@@ -21,10 +21,13 @@ syntax: glob
 *.lib
 *.sbr
 *.scc
+*.psess
+*.vsp
 [Bb]in
 [Dd]ebug*/
 obj/
 [Rr]elease*/
+ProgramData*/
 _ReSharper*/
 [Tt]humbs.db
 [Tt]est[Rr]esult*
