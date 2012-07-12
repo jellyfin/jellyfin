@@ -26,7 +26,6 @@ namespace MediaBrowser.Controller
         public string DataPath { get; private set; }
 
         public HttpServer HttpServer { get; private set; }
-        public ItemDataCache ItemDataCache { get; private set; }
         public ItemController ItemController { get; private set; }
         public UserController UserController { get; private set; }
         public PluginController PluginController { get; private set; }
@@ -61,7 +60,6 @@ namespace MediaBrowser.Controller
             UserController = new UserController(Path.Combine(DataPath, "Users"));
             PluginController = new PluginController(Path.Combine(DataPath, "Plugins"));
             DirectoryWatchers = new DirectoryWatchers();
-            ItemDataCache = new ItemDataCache();
 
             ItemController.PreBeginResolvePath += ItemController_PreBeginResolvePath;
             ItemController.BeginResolvePath += ItemController_BeginResolvePath;
@@ -86,7 +84,6 @@ namespace MediaBrowser.Controller
             // Get users from users folder
             // Load root media folder
             Parallel.Invoke(ReloadUsers, ReloadRoot);
-            var b = true;
         }
 
         private void ReloadConfiguration()

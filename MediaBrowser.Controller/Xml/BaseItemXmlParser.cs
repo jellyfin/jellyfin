@@ -146,16 +146,16 @@ namespace MediaBrowser.Controller.Xml
 
                 case "Director":
                     {
-                        var list = (item.People ?? new Person[]{}).ToList();
-                        list.AddRange(GetSplitValues(node.InnerText, '|').Select(v => new Person() { Name = v, PersonType = PersonType.Director }));
+                        var list = (item.People ?? new PersonInfo[]{}).ToList();
+                        list.AddRange(GetSplitValues(node.InnerText, '|').Select(v => new PersonInfo() { Name = v, PersonType = PersonType.Director }));
 
                         item.People = list;
                         break;
                     }
                 case "Writer":
                     {
-                        var list = (item.People ?? new Person[] { }).ToList();
-                        list.AddRange(GetSplitValues(node.InnerText, '|').Select(v => new Person() { Name = v, PersonType = PersonType.Writer }));
+                        var list = (item.People ?? new PersonInfo[] { }).ToList();
+                        list.AddRange(GetSplitValues(node.InnerText, '|').Select(v => new PersonInfo() { Name = v, PersonType = PersonType.Writer }));
 
                         item.People = list;
                         break;
@@ -164,8 +164,8 @@ namespace MediaBrowser.Controller.Xml
                 case "Actors":
                 case "GuestStars":
                     {
-                        var list = (item.People ?? new Person[] { }).ToList();
-                        list.AddRange(GetSplitValues(node.InnerText, '|').Select(v => new Person() { Name = v, PersonType = PersonType.Actor }));
+                        var list = (item.People ?? new PersonInfo[] { }).ToList();
+                        list.AddRange(GetSplitValues(node.InnerText, '|').Select(v => new PersonInfo() { Name = v, PersonType = PersonType.Actor }));
 
                         item.People = list;
                         break;
@@ -450,7 +450,7 @@ namespace MediaBrowser.Controller.Xml
 
         protected virtual void FetchDataFromPersonsNode(XmlNode node, T item)
         {
-            List<Person> list = (item.People ?? new Person[] { }).ToList();
+            List<PersonInfo> list = (item.People ?? new PersonInfo[] { }).ToList();
 
             foreach (XmlNode childNode in node.ChildNodes)
             {
@@ -542,9 +542,9 @@ namespace MediaBrowser.Controller.Xml
             }
         }
 
-        private Person GetPersonFromXmlNode(XmlNode node)
+        private PersonInfo GetPersonFromXmlNode(XmlNode node)
         {
-            Person person = new Person();
+            PersonInfo person = new PersonInfo();
 
             foreach (XmlNode childNode in node.ChildNodes)
             {
@@ -570,7 +570,7 @@ namespace MediaBrowser.Controller.Xml
                         }
 
                     case "Role":
-                        person.Description = childNode.InnerText ?? string.Empty;
+                        person.Overview = childNode.InnerText ?? string.Empty;
                         break;
 
                     default:
