@@ -1,0 +1,58 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using MediaBrowser.Common.Json;
+
+namespace MediaBrowser.Common.Plugins
+{
+    public abstract class BasePlugin<TConfigurationType> : IDisposable, IPlugin
+        where TConfigurationType : BasePluginConfiguration, new()
+    {
+        public string Path { get; set; }
+        public TConfigurationType Configuration { get; private set; }
+
+        private string ConfigurationPath
+        {
+            get
+            {
+                return System.IO.Path.Combine(Path, "config.js");
+            }
+        }
+        
+        public void Init()
+        {
+            Configuration = GetConfiguration();
+
+            if (Configuration.Enabled)
+            {
+                InitInternal();
+            }
+        }
+
+        protected abstract void InitInternal();
+
+        public virtual void Dispose()
+        {
+        }
+
+        private TConfigurationType GetConfiguration()
+        {
+            if (!File.Exists(ConfigurationPath))
+            {
+                return new TConfigurationType();
+            }
+
+            return JsonSerializer.Deserialize<TConfigurationType>(ConfigurationPath);
+        }
+    }
+
+    public interface IPlugin
+    {
+        string Path { get; set; }
+
+        void Init();
+        void Dispose();
+    }
+}
