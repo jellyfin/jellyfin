@@ -52,14 +52,27 @@ namespace MediaBrowser.TV
             return seasonPathExpressions.Any(r => r.IsMatch(path));
         }
 
-        public static bool IsSeriesFolder(string path, IEnumerable<string> files, IEnumerable<string> folders)
+        public static bool IsSeriesFolder(string path, IEnumerable<KeyValuePair<string, FileAttributes>> fileSystemChildren)
         {
-            if (folders.Any(f => IsSeasonFolder(f)))
+            foreach (var child in fileSystemChildren)
             {
-                return true;
+                if (child.Value.HasFlag(FileAttributes.Directory))
+                {
+                    if (IsSeasonFolder(child.Key))
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(EpisodeNumberFromFile(child.Key, false)))
+                    {
+                        return true;
+                    }
+                }
             }
 
-            return files.Any(f => !string.IsNullOrEmpty(EpisodeNumberFromFile(f, false)));
+            return false;
         }
 
         public static bool IsEpisode(string fullPath)

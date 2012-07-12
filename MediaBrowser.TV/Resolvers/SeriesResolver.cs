@@ -14,9 +14,15 @@ namespace MediaBrowser.TV.Resolvers
         {
             if (args.IsFolder)
             {
+                // Optimization to avoid running these tests against Seasons
+                if (args.Parent is Series)
+                {
+                    return null;
+                }
+
                 var metadataFile = args.GetFileByName("series.xml");
 
-                if (metadataFile.HasValue || Path.GetFileName(args.Path).IndexOf("[tvdbid=", StringComparison.OrdinalIgnoreCase) != -1)
+                if (metadataFile.HasValue || Path.GetFileName(args.Path).IndexOf("[tvdbid=", StringComparison.OrdinalIgnoreCase) != -1 || TVUtils.IsSeriesFolder(args.Path, args.FileSystemChildren))
                 {
                     return new Series();
                 }

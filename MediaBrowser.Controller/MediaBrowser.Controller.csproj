@@ -51,7 +51,6 @@
     <Compile Include="IO\Shortcut.cs" />
     <Compile Include="Library\ItemController.cs" />
     <Compile Include="Kernel.cs" />
-    <Compile Include="Library\ItemDataCache.cs" />
     <Compile Include="Net\CollectionExtensions.cs" />
     <Compile Include="Net\HttpServer.cs" />
     <Compile Include="Net\Request.cs" />

@@ -23,6 +23,8 @@ namespace MediaBrowser.Movies.Resolvers
                 {
                     return GetMovie(args);
                 }
+
+                // There's no metadata or [tmdb in the path, now we will have to work some magic to see if this is a Movie
             }
 
             return null;

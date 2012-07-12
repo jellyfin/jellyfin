@@ -38,7 +38,8 @@ namespace MediaBrowser.Model.Entities
         public string Overview { get; set; }
         public string Tagline { get; set; }
 
-        public IEnumerable<Person> People { get; set; }
+        [JsonIgnore]
+        public IEnumerable<PersonInfo> People { get; set; }
 
         public IEnumerable<string> Studios { get; set; }
 
