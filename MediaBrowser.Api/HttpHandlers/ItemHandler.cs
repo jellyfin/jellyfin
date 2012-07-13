@@ -1,92 +1,52 @@
-﻿using MediaBrowser.Controller.Net;
-using System;
-using System.IO;
-using System.IO.Compression;
-using MediaBrowser.Common.Json;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Controller;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public class ItemHandler : Response
+    public class ItemHandler : JsonHandler
     {
         public ItemHandler(RequestContext ctx)
             : base(ctx)
         {
-            ContentType = "application/json";
-
-            Headers["Content-Encoding"] = "gzip";
-
-            WriteStream = s =>
-            {
-                WriteReponse(s);
-                s.Close();
-            };
         }
 
-        private Guid ItemId
+        protected sealed override object ObjectToSerialize
         {
             get
             {
-                string id = RequestContext.Request.QueryString["id"];
-
-                if (string.IsNullOrEmpty(id))
-                {
-                    return Guid.Empty;
-                }
-
-                return Guid.Parse(id);
+                return GetSerializationObject(ItemToSerialize, true);
             }
         }
 
-        BaseItem Item
+        public static object GetSerializationObject(BaseItem item, bool includeChildren)
         {
-            get
-            {
-                Guid id = ItemId;
-
-                if (id == Guid.Empty)
-                {
-                    return Kernel.Instance.RootFolder;
-                }
-
-                return Kernel.Instance.RootFolder.FindById(id);
-            }
-        }
-
-        private void WriteReponse(Stream stream)
-        {
-            BaseItem item = Item;
-
-            object returnObject;
-
             Folder folder = item as Folder;
 
-            if (folder != null)
+            if (includeChildren && folder != null)
             {
-                returnObject = new
+                return new
                 {
-                    Item = item,
-                    Children = folder.Children
+                    BaseItem = item,
+                    Children = folder.Children,
+                    Type = item.GetType().Name
                 };
             }
             else
             {
-                returnObject = new
+                return new
                 {
-                    Item = item
+                    BaseItem = item,
+                    Type = item.GetType().Name
                 };
             }
-
-            WriteJsonResponse(returnObject, stream);
         }
 
-        private void WriteJsonResponse(object obj, Stream stream)
+        protected virtual BaseItem ItemToSerialize
         {
-            using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Compress, false))
+            get
             {
-                JsonSerializer.Serialize(obj, gzipStream);
-                //gzipStream.Flush();
+                return ApiService.GetItemById(QueryString["id"]);
             }
         }
     }

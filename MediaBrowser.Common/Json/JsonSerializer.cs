@@ -24,7 +24,7 @@ namespace MediaBrowser.Common.Json
                 }
             }
         }
-        
+
         public static void Serialize<T>(T o, string file)
         {
             using (StreamWriter streamWriter = new StreamWriter(file))

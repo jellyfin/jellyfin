@@ -51,12 +51,6 @@
     <Compile Include="IO\Shortcut.cs" />
     <Compile Include="Library\ItemController.cs" />
     <Compile Include="Kernel.cs" />
-    <Compile Include="Net\CollectionExtensions.cs" />
-    <Compile Include="Net\HttpServer.cs" />
-    <Compile Include="Net\Request.cs" />
-    <Compile Include="Net\RequestContext.cs" />
-    <Compile Include="Net\Response.cs" />
-    <Compile Include="Net\StreamExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resolvers\AudioResolver.cs" />
     <Compile Include="Resolvers\BaseItemResolver.cs" />

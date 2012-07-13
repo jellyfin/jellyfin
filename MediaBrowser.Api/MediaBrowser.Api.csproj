@@ -32,6 +32,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Reactive, Version=1.0.10621.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Rx-Main.1.0.11226\lib\Net4\System.Reactive.dll</HintPath>
@@ -43,8 +44,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApiService.cs" />
+    <Compile Include="HttpHandlers\GenreHandler.cs" />
+    <Compile Include="HttpHandlers\GenresHandler.cs" />
     <Compile Include="HttpHandlers\ImageHandler.cs" />
+    <Compile Include="HttpHandlers\InProgressItemsHandler.cs" />
     <Compile Include="HttpHandlers\ItemHandler.cs" />
+    <Compile Include="HttpHandlers\ItemListHandler.cs" />
+    <Compile Include="HttpHandlers\PersonHandler.cs" />
+    <Compile Include="HttpHandlers\RecentlyAddedItemsHandler.cs" />
+    <Compile Include="ImageProcessor.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

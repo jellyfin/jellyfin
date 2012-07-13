@@ -2,17 +2,12 @@ using System;
 using System.Net;
 using System.Reactive.Linq;
 
-namespace MediaBrowser.Controller.Net
+namespace MediaBrowser.Common.Net
 {
     public class HttpServer : IObservable<RequestContext>, IDisposable
     {
         private readonly HttpListener listener;
         private readonly IObservable<RequestContext> stream;
-
-        public HttpServer(int port)
-            : this("http://+:" + port + "/")
-        {
-        }
 
         public HttpServer(string url)
         {

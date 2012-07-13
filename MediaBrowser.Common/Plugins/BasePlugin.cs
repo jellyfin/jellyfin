@@ -7,7 +7,7 @@ using MediaBrowser.Common.Json;
 
 namespace MediaBrowser.Common.Plugins
 {
-    public abstract class BasePlugin<TConfigurationType> : IDisposable, IPlugin
+    public abstract class BasePlugin<TConfigurationType> : IPlugin
         where TConfigurationType : BasePluginConfiguration, new()
     {
         public string Path { get; set; }
@@ -33,10 +33,6 @@ namespace MediaBrowser.Common.Plugins
 
         protected abstract void InitInternal();
 
-        public virtual void Dispose()
-        {
-        }
-
         private TConfigurationType GetConfiguration()
         {
             if (!File.Exists(ConfigurationPath))
@@ -53,6 +49,5 @@ namespace MediaBrowser.Common.Plugins
         string Path { get; set; }
 
         void Init();
-        void Dispose();
     }
 }

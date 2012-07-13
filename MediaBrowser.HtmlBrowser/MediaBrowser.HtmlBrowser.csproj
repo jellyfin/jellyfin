@@ -54,9 +54,47 @@
       <Project>{17e1f4e6-8abd-4fe5-9ecf-43d4b6087ba2}</Project>
       <Name>MediaBrowser.Controller</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
+      <Project>{9b1ddd79-5134-4df3-ace3-d1957a7350d8}</Project>
+      <Name>MediaBrowser.Model</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\index.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\apple-touch-icon-114x114.png" />
+    <EmbeddedResource Include="Html\applesplashscreen.png" />
+    <EmbeddedResource Include="Html\favicon.ico" />
+    <EmbeddedResource Include="Html\thirdparty\jquery-1.7.1.min.js" />
+    <EmbeddedResource Include="Html\thirdparty\jquery.mobile.iconpack\images\ajax-loader.png" />
+    <EmbeddedResource Include="Html\thirdparty\jquery.mobile.iconpack\images\icons-18-black-pack.png" />
+    <EmbeddedResource Include="Html\thirdparty\jquery.mobile.iconpack\images\icons-18-white-pack.png" />
+    <EmbeddedResource Include="Html\thirdparty\jquery.mobile.iconpack\images\icons-36-black-pack.png" />
+    <EmbeddedResource Include="Html\thirdparty\jquery.mobile.iconpack\images\icons-36-white-pack.png" />
+    <EmbeddedResource Include="Html\thirdparty\jquery.mobile.iconpack\jqm-icon-pack-1.1.1-original.css" />
+    <EmbeddedResource Include="Html\thirdparty\jquery.mobile110\images\ajax-loader.gif" />
+    <EmbeddedResource Include="Html\thirdparty\jquery.mobile110\images\ajax-loader.png" />
+    <EmbeddedResource Include="Html\thirdparty\jquery.mobile110\images\icons-18-black.png" />
+    <EmbeddedResource Include="Html\thirdparty\jquery.mobile110\images\icons-18-white.png" />
+    <EmbeddedResource Include="Html\thirdparty\jquery.mobile110\images\icons-36-black.png" />
+    <EmbeddedResource Include="Html\thirdparty\jquery.mobile110\images\icons-36-white.png" />
+    <EmbeddedResource Include="Html\thirdparty\jquery.mobile110\jquery.mobile-1.1.0.css" />
+    <EmbeddedResource Include="Html\thirdparty\jquery.mobile110\jquery.mobile-1.1.0.js" />
+    <EmbeddedResource Include="Html\thirdparty\jquery.mobile110\jquery.mobile-1.1.0.min.css" />
+    <EmbeddedResource Include="Html\thirdparty\jquery.mobile110\jquery.mobile-1.1.0.min.js" />
+    <EmbeddedResource Include="Html\thirdparty\jquery.mobile110\jquery.mobile.structure-1.1.0.css" />
+    <EmbeddedResource Include="Html\thirdparty\jquery.mobile110\jquery.mobile.structure-1.1.0.min.css" />
+    <EmbeddedResource Include="Html\thirdparty\jquery.mobile110\jquery.mobile.theme-1.1.0.css" />
+    <EmbeddedResource Include="Html\thirdparty\jquery.mobile110\jquery.mobile.theme-1.1.0.min.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Handlers\" />
+    <Folder Include="Html\css\images\" />
+    <Folder Include="Html\scripts\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

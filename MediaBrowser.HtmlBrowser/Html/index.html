@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Media Browser</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />  
+		<link rel="icon" href="apple-touch-icon-114x114.png"/>  
+		<link rel="apple-touch-icon" href="apple-touch-icon-114x114.png"/>  
+		<link rel="apple-touch-startup-image" href="applesplashscreen.png" />  
+		<link rel="stylesheet" href="thirdparty/jquery.mobile110/jquery.mobile-1.1.0.min.css" />
+		<link rel="stylesheet" href="thirdparty/jquery.mobile.iconpack/jqm-icon-pack-1.1.1-original.css" />
+		<link rel="stylesheet" href="styles/site.css" />
+	</head>
+	<body>
+		<div data-role="page" data-theme="c" id="folderPage" class="page folderPage">
+			<div id="nowPlayingBar" class="nowPlayingBar ui-bar ui-bar-b"></div>
+			<div class="header ui-bar-c ui-header">
+				<h3 id="folderPageHeaderText" class="headerTextElement"></h3>
+				<a id="btnParent" class="ui-btn-left" data-role="button" data-icon="back" href="#folderPage" style="display:none;" data-iconpos="notext"></a>
+				<a id="btnHome" class="ui-btn-right" data-role="button" data-icon="home" href="#folderPage" data-iconpos="notext">Home</a>
+				<a id="btnTools" class="ui-btn-right" data-role="button" data-icon="wrench" href="setup.html" data-iconpos="notext" data-rel="external" data-ajax="false">Setup</a>
+			</div>
+			<div id="pageContent">
+
+			</div>
+		</div>
+		<div id="loadingAnimation">
+			<div id="loadingAnimationInner"></div>
+		</div>
+		<script src="thirdparty/jquery-1.7.1.min.js"></script>
+		<script src="thirdparty/jquery.mobile110/jquery.mobile-1.1.0.min.js"></script>
+		<script src="scripts/controllers.js"></script>
+		<script src="scripts/site.js"></script>
+	</body>
+</html>

@@ -25,18 +25,6 @@ namespace MediaBrowser.Controller.Library
             Resolvers.Insert(0, new TResolverType());
         }
 
-        /// <summary>
-        /// Registers a new BaseItem resolver.
-        /// </summary>
-        public void RemoveResovler<TBaseItemType, TResolverType>()
-            where TBaseItemType : BaseItem, new()
-            where TResolverType : BaseItemResolver<TBaseItemType>, new()
-        {
-            IBaseItemResolver resolver = Resolvers.First(r => r.GetType() == typeof(TResolverType));
-
-            Resolvers.Remove(resolver);
-        }
-
         #region PreBeginResolvePath Event
         /// <summary>
         /// Fires when a path is about to be resolved, but before child folders and files 
