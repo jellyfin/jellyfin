@@ -1,9 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Reactive.Linq;
 
-namespace MediaBrowser.Controller.Net
+namespace MediaBrowser.Common.Net
 {
     public static class StreamExtensions
     {

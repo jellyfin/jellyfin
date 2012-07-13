@@ -23,11 +23,9 @@ namespace MediaBrowser.Controller.Resolvers
                 item.Path = args.Path;
             }
 
-            Folder parentFolder = args.Parent as Folder;
-
-            if (parentFolder != null)
+            if (args.Parent != null)
             {
-                item.Parent = parentFolder;
+                item.Parent = args.Parent;
             }
 
             item.Id = Kernel.GetMD5(item.Path);

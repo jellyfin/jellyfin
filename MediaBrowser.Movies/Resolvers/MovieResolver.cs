@@ -17,14 +17,33 @@ namespace MediaBrowser.Movies.Resolvers
         {
             if (args.IsFolder)
             {
+                // Optimization to avoid running these tests against VF's
+                if (args.Parent != null && args.Parent.IsRoot)
+                {
+                    return null;
+                }
+
                 var metadataFile = args.GetFileByName("movie.xml");
 
                 if (metadataFile.HasValue || Path.GetFileName(args.Path).IndexOf("[tmdbid=", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    return GetMovie(args);
+                    return GetMovie(args) ?? new Movie();
+                }
+
+                // If it's not a boxset, the only other allowed parent type is Folder
+                if (!(args.Parent is BoxSet))
+                {
+                    if (args.Parent != null && args.Parent.GetType() != typeof(Folder))
+                    {
+                        return null;
+                    }
                 }
 
                 // There's no metadata or [tmdb in the path, now we will have to work some magic to see if this is a Movie
+                if (args.Parent != null)
+                {
+                    return GetMovie(args);
+                }
             }
 
             return null;
@@ -53,7 +72,7 @@ namespace MediaBrowser.Movies.Resolvers
                 }
             }
 
-            return new Movie();
+            return null;
         }
 
         private void PopulateBonusFeatures(Movie item, ItemResolveEventArgs args)

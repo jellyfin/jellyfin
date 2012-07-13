@@ -1,33 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using MediaBrowser.Api.HttpHandlers;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Net;
-using MediaBrowser.Api.HttpHandlers;
 
 namespace MediaBrowser.Api
 {
     public class Plugin : BasePlugin<BasePluginConfiguration>
     {
-        List<IDisposable> HttpHandlers = new List<IDisposable>();
-
         protected override void InitInternal()
         {
-            HttpHandlers.Add(Kernel.Instance.HttpServer.Where(ctx => ctx.Request.Url.LocalPath.EndsWith("mediabrowser/api/item")).Subscribe(ctx => ctx.Respond(new ItemHandler(ctx))));
-            HttpHandlers.Add(Kernel.Instance.HttpServer.Where(ctx => ctx.Request.Url.LocalPath.EndsWith("mediabrowser/api/image")).Subscribe(ctx => ctx.Respond(new ItemHandler(ctx))));
-        }
+            var httpServer = Kernel.Instance.HttpServer;
 
-        public override void Dispose()
-        {
-            base.Dispose();
+            httpServer.Where(ctx => ctx.Request.Url.LocalPath.EndsWith("/api/item", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new ItemHandler(ctx)));
 
-            foreach (var handler in HttpHandlers)
-            {
-                handler.Dispose();
-            }
+            httpServer.Where(ctx => ctx.Request.Url.LocalPath.EndsWith("/api/image", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new ImageHandler(ctx)));
 
-            HttpHandlers.Clear();
+            httpServer.Where(ctx => ctx.Request.Url.LocalPath.EndsWith("/api/genre", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new GenreHandler(ctx)));
+
+            httpServer.Where(ctx => ctx.Request.Url.LocalPath.EndsWith("/api/genres", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new GenresHandler(ctx)));
+
+            httpServer.Where(ctx => ctx.Request.Url.LocalPath.EndsWith("/api/recentlyaddeditems", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new RecentlyAddedItemsHandler(ctx)));
+
+            httpServer.Where(ctx => ctx.Request.Url.LocalPath.EndsWith("/api/inprogressitems", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new InProgressItemsHandler(ctx)));
         }
     }
 }

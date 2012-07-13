@@ -7,11 +7,11 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Logging;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -84,6 +84,7 @@ namespace MediaBrowser.Controller
             // Get users from users folder
             // Load root media folder
             Parallel.Invoke(ReloadUsers, ReloadRoot);
+            var b = true;
         }
 
         private void ReloadConfiguration()
@@ -96,14 +97,6 @@ namespace MediaBrowser.Controller
 
         private void ReloadPlugins()
         {
-            if (Plugins != null)
-            {
-                Parallel.For(0, Plugins.Count(), i =>
-                {
-                    Plugins.ElementAt(i).Dispose();
-                });
-            }
-
             // Find plugins
             Plugins = PluginController.GetAllPlugins();
 
@@ -120,7 +113,7 @@ namespace MediaBrowser.Controller
                 HttpServer.Dispose();
             }
 
-            HttpServer = new HttpServer(Configuration.HttpServerPortNumber);
+            HttpServer = new HttpServer("http://+:" + Configuration.HttpServerPortNumber + "/mediabrowser/");
         }
 
         /// <summary>
@@ -131,16 +124,6 @@ namespace MediaBrowser.Controller
             where TResolverType : BaseItemResolver<TBaseItemType>, new()
         {
             ItemController.AddResovler<TBaseItemType, TResolverType>();
-        }
-
-        /// <summary>
-        /// Unregisters a new BaseItem subclass
-        /// </summary>
-        public void RemoveBaseItemType<TBaseItemType, TResolverType>()
-            where TBaseItemType : BaseItem, new()
-            where TResolverType : BaseItemResolver<TBaseItemType>, new()
-        {
-            ItemController.RemoveResovler<TBaseItemType, TResolverType>();
         }
 
         /// <summary>

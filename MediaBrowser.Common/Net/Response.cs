@@ -1,29 +1,57 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
-using System.Text;
 
-namespace MediaBrowser.Controller.Net
+namespace MediaBrowser.Common.Net
 {
-    public class Response
+    public abstract class Response
     {
         protected RequestContext RequestContext { get; private set; }
-        
+
+        protected NameValueCollection QueryString
+        {
+            get
+            {
+                return RequestContext.Request.QueryString;
+            }
+        }
+
         public Response(RequestContext ctx)
         {
             RequestContext = ctx;
-            
+
             WriteStream = s => { };
-            StatusCode = 200;
             Headers = new Dictionary<string, string>();
-            CacheDuration = TimeSpan.FromTicks(0);
-            ContentType = "text/html";
         }
 
-        public int StatusCode { get; set; }
-        public string ContentType { get; set; }
+        public abstract string ContentType { get; }
+
+        public virtual int StatusCode
+        {
+            get
+            {
+                return 200;
+            }
+        }
+
+        public virtual TimeSpan CacheDuration
+        {
+            get
+            {
+                return TimeSpan.FromTicks(0);
+            }
+        }
+
+        public virtual DateTime? LastDateModified
+        {
+            get
+            {
+                return null;
+            }
+        }
+
         public IDictionary<string, string> Headers { get; set; }
-        public TimeSpan CacheDuration { get; set; }
         public Action<Stream> WriteStream { get; set; }
     }
 

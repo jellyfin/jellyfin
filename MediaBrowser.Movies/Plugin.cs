@@ -12,13 +12,5 @@ namespace MediaBrowser.Movies
             Kernel.Instance.AddBaseItemType<BoxSet, BoxSetResolver>();
             Kernel.Instance.AddBaseItemType<Movie, MovieResolver>();
         }
-
-        public override void Dispose()
-        {
-            base.Dispose();
-
-            Kernel.Instance.RemoveBaseItemType<Movie, MovieResolver>();
-            Kernel.Instance.RemoveBaseItemType<BoxSet, BoxSetResolver>();
-        }
     }
 }

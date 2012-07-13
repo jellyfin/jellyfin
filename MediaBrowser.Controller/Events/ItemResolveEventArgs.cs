@@ -60,7 +60,7 @@ namespace MediaBrowser.Controller.Events
     public class PreBeginResolveEventArgs : EventArgs
     {
         public string Path { get; set; }
-        public BaseItem Parent { get; set; }
+        public Folder Parent { get; set; }
 
         public bool Cancel { get; set; }
 

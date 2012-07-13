@@ -29,16 +29,5 @@ namespace MediaBrowser.TV
                 }
             }
         }
-
-        public override void Dispose()
-        {
-            base.Dispose();
-
-            Kernel.Instance.RemoveBaseItemType<Series, SeriesResolver>();
-            Kernel.Instance.RemoveBaseItemType<Season, SeasonResolver>();
-            Kernel.Instance.RemoveBaseItemType<Episode, EpisodeResolver>();
-
-            Kernel.Instance.ItemController.PreBeginResolvePath -= ItemController_PreBeginResolvePath;
-        }
     }
 }
