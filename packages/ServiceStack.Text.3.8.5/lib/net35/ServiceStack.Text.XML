@@ -1,0 +1,464 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ServiceStack.Text</name>
+    </assembly>
+    <members>
+        <member name="M:ServiceStack.Text.ITypeSerializer`1.CanCreateFromString(System.Type)">
+            <summary>
+            Determines whether this serializer can create the specified type from a string.
+            </summary>
+            <param name="type">The type.</param>
+            <returns>
+            	<c>true</c> if this instance [can create from string] the specified type; otherwise, <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:ServiceStack.Text.ITypeSerializer`1.DeserializeFromString(System.String)">
+            <summary>
+            Parses the specified value.
+            </summary>
+            <param name="value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Text.ITypeSerializer`1.DeserializeFromReader(System.IO.TextReader)">
+            <summary>
+            Deserializes from reader.
+            </summary>
+            <param name="reader">The reader.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Text.ITypeSerializer`1.SerializeToString(`0)">
+            <summary>
+            Serializes to string.
+            </summary>
+            <param name="value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Text.ITypeSerializer`1.SerializeToWriter(`0,System.IO.TextWriter)">
+            <summary>
+            Serializes to writer.
+            </summary>
+            <param name="value">The value.</param>
+            <param name="writer">The writer.</param>
+        </member>
+        <member name="M:ServiceStack.Text.JsonSerializer`1.DeserializeFromString(System.String)">
+            <summary>
+            Parses the specified value.
+            </summary>
+            <param name="value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.Text.Support.DoubleConverter">
+            <summary>
+            A class to allow the conversion of doubles to string representations of
+            their exact decimal values. The implementation aims for readability over
+            efficiency.
+            
+            Courtesy of @JonSkeet
+            http://www.yoda.arachsys.com/csharp/DoubleConverter.cs
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:ServiceStack.Text.Support.DoubleConverter.ToExactString(System.Double)" -->
+        <!-- Badly formed XML comment ignored for member "T:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal" -->
+        <!-- Badly formed XML comment ignored for member "F:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.digits" -->
+        <member name="F:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.decimalPoint">
+            <summary> 
+            How many digits are *after* the decimal point
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.#ctor(System.Int64)">
+            <summary> 
+            Constructs an arbitrary decimal expansion from the given long.
+            The long must not be negative.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.MultiplyBy(System.Int32)">
+            <summary>
+            Multiplies the current expansion by the given amount, which should
+            only be 2 or 5.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.Shift(System.Int32)">
+            <summary>
+            Shifts the decimal point; a negative value makes
+            the decimal expansion bigger (as fewer digits come after the
+            decimal place) and a positive value makes the decimal
+            expansion smaller.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.Normalize">
+            <summary>
+            Removes leading/trailing zeroes from the expansion.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.ToString">
+            <summary>
+            Converts the value to a proper decimal string representation.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Text.Json.JsonWriter`1">
+            <summary>
+            Implement the serializer using a more static approach
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:ServiceStack.Text.Marc.Link`2">
+            <summary>
+            Pretty Thread-Safe cache class from:
+            http://code.google.com/p/dapper-dot-net/source/browse/Dapper/SqlMapper.cs
+            
+            This is a micro-cache; suitable when the number of terms is controllable (a few hundred, for example),
+            and strictly append-only; you cannot change existing values. All key matches are on **REFERENCE**
+            equality. The type is fully thread-safe.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Text.DateTimeExtensions">
+            <summary>
+            A fast, standards-based, serialization-issue free DateTime serailizer.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Text.JsonSerializer">
+            <summary>
+            Creates an instance of a Type from a string value
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.Common.JsWriter.HasAnyEscapeChars(System.String)">
+            <summary>
+            micro optimizations: using flags instead of value.IndexOfAny(EscapeChars)
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Text.Common.DeserializeTypeUtils.GetTypeStringConstructor(System.Type)">
+            <summary>
+            Get the type(string) constructor if exists
+            </summary>
+            <param name="type">The type.</param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.Text.QueryStringWriter`1">
+            <summary>
+            Implement the serializer using a more static approach
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:FastMember.ObjectAccessor">
+            <summary>
+            Represents an individual object, allowing access to members by-name
+            </summary>
+        </member>
+        <member name="M:FastMember.ObjectAccessor.Equals(System.Object)">
+            <summary>
+            Use the target types definition of equality
+            </summary>
+        </member>
+        <member name="M:FastMember.ObjectAccessor.GetHashCode">
+            <summary>
+            Obtain the hash of the target object
+            </summary>
+        </member>
+        <member name="M:FastMember.ObjectAccessor.ToString">
+            <summary>
+            Use the target's definition of a string representation
+            </summary>
+        </member>
+        <member name="M:FastMember.ObjectAccessor.Create(System.Object)">
+            <summary>
+            Wraps an individual object, allowing by-name access to that instance
+            </summary>
+        </member>
+        <member name="P:FastMember.ObjectAccessor.Item(System.String)">
+            <summary>
+            Get or Set the value of a named member for the underlying object
+            </summary>
+        </member>
+        <member name="P:FastMember.ObjectAccessor.Target">
+            <summary>
+            The object represented by this instance
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Text.JsConfig.tsEmitCamelCaseNames">
+            <summary>
+            <see langword="true"/> if the <see cref="T:ServiceStack.Text.Common.ITypeSerializer"/> is configured
+            to take advantage of <see cref="T:System.CLSCompliantAttribute"/> specification,
+            to support user-friendly serialized formats, ie emitting camelCasing for JSON
+            and parsing member names and enum values in a case-insensitive manner.
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Text.JsConfig.tsThrowOnDeserializationError">
+            <summary>
+            Gets or sets a value indicating if the framework should throw serialization exceptions
+            or continue regardless of deserialization errors. If <see langword="true"/>  the framework
+            will throw; otherwise, it will parse as many fields as possible. The default is <see langword="false"/>.
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Text.JsConfig`1.ExcludeTypeInfo">
+            <summary>
+            Never emit type info for this type
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Text.JsConfig`1.EmitCamelCaseNames">
+            <summary>
+            <see langword="true"/> if the <see cref="T:ServiceStack.Text.Common.ITypeSerializer"/> is configured
+            to take advantage of <see cref="T:System.CLSCompliantAttribute"/> specification,
+            to support user-friendly serialized formats, ie emitting camelCasing for JSON
+            and parsing member names and enum values in a case-insensitive manner.
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Text.JsConfig`1.serializeFn">
+            <summary>
+            Define custom serialization fn for BCL Structs
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Text.JsConfig`1.DeSerializeFn">
+            <summary>
+            Define custom deserialization fn for BCL Structs
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Text.JsConfig`1.ExcludePropertyNames">
+            <summary>
+            Exclude specific properties of this type from being serialized
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Text.JsConfig`1.TreatValueAsRefTypes">
+            <summary>
+            Opt-in flag to set some Value Types to be treated as a Ref Type
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Text.TypeSerializer">
+            <summary>
+            Creates an instance of a Type from a string value
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.TypeSerializer.CanCreateFromString(System.Type)">
+            <summary>
+            Determines whether the specified type is convertible from string.
+            </summary>
+            <param name="type">The type.</param>
+            <returns>
+            	<c>true</c> if the specified type is convertible from string; otherwise, <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:ServiceStack.Text.TypeSerializer.DeserializeFromString``1(System.String)">
+            <summary>
+            Parses the specified value.
+            </summary>
+            <param name="value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Text.TypeSerializer.DeserializeFromString(System.String,System.Type)">
+            <summary>
+            Parses the specified type.
+            </summary>
+            <param name="type">The type.</param>
+            <param name="value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Text.TypeSerializer.ToStringDictionary``1(``0)">
+            <summary>
+            Useful extension method to get the Dictionary[string,string] representation of any POCO type.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Text.TypeSerializer.Dump``1(``0)">
+            <summary>
+            Recursively prints the contents of any POCO object in a human-friendly, readable format
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.Text.WP.HashSet`1">
+            <summary>
+             A hashset implementation that uses an IDictionary
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.Json.JsonTypeSerializer.WriteRawString(System.IO.TextWriter,System.String)">
+            <summary>
+            Shortcut escape when we're sure value doesn't contain any escaped chars
+            </summary>
+            <param name="writer"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:ServiceStack.Text.Json.JsonTypeSerializer.ConvertFromUtf32(System.Int32)">
+            <summary>
+            Since Silverlight doesn't have char.ConvertFromUtf32() so putting Mono's implemenation inline.
+            </summary>
+            <param name="utf32"></param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.Text.Controller.PathInfo">
+            <summary>
+            Class to hold  
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:ServiceStack.Text.Controller.PathInfo.Parse(System.String)" -->
+        <member name="F:ServiceStack.Text.StreamExtensions.DefaultBufferSize">
+            <summary>
+            @jonskeet: Collection of utility methods which operate on streams.
+            r285, February 26th 2009: http://www.yoda.arachsys.com/csharp/miscutil/
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.StreamExtensions.ReadFully(System.IO.Stream)">
+            <summary>
+            Reads the given stream up to the end, returning the data as a byte
+            array.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.StreamExtensions.ReadFully(System.IO.Stream,System.Int32)">
+            <summary>
+            Reads the given stream up to the end, returning the data as a byte
+            array, using the given buffer size.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.StreamExtensions.ReadFully(System.IO.Stream,System.Byte[])">
+            <summary>
+            Reads the given stream up to the end, returning the data as a byte
+            array, using the given buffer for transferring data. Note that the
+            current contents of the buffer is ignored, so the buffer needn't
+            be cleared beforehand.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.StreamExtensions.CopyTo(System.IO.Stream,System.IO.Stream)">
+            <summary>
+            Copies all the data from one stream into another.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.StreamExtensions.CopyTo(System.IO.Stream,System.IO.Stream,System.Int32)">
+            <summary>
+            Copies all the data from one stream into another, using a buffer
+            of the given size.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.StreamExtensions.CopyTo(System.IO.Stream,System.IO.Stream,System.Byte[])">
+            <summary>
+            Copies all the data from one stream into another, using the given 
+            buffer for transferring data. Note that the current contents of 
+            the buffer is ignored, so the buffer needn't be cleared beforehand.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.StreamExtensions.ReadExactly(System.IO.Stream,System.Int32)">
+            <summary>
+            Reads exactly the given number of bytes from the specified stream.
+            If the end of the stream is reached before the specified amount
+            of data is read, an exception is thrown.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.StreamExtensions.ReadExactly(System.IO.Stream,System.Byte[])">
+            <summary>
+            Reads into a buffer, filling it completely.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.StreamExtensions.ReadExactly(System.IO.Stream,System.Byte[],System.Int32)">
+            <summary>
+            Reads exactly the given number of bytes from the specified stream,
+            into the given buffer, starting at position 0 of the array.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.StreamExtensions.ReadExactly(System.IO.Stream,System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads exactly the given number of bytes from the specified stream,
+            into the given buffer, starting at position 0 of the array.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.StreamExtensions.ReadExactlyFast(System.IO.Stream,System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Same as ReadExactly, but without the argument checks.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Text.AssemblyUtils">
+            <summary>
+            Utils to load types
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.AssemblyUtils.FindType(System.String)">
+            <summary>
+            Find the type from the name supplied
+            </summary>
+            <param name="typeName">[typeName] or [typeName, assemblyName]</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Text.AssemblyUtils.FindType(System.String,System.String)">
+            <summary>
+            Find type if it exists
+            </summary>
+            <param name="typeName"></param>
+            <param name="assemblyName"></param>
+            <returns>The type if it exists</returns>
+        </member>
+        <member name="M:ServiceStack.Text.StringExtensions.BaseConvert(System.String,System.Int32,System.Int32)">
+            <summary>
+            Converts from base: 0 - 62
+            </summary>
+            <param name="source">The source.</param>
+            <param name="from">From.</param>
+            <param name="to">To.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Text.StringExtensions.FastToUtf8Bytes(System.String)">
+            <summary>
+            Skip the encoding process for 'safe strings' 
+            </summary>
+            <param name="strVal"></param>
+            <returns></returns>
+        </member>
+        <member name="T:FastMember.TypeAccessor">
+            <summary>
+            Provides by-name member-access to objects of a given type
+            </summary>
+        </member>
+        <member name="M:FastMember.TypeAccessor.CreateNew">
+            <summary>
+            Create a new instance of this type
+            </summary>
+        </member>
+        <member name="M:FastMember.TypeAccessor.Create(System.Type)">
+            <summary>
+            Provides a type-specific accessor, allowing by-name access for all objects of that type
+            </summary>
+            <remarks>The accessor is cached internally; a pre-existing accessor may be returned</remarks>
+        </member>
+        <member name="P:FastMember.TypeAccessor.CreateNewSupported">
+            <summary>
+            Does this type support new instances via a parameterless constructor?
+            </summary>
+        </member>
+        <member name="P:FastMember.TypeAccessor.Item(System.Object,System.String)">
+            <summary>
+            Get or set the value of a named member on the target instance
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Text.Jsv.JsvWriter`1">
+            <summary>
+            Implement the serializer using a more static approach
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:ServiceStack.Text.Json.JsonUtils.HasAnyEscapeChars(System.String)">
+            <summary>
+            micro optimizations: using flags instead of value.IndexOfAny(EscapeChars)
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Text.TypeSerializer`1.DeserializeFromString(System.String)">
+            <summary>
+            Parses the specified value.
+            </summary>
+            <param name="value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Text.Common.DateTimeSerializer.ParseWcfJsonDateOffset(System.String)">
+            <summary>
+            WCF Json format: /Date(unixts+0000)/
+            </summary>
+            <param name="wcfJsonDate"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Text.Common.DateTimeSerializer.ParseWcfJsonDate(System.String)">
+            <summary>
+            WCF Json format: /Date(unixts+0000)/
+            </summary>
+            <param name="wcfJsonDate"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

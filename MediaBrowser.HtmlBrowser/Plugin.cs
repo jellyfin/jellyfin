@@ -3,6 +3,7 @@ using System.Reactive.Linq;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller;
+using MediaBrowser.HtmlBrowser.Handlers;
 
 namespace MediaBrowser.HtmlBrowser
 {
@@ -12,11 +13,18 @@ namespace MediaBrowser.HtmlBrowser
         {
             var httpServer = Kernel.Instance.HttpServer;
 
-            /*httpServer.Where(ctx => ctx.Request.Url.LocalPath.EndsWith("/browser/index.html", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new EmbeddedResourceHandler(ctx, "MediaBrowser.HtmlBrowser.Html.index.html")));
+            httpServer.Where(ctx => ctx.LocalPath.IndexOf("/browser/", StringComparison.OrdinalIgnoreCase) != -1).Subscribe(ctx =>
+            {
+                string localPath = ctx.LocalPath;
+                string srch = "/browser/";
 
-            httpServer.Where(ctx => ctx.Request.Url.LocalPath.EndsWith("/browser/resource", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new EmbeddedResourceHandler(ctx)));
+                int index = localPath.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
 
-            httpServer.Where(ctx => ctx.Request.Url.LocalPath.EndsWith("/browser/favicon.ico", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new EmbeddedResourceHandler(ctx, "MediaBrowser.HtmlBrowser.Html.css.images.favicon.ico")));*/
+                string resource = localPath.Substring(index + srch.Length);
+
+                ctx.Respond(new EmbeddedResourceHandler(ctx, resource));
+
+            });
         }
     }
 }

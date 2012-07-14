@@ -6,69 +6,36 @@ namespace MediaBrowser.Controller.Xml
 {
     public static class XmlExtensions
     {
-        public static int SafeGetInt32(this XmlNode node)
-        {
-            return SafeGetInt32(node, 0);
-        }
-
-        public static int SafeGetInt32(this XmlNode node, int defaultInt)
-        {
-            if (node != null && node.InnerText.Length > 0)
-            {
-                int rval;
-                if (Int32.TryParse(node.InnerText, out rval))
-                {
-                    return rval;
-                }
-
-            }
-            return defaultInt;
-        }
-
         private static CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public static float SafeGetSingle(this XmlNode rvalNode, float minValue, float maxValue)
+        public static float ReadFloatSafe(this XmlReader reader)
         {
-            if (rvalNode.InnerText.Length > 0)
+            string valueString = reader.ReadElementContentAsString();
+
+            float value = 0;
+
+            if (!string.IsNullOrEmpty(valueString))
             {
-                float rval;
                 // float.TryParse is local aware, so it can be probamatic, force us culture
-                if (float.TryParse(rvalNode.InnerText, NumberStyles.AllowDecimalPoint, _usCulture, out rval))
-                {
-                    if (rval >= minValue && rval <= maxValue)
-                    {
-                        return rval;
-                    }
-                }
-
+                float.TryParse(valueString, NumberStyles.AllowDecimalPoint, _usCulture, out value);
             }
-            return minValue;
+
+            return value;
         }
-        
-        public static float SafeGetSingle(this XmlNode doc, string path, float minValue, float maxValue)
+
+        public static int ReadIntSafe(this XmlReader reader)
         {
-            XmlNode rvalNode = doc.SelectSingleNode(path);
-            if (rvalNode != null)
+            string valueString = reader.ReadElementContentAsString();
+
+            int value = 0;
+
+            if (!string.IsNullOrEmpty(valueString))
             {
-                rvalNode.SafeGetSingle(minValue, maxValue);
 
+                int.TryParse(valueString, out value);
             }
-            return minValue;
-        }
 
-
-        public static string SafeGetString(this XmlNode node)
-        {
-            return SafeGetString(node, null);
-        }
-
-        public static string SafeGetString(this XmlNode node, string defaultValue)
-        {
-            if (node != null && node.InnerText.Length > 0)
-            {
-                return node.InnerText;
-            }
-            return defaultValue;
+            return value;
         }
     }
 }

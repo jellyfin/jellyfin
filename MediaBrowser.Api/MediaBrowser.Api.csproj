@@ -54,6 +54,7 @@
     <Compile Include="HttpHandlers\PersonHandler.cs" />
     <Compile Include="HttpHandlers\RecentlyAddedItemsHandler.cs" />
     <Compile Include="ImageProcessor.cs" />
+    <Compile Include="HttpHandlers\MediaHandler.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

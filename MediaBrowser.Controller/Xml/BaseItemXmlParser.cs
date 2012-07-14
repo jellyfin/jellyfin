@@ -12,15 +12,17 @@ namespace MediaBrowser.Controller.Xml
     {
         public virtual void Fetch(T item, string metadataFile)
         {
-            XmlDocument doc = new XmlDocument();
-
-            doc.Load(metadataFile);
-
-            XmlElement titleElement = doc.DocumentElement;
-
-            foreach (XmlNode node in titleElement.ChildNodes)
+            using (XmlReader reader = XmlReader.Create(metadataFile))
             {
-                FetchDataFromXmlNode(node, item);
+                reader.MoveToContent();
+
+                while (reader.Read())
+                {
+                    if (reader.NodeType == XmlNodeType.Element)
+                    {
+                        FetchDataFromXmlNode(reader, item);
+                    }
+                }
             }
 
             // If dates weren't supplied in metadata, use values from the file
@@ -35,13 +37,13 @@ namespace MediaBrowser.Controller.Xml
             }
         }
 
-        protected virtual void FetchDataFromXmlNode(XmlNode node, T item)
+        protected virtual void FetchDataFromXmlNode(XmlReader reader, T item)
         {
-            switch (node.Name)
+            switch (reader.Name)
             {
                 case "Added":
                     DateTime added;
-                    if (DateTime.TryParse(node.InnerText ?? string.Empty, out added))
+                    if (DateTime.TryParse(reader.ReadElementContentAsString() ?? string.Empty, out added))
                     {
                         item.DateCreated = added;
                     }
@@ -49,7 +51,7 @@ namespace MediaBrowser.Controller.Xml
 
                 case "Type":
                     {
-                        item.DisplayMediaType = node.InnerText ?? string.Empty;
+                        item.DisplayMediaType = reader.ReadElementContentAsString() ?? string.Empty;
 
                         switch (item.DisplayMediaType.ToLower())
                         {
@@ -68,86 +70,65 @@ namespace MediaBrowser.Controller.Xml
                     }
 
                 case "banner":
-                    item.BannerImagePath = node.InnerText ?? string.Empty;
+                    item.BannerImagePath = reader.ReadElementContentAsString() ?? string.Empty;
                     break;
 
                 case "LocalTitle":
-                    item.Name = node.InnerText ?? string.Empty;
+                    item.Name = reader.ReadElementContentAsString() ?? string.Empty;
                     break;
 
                 case "SortTitle":
-                    item.SortName = node.InnerText ?? string.Empty;
+                    item.SortName = reader.ReadElementContentAsString() ?? string.Empty;
                     break;
 
                 case "Overview":
                 case "Description":
-                    item.Overview = node.InnerText ?? string.Empty;
+                    item.Overview = reader.ReadElementContentAsString() ?? string.Empty;
                     break;
 
                 case "TagLine":
-                    item.Tagline = node.InnerText ?? string.Empty;
+                    item.Tagline = reader.ReadElementContentAsString() ?? string.Empty;
                     break;
 
                 case "ContentRating":
                 case "MPAARating":
-                    item.OfficialRating = node.InnerText ?? string.Empty;
+                    item.OfficialRating = reader.ReadElementContentAsString() ?? string.Empty;
                     break;
 
                 case "CustomRating":
-                    item.CustomRating = node.InnerText ?? string.Empty;
+                    item.CustomRating = reader.ReadElementContentAsString() ?? string.Empty;
                     break;
 
                 case "CustomPin":
-                    item.CustomPin = node.InnerText ?? string.Empty;
-                    break;
-
-                case "Covers":
-                    FetchFromCoversNode(node, item);
-                    break;
-
-                case "Genres":
-                    FetchFromGenresNode(node, item);
+                    item.CustomPin = reader.ReadElementContentAsString() ?? string.Empty;
                     break;
 
                 case "Genre":
                     {
                         var genres = (item.Genres ?? new string[] { }).ToList();
-                        genres.AddRange(GetSplitValues(node.InnerText, '|'));
+                        genres.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|'));
 
                         item.Genres = genres;
                         break;
                     }
 
                 case "AspectRatio":
-                    item.AspectRatio = node.InnerText ?? string.Empty;
-                    break;
-
-                case "Rating":
-                case "IMDBrating":
-                    float IMDBrating = node.SafeGetSingle((float)-1, (float)10);
-
-                    if (IMDBrating >= 0)
-                    {
-                        item.UserRating = IMDBrating;
-                    }
+                    item.AspectRatio = reader.ReadElementContentAsString() ?? string.Empty;
                     break;
 
                 case "Network":
                     {
                         var studios = (item.Studios ?? new string[] { }).ToList();
-                        studios.AddRange(GetSplitValues(node.InnerText, '|'));
+                        studios.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|'));
 
                         item.Studios = studios;
                         break;
                     }
-                case "Studios":
-                    FetchFromStudiosNode(node, item);
-                    break;
 
                 case "Director":
                     {
-                        var list = (item.People ?? new PersonInfo[]{}).ToList();
-                        list.AddRange(GetSplitValues(node.InnerText, '|').Select(v => new PersonInfo() { Name = v, PersonType = PersonType.Director }));
+                        var list = (item.People ?? new PersonInfo[] { }).ToList();
+                        list.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo() { Name = v, PersonType = PersonType.Director }));
 
                         item.People = list;
                         break;
@@ -155,7 +136,7 @@ namespace MediaBrowser.Controller.Xml
                 case "Writer":
                     {
                         var list = (item.People ?? new PersonInfo[] { }).ToList();
-                        list.AddRange(GetSplitValues(node.InnerText, '|').Select(v => new PersonInfo() { Name = v, PersonType = PersonType.Writer }));
+                        list.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo() { Name = v, PersonType = PersonType.Writer }));
 
                         item.People = list;
                         break;
@@ -165,28 +146,20 @@ namespace MediaBrowser.Controller.Xml
                 case "GuestStars":
                     {
                         var list = (item.People ?? new PersonInfo[] { }).ToList();
-                        list.AddRange(GetSplitValues(node.InnerText, '|').Select(v => new PersonInfo() { Name = v, PersonType = PersonType.Actor }));
+                        list.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo() { Name = v, PersonType = PersonType.Actor }));
 
                         item.People = list;
                         break;
                     }
 
-                case "Persons":
-                    FetchDataFromPersonsNode(node, item);
-                    break;
-
                 case "Trailer":
-                    item.TrailerUrl = node.InnerText ?? string.Empty;
-                    break;
-
-                case "ParentalRating":
-                    FetchFromParentalRatingNode(node, item);
+                    item.TrailerUrl = reader.ReadElementContentAsString() ?? string.Empty;
                     break;
 
                 case "ProductionYear":
                     {
                         int ProductionYear;
-                        if (int.TryParse(node.InnerText, out ProductionYear) && ProductionYear > 1850)
+                        if (int.TryParse(reader.ReadElementContentAsString(), out ProductionYear) && ProductionYear > 1850)
                         {
                             item.ProductionYear = ProductionYear;
                         }
@@ -194,390 +167,478 @@ namespace MediaBrowser.Controller.Xml
                         break;
                     }
 
+                case "Rating":
+                case "IMDBrating":
+
+                    string rating = reader.ReadElementContentAsString();
+
+                    if (!string.IsNullOrEmpty(rating))
+                    {
+                        float val;
+
+                        if (float.TryParse(rating, out val))
+                        {
+                            item.UserRating = val;
+                        }
+                    }
+                    break;
+
+                case "Genres":
+                    FetchFromGenresNode(reader.ReadSubtree(), item);
+                    break;
+
+                case "Persons":
+                    FetchDataFromPersonsNode(reader.ReadSubtree(), item);
+                    break;
+
+                case "ParentalRating":
+                    FetchFromParentalRatingNode(reader.ReadSubtree(), item);
+                    break;
+
+                case "Studios":
+                    FetchFromStudiosNode(reader.ReadSubtree(), item);
+                    break;
+
                 case "MediaInfo":
-                    FetchMediaInfo(node, item);
+                    FetchMediaInfo(reader.ReadSubtree(), item);
                     break;
 
                 default:
+                    reader.Skip();
                     break;
             }
         }
 
-        protected virtual void FetchFromCoversNode(XmlNode node, T item)
+        private void FetchMediaInfo(XmlReader reader, T item)
         {
-            string cover = node.SafeGetString("Front");
+            var video = item as Video;
 
-            if (!string.IsNullOrEmpty(cover))
+            if (video != null)
             {
-                item.PrimaryImagePath = cover;
+                FetchMediaInfo(reader, video);
             }
         }
 
-        protected virtual void FetchMediaInfo(XmlNode node, T item)
+        private void FetchMediaInfo(XmlReader reader, Video item)
         {
-            var iMediaInfo = item as Video;
+            reader.MoveToContent();
 
-            if (iMediaInfo != null)
+            while (reader.Read())
             {
-                FetchMediaInfo(node, iMediaInfo);
-            }
-        }
-
-        protected virtual void FetchMediaInfo(XmlNode node, Video item)
-        {
-            foreach (XmlNode childNode in node.ChildNodes)
-            {
-                switch (childNode.Name)
+                if (reader.NodeType == XmlNodeType.Element)
                 {
-                    case "Audio":
-                        {
-                            AudioStream stream = FetchMediaInfoAudio(childNode);
+                    switch (reader.Name)
+                    {
+                        case "Audio":
+                            {
+                                AudioStream stream = FetchMediaInfoAudio(reader.ReadSubtree());
 
-                            List<AudioStream> streams = item.AudioStreams.ToList();
-                            streams.Add(stream);
-                            item.AudioStreams = streams;
+                                List<AudioStream> streams = item.AudioStreams.ToList();
+                                streams.Add(stream);
+                                item.AudioStreams = streams;
 
+                                break;
+                            }
+
+                        case "Video":
+                            FetchMediaInfoVideo(reader.ReadSubtree(), item);
                             break;
-                        }
 
-                    case "Video":
-                        FetchMediaInfoVideo(childNode, item);
-                        break;
+                        case "Subtitle":
+                            FetchMediaInfoSubtitles(reader.ReadSubtree(), item);
+                            break;
 
-                    case "Subtitle":
-                        FetchMediaInfoSubtitles(childNode, item);
-                        break;
-
-                    default:
-                        break;
+                        default:
+                            reader.Skip();
+                            break;
+                    }
                 }
             }
         }
 
-        protected virtual AudioStream FetchMediaInfoAudio(XmlNode node)
+        private AudioStream FetchMediaInfoAudio(XmlReader reader)
         {
             AudioStream stream = new AudioStream();
 
-            foreach (XmlNode childNode in node.ChildNodes)
+            reader.MoveToContent();
+
+            while (reader.Read())
             {
-                switch (childNode.Name)
+                if (reader.NodeType == XmlNodeType.Element)
                 {
-                    case "BitRate":
-                        stream.BitRate = childNode.SafeGetInt32();
-                        break;
+                    switch (reader.Name)
+                    {
+                        case "BitRate":
+                            stream.BitRate = reader.ReadIntSafe();
+                            break;
 
-                    case "Channels":
-                        stream.Channels = childNode.SafeGetInt32();
-                        break;
+                        case "Channels":
+                            stream.Channels = reader.ReadIntSafe();
+                            break;
 
-                    case "Language":
-                        stream.Language = childNode.InnerText ?? string.Empty;
-                        break;
+                        case "Language":
+                            stream.Language = reader.ReadElementContentAsString() ?? string.Empty;
+                            break;
 
-                    case "Codec":
-                        {
-                            string codec = childNode.InnerText ?? string.Empty;
-
-                            switch (codec.ToLower())
+                        case "Codec":
                             {
-                                case "dts-es":
-                                case "dts-es matrix":
-                                case "dts-es discrete":
-                                    stream.AudioFormat = "DTS";
-                                    stream.AudioProfile = "ES";
-                                    break;
-                                case "dts-hd hra":
-                                case "dts-hd high resolution":
-                                    stream.AudioFormat = "DTS";
-                                    stream.AudioProfile = "HRA";
-                                    break;
-                                case "dts ma":
-                                case "dts-hd ma":
-                                case "dts-hd master":
-                                    stream.AudioFormat = "DTS";
-                                    stream.AudioProfile = "MA";
-                                    break;
-                                case "dolby digital":
-                                case "dolby digital surround ex":
-                                case "dolby surround":
-                                    stream.AudioFormat = "AC-3";
-                                    break;
-                                case "dolby digital plus":
-                                    stream.AudioFormat = "E-AC-3";
-                                    break;
-                                case "dolby truehd":
-                                    stream.AudioFormat = "AC-3";
-                                    stream.AudioProfile = "TrueHD";
-                                    break;
-                                case "mp2":
-                                    stream.AudioFormat = "MPEG Audio";
-                                    stream.AudioProfile = "Layer 2";
-                                    break;
-                                case "other":
-                                    break;
-                                default:
-                                    stream.AudioFormat = codec;
-                                    break;
+                                string codec = reader.ReadElementContentAsString() ?? string.Empty;
+
+                                switch (codec.ToLower())
+                                {
+                                    case "dts-es":
+                                    case "dts-es matrix":
+                                    case "dts-es discrete":
+                                        stream.AudioFormat = "DTS";
+                                        stream.AudioProfile = "ES";
+                                        break;
+                                    case "dts-hd hra":
+                                    case "dts-hd high resolution":
+                                        stream.AudioFormat = "DTS";
+                                        stream.AudioProfile = "HRA";
+                                        break;
+                                    case "dts ma":
+                                    case "dts-hd ma":
+                                    case "dts-hd master":
+                                        stream.AudioFormat = "DTS";
+                                        stream.AudioProfile = "MA";
+                                        break;
+                                    case "dolby digital":
+                                    case "dolby digital surround ex":
+                                    case "dolby surround":
+                                        stream.AudioFormat = "AC-3";
+                                        break;
+                                    case "dolby digital plus":
+                                        stream.AudioFormat = "E-AC-3";
+                                        break;
+                                    case "dolby truehd":
+                                        stream.AudioFormat = "AC-3";
+                                        stream.AudioProfile = "TrueHD";
+                                        break;
+                                    case "mp2":
+                                        stream.AudioFormat = "MPEG Audio";
+                                        stream.AudioProfile = "Layer 2";
+                                        break;
+                                    case "other":
+                                        break;
+                                    default:
+                                        stream.AudioFormat = codec;
+                                        break;
+                                }
+
+                                break;
                             }
 
+                        default:
+                            reader.Skip();
                             break;
-                        }
-
-                    default:
-                        break;
+                    }
                 }
             }
 
             return stream;
         }
 
-        protected virtual void FetchMediaInfoVideo(XmlNode node, Video item)
+        private void FetchMediaInfoVideo(XmlReader reader, Video item)
         {
-            foreach (XmlNode childNode in node.ChildNodes)
+            reader.MoveToContent();
+
+            while (reader.Read())
             {
-                switch (childNode.Name)
+                if (reader.NodeType == XmlNodeType.Element)
                 {
-                    case "Width":
-                        item.Width = childNode.SafeGetInt32();
-                        break;
+                    switch (reader.Name)
+                    {
+                        case "Width":
+                            item.Width = reader.ReadIntSafe();
+                            break;
 
-                    case "Height":
-                        item.Height = childNode.SafeGetInt32();
-                        break;
+                        case "Height":
+                            item.Height = reader.ReadIntSafe();
+                            break;
 
-                    case "BitRate":
-                        item.VideoBitRate = childNode.SafeGetInt32();
-                        break;
+                        case "BitRate":
+                            item.VideoBitRate = reader.ReadIntSafe();
+                            break;
 
-                    case "FrameRate":
-                        item.FrameRate = childNode.InnerText ?? string.Empty;
-                        break;
+                        case "FrameRate":
+                            item.FrameRate = reader.ReadElementContentAsString() ?? string.Empty;
+                            break;
 
-                    case "ScanType":
-                        item.ScanType = childNode.InnerText ?? string.Empty;
-                        break;
+                        case "ScanType":
+                            item.ScanType = reader.ReadElementContentAsString() ?? string.Empty;
+                            break;
 
-                    case "Duration":
-                        item.RunTime = TimeSpan.FromMinutes(childNode.SafeGetInt32());
-                        break;
+                        case "Duration":
+                            item.RunTime = TimeSpan.FromMinutes(reader.ReadIntSafe());
+                            break;
 
-                    case "DurationSeconds":
-                        int seconds = childNode.SafeGetInt32();
-                        if (seconds > 0)
-                        {
-                            item.RunTime = TimeSpan.FromSeconds(seconds);
-                        }
-                        break;
-
-                    case "Codec":
-                        {
-                            string videoCodec = childNode.InnerText ?? string.Empty;
-
-                            switch (videoCodec.ToLower())
+                        case "DurationSeconds":
+                            int seconds = reader.ReadIntSafe();
+                            if (seconds > 0)
                             {
-                                case "sorenson h.263":
-                                    item.VideoCodec = "Sorenson H263";
-                                    break;
-                                case "h.262":
-                                    item.VideoCodec = "MPEG-2 Video";
-                                    break;
-                                case "h.264":
-                                    item.VideoCodec = "AVC";
-                                    break;
-                                default:
-                                    item.VideoCodec = videoCodec;
-                                    break;
+                                item.RunTime = TimeSpan.FromSeconds(seconds);
+                            }
+                            break;
+
+                        case "Codec":
+                            {
+                                string videoCodec = reader.ReadElementContentAsString() ?? string.Empty;
+
+                                switch (videoCodec.ToLower())
+                                {
+                                    case "sorenson h.263":
+                                        item.VideoCodec = "Sorenson H263";
+                                        break;
+                                    case "h.262":
+                                        item.VideoCodec = "MPEG-2 Video";
+                                        break;
+                                    case "h.264":
+                                        item.VideoCodec = "AVC";
+                                        break;
+                                    default:
+                                        item.VideoCodec = videoCodec;
+                                        break;
+                                }
+
+                                break;
                             }
 
+                        default:
+                            reader.Skip();
                             break;
-                        }
-
-                    default:
-                        break;
+                    }
                 }
             }
         }
 
-        protected virtual void FetchMediaInfoSubtitles(XmlNode node, Video item)
+        private void FetchMediaInfoSubtitles(XmlReader reader, Video item)
         {
-            List<string> subtitles = item.Subtitles.ToList();
+            List<string> list = (item.Subtitles ?? new string[] { }).ToList();
 
-            foreach (XmlNode childNode in node.ChildNodes)
+            reader.MoveToContent();
+
+            while (reader.Read())
             {
-                switch (childNode.Name)
+                if (reader.NodeType == XmlNodeType.Element)
                 {
-                    case "Language":
-                        string lang = childNode.InnerText;
+                    switch (reader.Name)
+                    {
+                        case "Language":
+                            {
+                                string genre = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrEmpty(lang))
-                        {
-                            subtitles.Add(lang);
-                        }
-                        break;
+                                if (!string.IsNullOrEmpty(genre))
+                                {
+                                    list.Add(genre);
+                                }
+                                break;
+                            }
 
-                    default:
-                        break;
+                        default:
+                            reader.Skip();
+                            break;
+                    }
                 }
             }
 
-            item.Subtitles = subtitles;
+            item.Subtitles = list;
         }
 
-        protected virtual void FetchFromGenresNode(XmlNode node, T item)
+        private void FetchFromGenresNode(XmlReader reader, T item)
         {
             List<string> list = (item.Genres ?? new string[] { }).ToList();
 
-            foreach (XmlNode childNode in node.ChildNodes)
+            reader.MoveToContent();
+
+            while (reader.Read())
             {
-                switch (childNode.Name)
+                if (reader.NodeType == XmlNodeType.Element)
                 {
-                    case "Genre":
-                        string text = childNode.InnerText ?? string.Empty;
+                    switch (reader.Name)
+                    {
+                        case "Genre":
+                            {
+                                string genre = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrEmpty(text))
-                        {
-                            list.Add(text);
-                        }
-                        break;
+                                if (!string.IsNullOrEmpty(genre))
+                                {
+                                    list.Add(genre);
+                                }
+                                break;
+                            }
 
-                    default:
-                        break;
+                        default:
+                            reader.Skip();
+                            break;
+                    }
                 }
-
             }
+
             item.Genres = list;
         }
 
-        protected virtual void FetchDataFromPersonsNode(XmlNode node, T item)
+        private void FetchDataFromPersonsNode(XmlReader reader, T item)
         {
             List<PersonInfo> list = (item.People ?? new PersonInfo[] { }).ToList();
 
-            foreach (XmlNode childNode in node.ChildNodes)
+            reader.MoveToContent();
+
+            while (reader.Read())
             {
-                switch (childNode.Name)
+                if (reader.NodeType == XmlNodeType.Element)
                 {
-                    case "Person":
-                        {
-                            list.Add(GetPersonFromXmlNode(childNode));
+                    switch (reader.Name)
+                    {
+                        case "Person":
+                            {
+                                list.Add(GetPersonFromXmlNode(reader));
+                                break;
+                            }
 
+                        default:
+                            reader.Skip();
                             break;
-                        }
-
-                    default:
-                        break;
+                    }
                 }
-
             }
 
             item.People = list;
         }
 
-        protected virtual void FetchFromStudiosNode(XmlNode node, T item)
+        private void FetchFromStudiosNode(XmlReader reader, T item)
         {
             List<string> list = (item.Studios ?? new string[] { }).ToList();
 
-            foreach (XmlNode childNode in node.ChildNodes)
+            reader.MoveToContent();
+
+            while (reader.Read())
             {
-                switch (childNode.Name)
+                if (reader.NodeType == XmlNodeType.Element)
                 {
-                    case "Studio":
-                        string text = childNode.InnerText ?? string.Empty;
+                    switch (reader.Name)
+                    {
+                        case "Studio":
+                            {
+                                string studio = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrEmpty(text))
-                        {
-                            list.Add(text);
-                        }
-                        break;
+                                if (!string.IsNullOrEmpty(studio))
+                                {
+                                    list.Add(studio);
+                                }
+                                break;
+                            }
 
-                    default:
-                        break;
+                        default:
+                            reader.Skip();
+                            break;
+                    }
                 }
             }
 
             item.Studios = list;
         }
 
-        protected virtual void FetchFromParentalRatingNode(XmlNode node, T item)
+        private void FetchFromParentalRatingNode(XmlReader reader, T item)
         {
-            foreach (XmlNode childNode in node.ChildNodes)
+            reader.MoveToContent();
+
+            while (reader.Read())
             {
-                switch (childNode.Name)
+                if (reader.NodeType == XmlNodeType.Element)
                 {
-                    case "Value":
-                        {
-                            int ParentalRating = childNode.SafeGetInt32((int)7);
-
-                            switch (ParentalRating)
+                    switch (reader.Name)
+                    {
+                        case "Value":
                             {
-                                case -1:
-                                    item.OfficialRating = "NR";
-                                    break;
-                                case 0:
-                                    item.OfficialRating = "UR";
-                                    break;
-                                case 1:
-                                    item.OfficialRating = "G";
-                                    break;
-                                case 3:
-                                    item.OfficialRating = "PG";
-                                    break;
-                                case 4:
-                                    item.OfficialRating = "PG-13";
-                                    break;
-                                case 5:
-                                    item.OfficialRating = "NC-17";
-                                    break;
-                                case 6:
-                                    item.OfficialRating = "R";
-                                    break;
-                                default:
-                                    break;
-                            }
-                            break;
-                        }
+                                string ratingString = reader.ReadElementContentAsString();
 
-                    default:
-                        break;
+                                int rating = 7;
+
+                                if (!string.IsNullOrEmpty(ratingString))
+                                {
+                                    int.TryParse(ratingString, out rating);
+                                }
+
+                                switch (rating)
+                                {
+                                    case -1:
+                                        item.OfficialRating = "NR";
+                                        break;
+                                    case 0:
+                                        item.OfficialRating = "UR";
+                                        break;
+                                    case 1:
+                                        item.OfficialRating = "G";
+                                        break;
+                                    case 3:
+                                        item.OfficialRating = "PG";
+                                        break;
+                                    case 4:
+                                        item.OfficialRating = "PG-13";
+                                        break;
+                                    case 5:
+                                        item.OfficialRating = "NC-17";
+                                        break;
+                                    case 6:
+                                        item.OfficialRating = "R";
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
                 }
             }
         }
 
-        private PersonInfo GetPersonFromXmlNode(XmlNode node)
+        private PersonInfo GetPersonFromXmlNode(XmlReader reader)
         {
             PersonInfo person = new PersonInfo();
 
-            foreach (XmlNode childNode in node.ChildNodes)
+            reader.MoveToContent();
+
+            while (reader.Read())
             {
-                switch (childNode.Name)
+                if (reader.NodeType == XmlNodeType.Element)
                 {
-                    case "Name":
-                        person.Name = childNode.InnerText ?? string.Empty;
-                        break;
-
-                    case "Type":
-                        {
-                            string type = childNode.InnerText ?? string.Empty;
-
-                            if (type == "Director")
-                            {
-                                person.PersonType = PersonType.Director;
-                            }
-                            else if (type == "Actor")
-                            {
-                                person.PersonType = PersonType.Actor;
-                            }
+                    switch (reader.Name)
+                    {
+                        case "Name":
+                            person.Name = reader.ReadElementContentAsString() ?? string.Empty;
                             break;
-                        }
 
-                    case "Role":
-                        person.Overview = childNode.InnerText ?? string.Empty;
-                        break;
+                        case "Type":
+                            {
+                                string type = reader.ReadElementContentAsString() ?? string.Empty;
 
-                    default:
-                        break;
+                                if (type == "Director")
+                                {
+                                    person.PersonType = PersonType.Director;
+                                }
+                                else if (type == "Actor")
+                                {
+                                    person.PersonType = PersonType.Actor;
+                                }
+                                break;
+                            }
+
+                        case "Role":
+                            person.Overview = reader.ReadElementContentAsString() ?? string.Empty;
+                            break;
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
                 }
-
             }
+
             return person;
         }
 

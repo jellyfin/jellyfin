@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Handlers\EmbeddedResourceHandler.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -92,7 +93,6 @@
     <EmbeddedResource Include="Html\thirdparty\jquery.mobile110\jquery.mobile.theme-1.1.0.min.css" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Handlers\" />
     <Folder Include="Html\css\images\" />
     <Folder Include="Html\scripts\" />
   </ItemGroup>
