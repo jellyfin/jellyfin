@@ -165,6 +165,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 return path;
             }
 
+            string id = QueryString["id"];
             string personName = QueryString["personname"];
             string imageType = QueryString["type"] ?? string.Empty;
             string imageIndex = QueryString["index"];

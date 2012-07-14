@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Xml;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Xml;
 using MediaBrowser.TV.Entities;
 
@@ -9,13 +8,13 @@ namespace MediaBrowser.TV.Metadata
 {
     public class EpisodeXmlParser : BaseItemXmlParser<Episode>
     {
-        protected override void FetchDataFromXmlNode(XmlNode node, Episode item)
+        protected override void FetchDataFromXmlNode(XmlReader reader, Episode item)
         {
-            switch (node.Name)
+            switch (reader.Name)
             {
                 case "filename":
                     {
-                        string filename = node.InnerText;
+                        string filename = reader.ReadElementContentAsString();
 
                         if (!string.IsNullOrEmpty(filename))
                         {
@@ -25,20 +24,20 @@ namespace MediaBrowser.TV.Metadata
                         break;
                     }
                 case "EpisodeNumber":
-                    item.EpisodeNumber = node.InnerText ?? string.Empty;
+                    item.EpisodeNumber = reader.ReadElementContentAsString() ?? string.Empty;
                     break;
 
                 case "SeasonNumber":
-                    item.SeasonNumber = node.InnerText ?? string.Empty;
+                    item.SeasonNumber = reader.ReadElementContentAsString() ?? string.Empty;
                     break;
 
                 case "EpisodeName":
-                    item.Name = node.InnerText ?? string.Empty;
+                    item.Name = reader.ReadElementContentAsString() ?? string.Empty;
                     break;
 
                 case "FirstAired":
                     {
-                        item.FirstAired = node.InnerText ?? string.Empty;
+                        item.FirstAired = reader.ReadElementContentAsString() ?? string.Empty;
 
                         if (!string.IsNullOrEmpty(item.FirstAired))
                         {
@@ -54,7 +53,7 @@ namespace MediaBrowser.TV.Metadata
                     }
 
                 default:
-                    base.FetchDataFromXmlNode(node, item);
+                    base.FetchDataFromXmlNode(reader, item);
                     break;
             }
         }

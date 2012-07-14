@@ -54,13 +54,13 @@
     <Compile Include="Entities\Video.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
       <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>
       <Name>MediaBrowser.Common</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

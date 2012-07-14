@@ -1,25 +1,22 @@
-﻿using System.Linq;
-using System.Xml;
-using MediaBrowser.Controller;
+﻿using System.Xml;
 using MediaBrowser.Controller.Xml;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Movies.Entities;
 
 namespace MediaBrowser.Movies.Metadata
 {
     public class MovieXmlParser : BaseItemXmlParser<Movie>
     {
-        protected override void FetchDataFromXmlNode(XmlNode node, Movie item)
+        protected override void FetchDataFromXmlNode(XmlReader reader, Movie item)
         {
-            switch (node.Name)
+            switch (reader.Name)
             {
                 case "TMDbId":
-                    item.TmdbId = node.InnerText ?? string.Empty;
+                    item.TmdbId = reader.ReadElementContentAsString() ?? string.Empty;
                     break;
 
                 case "IMDB":
                 case "IMDbId":
-                    string IMDbId = node.InnerText ?? string.Empty;
+                    string IMDbId = reader.ReadElementContentAsString() ?? string.Empty;
                     if (!string.IsNullOrEmpty(IMDbId))
                     {
                         item.ImdbId = IMDbId;
@@ -27,7 +24,7 @@ namespace MediaBrowser.Movies.Metadata
                     break;
 
                 default:
-                    base.FetchDataFromXmlNode(node, item);
+                    base.FetchDataFromXmlNode(reader, item);
                     break;
             }
         }

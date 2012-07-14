@@ -7,25 +7,25 @@ namespace MediaBrowser.TV.Metadata
 {
     public class SeriesXmlParser : BaseItemXmlParser<Series>
     {
-        protected override void FetchDataFromXmlNode(XmlNode node, Series item)
+        protected override void FetchDataFromXmlNode(XmlReader reader, Series item)
         {
-            switch (node.Name)
+            switch (reader.Name)
             {
                 case "id":
-                    item.TVDBSeriesId = node.InnerText ?? string.Empty;
+                    item.TVDBSeriesId = reader.ReadElementContentAsString() ?? string.Empty;
                     break;
 
                 case "SeriesName":
-                    item.Name = node.InnerText ?? string.Empty;
+                    item.Name = reader.ReadElementContentAsString() ?? string.Empty;
                     break;
 
                 case "Status":
-                    item.Status = node.InnerText ?? string.Empty;
+                    item.Status = reader.ReadElementContentAsString() ?? string.Empty;
                     break;
 
                 case "Runtime":
                     {
-                        string text = node.InnerText ?? string.Empty;
+                        string text = reader.ReadElementContentAsString() ?? string.Empty;
                         if (!string.IsNullOrEmpty(text))
                         {
 
@@ -39,7 +39,7 @@ namespace MediaBrowser.TV.Metadata
                     }
 
                 default:
-                    base.FetchDataFromXmlNode(node, item);
+                    base.FetchDataFromXmlNode(reader, item);
                     break;
             }
         }

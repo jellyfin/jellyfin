@@ -9,6 +9,14 @@ namespace MediaBrowser.Common.Net
         public HttpListenerRequest Request { get; private set; }
         public HttpListenerResponse Response { get; private set; }
 
+        public string LocalPath
+        {
+            get
+            {
+                return Request.Url.LocalPath;
+            }
+        }
+
         public RequestContext(HttpListenerContext context)
         {
             Response = context.Response;
@@ -19,6 +27,8 @@ namespace MediaBrowser.Common.Net
         {
             Response.AddHeader("Access-Control-Allow-Origin", "*");
 
+            Response.KeepAlive = true;
+            
             foreach (var header in handler.Headers)
             {
                 Response.AddHeader(header.Key, header.Value);
@@ -52,7 +62,6 @@ namespace MediaBrowser.Common.Net
                 {
                     CacheResponse(Response, cacheDuration, handler.LastDateModified);
                 }
-
                 handler.WriteStream(Response.OutputStream);
             }
             else
