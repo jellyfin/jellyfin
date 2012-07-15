@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Logging;
+﻿using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -11,7 +11,7 @@ namespace MediaBrowser.Model.Configuration
         public Configuration()
         {
             HttpServerPortNumber = 8096;
-            LogSeverity = Common.Logging.LogSeverity.Info;
+            LogSeverity = LogSeverity.Info;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Common.Json;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
@@ -21,24 +22,19 @@ namespace MediaBrowser.Api.HttpHandlers
 
         public static object GetSerializationObject(BaseItem item, bool includeChildren)
         {
-            Folder folder = item as Folder;
-
-            if (includeChildren && folder != null)
+            if (includeChildren && item.IsFolder)
             {
+                Folder folder = item as Folder;
+
                 return new
                 {
                     BaseItem = item,
-                    Children = folder.Children,
-                    Type = item.GetType().Name
+                    Children = folder.Children
                 };
             }
             else
             {
-                return new
-                {
-                    BaseItem = item,
-                    Type = item.GetType().Name
-                };
+                return item;
             }
         }
 

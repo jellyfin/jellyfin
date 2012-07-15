@@ -202,7 +202,7 @@ namespace MediaBrowser.Controller
                 return new Configuration();
             }
 
-            return JsonSerializer.Deserialize<Configuration>(file);
+            return JsonSerializer.DeserializeFromFile<Configuration>(file);
         }
 
         public void ReloadItem(BaseItem item)

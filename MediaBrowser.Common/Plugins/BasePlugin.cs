@@ -40,7 +40,7 @@ namespace MediaBrowser.Common.Plugins
                 return new TConfigurationType();
             }
 
-            return JsonSerializer.Deserialize<TConfigurationType>(ConfigurationPath);
+            return JsonSerializer.DeserializeFromFile<TConfigurationType>(ConfigurationPath);
         }
     }
 

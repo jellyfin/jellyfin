@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Logging
+namespace MediaBrowser.Model.Logging
 {
     [Flags]
     public enum LogSeverity

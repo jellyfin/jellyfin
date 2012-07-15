@@ -30,9 +30,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.4.5.7\lib\net40\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\packages\ServiceStack.Text.3.8.5\lib\net35\ServiceStack.Text.dll</HintPath>
     </Reference>
@@ -50,6 +47,7 @@
   <ItemGroup>
     <Compile Include="Events\GenericItemEventArgs.cs" />
     <Compile Include="Json\JsonSerializer.cs" />
+    <Compile Include="Model\DictionaryBaseItem.cs" />
     <Compile Include="Net\CollectionExtensions.cs" />
     <Compile Include="Net\Handlers\BaseEmbeddedResourceHandler.cs" />
     <Compile Include="Net\Handlers\JsonHandler.cs" />
@@ -63,13 +61,18 @@
     <Compile Include="Logging\FileLogger.cs" />
     <Compile Include="Logging\Logger.cs" />
     <Compile Include="Logging\LogRow.cs" />
-    <Compile Include="Logging\LogSeverity.cs" />
     <Compile Include="Plugins\BasePlugin.cs" />
     <Compile Include="Plugins\PluginController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
+      <Project>{9b1ddd79-5134-4df3-ace3-d1957a7350d8}</Project>
+      <Name>MediaBrowser.Model</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

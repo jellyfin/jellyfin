@@ -1,55 +1,55 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
+﻿using System.IO;
 
 namespace MediaBrowser.Common.Json
 {
     public class JsonSerializer
     {
-        public static void Serialize<T>(T o, Stream stream)
+        public static void SerializeToStream<T>(T o, Stream stream)
         {
-            using (StreamWriter streamWriter = new StreamWriter(stream))
-            {
-                using (Newtonsoft.Json.JsonTextWriter writer = new Newtonsoft.Json.JsonTextWriter(streamWriter))
-                {
-                    var settings = new Newtonsoft.Json.JsonSerializerSettings()
-                    {
-                        NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore
-                    };
-
-                    Newtonsoft.Json.JsonSerializer.Create(settings).Serialize(writer, o);
-                }
-            }
+            Configure();
+            
+            ServiceStack.Text.JsonSerializer.SerializeToStream<T>(o, stream);
         }
 
-        public static void Serialize<T>(T o, string file)
+        public static void SerializeToFile<T>(T o, string file)
         {
+            Configure();
+
             using (StreamWriter streamWriter = new StreamWriter(file))
             {
-                using (Newtonsoft.Json.JsonTextWriter writer = new Newtonsoft.Json.JsonTextWriter(streamWriter))
-                {
-                    var settings = new Newtonsoft.Json.JsonSerializerSettings()
-                    {
-                        NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore
-                    };
-
-                    Newtonsoft.Json.JsonSerializer.Create(settings).Serialize(writer, o);
-                }
+                ServiceStack.Text.JsonSerializer.SerializeToWriter<T>(o, streamWriter);
             }
         }
 
-        public static T Deserialize<T>(string file)
+        public static T DeserializeFromFile<T>(string file)
         {
-            using (StreamReader streamReader = new StreamReader(file))
+            Configure();
+
+            using (Stream stream = File.OpenRead(file))
             {
-                using (Newtonsoft.Json.JsonTextReader reader = new Newtonsoft.Json.JsonTextReader(streamReader))
-                {
-                    return Newtonsoft.Json.JsonSerializer.Create(new Newtonsoft.Json.JsonSerializerSettings() { }).Deserialize<T>(reader);
-                }
+                return ServiceStack.Text.JsonSerializer.DeserializeFromStream<T>(stream);
             }
+        }
+
+        public static T DeserializeFromStream<T>(Stream stream)
+        {
+            Configure();
+
+            return ServiceStack.Text.JsonSerializer.DeserializeFromStream<T>(stream);
+        }
+
+        public static T DeserializeFromString<T>(string data)
+        {
+            Configure();
+
+            return ServiceStack.Text.JsonSerializer.DeserializeFromString<T>(data);
+        }
+        
+        private static void Configure()
+        {
+            ServiceStack.Text.JsConfig.ExcludeTypeInfo = true;
+            ServiceStack.Text.JsConfig.IncludeNullValues = false;
+            ServiceStack.Text.JsConfig.DateHandler = ServiceStack.Text.JsonDateHandler.ISO8601;
         }
     }
 }
