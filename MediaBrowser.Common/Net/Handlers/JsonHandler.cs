@@ -29,7 +29,7 @@ namespace MediaBrowser.Common.Net.Handlers
         {
             using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Compress, false))
             {
-                JsonSerializer.Serialize(ObjectToSerialize, gzipStream);
+                JsonSerializer.SerializeToStream(ObjectToSerialize, gzipStream);
             }
         }
     }

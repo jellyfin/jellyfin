@@ -1,7 +1,6 @@
-﻿using MediaBrowser.Model.Entities;
-using System.Linq;
-using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.TV.Entities
 {
@@ -10,7 +9,7 @@ namespace MediaBrowser.TV.Entities
         /// <summary>
         /// Store these to reduce disk access in Episode Resolver
         /// </summary>
-        [JsonIgnore]
+        [IgnoreDataMember]
         public IEnumerable<string> MetadataFiles { get; set; }
     }
 }

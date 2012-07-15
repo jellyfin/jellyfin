@@ -8,6 +8,6 @@ namespace MediaBrowser.TV.Entities
     {
         public string SeasonNumber { get; set; }
         public string EpisodeNumber { get; set; }
-        public string FirstAired { get; set; }
+        public DateTime? FirstAired { get; set; }
     }
 }

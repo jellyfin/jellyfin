@@ -37,15 +37,16 @@ namespace MediaBrowser.TV.Metadata
 
                 case "FirstAired":
                     {
-                        item.FirstAired = reader.ReadElementContentAsString() ?? string.Empty;
+                        string firstAired = reader.ReadElementContentAsString() ?? string.Empty;
 
-                        if (!string.IsNullOrEmpty(item.FirstAired))
+                        if (!string.IsNullOrEmpty(firstAired))
                         {
                             DateTime airDate;
-                            int y = DateTime.TryParse(item.FirstAired, out airDate) ? airDate.Year : -1;
-                            if (y > 1850)
+
+                            if (DateTime.TryParse(firstAired, out airDate) && airDate.Year > 1850)
                             {
-                                item.ProductionYear = y;
+                                item.FirstAired = airDate;
+                                item.ProductionYear = airDate.Year;
                             }
                         }
 

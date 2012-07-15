@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.TV.Entities;

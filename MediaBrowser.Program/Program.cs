@@ -41,6 +41,7 @@ namespace MediaBrowser.Program
 
             var time = DateTime.Now - now;
             Console.WriteLine("Done in " + time.TotalSeconds + " seconds");
+            
             Console.WriteLine("Press Enter to quit.");
             Console.ReadLine();
         }

@@ -41,7 +41,7 @@ namespace MediaBrowser.Controller
         {
             string file = Path.Combine(path, "user.js");
 
-            return JsonSerializer.Deserialize<User>(file);
+            return JsonSerializer.DeserializeFromFile<User>(file);
         }
 
         public void CreateUser(User user)
@@ -54,7 +54,7 @@ namespace MediaBrowser.Controller
 
             Directory.CreateDirectory(userFolder);
 
-            JsonSerializer.Serialize(user, Path.Combine(userFolder, "user.js"));
+            JsonSerializer.SerializeToFile(user, Path.Combine(userFolder, "user.js"));
         }
     }
 }

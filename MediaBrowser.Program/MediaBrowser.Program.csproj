@@ -49,6 +49,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
+      <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>
+      <Name>MediaBrowser.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj">
       <Project>{17e1f4e6-8abd-4fe5-9ecf-43d4b6087ba2}</Project>
       <Name>MediaBrowser.Controller</Name>

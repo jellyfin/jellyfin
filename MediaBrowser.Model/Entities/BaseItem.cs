@@ -1,65 +1,85 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Model.Entities
 {
     public abstract class BaseItem
     {
-        public string Name { get; set; }
-        public string SortName { get; set; }
+        public virtual string Name { get; set; }
+        public virtual string SortName { get; set; }
 
-        public Guid Id { get; set; }
+        public virtual Guid Id { get; set; }
 
-        public DateTime DateCreated { get; set; }
-        public DateTime DateModified { get; set; }
+        public virtual DateTime DateCreated { get; set; }
 
-        public string Path { get; set; }
+        public virtual DateTime DateModified { get; set; }
 
-        [JsonIgnore]
+        public virtual string Path { get; set; }
+
+        [IgnoreDataMember]
         public Folder Parent { get; set; }
 
-        public string PrimaryImagePath { get; set; }
-        public string LogoImagePath { get; set; }
-        public string ArtImagePath { get; set; }
-        public string ThumbnailImagePath { get; set; }
-        public string BannerImagePath { get; set; }
+        public virtual string PrimaryImagePath { get; set; }
+        public virtual string LogoImagePath { get; set; }
+        public virtual string ArtImagePath { get; set; }
+        public virtual string ThumbnailImagePath { get; set; }
+        public virtual string BannerImagePath { get; set; }
 
-        public IEnumerable<string> BackdropImagePaths { get; set; }
+        public virtual IEnumerable<string> BackdropImagePaths { get; set; }
 
-        public string OfficialRating { get; set; }
+        public virtual string OfficialRating { get; set; }
 
-        public string CustomRating { get; set; }
-        public string CustomPin { get; set; }
+        public virtual string CustomRating { get; set; }
+        public virtual string CustomPin { get; set; }
 
-        public string Overview { get; set; }
-        public string Tagline { get; set; }
+        public virtual string Overview { get; set; }
+        public virtual string Tagline { get; set; }
 
-        [JsonIgnore]
-        public IEnumerable<PersonInfo> People { get; set; }
+        [IgnoreDataMember]
+        public virtual IEnumerable<PersonInfo> People { get; set; }
 
-        public IEnumerable<string> Studios { get; set; }
+        public virtual IEnumerable<string> Studios { get; set; }
 
-        public IEnumerable<string> Genres { get; set; }
+        public virtual IEnumerable<string> Genres { get; set; }
 
-        public string DisplayMediaType { get; set; }
+        public virtual string DisplayMediaType { get; set; }
 
-        public float? UserRating { get; set; }
-        public TimeSpan? RunTime { get; set; }
+        public virtual float? UserRating { get; set; }
+        public virtual TimeSpan? RunTime { get; set; }
 
-        public string AspectRatio { get; set; }
-        public int? ProductionYear { get; set; }
+        public virtual string AspectRatio { get; set; }
+        public virtual int? ProductionYear { get; set; }
 
-        public IEnumerable<Video> LocalTrailers { get; set; }
-        
-        public string TrailerUrl { get; set; }
+        public virtual IEnumerable<Video> LocalTrailers { get; set; }
+
+        public virtual string TrailerUrl { get; set; }
         
         public override string ToString()
         {
             return Name;
+        }
+
+        /// <summary>
+        /// This is strictly to enhance json output, until I can find a way to customize service stack to add this without having to use a property
+        /// </summary>
+        public virtual bool IsFolder
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// This is strictly to enhance json output, until I can find a way to customize service stack to add this without having to use a property
+        /// </summary>
+        public string Type
+        {
+            get
+            {
+                return GetType().Name;
+            }
         }
     }
 }

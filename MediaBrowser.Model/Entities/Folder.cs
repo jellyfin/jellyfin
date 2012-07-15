@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
-using Newtonsoft.Json;
+using System.Linq;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -20,10 +18,18 @@ namespace MediaBrowser.Model.Entities
             }
         }
 
-        [JsonIgnore]
+        public override bool IsFolder
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        [IgnoreDataMember]
         public BaseItem[] Children { get; set; }
 
-        [JsonIgnore]
+        [IgnoreDataMember]
         public IEnumerable<Folder> FolderChildren { get { return Children.OfType<Folder>(); } }
 
         public Folder GetFolderByName(string name)
