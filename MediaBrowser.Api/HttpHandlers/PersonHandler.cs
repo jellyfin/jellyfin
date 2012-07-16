@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.HttpHandlers
@@ -14,7 +15,7 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             get
             {
-                return ApiService.GetPersonByName(QueryString["name"]);
+                return Kernel.Instance.ItemController.GetPerson(QueryString["name"]);
             }
         }
     }

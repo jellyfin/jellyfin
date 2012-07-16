@@ -55,10 +55,6 @@
       <Project>{17e1f4e6-8abd-4fe5-9ecf-43d4b6087ba2}</Project>
       <Name>MediaBrowser.Controller</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
-      <Project>{9b1ddd79-5134-4df3-ace3-d1957a7350d8}</Project>
-      <Name>MediaBrowser.Model</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

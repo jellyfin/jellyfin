@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Entities;
+using System;
 
 namespace MediaBrowser.Model.Users
 {
@@ -11,7 +7,9 @@ namespace MediaBrowser.Model.Users
     {
         public UserItemRating Rating { get; set; }
 
-        public PlaybackStatus PlaybackStatus { get; set; }
+        public TimeSpan PlaybackPosition { get; set; }
+
+        public int PlayCount { get; set; }
     }
 
     public enum UserItemRating

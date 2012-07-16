@@ -5,9 +5,9 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public class GenresHandler : JsonHandler
+    public class StudiosHandler : JsonHandler
     {
-        public GenresHandler(RequestContext ctx)
+        public StudiosHandler(RequestContext ctx)
             : base(ctx)
         {
         }
@@ -19,7 +19,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
                 Guid userId = Guid.Parse(QueryString["userid"]);
 
-                return ApiService.GetAllGenres(parent, userId);
+                return ApiService.GetAllStudios(parent, userId);
             }
         }
     }

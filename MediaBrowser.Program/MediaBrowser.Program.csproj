@@ -58,7 +58,7 @@
       <Name>MediaBrowser.Controller</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
-      <Project>{9b1ddd79-5134-4df3-ace3-d1957a7350d8}</Project>
+      <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
       <Name>MediaBrowser.Model</Name>
     </ProjectReference>
   </ItemGroup>

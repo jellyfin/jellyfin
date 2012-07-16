@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Api;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
@@ -21,7 +21,7 @@ namespace MediaBrowser.Api.HttpHandlers
             {
                 Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
 
-                return ApiService.GetItemsWithGenre(parent, QueryString["name"]);
+                return Kernel.Instance.GetItemsWithGenre(parent, QueryString["name"], UserId);
             }
         }
     }

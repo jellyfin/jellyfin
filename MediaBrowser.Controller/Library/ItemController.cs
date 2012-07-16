@@ -310,5 +310,23 @@ namespace MediaBrowser.Controller.Library
 
             return returnFiles;
         }
+
+        public Person GetPerson(string name)
+        {
+            // not yet implemented
+            return null;
+        }
+
+        public Studio GetStudio(string name)
+        {
+            // not yet implemented
+            return null;
+        }
+
+        public Year GetYear(int value)
+        {
+            // not yet implemented
+            return null;
+        }
     }
 }

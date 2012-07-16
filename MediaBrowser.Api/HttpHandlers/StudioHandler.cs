@@ -5,9 +5,12 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    class RecentlyAddedItemsHandler : ItemListHandler
+    /// <summary>
+    /// Gets all items within containing a studio
+    /// </summary>
+    public class StudioHandler : ItemListHandler
     {
-        public RecentlyAddedItemsHandler(RequestContext ctx)
+        public StudioHandler(RequestContext ctx)
             : base(ctx)
         {
         }
@@ -18,12 +21,7 @@ namespace MediaBrowser.Api.HttpHandlers
             {
                 Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
 
-                if (QueryString["unplayed"] == "1")
-                {
-                    return Kernel.Instance.GetRecentlyAddedUnplayedItems(parent, UserId);
-                }
-
-                return Kernel.Instance.GetRecentlyAddedItems(parent, UserId);
+                return Kernel.Instance.GetItemsWithStudio(parent, QueryString["name"], UserId);
             }
         }
     }

@@ -45,9 +45,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApiInteraction\ApiController.cs" />
     <Compile Include="Events\GenericItemEventArgs.cs" />
     <Compile Include="Json\JsonSerializer.cs" />
-    <Compile Include="Model\DictionaryBaseItem.cs" />
+    <Compile Include="ApiInteraction\DictionaryBaseItem.cs" />
     <Compile Include="Net\CollectionExtensions.cs" />
     <Compile Include="Net\Handlers\BaseEmbeddedResourceHandler.cs" />
     <Compile Include="Net\Handlers\JsonHandler.cs" />
@@ -70,7 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
-      <Project>{9b1ddd79-5134-4df3-ace3-d1957a7350d8}</Project>
+      <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
       <Name>MediaBrowser.Model</Name>
     </ProjectReference>
   </ItemGroup>
