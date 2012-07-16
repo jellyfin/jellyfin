@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Net.Handlers;
@@ -19,7 +20,7 @@ namespace MediaBrowser.Api.HttpHandlers
             {
                 return ItemsToSerialize.Select(i =>
                 {
-                    return ItemHandler.GetSerializationObject(i, false);
+                    return ItemHandler.GetSerializationObject(i, false, UserId);
 
                 });
             }
@@ -28,6 +29,14 @@ namespace MediaBrowser.Api.HttpHandlers
         protected abstract IEnumerable<BaseItem> ItemsToSerialize
         {
             get;
+        }
+
+        protected Guid UserId
+        {
+            get
+            {
+                return Guid.Parse(QueryString["userid"]);
+            }
         }
     }
 }

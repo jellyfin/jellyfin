@@ -1,7 +1,9 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System;
+using MediaBrowser.Api.Model;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Net.Handlers;
+using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Common.Json;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
@@ -16,26 +18,31 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             get
             {
-                return GetSerializationObject(ItemToSerialize, true);
+                Guid userId = Guid.Parse(QueryString["userid"]);
+
+                return GetSerializationObject(ItemToSerialize, true, userId);
             }
         }
 
-        public static object GetSerializationObject(BaseItem item, bool includeChildren)
+        public static object GetSerializationObject(BaseItem item, bool includeChildren, Guid userId)
         {
-            if (includeChildren && item.IsFolder)
+            BaseItemInfo wrapper = new BaseItemInfo()
             {
-                Folder folder = item as Folder;
+                Item = item,
+                UserItemData = Kernel.Instance.GetUserItemData(userId, item.Id)
+            };
 
-                return new
-                {
-                    BaseItem = item,
-                    Children = folder.Children
-                };
-            }
-            else
+            if (includeChildren)
             {
-                return item;
+                var folder = item as Folder;
+
+                if (folder != null)
+                {
+                    wrapper.Children = Kernel.Instance.GetParentalAllowedChildren(folder, userId);
+                }
             }
+
+            return wrapper;
         }
 
         protected virtual BaseItem ItemToSerialize

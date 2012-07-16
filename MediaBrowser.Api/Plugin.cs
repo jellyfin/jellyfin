@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reactive.Linq;
 using MediaBrowser.Api.HttpHandlers;
 using MediaBrowser.Common.Plugins;
@@ -13,6 +12,8 @@ namespace MediaBrowser.Api
         {
             var httpServer = Kernel.Instance.HttpServer;
 
+            httpServer.Where(ctx => ctx.LocalPath.EndsWith("/api/users", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new UsersHandler(ctx)));
+
             httpServer.Where(ctx => ctx.LocalPath.EndsWith("/api/media", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new MediaHandler(ctx)));
 
             httpServer.Where(ctx => ctx.LocalPath.EndsWith("/api/item", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new ItemHandler(ctx)));
@@ -22,6 +23,10 @@ namespace MediaBrowser.Api
             httpServer.Where(ctx => ctx.LocalPath.EndsWith("/api/genre", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new GenreHandler(ctx)));
 
             httpServer.Where(ctx => ctx.LocalPath.EndsWith("/api/genres", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new GenresHandler(ctx)));
+
+            httpServer.Where(ctx => ctx.LocalPath.EndsWith("/api/studio", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new StudioHandler(ctx)));
+
+            httpServer.Where(ctx => ctx.LocalPath.EndsWith("/api/studios", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new StudiosHandler(ctx)));
 
             httpServer.Where(ctx => ctx.LocalPath.EndsWith("/api/recentlyaddeditems", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new RecentlyAddedItemsHandler(ctx)));
 

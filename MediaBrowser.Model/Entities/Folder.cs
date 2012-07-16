@@ -18,24 +18,11 @@ namespace MediaBrowser.Model.Entities
             }
         }
 
-        public override bool IsFolder
-        {
-            get
-            {
-                return true;
-            }
-        }
-
         [IgnoreDataMember]
         public BaseItem[] Children { get; set; }
 
         [IgnoreDataMember]
         public IEnumerable<Folder> FolderChildren { get { return Children.OfType<Folder>(); } }
-
-        public Folder GetFolderByName(string name)
-        {
-            return FolderChildren.FirstOrDefault(f => System.IO.Path.GetFileName(f.Path).Equals(name, StringComparison.OrdinalIgnoreCase));
-        }
 
         /// <summary>
         /// Finds an item by ID, recursively

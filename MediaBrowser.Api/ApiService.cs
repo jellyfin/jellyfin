@@ -9,52 +9,91 @@ namespace MediaBrowser.Api
     {
         public static BaseItem GetItemById(string id)
         {
-            if (string.IsNullOrEmpty(id))
+            Guid guid = string.IsNullOrEmpty(id) ? Guid.Empty : new Guid(id);
+
+            return Kernel.Instance.GetItemById(guid);
+        }
+
+        public static IEnumerable<CategoryInfo> GetAllStudios(Folder parent, Guid userId)
+        {
+            Dictionary<string, int> data = new Dictionary<string, int>();
+            
+            IEnumerable<BaseItem> allItems = Kernel.Instance.GetParentalAllowedRecursiveChildren(parent, userId);
+
+            foreach (var item in allItems)
             {
-                return Kernel.Instance.RootFolder;
+                if (item.Studios == null)
+                {
+                    continue;
+                }
+
+                foreach (string val in item.Studios)
+                {
+                    if (!data.ContainsKey(val))
+                    {
+                        data.Add(val, 1);
+                    }
+                    else
+                    {
+                        data[val]++;
+                    }
+                }
             }
 
-            return GetItemById(new Guid(id));
+            List<CategoryInfo> list = new List<CategoryInfo>();
+
+            foreach (string key in data.Keys)
+            {
+                list.Add(new CategoryInfo()
+                {
+                    Name = key,
+                    ItemCount = data[key]
+
+                });
+            }
+            
+            return list;
         }
 
-        public static BaseItem GetItemById(Guid id)
+        public static IEnumerable<CategoryInfo> GetAllGenres(Folder parent, Guid userId)
         {
-            if (id == Guid.Empty)
+            Dictionary<string, int> data = new Dictionary<string, int>();
+
+            IEnumerable<BaseItem> allItems = Kernel.Instance.GetParentalAllowedRecursiveChildren(parent, userId);
+
+            foreach (var item in allItems)
             {
-                return Kernel.Instance.RootFolder;
+                if (item.Genres == null)
+                {
+                    continue;
+                }
+
+                foreach (string val in item.Genres)
+                {
+                    if (!data.ContainsKey(val))
+                    {
+                        data.Add(val, 1);
+                    }
+                    else
+                    {
+                        data[val]++;
+                    }
+                }
             }
 
-            return Kernel.Instance.RootFolder.FindById(id);
-        }
+            List<CategoryInfo> list = new List<CategoryInfo>();
 
-        public static Person GetPersonByName(string name)
-        {
-            return null;
-        }
+            foreach (string key in data.Keys)
+            {
+                list.Add(new CategoryInfo()
+                {
+                    Name = key,
+                    ItemCount = data[key]
 
-        public static IEnumerable<BaseItem> GetItemsWithGenre(Folder parent, string genre)
-        {
-            return new BaseItem[] { };
-        }
+                });
+            }
 
-        public static IEnumerable<string> GetAllGenres(Folder parent)
-        {
-            return new string[] { };
-        }
-
-        public static IEnumerable<BaseItem> GetRecentlyAddedItems(Folder parent)
-        {
-            return new BaseItem[] { };
-        }
-
-        public static IEnumerable<BaseItem> GetRecentlyAddedUnplayedItems(Folder parent)
-        {
-            return new BaseItem[] { };
-        }
-
-        public static IEnumerable<BaseItem> GetInProgressItems(Folder parent)
-        {
-            return new BaseItem[] { };
+            return list;
         }
     }
 }

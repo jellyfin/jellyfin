@@ -53,8 +53,12 @@
     <Compile Include="HttpHandlers\ItemListHandler.cs" />
     <Compile Include="HttpHandlers\PersonHandler.cs" />
     <Compile Include="HttpHandlers\RecentlyAddedItemsHandler.cs" />
+    <Compile Include="HttpHandlers\StudioHandler.cs" />
+    <Compile Include="HttpHandlers\StudiosHandler.cs" />
+    <Compile Include="HttpHandlers\UsersHandler.cs" />
     <Compile Include="ImageProcessor.cs" />
     <Compile Include="HttpHandlers\MediaHandler.cs" />
+    <Compile Include="Model\BaseItemInfo.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -68,13 +72,14 @@
       <Name>MediaBrowser.Controller</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
-      <Project>{9b1ddd79-5134-4df3-ace3-d1957a7350d8}</Project>
+      <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
       <Name>MediaBrowser.Model</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\ProgramData\Plugins\$(ProjectName)\" /y</PostBuildEvent>

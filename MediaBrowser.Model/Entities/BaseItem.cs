@@ -51,6 +51,7 @@ namespace MediaBrowser.Model.Entities
         public virtual string AspectRatio { get; set; }
         public virtual int? ProductionYear { get; set; }
 
+        [IgnoreDataMember]
         public virtual IEnumerable<Video> LocalTrailers { get; set; }
 
         public virtual string TrailerUrl { get; set; }
@@ -58,17 +59,6 @@ namespace MediaBrowser.Model.Entities
         public override string ToString()
         {
             return Name;
-        }
-
-        /// <summary>
-        /// This is strictly to enhance json output, until I can find a way to customize service stack to add this without having to use a property
-        /// </summary>
-        public virtual bool IsFolder
-        {
-            get
-            {
-                return false;
-            }
         }
 
         /// <summary>

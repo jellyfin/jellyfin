@@ -1,7 +1,7 @@
 ﻿
 namespace MediaBrowser.Model.Entities
 {
-    public class Audio : BaseItem
+    public class Studio : BaseItem
     {
     }
 }

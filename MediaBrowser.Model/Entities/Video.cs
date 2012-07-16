@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -35,8 +31,8 @@ namespace MediaBrowser.Model.Entities
 
     public enum VideoType
     {
-        VideoFile = 1,
-        DVD = 2,
-        BluRay = 3
+        VideoFile,
+        DVD,
+        BluRay
     }
 }

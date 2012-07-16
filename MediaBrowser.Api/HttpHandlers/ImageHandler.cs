@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
-using System.IO.Compression;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
@@ -174,7 +175,7 @@ namespace MediaBrowser.Api.HttpHandlers
 
             if (!string.IsNullOrEmpty(personName))
             {
-                item = ApiService.GetPersonByName(personName);
+                item = Kernel.Instance.ItemController.GetPerson(personName);
             }
             else
             {

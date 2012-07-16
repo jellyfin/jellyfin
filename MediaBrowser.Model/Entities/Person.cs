@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
@@ -26,8 +21,9 @@ namespace MediaBrowser.Model.Entities
 
     public enum PersonType
     {
-        Actor = 1,
-        Director = 2,
-        Writer = 3
+        Actor,
+        Director,
+        Writer,
+        Producer
     }
 }
