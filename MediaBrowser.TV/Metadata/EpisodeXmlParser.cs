@@ -14,7 +14,7 @@ namespace MediaBrowser.TV.Metadata
             {
                 case "filename":
                     {
-                        string filename = reader.ReadElementContentAsString();
+                        string filename = reader.ReadString();
 
                         if (!string.IsNullOrWhiteSpace(filename))
                         {
@@ -24,7 +24,7 @@ namespace MediaBrowser.TV.Metadata
                         break;
                     }
                 case "EpisodeNumber":
-                    string number = reader.ReadElementContentAsString() ?? string.Empty;
+                    string number = reader.ReadString();
 
                     if (!string.IsNullOrWhiteSpace(number))
                     {
@@ -33,16 +33,16 @@ namespace MediaBrowser.TV.Metadata
                     break;
 
                 case "SeasonNumber":
-                    item.SeasonNumber = reader.ReadElementContentAsString() ?? string.Empty;
+                    item.SeasonNumber = reader.ReadString();
                     break;
 
                 case "EpisodeName":
-                    item.Name = reader.ReadElementContentAsString() ?? string.Empty;
+                    item.Name = reader.ReadString();
                     break;
 
                 case "FirstAired":
                     {
-                        string firstAired = reader.ReadElementContentAsString() ?? string.Empty;
+                        string firstAired = reader.ReadString();
 
                         if (!string.IsNullOrWhiteSpace(firstAired))
                         {
