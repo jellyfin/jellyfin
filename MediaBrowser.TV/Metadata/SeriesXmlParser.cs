@@ -12,7 +12,7 @@ namespace MediaBrowser.TV.Metadata
             switch (reader.Name)
             {
                 case "id":
-                    item.TVDBSeriesId = reader.ReadElementContentAsString() ?? string.Empty;
+                    item.TvdbId = reader.ReadElementContentAsString() ?? string.Empty;
                     break;
 
                 case "SeriesName":
@@ -26,7 +26,7 @@ namespace MediaBrowser.TV.Metadata
                 case "Runtime":
                     {
                         string text = reader.ReadElementContentAsString() ?? string.Empty;
-                        if (!string.IsNullOrEmpty(text))
+                        if (!string.IsNullOrWhiteSpace(text))
                         {
 
                             int runtime;

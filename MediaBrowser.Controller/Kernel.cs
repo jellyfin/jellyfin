@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Logging;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.IO;
@@ -16,6 +15,7 @@ using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Users;
+using MediaBrowser.Net;
 
 namespace MediaBrowser.Controller
 {
@@ -79,7 +79,7 @@ namespace MediaBrowser.Controller
 
             ReloadHttpServer();
 
-            ReloadPlugins();
+            LoadPlugins();
 
             // Get users from users folder
             // Load root media folder
@@ -94,7 +94,7 @@ namespace MediaBrowser.Controller
             Logger.LoggerInstance.LogSeverity = Configuration.LogSeverity;
         }
 
-        private void ReloadPlugins()
+        private void LoadPlugins()
         {
             // Find plugins
             Plugins = PluginController.GetAllPlugins();
@@ -261,7 +261,7 @@ namespace MediaBrowser.Controller
         /// </summary>
         public IEnumerable<BaseItem> GetParentalAllowedChildren(Folder folder, Guid userId)
         {
-            return folder.Children.ToList().Where(i => IsParentalAllowed(i, userId));
+            return folder.Children.Where(i => IsParentalAllowed(i, userId));
         }
 
         /// <summary>
@@ -307,7 +307,7 @@ namespace MediaBrowser.Controller
         {
             DateTime now = DateTime.Now;
 
-            return GetParentalAllowedRecursiveChildren(parent, userId).Where(i => (now - i.DateCreated).TotalDays < Configuration.RecentItemDays);
+            return GetParentalAllowedRecursiveChildren(parent, userId).Where(i => !(i is Folder) && (now - i.DateCreated).TotalDays < Configuration.RecentItemDays);
         }
 
         /// <summary>
@@ -330,6 +330,11 @@ namespace MediaBrowser.Controller
         {
             return GetParentalAllowedRecursiveChildren(parent, userId).Where(i =>
             {
+                if (i is Folder)
+                {
+                    return false;
+                }
+                
                 var userdata = GetUserItemData(userId, i.Id);
 
                 return userdata != null && userdata.PlaybackPosition.Ticks > 0;
@@ -359,5 +364,116 @@ namespace MediaBrowser.Controller
         {
             return GetParentalAllowedRecursiveChildren(parent, userId).Where(f => f.People != null && f.People.Any(s => s.Name.Equals(personName, StringComparison.OrdinalIgnoreCase)));
         }
+
+        /// <summary>
+        /// Gets all studios from all recursive children of a folder
+        /// The CategoryInfo class is used to keep track of the number of times each studio appears
+        /// </summary>
+        public IEnumerable<CategoryInfo> GetAllStudios(Folder parent, Guid userId)
+        {
+            Dictionary<string, int> data = new Dictionary<string, int>();
+
+            // Get all the allowed recursive children
+            IEnumerable<BaseItem> allItems = Kernel.Instance.GetParentalAllowedRecursiveChildren(parent, userId);
+
+            foreach (var item in allItems)
+            {
+                // Add each studio from the item to the data dictionary
+                // If the studio already exists, increment the count
+                if (item.Studios == null)
+                {
+                    continue;
+                }
+
+                foreach (string val in item.Studios)
+                {
+                    if (!data.ContainsKey(val))
+                    {
+                        data.Add(val, 1);
+                    }
+                    else
+                    {
+                        data[val]++;
+                    }
+                }
+            }
+
+            // Now go through the dictionary and create a Category for each studio
+            List<CategoryInfo> list = new List<CategoryInfo>();
+
+            foreach (string key in data.Keys)
+            {
+                // Get the original entity so that we can also supply the PrimaryImagePath
+                Studio entity = Kernel.Instance.ItemController.GetStudio(key);
+
+                if (entity != null)
+                {
+                    list.Add(new CategoryInfo()
+                    {
+                        Name = entity.Name,
+                        ItemCount = data[key],
+                        PrimaryImagePath = entity.PrimaryImagePath
+                    });
+                }
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// Gets all genres from all recursive children of a folder
+        /// The CategoryInfo class is used to keep track of the number of times each genres appears
+        /// </summary>
+        public IEnumerable<CategoryInfo> GetAllGenres(Folder parent, Guid userId)
+        {
+            Dictionary<string, int> data = new Dictionary<string, int>();
+
+            // Get all the allowed recursive children
+            IEnumerable<BaseItem> allItems = Kernel.Instance.GetParentalAllowedRecursiveChildren(parent, userId);
+
+            foreach (var item in allItems)
+            {
+                // Add each genre from the item to the data dictionary
+                // If the genre already exists, increment the count
+                if (item.Genres == null)
+                {
+                    continue;
+                }
+
+                foreach (string val in item.Genres)
+                {
+                    if (!data.ContainsKey(val))
+                    {
+                        data.Add(val, 1);
+                    }
+                    else
+                    {
+                        data[val]++;
+                    }
+                }
+            }
+
+            // Now go through the dictionary and create a Category for each genre
+            List<CategoryInfo> list = new List<CategoryInfo>();
+
+            foreach (string key in data.Keys)
+            {
+                // Get the original entity so that we can also supply the PrimaryImagePath
+                Genre entity = Kernel.Instance.ItemController.GetGenre(key);
+
+                if (entity != null)
+                {
+                    list.Add(new CategoryInfo()
+                    {
+                        Name = entity.Name,
+                        ItemCount = data[key],
+                        PrimaryImagePath = entity.PrimaryImagePath
+                    });
+                }
+            }
+
+            return list;
+        }
+
     }
 }

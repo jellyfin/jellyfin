@@ -5,6 +5,9 @@ using System.Text;
 
 namespace MediaBrowser.Controller.IO
 {
+    /// <summary>
+    /// Contains helpers to interact with shortcut files (.lnk)
+    /// </summary>
     public static class Shortcut
     {
         #region Signitures were imported from http://pinvoke.net

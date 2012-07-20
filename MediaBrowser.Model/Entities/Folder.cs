@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.Serialization;
 
 namespace MediaBrowser.Model.Entities
@@ -21,9 +18,6 @@ namespace MediaBrowser.Model.Entities
         [IgnoreDataMember]
         public BaseItem[] Children { get; set; }
 
-        [IgnoreDataMember]
-        public IEnumerable<Folder> FolderChildren { get { return Children.OfType<Folder>(); } }
-
         /// <summary>
         /// Finds an item by ID, recursively
         /// </summary>
@@ -36,17 +30,18 @@ namespace MediaBrowser.Model.Entities
 
             foreach (BaseItem item in Children)
             {
-                if (item.Id == id)
+                var folder = item as Folder;
+
+                if (folder != null)
                 {
-                    return item;
+                    var foundItem = folder.FindById(id);
+
+                    if (foundItem != null)
+                    {
+                        return foundItem;
+                    }
                 }
-            }
-
-            foreach (Folder folder in FolderChildren)
-            {
-                BaseItem item = folder.FindById(id);
-
-                if (item != null)
+                else if (item.Id == id)
                 {
                     return item;
                 }
@@ -67,17 +62,18 @@ namespace MediaBrowser.Model.Entities
 
             foreach (BaseItem item in Children)
             {
-                if (item.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
+                var folder = item as Folder;
+
+                if (folder != null)
                 {
-                    return item;
+                    var foundItem = folder.FindByPath(path);
+
+                    if (foundItem != null)
+                    {
+                        return foundItem;
+                    }
                 }
-            }
-
-            foreach (Folder folder in FolderChildren)
-            {
-                BaseItem item = folder.FindByPath(path);
-
-                if (item != null)
+                else if (item.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
                 {
                     return item;
                 }

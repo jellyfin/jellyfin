@@ -1,0 +1,39 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
+using MediaBrowser.Model.Users;
+
+namespace MediaBrowser.Model.Entities
+{
+    /// <summary>
+    /// This is a concrete class that the UI can use to deserialize
+    /// It is flat in the sense that it will be used regardless of the type of BaseItem involved
+    /// </summary>
+    public class ApiBaseItem : BaseItem
+    {
+    }
+
+    /// <summary>
+    /// This is the full return object when requesting an Item
+    /// </summary>
+    public class ApiBaseItemWrapper<T>
+        where T : BaseItem
+    {
+        public T Item { get; set; }
+
+        public UserItemData UserItemData { get; set; }
+
+        public IEnumerable<ApiBaseItemWrapper<T>> Children { get; set; }
+
+        [IgnoreDataMember]
+        public Type ItemType { get; set; }
+
+        public string Type
+        {
+            get
+            {
+                return ItemType.Name;
+            }
+        }
+    }
+}

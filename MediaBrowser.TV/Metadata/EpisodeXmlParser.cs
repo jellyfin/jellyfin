@@ -16,7 +16,7 @@ namespace MediaBrowser.TV.Metadata
                     {
                         string filename = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrEmpty(filename))
+                        if (!string.IsNullOrWhiteSpace(filename))
                         {
                             string metadataFolder = Path.GetDirectoryName(item.Path);
                             item.PrimaryImagePath = Path.Combine(metadataFolder, filename);
@@ -24,7 +24,12 @@ namespace MediaBrowser.TV.Metadata
                         break;
                     }
                 case "EpisodeNumber":
-                    item.EpisodeNumber = reader.ReadElementContentAsString() ?? string.Empty;
+                    string number = reader.ReadElementContentAsString() ?? string.Empty;
+
+                    if (!string.IsNullOrWhiteSpace(number))
+                    {
+                        item.IndexNumber = int.Parse(number);
+                    }
                     break;
 
                 case "SeasonNumber":
@@ -39,13 +44,13 @@ namespace MediaBrowser.TV.Metadata
                     {
                         string firstAired = reader.ReadElementContentAsString() ?? string.Empty;
 
-                        if (!string.IsNullOrEmpty(firstAired))
+                        if (!string.IsNullOrWhiteSpace(firstAired))
                         {
                             DateTime airDate;
 
                             if (DateTime.TryParse(firstAired, out airDate) && airDate.Year > 1850)
                             {
-                                item.FirstAired = airDate;
+                                item.PremiereDate = airDate;
                                 item.ProductionYear = airDate.Year;
                             }
                         }

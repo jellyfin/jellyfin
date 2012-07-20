@@ -29,6 +29,7 @@ namespace MediaBrowser.Controller.Resolvers
 
             item.IsRoot = args.Parent == null;
 
+            // Read data from folder.xml, if it exists
             PopulateFolderMetadata(item, args);
         }
 

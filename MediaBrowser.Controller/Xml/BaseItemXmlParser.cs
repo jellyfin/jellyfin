@@ -7,15 +7,23 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Xml
 {
-    public class BaseItemXmlParser<T>
+    /// <summary>
+    /// Provides a base class for parsing metadata xml
+    /// </summary>
+    public abstract class BaseItemXmlParser<T>
         where T : BaseItem, new()
     {
+        /// <summary>
+        /// Fetches metadata for an item from one xml file
+        /// </summary>
         public virtual void Fetch(T item, string metadataFile)
         {
+            // Use XmlReader for best performance
             using (XmlReader reader = XmlReader.Create(metadataFile))
             {
                 reader.MoveToContent();
 
+                // Loop through each element
                 while (reader.Read())
                 {
                     if (reader.NodeType == XmlNodeType.Element)
@@ -25,7 +33,7 @@ namespace MediaBrowser.Controller.Xml
                 }
             }
 
-            // If dates weren't supplied in metadata, use values from the file
+            // If dates weren't supplied in metadata, use values from the xml file
             if (item.DateCreated == DateTime.MinValue)
             {
                 item.DateCreated = File.GetCreationTime(metadataFile);
@@ -37,10 +45,14 @@ namespace MediaBrowser.Controller.Xml
             }
         }
 
+        /// <summary>
+        /// Fetches metadata from one Xml Element
+        /// </summary>
         protected virtual void FetchDataFromXmlNode(XmlReader reader, T item)
         {
             switch (reader.Name)
             {
+                // DateCreated
                 case "Added":
                     DateTime added;
                     if (DateTime.TryParse(reader.ReadElementContentAsString() ?? string.Empty, out added))
@@ -49,6 +61,7 @@ namespace MediaBrowser.Controller.Xml
                     }
                     break;
 
+                // DisplayMediaType
                 case "Type":
                     {
                         item.DisplayMediaType = reader.ReadElementContentAsString() ?? string.Empty;
@@ -69,6 +82,7 @@ namespace MediaBrowser.Controller.Xml
                         break;
                     }
 
+                // TODO: Do we still need this?
                 case "banner":
                     item.BannerImagePath = reader.ReadElementContentAsString() ?? string.Empty;
                     break;
@@ -172,7 +186,7 @@ namespace MediaBrowser.Controller.Xml
 
                     string rating = reader.ReadElementContentAsString();
 
-                    if (!string.IsNullOrEmpty(rating))
+                    if (!string.IsNullOrWhiteSpace(rating))
                     {
                         float val;
 
@@ -428,7 +442,7 @@ namespace MediaBrowser.Controller.Xml
                             {
                                 string genre = reader.ReadElementContentAsString();
 
-                                if (!string.IsNullOrEmpty(genre))
+                                if (!string.IsNullOrWhiteSpace(genre))
                                 {
                                     list.Add(genre);
                                 }
@@ -461,7 +475,7 @@ namespace MediaBrowser.Controller.Xml
                             {
                                 string genre = reader.ReadElementContentAsString();
 
-                                if (!string.IsNullOrEmpty(genre))
+                                if (!string.IsNullOrWhiteSpace(genre))
                                 {
                                     list.Add(genre);
                                 }
@@ -522,7 +536,7 @@ namespace MediaBrowser.Controller.Xml
                             {
                                 string studio = reader.ReadElementContentAsString();
 
-                                if (!string.IsNullOrEmpty(studio))
+                                if (!string.IsNullOrWhiteSpace(studio))
                                 {
                                     list.Add(studio);
                                 }
@@ -555,7 +569,7 @@ namespace MediaBrowser.Controller.Xml
 
                                 int rating = 7;
 
-                                if (!string.IsNullOrEmpty(ratingString))
+                                if (!string.IsNullOrWhiteSpace(ratingString))
                                 {
                                     int.TryParse(ratingString, out rating);
                                 }
@@ -646,7 +660,7 @@ namespace MediaBrowser.Controller.Xml
         {
             value = (value ?? string.Empty).Trim(deliminator);
 
-            return string.IsNullOrEmpty(value) ? new string[] { } : value.Split(deliminator);
+            return string.IsNullOrWhiteSpace(value) ? new string[] { } : value.Split(deliminator);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Reactive.Linq;
-using MediaBrowser.Common.Net.Handlers;
+using MediaBrowser.Net.Handlers;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller;
 using MediaBrowser.HtmlBrowser.Handlers;
@@ -13,7 +13,7 @@ namespace MediaBrowser.HtmlBrowser
         {
             var httpServer = Kernel.Instance.HttpServer;
 
-            httpServer.Where(ctx => ctx.LocalPath.IndexOf("/browser/", StringComparison.OrdinalIgnoreCase) != -1).Subscribe(ctx =>
+            /*httpServer.Where(ctx => ctx.LocalPath.IndexOf("/browser/", StringComparison.OrdinalIgnoreCase) != -1).Subscribe(ctx =>
             {
                 string localPath = ctx.LocalPath;
                 string srch = "/browser/";
@@ -24,7 +24,7 @@ namespace MediaBrowser.HtmlBrowser
 
                 ctx.Respond(new EmbeddedResourceHandler(ctx, resource));
 
-            });
+            });*/
         }
     }
 }

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Net
 {
     public static class CollectionExtensions
     {

@@ -17,7 +17,7 @@ namespace MediaBrowser.Movies.Metadata
                 case "IMDB":
                 case "IMDbId":
                     string IMDbId = reader.ReadElementContentAsString() ?? string.Empty;
-                    if (!string.IsNullOrEmpty(IMDbId))
+                    if (!string.IsNullOrWhiteSpace(IMDbId))
                     {
                         item.ImdbId = IMDbId;
                     }

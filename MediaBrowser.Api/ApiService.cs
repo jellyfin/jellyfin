@@ -1,10 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Api
 {
+    /// <summary>
+    /// Contains some helpers for the api
+    /// </summary>
     public static class ApiService
     {
         public static BaseItem GetItemById(string id)
@@ -14,86 +20,29 @@ namespace MediaBrowser.Api
             return Kernel.Instance.GetItemById(guid);
         }
 
-        public static IEnumerable<CategoryInfo> GetAllStudios(Folder parent, Guid userId)
+        /// <summary>
+        /// Takes a BaseItem and returns the actual object that will be serialized by the api
+        /// </summary>
+        public static ApiBaseItemWrapper<BaseItem> GetSerializationObject(BaseItem item, bool includeChildren, Guid userId)
         {
-            Dictionary<string, int> data = new Dictionary<string, int>();
-            
-            IEnumerable<BaseItem> allItems = Kernel.Instance.GetParentalAllowedRecursiveChildren(parent, userId);
-
-            foreach (var item in allItems)
+            ApiBaseItemWrapper<BaseItem> wrapper = new ApiBaseItemWrapper<BaseItem>()
             {
-                if (item.Studios == null)
-                {
-                    continue;
-                }
+                Item = item,
+                UserItemData = Kernel.Instance.GetUserItemData(userId, item.Id),
+                ItemType = item.GetType()
+            };
 
-                foreach (string val in item.Studios)
+            if (includeChildren)
+            {
+                var folder = item as Folder;
+
+                if (folder != null)
                 {
-                    if (!data.ContainsKey(val))
-                    {
-                        data.Add(val, 1);
-                    }
-                    else
-                    {
-                        data[val]++;
-                    }
+                    wrapper.Children = Kernel.Instance.GetParentalAllowedChildren(folder, userId).Select(c => GetSerializationObject(c, false, userId));
                 }
             }
 
-            List<CategoryInfo> list = new List<CategoryInfo>();
-
-            foreach (string key in data.Keys)
-            {
-                list.Add(new CategoryInfo()
-                {
-                    Name = key,
-                    ItemCount = data[key]
-
-                });
-            }
-            
-            return list;
-        }
-
-        public static IEnumerable<CategoryInfo> GetAllGenres(Folder parent, Guid userId)
-        {
-            Dictionary<string, int> data = new Dictionary<string, int>();
-
-            IEnumerable<BaseItem> allItems = Kernel.Instance.GetParentalAllowedRecursiveChildren(parent, userId);
-
-            foreach (var item in allItems)
-            {
-                if (item.Genres == null)
-                {
-                    continue;
-                }
-
-                foreach (string val in item.Genres)
-                {
-                    if (!data.ContainsKey(val))
-                    {
-                        data.Add(val, 1);
-                    }
-                    else
-                    {
-                        data[val]++;
-                    }
-                }
-            }
-
-            List<CategoryInfo> list = new List<CategoryInfo>();
-
-            foreach (string key in data.Keys)
-            {
-                list.Add(new CategoryInfo()
-                {
-                    Name = key,
-                    ItemCount = data[key]
-
-                });
-            }
-
-            return list;
+            return wrapper;
         }
     }
 }

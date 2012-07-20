@@ -15,6 +15,9 @@ namespace MediaBrowser.Controller.Resolvers
             return null;
         }
 
+        /// <summary>
+        /// Sets initial values on the newly resolved item
+        /// </summary>
         protected virtual void SetItemValues(T item, ItemResolveEventArgs args)
         {
             // If the subclass didn't specify this
@@ -23,6 +26,7 @@ namespace MediaBrowser.Controller.Resolvers
                 item.Path = args.Path;
             }
 
+            // If the subclass didn't specify this
             if (args.Parent != null)
             {
                 item.Parent = args.Parent;
@@ -40,9 +44,14 @@ namespace MediaBrowser.Controller.Resolvers
             
             if (item != null)
             {
+                // Set initial values on the newly resolved item
+                
                 SetItemValues(item, args);
 
+                // Make sure the item has a name
                 EnsureName(item);
+
+                // Make sure DateCreated and DateModified have values
                 EnsureDates(item);
             }
 
@@ -59,6 +68,9 @@ namespace MediaBrowser.Controller.Resolvers
 
         }
 
+        /// <summary>
+        /// Ensures DateCreated and DateModified have values
+        /// </summary>
         private void EnsureDates(T item)
         {
             // If the subclass didn't supply dates, add them here
@@ -73,6 +85,9 @@ namespace MediaBrowser.Controller.Resolvers
             }
         }
 
+        /// <summary>
+        /// Fills in image paths based on files win the folder
+        /// </summary>
         protected virtual void PopulateImages(T item, ItemResolveEventArgs args)
         {
             List<string> backdropFiles = new List<string>();
@@ -88,6 +103,7 @@ namespace MediaBrowser.Controller.Resolvers
 
                 string ext = Path.GetExtension(filePath);
 
+                // Only support png and jpg files
                 if (!ext.EndsWith("png", StringComparison.OrdinalIgnoreCase) && !ext.EndsWith("jpg", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
@@ -137,6 +153,9 @@ namespace MediaBrowser.Controller.Resolvers
         }
     }
 
+    /// <summary>
+    /// Weed this to keep a list of resolvers, since Resolvers are built with generics
+    /// </summary>
     public interface IBaseItemResolver
     {
         BaseItem ResolvePath(ItemResolveEventArgs args);

@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
+using MediaBrowser.Net.Handlers;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Net
 {
     public class RequestContext
     {
@@ -23,7 +24,7 @@ namespace MediaBrowser.Common.Net
             Request = context.Request;
         }
 
-        public void Respond(Response handler)
+        public void Respond(BaseHandler handler)
         {
             Response.AddHeader("Access-Control-Allow-Origin", "*");
 
@@ -58,6 +59,11 @@ namespace MediaBrowser.Common.Net
 
             if (statusCode != 304)
             {
+                if (handler.GzipResponse)
+                {
+                    Response.AddHeader("Content-Encoding", "gzip");
+                }
+
                 if (cacheDuration.Ticks > 0)
                 {
                     CacheResponse(Response, cacheDuration, handler.LastDateModified);

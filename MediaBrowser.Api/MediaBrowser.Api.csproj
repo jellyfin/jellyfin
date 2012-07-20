@@ -37,6 +37,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Rx-Main.1.0.11226\lib\Net4\System.Reactive.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -51,6 +52,7 @@
     <Compile Include="HttpHandlers\InProgressItemsHandler.cs" />
     <Compile Include="HttpHandlers\ItemHandler.cs" />
     <Compile Include="HttpHandlers\ItemListHandler.cs" />
+    <Compile Include="HttpHandlers\JsonHandler.cs" />
     <Compile Include="HttpHandlers\PersonHandler.cs" />
     <Compile Include="HttpHandlers\RecentlyAddedItemsHandler.cs" />
     <Compile Include="HttpHandlers\StudioHandler.cs" />
@@ -58,7 +60,6 @@
     <Compile Include="HttpHandlers\UsersHandler.cs" />
     <Compile Include="ImageProcessor.cs" />
     <Compile Include="HttpHandlers\MediaHandler.cs" />
-    <Compile Include="Model\BaseItemInfo.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -74,6 +75,10 @@
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
       <Name>MediaBrowser.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Net\MediaBrowser.Net.csproj">
+      <Project>{5da08d1c-0d52-4b1b-aa66-e4a171d938f6}</Project>
+      <Name>MediaBrowser.Net</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -6,7 +6,6 @@ namespace MediaBrowser.Model.Users
 {
     public class User : BaseItem
     {
-        public string Password { get; set; }
         public string MaxParentalRating { get; set; }
 
         private Dictionary<Guid, UserItemData> _ItemData = new Dictionary<Guid, UserItemData>();

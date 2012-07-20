@@ -1,23 +1,14 @@
-﻿using System.IO;
-using System.IO.Compression;
-using System;
+﻿using System;
+using System.IO;
 
-namespace MediaBrowser.Common.Net.Handlers
+namespace MediaBrowser.Net.Handlers
 {
-    public abstract class BaseEmbeddedResourceHandler : Response
+    public abstract class BaseEmbeddedResourceHandler : BaseHandler
     {
-        public BaseEmbeddedResourceHandler(RequestContext ctx, string resourcePath)
-            : base(ctx)
+        public BaseEmbeddedResourceHandler(string resourcePath)
+            : base()
         {
             ResourcePath = resourcePath;
-
-            Headers["Content-Encoding"] = "gzip";
-
-            WriteStream = s =>
-            {
-                WriteReponse(s);
-                s.Close();
-            };
         }
 
         protected string ResourcePath { get; set; }
@@ -57,12 +48,9 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        private void WriteReponse(Stream stream)
+        protected override void WriteResponseToOutputStream(Stream stream)
         {
-            using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Compress, false))
-            {
-                GetEmbeddedResourceStream().CopyTo(gzipStream);
-            }
+            GetEmbeddedResourceStream().CopyTo(stream);
         }
 
         protected abstract Stream GetEmbeddedResourceStream();
