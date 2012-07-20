@@ -24,9 +24,9 @@ namespace MediaBrowser.Controller.IO
 
             pathsToWatch.Add(rootFolder.Path);
 
-            foreach (Folder folder in rootFolder.FolderChildren)
+            foreach (Folder folder in rootFolder.Children.OfType<Folder>())
             {
-                foreach (Folder subFolder in folder.FolderChildren)
+                foreach (Folder subFolder in folder.Children.OfType<Folder>())
                 {
                     if (Path.IsPathRooted(subFolder.Path))
                     {

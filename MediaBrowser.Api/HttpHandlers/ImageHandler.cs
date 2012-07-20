@@ -1,27 +1,14 @@
 ﻿using System;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Net.Handlers;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public class ImageHandler : Response
+    public class ImageHandler : BaseHandler
     {
-        public ImageHandler(RequestContext ctx)
-            : base(ctx)
-        {
-            Headers["Content-Encoding"] = "gzip";
-
-            WriteStream = s =>
-            {
-                WriteReponse(s);
-                s.Close();
-            };
-        }
-
         private string _ImagePath = string.Empty;
         private string ImagePath
         {
@@ -149,12 +136,9 @@ namespace MediaBrowser.Api.HttpHandlers
             }
         }
 
-        private void WriteReponse(Stream stream)
+        protected override void WriteResponseToOutputStream(Stream stream)
         {
-            using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Compress, false))
-            {
-                ImageProcessor.ProcessImage(ImagePath, gzipStream, Width, Height, MaxWidth, MaxHeight, Quality);
-            }
+            ImageProcessor.ProcessImage(ImagePath, stream, Width, Height, MaxWidth, MaxHeight, Quality);
         }
 
         private string GetImagePath()

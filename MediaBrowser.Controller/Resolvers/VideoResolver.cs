@@ -1,20 +1,26 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Model.Entities;
-using System.Linq;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Resolvers
 {
+    /// <summary>
+    /// Resolves a Path into a Video
+    /// </summary>
     public class VideoResolver : BaseVideoResolver<Video>
     {
     }
 
+    /// <summary>
+    /// Resolves a Path into a Video or Video subclass
+    /// </summary>
     public abstract class BaseVideoResolver<T> : BaseItemResolver<T>
         where T : Video, new()
     {
         protected override T Resolve(ItemResolveEventArgs args)
         {
+            // If the path is a file check for a matching extensions
             if (!args.IsFolder)
             {
                 if (IsVideoFile(args.Path))
@@ -29,6 +35,7 @@ namespace MediaBrowser.Controller.Resolvers
 
             else
             {
+                // If the path is a folder, check if it's bluray or dvd
                 T item = ResolveFromFolderName(args.Path);
 
                 if (item != null)
@@ -36,6 +43,7 @@ namespace MediaBrowser.Controller.Resolvers
                     return item;
                 }
 
+                // Also check the subfolders for bluray or dvd
                 foreach (KeyValuePair<string, FileAttributes> folder in args.FileSystemChildren)
                 {
                     if (!folder.Value.HasFlag(FileAttributes.Directory))

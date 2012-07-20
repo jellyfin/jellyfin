@@ -36,6 +36,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\Configuration.cs" />
+    <Compile Include="Entities\ApiBaseItem.cs" />
     <Compile Include="Entities\Audio.cs" />
     <Compile Include="Entities\BaseItem.cs" />
     <Compile Include="Entities\CategoryInfo.cs" />

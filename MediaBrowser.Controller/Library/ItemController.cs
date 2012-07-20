@@ -323,6 +323,12 @@ namespace MediaBrowser.Controller.Library
             return null;
         }
 
+        public Genre GetGenre(string name)
+        {
+            // not yet implemented
+            return null;
+        }
+
         public Year GetYear(int value)
         {
             // not yet implemented

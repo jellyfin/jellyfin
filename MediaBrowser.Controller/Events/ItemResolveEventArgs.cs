@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using MediaBrowser.Model.Entities;
 using System.IO;
-using System.Linq;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Events
 {
+    /// <summary>
+    /// This is an EventArgs object used when resolving a Path into a BaseItem
+    /// </summary>
     public class ItemResolveEventArgs : PreBeginResolveEventArgs
     {
         public IEnumerable<KeyValuePair<string, FileAttributes>> FileSystemChildren { get; set; }
@@ -57,6 +59,11 @@ namespace MediaBrowser.Controller.Events
         }
     }
 
+    /// <summary>
+    /// This is an EventArgs object used before we begin resolving a Path into a BaseItem
+    /// File system children have not been collected yet, but consuming events will
+    /// have a chance to cancel resolution based on the Path, Parent and FileAttributes
+    /// </summary>
     public class PreBeginResolveEventArgs : EventArgs
     {
         public string Path { get; set; }

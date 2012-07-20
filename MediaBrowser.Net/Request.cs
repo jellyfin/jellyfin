@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Net
 {
     public class Request
     {

@@ -35,9 +35,6 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Reactive">
-      <HintPath>..\packages\Rx-Main.1.0.11226\lib\Net4\System.Reactive.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -48,15 +45,6 @@
     <Compile Include="ApiInteraction\ApiController.cs" />
     <Compile Include="Events\GenericItemEventArgs.cs" />
     <Compile Include="Json\JsonSerializer.cs" />
-    <Compile Include="ApiInteraction\DictionaryBaseItem.cs" />
-    <Compile Include="Net\CollectionExtensions.cs" />
-    <Compile Include="Net\Handlers\BaseEmbeddedResourceHandler.cs" />
-    <Compile Include="Net\Handlers\JsonHandler.cs" />
-    <Compile Include="Net\HttpServer.cs" />
-    <Compile Include="Net\Request.cs" />
-    <Compile Include="Net\RequestContext.cs" />
-    <Compile Include="Net\Response.cs" />
-    <Compile Include="Net\StreamExtensions.cs" />
     <Compile Include="Plugins\BasePluginConfiguration.cs" />
     <Compile Include="Logging\BaseLogger.cs" />
     <Compile Include="Logging\FileLogger.cs" />

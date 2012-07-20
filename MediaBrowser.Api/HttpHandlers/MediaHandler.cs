@@ -1,23 +1,12 @@
 ﻿using System;
 using System.IO;
-using System.IO.Compression;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Net.Handlers;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    class MediaHandler : Response
+    class MediaHandler : BaseHandler
     {
-        public MediaHandler(RequestContext ctx)
-            : base(ctx)
-        {
-            WriteStream = s =>
-            {
-                WriteReponse(s);
-                s.Close();
-            };
-        }
-
         private string _MediaPath = string.Empty;
         private string MediaPath
         {
@@ -44,6 +33,14 @@ namespace MediaBrowser.Api.HttpHandlers
             BaseItem item = ApiService.GetItemById(QueryString["id"]);
 
             return item.Path;
+        }
+
+        public override bool GzipResponse
+        {
+            get
+            {
+                return false;
+            }
         }
 
         public override string ContentType
@@ -87,7 +84,7 @@ namespace MediaBrowser.Api.HttpHandlers
             }
         }
 
-        private void WriteReponse(Stream stream)
+        protected override void WriteResponseToOutputStream(Stream stream)
         {
             try
             {
@@ -100,6 +97,5 @@ namespace MediaBrowser.Api.HttpHandlers
             {
             }
         }
-
     }
 }

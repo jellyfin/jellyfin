@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Json;
-using MediaBrowser.Model.Users;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Common.ApiInteraction
 {
@@ -21,19 +22,20 @@ namespace MediaBrowser.Common.ApiInteraction
             WebClient = new WebClient();
         }
 
-        public async Task<DictionaryBaseItem> GetRootItem(Guid userId)
+        public async Task<ApiBaseItemWrapper<ApiBaseItem>> GetRootItem(Guid userId)
         {
             string url = ApiUrl + "/item?userId=" + userId.ToString();
 
-            Stream stream = await WebClient.OpenReadTaskAsync(url);
-
-            using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress, false))
+            using (Stream stream = await WebClient.OpenReadTaskAsync(url))
             {
-                return DictionaryBaseItem.FromApiOutput(gzipStream);
+                using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress, false))
+                {
+                    return DeserializeBaseItemWrapper(gzipStream);
+                }
             }
         }
 
-        public async Task<DictionaryBaseItem> GetItem(Guid id, Guid userId)
+        public async Task<ApiBaseItemWrapper<ApiBaseItem>> GetItem(Guid id, Guid userId)
         {
             string url = ApiUrl + "/item?userId=" + userId.ToString();
 
@@ -42,11 +44,12 @@ namespace MediaBrowser.Common.ApiInteraction
                 url += "&id=" + id.ToString();
             }
 
-            Stream stream = await WebClient.OpenReadTaskAsync(url);
-
-            using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress, false))
+            using (Stream stream = await WebClient.OpenReadTaskAsync(url))
             {
-                return DictionaryBaseItem.FromApiOutput(gzipStream);
+                using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress, false))
+                {
+                    return DeserializeBaseItemWrapper(gzipStream);
+                }
             }
         }
 
@@ -54,11 +57,12 @@ namespace MediaBrowser.Common.ApiInteraction
         {
             string url = ApiUrl + "/users";
 
-            Stream stream = await WebClient.OpenReadTaskAsync(url);
-
-            using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress, false))
+            using (Stream stream = await WebClient.OpenReadTaskAsync(url))
             {
-                return JsonSerializer.DeserializeFromStream<IEnumerable<User>>(gzipStream);
+                using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress, false))
+                {
+                    return JsonSerializer.DeserializeFromStream<IEnumerable<User>>(gzipStream);
+                }
             }
         }
 
@@ -66,11 +70,12 @@ namespace MediaBrowser.Common.ApiInteraction
         {
             string url = ApiUrl + "/genres?userId=" + userId.ToString();
 
-            Stream stream = await WebClient.OpenReadTaskAsync(url);
-
-            using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress, false))
+            using (Stream stream = await WebClient.OpenReadTaskAsync(url))
             {
-                return JsonSerializer.DeserializeFromStream<IEnumerable<CategoryInfo>>(gzipStream);
+                using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress, false))
+                {
+                    return JsonSerializer.DeserializeFromStream<IEnumerable<CategoryInfo>>(gzipStream);
+                }
             }
         }
 
@@ -78,11 +83,12 @@ namespace MediaBrowser.Common.ApiInteraction
         {
             string url = ApiUrl + "/genre?userId=" + userId.ToString() + "&name=" + name;
 
-            Stream stream = await WebClient.OpenReadTaskAsync(url);
-
-            using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress, false))
+            using (Stream stream = await WebClient.OpenReadTaskAsync(url))
             {
-                return JsonSerializer.DeserializeFromStream<CategoryInfo>(gzipStream);
+                using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress, false))
+                {
+                    return JsonSerializer.DeserializeFromStream<CategoryInfo>(gzipStream);
+                }
             }
         }
 
@@ -90,11 +96,12 @@ namespace MediaBrowser.Common.ApiInteraction
         {
             string url = ApiUrl + "/studios?userId=" + userId.ToString();
 
-            Stream stream = await WebClient.OpenReadTaskAsync(url);
-
-            using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress, false))
+            using (Stream stream = await WebClient.OpenReadTaskAsync(url))
             {
-                return JsonSerializer.DeserializeFromStream<IEnumerable<CategoryInfo>>(gzipStream);
+                using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress, false))
+                {
+                    return JsonSerializer.DeserializeFromStream<IEnumerable<CategoryInfo>>(gzipStream);
+                }
             }
         }
 
@@ -102,12 +109,20 @@ namespace MediaBrowser.Common.ApiInteraction
         {
             string url = ApiUrl + "/studio?userId=" + userId.ToString() + "&name=" + name;
 
-            Stream stream = await WebClient.OpenReadTaskAsync(url);
-
-            using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress, false))
+            using (Stream stream = await WebClient.OpenReadTaskAsync(url))
             {
-                return JsonSerializer.DeserializeFromStream<CategoryInfo>(gzipStream);
+                using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress, false))
+                {
+                    return JsonSerializer.DeserializeFromStream<CategoryInfo>(gzipStream);
+                }
             }
+        }
+
+        private static ApiBaseItemWrapper<ApiBaseItem> DeserializeBaseItemWrapper(Stream stream)
+        {
+            ApiBaseItemWrapper<ApiBaseItem> data = JsonSerializer.DeserializeFromStream<ApiBaseItemWrapper<ApiBaseItem>>(stream);
+
+            return data;
         }
     }
 }

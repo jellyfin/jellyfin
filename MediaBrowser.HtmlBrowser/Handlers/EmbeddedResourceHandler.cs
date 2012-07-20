@@ -1,14 +1,14 @@
 ﻿using System.IO;
 using System.Reflection;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Net.Handlers;
+using MediaBrowser.Net;
+using MediaBrowser.Net.Handlers;
 
 namespace MediaBrowser.HtmlBrowser.Handlers
 {
     class EmbeddedResourceHandler : BaseEmbeddedResourceHandler
     {
-        public EmbeddedResourceHandler(RequestContext ctx, string resourcePath)
-            : base(ctx, resourcePath)
+        public EmbeddedResourceHandler(string resourcePath)
+            : base(resourcePath)
         {
       
         }

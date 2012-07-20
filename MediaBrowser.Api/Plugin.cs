@@ -3,6 +3,8 @@ using System.Reactive.Linq;
 using MediaBrowser.Api.HttpHandlers;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller;
+using MediaBrowser.Net;
+using MediaBrowser.Net.Handlers;
 
 namespace MediaBrowser.Api
 {
@@ -12,25 +14,70 @@ namespace MediaBrowser.Api
         {
             var httpServer = Kernel.Instance.HttpServer;
 
-            httpServer.Where(ctx => ctx.LocalPath.EndsWith("/api/users", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new UsersHandler(ctx)));
+            httpServer.Where(ctx => ctx.LocalPath.IndexOf("/api/", StringComparison.OrdinalIgnoreCase) != -1).Subscribe(ctx =>
+            {
+                BaseHandler handler = GetHandler(ctx);
 
-            httpServer.Where(ctx => ctx.LocalPath.EndsWith("/api/media", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new MediaHandler(ctx)));
+                if (handler != null)
+                {
+                    ctx.Respond(handler);
+                }
+            });
+        }
 
-            httpServer.Where(ctx => ctx.LocalPath.EndsWith("/api/item", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new ItemHandler(ctx)));
+        private BaseHandler GetHandler(RequestContext ctx)
+        {
+            BaseHandler handler = null;
 
-            httpServer.Where(ctx => ctx.LocalPath.EndsWith("/api/image", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new ImageHandler(ctx)));
+            string localPath = ctx.LocalPath;
 
-            httpServer.Where(ctx => ctx.LocalPath.EndsWith("/api/genre", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new GenreHandler(ctx)));
+            if (localPath.EndsWith("/api/item", StringComparison.OrdinalIgnoreCase))
+            {
+                handler = new ItemHandler();
+            }
+            else if (localPath.EndsWith("/api/image", StringComparison.OrdinalIgnoreCase))
+            {
+                handler = new ImageHandler();
+            } 
+            else if (localPath.EndsWith("/api/users", StringComparison.OrdinalIgnoreCase))
+            {
+                handler = new UsersHandler();
+            }
+            else if (localPath.EndsWith("/api/media", StringComparison.OrdinalIgnoreCase))
+            {
+                handler = new MediaHandler();
+            }
+            else if (localPath.EndsWith("/api/genre", StringComparison.OrdinalIgnoreCase))
+            {
+                handler = new GenreHandler();
+            }
+            else if (localPath.EndsWith("/api/genres", StringComparison.OrdinalIgnoreCase))
+            {
+                handler = new GenresHandler();
+            }
+            else if (localPath.EndsWith("/api/studio", StringComparison.OrdinalIgnoreCase))
+            {
+                handler = new StudioHandler();
+            }
+            else if (localPath.EndsWith("/api/studios", StringComparison.OrdinalIgnoreCase))
+            {
+                handler = new StudiosHandler();
+            }
+            else if (localPath.EndsWith("/api/recentlyaddeditems", StringComparison.OrdinalIgnoreCase))
+            {
+                handler = new RecentlyAddedItemsHandler();
+            }
+            else if (localPath.EndsWith("/api/inprogressitems", StringComparison.OrdinalIgnoreCase))
+            {
+                handler = new InProgressItemsHandler();
+            }
 
-            httpServer.Where(ctx => ctx.LocalPath.EndsWith("/api/genres", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new GenresHandler(ctx)));
+            if (handler != null)
+            {
+                handler.RequestContext = ctx;
+            }
 
-            httpServer.Where(ctx => ctx.LocalPath.EndsWith("/api/studio", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new StudioHandler(ctx)));
-
-            httpServer.Where(ctx => ctx.LocalPath.EndsWith("/api/studios", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new StudiosHandler(ctx)));
-
-            httpServer.Where(ctx => ctx.LocalPath.EndsWith("/api/recentlyaddeditems", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new RecentlyAddedItemsHandler(ctx)));
-
-            httpServer.Where(ctx => ctx.LocalPath.EndsWith("/api/inprogressitems", StringComparison.OrdinalIgnoreCase)).Subscribe(ctx => ctx.Respond(new InProgressItemsHandler(ctx)));
+            return handler;
         }
     }
 }

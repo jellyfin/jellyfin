@@ -8,6 +8,8 @@ namespace MediaBrowser.Controller.Resolvers
     {
         protected override Audio Resolve(ItemResolveEventArgs args)
         {
+            // Return audio if the path is a file and has a matching extension
+
             if (!args.IsFolder)
             {
                 if (IsAudioFile(args.Path))
