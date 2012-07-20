@@ -15,6 +15,14 @@ namespace MediaBrowser.TV.Metadata
                     item.TvdbId = reader.ReadElementContentAsString() ?? string.Empty;
                     break;
 
+                case "Airs_DayOfWeek":
+                    item.AirDay = reader.ReadElementContentAsString() ?? string.Empty;
+                    break;
+
+                case "Airs_Time":
+                    item.AirTime = reader.ReadElementContentAsString() ?? string.Empty;
+                    break;
+
                 case "SeriesName":
                     item.Name = reader.ReadElementContentAsString() ?? string.Empty;
                     break;
