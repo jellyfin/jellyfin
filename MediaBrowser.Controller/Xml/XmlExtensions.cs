@@ -42,5 +42,13 @@ namespace MediaBrowser.Controller.Xml
 
             return value;
         }
+
+        /// <summary>
+        /// Reads an int from the current element of an XmlReader
+        /// </summary>
+        public static string ReadString(this XmlReader reader)
+        {
+            return reader.ReadElementContentAsString();
+        }
     }
 }

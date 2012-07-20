@@ -12,28 +12,54 @@ namespace MediaBrowser.TV.Metadata
             switch (reader.Name)
             {
                 case "id":
-                    item.TvdbId = reader.ReadElementContentAsString() ?? string.Empty;
+                    item.TvdbId = reader.ReadString();
                     break;
 
                 case "Airs_DayOfWeek":
-                    item.AirDay = reader.ReadElementContentAsString() ?? string.Empty;
-                    break;
+                    {
+                        string day = reader.ReadString();
+
+                        if (!string.IsNullOrWhiteSpace(day))
+                        {
+                            if (day.Equals("Daily", StringComparison.OrdinalIgnoreCase))
+                            {
+                                item.AirDays = new DayOfWeek[] { 
+                                    DayOfWeek.Sunday,
+                                    DayOfWeek.Monday,
+                                    DayOfWeek.Tuesday,
+                                    DayOfWeek.Wednesday,
+                                    DayOfWeek.Thursday,
+                                    DayOfWeek.Friday,
+                                    DayOfWeek.Saturday
+                                };
+                            }
+                            else
+                            {
+                                item.AirDays = new DayOfWeek[] { 
+                                    (DayOfWeek)Enum.Parse(typeof(DayOfWeek), day, true)
+                                };
+                            }
+                        }
+
+                        break;
+                    }
 
                 case "Airs_Time":
-                    item.AirTime = reader.ReadElementContentAsString() ?? string.Empty;
+                    item.AirTime = reader.ReadString();
                     break;
 
                 case "SeriesName":
-                    item.Name = reader.ReadElementContentAsString() ?? string.Empty;
+                    item.Name = reader.ReadString();
                     break;
 
                 case "Status":
-                    item.Status = reader.ReadElementContentAsString() ?? string.Empty;
+                    item.Status = reader.ReadString();
                     break;
 
                 case "Runtime":
                     {
-                        string text = reader.ReadElementContentAsString() ?? string.Empty;
+                        string text = reader.ReadString();
+
                         if (!string.IsNullOrWhiteSpace(text))
                         {
 

@@ -11,12 +11,12 @@ namespace MediaBrowser.Movies.Metadata
             switch (reader.Name)
             {
                 case "TMDbId":
-                    item.TmdbId = reader.ReadElementContentAsString() ?? string.Empty;
+                    item.TmdbId = reader.ReadString();
                     break;
 
                 case "IMDB":
                 case "IMDbId":
-                    string IMDbId = reader.ReadElementContentAsString() ?? string.Empty;
+                    string IMDbId = reader.ReadString();
                     if (!string.IsNullOrWhiteSpace(IMDbId))
                     {
                         item.ImdbId = IMDbId;

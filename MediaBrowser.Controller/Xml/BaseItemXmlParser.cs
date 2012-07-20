@@ -55,7 +55,7 @@ namespace MediaBrowser.Controller.Xml
                 // DateCreated
                 case "Added":
                     DateTime added;
-                    if (DateTime.TryParse(reader.ReadElementContentAsString() ?? string.Empty, out added))
+                    if (DateTime.TryParse(reader.ReadString() ?? string.Empty, out added))
                     {
                         item.DateCreated = added;
                     }
@@ -64,7 +64,7 @@ namespace MediaBrowser.Controller.Xml
                 // DisplayMediaType
                 case "Type":
                     {
-                        item.DisplayMediaType = reader.ReadElementContentAsString() ?? string.Empty;
+                        item.DisplayMediaType = reader.ReadString();
 
                         switch (item.DisplayMediaType.ToLower())
                         {
@@ -84,56 +84,56 @@ namespace MediaBrowser.Controller.Xml
 
                 // TODO: Do we still need this?
                 case "banner":
-                    item.BannerImagePath = reader.ReadElementContentAsString() ?? string.Empty;
+                    item.BannerImagePath = reader.ReadString();
                     break;
 
                 case "LocalTitle":
-                    item.Name = reader.ReadElementContentAsString() ?? string.Empty;
+                    item.Name = reader.ReadString();
                     break;
 
                 case "SortTitle":
-                    item.SortName = reader.ReadElementContentAsString() ?? string.Empty;
+                    item.SortName = reader.ReadString();
                     break;
 
                 case "Overview":
                 case "Description":
-                    item.Overview = reader.ReadElementContentAsString() ?? string.Empty;
+                    item.Overview = reader.ReadString();
                     break;
 
                 case "TagLine":
-                    item.Tagline = reader.ReadElementContentAsString() ?? string.Empty;
+                    item.Tagline = reader.ReadString();
                     break;
 
                 case "ContentRating":
                 case "MPAARating":
-                    item.OfficialRating = reader.ReadElementContentAsString() ?? string.Empty;
+                    item.OfficialRating = reader.ReadString();
                     break;
 
                 case "CustomRating":
-                    item.CustomRating = reader.ReadElementContentAsString() ?? string.Empty;
+                    item.CustomRating = reader.ReadString();
                     break;
 
                 case "CustomPin":
-                    item.CustomPin = reader.ReadElementContentAsString() ?? string.Empty;
+                    item.CustomPin = reader.ReadString();
                     break;
 
                 case "Genre":
                     {
                         var genres = (item.Genres ?? new string[] { }).ToList();
-                        genres.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|'));
+                        genres.AddRange(GetSplitValues(reader.ReadString(), '|'));
 
                         item.Genres = genres;
                         break;
                     }
 
                 case "AspectRatio":
-                    item.AspectRatio = reader.ReadElementContentAsString() ?? string.Empty;
+                    item.AspectRatio = reader.ReadString();
                     break;
 
                 case "Network":
                     {
                         var studios = (item.Studios ?? new string[] { }).ToList();
-                        studios.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|'));
+                        studios.AddRange(GetSplitValues(reader.ReadString(), '|'));
 
                         item.Studios = studios;
                         break;
@@ -142,7 +142,7 @@ namespace MediaBrowser.Controller.Xml
                 case "Director":
                     {
                         var list = (item.People ?? new PersonInfo[] { }).ToList();
-                        list.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo() { Name = v, PersonType = PersonType.Director }));
+                        list.AddRange(GetSplitValues(reader.ReadString(), '|').Select(v => new PersonInfo() { Name = v, PersonType = PersonType.Director }));
 
                         item.People = list;
                         break;
@@ -150,7 +150,7 @@ namespace MediaBrowser.Controller.Xml
                 case "Writer":
                     {
                         var list = (item.People ?? new PersonInfo[] { }).ToList();
-                        list.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo() { Name = v, PersonType = PersonType.Writer }));
+                        list.AddRange(GetSplitValues(reader.ReadString(), '|').Select(v => new PersonInfo() { Name = v, PersonType = PersonType.Writer }));
 
                         item.People = list;
                         break;
@@ -160,20 +160,20 @@ namespace MediaBrowser.Controller.Xml
                 case "GuestStars":
                     {
                         var list = (item.People ?? new PersonInfo[] { }).ToList();
-                        list.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo() { Name = v, PersonType = PersonType.Actor }));
+                        list.AddRange(GetSplitValues(reader.ReadString(), '|').Select(v => new PersonInfo() { Name = v, PersonType = PersonType.Actor }));
 
                         item.People = list;
                         break;
                     }
 
                 case "Trailer":
-                    item.TrailerUrl = reader.ReadElementContentAsString() ?? string.Empty;
+                    item.TrailerUrl = reader.ReadString();
                     break;
 
                 case "ProductionYear":
                     {
                         int ProductionYear;
-                        if (int.TryParse(reader.ReadElementContentAsString(), out ProductionYear) && ProductionYear > 1850)
+                        if (int.TryParse(reader.ReadString(), out ProductionYear) && ProductionYear > 1850)
                         {
                             item.ProductionYear = ProductionYear;
                         }
@@ -184,7 +184,7 @@ namespace MediaBrowser.Controller.Xml
                 case "Rating":
                 case "IMDBrating":
 
-                    string rating = reader.ReadElementContentAsString();
+                    string rating = reader.ReadString();
 
                     if (!string.IsNullOrWhiteSpace(rating))
                     {
@@ -291,12 +291,12 @@ namespace MediaBrowser.Controller.Xml
                             break;
 
                         case "Language":
-                            stream.Language = reader.ReadElementContentAsString() ?? string.Empty;
+                            stream.Language = reader.ReadString();
                             break;
 
                         case "Codec":
                             {
-                                string codec = reader.ReadElementContentAsString() ?? string.Empty;
+                                string codec = reader.ReadString();
 
                                 switch (codec.ToLower())
                                 {
@@ -376,11 +376,11 @@ namespace MediaBrowser.Controller.Xml
                             break;
 
                         case "FrameRate":
-                            item.FrameRate = reader.ReadElementContentAsString() ?? string.Empty;
+                            item.FrameRate = reader.ReadString();
                             break;
 
                         case "ScanType":
-                            item.ScanType = reader.ReadElementContentAsString() ?? string.Empty;
+                            item.ScanType = reader.ReadString();
                             break;
 
                         case "Duration":
@@ -397,7 +397,7 @@ namespace MediaBrowser.Controller.Xml
 
                         case "Codec":
                             {
-                                string videoCodec = reader.ReadElementContentAsString() ?? string.Empty;
+                                string videoCodec = reader.ReadString();
 
                                 switch (videoCodec.ToLower())
                                 {
@@ -440,7 +440,7 @@ namespace MediaBrowser.Controller.Xml
                     {
                         case "Language":
                             {
-                                string genre = reader.ReadElementContentAsString();
+                                string genre = reader.ReadString();
 
                                 if (!string.IsNullOrWhiteSpace(genre))
                                 {
@@ -473,7 +473,7 @@ namespace MediaBrowser.Controller.Xml
                     {
                         case "Genre":
                             {
-                                string genre = reader.ReadElementContentAsString();
+                                string genre = reader.ReadString();
 
                                 if (!string.IsNullOrWhiteSpace(genre))
                                 {
@@ -534,7 +534,7 @@ namespace MediaBrowser.Controller.Xml
                     {
                         case "Studio":
                             {
-                                string studio = reader.ReadElementContentAsString();
+                                string studio = reader.ReadString();
 
                                 if (!string.IsNullOrWhiteSpace(studio))
                                 {
@@ -565,7 +565,7 @@ namespace MediaBrowser.Controller.Xml
                     {
                         case "Value":
                             {
-                                string ratingString = reader.ReadElementContentAsString();
+                                string ratingString = reader.ReadString();
 
                                 int rating = 7;
 
@@ -624,12 +624,12 @@ namespace MediaBrowser.Controller.Xml
                     switch (reader.Name)
                     {
                         case "Name":
-                            person.Name = reader.ReadElementContentAsString() ?? string.Empty;
+                            person.Name = reader.ReadString();
                             break;
 
                         case "Type":
                             {
-                                string type = reader.ReadElementContentAsString() ?? string.Empty;
+                                string type = reader.ReadString();
 
                                 if (type == "Director")
                                 {
@@ -643,7 +643,7 @@ namespace MediaBrowser.Controller.Xml
                             }
 
                         case "Role":
-                            person.Overview = reader.ReadElementContentAsString() ?? string.Empty;
+                            person.Overview = reader.ReadString();
                             break;
 
                         default:
