@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using MediaBrowser.Common.Json;
-using MediaBrowser.Net.Handlers;
+using MediaBrowser.Common.Net.Handlers;
 
 namespace MediaBrowser.Api.HttpHandlers
 {

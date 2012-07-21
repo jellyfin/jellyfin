@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Common.Logging
 {

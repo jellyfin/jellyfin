@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Net.Handlers;
-using MediaBrowser.Controller;
+﻿using MediaBrowser.Controller;
 
 namespace MediaBrowser.Api.HttpHandlers
 {

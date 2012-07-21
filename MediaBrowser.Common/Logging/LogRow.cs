@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Common.Logging
 {

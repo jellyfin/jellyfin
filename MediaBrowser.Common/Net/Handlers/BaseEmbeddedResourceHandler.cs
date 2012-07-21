@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace MediaBrowser.Net.Handlers
+namespace MediaBrowser.Common.Net.Handlers
 {
     public abstract class BaseEmbeddedResourceHandler : BaseHandler
     {

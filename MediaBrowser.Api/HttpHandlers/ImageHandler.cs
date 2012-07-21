@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Net.Handlers;
 
 namespace MediaBrowser.Api.HttpHandlers
 {

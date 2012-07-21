@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Reactive.Linq;
 
-namespace MediaBrowser.Net
+namespace MediaBrowser.Common.Net
 {
     public static class StreamExtensions
     {

@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\ServerConfiguration.cs" />
     <Compile Include="Events\ItemResolveEventArgs.cs" />
     <Compile Include="IO\DirectoryWatchers.cs" />
     <Compile Include="IO\Shortcut.cs" />
@@ -65,10 +66,6 @@
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
       <Name>MediaBrowser.Model</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Net\MediaBrowser.Net.csproj">
-      <Project>{5da08d1c-0d52-4b1b-aa66-e4a171d938f6}</Project>
-      <Name>MediaBrowser.Net</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

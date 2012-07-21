@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
-using MediaBrowser.Net.Handlers;
+using MediaBrowser.Common.Net.Handlers;
 
-namespace MediaBrowser.Net
+namespace MediaBrowser.Common.Net
 {
     public class RequestContext
     {

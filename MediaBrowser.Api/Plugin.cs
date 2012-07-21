@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Reactive.Linq;
 using MediaBrowser.Api.HttpHandlers;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller;
-using MediaBrowser.Net;
-using MediaBrowser.Net.Handlers;
 
 namespace MediaBrowser.Api
 {
