@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Configuration;
-using System.IO;
 using MediaBrowser.Controller;
 
 namespace MediaBrowser.Program
@@ -18,24 +16,7 @@ namespace MediaBrowser.Program
 
             Console.WriteLine("Loading");
 
-            string installDir = ConfigurationManager.AppSettings["DataPath"];
-
-            if (!Path.IsPathRooted(installDir))
-            {
-                string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
-                path = Path.GetDirectoryName(path);
-
-                installDir = Path.Combine(path, installDir);
-
-                installDir = Path.GetFullPath(installDir);
-            }
-
-            if (!Directory.Exists(installDir))
-            {
-                Directory.CreateDirectory(installDir);
-            }
-
-            Kernel kernel = new Kernel(installDir);
+            Kernel kernel = new Kernel();
 
             kernel.Init();
 

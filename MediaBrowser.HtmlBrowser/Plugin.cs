@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Reactive.Linq;
-using MediaBrowser.Net.Handlers;
+using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller;
 using MediaBrowser.HtmlBrowser.Handlers;

@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.Net.Handlers
+namespace MediaBrowser.Common.Net.Handlers
 {
     public abstract class BaseJsonHandler : BaseHandler
     {

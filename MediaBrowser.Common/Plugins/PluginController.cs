@@ -3,23 +3,45 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Kernel;
 
 namespace MediaBrowser.Common.Plugins
 {
+    /// <summary>
+    /// Manages Plugins within the PluginsPath directory
+    /// </summary>
     public class PluginController
     {
         public string PluginsPath { get; set; }
 
-        public PluginController(string pluginFolderPath)
-        {
-            PluginsPath = pluginFolderPath;
-        }
-
-        public IEnumerable<IPlugin> GetAllPlugins()
+        /// <summary>
+        /// Gets the list of currently loaded plugins
+        /// </summary>
+        public IEnumerable<IPlugin> Plugins { get; private set; }
+        
+        /// <summary>
+        /// Initializes the controller
+        /// </summary>
+        public void Init(KernelContext context)
         {
             AppDomain.CurrentDomain.AssemblyResolve -= new ResolveEventHandler(CurrentDomain_AssemblyResolve);
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
-            
+
+            Plugins = GetAllPlugins();
+
+            Parallel.For(0, Plugins.Count(), i =>
+            {
+                Plugins.ElementAt(i).Init();
+            });
+        }
+
+        /// <summary>
+        /// Gets all plugins within PluginsPath
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerable<IPlugin> GetAllPlugins()
+        {
             if (!Directory.Exists(PluginsPath))
             {
                 Directory.CreateDirectory(PluginsPath);
@@ -56,10 +78,10 @@ namespace MediaBrowser.Common.Plugins
 
         private IPlugin GetPluginFromDll(string path)
         {
-            return FindPlugin(Assembly.Load(File.ReadAllBytes(path)));
+            return GetPluginFromDll(Assembly.Load(File.ReadAllBytes(path)));
         }
 
-        private IPlugin FindPlugin(Assembly assembly)
+        private IPlugin GetPluginFromDll(Assembly assembly)
         {
             var plugin = assembly.GetTypes().Where(type => typeof(IPlugin).IsAssignableFrom(type)).FirstOrDefault();
 

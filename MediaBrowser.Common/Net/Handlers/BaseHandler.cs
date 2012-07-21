@@ -4,7 +4,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.IO.Compression;
 
-namespace MediaBrowser.Net.Handlers
+namespace MediaBrowser.Common.Net.Handlers
 {
     public abstract class BaseHandler
     {

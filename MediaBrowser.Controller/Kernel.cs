@@ -5,33 +5,24 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Json;
-using MediaBrowser.Common.Logging;
-using MediaBrowser.Common.Plugins;
+using MediaBrowser.Common.Kernel;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Users;
-using MediaBrowser.Net;
 
 namespace MediaBrowser.Controller
 {
-    public class Kernel
+    public class Kernel : BaseKernel<ServerConfiguration>
     {
         public static Kernel Instance { get; private set; }
 
-        public string DataPath { get; private set; }
-
-        public HttpServer HttpServer { get; private set; }
         public ItemController ItemController { get; private set; }
         public UserController UserController { get; private set; }
-        public PluginController PluginController { get; private set; }
 
-        public Configuration Configuration { get; private set; }
-        public IEnumerable<IPlugin> Plugins { get; private set; }
         public IEnumerable<User> Users { get; private set; }
         public Folder RootFolder { get; private set; }
 
@@ -41,24 +32,20 @@ namespace MediaBrowser.Controller
         {
             get
             {
-                return Path.Combine(DataPath, "Root");
+                return Path.Combine(ProgramDataPath, "Root");
             }
         }
 
         /// <summary>
         /// Creates a kernal based on a Data path, which is akin to our current programdata path
         /// </summary>
-        public Kernel(string dataPath)
+        public Kernel()
+            : base()
         {
             Instance = this;
 
-            DataPath = dataPath;
-
-            Logger.LoggerInstance = new FileLogger(Path.Combine(DataPath, "Logs"));
-
             ItemController = new ItemController();
-            UserController = new UserController(Path.Combine(DataPath, "Users"));
-            PluginController = new PluginController(Path.Combine(DataPath, "Plugins"));
+            UserController = new UserController(Path.Combine(ProgramDataPath, "Users"));
             DirectoryWatchers = new DirectoryWatchers();
 
             ItemController.PreBeginResolvePath += ItemController_PreBeginResolvePath;
@@ -73,46 +60,13 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Tells the kernel to start spinning up
         /// </summary>
-        public void Init()
+        public override void Init()
         {
-            ReloadConfiguration();
-
-            ReloadHttpServer();
-
-            LoadPlugins();
+            base.Init();
 
             // Get users from users folder
             // Load root media folder
             Parallel.Invoke(ReloadUsers, ReloadRoot);
-        }
-
-        private void ReloadConfiguration()
-        {
-            // Deserialize config
-            Configuration = GetConfiguration(DataPath);
-
-            Logger.LoggerInstance.LogSeverity = Configuration.LogSeverity;
-        }
-
-        private void LoadPlugins()
-        {
-            // Find plugins
-            Plugins = PluginController.GetAllPlugins();
-
-            Parallel.For(0, Plugins.Count(), i =>
-            {
-                Plugins.ElementAt(i).Init();
-            });
-        }
-
-        private void ReloadHttpServer()
-        {
-            if (HttpServer != null)
-            {
-                HttpServer.Dispose();
-            }
-
-            HttpServer = new HttpServer("http://+:" + Configuration.HttpServerPortNumber + "/mediabrowser/");
         }
 
         /// <summary>
@@ -190,18 +144,6 @@ namespace MediaBrowser.Controller
             {
                 return new Guid(md5Provider.ComputeHash(Encoding.Unicode.GetBytes(str)));
             }
-        }
-
-        private static Configuration GetConfiguration(string directory)
-        {
-            string file = Path.Combine(directory, "config.js");
-
-            if (!File.Exists(file))
-            {
-                return new Configuration();
-            }
-
-            return JsonSerializer.DeserializeFromFile<Configuration>(file);
         }
 
         public void ReloadItem(BaseItem item)
@@ -334,7 +276,7 @@ namespace MediaBrowser.Controller
                 {
                     return false;
                 }
-                
+
                 var userdata = GetUserItemData(userId, i.Id);
 
                 return userdata != null && userdata.PlaybackPosition.Ticks > 0;

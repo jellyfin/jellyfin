@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
+using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Net.Handlers;
 
 namespace MediaBrowser.Api.HttpHandlers
 {

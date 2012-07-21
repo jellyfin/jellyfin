@@ -2,7 +2,7 @@ using System;
 using System.Net;
 using System.Reactive.Linq;
 
-namespace MediaBrowser.Net
+namespace MediaBrowser.Common.Net
 {
     public class HttpServer : IObservable<RequestContext>, IDisposable
     {

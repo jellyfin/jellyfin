@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MediaBrowser.Model.Logging
+namespace MediaBrowser.Common.Logging
 {
     [Flags]
     public enum LogSeverity

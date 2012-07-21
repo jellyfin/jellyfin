@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Reflection;
-using MediaBrowser.Net;
-using MediaBrowser.Net.Handlers;
+using MediaBrowser.Common.Net.Handlers;
 
 namespace MediaBrowser.HtmlBrowser.Handlers
 {
