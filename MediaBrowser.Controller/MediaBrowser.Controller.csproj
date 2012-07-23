@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\ServerConfiguration.cs" />
+    <Compile Include="Configuration\ServerConfigurationController.cs" />
     <Compile Include="Events\ItemResolveEventArgs.cs" />
     <Compile Include="IO\DirectoryWatchers.cs" />
     <Compile Include="IO\Shortcut.cs" />

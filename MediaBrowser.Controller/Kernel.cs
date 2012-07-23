@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Events;
@@ -16,7 +17,7 @@ using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller
 {
-    public class Kernel : BaseKernel<ServerConfiguration>
+    public class Kernel : BaseKernel<ServerConfigurationController, ServerConfiguration>
     {
         public static Kernel Instance { get; private set; }
 
@@ -249,7 +250,9 @@ namespace MediaBrowser.Controller
         {
             DateTime now = DateTime.Now;
 
-            return GetParentalAllowedRecursiveChildren(parent, userId).Where(i => !(i is Folder) && (now - i.DateCreated).TotalDays < Configuration.RecentItemDays);
+            UserConfiguration config = ConfigurationController.GetUserConfiguration(userId);
+
+            return GetParentalAllowedRecursiveChildren(parent, userId).Where(i => !(i is Folder) && (now - i.DateCreated).TotalDays < config.RecentItemDays);
         }
 
         /// <summary>

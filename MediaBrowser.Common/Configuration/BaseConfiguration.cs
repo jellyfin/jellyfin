@@ -3,7 +3,7 @@
 namespace MediaBrowser.Common.Configuration
 {
     /// <summary>
-    /// Serves as a common base class for the Server and UI Configurations
+    /// Serves as a common base class for the Server and UI application Configurations
     /// </summary>
     public class BaseConfiguration
     {

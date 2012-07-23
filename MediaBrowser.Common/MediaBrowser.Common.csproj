@@ -48,6 +48,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\BaseConfiguration.cs" />
+    <Compile Include="Configuration\ConfigurationController.cs" />
+    <Compile Include="Configuration\UserConfiguration.cs" />
     <Compile Include="Events\GenericItemEventArgs.cs" />
     <Compile Include="Json\JsonSerializer.cs" />
     <Compile Include="Kernel\BaseKernel.cs" />
