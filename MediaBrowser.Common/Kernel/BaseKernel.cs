@@ -12,7 +12,8 @@ namespace MediaBrowser.Common.Kernel
     /// <summary>
     /// Represents a shared base kernel for both the UI and server apps
     /// </summary>
-    public abstract class BaseKernel<TConfigurationType>
+    public abstract class BaseKernel<TConfigurationContorllerType, TConfigurationType>
+        where TConfigurationContorllerType : ConfigurationController<TConfigurationType>, new()
         where TConfigurationType : BaseConfiguration, new()
     {
         /// <summary>
@@ -23,7 +24,7 @@ namespace MediaBrowser.Common.Kernel
         /// <summary>
         /// Gets the current configuration
         /// </summary>
-        public TConfigurationType Configuration { get; private set; }
+        public TConfigurationContorllerType ConfigurationController { get; private set; }
 
         /// <summary>
         /// Both the UI and server will have a built-in HttpServer.
@@ -38,19 +39,12 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         protected KernelContext KernelContext { get { return KernelContext.Server; } }
 
-        protected virtual string HttpServerUrlPrefix
-        {
-            get
-            {
-                return "http://+:" + Configuration.HttpServerPortNumber + "/mediabrowser/";
-            }
-        }
-
         public BaseKernel()
         {
             ProgramDataPath = GetProgramDataPath();
 
             PluginController = new PluginController() { PluginsPath = Path.Combine(ProgramDataPath, "Plugins") };
+            ConfigurationController = new TConfigurationContorllerType() { Path = Path.Combine(ProgramDataPath, "config.js") };
 
             Logger.LoggerInstance = new FileLogger(Path.Combine(ProgramDataPath, "Logs"));
         }
@@ -67,7 +61,6 @@ namespace MediaBrowser.Common.Kernel
         /// <summary>
         /// Gets the path to the application's ProgramDataFolder
         /// </summary>
-        /// <returns></returns>
         private string GetProgramDataPath()
         {
             string programDataPath = ConfigurationManager.AppSettings["ProgramDataPath"];
@@ -94,9 +87,9 @@ namespace MediaBrowser.Common.Kernel
         private void ReloadConfiguration()
         {
             // Deserialize config
-            Configuration = GetConfiguration(ProgramDataPath);
+            ConfigurationController.Reload();
 
-            Logger.LoggerInstance.LogSeverity = Configuration.LogSeverity;
+            Logger.LoggerInstance.LogSeverity = ConfigurationController.Configuration.LogSeverity;
         }
 
         private void ReloadHttpServer()
@@ -106,7 +99,7 @@ namespace MediaBrowser.Common.Kernel
                 HttpServer.Dispose();
             }
 
-            HttpServer = new HttpServer("http://+:" + Configuration.HttpServerPortNumber + "/mediabrowser/");
+            HttpServer = new HttpServer("http://+:" + ConfigurationController.Configuration.HttpServerPortNumber + "/mediabrowser/");
         }
 
         protected virtual void ReloadPlugins()

@@ -57,6 +57,7 @@
     <Compile Include="HttpHandlers\RecentlyAddedItemsHandler.cs" />
     <Compile Include="HttpHandlers\StudioHandler.cs" />
     <Compile Include="HttpHandlers\StudiosHandler.cs" />
+    <Compile Include="HttpHandlers\UserConfigurationHandler.cs" />
     <Compile Include="HttpHandlers\UsersHandler.cs" />
     <Compile Include="ImageProcessor.cs" />
     <Compile Include="HttpHandlers\MediaHandler.cs" />

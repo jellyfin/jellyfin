@@ -71,6 +71,10 @@ namespace MediaBrowser.Api
             {
                 handler = new InProgressItemsHandler();
             }
+            else if (localPath.EndsWith("/api/userconfiguration", StringComparison.OrdinalIgnoreCase))
+            {
+                handler = new UserConfigurationHandler();
+            }
 
             if (handler != null)
             {
