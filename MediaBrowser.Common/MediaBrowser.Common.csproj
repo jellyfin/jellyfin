@@ -49,7 +49,6 @@
   <ItemGroup>
     <Compile Include="Configuration\BaseConfiguration.cs" />
     <Compile Include="Configuration\ConfigurationController.cs" />
-    <Compile Include="Configuration\UserConfiguration.cs" />
     <Compile Include="Events\GenericItemEventArgs.cs" />
     <Compile Include="Json\JsonSerializer.cs" />
     <Compile Include="Kernel\BaseKernel.cs" />
@@ -63,7 +62,6 @@
     <Compile Include="Net\Request.cs" />
     <Compile Include="Net\RequestContext.cs" />
     <Compile Include="Net\StreamExtensions.cs" />
-    <Compile Include="Plugins\BasePluginConfiguration.cs" />
     <Compile Include="Logging\BaseLogger.cs" />
     <Compile Include="Logging\FileLogger.cs" />
     <Compile Include="Logging\Logger.cs" />

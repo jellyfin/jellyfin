@@ -54,13 +54,14 @@
     <Compile Include="HttpHandlers\ItemListHandler.cs" />
     <Compile Include="HttpHandlers\JsonHandler.cs" />
     <Compile Include="HttpHandlers\PersonHandler.cs" />
+    <Compile Include="HttpHandlers\PluginConfigurationHandler.cs" />
+    <Compile Include="HttpHandlers\PluginsHandler.cs" />
     <Compile Include="HttpHandlers\RecentlyAddedItemsHandler.cs" />
     <Compile Include="HttpHandlers\StudioHandler.cs" />
     <Compile Include="HttpHandlers\StudiosHandler.cs" />
     <Compile Include="HttpHandlers\UserConfigurationHandler.cs" />
     <Compile Include="HttpHandlers\UsersHandler.cs" />
     <Compile Include="ImageProcessor.cs" />
-    <Compile Include="HttpHandlers\MediaHandler.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

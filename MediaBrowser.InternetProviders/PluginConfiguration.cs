@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Plugins;
+﻿using MediaBrowser.Model.Plugins;
 
 namespace MediaBrowser.InternetProviders
 {

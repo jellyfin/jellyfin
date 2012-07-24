@@ -2,9 +2,14 @@
 
 namespace MediaBrowser.InternetProviders
 {
-    public class Plugin : BasePlugin<PluginConfiguration>
+    public class Plugin : BaseGenericPlugin<PluginConfiguration>
     {
-        protected override void InitInternal()
+        public override string Name
+        {
+            get { return "Internet Providers"; }
+        }
+
+        public override void InitInServer()
         {
         }
     }

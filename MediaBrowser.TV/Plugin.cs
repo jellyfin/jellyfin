@@ -1,16 +1,21 @@
-﻿using MediaBrowser.Common.Plugins;
+﻿using System;
+using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Events;
-using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Plugins;
 using MediaBrowser.TV.Entities;
 using MediaBrowser.TV.Resolvers;
-using System;
 
 namespace MediaBrowser.TV
 {
-    public class Plugin : BasePlugin<BasePluginConfiguration>
+    public class Plugin : BaseGenericPlugin<BasePluginConfiguration>
     {
-        protected override void InitInternal()
+        public override string Name
+        {
+            get { return "TV"; }
+        }
+
+        public override void InitInServer()
         {
             Kernel.Instance.AddBaseItemType<Series, SeriesResolver>();
             Kernel.Instance.AddBaseItemType<Season, SeasonResolver>();
