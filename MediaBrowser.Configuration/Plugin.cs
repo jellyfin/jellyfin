@@ -1,11 +1,13 @@
 ﻿using MediaBrowser.Common.Plugins;
+using MediaBrowser.Model.Plugins;
 
 namespace MediaBrowser.Configuration
 {
-    public class Plugin : BasePlugin<BasePluginConfiguration>
+    public class Plugin : BaseGenericPlugin<BasePluginConfiguration>
     {
-        protected override void InitInternal()
+        public override string Name
         {
+            get { return "Web-based Configuration"; }
         }
     }
 }

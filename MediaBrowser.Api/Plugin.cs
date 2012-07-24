@@ -5,12 +5,18 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller;
+using MediaBrowser.Model.Plugins;
 
 namespace MediaBrowser.Api
 {
-    public class Plugin : BasePlugin<BasePluginConfiguration>
+    public class Plugin : BaseGenericPlugin<BasePluginConfiguration>
     {
-        protected override void InitInternal()
+        public override string Name
+        {
+            get { return "WebAPI"; }
+        }
+
+        public override void InitInServer()
         {
             var httpServer = Kernel.Instance.HttpServer;
 
@@ -43,10 +49,6 @@ namespace MediaBrowser.Api
             {
                 handler = new UsersHandler();
             }
-            else if (localPath.EndsWith("/api/media", StringComparison.OrdinalIgnoreCase))
-            {
-                handler = new MediaHandler();
-            }
             else if (localPath.EndsWith("/api/genre", StringComparison.OrdinalIgnoreCase))
             {
                 handler = new GenreHandler();
@@ -74,6 +76,14 @@ namespace MediaBrowser.Api
             else if (localPath.EndsWith("/api/userconfiguration", StringComparison.OrdinalIgnoreCase))
             {
                 handler = new UserConfigurationHandler();
+            }
+            else if (localPath.EndsWith("/api/plugins", StringComparison.OrdinalIgnoreCase))
+            {
+                handler = new PluginsHandler();
+            }
+            else if (localPath.EndsWith("/api/pluginconfiguration", StringComparison.OrdinalIgnoreCase))
+            {
+                handler = new PluginConfigurationHandler();
             }
 
             if (handler != null)

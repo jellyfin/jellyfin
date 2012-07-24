@@ -18,7 +18,7 @@ namespace MediaBrowser.Common.Plugins
         /// <summary>
         /// Gets the list of currently loaded plugins
         /// </summary>
-        public IEnumerable<IPlugin> Plugins { get; private set; }
+        public IEnumerable<BasePlugin> Plugins { get; private set; }
         
         /// <summary>
         /// Initializes the controller
@@ -32,7 +32,21 @@ namespace MediaBrowser.Common.Plugins
 
             Parallel.For(0, Plugins.Count(), i =>
             {
-                Plugins.ElementAt(i).Init();
+                var plugin = Plugins.ElementAt(i);
+
+                plugin.ReloadConfiguration();
+
+                if (plugin.Enabled)
+                {
+                    if (context == KernelContext.Server)
+                    {
+                        plugin.InitInServer();
+                    }
+                    else
+                    {
+                        plugin.InitInUI();
+                    }
+                }
             });
         }
 
@@ -40,18 +54,18 @@ namespace MediaBrowser.Common.Plugins
         /// Gets all plugins within PluginsPath
         /// </summary>
         /// <returns></returns>
-        private IEnumerable<IPlugin> GetAllPlugins()
+        private IEnumerable<BasePlugin> GetAllPlugins()
         {
             if (!Directory.Exists(PluginsPath))
             {
                 Directory.CreateDirectory(PluginsPath);
             }
 
-            List<IPlugin> plugins = new List<IPlugin>();
+            List<BasePlugin> plugins = new List<BasePlugin>();
 
             foreach (string folder in Directory.GetDirectories(PluginsPath, "*", SearchOption.TopDirectoryOnly))
             {
-                IPlugin plugin = GetPluginFromDirectory(folder);
+                BasePlugin plugin = GetPluginFromDirectory(folder);
 
                 plugin.Path = folder;
 
@@ -64,7 +78,7 @@ namespace MediaBrowser.Common.Plugins
             return plugins;
         }
 
-        private IPlugin GetPluginFromDirectory(string path)
+        private BasePlugin GetPluginFromDirectory(string path)
         {
             string dll = Directory.GetFiles(path, "*.dll", SearchOption.TopDirectoryOnly).FirstOrDefault();
 
@@ -76,18 +90,22 @@ namespace MediaBrowser.Common.Plugins
             return null;
         }
 
-        private IPlugin GetPluginFromDll(string path)
+        private BasePlugin GetPluginFromDll(string path)
         {
             return GetPluginFromDll(Assembly.Load(File.ReadAllBytes(path)));
         }
 
-        private IPlugin GetPluginFromDll(Assembly assembly)
+        private BasePlugin GetPluginFromDll(Assembly assembly)
         {
-            var plugin = assembly.GetTypes().Where(type => typeof(IPlugin).IsAssignableFrom(type)).FirstOrDefault();
+            var plugin = assembly.GetTypes().Where(type => typeof(BasePlugin).IsAssignableFrom(type)).FirstOrDefault();
 
             if (plugin != null)
             {
-                return plugin.GetConstructor(Type.EmptyTypes).Invoke(null) as IPlugin;
+                BasePlugin instance = plugin.GetConstructor(Type.EmptyTypes).Invoke(null) as BasePlugin;
+
+                instance.Version = assembly.GetName().Version;
+
+                return instance;
             }
 
             return null;

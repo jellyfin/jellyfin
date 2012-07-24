@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MediaBrowser.Common.Configuration
+﻿
+namespace MediaBrowser.Model.Configuration
 {
     /// <summary>
     /// This holds settings that can be personalized on a per-user, per-device basis.

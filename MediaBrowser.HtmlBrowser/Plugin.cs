@@ -1,15 +1,17 @@
-﻿using System;
-using System.Reactive.Linq;
-using MediaBrowser.Common.Net.Handlers;
-using MediaBrowser.Common.Plugins;
+﻿using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller;
-using MediaBrowser.HtmlBrowser.Handlers;
+using MediaBrowser.Model.Plugins;
 
 namespace MediaBrowser.HtmlBrowser
 {
-    public class Plugin : BasePlugin<BasePluginConfiguration>
+    public class Plugin : BaseGenericPlugin<BasePluginConfiguration>
     {
-        protected override void InitInternal()
+        public override string Name
+        {
+            get { return "Html Library Browser"; }
+        }
+
+        public override void InitInServer()
         {
             var httpServer = Kernel.Instance.HttpServer;
 

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Controller.Configuration
 {
