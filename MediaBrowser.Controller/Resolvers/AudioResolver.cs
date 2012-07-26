@@ -1,9 +1,11 @@
-﻿using System.IO;
+﻿using System.ComponentModel.Composition;
+using System.IO;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Resolvers
 {
+    [Export(typeof(IBaseItemResolver))]
     public class AudioResolver : BaseItemResolver<Audio>
     {
         protected override Audio Resolve(ItemResolveEventArgs args)

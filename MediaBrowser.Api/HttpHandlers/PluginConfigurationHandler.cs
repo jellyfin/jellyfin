@@ -12,7 +12,7 @@ namespace MediaBrowser.Api.HttpHandlers
             {
                 string pluginName = QueryString["name"];
 
-                return Kernel.Instance.PluginController.Plugins.First(p => p.Name.Equals(pluginName, StringComparison.OrdinalIgnoreCase)).Configuration;
+                return Kernel.Instance.Plugins.First(p => p.Name.Equals(pluginName, StringComparison.OrdinalIgnoreCase)).Configuration;
             }
         }
     }

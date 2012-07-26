@@ -34,6 +34,7 @@
       <HintPath>..\packages\ServiceStack.Text.3.8.5\lib\net35\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Reactive, Version=1.0.10621.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -48,7 +49,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\BaseConfiguration.cs" />
-    <Compile Include="Configuration\ConfigurationController.cs" />
     <Compile Include="Events\GenericItemEventArgs.cs" />
     <Compile Include="Json\JsonSerializer.cs" />
     <Compile Include="Kernel\BaseKernel.cs" />
@@ -67,7 +67,6 @@
     <Compile Include="Logging\Logger.cs" />
     <Compile Include="Logging\LogRow.cs" />
     <Compile Include="Plugins\BasePlugin.cs" />
-    <Compile Include="Plugins\PluginController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

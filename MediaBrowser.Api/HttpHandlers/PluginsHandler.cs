@@ -13,7 +13,7 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             get
             {
-                var plugins = Kernel.Instance.PluginController.Plugins.Select(p =>
+                var plugins = Kernel.Instance.Plugins.Select(p =>
                 {
                     return new PluginInfo()
                     {

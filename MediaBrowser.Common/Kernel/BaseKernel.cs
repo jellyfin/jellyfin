@@ -1,6 +1,11 @@
-﻿using System.Configuration;
+﻿using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Hosting;
+using System.Configuration;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Logging;
@@ -12,8 +17,7 @@ namespace MediaBrowser.Common.Kernel
     /// <summary>
     /// Represents a shared base kernel for both the UI and server apps
     /// </summary>
-    public abstract class BaseKernel<TConfigurationContorllerType, TConfigurationType>
-        where TConfigurationContorllerType : ConfigurationController<TConfigurationType>, new()
+    public abstract class BaseKernel<TConfigurationType>
         where TConfigurationType : BaseConfiguration, new()
     {
         /// <summary>
@@ -21,18 +25,38 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         public string ProgramDataPath { get; private set; }
 
+        protected string PluginsPath
+        {
+            get
+            {
+                return Path.Combine(ProgramDataPath, "plugins");
+            }
+        }
+
+        protected string ConfigurationPath
+        {
+            get
+            {
+                return Path.Combine(ProgramDataPath, "config.js");
+            }
+        }
+
         /// <summary>
         /// Gets the current configuration
         /// </summary>
-        public TConfigurationContorllerType ConfigurationController { get; private set; }
+        public TConfigurationType Configuration { get; private set; }
 
+        /// <summary>
+        /// Gets the list of currently loaded plugins
+        /// </summary>
+        [ImportMany(typeof(BasePlugin))]
+        public IEnumerable<BasePlugin> Plugins { get; private set; }
+        
         /// <summary>
         /// Both the UI and server will have a built-in HttpServer.
         /// People will inevitably want remote control apps so it's needed in the UI too.
         /// </summary>
         public HttpServer HttpServer { get; private set; }
-
-        public PluginController PluginController { get; private set; }
 
         /// <summary>
         /// Gets the kernel context. The UI kernel will have to override this.
@@ -43,9 +67,6 @@ namespace MediaBrowser.Common.Kernel
         {
             ProgramDataPath = GetProgramDataPath();
 
-            PluginController = new PluginController() { PluginsPath = Path.Combine(ProgramDataPath, "Plugins") };
-            ConfigurationController = new TConfigurationContorllerType() { Path = Path.Combine(ProgramDataPath, "config.js") };
-
             Logger.LoggerInstance = new FileLogger(Path.Combine(ProgramDataPath, "Logs"));
         }
 
@@ -55,7 +76,51 @@ namespace MediaBrowser.Common.Kernel
 
             ReloadHttpServer();
 
-            ReloadPlugins();
+            ReloadComposableParts();
+        }
+
+        protected void ReloadComposableParts()
+        {
+            if (!Directory.Exists(PluginsPath))
+            {
+                Directory.CreateDirectory(PluginsPath);
+            }
+            
+            var catalog = new AggregateCatalog(Directory.GetDirectories(PluginsPath, "*", SearchOption.TopDirectoryOnly).Select(f => new DirectoryCatalog(f)));
+
+            //catalog.Catalogs.Add(new AssemblyCatalog(Assembly.GetExecutingAssembly()));
+            //catalog.Catalogs.Add(new AssemblyCatalog(GetType().Assembly));
+
+            new CompositionContainer(catalog).ComposeParts(this);
+
+            OnComposablePartsLoaded();
+        }
+
+        protected virtual void OnComposablePartsLoaded()
+        {
+            StartPlugins();
+        }
+
+        private void StartPlugins()
+        {
+            Parallel.For(0, Plugins.Count(), i =>
+            {
+                var plugin = Plugins.ElementAt(i);
+
+                plugin.ReloadConfiguration();
+
+                if (plugin.Enabled)
+                {
+                    if (KernelContext == KernelContext.Server)
+                    {
+                        plugin.InitInServer();
+                    }
+                    else
+                    {
+                        plugin.InitInUI();
+                    }
+                }
+            });
         }
 
         /// <summary>
@@ -87,9 +152,21 @@ namespace MediaBrowser.Common.Kernel
         private void ReloadConfiguration()
         {
             // Deserialize config
-            ConfigurationController.Reload();
+            if (!File.Exists(ConfigurationPath))
+            {
+                Configuration = new TConfigurationType();
+            }
+            else
+            {
+                Configuration = JsonSerializer.DeserializeFromFile<TConfigurationType>(ConfigurationPath);
+            }
 
-            Logger.LoggerInstance.LogSeverity = ConfigurationController.Configuration.LogSeverity;
+            Logger.LoggerInstance.LogSeverity = Configuration.LogSeverity;
+        }
+
+        public void SaveConfiguration()
+        {
+            JsonSerializer.SerializeToFile(Configuration, ConfigurationPath);
         }
 
         private void ReloadHttpServer()
@@ -99,13 +176,7 @@ namespace MediaBrowser.Common.Kernel
                 HttpServer.Dispose();
             }
 
-            HttpServer = new HttpServer("http://+:" + ConfigurationController.Configuration.HttpServerPortNumber + "/mediabrowser/");
-        }
-
-        protected virtual void ReloadPlugins()
-        {
-            // Find plugins
-            PluginController.Init(KernelContext);
+            HttpServer = new HttpServer("http://+:" + Configuration.HttpServerPortNumber + "/mediabrowser/");
         }
 
         private static TConfigurationType GetConfiguration(string directory)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -17,7 +18,7 @@ using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller
 {
-    public class Kernel : BaseKernel<ServerConfigurationController, ServerConfiguration>
+    public class Kernel : BaseKernel<ServerConfiguration>
     {
         public static Kernel Instance { get; private set; }
 
@@ -38,6 +39,12 @@ namespace MediaBrowser.Controller
         }
 
         /// <summary>
+        /// Gets the list of currently registered entity resolvers
+        /// </summary>
+        [ImportMany(typeof(IBaseItemResolver))]
+        public IEnumerable<IBaseItemResolver> EntityResolvers { get; private set; }
+        
+        /// <summary>
         /// Creates a kernal based on a Data path, which is akin to our current programdata path
         /// </summary>
         public Kernel()
@@ -51,33 +58,25 @@ namespace MediaBrowser.Controller
 
             ItemController.PreBeginResolvePath += ItemController_PreBeginResolvePath;
             ItemController.BeginResolvePath += ItemController_BeginResolvePath;
-
-            // Add support for core media types - audio, video, etc
-            AddBaseItemType<Folder, FolderResolver>();
-            AddBaseItemType<Audio, AudioResolver>();
-            AddBaseItemType<Video, VideoResolver>();
         }
 
-        /// <summary>
-        /// Tells the kernel to start spinning up
-        /// </summary>
-        public override void Init()
+        protected override void OnComposablePartsLoaded()
         {
-            base.Init();
+            List<IBaseItemResolver> resolvers = EntityResolvers.ToList();
+
+            // Add the internal resolvers
+            resolvers.Add(new VideoResolver());
+            resolvers.Add(new AudioResolver());
+            resolvers.Add(new FolderResolver());
+
+            EntityResolvers = resolvers;
+
+            // The base class will fire up all the plugins
+            base.OnComposablePartsLoaded();
 
             // Get users from users folder
             // Load root media folder
             Parallel.Invoke(ReloadUsers, ReloadRoot);
-        }
-
-        /// <summary>
-        /// Registers a new BaseItem subclass
-        /// </summary>
-        public void AddBaseItemType<TBaseItemType, TResolverType>()
-            where TBaseItemType : BaseItem, new()
-            where TResolverType : BaseItemResolver<TBaseItemType>, new()
-        {
-            ItemController.AddResovler<TBaseItemType, TResolverType>();
         }
 
         /// <summary>
@@ -147,6 +146,11 @@ namespace MediaBrowser.Controller
             }
         }
 
+        public UserConfiguration GetUserConfiguration(Guid userId)
+        {
+            return Configuration.DefaultUserConfiguration;
+        }
+        
         public void ReloadItem(BaseItem item)
         {
             Folder folder = item as Folder;
@@ -250,7 +254,7 @@ namespace MediaBrowser.Controller
         {
             DateTime now = DateTime.Now;
 
-            UserConfiguration config = ConfigurationController.GetUserConfiguration(userId);
+            UserConfiguration config = GetUserConfiguration(userId);
 
             return GetParentalAllowedRecursiveChildren(parent, userId).Where(i => !(i is Folder) && (now - i.DateCreated).TotalDays < config.RecentItemDays);
         }

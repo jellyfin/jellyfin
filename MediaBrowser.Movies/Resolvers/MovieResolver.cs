@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Controller;
@@ -11,6 +12,7 @@ using MediaBrowser.Movies.Metadata;
 
 namespace MediaBrowser.Movies.Resolvers
 {
+    [Export(typeof(IBaseItemResolver))]
     public class MovieResolver : BaseVideoResolver<Movie>
     {
         protected override Movie Resolve(ItemResolveEventArgs args)

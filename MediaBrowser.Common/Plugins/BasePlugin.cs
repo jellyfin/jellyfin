@@ -43,8 +43,22 @@ namespace MediaBrowser.Common.Plugins
     public abstract class BasePlugin
     {
         public abstract string Name { get; }
-        public string Path { get; set; }
-        public Version Version { get; set; }
+
+        public string Path
+        {
+            get
+            {
+                return System.IO.Path.GetDirectoryName(GetType().Assembly.Location);
+            }
+        }
+
+        public Version Version
+        {
+            get
+            {
+                return GetType().Assembly.GetName().Version;
+            }
+        }
 
         public BasePluginConfiguration Configuration { get; protected set; }
 
