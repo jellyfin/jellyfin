@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.IO;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Model.Entities;
@@ -8,6 +9,7 @@ namespace MediaBrowser.Controller.Resolvers
     /// <summary>
     /// Resolves a Path into a Video
     /// </summary>
+    [Export(typeof(IBaseItemResolver))]
     public class VideoResolver : BaseVideoResolver<Video>
     {
     }

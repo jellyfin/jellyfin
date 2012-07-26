@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.Composition;
 using System.Reactive.Linq;
 using MediaBrowser.Api.HttpHandlers;
 using MediaBrowser.Common.Net;
@@ -9,6 +10,7 @@ using MediaBrowser.Model.Plugins;
 
 namespace MediaBrowser.Api
 {
+    [Export(typeof(BasePlugin))]
     public class Plugin : BaseGenericPlugin<BasePluginConfiguration>
     {
         public override string Name

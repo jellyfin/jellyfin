@@ -13,18 +13,6 @@ namespace MediaBrowser.Controller.Library
 {
     public class ItemController
     {
-        private List<IBaseItemResolver> Resolvers = new List<IBaseItemResolver>();
-
-        /// <summary>
-        /// Registers a new BaseItem resolver.
-        /// </summary>
-        public void AddResovler<TBaseItemType, TResolverType>()
-            where TBaseItemType : BaseItem, new()
-            where TResolverType : BaseItemResolver<TBaseItemType>, new()
-        {
-            Resolvers.Insert(0, new TResolverType());
-        }
-
         #region PreBeginResolvePath Event
         /// <summary>
         /// Fires when a path is about to be resolved, but before child folders and files 
@@ -127,7 +115,7 @@ namespace MediaBrowser.Controller.Library
         private BaseItem ResolveItem(ItemResolveEventArgs args)
         {
             // If that didn't pan out, try the slow ones
-            foreach (IBaseItemResolver resolver in Resolvers)
+            foreach (IBaseItemResolver resolver in Kernel.Instance.EntityResolvers)
             {
                 var item = resolver.ResolvePath(args);
 

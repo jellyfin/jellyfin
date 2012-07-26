@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.ComponentModel.Composition;
 using MediaBrowser.Controller.Events;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Controller.Xml;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Resolvers
 {
+    [Export(typeof(IBaseItemResolver))]
     public class FolderResolver : BaseFolderResolver<Folder>
     {
         protected override Folder Resolve(ItemResolveEventArgs args)

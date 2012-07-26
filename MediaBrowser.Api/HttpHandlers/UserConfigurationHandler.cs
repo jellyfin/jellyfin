@@ -11,7 +11,7 @@ namespace MediaBrowser.Api.HttpHandlers
             {
                 Guid userId = Guid.Parse(QueryString["userid"]);
 
-                return Kernel.Instance.ConfigurationController.GetUserConfiguration(userId);
+                return Kernel.Instance.GetUserConfiguration(userId);
             }
         }
     }

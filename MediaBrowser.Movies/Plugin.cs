@@ -1,22 +1,15 @@
-﻿using MediaBrowser.Common.Plugins;
-using MediaBrowser.Controller;
+﻿using System.ComponentModel.Composition;
+using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
-using MediaBrowser.Movies.Entities;
-using MediaBrowser.Movies.Resolvers;
 
 namespace MediaBrowser.Movies
 {
+    [Export(typeof(BasePlugin))]
     public class Plugin : BaseGenericPlugin<BasePluginConfiguration>
     {
         public override string Name
         {
             get { return "Movies"; }
-        }
-
-        public override void InitInServer()
-        {
-            Kernel.Instance.AddBaseItemType<BoxSet, BoxSetResolver>();
-            Kernel.Instance.AddBaseItemType<Movie, MovieResolver>();
         }
     }
 }

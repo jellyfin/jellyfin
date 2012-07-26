@@ -31,6 +31,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.Reactive">
       <HintPath>..\packages\Rx-Main.1.0.11226\lib\Net4\System.Reactive.dll</HintPath>
@@ -43,7 +44,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\ServerConfiguration.cs" />
-    <Compile Include="Configuration\ServerConfigurationController.cs" />
     <Compile Include="Events\ItemResolveEventArgs.cs" />
     <Compile Include="IO\DirectoryWatchers.cs" />
     <Compile Include="IO\Shortcut.cs" />

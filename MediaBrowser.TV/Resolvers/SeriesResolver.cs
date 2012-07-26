@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.Composition;
 using System.IO;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Resolvers;
@@ -7,7 +8,8 @@ using MediaBrowser.TV.Metadata;
 
 namespace MediaBrowser.TV.Resolvers
 {
-    class SeriesResolver : BaseFolderResolver<Series>
+    [Export(typeof(IBaseItemResolver))]
+    public class SeriesResolver : BaseFolderResolver<Series>
     {
         protected override Series Resolve(ItemResolveEventArgs args)
         {
