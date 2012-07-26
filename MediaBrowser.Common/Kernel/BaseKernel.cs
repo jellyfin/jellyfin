@@ -96,8 +96,11 @@ namespace MediaBrowser.Common.Kernel
                 Directory.CreateDirectory(PluginsPath);
             }
 
-            var catalog = new AggregateCatalog(Directory.GetDirectories(PluginsPath, "*", SearchOption.TopDirectoryOnly).Select(f => new DirectoryCatalog(f)));
+            // Gets all plugin assemblies by first reading all bytes of the .dll and calling Assembly.Load against that
+            // This will prevent the .dll file from getting locked, and allow us to replace it when needed
+            IEnumerable<Assembly> pluginAssemblies = Directory.GetFiles(PluginsPath, "*.dll", SearchOption.AllDirectories).Select(f => Assembly.Load(File.ReadAllBytes((f))));
 
+            var catalog = new AggregateCatalog(pluginAssemblies.Select(a => new AssemblyCatalog(a)));
             //catalog.Catalogs.Add(new AssemblyCatalog(Assembly.GetExecutingAssembly()));
             //catalog.Catalogs.Add(new AssemblyCatalog(GetType().Assembly));
 
@@ -130,6 +133,12 @@ namespace MediaBrowser.Common.Kernel
         {
             foreach (BasePlugin plugin in Plugins)
             {
+                Assembly assembly = plugin.GetType().Assembly;
+                AssemblyName assemblyName = assembly.GetName();
+
+                plugin.Version = assemblyName.Version;
+                plugin.Path = Path.Combine(PluginsPath, assemblyName.Name);
+
                 plugin.ReloadConfiguration();
 
                 if (plugin.Enabled)

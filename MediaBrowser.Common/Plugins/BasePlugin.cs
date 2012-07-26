@@ -44,21 +44,9 @@ namespace MediaBrowser.Common.Plugins
     {
         public abstract string Name { get; }
 
-        public string Path
-        {
-            get
-            {
-                return System.IO.Path.GetDirectoryName(GetType().Assembly.Location);
-            }
-        }
+        public string Path { get; set; }
 
-        public Version Version
-        {
-            get
-            {
-                return GetType().Assembly.GetName().Version;
-            }
-        }
+        public Version Version { get; set; }
 
         public BasePluginConfiguration Configuration { get; protected set; }
 
