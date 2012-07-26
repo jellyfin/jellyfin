@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Logging;
@@ -25,6 +25,9 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         public string ProgramDataPath { get; private set; }
 
+        /// <summary>
+        /// Gets the path to the plugin directory
+        /// </summary>
         protected string PluginsPath
         {
             get
@@ -33,6 +36,9 @@ namespace MediaBrowser.Common.Kernel
             }
         }
 
+        /// <summary>
+        /// Gets the path to the application configuration file
+        /// </summary>
         protected string ConfigurationPath
         {
             get
@@ -51,7 +57,7 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         [ImportMany(typeof(BasePlugin))]
         public IEnumerable<BasePlugin> Plugins { get; private set; }
-        
+
         /// <summary>
         /// Both the UI and server will have a built-in HttpServer.
         /// People will inevitably want remote control apps so it's needed in the UI too.
@@ -79,34 +85,51 @@ namespace MediaBrowser.Common.Kernel
             ReloadComposableParts();
         }
 
+        /// <summary>
+        /// Uses MEF to locate plugins
+        /// Subclasses can use this to locate types within plugins
+        /// </summary>
         protected void ReloadComposableParts()
         {
             if (!Directory.Exists(PluginsPath))
             {
                 Directory.CreateDirectory(PluginsPath);
             }
-            
+
             var catalog = new AggregateCatalog(Directory.GetDirectories(PluginsPath, "*", SearchOption.TopDirectoryOnly).Select(f => new DirectoryCatalog(f)));
 
             //catalog.Catalogs.Add(new AssemblyCatalog(Assembly.GetExecutingAssembly()));
             //catalog.Catalogs.Add(new AssemblyCatalog(GetType().Assembly));
 
-            new CompositionContainer(catalog).ComposeParts(this);
+            var container = new CompositionContainer(catalog);
+
+            container.ComposeParts(this);
 
             OnComposablePartsLoaded();
+
+            catalog.Dispose();
+            container.Dispose();
         }
 
+        /// <summary>
+        /// Fires after MEF finishes finding composable parts within plugin assemblies
+        /// </summary>
         protected virtual void OnComposablePartsLoaded()
         {
+            // This event handler will allow any plugin to reference another
+            AppDomain.CurrentDomain.AssemblyResolve -= new ResolveEventHandler(CurrentDomain_AssemblyResolve);
+            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
+
             StartPlugins();
         }
 
+        /// <summary>
+        /// Initializes all plugins
+        /// </summary>
         private void StartPlugins()
         {
-            Parallel.For(0, Plugins.Count(), i =>
+            foreach (BasePlugin plugin in Plugins)
             {
-                var plugin = Plugins.ElementAt(i);
-
                 plugin.ReloadConfiguration();
 
                 if (plugin.Enabled)
@@ -120,7 +143,7 @@ namespace MediaBrowser.Common.Kernel
                         plugin.InitInUI();
                     }
                 }
-            });
+            }
         }
 
         /// <summary>
@@ -149,6 +172,9 @@ namespace MediaBrowser.Common.Kernel
             return programDataPath;
         }
 
+        /// <summary>
+        /// Reloads application configuration from the config file
+        /// </summary>
         private void ReloadConfiguration()
         {
             // Deserialize config
@@ -164,11 +190,17 @@ namespace MediaBrowser.Common.Kernel
             Logger.LoggerInstance.LogSeverity = Configuration.LogSeverity;
         }
 
+        /// <summary>
+        /// Saves the current application configuration to the config file
+        /// </summary>
         public void SaveConfiguration()
         {
             JsonSerializer.SerializeToFile(Configuration, ConfigurationPath);
         }
 
+        /// <summary>
+        /// Restarts the Http Server, or starts it if not currently running
+        /// </summary>
         private void ReloadHttpServer()
         {
             if (HttpServer != null)
@@ -179,16 +211,24 @@ namespace MediaBrowser.Common.Kernel
             HttpServer = new HttpServer("http://+:" + Configuration.HttpServerPortNumber + "/mediabrowser/");
         }
 
-        private static TConfigurationType GetConfiguration(string directory)
+        /// <summary>
+        /// This snippet will allow any plugin to reference another
+        /// </summary>
+        Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
-            string file = Path.Combine(directory, "config.js");
+            AssemblyName assemblyName = new AssemblyName(args.Name);
 
-            if (!File.Exists(file))
+            // Look for the .dll recursively within the plugins directory
+            string dll = Directory.GetFiles(PluginsPath, "*.dll", SearchOption.AllDirectories)
+                .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == assemblyName.Name);
+
+            // If we found a matching assembly, load it now
+            if (!string.IsNullOrEmpty(dll))
             {
-                return new TConfigurationType();
+                return Assembly.Load(File.ReadAllBytes(dll));
             }
 
-            return JsonSerializer.DeserializeFromFile<TConfigurationType>(file);
+            return null;
         }
     }
 }

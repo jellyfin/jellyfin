@@ -10,9 +10,5 @@ namespace MediaBrowser.InternetProviders
         {
             get { return "Internet Providers"; }
         }
-
-        public override void InitInServer()
-        {
-        }
     }
 }

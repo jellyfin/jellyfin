@@ -71,7 +71,7 @@ namespace MediaBrowser.Controller
 
             EntityResolvers = resolvers;
 
-            // The base class will fire up all the plugins
+            // The base class will start up all the plugins
             base.OnComposablePartsLoaded();
 
             // Get users from users folder
