@@ -48,7 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration\BaseConfiguration.cs" />
+    <Compile Include="Configuration\BaseApplicationConfiguration.cs" />
     <Compile Include="Events\GenericItemEventArgs.cs" />
     <Compile Include="Json\JsonSerializer.cs" />
     <Compile Include="Kernel\BaseKernel.cs" />

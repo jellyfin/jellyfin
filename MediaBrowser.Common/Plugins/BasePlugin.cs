@@ -2,6 +2,7 @@
 using System.IO;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Model.Plugins;
+using MediaBrowser.Common.Kernel;
 
 namespace MediaBrowser.Common.Plugins
 {
@@ -23,31 +24,45 @@ namespace MediaBrowser.Common.Plugins
             }
         }
 
-        public override void ReloadConfiguration()
+        protected override Type ConfigurationType
         {
-            if (!File.Exists(ConfigurationPath))
-            {
-                Configuration = new TConfigurationType();
-            }
-            else
-            {
-                Configuration = JsonSerializer.DeserializeFromFile<TConfigurationType>(ConfigurationPath);
-                Configuration.DateLastModified = File.GetLastWriteTime(ConfigurationPath);
-            }
+            get { return typeof(TConfigurationType); }
         }
     }
 
     /// <summary>
     /// Provides a common base class for all plugins
     /// </summary>
-    public abstract class BasePlugin
+    public abstract class BasePlugin : IDisposable
     {
+        /// <summary>
+        /// Gets or sets the plugin's current context
+        /// </summary>
+        public KernelContext Context { get; set; }
+
+        /// <summary>
+        /// Gets the name of the plugin
+        /// </summary>
         public abstract string Name { get; }
 
+        /// <summary>
+        /// Gets the type of configuration this plugin uses
+        /// </summary>
+        protected abstract Type ConfigurationType { get; }
+
+        /// <summary>
+        /// Gets or sets the path to the plugin's folder
+        /// </summary>
         public string Path { get; set; }
 
+        /// <summary>
+        /// Gets or sets the plugin version
+        /// </summary>
         public Version Version { get; set; }
 
+        /// <summary>
+        /// Gets or sets the current plugin configuration
+        /// </summary>
         public BasePluginConfiguration Configuration { get; protected set; }
 
         protected string ConfigurationPath
@@ -85,15 +100,31 @@ namespace MediaBrowser.Common.Plugins
             }
         }
 
-        public abstract void ReloadConfiguration();
+        public void ReloadConfiguration()
+        {
+            if (!File.Exists(ConfigurationPath))
+            {
+                Configuration = Activator.CreateInstance(ConfigurationType) as BasePluginConfiguration;
+            }
+            else
+            {
+                Configuration = JsonSerializer.DeserializeFromFile(ConfigurationType, ConfigurationPath) as BasePluginConfiguration;
+                Configuration.DateLastModified = File.GetLastWriteTime(ConfigurationPath);
+            }
+        }
 
-        public virtual void InitInServer()
+        /// <summary>
+        /// Starts the plugin.
+        /// </summary>
+        public virtual void Init()
         {
         }
 
-        public virtual void InitInUI()
+        /// <summary>
+        /// Disposes the plugins. Undos all actions performed during Init.
+        /// </summary>
+        public virtual void Dispose()
         {
         }
-
     }
 }

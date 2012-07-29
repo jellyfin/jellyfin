@@ -1,5 +1,5 @@
-﻿using System.IO;
-using System;
+﻿using System;
+using System.IO;
 
 namespace MediaBrowser.Common.Json
 {
@@ -19,6 +19,16 @@ namespace MediaBrowser.Common.Json
             using (StreamWriter streamWriter = new StreamWriter(file))
             {
                 ServiceStack.Text.JsonSerializer.SerializeToWriter<T>(obj, streamWriter);
+            }
+        }
+
+        public static object DeserializeFromFile(Type type, string file)
+        {
+            Configure();
+
+            using (Stream stream = File.OpenRead(file))
+            {
+                return ServiceStack.Text.JsonSerializer.DeserializeFromStream(type, stream);
             }
         }
 
