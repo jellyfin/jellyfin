@@ -18,7 +18,7 @@ namespace MediaBrowser.Common.Kernel
     /// Represents a shared base kernel for both the UI and server apps
     /// </summary>
     public abstract class BaseKernel<TConfigurationType>
-        where TConfigurationType : BaseConfiguration, new()
+        where TConfigurationType : BaseApplicationConfiguration, new()
     {
         /// <summary>
         /// Gets the path to the program data folder
@@ -139,18 +139,13 @@ namespace MediaBrowser.Common.Kernel
                 plugin.Version = assemblyName.Version;
                 plugin.Path = Path.Combine(PluginsPath, assemblyName.Name);
 
+                plugin.Context = KernelContext;
+
                 plugin.ReloadConfiguration();
 
                 if (plugin.Enabled)
                 {
-                    if (KernelContext == KernelContext.Server)
-                    {
-                        plugin.InitInServer();
-                    }
-                    else
-                    {
-                        plugin.InitInUI();
-                    }
+                    plugin.Init();
                 }
             }
         }

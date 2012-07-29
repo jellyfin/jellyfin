@@ -4,7 +4,7 @@ using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Controller.Configuration
 {
-    public class ServerConfiguration : BaseConfiguration
+    public class ServerConfiguration : BaseApplicationConfiguration
     {
         public string ImagesByNamePath { get; set; }
 

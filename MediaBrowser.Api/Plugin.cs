@@ -18,7 +18,7 @@ namespace MediaBrowser.Api
             get { return "WebAPI"; }
         }
 
-        public override void InitInServer()
+        public override void Init()
         {
             var httpServer = Kernel.Instance.HttpServer;
 

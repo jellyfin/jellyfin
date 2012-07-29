@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Model.Entities
@@ -25,15 +23,8 @@ namespace MediaBrowser.Model.Entities
 
         public IEnumerable<ApiBaseItemWrapper<T>> Children { get; set; }
 
-        [IgnoreDataMember]
-        public Type ItemType { get; set; }
+        public bool IsFolder { get; set; }
 
-        public string Type
-        {
-            get
-            {
-                return ItemType.Name;
-            }
-        }
+        public string Type { get; set; }
     }
 }

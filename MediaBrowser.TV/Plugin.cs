@@ -16,9 +16,14 @@ namespace MediaBrowser.TV
             get { return "TV"; }
         }
 
-        public override void InitInServer()
+        public override void Init()
         {
             Kernel.Instance.ItemController.PreBeginResolvePath += ItemController_PreBeginResolvePath;
+        }
+
+        public override void Dispose()
+        {
+            Kernel.Instance.ItemController.PreBeginResolvePath -= ItemController_PreBeginResolvePath;
         }
 
         void ItemController_PreBeginResolvePath(object sender, PreBeginResolveEventArgs e)
