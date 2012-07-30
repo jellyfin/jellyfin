@@ -6,12 +6,12 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Model.Progress;
 using MediaBrowser.Logging;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Progress;
 
 namespace MediaBrowser.Common.Kernel
 {
@@ -267,12 +267,18 @@ namespace MediaBrowser.Common.Kernel
             return null;
         }
 
+        /// <summary>
+        /// Disposes all resources currently in use.
+        /// </summary>
         public void Dispose()
         {
             DisposeHttpServer();
             DisposeLogger();
         }
 
+        /// <summary>
+        /// Disposes the current HttpServer
+        /// </summary>
         private void DisposeHttpServer()
         {
             if (HttpServer != null)
@@ -281,6 +287,9 @@ namespace MediaBrowser.Common.Kernel
             }
         }
 
+        /// <summary>
+        /// Disposes the current Logger instance
+        /// </summary>
         private void DisposeLogger()
         {
             if (Logger.LoggerInstance != null)

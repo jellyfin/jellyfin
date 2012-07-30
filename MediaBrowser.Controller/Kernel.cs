@@ -318,7 +318,7 @@ namespace MediaBrowser.Controller
         /// Gets all studios from all recursive children of a folder
         /// The CategoryInfo class is used to keep track of the number of times each studio appears
         /// </summary>
-        public IEnumerable<CategoryInfo> GetAllStudios(Folder parent, Guid userId)
+        public IEnumerable<CategoryInfo<Studio>> GetAllStudios(Folder parent, Guid userId)
         {
             Dictionary<string, int> data = new Dictionary<string, int>();
 
@@ -348,7 +348,7 @@ namespace MediaBrowser.Controller
             }
 
             // Now go through the dictionary and create a Category for each studio
-            List<CategoryInfo> list = new List<CategoryInfo>();
+            List<CategoryInfo<Studio>> list = new List<CategoryInfo<Studio>>();
 
             foreach (string key in data.Keys)
             {
@@ -357,11 +357,10 @@ namespace MediaBrowser.Controller
 
                 if (entity != null)
                 {
-                    list.Add(new CategoryInfo()
+                    list.Add(new CategoryInfo<Studio>()
                     {
-                        Name = entity.Name,
-                        ItemCount = data[key],
-                        PrimaryImagePath = entity.PrimaryImagePath
+                        Item = entity,
+                        ItemCount = data[key]
                     });
                 }
             }
@@ -373,7 +372,7 @@ namespace MediaBrowser.Controller
         /// Gets all genres from all recursive children of a folder
         /// The CategoryInfo class is used to keep track of the number of times each genres appears
         /// </summary>
-        public IEnumerable<CategoryInfo> GetAllGenres(Folder parent, Guid userId)
+        public IEnumerable<CategoryInfo<Genre>> GetAllGenres(Folder parent, Guid userId)
         {
             Dictionary<string, int> data = new Dictionary<string, int>();
 
@@ -403,7 +402,7 @@ namespace MediaBrowser.Controller
             }
 
             // Now go through the dictionary and create a Category for each genre
-            List<CategoryInfo> list = new List<CategoryInfo>();
+            List<CategoryInfo<Genre>> list = new List<CategoryInfo<Genre>>();
 
             foreach (string key in data.Keys)
             {
@@ -412,11 +411,10 @@ namespace MediaBrowser.Controller
 
                 if (entity != null)
                 {
-                    list.Add(new CategoryInfo()
+                    list.Add(new CategoryInfo<Genre>()
                     {
-                        Name = entity.Name,
-                        ItemCount = data[key],
-                        PrimaryImagePath = entity.PrimaryImagePath
+                        Item = entity,
+                        ItemCount = data[key]
                     });
                 }
             }

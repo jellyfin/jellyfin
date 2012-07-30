@@ -6,7 +6,7 @@ namespace MediaBrowser.Api.HttpHandlers
 {
     public class StudiosHandler : JsonHandler
     {
-        protected sealed override object ObjectToSerialize
+        protected override object ObjectToSerialize
         {
             get
             {
