@@ -1,6 +1,6 @@
 ﻿using System;
 using MediaBrowser.Controller;
-using MediaBrowser.Common.Progress;
+using MediaBrowser.Model.Progress;
 
 namespace MediaBrowser.Program
 {
@@ -28,6 +28,8 @@ namespace MediaBrowser.Program
             
             Console.WriteLine("Press Enter to quit.");
             Console.ReadLine();
+
+            kernel.Dispose();
         }
     }
 }

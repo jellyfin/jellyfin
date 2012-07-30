@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Text;
 using System.Threading;
 
-namespace MediaBrowser.Common.Logging
+namespace MediaBrowser.Logging
 {
-    public abstract class BaseLogger
+    public abstract class BaseLogger : IDisposable
     {
         public LogSeverity LogSeverity { get; set; }
 
@@ -27,22 +26,15 @@ namespace MediaBrowser.Common.Logging
         public void LogException(string message, Exception exception, params object[] paramList)
         {
             StringBuilder builder = new StringBuilder();
-
+            
             if (exception != null)
             {
-                var trace = new StackTrace(exception, true);
-                builder.AppendFormat("Exception.  Type={0} Msg={1} Src={2} Method={5} Line={6} Col={7}{4}StackTrace={4}{3}",
+                builder.AppendFormat("Exception.  Type={0} Msg={1} StackTrace={3}{2}",
                     exception.GetType().FullName,
                     exception.Message,
-                    exception.Source,
                     exception.StackTrace,
-                    Environment.NewLine,
-                    trace.GetFrame(0).GetMethod().Name,
-                    trace.GetFrame(0).GetFileLineNumber(),
-                    trace.GetFrame(0).GetFileColumnNumber());
+                    Environment.NewLine);
             }
-
-            StackFrame frame = new StackFrame(1);
 
             message = string.Format(message, paramList);
 
@@ -68,11 +60,15 @@ namespace MediaBrowser.Common.Logging
                 Message = message,
                 Category = string.Empty,
                 ThreadId = currentThread.ManagedThreadId,
-                ThreadName = currentThread.Name,
+                //ThreadName = currentThread.Name,
                 Time = DateTime.Now
             };
 
             LogEntry(row);
+        }
+
+        public virtual void Dispose()
+        {
         }
 
         protected abstract void LogEntry(LogRow row);

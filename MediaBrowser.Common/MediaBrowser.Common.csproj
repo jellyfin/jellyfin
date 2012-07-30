@@ -48,12 +48,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration\BaseApplicationConfiguration.cs" />
     <Compile Include="Events\GenericItemEventArgs.cs" />
     <Compile Include="Json\JsonSerializer.cs" />
     <Compile Include="Kernel\BaseKernel.cs" />
     <Compile Include="Kernel\KernelContext.cs" />
-    <Compile Include="Logging\LogSeverity.cs" />
     <Compile Include="Net\CollectionExtensions.cs" />
     <Compile Include="Net\Handlers\BaseEmbeddedResourceHandler.cs" />
     <Compile Include="Net\Handlers\BaseHandler.cs" />
@@ -62,18 +60,17 @@
     <Compile Include="Net\Request.cs" />
     <Compile Include="Net\RequestContext.cs" />
     <Compile Include="Net\StreamExtensions.cs" />
-    <Compile Include="Logging\BaseLogger.cs" />
-    <Compile Include="Logging\FileLogger.cs" />
-    <Compile Include="Logging\Logger.cs" />
-    <Compile Include="Logging\LogRow.cs" />
     <Compile Include="Plugins\BasePlugin.cs" />
-    <Compile Include="Progress\TaskProgress.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MediaBrowser.Logging\MediaBrowser.Logging.csproj">
+      <Project>{37032b77-fe2e-4ec5-b7e4-baf634443578}</Project>
+      <Name>MediaBrowser.Logging</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
       <Name>MediaBrowser.Model</Name>
