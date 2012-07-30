@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.Common.Progress
+namespace MediaBrowser.Model.Progress
 {
     /// <summary>
     /// Represents a generic progress class that can be used with IProgress

@@ -6,12 +6,12 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Common.Json;
-using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Common.Progress;
+using MediaBrowser.Model.Progress;
+using MediaBrowser.Logging;
 
 namespace MediaBrowser.Common.Kernel
 {
@@ -49,6 +49,22 @@ namespace MediaBrowser.Common.Kernel
         }
 
         /// <summary>
+        /// Gets the path to the log directory
+        /// </summary>
+        private string LogDirectoryPath
+        {
+            get
+            {
+                return Path.Combine(ProgramDataPath, "logs");
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the path to the current log file
+        /// </summary>
+        private string LogFilePath { get; set; }
+
+        /// <summary>
         /// Gets the current configuration
         /// </summary>
         public TConfigurationType Configuration { get; private set; }
@@ -73,17 +89,35 @@ namespace MediaBrowser.Common.Kernel
         public BaseKernel()
         {
             ProgramDataPath = GetProgramDataPath();
-
-            Logger.LoggerInstance = new FileLogger(Path.Combine(ProgramDataPath, "Logs"));
         }
 
         public virtual void Init(IProgress<TaskProgress> progress)
         {
+            ReloadLogger();
+
             ReloadConfiguration();
 
             ReloadHttpServer();
             
             ReloadComposableParts();
+        }
+
+        private void ReloadLogger()
+        {
+            DisposeLogger();
+            
+            if (!Directory.Exists(LogDirectoryPath))
+            {
+                Directory.CreateDirectory(LogDirectoryPath);
+            }
+
+            DateTime now = DateTime.Now;
+
+            LogFilePath = Path.Combine(LogDirectoryPath, now.ToString("dMyyyy") + "-" + now.Ticks + ".log");
+
+            FileStream fs = new FileStream(LogFilePath, FileMode.Append, FileAccess.Write, FileShare.Read); 
+            
+            Logger.LoggerInstance = new StreamLogger(fs);
         }
 
         /// <summary>
@@ -213,14 +247,6 @@ namespace MediaBrowser.Common.Kernel
             HttpServer = new HttpServer("http://+:" + Configuration.HttpServerPortNumber + "/mediabrowser/");
         }
 
-        private void DisposeHttpServer()
-        {
-            if (HttpServer != null)
-            {
-                HttpServer.Dispose();
-            }
-        }
-
         /// <summary>
         /// This snippet will allow any plugin to reference another
         /// </summary>
@@ -244,6 +270,23 @@ namespace MediaBrowser.Common.Kernel
         public void Dispose()
         {
             DisposeHttpServer();
+            DisposeLogger();
+        }
+
+        private void DisposeHttpServer()
+        {
+            if (HttpServer != null)
+            {
+                HttpServer.Dispose();
+            }
+        }
+
+        private void DisposeLogger()
+        {
+            if (Logger.LoggerInstance != null)
+            {
+                Logger.LoggerInstance.Dispose();
+            }
         }
     }
 }

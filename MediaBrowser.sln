@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Common", "Medi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Model", "MediaBrowser.Model\MediaBrowser.Model.csproj", "{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Logging", "MediaBrowser.Logging\MediaBrowser.Logging.csproj", "{37032B77-FE2E-4EC5-B7E4-BAF634443578}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{32DFC600-CD2F-4B2D-B39A-3B4C6C32F9B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{32DFC600-CD2F-4B2D-B39A-3B4C6C32F9B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{32DFC600-CD2F-4B2D-B39A-3B4C6C32F9B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37032B77-FE2E-4EC5-B7E4-BAF634443578}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37032B77-FE2E-4EC5-B7E4-BAF634443578}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37032B77-FE2E-4EC5-B7E4-BAF634443578}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37032B77-FE2E-4EC5-B7E4-BAF634443578}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4FD51AC5-2C16-4308-A993-C3A84F3B4582}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4FD51AC5-2C16-4308-A993-C3A84F3B4582}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4FD51AC5-2C16-4308-A993-C3A84F3B4582}.Release|Any CPU.ActiveCfg = Release|Any CPU
