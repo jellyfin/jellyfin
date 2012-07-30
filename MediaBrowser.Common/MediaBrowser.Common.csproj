@@ -67,6 +67,7 @@
     <Compile Include="Logging\Logger.cs" />
     <Compile Include="Logging\LogRow.cs" />
     <Compile Include="Plugins\BasePlugin.cs" />
+    <Compile Include="Progress\TaskProgress.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

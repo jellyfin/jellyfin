@@ -11,13 +11,14 @@ using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Common.Progress;
 
 namespace MediaBrowser.Common.Kernel
 {
     /// <summary>
     /// Represents a shared base kernel for both the UI and server apps
     /// </summary>
-    public abstract class BaseKernel<TConfigurationType>
+    public abstract class BaseKernel<TConfigurationType> : IDisposable
         where TConfigurationType : BaseApplicationConfiguration, new()
     {
         /// <summary>
@@ -76,12 +77,12 @@ namespace MediaBrowser.Common.Kernel
             Logger.LoggerInstance = new FileLogger(Path.Combine(ProgramDataPath, "Logs"));
         }
 
-        public virtual void Init()
+        public virtual void Init(IProgress<TaskProgress> progress)
         {
             ReloadConfiguration();
 
             ReloadHttpServer();
-
+            
             ReloadComposableParts();
         }
 
@@ -207,12 +208,17 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         private void ReloadHttpServer()
         {
+            DisposeHttpServer();
+
+            HttpServer = new HttpServer("http://+:" + Configuration.HttpServerPortNumber + "/mediabrowser/");
+        }
+
+        private void DisposeHttpServer()
+        {
             if (HttpServer != null)
             {
                 HttpServer.Dispose();
             }
-
-            HttpServer = new HttpServer("http://+:" + Configuration.HttpServerPortNumber + "/mediabrowser/");
         }
 
         /// <summary>
@@ -233,6 +239,11 @@ namespace MediaBrowser.Common.Kernel
             }
 
             return null;
+        }
+
+        public void Dispose()
+        {
+            DisposeHttpServer();
         }
     }
 }
