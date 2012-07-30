@@ -4,6 +4,9 @@ using System.Text;
 
 namespace MediaBrowser.Logging
 {
+    /// <summary>
+    /// Provides a Logger that can write to any Stream
+    /// </summary>
     public class StreamLogger : BaseLogger
     {
         private Stream Stream { get; set; }

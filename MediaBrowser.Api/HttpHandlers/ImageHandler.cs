@@ -136,6 +136,21 @@ namespace MediaBrowser.Api.HttpHandlers
             }
         }
 
+        private ImageType ImageType
+        {
+            get
+            {
+                string imageType = QueryString["type"];
+
+                if (string.IsNullOrEmpty(imageType))
+                {
+                    return Model.Entities.ImageType.Primary;
+                }
+
+                return (ImageType)Enum.Parse(typeof(ImageType), imageType, true);
+            }
+        }
+
         protected override void WriteResponseToOutputStream(Stream stream)
         {
             ImageProcessor.ProcessImage(ImagePath, stream, Width, Height, MaxWidth, MaxHeight, Quality);
@@ -152,7 +167,6 @@ namespace MediaBrowser.Api.HttpHandlers
 
             string id = QueryString["id"];
             string personName = QueryString["personname"];
-            string imageType = QueryString["type"] ?? string.Empty;
             string imageIndex = QueryString["index"];
 
             BaseItem item;
@@ -168,28 +182,28 @@ namespace MediaBrowser.Api.HttpHandlers
 
             int index = string.IsNullOrEmpty(imageIndex) ? 0 : int.Parse(imageIndex);
 
-            return GetImagePathFromTypes(item, imageType, index);
+            return GetImagePathFromTypes(item, ImageType, index);
         }
 
-        private string GetImagePathFromTypes(BaseItem item, string imageType, int imageIndex)
+        private string GetImagePathFromTypes(BaseItem item, ImageType imageType, int imageIndex)
         {
-            if (imageType.Equals("logo", StringComparison.OrdinalIgnoreCase))
+            if (imageType == ImageType.Logo)
             {
                 return item.LogoImagePath;
             }
-            else if (imageType.Equals("backdrop", StringComparison.OrdinalIgnoreCase))
+            else if (imageType == ImageType.Backdrop)
             {
                 return item.BackdropImagePaths.ElementAt(imageIndex);
             }
-            else if (imageType.Equals("banner", StringComparison.OrdinalIgnoreCase))
+            else if (imageType == ImageType.Banner)
             {
                 return item.BannerImagePath;
             }
-            else if (imageType.Equals("art", StringComparison.OrdinalIgnoreCase))
+            else if (imageType == ImageType.Art)
             {
                 return item.ArtImagePath;
             }
-            else if (imageType.Equals("thumbnail", StringComparison.OrdinalIgnoreCase))
+            else if (imageType == ImageType.Thumbnail)
             {
                 return item.ThumbnailImagePath;
             }

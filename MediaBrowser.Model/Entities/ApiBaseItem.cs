@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Model.Entities
@@ -26,5 +27,15 @@ namespace MediaBrowser.Model.Entities
         public bool IsFolder { get; set; }
 
         public string Type { get; set; }
+
+        public bool IsType(Type type)
+        {
+            return IsType(type.Name);
+        }
+
+        public bool IsType(string type)
+        {
+            return Type.Equals(type, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }
