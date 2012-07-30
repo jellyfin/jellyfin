@@ -384,14 +384,14 @@ namespace MediaBrowser.Controller.Xml
                             break;
 
                         case "Duration":
-                            item.RunTime = TimeSpan.FromMinutes(reader.ReadIntSafe());
+                            item.RunTimeInSeconds = reader.ReadIntSafe() * 60;
                             break;
 
                         case "DurationSeconds":
                             int seconds = reader.ReadIntSafe();
                             if (seconds > 0)
                             {
-                                item.RunTime = TimeSpan.FromSeconds(seconds);
+                                item.RunTimeInSeconds = seconds;
                             }
                             break;
 

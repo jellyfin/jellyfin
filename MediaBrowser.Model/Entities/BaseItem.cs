@@ -51,7 +51,7 @@ namespace MediaBrowser.Model.Entities
         public string DisplayMediaType { get; set; }
 
         public float? UserRating { get; set; }
-        public TimeSpan? RunTime { get; set; }
+        public int? RunTimeInSeconds { get; set; }
 
         public string AspectRatio { get; set; }
         public int? ProductionYear { get; set; }
