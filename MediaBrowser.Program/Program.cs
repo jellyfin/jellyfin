@@ -1,5 +1,6 @@
 ﻿using System;
 using MediaBrowser.Controller;
+using MediaBrowser.Common.Progress;
 
 namespace MediaBrowser.Program
 {
@@ -18,7 +19,9 @@ namespace MediaBrowser.Program
 
             Kernel kernel = new Kernel();
 
-            kernel.Init();
+            Progress<TaskProgress> progress = new Progress<TaskProgress>();
+
+            kernel.Init(progress);
 
             var time = DateTime.Now - now;
             Console.WriteLine("Done in " + time.TotalSeconds + " seconds");
