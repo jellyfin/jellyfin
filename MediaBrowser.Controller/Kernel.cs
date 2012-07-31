@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Events;
@@ -23,7 +24,6 @@ namespace MediaBrowser.Controller
         public static Kernel Instance { get; private set; }
 
         public ItemController ItemController { get; private set; }
-        public UserController UserController { get; private set; }
 
         public IEnumerable<User> Users { get; private set; }
         public Folder RootFolder { get; private set; }
@@ -38,6 +38,14 @@ namespace MediaBrowser.Controller
             }
         }
 
+        private string UsersPath
+        {
+            get
+            {
+                return Path.Combine(ProgramDataPath, "Users");
+            }
+        }
+        
         /// <summary>
         /// Gets the list of currently registered entity resolvers
         /// </summary>
@@ -53,7 +61,6 @@ namespace MediaBrowser.Controller
             Instance = this;
 
             ItemController = new ItemController();
-            UserController = new UserController(Path.Combine(ProgramDataPath, "Users"));
             DirectoryWatchers = new DirectoryWatchers();
 
             ItemController.PreBeginResolvePath += ItemController_PreBeginResolvePath;
@@ -117,7 +124,7 @@ namespace MediaBrowser.Controller
 
         private void ReloadUsers()
         {
-            Users = UserController.GetAllUsers();
+            Users = GetAllUsers();
         }
 
         /// <summary>
@@ -420,6 +427,65 @@ namespace MediaBrowser.Controller
             }
 
             return list;
+        }
+
+        /// <summary>
+        /// Gets all users within the system
+        /// </summary>
+        private IEnumerable<User> GetAllUsers()
+        {
+            if (!Directory.Exists(UsersPath))
+            {
+                Directory.CreateDirectory(UsersPath);
+            }
+
+            List<User> list = new List<User>();
+
+            foreach (string folder in Directory.GetDirectories(UsersPath, "*", SearchOption.TopDirectoryOnly))
+            {
+                User item = GetFromDirectory(folder);
+
+                if (item != null)
+                {
+                    list.Add(item);
+                }
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// Gets a User from it's directory
+        /// </summary>
+        private User GetFromDirectory(string path)
+        {
+            string file = Path.Combine(path, "user.js");
+
+            return JsonSerializer.DeserializeFromFile<User>(file);
+        }
+
+        /// <summary>
+        /// Creates a User with a given name
+        /// </summary>
+        public User CreateUser(string name)
+        {
+            var now = DateTime.Now;
+
+            User user = new User()
+            {
+                Name = name,
+                Id = Guid.NewGuid(),
+                DateCreated = now,
+                DateModified = now
+            };
+
+            user.Path = Path.Combine(UsersPath, user.Id.ToString());
+
+            Directory.CreateDirectory(user.Path);
+
+            JsonSerializer.SerializeToFile(user, Path.Combine(user.Path, "user.js"));
+
+            return user;
         }
 
     }
