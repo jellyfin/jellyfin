@@ -6,12 +6,12 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using MediaBrowser.Common.Json;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Logging;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Progress;
+using MediaBrowser.Common.Json;
 
 namespace MediaBrowser.Common.Kernel
 {
@@ -93,19 +93,21 @@ namespace MediaBrowser.Common.Kernel
 
         public virtual void Init(IProgress<TaskProgress> progress)
         {
+            JsonSerializer.Configure();
+
             ReloadLogger();
 
             ReloadConfiguration();
 
             ReloadHttpServer();
-            
+
             ReloadComposableParts();
         }
 
         private void ReloadLogger()
         {
             DisposeLogger();
-            
+
             if (!Directory.Exists(LogDirectoryPath))
             {
                 Directory.CreateDirectory(LogDirectoryPath);
@@ -115,8 +117,8 @@ namespace MediaBrowser.Common.Kernel
 
             LogFilePath = Path.Combine(LogDirectoryPath, now.ToString("dMyyyy") + "-" + now.Ticks + ".log");
 
-            FileStream fs = new FileStream(LogFilePath, FileMode.Append, FileAccess.Write, FileShare.Read); 
-            
+            FileStream fs = new FileStream(LogFilePath, FileMode.Append, FileAccess.Write, FileShare.Read);
+
             Logger.LoggerInstance = new StreamLogger(fs);
         }
 

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
-using MediaBrowser.Common.Json;
-using MediaBrowser.Model.Plugins;
 using MediaBrowser.Common.Kernel;
+using MediaBrowser.Model.Plugins;
+using MediaBrowser.Common.Json;
 
 namespace MediaBrowser.Common.Plugins
 {
@@ -100,19 +100,6 @@ namespace MediaBrowser.Common.Plugins
             }
         }
 
-        public void ReloadConfiguration()
-        {
-            if (!File.Exists(ConfigurationPath))
-            {
-                Configuration = Activator.CreateInstance(ConfigurationType) as BasePluginConfiguration;
-            }
-            else
-            {
-                Configuration = JsonSerializer.DeserializeFromFile(ConfigurationType, ConfigurationPath) as BasePluginConfiguration;
-                Configuration.DateLastModified = File.GetLastWriteTime(ConfigurationPath);
-            }
-        }
-
         /// <summary>
         /// Starts the plugin.
         /// </summary>
@@ -125,6 +112,19 @@ namespace MediaBrowser.Common.Plugins
         /// </summary>
         public virtual void Dispose()
         {
+        }
+
+        public void ReloadConfiguration()
+        {
+            if (!File.Exists(ConfigurationPath))
+            {
+                Configuration = Activator.CreateInstance(ConfigurationType) as BasePluginConfiguration;
+            }
+            else
+            {
+                Configuration = JsonSerializer.DeserializeFromFile(ConfigurationType, ConfigurationPath) as BasePluginConfiguration;
+                Configuration.DateLastModified = File.GetLastWriteTime(ConfigurationPath);
+            }
         }
     }
 }

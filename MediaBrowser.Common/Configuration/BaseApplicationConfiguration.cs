@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Logging;
+﻿using MediaBrowser.Common.Logging;
 
-namespace MediaBrowser.Model.Configuration
+namespace MediaBrowser.Common.Configuration
 {
     /// <summary>
     /// Serves as a common base class for the Server and UI application Configurations
