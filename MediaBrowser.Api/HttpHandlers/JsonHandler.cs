@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using MediaBrowser.Common.Net.Handlers;
-using MediaBrowser.Controller;
-using MediaBrowser.Common.Json;
+using MediaBrowser.Common.Serialization;
 
 namespace MediaBrowser.Api.HttpHandlers
 {

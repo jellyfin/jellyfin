@@ -50,7 +50,7 @@
   <ItemGroup>
     <Compile Include="Configuration\BaseApplicationConfiguration.cs" />
     <Compile Include="Events\GenericItemEventArgs.cs" />
-    <Compile Include="Json\JsonSerializer.cs" />
+    <Compile Include="Serialization\JsonSerializer.cs" />
     <Compile Include="Kernel\BaseKernel.cs" />
     <Compile Include="Kernel\KernelContext.cs" />
     <Compile Include="Logging\BaseLogger.cs" />

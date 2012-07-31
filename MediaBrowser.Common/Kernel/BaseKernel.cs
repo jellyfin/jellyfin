@@ -10,8 +10,8 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Progress;
-using MediaBrowser.Common.Json;
 
 namespace MediaBrowser.Common.Kernel
 {
@@ -93,8 +93,6 @@ namespace MediaBrowser.Common.Kernel
 
         public virtual void Init(IProgress<TaskProgress> progress)
         {
-            JsonSerializer.Configure();
-
             ReloadLogger();
 
             ReloadConfiguration();
