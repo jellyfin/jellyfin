@@ -68,7 +68,7 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets an image stream based on a url
         /// </summary>
-        public async Task<Stream> GetImageStream(string url)
+        public async Task<Stream> GetImageStreamAsync(string url)
         {
             Stream stream = await HttpClient.GetStreamAsync(url);
 
