@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace MediaBrowser.Logging
+namespace MediaBrowser.Common.Logging
 {
     public struct LogRow
     {

@@ -7,15 +7,11 @@ namespace MediaBrowser.Common.Json
     {
         public static void SerializeToStream<T>(T obj, Stream stream)
         {
-            Configure();
-            
             ServiceStack.Text.JsonSerializer.SerializeToStream<T>(obj, stream);
         }
 
         public static void SerializeToFile<T>(T obj, string file)
         {
-            Configure();
-
             using (StreamWriter streamWriter = new StreamWriter(file))
             {
                 ServiceStack.Text.JsonSerializer.SerializeToWriter<T>(obj, streamWriter);
@@ -24,8 +20,6 @@ namespace MediaBrowser.Common.Json
 
         public static object DeserializeFromFile(Type type, string file)
         {
-            Configure();
-
             using (Stream stream = File.OpenRead(file))
             {
                 return ServiceStack.Text.JsonSerializer.DeserializeFromStream(type, stream);
@@ -34,8 +28,6 @@ namespace MediaBrowser.Common.Json
 
         public static T DeserializeFromFile<T>(string file)
         {
-            Configure();
-
             using (Stream stream = File.OpenRead(file))
             {
                 return ServiceStack.Text.JsonSerializer.DeserializeFromStream<T>(stream);
@@ -44,19 +36,15 @@ namespace MediaBrowser.Common.Json
 
         public static T DeserializeFromStream<T>(Stream stream)
         {
-            Configure();
-
             return ServiceStack.Text.JsonSerializer.DeserializeFromStream<T>(stream);
         }
 
         public static T DeserializeFromString<T>(string data)
         {
-            Configure();
-
             return ServiceStack.Text.JsonSerializer.DeserializeFromString<T>(data);
         }
 
-        private static void Configure()
+        public static void Configure()
         {
             ServiceStack.Text.JsConfig.ExcludeTypeInfo = true;
             ServiceStack.Text.JsConfig.IncludeNullValues = false;

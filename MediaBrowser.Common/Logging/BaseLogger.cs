@@ -2,7 +2,7 @@
 using System.Text;
 using System.Threading;
 
-namespace MediaBrowser.Logging
+namespace MediaBrowser.Common.Logging
 {
     public abstract class BaseLogger : IDisposable
     {

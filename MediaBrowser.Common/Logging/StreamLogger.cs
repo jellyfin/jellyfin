@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace MediaBrowser.Logging
+namespace MediaBrowser.Common.Logging
 {
     /// <summary>
     /// Provides a Logger that can write to any Stream
@@ -20,7 +20,6 @@ namespace MediaBrowser.Logging
         protected override void LogEntry(LogRow row)
         {
             byte[] bytes = new UTF8Encoding().GetBytes(row.ToString() + Environment.NewLine);
-
             Stream.Write(bytes, 0, bytes.Length);
             Stream.Flush();
         }
@@ -28,7 +27,6 @@ namespace MediaBrowser.Logging
         public override void Dispose()
         {
             base.Dispose();
-
             Stream.Dispose();
         }
     }

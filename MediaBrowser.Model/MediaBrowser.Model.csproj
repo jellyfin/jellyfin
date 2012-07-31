@@ -10,7 +10,7 @@
     <RootNamespace>MediaBrowser.Model</RootNamespace>
     <AssemblyName>MediaBrowser.Model</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Profile95</TargetFrameworkProfile>
+    <TargetFrameworkProfile>Profile4</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
   </PropertyGroup>
@@ -32,14 +32,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <!-- A reference to the entire .NET Framework is automatically included -->
-    <ProjectReference Include="..\MediaBrowser.Logging\MediaBrowser.Logging.csproj">
-      <Project>{37032b77-fe2e-4ec5-b7e4-baf634443578}</Project>
-      <Name>MediaBrowser.Logging</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Configuration\BaseApplicationConfiguration.cs" />
     <Compile Include="Configuration\UserConfiguration.cs" />
     <Compile Include="Entities\ApiBaseItem.cs" />
     <Compile Include="Entities\Audio.cs" />
