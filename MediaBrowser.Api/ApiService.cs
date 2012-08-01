@@ -31,8 +31,13 @@ namespace MediaBrowser.Api
                 UserItemData = Kernel.Instance.GetUserItemData(userId, item.Id),
                 Type = item.GetType().Name,
                 IsFolder = (item is Folder),
-                ParentId = item.Parent == null ? Guid.Empty : item.Parent.Id
+                ParentLogoItemId = GetParentLogoItemId(item)
             };
+
+            if (item.Parent != null)
+            {
+                wrapper.ParentId = item.Parent.Id;
+            }
 
             if (includeChildren)
             {
@@ -45,6 +50,26 @@ namespace MediaBrowser.Api
             }
 
             return wrapper;
+        }
+
+        private static Guid? GetParentLogoItemId(BaseItem item)
+        {
+            if (string.IsNullOrEmpty(item.LogoImagePath))
+            {
+                var parent = item.Parent;
+
+                while (parent != null)
+                {
+                    if (!string.IsNullOrEmpty(parent.LogoImagePath))
+                    {
+                        return parent.Id;
+                    }
+
+                    parent = parent.Parent;
+                }
+            }
+
+            return null;
         }
     }
 }
