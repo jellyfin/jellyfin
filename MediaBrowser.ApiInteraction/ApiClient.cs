@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Net.Http;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Configuration;
@@ -76,11 +75,6 @@ namespace MediaBrowser.ApiInteraction
         public async Task<Stream> GetImageStreamAsync(string url)
         {
             return await HttpClient.GetStreamAsync(url);
-            /*byte[] bytes = await HttpClient.GetByteArrayAsync(url);
-
-            MemoryStream stream = new MemoryStream(bytes);
-
-            return stream;*/
         }
 
         /// <summary>
@@ -123,10 +117,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await HttpClient.GetStreamAsync(url))
             {
-                using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress, false))
-                {
-                    return JsonSerializer.DeserializeFromStream<IEnumerable<CategoryInfo<Genre>>>(gzipStream);
-                }
+                return JsonSerializer.DeserializeFromStream<IEnumerable<CategoryInfo<Genre>>>(stream);
             }
         }
 
@@ -139,10 +130,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await HttpClient.GetStreamAsync(url))
             {
-                using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress, false))
-                {
-                    return JsonSerializer.DeserializeFromStream<CategoryInfo<Genre>>(gzipStream);
-                }
+                return JsonSerializer.DeserializeFromStream<CategoryInfo<Genre>>(stream);
             }
         }
 
@@ -155,10 +143,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await HttpClient.GetStreamAsync(url))
             {
-                using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress, false))
-                {
-                    return JsonSerializer.DeserializeFromStream<IEnumerable<CategoryInfo<Studio>>>(gzipStream);
-                }
+                return JsonSerializer.DeserializeFromStream<IEnumerable<CategoryInfo<Studio>>>(stream);
             }
         }
 
@@ -171,10 +156,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await HttpClient.GetStreamAsync(url))
             {
-                using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress, false))
-                {
-                    return JsonSerializer.DeserializeFromStream<UserConfiguration>(gzipStream);
-                }
+                return JsonSerializer.DeserializeFromStream<UserConfiguration>(stream);
             }
         }
 
@@ -187,10 +169,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await HttpClient.GetStreamAsync(url))
             {
-                using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress, false))
-                {
-                    return JsonSerializer.DeserializeFromStream<CategoryInfo<Studio>>(gzipStream);
-                }
+                return JsonSerializer.DeserializeFromStream<CategoryInfo<Studio>>(stream);
             }
         }
     }
