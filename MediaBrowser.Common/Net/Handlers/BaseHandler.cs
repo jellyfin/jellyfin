@@ -86,7 +86,7 @@ namespace MediaBrowser.Common.Net.Handlers
             WriteStream = s =>
             {
                 WriteReponse(s);
-                s.Close();
+                s.Dispose();
             };
         }
 

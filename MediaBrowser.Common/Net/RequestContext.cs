@@ -29,7 +29,7 @@ namespace MediaBrowser.Common.Net
             Response.AddHeader("Access-Control-Allow-Origin", "*");
 
             Response.KeepAlive = true;
-            
+
             foreach (var header in handler.Headers)
             {
                 Response.AddHeader(header.Key, header.Value);
@@ -54,11 +54,12 @@ namespace MediaBrowser.Common.Net
                 }
             }
 
-            Response.SendChunked = true;
             Response.StatusCode = statusCode;
 
-            if (statusCode != 304)
+            if (statusCode == 200)
             {
+                Response.SendChunked = true;
+
                 if (handler.GzipResponse)
                 {
                     Response.AddHeader("Content-Encoding", "gzip");
@@ -72,8 +73,8 @@ namespace MediaBrowser.Common.Net
             }
             else
             {
-                Response.OutputStream.Flush();
-                Response.OutputStream.Close();
+                Response.SendChunked = false;
+                Response.OutputStream.Dispose();
             }
         }
 
@@ -81,7 +82,7 @@ namespace MediaBrowser.Common.Net
         {
             DateTime lastModified = dateModified ?? DateTime.Now;
 
-            response.Headers[HttpResponseHeader.CacheControl] = "Public";
+            response.Headers[HttpResponseHeader.CacheControl] = "public, max-age=" + Convert.ToInt32(duration.TotalSeconds);
             response.Headers[HttpResponseHeader.Expires] = DateTime.Now.Add(duration).ToString("r");
             response.Headers[HttpResponseHeader.LastModified] = lastModified.ToString("r");
         }
