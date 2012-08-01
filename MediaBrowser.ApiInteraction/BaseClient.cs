@@ -13,8 +13,15 @@ namespace MediaBrowser.ApiInteraction
         protected HttpClient HttpClient { get; private set; }
 
         public BaseClient()
+            : this(new HttpClientHandler())
         {
-            HttpClient = new HttpClient();
+        }
+
+        public BaseClient(HttpClientHandler clientHandler)
+        {
+            clientHandler.AutomaticDecompression = System.Net.DecompressionMethods.GZip;
+
+            HttpClient = new HttpClient(clientHandler);
         }
 
         public void Dispose()

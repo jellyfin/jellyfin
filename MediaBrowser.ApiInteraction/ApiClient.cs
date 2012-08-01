@@ -19,6 +19,11 @@ namespace MediaBrowser.ApiInteraction
         {
         }
 
+        public ApiClient(HttpClientHandler handler)
+            : base(handler)
+        {
+        }
+
         /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>
@@ -70,10 +75,12 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         public async Task<Stream> GetImageStreamAsync(string url)
         {
-            Stream stream = await HttpClient.GetStreamAsync(url);
+            return await HttpClient.GetStreamAsync(url);
+            /*byte[] bytes = await HttpClient.GetByteArrayAsync(url);
 
-            // For now this assumes the response stream is compressed. We can always improve this later.
-            return new GZipStream(stream, CompressionMode.Decompress, false);
+            MemoryStream stream = new MemoryStream(bytes);
+
+            return stream;*/
         }
 
         /// <summary>
@@ -90,10 +97,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await HttpClient.GetStreamAsync(url))
             {
-                using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress, false))
-                {
-                    return JsonSerializer.DeserializeFromStream<ApiBaseItemWrapper<ApiBaseItem>>(gzipStream);
-                }
+                return JsonSerializer.DeserializeFromStream<ApiBaseItemWrapper<ApiBaseItem>>(stream);
             }
         }
 
@@ -106,10 +110,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await HttpClient.GetStreamAsync(url))
             {
-                using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress, false))
-                {
-                    return JsonSerializer.DeserializeFromStream<IEnumerable<User>>(gzipStream);
-                }
+                return JsonSerializer.DeserializeFromStream<IEnumerable<User>>(stream);
             }
         }
 
