@@ -30,7 +30,8 @@ namespace MediaBrowser.Api
                 Item = item,
                 UserItemData = Kernel.Instance.GetUserItemData(userId, item.Id),
                 Type = item.GetType().Name,
-                IsFolder = (item is Folder)
+                IsFolder = (item is Folder),
+                ParentId = item.Parent == null ? Guid.Empty : item.Parent.Id
             };
 
             if (includeChildren)

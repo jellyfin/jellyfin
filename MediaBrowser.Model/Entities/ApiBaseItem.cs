@@ -26,6 +26,8 @@ namespace MediaBrowser.Model.Entities
 
         public bool IsFolder { get; set; }
 
+        public Guid ParentId { get; set; }
+
         public string Type { get; set; }
 
         public bool IsType(Type type)
