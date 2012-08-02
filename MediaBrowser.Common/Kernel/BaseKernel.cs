@@ -141,7 +141,7 @@ namespace MediaBrowser.Common.Kernel
         /// <summary>
         /// Reloads application configuration from the config file
         /// </summary>
-        private void ReloadConfiguration()
+        protected virtual void ReloadConfiguration()
         {
             //Configuration information for anything other than server-specific configuration will have to come via the API... -ebr
 
@@ -199,7 +199,7 @@ namespace MediaBrowser.Common.Kernel
         /// <summary>
         /// Disposes all resources currently in use.
         /// </summary>
-        public void Dispose()
+        public virtual void Dispose()
         {
             DisposeHttpServer();
             DisposeLogger();

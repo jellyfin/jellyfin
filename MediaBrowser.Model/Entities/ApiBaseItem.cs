@@ -26,7 +26,7 @@ namespace MediaBrowser.Model.Entities
 
         public bool IsFolder { get; set; }
 
-        public Guid ParentId { get; set; }
+        public Guid? ParentId { get; set; }
 
         public string Type { get; set; }
 
@@ -39,5 +39,10 @@ namespace MediaBrowser.Model.Entities
         {
             return Type.Equals(type, StringComparison.OrdinalIgnoreCase);
         }
+
+        /// <summary>
+        /// If the item does not have a logo, this will hold the Id of the Parent that has one.
+        /// </summary>
+        public Guid? ParentLogoItemId { get; set; }
     }
 }
