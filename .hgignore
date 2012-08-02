@@ -38,3 +38,4 @@ _ReSharper*/
 # ncrunch files
 *.ncrunchsolution
 *.ncrunchproject
+MediaBrowser.Common/Kernel/BaseKernel.cs.orig
