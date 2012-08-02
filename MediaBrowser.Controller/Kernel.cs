@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Serialization;
 using MediaBrowser.Controller.Configuration;
@@ -34,17 +35,18 @@ namespace MediaBrowser.Controller
         {
             get
             {
-                return Path.Combine(ProgramDataPath, "Root");
+                return ApplicationPaths.RootFolderPath;
             }
         }
 
-        private string UsersPath
-        {
-            get
-            {
-                return Path.Combine(ProgramDataPath, "Users");
-            }
-        }
+        //gonna want to load this from the standard repository... -ebr
+        //private string UsersPath
+        //{
+        //    get
+        //    {
+        //        return Path.Combine(ProgramDataPath, "Users");
+        //    }
+        //}
         
         /// <summary>
         /// Gets the list of currently registered entity resolvers
@@ -434,22 +436,24 @@ namespace MediaBrowser.Controller
         /// </summary>
         private IEnumerable<User> GetAllUsers()
         {
-            if (!Directory.Exists(UsersPath))
-            {
-                Directory.CreateDirectory(UsersPath);
-            }
+            //we'll get this from the standard repo... -ebr
+
+            //if (!Directory.Exists(UsersPath))
+            //{
+            //    Directory.CreateDirectory(UsersPath);
+            //}
 
             List<User> list = new List<User>();
 
-            foreach (string folder in Directory.GetDirectories(UsersPath, "*", SearchOption.TopDirectoryOnly))
-            {
-                User item = GetFromDirectory(folder);
+            //foreach (string folder in Directory.GetDirectories(UsersPath, "*", SearchOption.TopDirectoryOnly))
+            //{
+            //    User item = GetFromDirectory(folder);
 
-                if (item != null)
-                {
-                    list.Add(item);
-                }
-            }
+            //    if (item != null)
+            //    {
+            //        list.Add(item);
+            //    }
+            //}
 
             return list;
         }
@@ -457,36 +461,36 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Gets a User from it's directory
         /// </summary>
-        private User GetFromDirectory(string path)
-        {
-            string file = Path.Combine(path, "user.js");
+        //private User GetFromDirectory(string path)
+        //{
+        //    string file = Path.Combine(path, "user.js");
 
-            return JsonSerializer.DeserializeFromFile<User>(file);
-        }
+        //    return JsonSerializer.DeserializeFromFile<User>(file);
+        //}
 
         /// <summary>
         /// Creates a User with a given name
         /// </summary>
-        public User CreateUser(string name)
-        {
-            var now = DateTime.Now;
+        //public User CreateUser(string name)
+        //{
+        //    var now = DateTime.Now;
 
-            User user = new User()
-            {
-                Name = name,
-                Id = Guid.NewGuid(),
-                DateCreated = now,
-                DateModified = now
-            };
+        //    User user = new User()
+        //    {
+        //        Name = name,
+        //        Id = Guid.NewGuid(),
+        //        DateCreated = now,
+        //        DateModified = now
+        //    };
 
-            user.Path = Path.Combine(UsersPath, user.Id.ToString());
+        //    user.Path = Path.Combine(UsersPath, user.Id.ToString());
 
-            Directory.CreateDirectory(user.Path);
+        //    Directory.CreateDirectory(user.Path);
 
-            JsonSerializer.SerializeToFile(user, Path.Combine(user.Path, "user.js"));
+        //    JsonSerializer.SerializeToFile(user, Path.Combine(user.Path, "user.js"));
 
-            return user;
-        }
+        //    return user;
+        //}
 
     }
 }

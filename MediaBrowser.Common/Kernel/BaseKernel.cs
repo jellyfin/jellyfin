@@ -22,49 +22,6 @@ namespace MediaBrowser.Common.Kernel
         where TConfigurationType : BaseApplicationConfiguration, new()
     {
         /// <summary>
-        /// Gets the path to the program data folder
-        /// </summary>
-        public string ProgramDataPath { get; private set; }
-
-        /// <summary>
-        /// Gets the path to the plugin directory
-        /// </summary>
-        protected string PluginsPath
-        {
-            get
-            {
-                return Path.Combine(ProgramDataPath, "plugins");
-            }
-        }
-
-        /// <summary>
-        /// Gets the path to the application configuration file
-        /// </summary>
-        protected string ConfigurationPath
-        {
-            get
-            {
-                return Path.Combine(ProgramDataPath, "config.js");
-            }
-        }
-
-        /// <summary>
-        /// Gets the path to the log directory
-        /// </summary>
-        private string LogDirectoryPath
-        {
-            get
-            {
-                return Path.Combine(ProgramDataPath, "logs");
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the path to the current log file
-        /// </summary>
-        private string LogFilePath { get; set; }
-
-        /// <summary>
         /// Gets the current configuration
         /// </summary>
         public TConfigurationType Configuration { get; private set; }
@@ -88,7 +45,7 @@ namespace MediaBrowser.Common.Kernel
 
         public BaseKernel()
         {
-            ProgramDataPath = GetProgramDataPath();
+            
         }
 
         public virtual void Init(IProgress<TaskProgress> progress)
@@ -102,18 +59,18 @@ namespace MediaBrowser.Common.Kernel
             ReloadComposableParts();
         }
 
+        /// <summary>
+        /// Gets or sets the path to the current log file
+        /// </summary>
+        public static string LogFilePath { get; set; }
+
         private void ReloadLogger()
         {
             DisposeLogger();
 
-            if (!Directory.Exists(LogDirectoryPath))
-            {
-                Directory.CreateDirectory(LogDirectoryPath);
-            }
-
             DateTime now = DateTime.Now;
 
-            LogFilePath = Path.Combine(LogDirectoryPath, now.ToString("dMyyyy") + "-" + now.Ticks + ".log");
+            LogFilePath = Path.Combine(ApplicationPaths.LogDirectoryPath, Assembly.GetExecutingAssembly().GetType().Name + "-" + now.ToString("dMyyyy") + "-" + now.Ticks + ".log");
 
             FileStream fs = new FileStream(LogFilePath, FileMode.Append, FileAccess.Write, FileShare.Read);
 
@@ -126,14 +83,9 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         protected void ReloadComposableParts()
         {
-            if (!Directory.Exists(PluginsPath))
-            {
-                Directory.CreateDirectory(PluginsPath);
-            }
-
             // Gets all plugin assemblies by first reading all bytes of the .dll and calling Assembly.Load against that
             // This will prevent the .dll file from getting locked, and allow us to replace it when needed
-            IEnumerable<Assembly> pluginAssemblies = Directory.GetFiles(PluginsPath, "*.dll", SearchOption.AllDirectories).Select(f => Assembly.Load(File.ReadAllBytes((f))));
+            IEnumerable<Assembly> pluginAssemblies = Directory.GetFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.AllDirectories).Select(f => Assembly.Load(File.ReadAllBytes((f))));
 
             var catalog = new AggregateCatalog(pluginAssemblies.Select(a => new AssemblyCatalog(a)));
             //catalog.Catalogs.Add(new AssemblyCatalog(Assembly.GetExecutingAssembly()));
@@ -172,7 +124,7 @@ namespace MediaBrowser.Common.Kernel
                 AssemblyName assemblyName = assembly.GetName();
 
                 plugin.Version = assemblyName.Version;
-                plugin.Path = Path.Combine(PluginsPath, assemblyName.Name);
+                plugin.Path = Path.Combine(ApplicationPaths.PluginsPath, assemblyName.Name);
 
                 plugin.Context = KernelContext;
 
@@ -185,57 +137,34 @@ namespace MediaBrowser.Common.Kernel
             }
         }
 
-        /// <summary>
-        /// Gets the path to the application's ProgramDataFolder
-        /// </summary>
-        private string GetProgramDataPath()
-        {
-            string programDataPath = ConfigurationManager.AppSettings["ProgramDataPath"];
-
-            // If it's a relative path, e.g. "..\"
-            if (!Path.IsPathRooted(programDataPath))
-            {
-                string path = Assembly.GetExecutingAssembly().Location;
-                path = Path.GetDirectoryName(path);
-
-                programDataPath = Path.Combine(path, programDataPath);
-
-                programDataPath = Path.GetFullPath(programDataPath);
-            }
-
-            if (!Directory.Exists(programDataPath))
-            {
-                Directory.CreateDirectory(programDataPath);
-            }
-
-            return programDataPath;
-        }
 
         /// <summary>
         /// Reloads application configuration from the config file
         /// </summary>
         private void ReloadConfiguration()
         {
-            // Deserialize config
-            if (!File.Exists(ConfigurationPath))
-            {
-                Configuration = new TConfigurationType();
-            }
-            else
-            {
-                Configuration = JsonSerializer.DeserializeFromFile<TConfigurationType>(ConfigurationPath);
-            }
+            //Configuration information for anything other than server-specific configuration will have to come via the API... -ebr
 
-            Logger.LoggerInstance.LogSeverity = Configuration.LogSeverity;
+            //// Deserialize config
+            //if (!File.Exists(ConfigurationPath))
+            //{
+            //    Configuration = new TConfigurationType();
+            //}
+            //else
+            //{
+            //    Configuration = JsonSerializer.DeserializeFromFile<TConfigurationType>(ConfigurationPath);
+            //}
+
+            //Logger.LoggerInstance.LogSeverity = Configuration.LogSeverity;
         }
 
         /// <summary>
         /// Saves the current application configuration to the config file
         /// </summary>
-        public void SaveConfiguration()
-        {
-            JsonSerializer.SerializeToFile(Configuration, ConfigurationPath);
-        }
+        //public void SaveConfiguration()
+        //{
+        //    JsonSerializer.SerializeToFile(Configuration, ConfigurationPath);
+        //}
 
         /// <summary>
         /// Restarts the Http Server, or starts it if not currently running
@@ -255,7 +184,7 @@ namespace MediaBrowser.Common.Kernel
             AssemblyName assemblyName = new AssemblyName(args.Name);
 
             // Look for the .dll recursively within the plugins directory
-            string dll = Directory.GetFiles(PluginsPath, "*.dll", SearchOption.AllDirectories)
+            string dll = Directory.GetFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.AllDirectories)
                 .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == assemblyName.Name);
 
             // If we found a matching assembly, load it now
