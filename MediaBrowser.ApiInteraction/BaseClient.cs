@@ -8,7 +8,23 @@ namespace MediaBrowser.ApiInteraction
     /// </summary>
     public abstract class BaseClient : IDisposable
     {
-        public string ApiUrl { get; set; }
+        /// <summary>
+        /// Gets or sets the server host name (myserver or 192.168.x.x)
+        /// </summary>
+        public string ServerHostName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the port number used by the API
+        /// </summary>
+        public int ApiPort { get; set; }
+
+        protected string ApiUrl
+        {
+            get
+            {
+                return string.Format("http://{0}:{1}/mediabrowser/api", ServerHostName, ApiPort);
+            }
+        }
 
         protected HttpClient HttpClient { get; private set; }
 
