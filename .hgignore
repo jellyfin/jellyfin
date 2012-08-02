@@ -23,6 +23,7 @@ syntax: glob
 *.scc
 *.psess
 *.vsp
+*.orig
 [Bb]in
 [Dd]ebug*/
 obj/
@@ -38,4 +39,3 @@ _ReSharper*/
 # ncrunch files
 *.ncrunchsolution
 *.ncrunchproject
-MediaBrowser.Common/Kernel/BaseKernel.cs.orig
