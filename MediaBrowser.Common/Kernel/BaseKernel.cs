@@ -145,26 +145,18 @@ namespace MediaBrowser.Common.Kernel
         {
             //Configuration information for anything other than server-specific configuration will have to come via the API... -ebr
 
-            //// Deserialize config
-            //if (!File.Exists(ConfigurationPath))
-            //{
-            //    Configuration = new TConfigurationType();
-            //}
-            //else
-            //{
-            //    Configuration = JsonSerializer.DeserializeFromFile<TConfigurationType>(ConfigurationPath);
-            //}
+            // Deserialize config
+            if (!File.Exists(ApplicationPaths.ConfigurationPath))
+            {
+                Configuration = new TConfigurationType();
+            }
+            else
+            {
+                Configuration = JsonSerializer.DeserializeFromFile<TConfigurationType>(ApplicationPaths.ConfigurationPath);
+            }
 
-            //Logger.LoggerInstance.LogSeverity = Configuration.LogSeverity;
+            Logger.LoggerInstance.LogSeverity = Configuration.LogSeverity;
         }
-
-        /// <summary>
-        /// Saves the current application configuration to the config file
-        /// </summary>
-        //public void SaveConfiguration()
-        //{
-        //    JsonSerializer.SerializeToFile(Configuration, ConfigurationPath);
-        //}
 
         /// <summary>
         /// Restarts the Http Server, or starts it if not currently running
