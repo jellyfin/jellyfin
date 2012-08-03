@@ -30,9 +30,20 @@ namespace MediaBrowser.Api
                 Item = item,
                 UserItemData = Kernel.Instance.GetUserItemData(userId, item.Id),
                 Type = item.GetType().Name,
-                IsFolder = (item is Folder),
-                ParentLogoItemId = GetParentLogoItemId(item)
+                IsFolder = (item is Folder)
             };
+
+            if (string.IsNullOrEmpty(item.LogoImagePath))
+            {
+                wrapper.ParentLogoItemId = GetParentLogoItemId(item);
+            }
+
+            if (item.BackdropImagePaths == null || !item.BackdropImagePaths.Any())
+            {
+                int backdropCount;
+                wrapper.ParentBackdropItemId = GetParentBackdropItemId(item, out backdropCount);
+                wrapper.ParentBackdropCount = backdropCount;
+            }
 
             if (item.Parent != null)
             {
@@ -52,21 +63,38 @@ namespace MediaBrowser.Api
             return wrapper;
         }
 
+        private static Guid? GetParentBackdropItemId(BaseItem item, out int backdropCount)
+        {
+            backdropCount = 0;
+
+            var parent = item.Parent;
+
+            while (parent != null)
+            {
+                if (parent.BackdropImagePaths != null && parent.BackdropImagePaths.Any())
+                {
+                    backdropCount = parent.BackdropImagePaths.Count();
+                    return parent.Id;
+                }
+
+                parent = parent.Parent;
+            }
+
+            return null;
+        }
+
         private static Guid? GetParentLogoItemId(BaseItem item)
         {
-            if (string.IsNullOrEmpty(item.LogoImagePath))
+            var parent = item.Parent;
+
+            while (parent != null)
             {
-                var parent = item.Parent;
-
-                while (parent != null)
+                if (!string.IsNullOrEmpty(parent.LogoImagePath))
                 {
-                    if (!string.IsNullOrEmpty(parent.LogoImagePath))
-                    {
-                        return parent.Id;
-                    }
-
-                    parent = parent.Parent;
+                    return parent.Id;
                 }
+
+                parent = parent.Parent;
             }
 
             return null;

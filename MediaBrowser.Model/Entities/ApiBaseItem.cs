@@ -44,5 +44,9 @@ namespace MediaBrowser.Model.Entities
         /// If the item does not have a logo, this will hold the Id of the Parent that has one.
         /// </summary>
         public Guid? ParentLogoItemId { get; set; }
+
+        public Guid? ParentBackdropItemId { get; set; }
+
+        public int? ParentBackdropCount { get; set; }
     }
 }
