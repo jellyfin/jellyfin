@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
 
 namespace MediaBrowser.ApiInteraction
@@ -16,13 +17,16 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets or sets the port number used by the API
         /// </summary>
-        public int ApiPort { get; set; }
+        public int ServerApiPort { get; set; }
 
+        /// <summary>
+        /// Gets the current api url based on hostname and port.
+        /// </summary>
         protected string ApiUrl
         {
             get
             {
-                return string.Format("http://{0}:{1}/mediabrowser/api", ServerHostName, ApiPort);
+                return string.Format("http://{0}:{1}/mediabrowser/api", ServerHostName, ServerApiPort);
             }
         }
 
@@ -35,7 +39,7 @@ namespace MediaBrowser.ApiInteraction
 
         public BaseClient(HttpClientHandler clientHandler)
         {
-            clientHandler.AutomaticDecompression = System.Net.DecompressionMethods.GZip;
+            clientHandler.AutomaticDecompression = DecompressionMethods.GZip;
 
             HttpClient = new HttpClient(clientHandler);
         }

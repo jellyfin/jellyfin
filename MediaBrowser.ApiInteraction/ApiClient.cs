@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Configuration;
@@ -69,6 +70,67 @@ namespace MediaBrowser.ApiInteraction
             return url;
         }
 
+        /// <summary>
+        /// This is a helper to get a list of backdrop url's from a given ApiBaseItemWrapper. If the actual item does not have any backdrops it will return backdrops from the first parent that does.
+        /// </summary>
+        /// <param name="itemWrapper">A given item.</param>
+        /// <param name="width">Use if a fixed width is required. Aspect ratio will be preserved.</param>
+        /// <param name="height">Use if a fixed height is required. Aspect ratio will be preserved.</param>
+        /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
+        /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
+        /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
+        public IEnumerable<string> GetBackdropImageUrls(ApiBaseItemWrapper<ApiBaseItem> itemWrapper, int? width, int? height, int? maxWidth, int? maxHeight, int? quality)
+        {
+            Guid? backdropItemId = null;
+            int backdropCount = 0;
+
+            if (itemWrapper.Item.BackdropImagePaths == null || !itemWrapper.Item.BackdropImagePaths.Any())
+            {
+                backdropItemId = itemWrapper.ParentBackdropItemId;
+                backdropCount = itemWrapper.ParentBackdropCount ?? 0;
+            }
+            else
+            {
+                backdropItemId = itemWrapper.Item.Id;
+                backdropCount = itemWrapper.Item.BackdropImagePaths.Count();
+            }
+
+            if (backdropItemId == null)
+            {
+                return new string[] { };
+            }
+
+            List<string> files = new List<string>();
+
+            for (int i = 0; i < backdropCount; i++)
+            {
+                files.Add(GetImageUrl(backdropItemId.Value, ImageType.Backdrop, i, width, height, maxWidth, maxHeight, quality));
+            }
+
+            return files;
+        }
+
+        /// <summary>
+        /// This is a helper to get the logo image url from a given ApiBaseItemWrapper. If the actual item does not have a logo, it will return the logo from the first parent that does, or null.
+        /// </summary>
+        /// <param name="itemWrapper">A given item.</param>
+        /// <param name="width">Use if a fixed width is required. Aspect ratio will be preserved.</param>
+        /// <param name="height">Use if a fixed height is required. Aspect ratio will be preserved.</param>
+        /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
+        /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
+        /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
+        public string GetLogoImageUrl(ApiBaseItemWrapper<ApiBaseItem> itemWrapper, int? width, int? height, int? maxWidth, int? maxHeight, int? quality)
+        {
+            Guid? logoItemId = !string.IsNullOrEmpty(itemWrapper.Item.LogoImagePath) ? itemWrapper.Item.Id : itemWrapper.ParentLogoItemId;
+
+            if (logoItemId.HasValue)
+            {
+                return GetImageUrl(logoItemId.Value, ImageType.Logo, null, width, height, maxWidth, maxHeight, quality);
+            }
+
+            return null;
+        }
+        
         /// <summary>
         /// Gets an image stream based on a url
         /// </summary>
