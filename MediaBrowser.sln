@@ -9,8 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.TV", "MediaBro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Configuration", "MediaBrowser.Configuration\MediaBrowser.Configuration.csproj", "{933CC468-E22B-48D8-8BCA-2E026F411CA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Program", "MediaBrowser.Program\MediaBrowser.Program.csproj", "{78AEA637-AF42-4F43-8E2B-0F2F0E2931F3}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Api", "MediaBrowser.Api\MediaBrowser.Api.csproj", "{4FD51AC5-2C16-4308-A993-C3A84F3B4582}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.InternetProviders", "MediaBrowser.InternetProviders\MediaBrowser.InternetProviders.csproj", "{5758B2C7-949A-421D-B268-70A950CF8741}"
@@ -23,12 +21,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Model", "Media
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.ApiInteraction", "MediaBrowser.ApiInteraction\MediaBrowser.ApiInteraction.csproj", "{B1C27231-7017-4C9B-A678-DE891954FA38}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.ServerApplication", "MediaBrowser.ServerApplication\MediaBrowser.ServerApplication.csproj", "{156EA256-AD2D-4D2F-B116-2ED4B9EFD869}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{156EA256-AD2D-4D2F-B116-2ED4B9EFD869}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{156EA256-AD2D-4D2F-B116-2ED4B9EFD869}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{156EA256-AD2D-4D2F-B116-2ED4B9EFD869}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{156EA256-AD2D-4D2F-B116-2ED4B9EFD869}.Release|Any CPU.Build.0 = Release|Any CPU
 		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -45,10 +49,6 @@ Global
 		{5758B2C7-949A-421D-B268-70A950CF8741}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5758B2C7-949A-421D-B268-70A950CF8741}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5758B2C7-949A-421D-B268-70A950CF8741}.Release|Any CPU.Build.0 = Release|Any CPU
-		{78AEA637-AF42-4F43-8E2B-0F2F0E2931F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{78AEA637-AF42-4F43-8E2B-0F2F0E2931F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{78AEA637-AF42-4F43-8E2B-0F2F0E2931F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{78AEA637-AF42-4F43-8E2B-0F2F0E2931F3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}.Release|Any CPU.ActiveCfg = Release|Any CPU
