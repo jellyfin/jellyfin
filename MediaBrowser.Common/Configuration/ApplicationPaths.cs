@@ -24,37 +24,13 @@ namespace MediaBrowser.Common.Configuration
                 if (_programDataPath == null)
                 {
                     _programDataPath = GetProgramDataPath();
-                    InitDirectories();  //move this here so we don't have to check for existence on every directory reference
                 }
                 return _programDataPath;
             }
         }
 
-        private static void InitDirectories()
-        {
-            if (!Directory.Exists(LogDirectoryPath))
-            {
-                Directory.CreateDirectory(LogDirectoryPath);
-            }
-            if (!Directory.Exists(PluginsPath))
-            {
-                Directory.CreateDirectory(PluginsPath);
-            }
-            if (!Directory.Exists(RootFolderPath))
-            {
-                Directory.CreateDirectory(RootFolderPath);
-            }
-            if (!Directory.Exists(ConfigurationPath))
-            {
-                Directory.CreateDirectory(ConfigurationPath);
-                Directory.CreateDirectory(SystemConfigurationPath);
-                Directory.CreateDirectory(DeviceConfigurationPath);
-                Directory.CreateDirectory(UserConfigurationPath);
-            }
 
-
-        }
-
+        private static string _pluginsPath;
         /// <summary>
         /// Gets the path to the plugin directory
         /// </summary>
@@ -62,10 +38,20 @@ namespace MediaBrowser.Common.Configuration
         {
             get
             {
-                return Path.Combine(ProgramDataPath, "plugins");
+                if (_pluginsPath == null)
+                {
+                    _pluginsPath = Path.Combine(ProgramDataPath, "plugins");
+                    if (!Directory.Exists(PluginsPath))
+                    {
+                        Directory.CreateDirectory(PluginsPath);
+                    }
+                }
+
+                return _pluginsPath;
             }
         }
 
+        private static string _configurationPath;
         /// <summary>
         /// Gets the path to the application configuration root directory
         /// </summary>
@@ -73,10 +59,19 @@ namespace MediaBrowser.Common.Configuration
         {
             get
             {
-                return Path.Combine(ProgramDataPath, "config");
+                if (_configurationPath == null)
+                {
+                    _configurationPath = Path.Combine(ProgramDataPath, "config");
+                    if (!Directory.Exists(ConfigurationPath))
+                    {
+                        Directory.CreateDirectory(ConfigurationPath);
+                    }
+                }
+                return _configurationPath;
             }
         }
 
+        private static string _systemConfigurationPath;
         /// <summary>
         /// Gets the path to the system configuration directory
         /// </summary>
@@ -84,10 +79,19 @@ namespace MediaBrowser.Common.Configuration
         {
             get
             {
-                return Path.Combine(ConfigurationPath, "system");
+                if (_systemConfigurationPath == null)
+                {
+                    _systemConfigurationPath = Path.Combine(ConfigurationPath, "system");
+                    if (!Directory.Exists(_systemConfigurationPath))
+                    {
+                        Directory.CreateDirectory(_systemConfigurationPath);
+                    }
+                }
+                return _systemConfigurationPath;
             }
         }
 
+        private static string _userConfigurationPath;
         /// <summary>
         /// Gets the path to the user configuration directory
         /// </summary>
@@ -95,10 +99,19 @@ namespace MediaBrowser.Common.Configuration
         {
             get
             {
-                return Path.Combine(ConfigurationPath, "user");
+                if (_userConfigurationPath == null)
+                {
+                    _userConfigurationPath = Path.Combine(ConfigurationPath, "user");
+                    if (!Directory.Exists(_userConfigurationPath))
+                    {
+                        Directory.CreateDirectory(_userConfigurationPath);
+                    }
+                }
+                return _userConfigurationPath;
             }
         }
 
+        private static string _deviceConfigurationPath;
         /// <summary>
         /// Gets the path to the device configuration directory
         /// </summary>
@@ -106,10 +119,19 @@ namespace MediaBrowser.Common.Configuration
         {
             get
             {
-                return Path.Combine(ConfigurationPath, "device");
+                if (_deviceConfigurationPath == null)
+                {
+                    _deviceConfigurationPath = Path.Combine(ConfigurationPath, "device");
+                    if (!Directory.Exists(_deviceConfigurationPath))
+                    {
+                        Directory.CreateDirectory(_deviceConfigurationPath);
+                    }
+                }
+                return _deviceConfigurationPath;
             }
         }
 
+        private static string _logDirectoryPath;
         /// <summary>
         /// Gets the path to the log directory
         /// </summary>
@@ -117,10 +139,19 @@ namespace MediaBrowser.Common.Configuration
         {
             get
             {
-                return Path.Combine(ProgramDataPath, "logs");
+                if (_logDirectoryPath == null)
+                {
+                    _logDirectoryPath = Path.Combine(ProgramDataPath, "logs");
+                    if (!Directory.Exists(_logDirectoryPath))
+                    {
+                        Directory.CreateDirectory(_logDirectoryPath);
+                    }
+                }
+                return _logDirectoryPath;
             }
         }
 
+        private static string _rootFolderPath;
         /// <summary>
         /// Gets the path to the root media directory
         /// </summary>
@@ -128,7 +159,15 @@ namespace MediaBrowser.Common.Configuration
         {
             get
             {
-                return Path.Combine(ProgramDataPath, "root");
+                if (_rootFolderPath == null)
+                {
+                    _rootFolderPath = Path.Combine(ProgramDataPath, "root");
+                    if (!Directory.Exists(_rootFolderPath))
+                    {
+                        Directory.CreateDirectory(_rootFolderPath);
+                    }
+                }
+                return _rootFolderPath;
             }
         }
 
