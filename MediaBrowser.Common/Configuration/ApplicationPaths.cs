@@ -41,9 +41,9 @@ namespace MediaBrowser.Common.Configuration
                 if (_pluginsPath == null)
                 {
                     _pluginsPath = Path.Combine(ProgramDataPath, "plugins");
-                    if (!Directory.Exists(PluginsPath))
+                    if (!Directory.Exists(_configurationPath))
                     {
-                        Directory.CreateDirectory(PluginsPath);
+                        Directory.CreateDirectory(_configurationPath);
                     }
                 }
 
@@ -62,9 +62,9 @@ namespace MediaBrowser.Common.Configuration
                 if (_configurationPath == null)
                 {
                     _configurationPath = Path.Combine(ProgramDataPath, "config");
-                    if (!Directory.Exists(ConfigurationPath))
+                    if (!Directory.Exists(_configurationPath))
                     {
-                        Directory.CreateDirectory(ConfigurationPath);
+                        Directory.CreateDirectory(_configurationPath);
                     }
                 }
                 return _configurationPath;
@@ -168,6 +168,27 @@ namespace MediaBrowser.Common.Configuration
                     }
                 }
                 return _rootFolderPath;
+            }
+        }
+
+        private static string _ibnPath;
+        /// <summary>
+        /// Gets the path to the Images By Name directory
+        /// </summary>
+        public static string IBNPath
+        {
+            get
+            {
+                if (_ibnPath == null)
+                {
+                    _ibnPath = Path.Combine(ProgramDataPath, "ImagesByName");
+                    if (!Directory.Exists(_ibnPath))
+                    {
+                        Directory.CreateDirectory(_ibnPath);
+                    }
+                }
+
+                return _pluginsPath;
             }
         }
 
