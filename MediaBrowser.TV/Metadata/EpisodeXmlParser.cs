@@ -40,24 +40,6 @@ namespace MediaBrowser.TV.Metadata
                     item.Name = reader.ReadString();
                     break;
 
-                case "FirstAired":
-                    {
-                        string firstAired = reader.ReadString();
-
-                        if (!string.IsNullOrWhiteSpace(firstAired))
-                        {
-                            DateTime airDate;
-
-                            if (DateTime.TryParse(firstAired, out airDate) && airDate.Year > 1850)
-                            {
-                                item.PremiereDate = airDate;
-                                item.ProductionYear = airDate.Year;
-                            }
-                        }
-
-                        break;
-                    }
-
                 default:
                     base.FetchDataFromXmlNode(reader, item);
                     break;

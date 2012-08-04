@@ -197,6 +197,24 @@ namespace MediaBrowser.Controller.Xml
                     }
                     break;
 
+                case "FirstAired":
+                    {
+                        string firstAired = reader.ReadString();
+
+                        if (!string.IsNullOrWhiteSpace(firstAired))
+                        {
+                            DateTime airDate;
+
+                            if (DateTime.TryParse(firstAired, out airDate) && airDate.Year > 1850)
+                            {
+                                item.PremiereDate = airDate;
+                                item.ProductionYear = airDate.Year;
+                            }
+                        }
+
+                        break;
+                    }
+
                 case "Genres":
                     FetchFromGenresNode(reader.ReadSubtree(), item);
                     break;
