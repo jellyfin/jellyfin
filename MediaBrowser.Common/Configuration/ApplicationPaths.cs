@@ -41,9 +41,9 @@ namespace MediaBrowser.Common.Configuration
                 if (_pluginsPath == null)
                 {
                     _pluginsPath = Path.Combine(ProgramDataPath, "plugins");
-                    if (!Directory.Exists(_configurationPath))
+                    if (!Directory.Exists(_pluginsPath))
                     {
-                        Directory.CreateDirectory(_configurationPath);
+                        Directory.CreateDirectory(_pluginsPath);
                     }
                 }
 
