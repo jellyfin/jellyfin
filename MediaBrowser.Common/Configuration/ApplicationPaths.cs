@@ -188,7 +188,7 @@ namespace MediaBrowser.Common.Configuration
                     }
                 }
 
-                return _pluginsPath;
+                return _ibnPath;
             }
         }
 
