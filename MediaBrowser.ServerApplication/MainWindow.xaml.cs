@@ -38,15 +38,11 @@ namespace MediaBrowser.ServerApplication
 
             try
             {
-                DateTime now = DateTime.Now;
-
                 splash.Show();
 
                 kernel = new Kernel();
 
                 kernel.Init(progress);
-
-                var time = DateTime.Now - now;
             }
             catch
             {
@@ -63,11 +59,6 @@ namespace MediaBrowser.ServerApplication
         {
             // Don't show the system tray icon until the app has loaded.
             this.MbTaskbarIcon.Visibility = System.Windows.Visibility.Visible;
-        }
-        
-        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            kernel.Dispose();
         }
 
         #endregion
