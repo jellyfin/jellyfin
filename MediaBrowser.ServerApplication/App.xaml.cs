@@ -33,8 +33,8 @@ namespace MediaBrowser.ServerApplication
         #region ISingleInstanceApp Members
         public bool SignalExternalCommandLineArgs(IList<string> args)
         {
-            // handle command line arguments of second instance
-            // ...
+            OpenDashboard();
+
             return true;
         }
         #endregion
@@ -44,6 +44,10 @@ namespace MediaBrowser.ServerApplication
             base.OnExit(e);
 
             Kernel.Instance.Dispose();
+        }
+
+        public static void OpenDashboard()
+        {
         }
     }
 }
