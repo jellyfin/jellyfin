@@ -73,7 +73,7 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        public virtual bool GzipResponse
+        public virtual bool CompressResponse
         {
             get
             {
@@ -92,11 +92,11 @@ namespace MediaBrowser.Common.Net.Handlers
 
         private void WriteReponse(Stream stream)
         {
-            if (GzipResponse)
+            if (CompressResponse)
             {
-                using (GZipStream gzipStream = new GZipStream(stream, CompressionMode.Compress, false))
+                using (DeflateStream compressedStream = new DeflateStream(stream, CompressionLevel.Fastest, false))
                 {
-                    WriteResponseToOutputStream(gzipStream);
+                    WriteResponseToOutputStream(compressedStream);
                 }
             }
             else

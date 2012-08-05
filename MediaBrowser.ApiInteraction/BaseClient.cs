@@ -39,7 +39,7 @@ namespace MediaBrowser.ApiInteraction
 
         public BaseClient(HttpClientHandler clientHandler)
         {
-            clientHandler.AutomaticDecompression = DecompressionMethods.GZip;
+            clientHandler.AutomaticDecompression = DecompressionMethods.Deflate;
 
             HttpClient = new HttpClient(clientHandler);
         }

@@ -60,9 +60,9 @@ namespace MediaBrowser.Common.Net
             {
                 Response.SendChunked = true;
 
-                if (handler.GzipResponse)
+                if (handler.CompressResponse)
                 {
-                    Response.AddHeader("Content-Encoding", "gzip");
+                    Response.AddHeader("Content-Encoding", "deflate");
                 }
 
                 if (cacheDuration.Ticks > 0)
