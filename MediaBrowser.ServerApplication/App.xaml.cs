@@ -5,6 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using MediaBrowser.Controller;
 
 namespace MediaBrowser.ServerApplication
 {
@@ -13,5 +14,11 @@ namespace MediaBrowser.ServerApplication
     /// </summary>
     public partial class App : Application
     {
+        protected override void OnExit(ExitEventArgs e)
+        {
+            base.OnExit(e);
+
+            Kernel.Instance.Dispose();
+        }
     }
 }
