@@ -23,15 +23,13 @@ namespace MediaBrowser.ServerApplication
     /// </summary>
     public partial class MainWindow : Window
     {
-        protected static Kernel kernel;
-
         public MainWindow()
         {
             InitializeComponent();
             LoadKernel();
         }
 
-        private static void LoadKernel()
+        private void LoadKernel()
         {
             Progress<TaskProgress> progress = new Progress<TaskProgress>();
             SplashScreen splash = new SplashScreen(progress);
@@ -40,12 +38,11 @@ namespace MediaBrowser.ServerApplication
             {
                 splash.Show();
 
-                kernel = new Kernel();
-
-                kernel.Init(progress);
+                new Kernel().Init(progress);
             }
-            catch
+            catch (Exception ex)
             {
+                MessageBox.Show("There was an error launching Media Browser: " + ex.Message);
             }
             finally
             {
