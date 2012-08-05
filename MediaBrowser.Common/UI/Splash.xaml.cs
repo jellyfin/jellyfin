@@ -14,14 +14,14 @@ using System.Windows.Shapes;
 
 using MediaBrowser.Model.Progress;
 
-namespace MediaBrowser.ServerApplication
+namespace MediaBrowser.Common.UI
 {
     /// <summary>
-    /// Interaction logic for SplashScreen.xaml
+    /// Interaction logic for Splash.xaml
     /// </summary>
-    public partial class SplashScreen : Window
+    public partial class Splash : Window
     {
-        public SplashScreen(IProgress<TaskProgress> progress)
+        public Splash(IProgress<TaskProgress> progress)
         {
             InitializeComponent();
         }
