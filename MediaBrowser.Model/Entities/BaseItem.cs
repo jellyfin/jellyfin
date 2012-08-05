@@ -62,7 +62,6 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         public int? IndexNumber { get; set; }
 
-        [IgnoreDataMember]
         public IEnumerable<Video> LocalTrailers { get; set; }
 
         public string TrailerUrl { get; set; }
