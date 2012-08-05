@@ -65,7 +65,7 @@ namespace MediaBrowser.ServerApplication
 
         private void cmOpenDashboard_click(object sender, RoutedEventArgs e)
         {
-
+            App.OpenDashboard();
         }
 
         private void cmVisitCT_click(object sender, RoutedEventArgs e)
