@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using MediaBrowser.Common;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Progress;
 
@@ -32,7 +33,7 @@ namespace MediaBrowser.ServerApplication
         private void LoadKernel()
         {
             Progress<TaskProgress> progress = new Progress<TaskProgress>();
-            SplashScreen splash = new SplashScreen(progress);
+            Common.UI.Splash splash = new Common.UI.Splash(progress);
 
             try
             {
