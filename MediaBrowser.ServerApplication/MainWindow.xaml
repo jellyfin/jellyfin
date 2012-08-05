@@ -1,8 +1,20 @@
 ﻿<Window x:Class="MediaBrowser.ServerApplication.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="350" Width="525">
+        xmlns:tb="http://www.hardcodet.net/taskbar"
+        Title="MainWindow" Height="350" Width="525" AllowsTransparency="True" Background="Transparent" WindowStyle="None" ShowInTaskbar="False" Closing="MainWindow_Closing" Loaded="MainWindow_Loaded">
     <Grid>
-        
+        <tb:TaskbarIcon Name="MbTaskbarIcon" IconSource="/Icons/Icon.ico" ToolTipText="MediaBrowser Server" Visibility="Hidden">
+
+            <tb:TaskbarIcon.ContextMenu>
+                <ContextMenu Background="White">
+                    <MenuItem Name="cmOpenDashboard" Header="Open Dashboard" Click="cmOpenDashboard_click"/>
+                    <MenuItem Name="cmVisitCT" Header="Visit Community Tracker" Click="cmVisitCT_click"/>
+                    <Separator/>
+                    <MenuItem Name="cmExit" Header="Exit" Click="cmExit_click"/>
+                </ContextMenu>
+            </tb:TaskbarIcon.ContextMenu>           
+
+        </tb:TaskbarIcon>
     </Grid>
 </Window>

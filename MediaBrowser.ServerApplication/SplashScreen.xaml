@@ -1,0 +1,8 @@
+﻿<Window x:Class="MediaBrowser.ServerApplication.SplashScreen"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="SplashScreen" Height="300" Width="600">
+    <Grid>
+        
+    </Grid>
+</Window>
