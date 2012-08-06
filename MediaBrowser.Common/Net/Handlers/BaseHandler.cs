@@ -14,9 +14,35 @@ namespace MediaBrowser.Common.Net.Handlers
         public IDictionary<string, string> Headers = new Dictionary<string, string>();
 
         /// <summary>
+        /// Returns true or false indicating if the handler writes to the stream asynchronously.
+        /// If so the subclass will be responsible for disposing the stream when complete.
+        /// </summary>
+        protected virtual bool IsAsyncHandler
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// The action to write the response to the output stream
         /// </summary>
-        public Action<Stream> WriteStream { get; set; }
+        public virtual Action<Stream> WriteStream
+        {
+            get
+            {
+                return s =>
+                {
+                    WriteReponse(s);
+
+                    if (!IsAsyncHandler)
+                    {
+                        s.Dispose();
+                    }
+                };
+            }
+        }
 
         /// <summary>
         /// The original RequestContext
@@ -79,15 +105,6 @@ namespace MediaBrowser.Common.Net.Handlers
             {
                 return true;
             }
-        }
-
-        public BaseHandler()
-        {
-            WriteStream = s =>
-            {
-                WriteReponse(s);
-                s.Dispose();
-            };
         }
 
         private void WriteReponse(Stream stream)
