@@ -13,6 +13,22 @@ namespace MediaBrowser.Common.Net.Handlers
         /// </summary>
         public IDictionary<string, string> Headers = new Dictionary<string, string>();
 
+        public virtual bool UseChunkedEncoding
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public virtual long? ContentLength
+        {
+            get
+            {
+                return null;
+            }
+        }
+
         /// <summary>
         /// Returns true or false indicating if the handler writes to the stream asynchronously.
         /// If so the subclass will be responsible for disposing the stream when complete.
