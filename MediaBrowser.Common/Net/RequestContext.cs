@@ -58,7 +58,12 @@ namespace MediaBrowser.Common.Net
 
             if (statusCode == 200)
             {
-                Response.SendChunked = true;
+                Response.SendChunked = handler.UseChunkedEncoding;
+
+                if (handler.ContentLength.HasValue)
+                {
+                    Response.ContentLength64 = handler.ContentLength.Value;
+                }
 
                 if (handler.CompressResponse)
                 {
