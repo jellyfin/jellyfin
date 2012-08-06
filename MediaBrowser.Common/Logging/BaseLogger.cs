@@ -26,7 +26,7 @@ namespace MediaBrowser.Common.Logging
         public void LogException(string message, Exception exception, params object[] paramList)
         {
             StringBuilder builder = new StringBuilder();
-            
+
             if (exception != null)
             {
                 builder.AppendFormat("Exception.  Type={0} Msg={1} StackTrace={3}{2}",
@@ -36,7 +36,7 @@ namespace MediaBrowser.Common.Logging
                     Environment.NewLine);
             }
 
-            message = string.Format(message, paramList);
+            message = FormatMessage(message, paramList);
 
             LogError(string.Format("{0} ( {1} )", message, builder));
         }
@@ -46,11 +46,24 @@ namespace MediaBrowser.Common.Logging
             LogEntry(message, LogSeverity.Warning, paramList);
         }
 
+        private string FormatMessage(string message, params object[] paramList)
+        {
+            if (paramList != null)
+            {
+                for (int i = 0; i < paramList.Length; i++)
+                {
+                    message = message.Replace("{" + i + "}", paramList[i].ToString());
+                }
+            }
+
+            return message;
+        }
+
         private void LogEntry(string message, LogSeverity severity, params object[] paramList)
         {
             if (severity < LogSeverity) return;
-            
-            message = string.Format(message, paramList);
+
+            message = FormatMessage(message, paramList);
 
             Thread currentThread = Thread.CurrentThread;
 
