@@ -35,7 +35,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
         /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
         /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
-        public string GetImageUrl(Guid itemId, ImageType imageType, int? imageIndex, int? width, int? height, int? maxWidth, int? maxHeight, int? quality)
+        public string GetImageUrl(Guid itemId, ImageType imageType, int? imageIndex = null, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
         {
             string url = ApiUrl + "/image";
 
@@ -79,7 +79,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
         /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
         /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
-        public IEnumerable<string> GetBackdropImageUrls(ApiBaseItemWrapper<ApiBaseItem> itemWrapper, int? width, int? height, int? maxWidth, int? maxHeight, int? quality)
+        public IEnumerable<string> GetBackdropImageUrls(ApiBaseItemWrapper<ApiBaseItem> itemWrapper, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
         {
             Guid? backdropItemId = null;
             int backdropCount = 0;
@@ -119,7 +119,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
         /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
         /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
-        public string GetLogoImageUrl(ApiBaseItemWrapper<ApiBaseItem> itemWrapper, int? width, int? height, int? maxWidth, int? maxHeight, int? quality)
+        public string GetLogoImageUrl(ApiBaseItemWrapper<ApiBaseItem> itemWrapper, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
         {
             Guid? logoItemId = !string.IsNullOrEmpty(itemWrapper.Item.LogoImagePath) ? itemWrapper.Item.Id : itemWrapper.ParentLogoItemId;
 
@@ -130,7 +130,7 @@ namespace MediaBrowser.ApiInteraction
 
             return null;
         }
-        
+
         /// <summary>
         /// Gets an image stream based on a url
         /// </summary>
