@@ -13,6 +13,8 @@ namespace MediaBrowser.Common.Net.Handlers
         /// </summary>
         public IDictionary<string, string> Headers = new Dictionary<string, string>();
 
+        private Stream CompressedStream { get; set; }
+
         public virtual bool UseChunkedEncoding
         {
             get
@@ -54,7 +56,7 @@ namespace MediaBrowser.Common.Net.Handlers
 
                     if (!IsAsyncHandler)
                     {
-                        s.Dispose();
+                        DisposeResponseStream();
                     }
                 };
             }
@@ -127,10 +129,9 @@ namespace MediaBrowser.Common.Net.Handlers
         {
             if (CompressResponse)
             {
-                using (DeflateStream compressedStream = new DeflateStream(stream, CompressionLevel.Fastest, false))
-                {
-                    WriteResponseToOutputStream(compressedStream);
-                }
+                CompressedStream = new DeflateStream(stream, CompressionLevel.Fastest, false);
+
+                WriteResponseToOutputStream(CompressedStream);
             }
             else
             {
@@ -140,5 +141,14 @@ namespace MediaBrowser.Common.Net.Handlers
 
         protected abstract void WriteResponseToOutputStream(Stream stream);
 
+        protected void DisposeResponseStream()
+        {
+            if (CompressedStream != null)
+            {
+                CompressedStream.Dispose();
+            }
+
+            RequestContext.Response.OutputStream.Dispose();
+        }
     }
 }
