@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
-using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Common.Logging;
+using MediaBrowser.Common.Net.Handlers;
 
 namespace MediaBrowser.Common.Net
 {
@@ -62,26 +62,6 @@ namespace MediaBrowser.Common.Net
 
             if (statusCode == 200 || statusCode == 206)
             {
-                // Don't force this to true. HttpListener will default it to true if supported by the client.
-                if (!handler.UseChunkedEncoding)
-                {
-                    Response.SendChunked = false;
-                }
-
-                if (handler.ContentLength.HasValue)
-                {
-                    Response.ContentLength64 = handler.ContentLength.Value;
-                }
-
-                if (handler.CompressResponse)
-                {
-                    Response.AddHeader("Content-Encoding", "deflate");
-                }
-
-                if (cacheDuration.Ticks > 0)
-                {
-                    CacheResponse(Response, cacheDuration, handler.LastDateModified);
-                }
                 handler.WriteStream(Response.OutputStream);
             }
             else
@@ -89,15 +69,6 @@ namespace MediaBrowser.Common.Net
                 Response.SendChunked = false;
                 Response.OutputStream.Dispose();
             }
-        }
-
-        private void CacheResponse(HttpListenerResponse response, TimeSpan duration, DateTime? dateModified)
-        {
-            DateTime lastModified = dateModified ?? DateTime.Now;
-
-            response.Headers[HttpResponseHeader.CacheControl] = "public, max-age=" + Convert.ToInt32(duration.TotalSeconds);
-            response.Headers[HttpResponseHeader.Expires] = DateTime.Now.Add(duration).ToString("r");
-            response.Headers[HttpResponseHeader.LastModified] = lastModified.ToString("r");
         }
 
         private bool IsCacheValid(DateTime ifModifiedSince, TimeSpan cacheDuration, DateTime? dateModified)
