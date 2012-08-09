@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using MediaBrowser.Common.Net.Handlers;
+using MediaBrowser.Common.Logging;
 
 namespace MediaBrowser.Common.Net
 {
@@ -26,6 +27,9 @@ namespace MediaBrowser.Common.Net
 
         public void Respond(BaseHandler handler)
         {
+            Logger.LogInfo("Http Server received request at: " + Request.Url.ToString());
+            Logger.LogInfo("Http Headers: " + string.Join(",", Request.Headers.AllKeys.Select(k => k + "=" + Request.Headers[k])));
+
             Response.AddHeader("Access-Control-Allow-Origin", "*");
 
             Response.KeepAlive = true;
@@ -56,9 +60,13 @@ namespace MediaBrowser.Common.Net
 
             Response.StatusCode = statusCode;
 
-            if (statusCode == 200)
+            if (statusCode == 200 || statusCode == 206)
             {
-                Response.SendChunked = handler.UseChunkedEncoding;
+                // Don't force this to true. HttpListener will default it to true if supported by the client.
+                if (!handler.UseChunkedEncoding)
+                {
+                    Response.SendChunked = false;
+                }
 
                 if (handler.ContentLength.HasValue)
                 {
