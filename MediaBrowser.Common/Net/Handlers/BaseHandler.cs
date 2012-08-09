@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.IO.Compression;
+using System.Net;
 
 namespace MediaBrowser.Common.Net.Handlers
 {
@@ -46,7 +47,7 @@ namespace MediaBrowser.Common.Net.Handlers
         /// <summary>
         /// The action to write the response to the output stream
         /// </summary>
-        public virtual Action<Stream> WriteStream
+        public Action<Stream> WriteStream
         {
             get
             {
@@ -125,11 +126,84 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
+        private bool ClientSupportsCompression
+        {
+            get
+            {
+                string enc = RequestContext.Request.Headers["Accept-Encoding"] ?? string.Empty;
+
+                return enc.IndexOf("deflate", StringComparison.OrdinalIgnoreCase) != -1 || enc.IndexOf("gzip", StringComparison.OrdinalIgnoreCase) != -1;
+            }
+        }
+
+        private string CompressionMethod
+        {
+            get
+            {
+                string enc = RequestContext.Request.Headers["Accept-Encoding"] ?? string.Empty;
+
+                if (enc.IndexOf("deflate", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    return "deflate";
+                }
+                if (enc.IndexOf("gzip", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    return "gzip";
+                }
+
+                return null;
+            }
+        }
+
+        protected virtual void PrepareResponseBeforeWriteOutput(HttpListenerResponse response)
+        {
+            // Don't force this to true. HttpListener will default it to true if supported by the client.
+            if (!UseChunkedEncoding)
+            {
+                response.SendChunked = false;
+            }
+
+            if (ContentLength.HasValue)
+            {
+                response.ContentLength64 = ContentLength.Value;
+            }
+
+            if (CompressResponse && ClientSupportsCompression)
+            {
+                response.AddHeader("Content-Encoding", CompressionMethod);
+            }
+
+            TimeSpan cacheDuration = CacheDuration;
+            
+            if (cacheDuration.Ticks > 0)
+            {
+                CacheResponse(response, cacheDuration, LastDateModified);
+            }
+        }
+
+        private void CacheResponse(HttpListenerResponse response, TimeSpan duration, DateTime? dateModified)
+        {
+            DateTime lastModified = dateModified ?? DateTime.Now;
+
+            response.Headers[HttpResponseHeader.CacheControl] = "public, max-age=" + Convert.ToInt32(duration.TotalSeconds);
+            response.Headers[HttpResponseHeader.Expires] = DateTime.Now.Add(duration).ToString("r");
+            response.Headers[HttpResponseHeader.LastModified] = lastModified.ToString("r");
+        }
+
         private void WriteReponse(Stream stream)
         {
-            if (CompressResponse)
+            PrepareResponseBeforeWriteOutput(RequestContext.Response);
+
+            if (CompressResponse && ClientSupportsCompression)
             {
-                CompressedStream = new DeflateStream(stream, CompressionLevel.Fastest, false);
+                if (CompressionMethod.Equals("deflate", StringComparison.OrdinalIgnoreCase))
+                {
+                    CompressedStream = new DeflateStream(stream, CompressionLevel.Fastest, false);
+                }
+                else
+                {
+                    CompressedStream = new GZipStream(stream, CompressionLevel.Fastest, false);
+                }
 
                 WriteResponseToOutputStream(CompressedStream);
             }
