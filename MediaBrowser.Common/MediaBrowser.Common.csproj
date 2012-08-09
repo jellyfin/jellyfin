@@ -58,6 +58,7 @@
     <Compile Include="Configuration\ApplicationPaths.cs" />
     <Compile Include="Configuration\BaseApplicationConfiguration.cs" />
     <Compile Include="Events\GenericItemEventArgs.cs" />
+    <Compile Include="Net\MimeTypes.cs" />
     <Compile Include="Serialization\JsonSerializer.cs" />
     <Compile Include="Kernel\BaseKernel.cs" />
     <Compile Include="Kernel\KernelContext.cs" />
