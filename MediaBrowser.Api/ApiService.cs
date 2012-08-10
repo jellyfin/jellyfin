@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
+using MediaBrowser.Api.Transcoding;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Api
 {
@@ -13,6 +12,44 @@ namespace MediaBrowser.Api
     /// </summary>
     public static class ApiService
     {
+        /// <summary>
+        /// Holds the list of active transcoding jobs
+        /// </summary>
+        private static List<TranscodingJob> CurrentTranscodingJobs = new List<TranscodingJob>();
+
+        /// <summary>
+        /// Finds an active transcoding job
+        /// </summary>
+        public static TranscodingJob GetTranscodingJob(string outputPath)
+        {
+            lock (CurrentTranscodingJobs)
+            {
+                return CurrentTranscodingJobs.FirstOrDefault(j => j.OutputFile.Equals(outputPath, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        /// <summary>
+        /// Removes a transcoding job from the active list
+        /// </summary>
+        public static void RemoveTranscodingJob(TranscodingJob job)
+        {
+            lock (CurrentTranscodingJobs)
+            {
+                CurrentTranscodingJobs.Remove(job);
+            }
+        }
+
+        /// <summary>
+        /// Adds a transcoding job to the active list
+        /// </summary>
+        public static void AddTranscodingJob(TranscodingJob job)
+        {
+            lock (CurrentTranscodingJobs)
+            {
+                CurrentTranscodingJobs.Add(job);
+            }
+        }
+
         public static BaseItem GetItemById(string id)
         {
             Guid guid = string.IsNullOrEmpty(id) ? Guid.Empty : new Guid(id);
