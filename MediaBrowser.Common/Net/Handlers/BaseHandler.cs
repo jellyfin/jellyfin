@@ -3,32 +3,36 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net;
+using MediaBrowser.Common.Logging;
 
 namespace MediaBrowser.Common.Net.Handlers
 {
     public abstract class BaseHandler
     {
-        /// <summary>
-        /// Response headers
-        /// </summary>
-        public IDictionary<string, string> Headers = new Dictionary<string, string>();
-
         private Stream CompressedStream { get; set; }
 
-        public virtual bool UseChunkedEncoding
-        {
-            get
-            {
-                return true;
-            }
-        }
-
-        public virtual long? ContentLength
+        public virtual bool? UseChunkedEncoding
         {
             get
             {
                 return null;
+            }
+        }
+
+        private bool _TotalContentLengthDiscovered = false;
+        private long? _TotalContentLength = null;
+        public long? TotalContentLength
+        {
+            get
+            {
+                if (!_TotalContentLengthDiscovered)
+                {
+                    _TotalContentLength = GetTotalContentLength();
+                }
+
+                return _TotalContentLength;
             }
         }
 
@@ -44,29 +48,18 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        /// <summary>
-        /// The action to write the response to the output stream
-        /// </summary>
-        public Action<Stream> WriteStream
+        protected virtual bool SupportsByteRangeRequests
         {
             get
             {
-                return s =>
-                {
-                    WriteReponse(s);
-
-                    if (!IsAsyncHandler)
-                    {
-                        DisposeResponseStream();
-                    }
-                };
+                return false;
             }
         }
 
         /// <summary>
-        /// The original RequestContext
+        /// The original HttpListenerContext
         /// </summary>
-        public RequestContext RequestContext { get; set; }
+        protected HttpListenerContext HttpListenerContext { get; private set; }
 
         /// <summary>
         /// The original QueryString
@@ -75,7 +68,54 @@ namespace MediaBrowser.Common.Net.Handlers
         {
             get
             {
-                return RequestContext.Request.QueryString;
+                return HttpListenerContext.Request.QueryString;
+            }
+        }
+
+        protected List<KeyValuePair<long, long?>> _RequestedRanges = null;
+        protected IEnumerable<KeyValuePair<long, long?>> RequestedRanges
+        {
+            get
+            {
+                if (_RequestedRanges == null)
+                {
+                    _RequestedRanges = new List<KeyValuePair<long, long?>>();
+
+                    if (IsRangeRequest)
+                    {
+                        // Example: bytes=0-,32-63
+                        string[] ranges = HttpListenerContext.Request.Headers["Range"].Split('=')[1].Split(',');
+
+                        foreach (string range in ranges)
+                        {
+                            string[] vals = range.Split('-');
+
+                            long start = 0;
+                            long? end = null;
+
+                            if (!string.IsNullOrEmpty(vals[0]))
+                            {
+                                start = long.Parse(vals[0]);
+                            }
+                            if (!string.IsNullOrEmpty(vals[1]))
+                            {
+                                end = long.Parse(vals[1]);
+                            }
+
+                            _RequestedRanges.Add(new KeyValuePair<long, long?>(start, end));
+                        }
+                    }
+                }
+
+                return _RequestedRanges;
+            }
+        }
+
+        protected bool IsRangeRequest
+        {
+            get
+            {
+                return HttpListenerContext.Request.Headers.AllKeys.Contains("Range");
             }
         }
 
@@ -87,13 +127,7 @@ namespace MediaBrowser.Common.Net.Handlers
         /// <summary>
         /// Gets the status code to include in the response headers
         /// </summary>
-        public virtual int StatusCode
-        {
-            get
-            {
-                return 200;
-            }
-        }
+        protected int StatusCode { get; set; }
 
         /// <summary>
         /// Gets the cache duration to include in the response headers
@@ -106,18 +140,25 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
+        private bool _LastDateModifiedDiscovered = false;
+        private DateTime? _LastDateModified = null;
         /// <summary>
         /// Gets the last date modified of the content being returned, if this can be determined.
         /// This will be used to invalidate the cache, so it's not needed if CacheDuration is 0.
         /// </summary>
-        public virtual DateTime? LastDateModified
+        public DateTime? LastDateModified
         {
             get
             {
-                return null;
+                if (!_LastDateModifiedDiscovered)
+                {
+                    _LastDateModified = GetLastDateModified();
+                }
+
+                return _LastDateModified;
             }
         }
-
+        
         public virtual bool CompressResponse
         {
             get
@@ -130,7 +171,7 @@ namespace MediaBrowser.Common.Net.Handlers
         {
             get
             {
-                string enc = RequestContext.Request.Headers["Accept-Encoding"] ?? string.Empty;
+                string enc = HttpListenerContext.Request.Headers["Accept-Encoding"] ?? string.Empty;
 
                 return enc.IndexOf("deflate", StringComparison.OrdinalIgnoreCase) != -1 || enc.IndexOf("gzip", StringComparison.OrdinalIgnoreCase) != -1;
             }
@@ -140,7 +181,7 @@ namespace MediaBrowser.Common.Net.Handlers
         {
             get
             {
-                string enc = RequestContext.Request.Headers["Accept-Encoding"] ?? string.Empty;
+                string enc = HttpListenerContext.Request.Headers["Accept-Encoding"] ?? string.Empty;
 
                 if (enc.IndexOf("deflate", StringComparison.OrdinalIgnoreCase) != -1)
                 {
@@ -155,30 +196,127 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        protected virtual void PrepareResponseBeforeWriteOutput(HttpListenerResponse response)
+        public void ProcessRequest(HttpListenerContext ctx)
         {
-            // Don't force this to true. HttpListener will default it to true if supported by the client.
-            if (!UseChunkedEncoding)
-            {
-                response.SendChunked = false;
-            }
+            HttpListenerContext = ctx;
 
-            if (ContentLength.HasValue)
-            {
-                response.ContentLength64 = ContentLength.Value;
-            }
+            Logger.LogInfo("Http Server received request at: " + ctx.Request.Url.ToString());
+            Logger.LogInfo("Http Headers: " + string.Join(",", ctx.Request.Headers.AllKeys.Select(k => k + "=" + ctx.Request.Headers[k])));
 
-            if (CompressResponse && ClientSupportsCompression)
+            ctx.Response.AddHeader("Access-Control-Allow-Origin", "*");
+
+            ctx.Response.KeepAlive = true;
+
+            if (SupportsByteRangeRequests && IsRangeRequest)
             {
-                response.AddHeader("Content-Encoding", CompressionMethod);
+                ctx.Response.Headers["Accept-Ranges"] = "bytes";
             }
+            
+            // Set the initial status code
+            // When serving a range request, we need to return status code 206 to indicate a partial response body
+            StatusCode = SupportsByteRangeRequests && IsRangeRequest ? 206 : 200;
+
+            ctx.Response.ContentType = ContentType;
 
             TimeSpan cacheDuration = CacheDuration;
-            
+
+            if (ctx.Request.Headers.AllKeys.Contains("If-Modified-Since"))
+            {
+                DateTime ifModifiedSince;
+
+                if (DateTime.TryParse(ctx.Request.Headers["If-Modified-Since"].Replace(" GMT", string.Empty), out ifModifiedSince))
+                {
+                    // If the cache hasn't expired yet just return a 304
+                    if (IsCacheValid(ifModifiedSince, cacheDuration, LastDateModified))
+                    {
+                        StatusCode = 304;
+                    }
+                }
+            }
+
+            if (StatusCode == 200 || StatusCode == 206)
+            {
+                ProcessUncachedResponse(ctx, cacheDuration);
+            }
+            else
+            {
+                ctx.Response.StatusCode = StatusCode;
+                ctx.Response.SendChunked = false;
+                DisposeResponseStream();
+            }
+        }
+
+        private void ProcessUncachedResponse(HttpListenerContext ctx, TimeSpan cacheDuration)
+        {
+            long? totalContentLength = TotalContentLength;
+
+            // By default, use chunked encoding if we don't know the content length
+            bool useChunkedEncoding = UseChunkedEncoding == null ? (totalContentLength == null) : UseChunkedEncoding.Value;
+
+            // Don't force this to true. HttpListener will default it to true if supported by the client.
+            if (!useChunkedEncoding)
+            {
+                ctx.Response.SendChunked = false;
+            }
+
+            // Set the content length, if we know it
+            if (totalContentLength.HasValue)
+            {
+                ctx.Response.ContentLength64 = totalContentLength.Value;
+            }
+
+            // Add the compression header
+            if (CompressResponse && ClientSupportsCompression)
+            {
+                ctx.Response.AddHeader("Content-Encoding", CompressionMethod);
+            }
+
+            // Add caching headers
             if (cacheDuration.Ticks > 0)
             {
-                CacheResponse(response, cacheDuration, LastDateModified);
+                CacheResponse(ctx.Response, cacheDuration, LastDateModified);
             }
+
+            PrepareUncachedResponse(ctx, cacheDuration);
+
+            // Set the status code
+            ctx.Response.StatusCode = StatusCode;
+
+            if (StatusCode == 200 || StatusCode == 206)
+            {
+                // Finally, write the response data
+                Stream outputStream = ctx.Response.OutputStream;
+
+                if (CompressResponse && ClientSupportsCompression)
+                {
+                    if (CompressionMethod.Equals("deflate", StringComparison.OrdinalIgnoreCase))
+                    {
+                        CompressedStream = new DeflateStream(outputStream, CompressionLevel.Fastest, false);
+                    }
+                    else
+                    {
+                        CompressedStream = new GZipStream(outputStream, CompressionLevel.Fastest, false);
+                    }
+
+                    outputStream = CompressedStream;
+                }
+
+                WriteResponseToOutputStream(outputStream);
+
+                if (!IsAsyncHandler)
+                {
+                    DisposeResponseStream();
+                }
+            }
+            else
+            {
+                ctx.Response.SendChunked = false;
+                DisposeResponseStream();
+            }
+        }
+
+        protected virtual void PrepareUncachedResponse(HttpListenerContext ctx, TimeSpan cacheDuration)
+        {
         }
 
         private void CacheResponse(HttpListenerResponse response, TimeSpan duration, DateTime? dateModified)
@@ -190,29 +328,6 @@ namespace MediaBrowser.Common.Net.Handlers
             response.Headers[HttpResponseHeader.LastModified] = lastModified.ToString("r");
         }
 
-        private void WriteReponse(Stream stream)
-        {
-            PrepareResponseBeforeWriteOutput(RequestContext.Response);
-
-            if (CompressResponse && ClientSupportsCompression)
-            {
-                if (CompressionMethod.Equals("deflate", StringComparison.OrdinalIgnoreCase))
-                {
-                    CompressedStream = new DeflateStream(stream, CompressionLevel.Fastest, false);
-                }
-                else
-                {
-                    CompressedStream = new GZipStream(stream, CompressionLevel.Fastest, false);
-                }
-
-                WriteResponseToOutputStream(CompressedStream);
-            }
-            else
-            {
-                WriteResponseToOutputStream(stream);
-            }
-        }
-
         protected abstract void WriteResponseToOutputStream(Stream stream);
 
         protected void DisposeResponseStream()
@@ -222,7 +337,45 @@ namespace MediaBrowser.Common.Net.Handlers
                 CompressedStream.Dispose();
             }
 
-            RequestContext.Response.OutputStream.Dispose();
+            HttpListenerContext.Response.OutputStream.Dispose();
+        }
+
+        private bool IsCacheValid(DateTime ifModifiedSince, TimeSpan cacheDuration, DateTime? dateModified)
+        {
+            if (dateModified.HasValue)
+            {
+                DateTime lastModified = NormalizeDateForComparison(dateModified.Value);
+                ifModifiedSince = NormalizeDateForComparison(ifModifiedSince);
+
+                return lastModified <= ifModifiedSince;
+            }
+
+            DateTime cacheExpirationDate = ifModifiedSince.Add(cacheDuration);
+
+            if (DateTime.Now < cacheExpirationDate)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// When the browser sends the IfModifiedDate, it's precision is limited to seconds, so this will account for that
+        /// </summary>
+        private DateTime NormalizeDateForComparison(DateTime date)
+        {
+            return new DateTime(date.Year, date.Month, date.Day, date.Hour, date.Minute, date.Second);
+        }
+
+        protected virtual long? GetTotalContentLength()
+        {
+            return null;
+        }
+
+        protected virtual DateTime? GetLastDateModified()
+        {
+            return null;
         }
     }
 }
