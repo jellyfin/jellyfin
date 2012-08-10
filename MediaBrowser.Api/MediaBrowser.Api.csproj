@@ -66,6 +66,7 @@
     <Compile Include="ImageProcessor.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Transcoding\TranscodingJob.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
@@ -84,7 +85,9 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="ffmpeg\ffmpeg.exe" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\ProgramData\Plugins\$(ProjectName)\" /y</PostBuildEvent>
