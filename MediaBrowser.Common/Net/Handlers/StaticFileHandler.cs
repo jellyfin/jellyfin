@@ -10,7 +10,7 @@ namespace MediaBrowser.Common.Net.Handlers
 {
     public class StaticFileHandler : BaseHandler
     {
-        public string Path
+        public virtual string Path
         {
             get
             {

@@ -44,7 +44,7 @@ namespace MediaBrowser.Api
             else if (localPath.EndsWith("/api/image", StringComparison.OrdinalIgnoreCase))
             {
                 return new ImageHandler();
-            } 
+            }
             else if (localPath.EndsWith("/api/users", StringComparison.OrdinalIgnoreCase))
             {
                 return new UsersHandler();
@@ -88,6 +88,10 @@ namespace MediaBrowser.Api
             else if (localPath.EndsWith("/api/static", StringComparison.OrdinalIgnoreCase))
             {
                 return new StaticFileHandler();
+            }
+            else if (localPath.EndsWith("/api/audio", StringComparison.OrdinalIgnoreCase))
+            {
+                return new AudioHandler();
             }
 
             return null;
