@@ -46,18 +46,15 @@ namespace MediaBrowser.Api.HttpHandlers
             }
         }
 
-        public override DateTime? LastDateModified
+        protected override DateTime? GetLastDateModified()
         {
-            get
+            try
             {
-                try
-                {
-                    return File.GetLastWriteTime(ImagePath);
-                }
-                catch
-                {
-                    return null;
-                }
+                return File.GetLastWriteTime(ImagePath);
+            }
+            catch
+            {
+                return base.GetLastDateModified();
             }
         }
 

@@ -4,10 +4,10 @@ using System.Reactive.Linq;
 
 namespace MediaBrowser.Common.Net
 {
-    public class HttpServer : IObservable<RequestContext>, IDisposable
+    public class HttpServer : IObservable<HttpListenerContext>, IDisposable
     {
         private readonly HttpListener listener;
-        private readonly IObservable<RequestContext> stream;
+        private readonly IObservable<HttpListenerContext> stream;
 
         public HttpServer(string url)
         {
@@ -17,12 +17,11 @@ namespace MediaBrowser.Common.Net
             stream = ObservableHttpContext();
         }
 
-        private IObservable<RequestContext> ObservableHttpContext()
+        private IObservable<HttpListenerContext> ObservableHttpContext()
         {
-            return Observable.Create<RequestContext>(obs =>
+            return Observable.Create<HttpListenerContext>(obs =>
                                 Observable.FromAsyncPattern<HttpListenerContext>(listener.BeginGetContext,
                                                                                  listener.EndGetContext)()
-                                          .Select(c => new RequestContext(c))
                                           .Subscribe(obs))
                              .Repeat()
                              .Retry()
@@ -34,7 +33,7 @@ namespace MediaBrowser.Common.Net
             listener.Stop();
         }
 
-        public IDisposable Subscribe(IObserver<RequestContext> observer)
+        public IDisposable Subscribe(IObserver<HttpListenerContext> observer)
         {
             return stream.Subscribe(observer);
         }

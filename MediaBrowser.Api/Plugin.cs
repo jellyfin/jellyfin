@@ -1,8 +1,8 @@
 ﻿using System;
 using System.ComponentModel.Composition;
+using System.Net;
 using System.Reactive.Linq;
 using MediaBrowser.Api.HttpHandlers;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller;
@@ -22,78 +22,75 @@ namespace MediaBrowser.Api
         {
             var httpServer = Kernel.Instance.HttpServer;
 
-            httpServer.Where(ctx => ctx.LocalPath.IndexOf("/api/", StringComparison.OrdinalIgnoreCase) != -1).Subscribe(ctx =>
+            httpServer.Where(ctx => ctx.Request.Url.LocalPath.IndexOf("/api/", StringComparison.OrdinalIgnoreCase) != -1).Subscribe(ctx =>
             {
                 BaseHandler handler = GetHandler(ctx);
 
                 if (handler != null)
                 {
-                    ctx.Respond(handler);
+                    handler.ProcessRequest(ctx);
                 }
             });
         }
 
-        private BaseHandler GetHandler(RequestContext ctx)
+        private BaseHandler GetHandler(HttpListenerContext ctx)
         {
-            BaseHandler handler = null;
-
-            string localPath = ctx.LocalPath;
+            string localPath = ctx.Request.Url.LocalPath;
 
             if (localPath.EndsWith("/api/item", StringComparison.OrdinalIgnoreCase))
             {
-                handler = new ItemHandler();
+                return new ItemHandler();
             }
             else if (localPath.EndsWith("/api/image", StringComparison.OrdinalIgnoreCase))
             {
-                handler = new ImageHandler();
+                return new ImageHandler();
             } 
             else if (localPath.EndsWith("/api/users", StringComparison.OrdinalIgnoreCase))
             {
-                handler = new UsersHandler();
+                return new UsersHandler();
             }
             else if (localPath.EndsWith("/api/genre", StringComparison.OrdinalIgnoreCase))
             {
-                handler = new GenreHandler();
+                return new GenreHandler();
             }
             else if (localPath.EndsWith("/api/genres", StringComparison.OrdinalIgnoreCase))
             {
-                handler = new GenresHandler();
+                return new GenresHandler();
             }
             else if (localPath.EndsWith("/api/studio", StringComparison.OrdinalIgnoreCase))
             {
-                handler = new StudioHandler();
+                return new StudioHandler();
             }
             else if (localPath.EndsWith("/api/studios", StringComparison.OrdinalIgnoreCase))
             {
-                handler = new StudiosHandler();
+                return new StudiosHandler();
             }
             else if (localPath.EndsWith("/api/recentlyaddeditems", StringComparison.OrdinalIgnoreCase))
             {
-                handler = new RecentlyAddedItemsHandler();
+                return new RecentlyAddedItemsHandler();
             }
             else if (localPath.EndsWith("/api/inprogressitems", StringComparison.OrdinalIgnoreCase))
             {
-                handler = new InProgressItemsHandler();
+                return new InProgressItemsHandler();
             }
             else if (localPath.EndsWith("/api/userconfiguration", StringComparison.OrdinalIgnoreCase))
             {
-                handler = new UserConfigurationHandler();
+                return new UserConfigurationHandler();
             }
             else if (localPath.EndsWith("/api/plugins", StringComparison.OrdinalIgnoreCase))
             {
-                handler = new PluginsHandler();
+                return new PluginsHandler();
             }
             else if (localPath.EndsWith("/api/pluginconfiguration", StringComparison.OrdinalIgnoreCase))
             {
-                handler = new PluginConfigurationHandler();
+                return new PluginConfigurationHandler();
             }
-
-            if (handler != null)
+            else if (localPath.EndsWith("/api/static", StringComparison.OrdinalIgnoreCase))
             {
-                handler.RequestContext = ctx;
+                return new StaticFileHandler();
             }
 
-            return handler;
+            return null;
         }
     }
 }
