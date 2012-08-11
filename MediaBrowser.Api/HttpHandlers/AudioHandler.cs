@@ -49,7 +49,12 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             int index = AudioFormats.ToList().IndexOf(audioFormat);
 
-            return AudioBitRates.ElementAtOrDefault(index);
+            if (!AudioBitRates.Any())
+            {
+                return null;
+            }
+
+            return AudioBitRates.ElementAt(index);
         }
 
         /// <summary>
