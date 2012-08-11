@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.Net.Handlers
 {
@@ -48,9 +49,9 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        protected override void WriteResponseToOutputStream(Stream stream)
+        protected override Task WriteResponseToOutputStream(Stream stream)
         {
-            GetEmbeddedResourceStream().CopyTo(stream);
+            return GetEmbeddedResourceStream().CopyToAsync(stream);
         }
 
         protected abstract Stream GetEmbeddedResourceStream();

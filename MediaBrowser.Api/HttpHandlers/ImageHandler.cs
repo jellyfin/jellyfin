@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
@@ -148,9 +149,12 @@ namespace MediaBrowser.Api.HttpHandlers
             }
         }
 
-        protected override void WriteResponseToOutputStream(Stream stream)
+        protected override Task WriteResponseToOutputStream(Stream stream)
         {
-            ImageProcessor.ProcessImage(ImagePath, stream, Width, Height, MaxWidth, MaxHeight, Quality);
+            return Task.Run(() =>
+            {
+                ImageProcessor.ProcessImage(ImagePath, stream, Width, Height, MaxWidth, MaxHeight, Quality);
+            });
         }
 
         private string GetImagePath()

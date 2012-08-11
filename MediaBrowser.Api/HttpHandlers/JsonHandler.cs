@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Common.Serialization;
 
@@ -8,9 +9,12 @@ namespace MediaBrowser.Api.HttpHandlers
     {
         protected abstract object ObjectToSerialize { get; }
 
-        protected override void WriteResponseToOutputStream(Stream stream)
+        protected override Task WriteResponseToOutputStream(Stream stream)
         {
-            JsonSerializer.SerializeToStream(ObjectToSerialize, stream);
+            return Task.Run(() =>
+            {
+                JsonSerializer.SerializeToStream(ObjectToSerialize, stream);
+            });
         }
     }
 }
