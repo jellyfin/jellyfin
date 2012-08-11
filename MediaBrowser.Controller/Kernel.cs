@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Serialization;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.IO;
