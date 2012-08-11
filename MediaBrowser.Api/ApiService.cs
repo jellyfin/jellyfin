@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using MediaBrowser.Api.Transcoding;
+using System.Reflection;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
 
@@ -12,41 +13,42 @@ namespace MediaBrowser.Api
     /// </summary>
     public static class ApiService
     {
+        private static string _FFMpegDirectory = null;
         /// <summary>
-        /// Holds the list of active transcoding jobs
+        /// Gets the folder path to ffmpeg
         /// </summary>
-        private static List<TranscodingJob> CurrentTranscodingJobs = new List<TranscodingJob>();
-
-        /// <summary>
-        /// Finds an active transcoding job
-        /// </summary>
-        public static TranscodingJob GetTranscodingJob(string outputPath)
+        public static string FFMpegDirectory
         {
-            lock (CurrentTranscodingJobs)
+            get
             {
-                return CurrentTranscodingJobs.FirstOrDefault(j => j.OutputFile.Equals(outputPath, StringComparison.OrdinalIgnoreCase));
+                if (_FFMpegDirectory == null)
+                {
+                    _FFMpegDirectory = System.IO.Path.Combine(ApplicationPaths.ProgramDataPath, "ffmpeg");
+
+                    if (!Directory.Exists(_FFMpegDirectory))
+                    {
+                        Directory.CreateDirectory(_FFMpegDirectory);
+
+                        // Extract ffmpeg
+                        using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Api.ffmpeg.ffmpeg.exe"))
+                        {
+                            using (FileStream fileStream = new FileStream(FFMpegPath, FileMode.Create))
+                            {
+                                stream.CopyTo(fileStream);
+                            }
+                        }
+                    }
+                }
+
+                return _FFMpegDirectory;
             }
         }
 
-        /// <summary>
-        /// Removes a transcoding job from the active list
-        /// </summary>
-        public static void RemoveTranscodingJob(TranscodingJob job)
+        public static string FFMpegPath
         {
-            lock (CurrentTranscodingJobs)
+            get
             {
-                CurrentTranscodingJobs.Remove(job);
-            }
-        }
-
-        /// <summary>
-        /// Adds a transcoding job to the active list
-        /// </summary>
-        public static void AddTranscodingJob(TranscodingJob job)
-        {
-            lock (CurrentTranscodingJobs)
-            {
-                CurrentTranscodingJobs.Add(job);
+                return System.IO.Path.Combine(FFMpegDirectory, "ffmpeg.exe");
             }
         }
 
