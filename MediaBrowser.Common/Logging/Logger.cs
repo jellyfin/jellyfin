@@ -21,6 +21,11 @@ namespace MediaBrowser.Common.Logging
             LoggerInstance.LogError(message, paramList);
         }
 
+        public static void LogException(Exception ex, params object[] paramList)
+        {
+            LogException(string.Empty, ex, paramList);
+        }
+
         public static void LogException(string message, Exception ex, params object[] paramList)
         {
             LoggerInstance.LogException(message, ex, paramList);
