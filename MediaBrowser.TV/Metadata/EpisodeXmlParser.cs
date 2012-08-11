@@ -18,8 +18,8 @@ namespace MediaBrowser.TV.Metadata
 
                         if (!string.IsNullOrWhiteSpace(filename))
                         {
-                            string metadataFolder = Path.GetDirectoryName(item.Path);
-                            item.PrimaryImagePath = Path.Combine(metadataFolder, filename);
+                            string seasonFolder = Path.GetDirectoryName(item.Path);
+                            item.PrimaryImagePath = Path.Combine(seasonFolder, "metadata", filename);
                         }
                         break;
                     }
