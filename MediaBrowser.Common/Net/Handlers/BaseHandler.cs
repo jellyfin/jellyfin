@@ -59,7 +59,7 @@ namespace MediaBrowser.Common.Net.Handlers
         /// <summary>
         /// The original HttpListenerContext
         /// </summary>
-        protected HttpListenerContext HttpListenerContext { get; private set; }
+        protected HttpListenerContext HttpListenerContext { get; set; }
 
         /// <summary>
         /// The original QueryString
@@ -196,7 +196,7 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        public void ProcessRequest(HttpListenerContext ctx)
+        public virtual void ProcessRequest(HttpListenerContext ctx)
         {
             HttpListenerContext = ctx;
 
