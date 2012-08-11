@@ -10,11 +10,21 @@ namespace MediaBrowser.Common.Net.Handlers
 {
     public class StaticFileHandler : BaseHandler
     {
+        private string _Path;
         public virtual string Path
         {
             get
             {
+                if (!string.IsNullOrWhiteSpace(_Path))
+                {
+                    return _Path;
+                }
+
                 return QueryString["path"];
+            }
+            set
+            {
+                _Path = value;
             }
         }
 
