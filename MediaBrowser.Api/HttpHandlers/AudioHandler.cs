@@ -64,7 +64,7 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             get
             {
-                string val = QueryString["audioformat"];
+                string val = QueryString["audioformats"];
 
                 if (string.IsNullOrEmpty(val))
                 {
