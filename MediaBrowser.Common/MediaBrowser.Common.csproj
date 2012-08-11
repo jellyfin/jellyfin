@@ -80,7 +80,7 @@
     <Compile Include="UI\Splash.xaml.cs">
       <DependentUpon>Splash.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Util\SingleInstance.cs" />
+    <Compile Include="UI\SingleInstance.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
