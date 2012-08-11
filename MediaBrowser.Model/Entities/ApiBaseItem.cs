@@ -10,6 +10,15 @@ namespace MediaBrowser.Model.Entities
     /// </summary>
     public class ApiBaseItem : BaseItem
     {
+        // TV Series
+        public string TvdbId { get; set; }
+        public string Status { get; set; }
+        public IEnumerable<DayOfWeek> AirDays { get; set; }
+        public string AirTime { get; set; }
+
+        // Movie
+        public string TmdbId { get; set; }
+        public string ImdbId { get; set; }
     }
 
     /// <summary>
