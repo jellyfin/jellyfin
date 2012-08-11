@@ -23,7 +23,7 @@ namespace MediaBrowser.Controller.Resolvers
             return null;
         }
 
-        public static bool IsAudioFile(string path)
+        private static bool IsAudioFile(string path)
         {
             string extension = Path.GetExtension(path).ToLower();
 
