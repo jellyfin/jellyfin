@@ -63,6 +63,7 @@
     <Compile Include="HttpHandlers\StudiosHandler.cs" />
     <Compile Include="HttpHandlers\UserConfigurationHandler.cs" />
     <Compile Include="HttpHandlers\UsersHandler.cs" />
+    <Compile Include="HttpHandlers\VideoHandler.cs" />
     <Compile Include="ImageProcessor.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -86,6 +87,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ffmpeg\ffmpeg.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ffmpeg\readme.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

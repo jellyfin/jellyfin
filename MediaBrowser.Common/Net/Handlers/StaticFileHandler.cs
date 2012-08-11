@@ -117,14 +117,6 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        protected override bool IsAsyncHandler
-        {
-            get
-            {
-                return true;
-            }
-        }
-
         public override string ContentType
         {
             get
@@ -133,7 +125,7 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        protected async override void WriteResponseToOutputStream(Stream stream)
+        protected async override Task WriteResponseToOutputStream(Stream stream)
         {
             try
             {
@@ -175,8 +167,6 @@ namespace MediaBrowser.Common.Net.Handlers
                 {
                     FileStream.Dispose();
                 }
-
-                DisposeResponseStream();
             }
         }
 

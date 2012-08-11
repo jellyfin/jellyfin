@@ -93,6 +93,10 @@ namespace MediaBrowser.Api
             {
                 return new AudioHandler();
             }
+            else if (localPath.EndsWith("/api/video", StringComparison.OrdinalIgnoreCase))
+            {
+                return new VideoHandler();
+            }
 
             return null;
         }

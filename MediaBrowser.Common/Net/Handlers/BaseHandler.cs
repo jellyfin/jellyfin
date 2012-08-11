@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Logging;
 
 namespace MediaBrowser.Common.Net.Handlers
@@ -33,18 +34,6 @@ namespace MediaBrowser.Common.Net.Handlers
                 }
 
                 return _TotalContentLength;
-            }
-        }
-
-        /// <summary>
-        /// Returns true or false indicating if the handler writes to the stream asynchronously.
-        /// If so the subclass will be responsible for disposing the stream when complete.
-        /// </summary>
-        protected virtual bool IsAsyncHandler
-        {
-            get
-            {
-                return false;
             }
         }
 
@@ -246,7 +235,7 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        private void ProcessUncachedResponse(HttpListenerContext ctx, TimeSpan cacheDuration)
+        private async void ProcessUncachedResponse(HttpListenerContext ctx, TimeSpan cacheDuration)
         {
             long? totalContentLength = TotalContentLength;
 
@@ -277,8 +266,6 @@ namespace MediaBrowser.Common.Net.Handlers
                 CacheResponse(ctx.Response, cacheDuration, LastDateModified);
             }
 
-            PrepareUncachedResponse(ctx, cacheDuration);
-
             // Set the status code
             ctx.Response.StatusCode = StatusCode;
 
@@ -301,9 +288,15 @@ namespace MediaBrowser.Common.Net.Handlers
                     outputStream = CompressedStream;
                 }
 
-                WriteResponseToOutputStream(outputStream);
-
-                if (!IsAsyncHandler)
+                try
+                {
+                    await WriteResponseToOutputStream(outputStream);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogException(ex);
+                }
+                finally
                 {
                     DisposeResponseStream();
                 }
@@ -315,10 +308,6 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        protected virtual void PrepareUncachedResponse(HttpListenerContext ctx, TimeSpan cacheDuration)
-        {
-        }
-
         private void CacheResponse(HttpListenerResponse response, TimeSpan duration, DateTime? dateModified)
         {
             DateTime lastModified = dateModified ?? DateTime.Now;
@@ -328,9 +317,9 @@ namespace MediaBrowser.Common.Net.Handlers
             response.Headers[HttpResponseHeader.LastModified] = lastModified.ToString("r");
         }
 
-        protected abstract void WriteResponseToOutputStream(Stream stream);
+        protected abstract Task WriteResponseToOutputStream(Stream stream);
 
-        protected void DisposeResponseStream()
+        private void DisposeResponseStream()
         {
             if (CompressedStream != null)
             {
