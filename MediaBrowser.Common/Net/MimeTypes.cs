@@ -49,6 +49,10 @@ namespace MediaBrowser.Common.Net
             {
                 return "video/avi";
             }
+            else if (ext.EndsWith("m4v", StringComparison.OrdinalIgnoreCase))
+            {
+                return "video/x-m4v";
+            }
 
             // Type text
             else if (ext.EndsWith("css", StringComparison.OrdinalIgnoreCase))
