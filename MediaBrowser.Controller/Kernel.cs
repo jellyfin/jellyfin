@@ -16,6 +16,7 @@ using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Users;
+using MediaBrowser.Model.Progress;
 
 namespace MediaBrowser.Controller
 {
@@ -37,13 +38,13 @@ namespace MediaBrowser.Controller
                 return ApplicationPaths.RootFolderPath;
             }
         }
-        
+
         /// <summary>
         /// Gets the list of currently registered entity resolvers
         /// </summary>
         [ImportMany(typeof(IBaseItemResolver))]
         public IEnumerable<IBaseItemResolver> EntityResolvers { get; private set; }
-        
+
         /// <summary>
         /// Creates a kernal based on a Data path, which is akin to our current programdata path
         /// </summary>
@@ -59,6 +60,19 @@ namespace MediaBrowser.Controller
             ItemController.BeginResolvePath += ItemController_BeginResolvePath;
         }
 
+        public override void Init(IProgress<TaskProgress> progress)
+        {
+            base.Init(progress);
+
+            progress.Report(new TaskProgress() { Description = "Loading Users", PercentComplete = 15 });
+            ReloadUsers();
+
+            progress.Report(new TaskProgress() { Description = "Loading Media Library", PercentComplete = 20 });
+            ReloadRoot();
+
+            progress.Report(new TaskProgress() { Description = "Loading Complete", PercentComplete = 100 });
+        }
+
         protected override void OnComposablePartsLoaded()
         {
             List<IBaseItemResolver> resolvers = EntityResolvers.ToList();
@@ -72,10 +86,6 @@ namespace MediaBrowser.Controller
 
             // The base class will start up all the plugins
             base.OnComposablePartsLoaded();
-
-            // Get users from users folder
-            // Load root media folder
-            Parallel.Invoke(ReloadUsers, ReloadRoot);
         }
 
         /// <summary>
@@ -149,7 +159,7 @@ namespace MediaBrowser.Controller
         {
             return Configuration.DefaultUserConfiguration;
         }
-        
+
         public void ReloadItem(BaseItem item)
         {
             Folder folder = item as Folder;

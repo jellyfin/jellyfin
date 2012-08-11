@@ -45,17 +45,20 @@ namespace MediaBrowser.Common.Kernel
 
         public BaseKernel()
         {
-            
+
         }
 
         public virtual void Init(IProgress<TaskProgress> progress)
         {
             ReloadLogger();
 
+            progress.Report(new TaskProgress() { Description = "Loading configuration", PercentComplete = 0 });
             ReloadConfiguration();
 
+            progress.Report(new TaskProgress() { Description = "Starting Http server", PercentComplete = 5 });
             ReloadHttpServer();
 
+            progress.Report(new TaskProgress() { Description = "Loading Plugins", PercentComplete = 10 });
             ReloadComposableParts();
         }
 
