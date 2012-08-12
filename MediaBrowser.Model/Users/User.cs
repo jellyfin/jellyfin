@@ -4,7 +4,7 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Users
 {
-    public class User : BaseItem
+    public class User : BaseEntity
     {
         public string MaxParentalRating { get; set; }
 

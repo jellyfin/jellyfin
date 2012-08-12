@@ -4,12 +4,9 @@ using System.Runtime.Serialization;
 
 namespace MediaBrowser.Model.Entities
 {
-    public abstract class BaseItem
+    public abstract class BaseItem : BaseEntity
     {
-        public string Name { get; set; }
         public string SortName { get; set; }
-
-        public Guid Id { get; set; }
 
         public DateTime DateCreated { get; set; }
 
@@ -25,7 +22,6 @@ namespace MediaBrowser.Model.Entities
         [IgnoreDataMember]
         public Folder Parent { get; set; }
 
-        public string PrimaryImagePath { get; set; }
         public string LogoImagePath { get; set; }
         public string ArtImagePath { get; set; }
         public string ThumbnailImagePath { get; set; }

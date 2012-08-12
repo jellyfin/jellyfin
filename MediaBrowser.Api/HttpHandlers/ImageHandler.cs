@@ -168,19 +168,15 @@ namespace MediaBrowser.Api.HttpHandlers
 
             string id = QueryString["id"];
             string personName = QueryString["personname"];
-            string imageIndex = QueryString["index"];
-
-            BaseItem item;
 
             if (!string.IsNullOrEmpty(personName))
             {
-                item = Kernel.Instance.ItemController.GetPerson(personName);
-            }
-            else
-            {
-                item = ApiService.GetItemById(QueryString["id"]);
+                return Kernel.Instance.ItemController.GetPerson(personName).PrimaryImagePath;
             }
 
+            BaseItem item = ApiService.GetItemById(QueryString["id"]);
+
+            string imageIndex = QueryString["index"];
             int index = string.IsNullOrEmpty(imageIndex) ? 0 : int.Parse(imageIndex);
 
             return GetImagePathFromTypes(item, ImageType, index);
