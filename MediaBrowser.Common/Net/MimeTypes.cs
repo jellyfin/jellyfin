@@ -53,6 +53,10 @@ namespace MediaBrowser.Common.Net
             {
                 return "video/x-m4v";
             }
+            else if (ext.EndsWith("asf", StringComparison.OrdinalIgnoreCase))
+            {
+                return "video/x-ms-asf";
+            }
 
             // Type text
             else if (ext.EndsWith("css", StringComparison.OrdinalIgnoreCase))
@@ -106,6 +110,10 @@ namespace MediaBrowser.Common.Net
             else if (ext.EndsWith("wav", StringComparison.OrdinalIgnoreCase))
             {
                 return "audio/wav";
+            }
+            else if (ext.EndsWith("wma", StringComparison.OrdinalIgnoreCase))
+            {
+                return "audio/x-ms-wma";
             }
             else if (ext.EndsWith("ogg", StringComparison.OrdinalIgnoreCase) || ext.EndsWith("oga", StringComparison.OrdinalIgnoreCase))
             {
