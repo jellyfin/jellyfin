@@ -105,7 +105,7 @@ namespace MediaBrowser.Api.HttpHandlers
         /// <summary>
         /// Creates arguments to pass to ffmpeg
         /// </summary>
-        private string GetAudioArguments()
+        protected override string GetCommandLineArguments()
         {
             List<string> audioTranscodeParams = new List<string>();
 
@@ -131,40 +131,6 @@ namespace MediaBrowser.Api.HttpHandlers
             audioTranscodeParams.Add("-f " + outputFormat);
 
             return "-i \"" + LibraryItem.Path + "\" -vn " + string.Join(" ", audioTranscodeParams.ToArray()) + " -";
-        }
-
-        protected async override Task WriteResponseToOutputStream(Stream stream)
-        {
-            ProcessStartInfo startInfo = new ProcessStartInfo();
-
-            startInfo.CreateNoWindow = true;
-
-            startInfo.UseShellExecute = false;
-            startInfo.RedirectStandardOutput = true;
-
-            startInfo.FileName = ApiService.FFMpegPath;
-            startInfo.WorkingDirectory = ApiService.FFMpegDirectory;
-            startInfo.Arguments = GetAudioArguments();
-
-            Logger.LogInfo(startInfo.FileName + " " + startInfo.Arguments);
-
-            Process process = new Process();
-            process.StartInfo = startInfo;
-
-            try
-            {
-                process.Start();
-
-                await process.StandardOutput.BaseStream.CopyToAsync(stream);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogException(ex);
-            }
-            finally
-            {
-                process.Dispose();
-            }
         }
     }
 
@@ -252,7 +218,48 @@ namespace MediaBrowser.Api.HttpHandlers
             base.ProcessRequest(ctx);
         }
 
+        protected abstract string GetCommandLineArguments();
         protected abstract string GetOutputFormat();
         protected abstract bool RequiresConversion();
+
+        protected async override Task WriteResponseToOutputStream(Stream stream)
+        {
+            ProcessStartInfo startInfo = new ProcessStartInfo();
+
+            startInfo.CreateNoWindow = true;
+
+            startInfo.UseShellExecute = false;
+            startInfo.RedirectStandardOutput = true;
+            startInfo.RedirectStandardError = true;
+
+            startInfo.FileName = ApiService.FFMpegPath;
+            startInfo.WorkingDirectory = ApiService.FFMpegDirectory;
+            startInfo.Arguments = GetCommandLineArguments();
+
+            Logger.LogInfo(startInfo.FileName + " " + startInfo.Arguments);
+
+            Process process = new Process();
+            process.StartInfo = startInfo;
+
+            try
+            {
+                process.Start();
+
+                // MUST read both stdout and stderr asynchronously or a deadlock may occurr
+                process.BeginErrorReadLine();
+
+                await process.StandardOutput.BaseStream.CopyToAsync(stream);
+
+                process.WaitForExit();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException(ex);
+            }
+            finally
+            {
+                process.Dispose();
+            }
+        }
     }
 }

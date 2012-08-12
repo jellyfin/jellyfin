@@ -1,20 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Logging;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Net.Handlers;
-using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
     class VideoHandler : BaseMediaHandler<Video>
     {
+        private IEnumerable<string> UnsupportedOutputFormats = new string[] { "mp4" };
+
         public IEnumerable<string> VideoFormats
         {
             get
@@ -28,17 +22,23 @@ namespace MediaBrowser.Api.HttpHandlers
         /// </summary>
         protected override string GetOutputFormat()
         {
-            return VideoFormats.First();
+            return VideoFormats.First(f => !UnsupportedOutputFormats.Any(s => s.Equals(f, StringComparison.OrdinalIgnoreCase)));
         }
 
         protected override bool RequiresConversion()
         {
+            // If it's not in a format we can output to, return true
+            if (UnsupportedOutputFormats.Any(f => LibraryItem.Path.EndsWith(f, StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+
             // If it's not in a format the consumer accepts, return true
             if (!VideoFormats.Any(f => LibraryItem.Path.EndsWith(f, StringComparison.OrdinalIgnoreCase)))
             {
                 return true;
             }
-            
+
             AudioStream audio = LibraryItem.AudioStreams.FirstOrDefault();
 
             if (audio != null)
@@ -54,9 +54,16 @@ namespace MediaBrowser.Api.HttpHandlers
             return false;
         }
 
-        protected override Task WriteResponseToOutputStream(Stream stream)
+        /// <summary>
+        /// Creates arguments to pass to ffmpeg
+        /// </summary>
+        protected override string GetCommandLineArguments()
         {
-            throw new NotImplementedException();
+            List<string> audioTranscodeParams = new List<string>();
+
+            string outputFormat = GetOutputFormat();
+            outputFormat = "matroska";
+            return "-i \"" + LibraryItem.Path + "\"  -vcodec copy -acodec copy -f " + outputFormat + " -";
         }
     }
 }

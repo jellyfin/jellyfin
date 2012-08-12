@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller.Configuration;
@@ -15,8 +14,8 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Users;
 using MediaBrowser.Model.Progress;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller
 {
