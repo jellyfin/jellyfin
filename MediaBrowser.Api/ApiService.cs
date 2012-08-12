@@ -13,45 +13,6 @@ namespace MediaBrowser.Api
     /// </summary>
     public static class ApiService
     {
-        private static string _FFMpegDirectory = null;
-        /// <summary>
-        /// Gets the folder path to ffmpeg
-        /// </summary>
-        public static string FFMpegDirectory
-        {
-            get
-            {
-                if (_FFMpegDirectory == null)
-                {
-                    _FFMpegDirectory = System.IO.Path.Combine(ApplicationPaths.ProgramDataPath, "ffmpeg");
-
-                    if (!Directory.Exists(_FFMpegDirectory))
-                    {
-                        Directory.CreateDirectory(_FFMpegDirectory);
-
-                        // Extract ffmpeg
-                        using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Api.ffmpeg.ffmpeg.exe"))
-                        {
-                            using (FileStream fileStream = new FileStream(FFMpegPath, FileMode.Create))
-                            {
-                                stream.CopyTo(fileStream);
-                            }
-                        }
-                    }
-                }
-
-                return _FFMpegDirectory;
-            }
-        }
-
-        public static string FFMpegPath
-        {
-            get
-            {
-                return System.IO.Path.Combine(FFMpegDirectory, "ffmpeg.exe");
-            }
-        }
-
         public static BaseItem GetItemById(string id)
         {
             Guid guid = string.IsNullOrEmpty(id) ? Guid.Empty : new Guid(id);
@@ -137,6 +98,59 @@ namespace MediaBrowser.Api
             }
 
             return null;
+        }
+
+        private static string _FFMpegDirectory = null;
+        /// <summary>
+        /// Gets the folder path to ffmpeg
+        /// </summary>
+        public static string FFMpegDirectory
+        {
+            get
+            {
+                if (_FFMpegDirectory == null)
+                {
+                    _FFMpegDirectory = System.IO.Path.Combine(ApplicationPaths.ProgramDataPath, "ffmpeg");
+
+                    if (!Directory.Exists(_FFMpegDirectory))
+                    {
+                        Directory.CreateDirectory(_FFMpegDirectory);
+                    }
+                }
+
+                return _FFMpegDirectory;
+            }
+        }
+
+        private static string _FFMpegPath = null;
+        /// <summary>
+        /// Gets the path to ffmpeg.exe
+        /// </summary>
+        public static string FFMpegPath
+        {
+            get
+            {
+                if (_FFMpegPath == null)
+                {
+                    string filename = "ffmpeg.exe";
+
+                    _FFMpegPath = Path.Combine(FFMpegDirectory, filename);
+
+                    if (!File.Exists(_FFMpegPath))
+                    {
+                        // Extract ffprobe
+                        using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Api.FFMpeg." + filename))
+                        {
+                            using (FileStream fileStream = new FileStream(_FFMpegPath, FileMode.Create))
+                            {
+                                stream.CopyTo(fileStream);
+                            }
+                        }
+                    }
+                }
+
+                return _FFMpegPath;
+            }
         }
     }
 }
