@@ -54,6 +54,21 @@ namespace MediaBrowser.Api.HttpHandlers
             return false;
         }
 
+        private string GetFFMpegOutputFormat(string outputFormat)
+        {
+            if (outputFormat.Equals("mkv", StringComparison.OrdinalIgnoreCase))
+            {
+                return "matroska";
+            }
+
+            return outputFormat;
+        }
+
+        private int GetOutputAudioStreamIndex(string outputFormat)
+        {
+            return 0;
+        }
+
         /// <summary>
         /// Creates arguments to pass to ffmpeg
         /// </summary>
@@ -62,8 +77,61 @@ namespace MediaBrowser.Api.HttpHandlers
             List<string> audioTranscodeParams = new List<string>();
 
             string outputFormat = GetOutputFormat();
-            outputFormat = "matroska";
-            return "-i \"" + LibraryItem.Path + "\"  -vcodec copy -acodec copy -f " + outputFormat + " -";
+
+            int audioStreamIndex = GetOutputAudioStreamIndex(outputFormat);
+
+            List<string> maps = new List<string>();
+
+            // Add the video stream
+            maps.Add("-map 0:0");
+
+            // Add the audio stream
+            if (audioStreamIndex != -1)
+            {
+                maps.Add("-map 0:" + (1 + audioStreamIndex));
+            }
+
+            // Add all the subtitle streams
+            for (int i = 0; i < LibraryItem.Subtitles.Count(); i++)
+            {
+                maps.Add("-map 0:" + (1 + LibraryItem.AudioStreams.Count() + i));
+
+            }
+
+            return string.Format("-i \"{0}\" {1} {2} {3} -f {4} -",
+                LibraryItem.Path,
+                string.Join(" ", maps.ToArray()),
+                GetVideoArguments(),
+                GetAudioArguments(),
+                GetFFMpegOutputFormat(outputFormat)
+                );
+        }
+
+        private string GetVideoArguments()
+        {
+            return "-c:v copy";
+        }
+
+        private string GetAudioArguments()
+        {
+            return "-c:a copy";
+        }
+
+        private string GetSubtitleArguments()
+        {
+            string args = "";
+
+            for (int i = 0; i < LibraryItem.Subtitles.Count(); i++)
+            {
+                if (i > 0)
+                {
+                    args += " ";
+                }
+                args += "-c:s copy";
+
+            }
+
+            return args;
         }
     }
 }
