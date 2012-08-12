@@ -5,36 +5,25 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
+    /// <summary>
+    /// Supported output formats: mkv,m4v,mp4,asf,wmv,mov,webm,ogv,3gp,avi,ts,flv
+    /// </summary>
     class VideoHandler : BaseMediaHandler<Video>
     {
-        private IEnumerable<string> UnsupportedOutputFormats = new string[] { "mp4" };
-
-        public IEnumerable<string> VideoFormats
+        /// <summary>
+        /// We can output these files directly, but we can't encode them
+        /// </summary>
+        protected override IEnumerable<string> UnsupportedOutputEncodingFormats
         {
             get
             {
-                return QueryString["videoformats"].Split(',');
+                return new string[] { "mp4", "wmv" };
             }
-        }
-
-        /// <summary>
-        /// Gets the format we'll be converting to
-        /// </summary>
-        protected override string GetOutputFormat()
-        {
-            return VideoFormats.First(f => !UnsupportedOutputFormats.Any(s => s.Equals(f, StringComparison.OrdinalIgnoreCase)));
         }
 
         protected override bool RequiresConversion()
         {
-            // If it's not in a format we can output to, return true
-            if (UnsupportedOutputFormats.Any(f => LibraryItem.Path.EndsWith(f, StringComparison.OrdinalIgnoreCase)))
-            {
-                return true;
-            }
-
-            // If it's not in a format the consumer accepts, return true
-            if (!VideoFormats.Any(f => LibraryItem.Path.EndsWith(f, StringComparison.OrdinalIgnoreCase)))
+            if (base.RequiresConversion())
             {
                 return true;
             }
@@ -60,13 +49,16 @@ namespace MediaBrowser.Api.HttpHandlers
             {
                 return "matroska";
             }
+            else if (outputFormat.Equals("ts", StringComparison.OrdinalIgnoreCase))
+            {
+                return "mpegts";
+            }
+            else if (outputFormat.Equals("ogv", StringComparison.OrdinalIgnoreCase))
+            {
+                return "ogg";
+            }
 
             return outputFormat;
-        }
-
-        private int GetOutputAudioStreamIndex(string outputFormat)
-        {
-            return 0;
         }
 
         /// <summary>
@@ -76,31 +68,10 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             List<string> audioTranscodeParams = new List<string>();
 
-            string outputFormat = GetOutputFormat();
+            string outputFormat = GetConversionOutputFormat();
 
-            int audioStreamIndex = GetOutputAudioStreamIndex(outputFormat);
-
-            List<string> maps = new List<string>();
-
-            // Add the video stream
-            maps.Add("-map 0:0");
-
-            // Add the audio stream
-            if (audioStreamIndex != -1)
-            {
-                maps.Add("-map 0:" + (1 + audioStreamIndex));
-            }
-
-            // Add all the subtitle streams
-            for (int i = 0; i < LibraryItem.Subtitles.Count(); i++)
-            {
-                maps.Add("-map 0:" + (1 + LibraryItem.AudioStreams.Count() + i));
-
-            }
-
-            return string.Format("-i \"{0}\" {1} {2} {3} -f {4} -",
+            return string.Format("-i \"{0}\" {1} {2} -f {3} -",
                 LibraryItem.Path,
-                string.Join(" ", maps.ToArray()),
                 GetVideoArguments(),
                 GetAudioArguments(),
                 GetFFMpegOutputFormat(outputFormat)
@@ -109,29 +80,12 @@ namespace MediaBrowser.Api.HttpHandlers
 
         private string GetVideoArguments()
         {
-            return "-c:v copy";
+            return "-vcodec copy";
         }
 
         private string GetAudioArguments()
         {
-            return "-c:a copy";
-        }
-
-        private string GetSubtitleArguments()
-        {
-            string args = "";
-
-            for (int i = 0; i < LibraryItem.Subtitles.Count(); i++)
-            {
-                if (i > 0)
-                {
-                    args += " ";
-                }
-                args += "-c:s copy";
-
-            }
-
-            return args;
+            return "-acodec copy";
         }
     }
 }

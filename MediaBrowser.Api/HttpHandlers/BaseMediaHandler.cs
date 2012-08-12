@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
@@ -15,6 +17,28 @@ namespace MediaBrowser.Api.HttpHandlers
     public abstract class BaseMediaHandler<T> : BaseHandler
         where T : BaseItem, new()
     {
+        /// <summary>
+        /// Supported values: mp3,flac,ogg,wav,asf,wma,aac
+        /// </summary>
+        protected virtual IEnumerable<string> OutputFormats
+        {
+            get
+            {
+                return QueryString["outputformats"].Split(',');
+            }
+        }
+
+        /// <summary>
+        /// These formats can be outputted directly but cannot be encoded to
+        /// </summary>
+        protected virtual IEnumerable<string> UnsupportedOutputEncodingFormats
+        {
+            get
+            {
+                return new string[] { };
+            }
+        }
+
         private T _LibraryItem;
         /// <summary>
         /// Gets the library item that will be played, if any
@@ -71,7 +95,7 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             get
             {
-                return MimeTypes.GetMimeType("." + GetOutputFormat());
+                return MimeTypes.GetMimeType("." + GetConversionOutputFormat());
             }
         }
 
@@ -97,8 +121,35 @@ namespace MediaBrowser.Api.HttpHandlers
         }
 
         protected abstract string GetCommandLineArguments();
-        protected abstract string GetOutputFormat();
-        protected abstract bool RequiresConversion();
+
+        /// <summary>
+        /// Gets the format we'll be converting to
+        /// </summary>
+        protected virtual string GetConversionOutputFormat()
+        {
+            return OutputFormats.First(f => !UnsupportedOutputEncodingFormats.Any(s => s.Equals(f, StringComparison.OrdinalIgnoreCase)));
+        }
+
+        protected virtual bool RequiresConversion()
+        {
+            string currentFormat = Path.GetExtension(LibraryItem.Path).Replace(".", string.Empty);
+
+            if (OutputFormats.Any(f => currentFormat.EndsWith(f, StringComparison.OrdinalIgnoreCase)))
+            {
+                // We can output these files directly, but we can't encode them
+                if (UnsupportedOutputEncodingFormats.Any(f => currentFormat.EndsWith(f, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                // If it's not in a format the consumer accepts, return true
+                return true;
+            }
+
+            return false;
+        }
 
         protected async override Task WriteResponseToOutputStream(Stream stream)
         {
