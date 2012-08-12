@@ -1,11 +1,10 @@
 ﻿using MediaBrowser.Controller;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public class PersonHandler : ItemHandler
+    public class PersonHandler : JsonHandler
     {
-        protected override BaseItem ItemToSerialize
+        protected sealed override object ObjectToSerialize
         {
             get
             {
