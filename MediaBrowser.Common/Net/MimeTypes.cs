@@ -115,6 +115,14 @@ namespace MediaBrowser.Common.Net
             {
                 return "audio/x-ms-wma";
             }
+            else if (ext.EndsWith("flac", StringComparison.OrdinalIgnoreCase))
+            {
+                return "audio/flac";
+            }
+            else if (ext.EndsWith("aac", StringComparison.OrdinalIgnoreCase))
+            {
+                return "audio/x-aac";
+            }
             else if (ext.EndsWith("ogg", StringComparison.OrdinalIgnoreCase) || ext.EndsWith("oga", StringComparison.OrdinalIgnoreCase))
             {
                 return "audio/ogg";
