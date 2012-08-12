@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Windows;
-using Microsoft.Shell;
 using MediaBrowser.Controller;
+using Microsoft.Shell;
 
 namespace MediaBrowser.ServerApplication
 {
@@ -16,7 +13,7 @@ namespace MediaBrowser.ServerApplication
     public partial class App : Application, ISingleInstanceApp
     {
         private const string Unique = "MediaBrowser3";
-        
+
         [STAThread]
         public static void Main()
         {
@@ -48,6 +45,9 @@ namespace MediaBrowser.ServerApplication
 
         public static void OpenDashboard()
         {
+            using (Process process = Process.Start("http://localhost:" + Kernel.Instance.Configuration.HttpServerPortNumber + "/mediabrowser/dashboard/index.html"))
+            {
+            }
         }
     }
 }
