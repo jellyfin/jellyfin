@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Net.Handlers;
@@ -241,16 +242,26 @@ namespace MediaBrowser.Api.HttpHandlers
             Process process = new Process();
             process.StartInfo = startInfo;
 
+            // FFMpeg writes debug info to StdErr. This is useful when debugging so let's put it in the log directory.
+            FileStream logStream = new FileStream(Path.Combine(ApplicationPaths.LogDirectoryPath, "ffmpeg-" + Guid.NewGuid().ToString() + ".txt"), FileMode.Create);
+
             try
             {
                 process.Start();
 
                 // MUST read both stdout and stderr asynchronously or a deadlock may occurr
-                process.BeginErrorReadLine();
+                // If we ever decide to disable the ffmpeg log then you must uncomment the below line.
+                //process.BeginErrorReadLine();
+
+                Task errorTask = Task.Run(async () => { await process.StandardError.BaseStream.CopyToAsync(logStream); });
 
                 await process.StandardOutput.BaseStream.CopyToAsync(stream);
 
                 process.WaitForExit();
+
+                await errorTask;
+
+                Logger.LogInfo("FFMpeg exited with code " + process.ExitCode);
             }
             catch (Exception ex)
             {
@@ -258,6 +269,7 @@ namespace MediaBrowser.Api.HttpHandlers
             }
             finally
             {
+                logStream.Dispose();
                 process.Dispose();
             }
         }
