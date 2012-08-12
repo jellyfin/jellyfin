@@ -57,6 +57,14 @@ namespace MediaBrowser.Common.Net
             {
                 return "video/x-ms-asf";
             }
+            else if (ext.EndsWith("3gp", StringComparison.OrdinalIgnoreCase))
+            {
+                return "video/3gpp";
+            }
+            else if (ext.EndsWith("ts", StringComparison.OrdinalIgnoreCase))
+            {
+                return "video/mp2t";
+            }
 
             // Type text
             else if (ext.EndsWith("css", StringComparison.OrdinalIgnoreCase))
@@ -127,7 +135,13 @@ namespace MediaBrowser.Common.Net
             {
                 return "audio/ogg";
             }
-           
+
+            // Playlists
+            else if (ext.EndsWith("m3u8", StringComparison.OrdinalIgnoreCase))
+            {
+                return "application/x-mpegURL";
+            }
+
             throw new InvalidOperationException("Argument not supported: " + path);
         }
     }
