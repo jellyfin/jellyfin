@@ -1,28 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
+    /// <summary>
+    /// Supported output formats are: mp3,flac,ogg,wav,asf,wma,aac
+    /// </summary>
     public class AudioHandler : BaseMediaHandler<Audio>
     {
         /// <summary>
-        /// Supported values: mp3,flac,ogg,wav,asf
+        /// Overriding to provide mp3 as a default, since pretty much every device supports it
         /// </summary>
-        public IEnumerable<string> AudioFormats
+        protected override IEnumerable<string> OutputFormats
         {
             get
             {
-                string val = QueryString["audioformats"];
+                IEnumerable<string> vals = base.OutputFormats;
 
-                if (string.IsNullOrEmpty(val))
-                {
-                    return new string[] { "mp3" };
-                }
+                return vals.Any() ? vals : new string[] { "mp3" };
+            }
+        }
 
-                return val.Split(',');
+        /// <summary>
+        /// We can output these files directly, but we can't encode them
+        /// </summary>
+        protected override IEnumerable<string> UnsupportedOutputEncodingFormats
+        {
+            get
+            {
+                return new string[] { "wma", "aac" };
             }
         }
 
@@ -48,7 +56,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 return null;
             }
 
-            int index = AudioFormats.ToList().IndexOf(audioFormat);
+            int index = OutputFormats.ToList().IndexOf(audioFormat);
 
             return AudioBitRates.ElementAt(index);
         }
@@ -58,14 +66,13 @@ namespace MediaBrowser.Api.HttpHandlers
         /// </summary>
         protected override bool RequiresConversion()
         {
-            string currentFormat = Path.GetExtension(LibraryItem.Path).Replace(".", string.Empty);
-
-            // If it's not in a format the consumer accepts, return true
-            if (!AudioFormats.Any(f => currentFormat.EndsWith(f, StringComparison.OrdinalIgnoreCase)))
+            if (base.RequiresConversion())
             {
                 return true;
             }
 
+            string currentFormat = Path.GetExtension(LibraryItem.Path).Replace(".", string.Empty);
+            
             int? bitrate = GetMaxAcceptedBitRate(currentFormat);
 
             // If the bitrate is greater than our desired bitrate, we need to transcode
@@ -91,21 +98,13 @@ namespace MediaBrowser.Api.HttpHandlers
         }
 
         /// <summary>
-        /// Gets the format we'll be converting to
-        /// </summary>
-        protected override string GetOutputFormat()
-        {
-            return AudioFormats.First();
-        }
-
-        /// <summary>
         /// Creates arguments to pass to ffmpeg
         /// </summary>
         protected override string GetCommandLineArguments()
         {
             List<string> audioTranscodeParams = new List<string>();
 
-            string outputFormat = GetOutputFormat();
+            string outputFormat = GetConversionOutputFormat();
 
             int? bitrate = GetMaxAcceptedBitRate(outputFormat);
 
