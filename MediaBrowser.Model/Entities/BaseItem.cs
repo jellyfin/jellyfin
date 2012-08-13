@@ -8,10 +8,6 @@ namespace MediaBrowser.Model.Entities
     {
         public string SortName { get; set; }
 
-        public DateTime DateCreated { get; set; }
-
-        public DateTime DateModified { get; set; }
-
         /// <summary>
         /// When the item first debuted. For movies this could be premiere date, episodes would be first aired
         /// </summary>
@@ -60,10 +56,5 @@ namespace MediaBrowser.Model.Entities
         public IEnumerable<Video> LocalTrailers { get; set; }
 
         public string TrailerUrl { get; set; }
-
-        public override string ToString()
-        {
-            return Name;
-        }
     }
 }
