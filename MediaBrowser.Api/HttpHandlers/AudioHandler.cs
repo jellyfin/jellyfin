@@ -113,19 +113,59 @@ namespace MediaBrowser.Api.HttpHandlers
                 audioTranscodeParams.Add("-ab " + bitrate.Value);
             }
 
-            if (AudioChannels.HasValue)
+            int? channels = GetNumAudioChannelsParam();
+
+            if (channels.HasValue)
             {
-                audioTranscodeParams.Add("-ac " + AudioChannels.Value);
+                audioTranscodeParams.Add("-ac " + channels.Value);
             }
 
-            if (AudioSampleRate.HasValue)
+            int? sampleRate = GetSampleRateParam();
+
+            if (sampleRate.HasValue)
             {
-                audioTranscodeParams.Add("-ar " + AudioSampleRate.Value);
+                audioTranscodeParams.Add("-ar " + sampleRate.Value);
             }
 
             audioTranscodeParams.Add("-f " + outputFormat);
 
             return "-i \"" + LibraryItem.Path + "\" -vn " + string.Join(" ", audioTranscodeParams.ToArray()) + " -";
+        }
+
+        /// <summary>
+        /// Gets the number of audio channels to specify on the command line
+        /// </summary>
+        private int? GetNumAudioChannelsParam()
+        {
+            // If the user requested a max number of channels
+            if (AudioChannels.HasValue)
+            {
+                // Only specify the param if we're going to downmix
+                if (AudioChannels.Value < LibraryItem.Channels)
+                {
+                    return AudioChannels.Value;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the number of audio channels to specify on the command line
+        /// </summary>
+        private int? GetSampleRateParam()
+        {
+            // If the user requested a max value
+            if (AudioSampleRate.HasValue)
+            {
+                // Only specify the param if we're going to downmix
+                if (AudioSampleRate.Value < LibraryItem.SampleRate)
+                {
+                    return AudioSampleRate.Value;
+                }
+            }
+
+            return null;
         }
     }
 }
