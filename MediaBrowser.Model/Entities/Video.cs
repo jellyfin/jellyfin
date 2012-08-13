@@ -27,6 +27,7 @@ namespace MediaBrowser.Model.Entities
         public string Language { get; set; }
         public int BitRate { get; set; }
         public int Channels { get; set; }
+        public int SampleRate { get; set; }
     }
 
     public enum VideoType
