@@ -166,7 +166,6 @@ namespace MediaBrowser.Api.HttpHandlers
                 return path;
             }
 
-            string id = QueryString["id"];
             string personName = QueryString["personname"];
 
             if (!string.IsNullOrEmpty(personName))
