@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using MediaBrowser.Model.Entities;
-using System.IO;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
@@ -102,21 +102,31 @@ namespace MediaBrowser.Api.HttpHandlers
 
         private string GetAudioArguments(string outputFormat)
         {
-            string codec = GetAudioCodec(outputFormat);
+            AudioStream audioStream = LibraryItem.AudioStreams.FirstOrDefault();
+
+            if (audioStream == null)
+            {
+                return string.Empty;
+            }
+
+            string codec = GetAudioCodec(audioStream, outputFormat);
 
             string args = "-acodec " + codec;
 
             if (!codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
-                int? channels = GetNumAudioChannels(codec);
+                int? channels = GetNumAudioChannelsParam(codec, audioStream.Channels);
 
                 if (channels.HasValue)
                 {
                     args += " -ac " + channels.Value;
                 }
-                if (AudioSampleRate.HasValue)
+
+                int? sampleRate = GetSampleRateParam(audioStream.SampleRate);
+
+                if (sampleRate.HasValue)
                 {
-                    args += " -ar " + AudioSampleRate.Value;
+                    args += " -ar " + sampleRate.Value;
                 }
 
             }
@@ -131,54 +141,65 @@ namespace MediaBrowser.Api.HttpHandlers
                 // Per webm specification, it must be vpx
                 return "libvpx";
             }
-            else if (outputFormat.Equals("flv"))
-            {
-                return "libx264";
-            }
-            else if (outputFormat.Equals("ts"))
-            {
-                return "libx264";
-            }
             else if (outputFormat.Equals("asf"))
             {
                 return "wmv2";
             }
 
-            return "copy";
+            return "libx264";
         }
-        
-        private string GetAudioCodec(string outputFormat)
+
+        private string GetAudioCodec(AudioStream audioStream, string outputFormat)
         {
             if (outputFormat.Equals("webm"))
             {
                 // Per webm specification, it must be vorbis
                 return "libvorbis";
             }
-            else if (outputFormat.Equals("flv"))
+
+            // See if we can just copy the stream
+            if (HasBasicAudio(audioStream))
             {
-                return "libvo_aacenc";
-            }
-            else if (outputFormat.Equals("ts"))
-            {
-                return "libvo_aacenc";
-            }
-            else if (outputFormat.Equals("asf"))
-            {
-                return "libvo_aacenc";
+                return "copy";
             }
 
-            return "copy";
+            return "libvo_aacenc";
         }
 
-        private int? GetNumAudioChannels(string audioCodec)
+        private int? GetNumAudioChannelsParam(string audioCodec, int libraryItemChannels)
         {
-            if (audioCodec.Equals("libvo_aacenc"))
+            if (libraryItemChannels > 2 && audioCodec.Equals("libvo_aacenc"))
             {
                 // libvo_aacenc currently only supports two channel output
                 return 2;
             }
-            
-            return AudioChannels;
+
+            return GetNumAudioChannelsParam(libraryItemChannels);
+        }
+
+        private bool HasBasicAudio(AudioStream audio)
+        {
+            int maxChannels = AudioChannels ?? 2;
+
+            if (audio.Channels > maxChannels)
+            {
+                return false;
+            }
+
+            if (audio.AudioFormat.IndexOf("aac", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                return true;
+            }
+            if (audio.AudioFormat.IndexOf("ac-3", StringComparison.OrdinalIgnoreCase) != -1 || audio.AudioFormat.IndexOf("ac3", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                return true;
+            }
+            if (audio.AudioFormat.IndexOf("mpeg", StringComparison.OrdinalIgnoreCase) != -1 || audio.AudioFormat.IndexOf("mp3", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
