@@ -10,6 +10,6 @@ namespace MediaBrowser.TV.Entities
         /// Store these to reduce disk access in Episode Resolver
         /// </summary>
         [IgnoreDataMember]
-        public IEnumerable<string> MetadataFiles { get; set; }
+        internal IEnumerable<string> MetadataFiles { get; set; }
     }
 }
