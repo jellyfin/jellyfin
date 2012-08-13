@@ -212,5 +212,41 @@ namespace MediaBrowser.Api.HttpHandlers
                 process.Dispose();
             }
         }
+
+        /// <summary>
+        /// Gets the number of audio channels to specify on the command line
+        /// </summary>
+        protected int? GetNumAudioChannelsParam(int libraryItemChannels)
+        {
+            // If the user requested a max number of channels
+            if (AudioChannels.HasValue)
+            {
+                // Only specify the param if we're going to downmix
+                if (AudioChannels.Value < libraryItemChannels)
+                {
+                    return AudioChannels.Value;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the number of audio channels to specify on the command line
+        /// </summary>
+        protected int? GetSampleRateParam(int libraryItemSampleRate)
+        {
+            // If the user requested a max value
+            if (AudioSampleRate.HasValue)
+            {
+                // Only specify the param if we're going to downmix
+                if (AudioSampleRate.Value < libraryItemSampleRate)
+                {
+                    return AudioSampleRate.Value;
+                }
+            }
+
+            return null;
+        }
     }
 }
