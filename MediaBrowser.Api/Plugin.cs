@@ -61,6 +61,10 @@ namespace MediaBrowser.Api
             {
                 return new ItemsWithYearHandler();
             }
+            else if (localPath.EndsWith("/api/itemswithperson", StringComparison.OrdinalIgnoreCase))
+            {
+                return new ItemsWithPersonHandler();
+            }
             else if (localPath.EndsWith("/api/years", StringComparison.OrdinalIgnoreCase))
             {
                 return new YearsHandler();
