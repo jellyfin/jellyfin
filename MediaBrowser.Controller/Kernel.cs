@@ -315,11 +315,70 @@ namespace MediaBrowser.Controller
         }
 
         /// <summary>
+        /// Finds all recursive items within a top-level parent that contain the given year and are allowed for the current user
+        /// </summary>
+        public IEnumerable<BaseItem> GetItemsWithYear(Folder parent, int year, Guid userId)
+        {
+            return GetParentalAllowedRecursiveChildren(parent, userId).Where(f => f.ProductionYear.HasValue && f.ProductionYear == year);
+        }
+        
+        /// <summary>
         /// Finds all recursive items within a top-level parent that contain the given person and are allowed for the current user
         /// </summary>
         public IEnumerable<BaseItem> GetItemsWithPerson(Folder parent, string personName, Guid userId)
         {
             return GetParentalAllowedRecursiveChildren(parent, userId).Where(f => f.People != null && f.People.Any(s => s.Name.Equals(personName, StringComparison.OrdinalIgnoreCase)));
+        }
+
+        /// <summary>
+        /// Gets all years from all recursive children of a folder
+        /// The CategoryInfo class is used to keep track of the number of times each year appears
+        /// </summary>
+        public IEnumerable<CategoryInfo<Year>> GetAllYears(Folder parent, Guid userId)
+        {
+            Dictionary<int, int> data = new Dictionary<int, int>();
+
+            // Get all the allowed recursive children
+            IEnumerable<BaseItem> allItems = Kernel.Instance.GetParentalAllowedRecursiveChildren(parent, userId);
+
+            foreach (var item in allItems)
+            {
+                // Add the year from the item to the data dictionary
+                // If the year already exists, increment the count
+                if (item.ProductionYear == null)
+                {
+                    continue;
+                }
+
+                if (!data.ContainsKey(item.ProductionYear.Value))
+                {
+                    data.Add(item.ProductionYear.Value, 1);
+                }
+                else
+                {
+                    data[item.ProductionYear.Value]++;
+                }
+            }
+
+            // Now go through the dictionary and create a Category for each studio
+            List<CategoryInfo<Year>> list = new List<CategoryInfo<Year>>();
+
+            foreach (int key in data.Keys)
+            {
+                // Get the original entity so that we can also supply the PrimaryImagePath
+                Year entity = Kernel.Instance.ItemController.GetYear(key);
+
+                if (entity != null)
+                {
+                    list.Add(new CategoryInfo<Year>()
+                    {
+                        Item = entity,
+                        ItemCount = data[key]
+                    });
+                }
+            }
+
+            return list;
         }
 
         /// <summary>
@@ -441,7 +500,7 @@ namespace MediaBrowser.Controller
             User user = new User();
 
             user.Name = "Default User";
-            user.Id = Guid.NewGuid();
+            user.Id = Guid.Parse("5d1cf7fce25943b790d140095457a42b");
 
             list.Add(user);
 

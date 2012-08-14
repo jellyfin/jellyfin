@@ -5,9 +5,9 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Api.HttpHandlers
 {
     /// <summary>
-    /// Gets all items within containing a studio
+    /// Gets all items within a Genre
     /// </summary>
-    public class StudioHandler : ItemListHandler
+    public class ItemsWithGenreHandler : ItemListHandler
     {
         protected override IEnumerable<BaseItem> ItemsToSerialize
         {
@@ -15,7 +15,7 @@ namespace MediaBrowser.Api.HttpHandlers
             {
                 Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
 
-                return Kernel.Instance.GetItemsWithStudio(parent, QueryString["name"], UserId);
+                return Kernel.Instance.GetItemsWithGenre(parent, QueryString["name"], UserId);
             }
         }
     }

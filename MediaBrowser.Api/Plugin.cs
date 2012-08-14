@@ -49,17 +49,25 @@ namespace MediaBrowser.Api
             {
                 return new UsersHandler();
             }
-            else if (localPath.EndsWith("/api/genre", StringComparison.OrdinalIgnoreCase))
+            else if (localPath.EndsWith("/api/itemswithgenre", StringComparison.OrdinalIgnoreCase))
             {
-                return new GenreHandler();
+                return new ItemsWithGenreHandler();
             }
             else if (localPath.EndsWith("/api/genres", StringComparison.OrdinalIgnoreCase))
             {
                 return new GenresHandler();
             }
-            else if (localPath.EndsWith("/api/studio", StringComparison.OrdinalIgnoreCase))
+            else if (localPath.EndsWith("/api/itemswithyear", StringComparison.OrdinalIgnoreCase))
             {
-                return new StudioHandler();
+                return new ItemsWithYearHandler();
+            }
+            else if (localPath.EndsWith("/api/years", StringComparison.OrdinalIgnoreCase))
+            {
+                return new YearsHandler();
+            }
+            else if (localPath.EndsWith("/api/itemswithstudio", StringComparison.OrdinalIgnoreCase))
+            {
+                return new ItemsWithStudioHandler();
             }
             else if (localPath.EndsWith("/api/studios", StringComparison.OrdinalIgnoreCase))
             {

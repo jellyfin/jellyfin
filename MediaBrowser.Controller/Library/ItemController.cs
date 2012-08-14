@@ -8,6 +8,7 @@ using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Common.Configuration;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -57,41 +58,41 @@ namespace MediaBrowser.Controller.Library
         }
         #endregion
 
-        #region Item Events
+        #region BaseItem Events
         /// <summary>
         /// Called when an item is being created.
         /// This should be used to fill item values, such as metadata
         /// </summary>
-        public event EventHandler<GenericItemEventArgs<BaseItem>> ItemCreating;
+        public event EventHandler<GenericItemEventArgs<BaseItem>> BaseItemCreating;
 
         /// <summary>
         /// Called when an item has been created.
         /// This should be used to process or modify item values.
         /// </summary>
-        public event EventHandler<GenericItemEventArgs<BaseItem>> ItemCreated;
+        public event EventHandler<GenericItemEventArgs<BaseItem>> BaseItemCreated;
         #endregion
 
         /// <summary>
         /// Called when an item has been created
         /// </summary>
-        private void OnItemCreated(BaseItem item, Folder parent)
+        private void OnBaseItemCreated(BaseItem item, Folder parent)
         {
             GenericItemEventArgs<BaseItem> args = new GenericItemEventArgs<BaseItem> { Item = item };
 
-            if (ItemCreating != null)
+            if (BaseItemCreating != null)
             {
-                ItemCreating(this, args);
+                BaseItemCreating(this, args);
             }
 
-            if (ItemCreated != null)
+            if (BaseItemCreated != null)
             {
-                ItemCreated(this, args);
+                BaseItemCreated(this, args);
             }
         }
 
         private void FireCreateEventsRecursive(Folder folder, Folder parent)
         {
-            OnItemCreated(folder, parent);
+            OnBaseItemCreated(folder, parent);
 
             int count = folder.Children.Length;
 
@@ -107,7 +108,7 @@ namespace MediaBrowser.Controller.Library
                 }
                 else
                 {
-                    OnItemCreated(item, folder);
+                    OnBaseItemCreated(item, folder);
                 }
             });
         }
@@ -153,7 +154,7 @@ namespace MediaBrowser.Controller.Library
                 }
                 else
                 {
-                    OnItemCreated(item, parent);
+                    OnBaseItemCreated(item, parent);
                 }
             }
 
@@ -299,28 +300,98 @@ namespace MediaBrowser.Controller.Library
             return returnFiles;
         }
 
+        /// <summary>
+        /// Gets a Person
+        /// </summary>
         public Person GetPerson(string name)
         {
-            // not yet implemented
-            return null;
+            string path = Path.Combine(ApplicationPaths.PeoplePath, name);
+
+            return GetImagesByNameItem<Person>(path, name);
         }
 
+        /// <summary>
+        /// Gets a Studio
+        /// </summary>
         public Studio GetStudio(string name)
         {
-            // not yet implemented
-            return null;
+            string path = Path.Combine(ApplicationPaths.StudioPath, name);
+
+            return GetImagesByNameItem<Studio>(path, name);
         }
 
+        /// <summary>
+        /// Gets a Genre
+        /// </summary>
         public Genre GetGenre(string name)
         {
-            // not yet implemented
-            return null;
+            string path = Path.Combine(ApplicationPaths.GenrePath, name);
+
+            return GetImagesByNameItem<Genre>(path, name);
         }
 
+        /// <summary>
+        /// Gets a Year
+        /// </summary>
         public Year GetYear(int value)
         {
-            // not yet implemented
-            return null;
+            string path = Path.Combine(ApplicationPaths.YearPath, value.ToString());
+
+            return GetImagesByNameItem<Year>(path, value.ToString());
+        }
+
+        private Dictionary<string, object> ImagesByNameItemCache = new Dictionary<string, object>();
+
+        /// <summary>
+        /// Generically retrieves an IBN item
+        /// </summary>
+        private T GetImagesByNameItem<T>(string path, string name)
+            where T : BaseEntity, new()
+        {
+            string key = path.ToLower();
+
+            // Look for it in the cache, if it's not there, create it
+            if (!ImagesByNameItemCache.ContainsKey(key))
+            {
+                ImagesByNameItemCache[key] = CreateImagesByNameItem<T>(path, name);
+            }
+
+            return ImagesByNameItemCache[key] as T;
+        }
+
+        /// <summary>
+        /// Creates an IBN item based on a given path
+        /// </summary>
+        private T CreateImagesByNameItem<T>(string path, string name)
+            where T : BaseEntity, new ()
+        {
+            T item = new T();
+
+            item.Name = name;
+            item.Id = Kernel.GetMD5(path);
+
+            if (Directory.Exists(path))
+            {
+                item.DateCreated = Directory.GetCreationTime(path);
+                item.DateModified = Directory.GetLastAccessTime(path);
+                if (File.Exists(Path.Combine(path, "folder.jpg")))
+                {
+                    item.PrimaryImagePath = Path.Combine(path, "folder.jpg");
+                }
+                else if (File.Exists(Path.Combine(path, "folder.png")))
+                {
+                    item.PrimaryImagePath = Path.Combine(path, "folder.png");
+                }
+            }
+            else
+            {
+                DateTime now = DateTime.Now;
+
+                item.DateCreated = now;
+                item.DateModified = now;
+            }
+
+            return item;
         }
     }
 }
