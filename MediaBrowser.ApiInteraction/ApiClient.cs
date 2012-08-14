@@ -227,7 +227,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         public async Task<IEnumerable<ApiBaseItemWrapper<ApiBaseItem>>> GetItemsWithPersonAsync(string name, PersonType? personType, Guid userId)
         {
-            string url = ApiUrl + "/itemswithgenre?userId=" + userId.ToString() + "&name=" + name;
+            string url = ApiUrl + "/itemswithperson?userId=" + userId.ToString() + "&name=" + name;
 
             if (personType.HasValue)
             {
