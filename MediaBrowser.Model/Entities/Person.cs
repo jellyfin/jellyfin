@@ -17,10 +17,16 @@ namespace MediaBrowser.Model.Entities
         public string Name { get; set; }
         public string Overview { get; set; }
         public PersonType PersonType { get; set; }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 
     public enum PersonType
     {
+        Other,
         Actor,
         Director,
         Writer,
