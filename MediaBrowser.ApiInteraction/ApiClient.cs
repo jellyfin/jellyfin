@@ -197,7 +197,7 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Gets a Year
+        /// Gets all items that contain a given Year
         /// </summary>
         public async Task<IEnumerable<ApiBaseItemWrapper<ApiBaseItem>>> GetItemsWithYearAsync(string name, Guid userId)
         {
@@ -210,11 +210,29 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Gets a Genre
+        /// Gets all items that contain a given Genre
         /// </summary>
         public async Task<IEnumerable<ApiBaseItemWrapper<ApiBaseItem>>> GetItemsWithGenreAsync(string name, Guid userId)
         {
             string url = ApiUrl + "/itemswithgenre?userId=" + userId.ToString() + "&name=" + name;
+
+            using (Stream stream = await HttpClient.GetStreamAsync(url))
+            {
+                return JsonSerializer.DeserializeFromStream<IEnumerable<ApiBaseItemWrapper<ApiBaseItem>>>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Gets all items that contain a given Person
+        /// </summary>
+        public async Task<IEnumerable<ApiBaseItemWrapper<ApiBaseItem>>> GetItemsWithPersonAsync(string name, PersonType? personType, Guid userId)
+        {
+            string url = ApiUrl + "/itemswithgenre?userId=" + userId.ToString() + "&name=" + name;
+
+            if (personType.HasValue)
+            {
+                url += "&persontype=" + personType.Value.ToString();
+            }
 
             using (Stream stream = await HttpClient.GetStreamAsync(url))
             {
@@ -249,7 +267,7 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Gets a Studio
+        /// Gets all items that contain a given Studio
         /// </summary>
         public async Task<IEnumerable<ApiBaseItemWrapper<ApiBaseItem>>> GetItemsWithStudioAsync(string name, Guid userId)
         {

@@ -307,6 +307,29 @@ namespace MediaBrowser.Controller
         }
 
         /// <summary>
+        /// Finds all recursive items within a top-level parent that contain the given person and are allowed for the current user
+        /// </summary>
+        /// <param name="personType">Specify this to limit results to a specific PersonType</param>
+        public IEnumerable<BaseItem> GetItemsWithPerson(Folder parent, string person, PersonType? personType, Guid userId)
+        {
+            return GetParentalAllowedRecursiveChildren(parent, userId).Where(c =>
+            {
+                if (c.People != null)
+                {
+                    if (personType.HasValue)
+                    {
+                        return c.People.Any(p => p.Name.Equals(person, StringComparison.OrdinalIgnoreCase) && p.PersonType == personType.Value);
+                    }
+                    else
+                    {
+                        return c.People.Any(p => p.Name.Equals(person, StringComparison.OrdinalIgnoreCase));
+                    }
+                }
+
+                return false;
+            });
+        }
+        /// <summary>
         /// Finds all recursive items within a top-level parent that contain the given genre and are allowed for the current user
         /// </summary>
         public IEnumerable<BaseItem> GetItemsWithGenre(Folder parent, string genre, Guid userId)
@@ -321,7 +344,7 @@ namespace MediaBrowser.Controller
         {
             return GetParentalAllowedRecursiveChildren(parent, userId).Where(f => f.ProductionYear.HasValue && f.ProductionYear == year);
         }
-        
+
         /// <summary>
         /// Finds all recursive items within a top-level parent that contain the given person and are allowed for the current user
         /// </summary>
