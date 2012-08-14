@@ -18,7 +18,10 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             get
             {
-                return new string[] { "mp4", "wmv", "3gp", "avi", "ogv", "mov", "m4v", "mkv" };
+                // mp4, 3gp, mov - muxer does not support non-seekable output
+                // avi, mov, mkv, m4v - can't stream these when encoding. the player will try to download them completely before starting playback.
+                // wmv - can't seem to figure out the output format name
+                return new string[] { "mp4", "3gp", "m4v", "mkv", "avi", "mov", "wmv" };
             }
         }
 
@@ -145,6 +148,14 @@ namespace MediaBrowser.Api.HttpHandlers
             {
                 return "wmv2";
             }
+            else if (outputFormat.Equals("wmv"))
+            {
+                return "wmv2";
+            }
+            else if (outputFormat.Equals("ogv"))
+            {
+                return "libtheora";
+            }
 
             return "libx264";
         }
@@ -154,6 +165,18 @@ namespace MediaBrowser.Api.HttpHandlers
             if (outputFormat.Equals("webm"))
             {
                 // Per webm specification, it must be vorbis
+                return "libvorbis";
+            }
+            else if (outputFormat.Equals("asf"))
+            {
+                return "wmav2";
+            }
+            else if (outputFormat.Equals("wmv"))
+            {
+                return "wmav2";
+            }
+            else if (outputFormat.Equals("ogv"))
+            {
                 return "libvorbis";
             }
 
@@ -168,10 +191,18 @@ namespace MediaBrowser.Api.HttpHandlers
 
         private int? GetNumAudioChannelsParam(string audioCodec, int libraryItemChannels)
         {
-            if (libraryItemChannels > 2 && audioCodec.Equals("libvo_aacenc"))
+            if (libraryItemChannels > 2)
             {
-                // libvo_aacenc currently only supports two channel output
-                return 2;
+                if (audioCodec.Equals("libvo_aacenc"))
+                {
+                    // libvo_aacenc currently only supports two channel output
+                    return 2;
+                }
+                else if (audioCodec.Equals("wmav2"))
+                {
+                    // wmav2 currently only supports two channel output
+                    return 2;
+                }
             }
 
             return GetNumAudioChannelsParam(libraryItemChannels);
@@ -179,11 +210,12 @@ namespace MediaBrowser.Api.HttpHandlers
 
         private bool HasBasicAudio(AudioStream audio)
         {
-            int maxChannels = AudioChannels ?? 2;
-
-            if (audio.Channels > maxChannels)
+            if (AudioChannels.HasValue)
             {
-                return false;
+                if (audio.Channels > AudioChannels.Value)
+                {
+                    return false;
+                }
             }
 
             if (audio.AudioFormat.IndexOf("aac", StringComparison.OrdinalIgnoreCase) != -1)
