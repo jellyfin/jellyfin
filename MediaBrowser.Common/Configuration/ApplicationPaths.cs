@@ -175,7 +175,7 @@ namespace MediaBrowser.Common.Configuration
         /// <summary>
         /// Gets the path to the Images By Name directory
         /// </summary>
-        public static string IBNPath
+        public static string ImagesByNamePath
         {
             get
             {
@@ -192,6 +192,90 @@ namespace MediaBrowser.Common.Configuration
             }
         }
 
+        private static string _PeoplePath;
+        /// <summary>
+        /// Gets the path to the People directory
+        /// </summary>
+        public static string PeoplePath
+        {
+            get
+            {
+                if (_PeoplePath == null)
+                {
+                    _PeoplePath = Path.Combine(ImagesByNamePath, "People");
+                    if (!Directory.Exists(_PeoplePath))
+                    {
+                        Directory.CreateDirectory(_PeoplePath);
+                    }
+                }
+
+                return _PeoplePath;
+            }
+        }
+
+        private static string _GenrePath;
+        /// <summary>
+        /// Gets the path to the Genre directory
+        /// </summary>
+        public static string GenrePath
+        {
+            get
+            {
+                if (_GenrePath == null)
+                {
+                    _GenrePath = Path.Combine(ImagesByNamePath, "Genre");
+                    if (!Directory.Exists(_GenrePath))
+                    {
+                        Directory.CreateDirectory(_GenrePath);
+                    }
+                }
+
+                return _GenrePath;
+            }
+        }
+
+        private static string _StudioPath;
+        /// <summary>
+        /// Gets the path to the Studio directory
+        /// </summary>
+        public static string StudioPath
+        {
+            get
+            {
+                if (_StudioPath == null)
+                {
+                    _StudioPath = Path.Combine(ImagesByNamePath, "Studio");
+                    if (!Directory.Exists(_StudioPath))
+                    {
+                        Directory.CreateDirectory(_StudioPath);
+                    }
+                }
+
+                return _StudioPath;
+            }
+        }
+
+        private static string _yearPath;
+        /// <summary>
+        /// Gets the path to the Year directory
+        /// </summary>
+        public static string YearPath
+        {
+            get
+            {
+                if (_yearPath == null)
+                {
+                    _yearPath = Path.Combine(ImagesByNamePath, "Year");
+                    if (!Directory.Exists(_yearPath))
+                    {
+                        Directory.CreateDirectory(_yearPath);
+                    }
+                }
+
+                return _yearPath;
+            }
+        }
+        
         /// <summary>
         /// Gets the path to the application's ProgramDataFolder
         /// </summary>

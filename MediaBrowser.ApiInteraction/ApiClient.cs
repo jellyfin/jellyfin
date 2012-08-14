@@ -184,15 +184,41 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Gets a Genre
+        /// Gets all Years
         /// </summary>
-        public async Task<CategoryInfo<Genre>> GetGenreAsync(string name, Guid userId)
+        public async Task<IEnumerable<CategoryInfo<Year>>> GetAllYearsAsync(Guid userId)
         {
-            string url = ApiUrl + "/genre?userId=" + userId.ToString() + "&name=" + name;
+            string url = ApiUrl + "/years?userId=" + userId.ToString();
 
             using (Stream stream = await HttpClient.GetStreamAsync(url))
             {
-                return JsonSerializer.DeserializeFromStream<CategoryInfo<Genre>>(stream);
+                return JsonSerializer.DeserializeFromStream<IEnumerable<CategoryInfo<Year>>>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Gets a Year
+        /// </summary>
+        public async Task<IEnumerable<ApiBaseItemWrapper<ApiBaseItem>>> GetItemsWithYearAsync(string name, Guid userId)
+        {
+            string url = ApiUrl + "/itemswithyear?userId=" + userId.ToString() + "&name=" + name;
+
+            using (Stream stream = await HttpClient.GetStreamAsync(url))
+            {
+                return JsonSerializer.DeserializeFromStream<IEnumerable<ApiBaseItemWrapper<ApiBaseItem>>>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Gets a Genre
+        /// </summary>
+        public async Task<IEnumerable<ApiBaseItemWrapper<ApiBaseItem>>> GetItemsWithGenreAsync(string name, Guid userId)
+        {
+            string url = ApiUrl + "/itemswithgenre?userId=" + userId.ToString() + "&name=" + name;
+
+            using (Stream stream = await HttpClient.GetStreamAsync(url))
+            {
+                return JsonSerializer.DeserializeFromStream<IEnumerable<ApiBaseItemWrapper<ApiBaseItem>>>(stream);
             }
         }
 
@@ -225,13 +251,13 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets a Studio
         /// </summary>
-        public async Task<CategoryInfo<Studio>> GetStudioAsync(string name, Guid userId)
+        public async Task<IEnumerable<ApiBaseItemWrapper<ApiBaseItem>>> GetItemsWithStudioAsync(string name, Guid userId)
         {
-            string url = ApiUrl + "/studio?userId=" + userId.ToString() + "&name=" + name;
+            string url = ApiUrl + "/itemswithstudio?userId=" + userId.ToString() + "&name=" + name;
 
             using (Stream stream = await HttpClient.GetStreamAsync(url))
             {
-                return JsonSerializer.DeserializeFromStream<CategoryInfo<Studio>>(stream);
+                return JsonSerializer.DeserializeFromStream<IEnumerable<ApiBaseItemWrapper<ApiBaseItem>>>(stream);
             }
         }
     }

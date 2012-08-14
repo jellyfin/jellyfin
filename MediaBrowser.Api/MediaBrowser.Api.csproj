@@ -49,7 +49,7 @@
     <Compile Include="ApiService.cs" />
     <Compile Include="HttpHandlers\AudioHandler.cs" />
     <Compile Include="HttpHandlers\BaseMediaHandler.cs" />
-    <Compile Include="HttpHandlers\GenreHandler.cs" />
+    <Compile Include="HttpHandlers\ItemsWithGenreHandler.cs" />
     <Compile Include="HttpHandlers\GenresHandler.cs" />
     <Compile Include="HttpHandlers\ImageHandler.cs" />
     <Compile Include="HttpHandlers\InProgressItemsHandler.cs" />
@@ -60,11 +60,13 @@
     <Compile Include="HttpHandlers\PluginConfigurationHandler.cs" />
     <Compile Include="HttpHandlers\PluginsHandler.cs" />
     <Compile Include="HttpHandlers\RecentlyAddedItemsHandler.cs" />
-    <Compile Include="HttpHandlers\StudioHandler.cs" />
+    <Compile Include="HttpHandlers\ItemsWithStudioHandler.cs" />
     <Compile Include="HttpHandlers\StudiosHandler.cs" />
     <Compile Include="HttpHandlers\UserConfigurationHandler.cs" />
     <Compile Include="HttpHandlers\UsersHandler.cs" />
     <Compile Include="HttpHandlers\VideoHandler.cs" />
+    <Compile Include="HttpHandlers\ItemsWithYearHandler.cs" />
+    <Compile Include="HttpHandlers\YearsHandler.cs" />
     <Compile Include="ImageProcessor.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
