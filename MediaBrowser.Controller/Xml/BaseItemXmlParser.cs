@@ -524,7 +524,7 @@ namespace MediaBrowser.Controller.Xml
                     {
                         case "Person":
                             {
-                                list.Add(GetPersonFromXmlNode(reader));
+                                list.Add(GetPersonFromXmlNode(reader.ReadSubtree()));
                                 break;
                             }
 
@@ -649,13 +649,21 @@ namespace MediaBrowser.Controller.Xml
                             {
                                 string type = reader.ReadString();
 
-                                if (type == "Director")
+                                if (type.Equals("Director", StringComparison.OrdinalIgnoreCase))
                                 {
                                     person.PersonType = PersonType.Director;
                                 }
-                                else if (type == "Actor")
+                                else if (type.Equals("Actor", StringComparison.OrdinalIgnoreCase))
                                 {
                                     person.PersonType = PersonType.Actor;
+                                }
+                                else if (type.Equals("Writer", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    person.PersonType = PersonType.Writer;
+                                }
+                                else if (type.Equals("Producer", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    person.PersonType = PersonType.Producer;
                                 }
                                 break;
                             }
