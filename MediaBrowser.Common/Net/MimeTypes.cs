@@ -61,6 +61,10 @@ namespace MediaBrowser.Common.Net
             {
                 return "video/3gpp";
             }
+            else if (ext.EndsWith("3g2", StringComparison.OrdinalIgnoreCase))
+            {
+                return "video/3gpp2";
+            }
             else if (ext.EndsWith("ts", StringComparison.OrdinalIgnoreCase))
             {
                 return "video/mp2t";
