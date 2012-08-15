@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -10,19 +9,31 @@ using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.ApiInteraction
 {
-    public class ApiClient : BaseClient
+    public class ApiClient : IDisposable
     {
+        /// <summary>
+        /// Gets or sets the server host name (myserver or 192.168.x.x)
+        /// </summary>
+        public string ServerHostName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the port number used by the API
+        /// </summary>
+        public int ServerApiPort { get; set; }
+
+        /// <summary>
+        /// Gets the current api url based on hostname and port.
+        /// </summary>
+        protected string ApiUrl
+        {
+            get
+            {
+                return string.Format("http://{0}:{1}/mediabrowser/api", ServerHostName, ServerApiPort);
+            }
+        }
+
+        public IHttpClient HttpClient { get; set; }
         public IJsonSerializer JsonSerializer { get; set; }
-
-        public ApiClient()
-            : base()
-        {
-        }
-
-        public ApiClient(HttpClientHandler handler)
-            : base(handler)
-        {
-        }
 
         /// <summary>
         /// Gets an image url that can be used to download an image from the api
@@ -277,6 +288,11 @@ namespace MediaBrowser.ApiInteraction
             {
                 return JsonSerializer.DeserializeFromStream<IEnumerable<ApiBaseItemWrapper<ApiBaseItem>>>(stream);
             }
+        }
+
+        public void Dispose()
+        {
+            HttpClient.Dispose();
         }
     }
 }

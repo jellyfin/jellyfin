@@ -185,7 +185,7 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        public virtual void ProcessRequest(HttpListenerContext ctx)
+        public virtual async Task ProcessRequest(HttpListenerContext ctx)
         {
             HttpListenerContext = ctx;
 
@@ -196,46 +196,61 @@ namespace MediaBrowser.Common.Net.Handlers
 
             ctx.Response.KeepAlive = true;
 
-            if (SupportsByteRangeRequests && IsRangeRequest)
+            try
             {
-                ctx.Response.Headers["Accept-Ranges"] = "bytes";
-            }
-            
-            // Set the initial status code
-            // When serving a range request, we need to return status code 206 to indicate a partial response body
-            StatusCode = SupportsByteRangeRequests && IsRangeRequest ? 206 : 200;
-
-            ctx.Response.ContentType = ContentType;
-
-            TimeSpan cacheDuration = CacheDuration;
-
-            if (ctx.Request.Headers.AllKeys.Contains("If-Modified-Since"))
-            {
-                DateTime ifModifiedSince;
-
-                if (DateTime.TryParse(ctx.Request.Headers["If-Modified-Since"].Replace(" GMT", string.Empty), out ifModifiedSince))
+                if (SupportsByteRangeRequests && IsRangeRequest)
                 {
-                    // If the cache hasn't expired yet just return a 304
-                    if (IsCacheValid(ifModifiedSince, cacheDuration, LastDateModified))
+                    ctx.Response.Headers["Accept-Ranges"] = "bytes";
+                }
+
+                // Set the initial status code
+                // When serving a range request, we need to return status code 206 to indicate a partial response body
+                StatusCode = SupportsByteRangeRequests && IsRangeRequest ? 206 : 200;
+
+                ctx.Response.ContentType = ContentType;
+
+                TimeSpan cacheDuration = CacheDuration;
+
+                if (ctx.Request.Headers.AllKeys.Contains("If-Modified-Since"))
+                {
+                    DateTime ifModifiedSince;
+
+                    if (DateTime.TryParse(ctx.Request.Headers["If-Modified-Since"].Replace(" GMT", string.Empty), out ifModifiedSince))
                     {
-                        StatusCode = 304;
+                        // If the cache hasn't expired yet just return a 304
+                        if (IsCacheValid(ifModifiedSince, cacheDuration, LastDateModified))
+                        {
+                            StatusCode = 304;
+                        }
                     }
                 }
-            }
 
-            if (StatusCode == 200 || StatusCode == 206)
-            {
-                ProcessUncachedResponse(ctx, cacheDuration);
+                PrepareResponse();
+
+                if (IsResponseValid)
+                {
+                    await ProcessUncachedRequest(ctx, cacheDuration);
+                }
+                else
+                {
+                    ctx.Response.StatusCode = StatusCode;
+                    ctx.Response.SendChunked = false;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                ctx.Response.StatusCode = StatusCode;
-                ctx.Response.SendChunked = false;
+                // It might be too late if some response data has already been transmitted, but try to set this
+                ctx.Response.StatusCode = 500;
+                
+                Logger.LogException(ex);
+            }
+            finally
+            {
                 DisposeResponseStream();
             }
         }
 
-        private async void ProcessUncachedResponse(HttpListenerContext ctx, TimeSpan cacheDuration)
+        private async Task ProcessUncachedRequest(HttpListenerContext ctx, TimeSpan cacheDuration)
         {
             long? totalContentLength = TotalContentLength;
 
@@ -269,7 +284,7 @@ namespace MediaBrowser.Common.Net.Handlers
             // Set the status code
             ctx.Response.StatusCode = StatusCode;
 
-            if (StatusCode == 200 || StatusCode == 206)
+            if (IsResponseValid)
             {
                 // Finally, write the response data
                 Stream outputStream = ctx.Response.OutputStream;
@@ -288,23 +303,11 @@ namespace MediaBrowser.Common.Net.Handlers
                     outputStream = CompressedStream;
                 }
 
-                try
-                {
-                    await WriteResponseToOutputStream(outputStream);
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogException(ex);
-                }
-                finally
-                {
-                    DisposeResponseStream();
-                }
+                await WriteResponseToOutputStream(outputStream);
             }
             else
             {
                 ctx.Response.SendChunked = false;
-                DisposeResponseStream();
             }
         }
 
@@ -317,9 +320,16 @@ namespace MediaBrowser.Common.Net.Handlers
             response.Headers[HttpResponseHeader.LastModified] = lastModified.ToString("r");
         }
 
+        /// <summary>
+        /// Gives subclasses a chance to do and prep work, and also to validate data and set an error status code, if needed
+        /// </summary>
+        protected virtual void PrepareResponse()
+        {
+        }
+
         protected abstract Task WriteResponseToOutputStream(Stream stream);
 
-        private void DisposeResponseStream()
+        protected virtual void DisposeResponseStream()
         {
             if (CompressedStream != null)
             {
@@ -365,6 +375,14 @@ namespace MediaBrowser.Common.Net.Handlers
         protected virtual DateTime? GetLastDateModified()
         {
             return null;
+        }
+
+        private bool IsResponseValid
+        {
+            get
+            {
+                return StatusCode == 200 || StatusCode == 206;
+            }
         }
     }
 }

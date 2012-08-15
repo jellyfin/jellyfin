@@ -5,6 +5,8 @@ namespace MediaBrowser.Common.Net
 {
     public static class MimeTypes
     {
+        public static string JsonMimeType = "application/json";
+
         public static string GetMimeType(string path)
         {
             string ext = Path.GetExtension(path);

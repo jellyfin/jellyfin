@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Linq;
+using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public class PluginConfigurationHandler : JsonHandler
+    public class PluginConfigurationHandler : BaseJsonHandler
     {
-        protected override object ObjectToSerialize
+        protected override object GetObjectToSerialize()
         {
-            get
-            {
-                string pluginName = QueryString["name"];
+            string pluginName = QueryString["name"];
 
-                return Kernel.Instance.Plugins.First(p => p.Name.Equals(pluginName, StringComparison.OrdinalIgnoreCase)).Configuration;
-            }
+            return Kernel.Instance.Plugins.First(p => p.Name.Equals(pluginName, StringComparison.OrdinalIgnoreCase)).Configuration;
         }
     }
 }

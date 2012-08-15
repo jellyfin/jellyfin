@@ -1,18 +1,23 @@
 ﻿using System;
+using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public class ItemHandler : JsonHandler
+    public class ItemHandler : BaseJsonHandler
     {
-        protected sealed override object ObjectToSerialize
+        protected sealed override object GetObjectToSerialize()
         {
-            get
-            {
-                Guid userId = Guid.Parse(QueryString["userid"]);
+            Guid userId = Guid.Parse(QueryString["userid"]);
 
-                return ApiService.GetSerializationObject(ItemToSerialize, true, userId);
+            BaseItem item = ItemToSerialize;
+
+            if (item == null)
+            {
+                return null;
             }
+
+            return ApiService.GetSerializationObject(item, true, userId);
         }
 
         protected virtual BaseItem ItemToSerialize

@@ -1,15 +1,13 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Common.Net.Handlers;
+using MediaBrowser.Controller;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    class UsersHandler : JsonHandler
+    class UsersHandler : BaseJsonHandler
     {
-        protected override object ObjectToSerialize
+        protected override object GetObjectToSerialize()
         {
-            get
-            {
-                return Kernel.Instance.Users;
-            }
+            return Kernel.Instance.Users;
         }
     }
 }

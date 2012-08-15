@@ -28,37 +28,44 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        private bool FileStreamDiscovered = false;
-        private FileStream _FileStream = null;
-        private FileStream FileStream
+        private bool _SourceStreamEnsured = false;
+        private Stream _SourceStream = null;
+        private Stream SourceStream
         {
             get
             {
-                if (!FileStreamDiscovered)
-                {
-                    try
-                    {
-                        _FileStream = File.OpenRead(Path);
-                    }
-                    catch (FileNotFoundException)
-                    {
-                        StatusCode = 404;
-                    }
-                    catch (DirectoryNotFoundException)
-                    {
-                        StatusCode = 404;
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        StatusCode = 403;
-                    }
-                    finally
-                    {
-                        FileStreamDiscovered = true;
-                    }
-                }
+                EnsureSourceStream();
+                return _SourceStream;
+            }
+        }
 
-                return _FileStream;
+        private void EnsureSourceStream()
+        {
+            if (!_SourceStreamEnsured)
+            {
+                try
+                {
+                    _SourceStream = File.OpenRead(Path);
+                }
+                catch (FileNotFoundException ex)
+                {
+                    StatusCode = 404;
+                    Logger.LogException(ex);
+                }
+                catch (DirectoryNotFoundException ex)
+                {
+                    StatusCode = 404;
+                    Logger.LogException(ex);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    StatusCode = 403;
+                    Logger.LogException(ex);
+                }
+                finally
+                {
+                    _SourceStreamEnsured = true;
+                }
             }
         }
 
@@ -74,13 +81,13 @@ namespace MediaBrowser.Common.Net.Handlers
         {
             get
             {
-                string contentType = ContentType;
-
                 // Can't compress these
                 if (IsRangeRequest)
                 {
                     return false;
                 }
+
+                string contentType = ContentType;
 
                 // Don't compress media
                 if (contentType.StartsWith("audio/", StringComparison.OrdinalIgnoreCase) || contentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase))
@@ -95,26 +102,19 @@ namespace MediaBrowser.Common.Net.Handlers
 
         protected override long? GetTotalContentLength()
         {
-            try
-            {
-                return FileStream.Length;
-            }
-            catch
-            {
-                return base.GetTotalContentLength();
-            }
+            return SourceStream.Length;
         }
 
         protected override DateTime? GetLastDateModified()
         {
-            try
+            EnsureSourceStream();
+
+            if (SourceStream == null)
             {
-                return File.GetLastWriteTime(Path);
+                return null;
             }
-            catch
-            {
-                return base.GetLastDateModified();
-            }
+
+            return File.GetLastWriteTime(Path);
         }
 
         public override string ContentType
@@ -125,48 +125,48 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
+        protected override void PrepareResponse()
+        {
+            base.PrepareResponse();
+
+            EnsureSourceStream();
+        }
+
         protected async override Task WriteResponseToOutputStream(Stream stream)
         {
-            try
+            if (IsRangeRequest)
             {
-                if (FileStream != null)
-                {
-                    if (IsRangeRequest)
-                    {
-                        KeyValuePair<long, long?> requestedRange = RequestedRanges.First();
+                KeyValuePair<long, long?> requestedRange = RequestedRanges.First();
 
-                        // If the requested range is "0-" and we know the total length, we can optimize by avoiding having to buffer the content into memory
-                        if (requestedRange.Value == null && TotalContentLength != null)
-                        {
-                            await ServeCompleteRangeRequest(requestedRange, stream);
-                        }
-                        else if (TotalContentLength.HasValue)
-                        {
-                            // This will have to buffer a portion of the content into memory
-                            await ServePartialRangeRequestWithKnownTotalContentLength(requestedRange, stream);
-                        }
-                        else
-                        {
-                            // This will have to buffer the entire content into memory
-                            await ServePartialRangeRequestWithUnknownTotalContentLength(requestedRange, stream);
-                        }
-                    }
-                    else
-                    {
-                        await FileStream.CopyToAsync(stream);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogException("WriteResponseToOutputStream", ex);
-            }
-            finally
-            {
-                if (FileStream != null)
+                // If the requested range is "0-" and we know the total length, we can optimize by avoiding having to buffer the content into memory
+                if (requestedRange.Value == null && TotalContentLength != null)
                 {
-                    FileStream.Dispose();
+                    await ServeCompleteRangeRequest(requestedRange, stream);
                 }
+                else if (TotalContentLength.HasValue)
+                {
+                    // This will have to buffer a portion of the content into memory
+                    await ServePartialRangeRequestWithKnownTotalContentLength(requestedRange, stream);
+                }
+                else
+                {
+                    // This will have to buffer the entire content into memory
+                    await ServePartialRangeRequestWithUnknownTotalContentLength(requestedRange, stream);
+                }
+            }
+            else
+            {
+                await SourceStream.CopyToAsync(stream);
+            }
+        }
+
+        protected override void DisposeResponseStream()
+        {
+            base.DisposeResponseStream();
+
+            if (SourceStream != null)
+            {
+                SourceStream.Dispose();
             }
         }
 
@@ -188,10 +188,10 @@ namespace MediaBrowser.Common.Net.Handlers
 
             if (rangeStart > 0)
             {
-                FileStream.Position = rangeStart;
+                SourceStream.Position = rangeStart;
             }
 
-            await FileStream.CopyToAsync(responseStream);
+            await SourceStream.CopyToAsync(responseStream);
         }
 
         /// <summary>
@@ -200,7 +200,7 @@ namespace MediaBrowser.Common.Net.Handlers
         private async Task ServePartialRangeRequestWithUnknownTotalContentLength(KeyValuePair<long, long?> requestedRange, Stream responseStream)
         {
             // Read the entire stream so that we can determine the length
-            byte[] bytes = await ReadBytes(FileStream, 0, null);
+            byte[] bytes = await ReadBytes(SourceStream, 0, null);
 
             long totalContentLength = bytes.LongLength;
 
@@ -226,7 +226,7 @@ namespace MediaBrowser.Common.Net.Handlers
             long rangeLength = 1 + rangeEnd - rangeStart;
 
             // Only read the bytes we need
-            byte[] bytes = await ReadBytes(FileStream, Convert.ToInt32(rangeStart), Convert.ToInt32(rangeLength));
+            byte[] bytes = await ReadBytes(SourceStream, Convert.ToInt32(rangeStart), Convert.ToInt32(rangeLength));
 
             // Content-Length is the length of what we're serving, not the original content
             HttpListenerContext.Response.ContentLength64 = rangeLength;

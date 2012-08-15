@@ -1,20 +1,18 @@
 ﻿using System;
+using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public class StudiosHandler : JsonHandler
+    public class StudiosHandler : BaseJsonHandler
     {
-        protected override object ObjectToSerialize
+        protected override object GetObjectToSerialize()
         {
-            get
-            {
-                Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
-                Guid userId = Guid.Parse(QueryString["userid"]);
+            Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
+            Guid userId = Guid.Parse(QueryString["userid"]);
 
-                return Kernel.Instance.GetAllStudios(parent, userId);
-            }
+            return Kernel.Instance.GetAllStudios(parent, userId);
         }
     }
 }
