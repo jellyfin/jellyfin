@@ -41,6 +41,7 @@
     <Compile Include="Entities\Folder.cs" />
     <Compile Include="Entities\Genre.cs" />
     <Compile Include="Entities\ImageType.cs" />
+    <Compile Include="Entities\MetadataProviders.cs" />
     <Compile Include="Entities\Person.cs" />
     <Compile Include="Entities\Studio.cs" />
     <Compile Include="Entities\Video.cs" />

@@ -45,7 +45,6 @@
     <Compile Include="Resolvers\BoxSetResolver.cs" />
     <Compile Include="Entities\Movie.cs" />
     <Compile Include="Resolvers\MovieResolver.cs" />
-    <Compile Include="Metadata\MovieXmlParser.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

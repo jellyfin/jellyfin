@@ -10,7 +10,7 @@ namespace MediaBrowser.Controller.Xml
     /// <summary>
     /// Provides a base class for parsing metadata xml
     /// </summary>
-    public abstract class BaseItemXmlParser<T>
+    public class BaseItemXmlParser<T>
         where T : BaseItem, new()
     {
         /// <summary>
@@ -214,6 +214,32 @@ namespace MediaBrowser.Controller.Xml
 
                         break;
                     }
+
+                case "TMDbId":
+                    string tmdb = reader.ReadString();
+                    if (!string.IsNullOrWhiteSpace(tmdb))
+                    {
+                        item.SetProviderId(MetadataProviders.Tmdb, tmdb);
+                    }
+                    break;
+
+                case "TVcomId":
+                    string TVcomId = reader.ReadString();
+                    if (!string.IsNullOrWhiteSpace(TVcomId))
+                    {
+                        item.SetProviderId(MetadataProviders.Tvcom, TVcomId);
+                    }
+                    break;
+
+                case "IMDB_ID":
+                case "IMDB":
+                case "IMDbId":
+                    string IMDbId = reader.ReadString();
+                    if (!string.IsNullOrWhiteSpace(IMDbId))
+                    {
+                        item.SetProviderId(MetadataProviders.Imdb, IMDbId);
+                    }
+                    break;
 
                 case "Genres":
                     FetchFromGenresNode(reader.ReadSubtree(), item);

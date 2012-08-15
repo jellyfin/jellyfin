@@ -1,22 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public abstract class ItemListHandler : JsonHandler
+    public abstract class ItemListHandler : BaseJsonHandler
     {
-        protected sealed override object ObjectToSerialize
+        protected override object GetObjectToSerialize()
         {
-            get
+            return ItemsToSerialize.Select(i =>
             {
-                return ItemsToSerialize.Select(i =>
-                {
-                    return ApiService.GetSerializationObject(i, false, UserId);
+                return ApiService.GetSerializationObject(i, false, UserId);
 
-                });
-            }
+            });
         }
 
         protected abstract IEnumerable<BaseItem> ItemsToSerialize

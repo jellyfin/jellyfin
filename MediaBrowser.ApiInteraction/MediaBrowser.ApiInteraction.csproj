@@ -40,7 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiClient.cs" />
-    <Compile Include="BaseClient.cs" />
+    <Compile Include="IHttpClient.cs" />
     <Compile Include="IJsonSerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

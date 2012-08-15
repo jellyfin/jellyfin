@@ -58,6 +58,8 @@ namespace MediaBrowser.Api
                 {
                     wrapper.Children = Kernel.Instance.GetParentalAllowedChildren(folder, userId).Select(c => GetSerializationObject(c, false, userId));
                 }
+
+                wrapper.People = item.People;
             }
 
             return wrapper;
@@ -136,15 +138,18 @@ namespace MediaBrowser.Api
 
                     _FFMpegPath = Path.Combine(FFMpegDirectory, filename);
 
-                    if (!File.Exists(_FFMpegPath))
+                    // Always re-extract the first time to handle new versions
+                    if (File.Exists(_FFMpegPath))
                     {
-                        // Extract ffprobe
-                        using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Api.FFMpeg." + filename))
+                        File.Delete(_FFMpegPath);
+                    }
+
+                    // Extract ffprobe
+                    using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Api.FFMpeg." + filename))
+                    {
+                        using (FileStream fileStream = new FileStream(_FFMpegPath, FileMode.Create))
                         {
-                            using (FileStream fileStream = new FileStream(_FFMpegPath, FileMode.Create))
-                            {
-                                stream.CopyTo(fileStream);
-                            }
+                            stream.CopyTo(fileStream);
                         }
                     }
                 }

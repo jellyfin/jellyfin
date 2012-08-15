@@ -1,15 +1,13 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Common.Net.Handlers;
+using MediaBrowser.Controller;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public class PersonHandler : JsonHandler
+    public class PersonHandler : BaseJsonHandler
     {
-        protected sealed override object ObjectToSerialize
+        protected override object GetObjectToSerialize()
         {
-            get
-            {
-                return Kernel.Instance.ItemController.GetPerson(QueryString["name"]);
-            }
+            return Kernel.Instance.ItemController.GetPerson(QueryString["name"]);
         }
     }
 }

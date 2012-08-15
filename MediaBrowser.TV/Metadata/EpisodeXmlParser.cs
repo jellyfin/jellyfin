@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Xml;
 using MediaBrowser.Controller.Xml;
 using MediaBrowser.TV.Entities;

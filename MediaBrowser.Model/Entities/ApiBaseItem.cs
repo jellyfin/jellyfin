@@ -11,14 +11,9 @@ namespace MediaBrowser.Model.Entities
     public class ApiBaseItem : BaseItem
     {
         // TV Series
-        public string TvdbId { get; set; }
         public string Status { get; set; }
         public IEnumerable<DayOfWeek> AirDays { get; set; }
         public string AirTime { get; set; }
-
-        // Movie
-        public string TmdbId { get; set; }
-        public string ImdbId { get; set; }
     }
 
     /// <summary>
@@ -48,6 +43,8 @@ namespace MediaBrowser.Model.Entities
         {
             return Type.Equals(type, StringComparison.OrdinalIgnoreCase);
         }
+
+        public IEnumerable<PersonInfo> People { get; set; }
 
         /// <summary>
         /// If the item does not have a logo, this will hold the Id of the Parent that has one.

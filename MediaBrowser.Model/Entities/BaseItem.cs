@@ -33,6 +33,7 @@ namespace MediaBrowser.Model.Entities
         public string Overview { get; set; }
         public string Tagline { get; set; }
 
+        [IgnoreDataMember]
         public IEnumerable<PersonInfo> People { get; set; }
 
         public IEnumerable<string> Studios { get; set; }
@@ -56,5 +57,49 @@ namespace MediaBrowser.Model.Entities
         public IEnumerable<Video> LocalTrailers { get; set; }
 
         public string TrailerUrl { get; set; }
+
+        public Dictionary<string, string> ProviderIds { get; set; }
+
+        /// <summary>
+        /// Gets a provider id
+        /// </summary>
+        public string GetProviderId(MetadataProviders provider)
+        {
+            return GetProviderId(provider.ToString());
+        }
+
+        /// <summary>
+        /// Gets a provider id
+        /// </summary>
+        public string GetProviderId(string name)
+        {
+            if (ProviderIds == null)
+            {
+                return null;
+            }
+
+            return ProviderIds[name];
+        }
+
+        /// <summary>
+        /// Sets a provider id
+        /// </summary>
+        public void SetProviderId(string name, string value)
+        {
+            if (ProviderIds == null)
+            {
+                ProviderIds = new Dictionary<string, string>();
+            }
+
+            ProviderIds[name] = value;
+        }
+
+        /// <summary>
+        /// Sets a provider id
+        /// </summary>
+        public void SetProviderId(MetadataProviders provider, string value)
+        {
+            SetProviderId(provider.ToString(), value);
+        }
     }
 }

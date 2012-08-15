@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Xml;
 using MediaBrowser.Controller.Xml;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.TV.Entities;
 
 namespace MediaBrowser.TV.Metadata
@@ -12,7 +13,11 @@ namespace MediaBrowser.TV.Metadata
             switch (reader.Name)
             {
                 case "id":
-                    item.TvdbId = reader.ReadString();
+                    string id = reader.ReadString();
+                    if (!string.IsNullOrWhiteSpace(id))
+                    {
+                        item.SetProviderId(MetadataProviders.Tvdb, id);
+                    }
                     break;
 
                 case "Airs_DayOfWeek":

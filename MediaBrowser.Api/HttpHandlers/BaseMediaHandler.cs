@@ -107,17 +107,18 @@ namespace MediaBrowser.Api.HttpHandlers
             }
         }
 
-        public override void ProcessRequest(HttpListenerContext ctx)
+        public override async Task ProcessRequest(HttpListenerContext ctx)
         {
             HttpListenerContext = ctx;
 
             if (!RequiresConversion())
             {
-                new StaticFileHandler() { Path = LibraryItem.Path }.ProcessRequest(ctx);
-                return;
+                await new StaticFileHandler() { Path = LibraryItem.Path }.ProcessRequest(ctx);
             }
-
-            base.ProcessRequest(ctx);
+            else
+            {
+                await base.ProcessRequest(ctx);
+            }
         }
 
         protected abstract string GetCommandLineArguments();

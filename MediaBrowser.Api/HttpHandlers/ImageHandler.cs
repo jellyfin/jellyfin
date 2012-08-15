@@ -2,6 +2,8 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Logging;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
@@ -10,12 +12,12 @@ namespace MediaBrowser.Api.HttpHandlers
 {
     public class ImageHandler : BaseHandler
     {
-        private string _ImagePath = string.Empty;
+        private string _ImagePath = null;
         private string ImagePath
         {
             get
             {
-                if (string.IsNullOrEmpty(_ImagePath))
+                if (_ImagePath == null)
                 {
                     _ImagePath = GetImagePath();
                 }
@@ -24,18 +26,61 @@ namespace MediaBrowser.Api.HttpHandlers
             }
         }
 
+        private Stream _SourceStream = null;
+        private Stream SourceStream
+        {
+            get
+            {
+                EnsureSourceStream();
+
+                return _SourceStream;
+            }
+        }
+
+
+        private bool _SourceStreamEnsured = false;
+        private void EnsureSourceStream()
+        {
+            if (!_SourceStreamEnsured)
+            {
+                try
+                {
+                    _SourceStream = File.OpenRead(ImagePath);
+                }
+                catch (FileNotFoundException ex)
+                {
+                    StatusCode = 404;
+                    Logger.LogException(ex);
+                }
+                catch (DirectoryNotFoundException ex)
+                {
+                    StatusCode = 404;
+                    Logger.LogException(ex);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    StatusCode = 403;
+                    Logger.LogException(ex);
+                }
+                finally
+                {
+                    _SourceStreamEnsured = true;
+                }
+            }
+        }
+        
         public override string ContentType
         {
             get
             {
-                string extension = Path.GetExtension(ImagePath);
+                EnsureSourceStream();
 
-                if (extension.EndsWith("png", StringComparison.OrdinalIgnoreCase))
+                if (SourceStream == null)
                 {
-                    return "image/png";
+                    return null;
                 }
-
-                return "image/jpeg";
+                
+                return MimeTypes.GetMimeType(ImagePath);
             }
         }
 
@@ -49,14 +94,14 @@ namespace MediaBrowser.Api.HttpHandlers
 
         protected override DateTime? GetLastDateModified()
         {
-            try
+            EnsureSourceStream();
+
+            if (SourceStream == null)
             {
-                return File.GetLastWriteTime(ImagePath);
+                return null;
             }
-            catch
-            {
-                return base.GetLastDateModified();
-            }
+
+            return File.GetLastWriteTime(ImagePath);
         }
 
         private int? Height
@@ -142,7 +187,7 @@ namespace MediaBrowser.Api.HttpHandlers
 
                 if (string.IsNullOrEmpty(imageType))
                 {
-                    return Model.Entities.ImageType.Primary;
+                    return ImageType.Primary;
                 }
 
                 return (ImageType)Enum.Parse(typeof(ImageType), imageType, true);
@@ -153,7 +198,7 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             return Task.Run(() =>
             {
-                ImageProcessor.ProcessImage(ImagePath, stream, Width, Height, MaxWidth, MaxHeight, Quality);
+                ImageProcessor.ProcessImage(SourceStream, stream, Width, Height, MaxWidth, MaxHeight, Quality);
             });
         }
 

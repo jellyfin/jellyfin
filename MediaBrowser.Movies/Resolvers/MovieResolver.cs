@@ -6,9 +6,9 @@ using System.Linq;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Controller.Xml;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Movies.Entities;
-using MediaBrowser.Movies.Metadata;
 
 namespace MediaBrowser.Movies.Resolvers
 {
@@ -97,7 +97,7 @@ namespace MediaBrowser.Movies.Resolvers
 
             if (metadataFile.HasValue)
             {
-                new MovieXmlParser().Fetch(item, metadataFile.Value.Key);
+                new BaseItemXmlParser<Movie>().Fetch(item, metadataFile.Value.Key);
             }
 
             PopulateBonusFeatures(item, args);

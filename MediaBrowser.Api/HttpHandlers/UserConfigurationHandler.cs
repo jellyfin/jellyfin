@@ -1,18 +1,16 @@
 ﻿using System;
+using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public class UserConfigurationHandler : JsonHandler
+    public class UserConfigurationHandler : BaseJsonHandler
     {
-        protected override object ObjectToSerialize
+        protected override object GetObjectToSerialize()
         {
-            get
-            {
-                Guid userId = Guid.Parse(QueryString["userid"]);
+            Guid userId = Guid.Parse(QueryString["userid"]);
 
-                return Kernel.Instance.GetUserConfiguration(userId);
-            }
+            return Kernel.Instance.GetUserConfiguration(userId);
         }
     }
 }

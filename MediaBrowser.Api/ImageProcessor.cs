@@ -8,9 +8,9 @@ namespace MediaBrowser.Api
 {
     public static class ImageProcessor
     {
-        public static void ProcessImage(string path, Stream toStream, int? width, int? height, int? maxWidth, int? maxHeight, int? quality)
+        public static void ProcessImage(Stream sourceImageStream, Stream toStream, int? width, int? height, int? maxWidth, int? maxHeight, int? quality)
         {
-            Image originalImage = Image.FromFile(path);
+            Image originalImage = Image.FromStream(sourceImageStream);
 
             var newWidth = originalImage.Width;
             var newHeight = originalImage.Height;

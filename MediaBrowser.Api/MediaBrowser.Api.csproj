@@ -56,7 +56,6 @@
     <Compile Include="HttpHandlers\ItemHandler.cs" />
     <Compile Include="HttpHandlers\ItemListHandler.cs" />
     <Compile Include="HttpHandlers\ItemsWithPersonHandler.cs" />
-    <Compile Include="HttpHandlers\JsonHandler.cs" />
     <Compile Include="HttpHandlers\PersonHandler.cs" />
     <Compile Include="HttpHandlers\PluginConfigurationHandler.cs" />
     <Compile Include="HttpHandlers\PluginsHandler.cs" />
