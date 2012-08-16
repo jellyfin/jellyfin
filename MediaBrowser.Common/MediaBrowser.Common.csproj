@@ -41,6 +41,7 @@
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Reactive, Version=1.0.10621.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Rx-Main.1.0.11226\lib\Net4\System.Reactive.dll</HintPath>
@@ -57,6 +58,7 @@
   <ItemGroup>
     <Compile Include="Configuration\ApplicationPaths.cs" />
     <Compile Include="Configuration\BaseApplicationConfiguration.cs" />
+    <Compile Include="Drawing\DrawingUtils.cs" />
     <Compile Include="Events\GenericItemEventArgs.cs" />
     <Compile Include="Net\Handlers\StaticFileHandler.cs" />
     <Compile Include="Net\MimeTypes.cs" />
