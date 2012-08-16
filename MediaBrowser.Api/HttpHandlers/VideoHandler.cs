@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Model.Entities;
+using System.Drawing;
+using MediaBrowser.Common.Drawing;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
@@ -41,12 +43,16 @@ namespace MediaBrowser.Api.HttpHandlers
                 return true;
             }
 
+            if (RequiresVideoConversion())
+            {
+                return true;
+            }
+
             AudioStream audio = LibraryItem.AudioStreams.FirstOrDefault();
 
             if (audio != null)
             {
-                // If the number of channels is greater than our desired channels, we need to transcode
-                if (AudioChannels.HasValue && AudioChannels.Value < audio.Channels)
+                if (RequiresAudioConversion(audio))
                 {
                     return true;
                 }
@@ -99,6 +105,16 @@ namespace MediaBrowser.Api.HttpHandlers
             string codec = GetVideoCodec(outputFormat);
 
             string args = "-vcodec " + codec;
+
+            if (!codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
+            {
+                if (Width.HasValue || Height.HasValue || MaxHeight.HasValue || MaxWidth.HasValue)
+                {
+                    Size size = DrawingUtils.Resize(LibraryItem.Width, LibraryItem.Height, Width, Height, MaxWidth, MaxHeight);
+
+                    args += string.Format(" -s {0}x{1}", size.Width, size.Height);
+                }
+            }
 
             return args;
         }
@@ -157,6 +173,11 @@ namespace MediaBrowser.Api.HttpHandlers
                 return "libtheora";
             }
 
+            if (!RequiresVideoConversion())
+            {
+                return "copy";
+            }
+
             return "libx264";
         }
 
@@ -181,7 +202,7 @@ namespace MediaBrowser.Api.HttpHandlers
             }
 
             // See if we can just copy the stream
-            if (HasBasicAudio(audioStream))
+            if (!RequiresAudioConversion(audioStream))
             {
                 return "copy";
             }
@@ -208,30 +229,131 @@ namespace MediaBrowser.Api.HttpHandlers
             return GetNumAudioChannelsParam(libraryItemChannels);
         }
 
-        private bool HasBasicAudio(AudioStream audio)
+        private bool RequiresVideoConversion()
+        {
+            // Check dimensions
+            if (Width.HasValue)
+            {
+                if (Width.Value != LibraryItem.Width)
+                {
+                    return true;
+                }
+            }
+            if (Height.HasValue)
+            {
+                if (Height.Value != LibraryItem.Height)
+                {
+                    return true;
+                }
+            }
+            if (MaxWidth.HasValue)
+            {
+                if (MaxWidth.Value < LibraryItem.Width)
+                {
+                    return true;
+                }
+            }
+            if (MaxHeight.HasValue)
+            {
+                if (MaxHeight.Value < LibraryItem.Height)
+                {
+                    return true;
+                }
+            }
+
+            if (LibraryItem.VideoCodec.IndexOf("264", StringComparison.OrdinalIgnoreCase) != -1 || LibraryItem.VideoCodec.IndexOf("avc", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                return false;
+            }
+
+            return false;
+        }
+
+        private bool RequiresAudioConversion(AudioStream audio)
         {
             if (AudioChannels.HasValue)
             {
                 if (audio.Channels > AudioChannels.Value)
                 {
-                    return false;
+                    return true;
                 }
             }
 
             if (audio.AudioFormat.IndexOf("aac", StringComparison.OrdinalIgnoreCase) != -1)
             {
-                return true;
+                return false;
             }
             if (audio.AudioFormat.IndexOf("ac-3", StringComparison.OrdinalIgnoreCase) != -1 || audio.AudioFormat.IndexOf("ac3", StringComparison.OrdinalIgnoreCase) != -1)
             {
-                return true;
+                return false;
             }
             if (audio.AudioFormat.IndexOf("mpeg", StringComparison.OrdinalIgnoreCase) != -1 || audio.AudioFormat.IndexOf("mp3", StringComparison.OrdinalIgnoreCase) != -1)
             {
-                return true;
+                return false;
             }
 
-            return false;
+            return true;
         }
+
+        private int? Height
+        {
+            get
+            {
+                string val = QueryString["height"];
+
+                if (string.IsNullOrEmpty(val))
+                {
+                    return null;
+                }
+
+                return int.Parse(val);
+            }
+        }
+
+        private int? Width
+        {
+            get
+            {
+                string val = QueryString["width"];
+
+                if (string.IsNullOrEmpty(val))
+                {
+                    return null;
+                }
+
+                return int.Parse(val);
+            }
+        }
+
+        private int? MaxHeight
+        {
+            get
+            {
+                string val = QueryString["maxheight"];
+
+                if (string.IsNullOrEmpty(val))
+                {
+                    return null;
+                }
+
+                return int.Parse(val);
+            }
+        }
+
+        private int? MaxWidth
+        {
+            get
+            {
+                string val = QueryString["maxwidth"];
+
+                if (string.IsNullOrEmpty(val))
+                {
+                    return null;
+                }
+
+                return int.Parse(val);
+            }
+        }
+
     }
 }

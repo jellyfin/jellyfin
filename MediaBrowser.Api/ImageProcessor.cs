@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using MediaBrowser.Common.Drawing;
 
 namespace MediaBrowser.Api
 {
@@ -12,40 +13,9 @@ namespace MediaBrowser.Api
         {
             Image originalImage = Image.FromStream(sourceImageStream);
 
-            var newWidth = originalImage.Width;
-            var newHeight = originalImage.Height;
+            Size newSize = DrawingUtils.Resize(originalImage.Size, width, height, maxWidth, maxHeight);
 
-            if (width.HasValue && height.HasValue)
-            {
-                newWidth = width.Value;
-                newHeight = height.Value;
-            }
-
-            else if (height.HasValue)
-            {
-                newWidth = GetNewWidth(newHeight, newWidth, height.Value);
-                newHeight = height.Value;
-            }
-
-            else if (width.HasValue)
-            {
-                newHeight = GetNewHeight(newHeight, newWidth, width.Value);
-                newWidth = width.Value;
-            }
-
-            if (maxHeight.HasValue && maxHeight < newHeight)
-            {
-                newWidth = GetNewWidth(newHeight, newWidth, maxHeight.Value);
-                newHeight = maxHeight.Value;
-            }
-
-            if (maxWidth.HasValue && maxWidth < newWidth)
-            {
-                newHeight = GetNewHeight(newHeight, newWidth, maxWidth.Value);
-                newWidth = maxWidth.Value;
-            }
-
-            Bitmap thumbnail = new Bitmap(newWidth, newHeight, originalImage.PixelFormat);
+            Bitmap thumbnail = new Bitmap(newSize.Width, newSize.Height, originalImage.PixelFormat);
             thumbnail.SetResolution(originalImage.HorizontalResolution, originalImage.VerticalResolution);
 
             Graphics thumbnailGraph = Graphics.FromImage(thumbnail);
@@ -55,7 +25,7 @@ namespace MediaBrowser.Api
             thumbnailGraph.PixelOffsetMode = PixelOffsetMode.HighQuality;
             thumbnailGraph.CompositingMode = CompositingMode.SourceOver;
 
-            thumbnailGraph.DrawImage(originalImage, 0, 0, newWidth, newHeight);
+            thumbnailGraph.DrawImage(originalImage, 0, 0, newSize.Width, newSize.Height);
 
             Write(originalImage, thumbnail, toStream, quality);
 
@@ -74,7 +44,7 @@ namespace MediaBrowser.Api
             }
             else if (ImageFormat.Png.Equals(originalImage.RawFormat))
             {
-                SavePng(newImage, toStream);
+                newImage.Save(toStream, ImageFormat.Png);
             }
             else
             {
@@ -96,22 +66,6 @@ namespace MediaBrowser.Api
             }
         }
 
-        private static void SavePng(Image newImage, Stream target)
-        {
-            if (target.CanSeek)
-            {
-                newImage.Save(target, ImageFormat.Png);
-            }
-            else
-            {
-                using (MemoryStream ms = new MemoryStream(4096))
-                {
-                    newImage.Save(ms, ImageFormat.Png);
-                    ms.WriteTo(target);
-                }
-            }
-        }
-
         private static ImageCodecInfo GetImageCodeInfo(string mimeType)
         {
             ImageCodecInfo[] info = ImageCodecInfo.GetImageEncoders();
@@ -125,24 +79,6 @@ namespace MediaBrowser.Api
                 }
             }
             return info[1];
-        }
-
-        private static int GetNewWidth(int currentHeight, int currentWidth, int newHeight)
-        {
-            decimal scaleFactor = newHeight;
-            scaleFactor /= currentHeight;
-            scaleFactor *= currentWidth;
-
-            return Convert.ToInt32(scaleFactor);
-        }
-
-        private static int GetNewHeight(int currentHeight, int currentWidth, int newWidth)
-        {
-            decimal scaleFactor = newWidth;
-            scaleFactor /= currentWidth;
-            scaleFactor *= currentHeight;
-
-            return Convert.ToInt32(scaleFactor);
         }
     }
 }
