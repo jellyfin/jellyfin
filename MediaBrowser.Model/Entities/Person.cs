@@ -6,7 +6,6 @@ namespace MediaBrowser.Model.Entities
     /// </summary>
     public class Person : BaseEntity
     {
-        public PersonType PersonType { get; set; }
     }
 
     /// <summary>

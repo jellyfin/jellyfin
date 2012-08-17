@@ -24,9 +24,9 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Takes a BaseItem and returns the actual object that will be serialized by the api
         /// </summary>
-        public static BaseItemWrapper<BaseItem> GetSerializationObject(BaseItem item, bool includeChildren, Guid userId)
+        public static BaseItemContainer<BaseItem> GetSerializationObject(BaseItem item, bool includeChildren, Guid userId)
         {
-            BaseItemWrapper<BaseItem> wrapper = new BaseItemWrapper<BaseItem>()
+            BaseItemContainer<BaseItem> wrapper = new BaseItemContainer<BaseItem>()
             {
                 Item = item,
                 UserItemData = Kernel.Instance.GetUserItemData(userId, item.Id),
@@ -60,7 +60,45 @@ namespace MediaBrowser.Api
                     wrapper.Children = Kernel.Instance.GetParentalAllowedChildren(folder, userId).Select(c => GetSerializationObject(c, false, userId));
                 }
 
-                wrapper.People = item.People;
+                // Attach People by transforming them into BaseItemPerson (DTO)
+                if (item.People != null)
+                {
+                    wrapper.People = item.People.Select(p =>
+                    {
+                        BaseItemPerson baseItemPerson = new BaseItemPerson();
+
+                        baseItemPerson.PersonInfo = p;
+
+                        Person ibnObject = Kernel.Instance.ItemController.GetPerson(p.Name);
+
+                        if (ibnObject != null)
+                        {
+                            baseItemPerson.PrimaryImagePath = ibnObject.PrimaryImagePath;
+                        }
+
+                        return baseItemPerson;
+                    });
+                }
+            }
+
+            // Attach Studios by transforming them into BaseItemStudio (DTO)
+            if (item.Studios != null)
+            {
+                wrapper.Studios = item.Studios.Select(s =>
+                {
+                    BaseItemStudio baseItemStudio = new BaseItemStudio();
+
+                    baseItemStudio.Name = s;
+
+                    Studio ibnObject = Kernel.Instance.ItemController.GetStudio(s);
+
+                    if (ibnObject != null)
+                    {
+                        baseItemStudio.PrimaryImagePath = ibnObject.PrimaryImagePath;
+                    }
+
+                    return baseItemStudio;
+                });
             }
 
             return wrapper;

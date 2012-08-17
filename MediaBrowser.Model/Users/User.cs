@@ -10,5 +10,12 @@ namespace MediaBrowser.Model.Users
 
         private Dictionary<Guid, UserItemData> _ItemData = new Dictionary<Guid, UserItemData>();
         public Dictionary<Guid, UserItemData> ItemData { get { return _ItemData; } set { _ItemData = value; } }
+
+        public int RecentItemDays { get; set; }
+
+        public User()
+        {
+            RecentItemDays = 14;
+        }
     }
 }

@@ -12,7 +12,6 @@ using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Progress;
@@ -155,11 +154,6 @@ namespace MediaBrowser.Controller
             }
         }
 
-        public UserConfiguration GetUserConfiguration(Guid userId)
-        {
-            return Configuration.DefaultUserConfiguration;
-        }
-
         public void ReloadItem(BaseItem item)
         {
             Folder folder = item as Folder;
@@ -263,9 +257,9 @@ namespace MediaBrowser.Controller
         {
             DateTime now = DateTime.Now;
 
-            UserConfiguration config = GetUserConfiguration(userId);
+            User user = Users.First(u => u.Id == userId);
 
-            return GetParentalAllowedRecursiveChildren(parent, userId).Where(i => !(i is Folder) && (now - i.DateCreated).TotalDays < config.RecentItemDays);
+            return GetParentalAllowedRecursiveChildren(parent, userId).Where(i => !(i is Folder) && (now - i.DateCreated).TotalDays < user.RecentItemDays);
         }
 
         /// <summary>
@@ -358,7 +352,7 @@ namespace MediaBrowser.Controller
         /// Gets all years from all recursive children of a folder
         /// The CategoryInfo class is used to keep track of the number of times each year appears
         /// </summary>
-        public IEnumerable<CategoryInfo<Year>> GetAllYears(Folder parent, Guid userId)
+        public IEnumerable<IBNItem<Year>> GetAllYears(Folder parent, Guid userId)
         {
             Dictionary<int, int> data = new Dictionary<int, int>();
 
@@ -385,7 +379,7 @@ namespace MediaBrowser.Controller
             }
 
             // Now go through the dictionary and create a Category for each studio
-            List<CategoryInfo<Year>> list = new List<CategoryInfo<Year>>();
+            List<IBNItem<Year>> list = new List<IBNItem<Year>>();
 
             foreach (int key in data.Keys)
             {
@@ -394,10 +388,10 @@ namespace MediaBrowser.Controller
 
                 if (entity != null)
                 {
-                    list.Add(new CategoryInfo<Year>()
+                    list.Add(new IBNItem<Year>()
                     {
                         Item = entity,
-                        ItemCount = data[key]
+                        BaseItemCount = data[key]
                     });
                 }
             }
@@ -409,7 +403,7 @@ namespace MediaBrowser.Controller
         /// Gets all studios from all recursive children of a folder
         /// The CategoryInfo class is used to keep track of the number of times each studio appears
         /// </summary>
-        public IEnumerable<CategoryInfo<Studio>> GetAllStudios(Folder parent, Guid userId)
+        public IEnumerable<IBNItem<Studio>> GetAllStudios(Folder parent, Guid userId)
         {
             Dictionary<string, int> data = new Dictionary<string, int>();
 
@@ -439,7 +433,7 @@ namespace MediaBrowser.Controller
             }
 
             // Now go through the dictionary and create a Category for each studio
-            List<CategoryInfo<Studio>> list = new List<CategoryInfo<Studio>>();
+            List<IBNItem<Studio>> list = new List<IBNItem<Studio>>();
 
             foreach (string key in data.Keys)
             {
@@ -448,10 +442,10 @@ namespace MediaBrowser.Controller
 
                 if (entity != null)
                 {
-                    list.Add(new CategoryInfo<Studio>()
+                    list.Add(new IBNItem<Studio>()
                     {
                         Item = entity,
-                        ItemCount = data[key]
+                        BaseItemCount = data[key]
                     });
                 }
             }
@@ -463,7 +457,7 @@ namespace MediaBrowser.Controller
         /// Gets all genres from all recursive children of a folder
         /// The CategoryInfo class is used to keep track of the number of times each genres appears
         /// </summary>
-        public IEnumerable<CategoryInfo<Genre>> GetAllGenres(Folder parent, Guid userId)
+        public IEnumerable<IBNItem<Genre>> GetAllGenres(Folder parent, Guid userId)
         {
             Dictionary<string, int> data = new Dictionary<string, int>();
 
@@ -493,7 +487,7 @@ namespace MediaBrowser.Controller
             }
 
             // Now go through the dictionary and create a Category for each genre
-            List<CategoryInfo<Genre>> list = new List<CategoryInfo<Genre>>();
+            List<IBNItem<Genre>> list = new List<IBNItem<Genre>>();
 
             foreach (string key in data.Keys)
             {
@@ -502,10 +496,10 @@ namespace MediaBrowser.Controller
 
                 if (entity != null)
                 {
-                    list.Add(new CategoryInfo<Genre>()
+                    list.Add(new IBNItem<Genre>()
                     {
                         Item = entity,
-                        ItemCount = data[key]
+                        BaseItemCount = data[key]
                     });
                 }
             }

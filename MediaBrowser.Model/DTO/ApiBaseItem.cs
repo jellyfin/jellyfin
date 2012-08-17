@@ -20,14 +20,14 @@ namespace MediaBrowser.Model.DTO
     /// <summary>
     /// This is the full return object when requesting an Item
     /// </summary>
-    public class BaseItemWrapper<T>
-        where T : BaseItem
+    public class BaseItemContainer<TItemType>
+        where TItemType : BaseItem
     {
-        public T Item { get; set; }
+        public TItemType Item { get; set; }
 
         public UserItemData UserItemData { get; set; }
 
-        public IEnumerable<BaseItemWrapper<T>> Children { get; set; }
+        public IEnumerable<BaseItemContainer<TItemType>> Children { get; set; }
 
         public bool IsFolder { get; set; }
 
@@ -45,7 +45,8 @@ namespace MediaBrowser.Model.DTO
             return Type.Equals(type, StringComparison.OrdinalIgnoreCase);
         }
 
-        public IEnumerable<PersonInfo> People { get; set; }
+        public IEnumerable<BaseItemPerson> People { get; set; }
+        public IEnumerable<BaseItemStudio> Studios { get; set; }
 
         /// <summary>
         /// If the item does not have a logo, this will hold the Id of the Parent that has one.
@@ -60,7 +61,7 @@ namespace MediaBrowser.Model.DTO
     /// <summary>
     /// This is strictly for convenience so the UI's don't have to use the verbose generic syntax of BaseItemWrapper<ApiBaseItem>
     /// </summary>
-    public class ApiBaseItemWrapper : BaseItemWrapper<ApiBaseItem>
+    public class ApiBaseItemContainer : BaseItemContainer<ApiBaseItem>
     {
     }
 }
