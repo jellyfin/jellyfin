@@ -32,12 +32,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Configuration\UserConfiguration.cs" />
     <Compile Include="DTO\ApiBaseItem.cs" />
     <Compile Include="Entities\Audio.cs" />
     <Compile Include="Entities\BaseEntity.cs" />
     <Compile Include="Entities\BaseItem.cs" />
-    <Compile Include="DTO\CategoryInfo.cs" />
+    <Compile Include="DTO\IBNItem.cs" />
     <Compile Include="Entities\Folder.cs" />
     <Compile Include="Entities\Genre.cs" />
     <Compile Include="Entities\ImageType.cs" />

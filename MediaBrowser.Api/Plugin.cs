@@ -49,45 +49,21 @@ namespace MediaBrowser.Api
             {
                 return new UsersHandler();
             }
-            else if (localPath.EndsWith("/api/itemswithgenre", StringComparison.OrdinalIgnoreCase))
+            else if (localPath.EndsWith("/api/itemlist", StringComparison.OrdinalIgnoreCase))
             {
-                return new ItemsWithGenreHandler();
+                return new ItemListHandler();
             }
             else if (localPath.EndsWith("/api/genres", StringComparison.OrdinalIgnoreCase))
             {
                 return new GenresHandler();
             }
-            else if (localPath.EndsWith("/api/itemswithyear", StringComparison.OrdinalIgnoreCase))
-            {
-                return new ItemsWithYearHandler();
-            }
-            else if (localPath.EndsWith("/api/itemswithperson", StringComparison.OrdinalIgnoreCase))
-            {
-                return new ItemsWithPersonHandler();
-            }
             else if (localPath.EndsWith("/api/years", StringComparison.OrdinalIgnoreCase))
             {
                 return new YearsHandler();
             }
-            else if (localPath.EndsWith("/api/itemswithstudio", StringComparison.OrdinalIgnoreCase))
-            {
-                return new ItemsWithStudioHandler();
-            }
             else if (localPath.EndsWith("/api/studios", StringComparison.OrdinalIgnoreCase))
             {
                 return new StudiosHandler();
-            }
-            else if (localPath.EndsWith("/api/recentlyaddeditems", StringComparison.OrdinalIgnoreCase))
-            {
-                return new RecentlyAddedItemsHandler();
-            }
-            else if (localPath.EndsWith("/api/inprogressitems", StringComparison.OrdinalIgnoreCase))
-            {
-                return new InProgressItemsHandler();
-            }
-            else if (localPath.EndsWith("/api/userconfiguration", StringComparison.OrdinalIgnoreCase))
-            {
-                return new UserConfigurationHandler();
             }
             else if (localPath.EndsWith("/api/plugins", StringComparison.OrdinalIgnoreCase))
             {

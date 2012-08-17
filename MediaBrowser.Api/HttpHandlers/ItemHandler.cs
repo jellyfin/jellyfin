@@ -5,9 +5,9 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public class ItemHandler : BaseJsonHandler<BaseItemWrapper<BaseItem>>
+    public class ItemHandler : BaseJsonHandler<BaseItemContainer<BaseItem>>
     {
-        protected sealed override BaseItemWrapper<BaseItem> GetObjectToSerialize()
+        protected sealed override BaseItemContainer<BaseItem> GetObjectToSerialize()
         {
             Guid userId = Guid.Parse(QueryString["userid"]);
 

@@ -7,9 +7,9 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public class StudiosHandler : BaseJsonHandler<IEnumerable<CategoryInfo<Studio>>>
+    public class StudiosHandler : BaseJsonHandler<IEnumerable<IBNItem<Studio>>>
     {
-        protected override IEnumerable<CategoryInfo<Studio>> GetObjectToSerialize()
+        protected override IEnumerable<IBNItem<Studio>> GetObjectToSerialize()
         {
             Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
             Guid userId = Guid.Parse(QueryString["userid"]);
