@@ -5,6 +5,7 @@ using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
@@ -24,34 +25,36 @@ namespace MediaBrowser.Api.HttpHandlers
             get
             {
                 Folder parent = ApiService.GetItemById(ItemId) as Folder;
+
+                User user = Kernel.Instance.Users.First(u => u.Id == UserId);
                 
                 if (ListType.Equals("inprogressitems", StringComparison.OrdinalIgnoreCase))
                 {
-                    return Kernel.Instance.GetInProgressItems(parent, UserId);
+                    return parent.GetInProgressItems(user);
                 }
                 else if (ListType.Equals("recentlyaddeditems", StringComparison.OrdinalIgnoreCase))
                 {
-                    return Kernel.Instance.GetRecentlyAddedItems(parent, UserId);
+                    return parent.GetRecentlyAddedItems(user);
                 }
                 else if (ListType.Equals("recentlyaddedunplayeditems", StringComparison.OrdinalIgnoreCase))
                 {
-                    return Kernel.Instance.GetRecentlyAddedUnplayedItems(parent, UserId);
+                    return parent.GetRecentlyAddedUnplayedItems(user);
                 }
                 else if (ListType.Equals("itemswithgenre", StringComparison.OrdinalIgnoreCase))
                 {
-                    return Kernel.Instance.GetItemsWithGenre(parent, QueryString["name"], UserId);
+                    return parent.GetItemsWithGenre(QueryString["name"], user);
                 }
                 else if (ListType.Equals("itemswithyear", StringComparison.OrdinalIgnoreCase))
                 {
-                    return Kernel.Instance.GetItemsWithYear(parent, int.Parse(QueryString["year"]), UserId);
+                    return parent.GetItemsWithYear(int.Parse(QueryString["year"]), user);
                 }
                 else if (ListType.Equals("itemswithstudio", StringComparison.OrdinalIgnoreCase))
                 {
-                    return Kernel.Instance.GetItemsWithStudio(parent, QueryString["name"], UserId);
+                    return parent.GetItemsWithStudio(QueryString["name"], user);
                 }
                 else if (ListType.Equals("itemswithperson", StringComparison.OrdinalIgnoreCase))
                 {
-                    return Kernel.Instance.GetItemsWithPerson(parent, QueryString["name"], UserId);
+                    return parent.GetItemsWithPerson(QueryString["name"], null, user);
                 }
 
                 throw new InvalidOperationException();
