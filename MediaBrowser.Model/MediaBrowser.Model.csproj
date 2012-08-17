@@ -33,11 +33,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Configuration\UserConfiguration.cs" />
-    <Compile Include="Entities\ApiBaseItem.cs" />
+    <Compile Include="DTO\ApiBaseItem.cs" />
     <Compile Include="Entities\Audio.cs" />
     <Compile Include="Entities\BaseEntity.cs" />
     <Compile Include="Entities\BaseItem.cs" />
-    <Compile Include="Entities\CategoryInfo.cs" />
+    <Compile Include="DTO\CategoryInfo.cs" />
     <Compile Include="Entities\Folder.cs" />
     <Compile Include="Entities\Genre.cs" />
     <Compile Include="Entities\ImageType.cs" />
@@ -47,7 +47,7 @@
     <Compile Include="Entities\Video.cs" />
     <Compile Include="Entities\Year.cs" />
     <Compile Include="Plugins\BasePluginConfiguration.cs" />
-    <Compile Include="Plugins\PluginInfo.cs" />
+    <Compile Include="DTO\PluginInfo.cs" />
     <Compile Include="Progress\TaskProgress.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Users\User.cs" />

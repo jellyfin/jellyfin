@@ -4,7 +4,7 @@ using MediaBrowser.Common.Serialization;
 
 namespace MediaBrowser.Common.Net.Handlers
 {
-    public abstract class BaseJsonHandler : BaseHandler
+    public abstract class BaseJsonHandler<T> : BaseHandler
     {
         public override string ContentType
         {
@@ -12,7 +12,7 @@ namespace MediaBrowser.Common.Net.Handlers
         }
 
         private bool _ObjectToSerializeEnsured = false;
-        private object _ObjectToSerialize;
+        private T _ObjectToSerialize;
      
         private void EnsureObjectToSerialize()
         {
@@ -29,7 +29,7 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        private object ObjectToSerialize
+        private T ObjectToSerialize
         {
             get
             {
@@ -38,7 +38,7 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        protected abstract object GetObjectToSerialize();
+        protected abstract T GetObjectToSerialize();
 
         protected override void PrepareResponse()
         {
@@ -51,7 +51,7 @@ namespace MediaBrowser.Common.Net.Handlers
         {
             return Task.Run(() =>
             {
-                JsonSerializer.SerializeToStream(ObjectToSerialize, stream);
+                JsonSerializer.SerializeToStream<T>(ObjectToSerialize, stream);
             });
         }
     }

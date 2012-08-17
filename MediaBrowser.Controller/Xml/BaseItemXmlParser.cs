@@ -113,10 +113,6 @@ namespace MediaBrowser.Controller.Xml
                     item.CustomRating = reader.ReadString();
                     break;
 
-                case "CustomPin":
-                    item.CustomPin = reader.ReadString();
-                    break;
-
                 case "Genre":
                     {
                         var genres = (item.Genres ?? new string[] { }).ToList();

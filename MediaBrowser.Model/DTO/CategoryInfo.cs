@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.Model.Entities
+namespace MediaBrowser.Model.DTO
 {
     /// <summary>
     /// This is a stub class used by the api to get IBN types along with their item counts

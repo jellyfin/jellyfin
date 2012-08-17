@@ -2,12 +2,13 @@
 using System.Linq;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
+using MediaBrowser.Model.Plugins;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public class PluginConfigurationHandler : BaseJsonHandler
+    public class PluginConfigurationHandler : BaseJsonHandler<BasePluginConfiguration>
     {
-        protected override object GetObjectToSerialize()
+        protected override BasePluginConfiguration GetObjectToSerialize()
         {
             string pluginName = QueryString["name"];
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
+using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api
@@ -23,9 +24,9 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Takes a BaseItem and returns the actual object that will be serialized by the api
         /// </summary>
-        public static ApiBaseItemWrapper<BaseItem> GetSerializationObject(BaseItem item, bool includeChildren, Guid userId)
+        public static BaseItemWrapper<BaseItem> GetSerializationObject(BaseItem item, bool includeChildren, Guid userId)
         {
-            ApiBaseItemWrapper<BaseItem> wrapper = new ApiBaseItemWrapper<BaseItem>()
+            BaseItemWrapper<BaseItem> wrapper = new BaseItemWrapper<BaseItem>()
             {
                 Item = item,
                 UserItemData = Kernel.Instance.GetUserItemData(userId, item.Id),

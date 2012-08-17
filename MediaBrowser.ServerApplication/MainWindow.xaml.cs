@@ -22,15 +22,15 @@ namespace MediaBrowser.ServerApplication
             Progress<TaskProgress> progress = new Progress<TaskProgress>();
             Common.UI.Splash splash = new Common.UI.Splash(progress);
 
+            splash.Show();
+            
             try
             {
-                splash.Show();
-
                 new Kernel().Init(progress);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("There was an error launching Media Browser: " + ex.Message);
+                MessageBox.Show("There was an error launching Media Browser Server: " + ex.Message);
             }
             finally
             {

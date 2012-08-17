@@ -26,9 +26,9 @@ namespace MediaBrowser.Model.Entities
         public IEnumerable<string> BackdropImagePaths { get; set; }
 
         public string OfficialRating { get; set; }
-
+        
+        [IgnoreDataMember]
         public string CustomRating { get; set; }
-        public string CustomPin { get; set; }
 
         public string Overview { get; set; }
         public string Tagline { get; set; }
