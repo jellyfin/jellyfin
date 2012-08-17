@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Users;
 
@@ -90,7 +91,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
         /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
         /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
-        public IEnumerable<string> GetBackdropImageUrls(ApiBaseItemWrapper<ApiBaseItem> itemWrapper, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
+        public IEnumerable<string> GetBackdropImageUrls(BaseItemWrapper<ApiBaseItem> itemWrapper, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
         {
             Guid? backdropItemId = null;
             int backdropCount = 0;
@@ -130,7 +131,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
         /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
         /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
-        public string GetLogoImageUrl(ApiBaseItemWrapper<ApiBaseItem> itemWrapper, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
+        public string GetLogoImageUrl(BaseItemWrapper<ApiBaseItem> itemWrapper, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
         {
             Guid? logoItemId = !string.IsNullOrEmpty(itemWrapper.Item.LogoImagePath) ? itemWrapper.Item.Id : itemWrapper.ParentLogoItemId;
 
@@ -153,7 +154,7 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets a BaseItem
         /// </summary>
-        public async Task<ApiBaseItemWrapper<ApiBaseItem>> GetItemAsync(Guid id, Guid userId)
+        public async Task<BaseItemWrapper<ApiBaseItem>> GetItemAsync(Guid id, Guid userId)
         {
             string url = ApiUrl + "/item?userId=" + userId.ToString();
 
@@ -164,7 +165,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await HttpClient.GetStreamAsync(url))
             {
-                return JsonSerializer.DeserializeFromStream<ApiBaseItemWrapper<ApiBaseItem>>(stream);
+                return JsonSerializer.DeserializeFromStream<BaseItemWrapper<ApiBaseItem>>(stream);
             }
         }
 
@@ -210,33 +211,33 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets all items that contain a given Year
         /// </summary>
-        public async Task<IEnumerable<ApiBaseItemWrapper<ApiBaseItem>>> GetItemsWithYearAsync(string name, Guid userId)
+        public async Task<IEnumerable<BaseItemWrapper<ApiBaseItem>>> GetItemsWithYearAsync(string name, Guid userId)
         {
             string url = ApiUrl + "/itemswithyear?userId=" + userId.ToString() + "&name=" + name;
 
             using (Stream stream = await HttpClient.GetStreamAsync(url))
             {
-                return JsonSerializer.DeserializeFromStream<IEnumerable<ApiBaseItemWrapper<ApiBaseItem>>>(stream);
+                return JsonSerializer.DeserializeFromStream<IEnumerable<BaseItemWrapper<ApiBaseItem>>>(stream);
             }
         }
 
         /// <summary>
         /// Gets all items that contain a given Genre
         /// </summary>
-        public async Task<IEnumerable<ApiBaseItemWrapper<ApiBaseItem>>> GetItemsWithGenreAsync(string name, Guid userId)
+        public async Task<IEnumerable<BaseItemWrapper<ApiBaseItem>>> GetItemsWithGenreAsync(string name, Guid userId)
         {
             string url = ApiUrl + "/itemswithgenre?userId=" + userId.ToString() + "&name=" + name;
 
             using (Stream stream = await HttpClient.GetStreamAsync(url))
             {
-                return JsonSerializer.DeserializeFromStream<IEnumerable<ApiBaseItemWrapper<ApiBaseItem>>>(stream);
+                return JsonSerializer.DeserializeFromStream<IEnumerable<BaseItemWrapper<ApiBaseItem>>>(stream);
             }
         }
 
         /// <summary>
         /// Gets all items that contain a given Person
         /// </summary>
-        public async Task<IEnumerable<ApiBaseItemWrapper<ApiBaseItem>>> GetItemsWithPersonAsync(string name, PersonType? personType, Guid userId)
+        public async Task<IEnumerable<BaseItemWrapper<ApiBaseItem>>> GetItemsWithPersonAsync(string name, PersonType? personType, Guid userId)
         {
             string url = ApiUrl + "/itemswithperson?userId=" + userId.ToString() + "&name=" + name;
 
@@ -247,7 +248,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await HttpClient.GetStreamAsync(url))
             {
-                return JsonSerializer.DeserializeFromStream<IEnumerable<ApiBaseItemWrapper<ApiBaseItem>>>(stream);
+                return JsonSerializer.DeserializeFromStream<IEnumerable<BaseItemWrapper<ApiBaseItem>>>(stream);
             }
         }
 
@@ -280,13 +281,13 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets all items that contain a given Studio
         /// </summary>
-        public async Task<IEnumerable<ApiBaseItemWrapper<ApiBaseItem>>> GetItemsWithStudioAsync(string name, Guid userId)
+        public async Task<IEnumerable<BaseItemWrapper<ApiBaseItem>>> GetItemsWithStudioAsync(string name, Guid userId)
         {
             string url = ApiUrl + "/itemswithstudio?userId=" + userId.ToString() + "&name=" + name;
 
             using (Stream stream = await HttpClient.GetStreamAsync(url))
             {
-                return JsonSerializer.DeserializeFromStream<IEnumerable<ApiBaseItemWrapper<ApiBaseItem>>>(stream);
+                return JsonSerializer.DeserializeFromStream<IEnumerable<BaseItemWrapper<ApiBaseItem>>>(stream);
             }
         }
 

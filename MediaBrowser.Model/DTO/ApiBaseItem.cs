@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Users;
 
-namespace MediaBrowser.Model.Entities
+namespace MediaBrowser.Model.DTO
 {
     /// <summary>
     /// This is a concrete class that the UI can use to deserialize
@@ -10,7 +11,7 @@ namespace MediaBrowser.Model.Entities
     /// </summary>
     public class ApiBaseItem : BaseItem
     {
-        // TV Series
+        // Series properties
         public string Status { get; set; }
         public IEnumerable<DayOfWeek> AirDays { get; set; }
         public string AirTime { get; set; }
@@ -19,14 +20,14 @@ namespace MediaBrowser.Model.Entities
     /// <summary>
     /// This is the full return object when requesting an Item
     /// </summary>
-    public class ApiBaseItemWrapper<T>
+    public class BaseItemWrapper<T>
         where T : BaseItem
     {
         public T Item { get; set; }
 
         public UserItemData UserItemData { get; set; }
 
-        public IEnumerable<ApiBaseItemWrapper<T>> Children { get; set; }
+        public IEnumerable<BaseItemWrapper<T>> Children { get; set; }
 
         public bool IsFolder { get; set; }
 
@@ -54,5 +55,12 @@ namespace MediaBrowser.Model.Entities
         public Guid? ParentBackdropItemId { get; set; }
 
         public int? ParentBackdropCount { get; set; }
+    }
+
+    /// <summary>
+    /// This is strictly for convenience so the UI's don't have to use the verbose generic syntax of BaseItemWrapper<ApiBaseItem>
+    /// </summary>
+    public class ApiBaseItemWrapper : BaseItemWrapper<ApiBaseItem>
+    {
     }
 }

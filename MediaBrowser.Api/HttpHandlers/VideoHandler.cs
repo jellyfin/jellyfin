@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Model.Entities;
-using System.Drawing;
 using MediaBrowser.Common.Drawing;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.HttpHandlers
 {

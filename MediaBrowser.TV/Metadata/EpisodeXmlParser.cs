@@ -31,10 +31,6 @@ namespace MediaBrowser.TV.Metadata
                     }
                     break;
 
-                case "SeasonNumber":
-                    item.SeasonNumber = reader.ReadString();
-                    break;
-
                 case "EpisodeName":
                     item.Name = reader.ReadString();
                     break;

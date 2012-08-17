@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MediaBrowser.Model.Plugins
+namespace MediaBrowser.Model.DTO
 {
     /// <summary>
     /// This is a serializable stub class that is used by the api to provide information about installed plugins.

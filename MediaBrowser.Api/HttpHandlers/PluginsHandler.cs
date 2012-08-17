@@ -1,16 +1,17 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
-using MediaBrowser.Model.Plugins;
+using MediaBrowser.Model.DTO;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
     /// <summary>
     /// Provides information about installed plugins
     /// </summary>
-    public class PluginsHandler : BaseJsonHandler
+    public class PluginsHandler : BaseJsonHandler<IEnumerable<PluginInfo>>
     {
-        protected override object GetObjectToSerialize()
+        protected override IEnumerable<PluginInfo> GetObjectToSerialize()
         {
             var plugins = Kernel.Instance.Plugins.Select(p =>
             {
