@@ -17,7 +17,58 @@ namespace MediaBrowser.Api.HttpHandlers
             Guid userId = Guid.Parse(QueryString["userid"]);
             User user = Kernel.Instance.Users.First(u => u.Id == userId);
 
-            return Kernel.Instance.GetAllYears(parent, user);
+            return GetAllYears(parent, user);
+        }
+
+        /// <summary>
+        /// Gets all years from all recursive children of a folder
+        /// The CategoryInfo class is used to keep track of the number of times each year appears
+        /// </summary>
+        private IEnumerable<IBNItem<Year>> GetAllYears(Folder parent, User user)
+        {
+            Dictionary<int, int> data = new Dictionary<int, int>();
+
+            // Get all the allowed recursive children
+            IEnumerable<BaseItem> allItems = parent.GetParentalAllowedRecursiveChildren(user);
+
+            foreach (var item in allItems)
+            {
+                // Add the year from the item to the data dictionary
+                // If the year already exists, increment the count
+                if (item.ProductionYear == null)
+                {
+                    continue;
+                }
+
+                if (!data.ContainsKey(item.ProductionYear.Value))
+                {
+                    data.Add(item.ProductionYear.Value, 1);
+                }
+                else
+                {
+                    data[item.ProductionYear.Value]++;
+                }
+            }
+
+            // Now go through the dictionary and create a Category for each studio
+            List<IBNItem<Year>> list = new List<IBNItem<Year>>();
+
+            foreach (int key in data.Keys)
+            {
+                // Get the original entity so that we can also supply the PrimaryImagePath
+                Year entity = Kernel.Instance.ItemController.GetYear(key);
+
+                if (entity != null)
+                {
+                    list.Add(new IBNItem<Year>()
+                    {
+                        Item = entity,
+                        BaseItemCount = data[key]
+                    });
+                }
+            }
+
+            return list;
         }
     }
 }
