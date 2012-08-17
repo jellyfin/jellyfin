@@ -17,5 +17,18 @@ namespace MediaBrowser.Model.Users
         {
             RecentItemDays = 14;
         }
+
+        /// <summary>
+        /// Gets user data for an item, if there is any
+        /// </summary>
+        public UserItemData GetItemData(Guid itemId)
+        {
+            if (ItemData.ContainsKey(itemId))
+            {
+                return ItemData[itemId];
+            }
+
+            return null;
+        }
     }
 }

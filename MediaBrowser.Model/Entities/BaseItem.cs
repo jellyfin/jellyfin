@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -100,6 +101,14 @@ namespace MediaBrowser.Model.Entities
         public void SetProviderId(MetadataProviders provider, string value)
         {
             SetProviderId(provider.ToString(), value);
+        }
+
+        /// <summary>
+        /// Determines if a given user has access to this item
+        /// </summary>
+        internal bool IsParentalAllowed(User user)
+        {
+            return true;
         }
     }
 }

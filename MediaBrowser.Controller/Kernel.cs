@@ -198,166 +198,15 @@ namespace MediaBrowser.Controller
         }
 
         /// <summary>
-        /// Determines if an item is allowed for a given user
-        /// </summary>
-        public bool IsParentalAllowed(BaseItem item, Guid userId)
-        {
-            // not yet implemented
-            return true;
-        }
-
-        /// <summary>
-        /// Gets allowed children of an item
-        /// </summary>
-        public IEnumerable<BaseItem> GetParentalAllowedChildren(Folder folder, Guid userId)
-        {
-            return folder.Children.Where(i => IsParentalAllowed(i, userId));
-        }
-
-        /// <summary>
-        /// Gets allowed recursive children of an item
-        /// </summary>
-        public IEnumerable<BaseItem> GetParentalAllowedRecursiveChildren(Folder folder, Guid userId)
-        {
-            foreach (var item in GetParentalAllowedChildren(folder, userId))
-            {
-                yield return item;
-
-                var subFolder = item as Folder;
-
-                if (subFolder != null)
-                {
-                    foreach (var subitem in GetParentalAllowedRecursiveChildren(subFolder, userId))
-                    {
-                        yield return subitem;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets user data for an item, if there is any
-        /// </summary>
-        public UserItemData GetUserItemData(Guid userId, Guid itemId)
-        {
-            User user = Users.First(u => u.Id == userId);
-
-            if (user.ItemData.ContainsKey(itemId))
-            {
-                return user.ItemData[itemId];
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets all recently added items (recursive) within a folder, based on configuration and parental settings
-        /// </summary>
-        public IEnumerable<BaseItem> GetRecentlyAddedItems(Folder parent, Guid userId)
-        {
-            DateTime now = DateTime.Now;
-
-            User user = Users.First(u => u.Id == userId);
-
-            return GetParentalAllowedRecursiveChildren(parent, userId).Where(i => !(i is Folder) && (now - i.DateCreated).TotalDays < user.RecentItemDays);
-        }
-
-        /// <summary>
-        /// Gets all recently added unplayed items (recursive) within a folder, based on configuration and parental settings
-        /// </summary>
-        public IEnumerable<BaseItem> GetRecentlyAddedUnplayedItems(Folder parent, Guid userId)
-        {
-            return GetRecentlyAddedItems(parent, userId).Where(i =>
-            {
-                var userdata = GetUserItemData(userId, i.Id);
-
-                return userdata == null || userdata.PlayCount == 0;
-            });
-        }
-
-        /// <summary>
-        /// Gets all in-progress items (recursive) within a folder
-        /// </summary>
-        public IEnumerable<BaseItem> GetInProgressItems(Folder parent, Guid userId)
-        {
-            return GetParentalAllowedRecursiveChildren(parent, userId).Where(i =>
-            {
-                if (i is Folder)
-                {
-                    return false;
-                }
-
-                var userdata = GetUserItemData(userId, i.Id);
-
-                return userdata != null && userdata.PlaybackPosition.Ticks > 0;
-            });
-        }
-
-        /// <summary>
-        /// Finds all recursive items within a top-level parent that contain the given studio and are allowed for the current user
-        /// </summary>
-        public IEnumerable<BaseItem> GetItemsWithStudio(Folder parent, string studio, Guid userId)
-        {
-            return GetParentalAllowedRecursiveChildren(parent, userId).Where(f => f.Studios != null && f.Studios.Any(s => s.Equals(studio, StringComparison.OrdinalIgnoreCase)));
-        }
-
-        /// <summary>
-        /// Finds all recursive items within a top-level parent that contain the given person and are allowed for the current user
-        /// </summary>
-        /// <param name="personType">Specify this to limit results to a specific PersonType</param>
-        public IEnumerable<BaseItem> GetItemsWithPerson(Folder parent, string person, PersonType? personType, Guid userId)
-        {
-            return GetParentalAllowedRecursiveChildren(parent, userId).Where(c =>
-            {
-                if (c.People != null)
-                {
-                    if (personType.HasValue)
-                    {
-                        return c.People.Any(p => p.Name.Equals(person, StringComparison.OrdinalIgnoreCase) && p.PersonType == personType.Value);
-                    }
-                    else
-                    {
-                        return c.People.Any(p => p.Name.Equals(person, StringComparison.OrdinalIgnoreCase));
-                    }
-                }
-
-                return false;
-            });
-        }
-        /// <summary>
-        /// Finds all recursive items within a top-level parent that contain the given genre and are allowed for the current user
-        /// </summary>
-        public IEnumerable<BaseItem> GetItemsWithGenre(Folder parent, string genre, Guid userId)
-        {
-            return GetParentalAllowedRecursiveChildren(parent, userId).Where(f => f.Genres != null && f.Genres.Any(s => s.Equals(genre, StringComparison.OrdinalIgnoreCase)));
-        }
-
-        /// <summary>
-        /// Finds all recursive items within a top-level parent that contain the given year and are allowed for the current user
-        /// </summary>
-        public IEnumerable<BaseItem> GetItemsWithYear(Folder parent, int year, Guid userId)
-        {
-            return GetParentalAllowedRecursiveChildren(parent, userId).Where(f => f.ProductionYear.HasValue && f.ProductionYear == year);
-        }
-
-        /// <summary>
-        /// Finds all recursive items within a top-level parent that contain the given person and are allowed for the current user
-        /// </summary>
-        public IEnumerable<BaseItem> GetItemsWithPerson(Folder parent, string personName, Guid userId)
-        {
-            return GetParentalAllowedRecursiveChildren(parent, userId).Where(f => f.People != null && f.People.Any(s => s.Name.Equals(personName, StringComparison.OrdinalIgnoreCase)));
-        }
-
-        /// <summary>
         /// Gets all years from all recursive children of a folder
         /// The CategoryInfo class is used to keep track of the number of times each year appears
         /// </summary>
-        public IEnumerable<IBNItem<Year>> GetAllYears(Folder parent, Guid userId)
+        public IEnumerable<IBNItem<Year>> GetAllYears(Folder parent, User user)
         {
             Dictionary<int, int> data = new Dictionary<int, int>();
 
             // Get all the allowed recursive children
-            IEnumerable<BaseItem> allItems = Kernel.Instance.GetParentalAllowedRecursiveChildren(parent, userId);
+            IEnumerable<BaseItem> allItems = parent.GetParentalAllowedRecursiveChildren(user);
 
             foreach (var item in allItems)
             {
@@ -403,12 +252,12 @@ namespace MediaBrowser.Controller
         /// Gets all studios from all recursive children of a folder
         /// The CategoryInfo class is used to keep track of the number of times each studio appears
         /// </summary>
-        public IEnumerable<IBNItem<Studio>> GetAllStudios(Folder parent, Guid userId)
+        public IEnumerable<IBNItem<Studio>> GetAllStudios(Folder parent, User user)
         {
             Dictionary<string, int> data = new Dictionary<string, int>();
 
             // Get all the allowed recursive children
-            IEnumerable<BaseItem> allItems = Kernel.Instance.GetParentalAllowedRecursiveChildren(parent, userId);
+            IEnumerable<BaseItem> allItems = parent.GetParentalAllowedRecursiveChildren(user);
 
             foreach (var item in allItems)
             {
@@ -457,12 +306,12 @@ namespace MediaBrowser.Controller
         /// Gets all genres from all recursive children of a folder
         /// The CategoryInfo class is used to keep track of the number of times each genres appears
         /// </summary>
-        public IEnumerable<IBNItem<Genre>> GetAllGenres(Folder parent, Guid userId)
+        public IEnumerable<IBNItem<Genre>> GetAllGenres(Folder parent, User user)
         {
             Dictionary<string, int> data = new Dictionary<string, int>();
 
             // Get all the allowed recursive children
-            IEnumerable<BaseItem> allItems = Kernel.Instance.GetParentalAllowedRecursiveChildren(parent, userId);
+            IEnumerable<BaseItem> allItems = parent.GetParentalAllowedRecursiveChildren(user);
 
             foreach (var item in allItems)
             {

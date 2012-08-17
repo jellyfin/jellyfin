@@ -6,6 +6,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Api
 {
@@ -26,10 +27,12 @@ namespace MediaBrowser.Api
         /// </summary>
         public static BaseItemContainer<BaseItem> GetSerializationObject(BaseItem item, bool includeChildren, Guid userId)
         {
+            User user = Kernel.Instance.Users.First(u => u.Id == userId);
+
             BaseItemContainer<BaseItem> wrapper = new BaseItemContainer<BaseItem>()
             {
                 Item = item,
-                UserItemData = Kernel.Instance.GetUserItemData(userId, item.Id),
+                UserItemData = user.GetItemData(item.Id),
                 Type = item.GetType().Name,
                 IsFolder = (item is Folder)
             };
@@ -57,7 +60,7 @@ namespace MediaBrowser.Api
 
                 if (folder != null)
                 {
-                    wrapper.Children = Kernel.Instance.GetParentalAllowedChildren(folder, userId).Select(c => GetSerializationObject(c, false, userId));
+                    wrapper.Children = folder.GetParentalAllowedChildren(user).Select(c => GetSerializationObject(c, false, userId));
                 }
 
                 // Attach People by transforming them into BaseItemPerson (DTO)
