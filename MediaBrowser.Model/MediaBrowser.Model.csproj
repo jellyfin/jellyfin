@@ -46,6 +46,7 @@
     <Compile Include="Entities\Person.cs" />
     <Compile Include="Entities\Studio.cs" />
     <Compile Include="Entities\Video.cs" />
+    <Compile Include="Entities\VirtualFolder.cs" />
     <Compile Include="Entities\Year.cs" />
     <Compile Include="Plugins\BasePluginConfiguration.cs" />
     <Compile Include="DTO\PluginInfo.cs" />

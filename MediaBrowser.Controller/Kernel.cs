@@ -77,6 +77,7 @@ namespace MediaBrowser.Controller
             // Add the internal resolvers
             resolvers.Add(new VideoResolver());
             resolvers.Add(new AudioResolver());
+            resolvers.Add(new VirtualFolderResolver());
             resolvers.Add(new FolderResolver());
 
             EntityResolvers = resolvers;

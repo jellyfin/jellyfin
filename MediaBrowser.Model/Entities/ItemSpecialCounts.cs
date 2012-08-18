@@ -2,7 +2,7 @@
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
-    /// Since it can be slow to collect this data. This class helps provide a way to calculate them all at once.
+    /// Since it can be slow to collect this data, this class helps provide a way to calculate them all at once.
     /// </summary>
     public class ItemSpecialCounts
     {
