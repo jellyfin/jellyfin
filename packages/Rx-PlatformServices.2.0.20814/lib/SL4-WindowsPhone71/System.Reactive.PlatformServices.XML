@@ -1,0 +1,311 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>System.Reactive.PlatformServices</name>
+    </assembly>
+    <members>
+        <member name="T:System.Reactive.Concurrency.EventLoopScheduler">
+            <summary>
+            Represents an object that schedules units of work on a designated thread.
+            </summary>
+        </member>
+        <member name="F:System.Reactive.Concurrency.EventLoopScheduler.s_counter">
+            <summary>
+            Counter for diagnostic purposes, to name the threads.
+            </summary>
+        </member>
+        <member name="F:System.Reactive.Concurrency.EventLoopScheduler._threadFactory">
+            <summary>
+            Thread factory function.
+            </summary>
+        </member>
+        <member name="F:System.Reactive.Concurrency.EventLoopScheduler._stopwatch">
+            <summary>
+            Stopwatch for timing free of absolute time dependencies.
+            </summary>
+        </member>
+        <member name="F:System.Reactive.Concurrency.EventLoopScheduler._thread">
+            <summary>
+            Thread used by the event loop to run work items on. No work should be run on any other thread.
+            If ExitIfEmpty is set, the thread can quit and a new thread will be created when new work is scheduled.
+            </summary>
+        </member>
+        <member name="F:System.Reactive.Concurrency.EventLoopScheduler._gate">
+            <summary>
+            Gate to protect data structures, including the work queue and the ready list.
+            </summary>
+        </member>
+        <member name="F:System.Reactive.Concurrency.EventLoopScheduler._evt">
+            <summary>
+            Semaphore to count requests to re-evaluate the queue, from either Schedule requests or when a timer
+            expires and moves on to the next item in the queue.
+            </summary>
+        </member>
+        <member name="F:System.Reactive.Concurrency.EventLoopScheduler._queue">
+            <summary>
+            Queue holding work items. Protected by the gate.
+            </summary>
+        </member>
+        <member name="F:System.Reactive.Concurrency.EventLoopScheduler._readyList">
+            <summary>
+            Queue holding items that are ready to be run as soon as possible. Protected by the gate.
+            </summary>
+        </member>
+        <member name="F:System.Reactive.Concurrency.EventLoopScheduler._nextItem">
+            <summary>
+            Work item that will be scheduled next. Used upon reevaluation of the queue to check whether the next
+            item is still the same. If not, a new timer needs to be started (see below).
+            </summary>
+        </member>
+        <member name="F:System.Reactive.Concurrency.EventLoopScheduler._nextTimer">
+            <summary>
+            Disposable that always holds the timer to dispatch the first element in the queue.
+            </summary>
+        </member>
+        <member name="F:System.Reactive.Concurrency.EventLoopScheduler._disposed">
+            <summary>
+            Flag indicating whether the event loop should quit. When set, the event should be signaled as well to
+            wake up the event loop thread, which will subsequently abandon all work.
+            </summary>
+        </member>
+        <member name="M:System.Reactive.Concurrency.EventLoopScheduler.#ctor">
+            <summary>
+            Creates an object that schedules units of work on a designated thread.
+            </summary>
+        </member>
+        <member name="M:System.Reactive.Concurrency.EventLoopScheduler.#ctor(System.Func{System.Threading.ThreadStart,System.Threading.Thread})">
+            <summary>
+            Creates an object that schedules units of work on a designated thread, using the specified factory to control thread creation options.
+            </summary>
+            <param name="threadFactory">Factory function for thread creation.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="threadFactory"/> is null.</exception>
+        </member>
+        <member name="M:System.Reactive.Concurrency.EventLoopScheduler.Schedule``1(``0,System.TimeSpan,System.Func{System.Reactive.Concurrency.IScheduler,``0,System.IDisposable})">
+            <summary>
+            Schedules an action to be executed after dueTime.
+            </summary>
+            <typeparam name="TState">The type of the state passed to the scheduled action.</typeparam>
+            <param name="state">State passed to the action to be executed.</param>
+            <param name="action">Action to be executed.</param>
+            <param name="dueTime">Relative time after which to execute the action.</param>
+            <returns>The disposable object used to cancel the scheduled action (best effort).</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="action"/> is null.</exception>
+            <exception cref="T:System.ObjectDisposedException">The scheduler has been disposed and doesn't accept new work.</exception>
+        </member>
+        <member name="M:System.Reactive.Concurrency.EventLoopScheduler.SchedulePeriodic``1(``0,System.TimeSpan,System.Func{``0,``0})">
+            <summary>
+            Schedules a periodic piece of work on the designated thread.
+            </summary>
+            <typeparam name="TState">The type of the state passed to the scheduled action.</typeparam>
+            <param name="state">Initial state passed to the action upon the first iteration.</param>
+            <param name="period">Period for running the work periodically.</param>
+            <param name="action">Action to be executed, potentially updating the state.</param>
+            <returns>The disposable object used to cancel the scheduled recurring action (best effort).</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="action"/> is null.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="period"/> is less than TimeSpan.Zero.</exception>
+            <exception cref="T:System.ObjectDisposedException">The scheduler has been disposed and doesn't accept new work.</exception>
+        </member>
+        <member name="M:System.Reactive.Concurrency.EventLoopScheduler.StartStopwatch">
+            <summary>
+            Starts a new stopwatch object.
+            </summary>
+            <returns>New stopwatch object; started at the time of the request.</returns>
+        </member>
+        <member name="M:System.Reactive.Concurrency.EventLoopScheduler.Dispose">
+            <summary>
+            Ends the thread associated with this scheduler. All remaining work in the scheduler queue is abandoned.
+            </summary>
+        </member>
+        <member name="M:System.Reactive.Concurrency.EventLoopScheduler.EnsureThread">
+            <summary>
+            Ensures there is an event loop thread running. Should be called under the gate.
+            </summary>
+        </member>
+        <member name="M:System.Reactive.Concurrency.EventLoopScheduler.Run">
+            <summary>
+            Event loop scheduled on the designated event loop thread. The loop is suspended/resumed using the event
+            which gets set by calls to Schedule, the next item timer, or calls to Dispose.
+            </summary>
+        </member>
+        <member name="P:System.Reactive.Concurrency.EventLoopScheduler.ExitIfEmpty">
+            <summary>
+            Indicates whether the event loop thread is allowed to quit when no work is left. If new work
+            is scheduled afterwards, a new event loop thread is created. This property is used by the
+            NewThreadScheduler which uses an event loop for its recursive invocations.
+            </summary>
+        </member>
+        <member name="T:System.Reactive.Concurrency.NewThreadScheduler">
+            <summary>
+            Represents an object that schedules each unit of work on a separate thread.
+            </summary>
+        </member>
+        <member name="M:System.Reactive.Concurrency.NewThreadScheduler.#ctor">
+            <summary>
+            Creates an object that schedules each unit of work on a separate thread.
+            </summary>
+        </member>
+        <member name="M:System.Reactive.Concurrency.NewThreadScheduler.#ctor(System.Func{System.Threading.ThreadStart,System.Threading.Thread})">
+            <summary>
+            Creates an object that schedules each unit of work on a separate thread.
+            </summary>
+            <param name="threadFactory">Factory function for thread creation.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="threadFactory"/> is null.</exception>
+        </member>
+        <member name="M:System.Reactive.Concurrency.NewThreadScheduler.Schedule``1(``0,System.TimeSpan,System.Func{System.Reactive.Concurrency.IScheduler,``0,System.IDisposable})">
+            <summary>
+            Schedules an action to be executed after dueTime.
+            </summary>
+            <typeparam name="TState">The type of the state passed to the scheduled action.</typeparam>
+            <param name="state">State passed to the action to be executed.</param>
+            <param name="action">Action to be executed.</param>
+            <param name="dueTime">Relative time after which to execute the action.</param>
+            <returns>The disposable object used to cancel the scheduled action (best effort).</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="action"/> is null.</exception>
+        </member>
+        <member name="M:System.Reactive.Concurrency.NewThreadScheduler.ScheduleLongRunning``1(``0,System.Action{``0,System.Reactive.Disposables.ICancelable})">
+            <summary>
+            Schedules a long-running task by creating a new thread. Cancellation happens through polling.
+            </summary>
+            <typeparam name="TState">The type of the state passed to the scheduled action.</typeparam>
+            <param name="state">State passed to the action to be executed.</param>
+            <param name="action">Action to be executed.</param>
+            <returns>The disposable object used to cancel the scheduled action (best effort).</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="action"/> is null.</exception>
+        </member>
+        <member name="M:System.Reactive.Concurrency.NewThreadScheduler.SchedulePeriodic``1(``0,System.TimeSpan,System.Func{``0,``0})">
+            <summary>
+            Schedules a periodic piece of work by creating a new thread that goes to sleep when work has been dispatched and wakes up again at the next periodic due time.
+            </summary>
+            <typeparam name="TState">The type of the state passed to the scheduled action.</typeparam>
+            <param name="state">Initial state passed to the action upon the first iteration.</param>
+            <param name="period">Period for running the work periodically.</param>
+            <param name="action">Action to be executed, potentially updating the state.</param>
+            <returns>The disposable object used to cancel the scheduled recurring action (best effort).</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="action"/> is null.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="period"/> is less than TimeSpan.Zero.</exception>
+        </member>
+        <member name="M:System.Reactive.Concurrency.NewThreadScheduler.StartStopwatch">
+            <summary>
+            Starts a new stopwatch object.
+            </summary>
+            <returns>New stopwatch object; started at the time of the request.</returns>
+        </member>
+        <member name="P:System.Reactive.Concurrency.NewThreadScheduler.Default">
+            <summary>
+            Gets an instance of this scheduler that uses the default Thread constructor.
+            </summary>
+        </member>
+        <member name="T:System.Reactive.PlatformServices.EnlightenmentProvider">
+            <summary>
+            Provides access to the platform enlightenments used by other Rx libraries to improve system performance and
+            runtime efficiency. While Rx can run without platform enlightenments loaded, it's recommended to deploy the
+            System.Reactive.PlatformServices assembly with your application and call <see cref="M:System.Reactive.PlatformServices.EnlightenmentProvider.EnsureLoaded"/> during application startup to ensure enlightenments are properly loaded.
+            </summary>
+        </member>
+        <member name="M:System.Reactive.PlatformServices.EnlightenmentProvider.EnsureLoaded">
+            <summary>
+            Ensures that the calling assembly has a reference to the System.Reactive.PlatformServices assembly with
+            platform enlightenments. If no reference is made from the user code, it's possible for the build process
+            to drop the deployment of System.Reactive.PlatformServices, preventing its runtime discovery.
+            </summary>
+            <returns>
+            true if the loaded enlightenment provider matches the provided defined in the current assembly; false
+            otherwise. When a custom enlightenment provider is installed by the host, false will be returned.
+            </returns>
+        </member>
+        <member name="T:System.Reactive.Concurrency.ThreadPoolScheduler">
+            <summary>
+            Represents an object that schedules units of work on the CLR thread pool.
+            </summary>
+            <seealso cref="P:System.Reactive.Concurrency.ThreadPoolScheduler.Instance">Singleton instance of this type exposed through this static property.</seealso>
+        </member>
+        <member name="M:System.Reactive.Concurrency.ThreadPoolScheduler.Schedule``1(``0,System.Func{System.Reactive.Concurrency.IScheduler,``0,System.IDisposable})">
+            <summary>
+            Schedules an action to be executed.
+            </summary>
+            <typeparam name="TState">The type of the state passed to the scheduled action.</typeparam>
+            <param name="state">State passed to the action to be executed.</param>
+            <param name="action">Action to be executed.</param>
+            <returns>The disposable object used to cancel the scheduled action (best effort).</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="action"/> is null.</exception>
+        </member>
+        <member name="M:System.Reactive.Concurrency.ThreadPoolScheduler.Schedule``1(``0,System.TimeSpan,System.Func{System.Reactive.Concurrency.IScheduler,``0,System.IDisposable})">
+            <summary>
+            Schedules an action to be executed after dueTime, using a System.Threading.Timer object.
+            </summary>
+            <typeparam name="TState">The type of the state passed to the scheduled action.</typeparam>
+            <param name="state">State passed to the action to be executed.</param>
+            <param name="action">Action to be executed.</param>
+            <param name="dueTime">Relative time after which to execute the action.</param>
+            <returns>The disposable object used to cancel the scheduled action (best effort).</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="action"/> is null.</exception>
+        </member>
+        <member name="M:System.Reactive.Concurrency.ThreadPoolScheduler.ScheduleLongRunning``1(``0,System.Action{``0,System.Reactive.Disposables.ICancelable})">
+            <summary>
+            Schedules a long-running task by creating a new thread. Cancellation happens through polling.
+            </summary>
+            <typeparam name="TState">The type of the state passed to the scheduled action.</typeparam>
+            <param name="state">State passed to the action to be executed.</param>
+            <param name="action">Action to be executed.</param>
+            <returns>The disposable object used to cancel the scheduled action (best effort).</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="action"/> is null.</exception>
+        </member>
+        <member name="M:System.Reactive.Concurrency.ThreadPoolScheduler.StartStopwatch">
+            <summary>
+            Starts a new stopwatch object.
+            </summary>
+            <returns>New stopwatch object; started at the time of the request.</returns>
+        </member>
+        <member name="M:System.Reactive.Concurrency.ThreadPoolScheduler.SchedulePeriodic``1(``0,System.TimeSpan,System.Func{``0,``0})">
+            <summary>
+            Schedules a periodic piece of work, using a System.Threading.Timer object.
+            </summary>
+            <typeparam name="TState">The type of the state passed to the scheduled action.</typeparam>
+            <param name="state">Initial state passed to the action upon the first iteration.</param>
+            <param name="period">Period for running the work periodically.</param>
+            <param name="action">Action to be executed, potentially updating the state.</param>
+            <returns>The disposable object used to cancel the scheduled recurring action (best effort).</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="action"/> is null.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="period"/> is less than or equal to zero.</exception>
+        </member>
+        <member name="P:System.Reactive.Concurrency.ThreadPoolScheduler.Instance">
+            <summary>
+            Gets the singleton instance of the CLR thread pool scheduler.
+            </summary>
+        </member>
+        <member name="T:System.Reactive.PlatformServices.CurrentPlatformEnlightenmentProvider">
+            <summary>
+            (Infrastructure) Provider for platform-specific framework enlightenments.
+            </summary>
+        </member>
+        <member name="M:System.Reactive.PlatformServices.CurrentPlatformEnlightenmentProvider.GetService``1(System.Object[])">
+            <summary>
+            (Infastructure) Tries to gets the specified service.
+            </summary>
+            <typeparam name="T">Service type.</typeparam>
+            <param name="args">Optional set of arguments.</param>
+            <returns>Service instance or null if not found.</returns>
+        </member>
+        <member name="T:System.Reactive.Strings_PlatformServices">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:System.Reactive.Strings_PlatformServices.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:System.Reactive.Strings_PlatformServices.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:System.Reactive.Strings_PlatformServices.WINRT_NO_SUB1MS_TIMERS">
+            <summary>
+              Looks up a localized string similar to The WinRT thread pool doesn&apos;t support creating periodic timers with a period below 1 millisecond..
+            </summary>
+        </member>
+    </members>
+</doc>
