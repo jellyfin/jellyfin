@@ -97,5 +97,32 @@ namespace MediaBrowser.Controller.Events
             }
         }
 
+        public VirtualFolder VirtualFolder
+        {
+            get
+            {
+                if (Parent != null)
+                {
+                    return Parent.VirtualFolder;
+                }
+
+                return null;
+            }
+        }
+
+        public string VirtualFolderCollectionType
+        {
+            get
+            {
+                VirtualFolder vf = VirtualFolder;
+
+                if (vf == null)
+                {
+                    return null;
+                }
+
+                return vf.CollectionType;
+            }
+        }
     }
 }

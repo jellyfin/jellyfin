@@ -17,7 +17,7 @@ namespace MediaBrowser.Movies.Resolvers
     {
         protected override Movie Resolve(ItemResolveEventArgs args)
         {
-            if (args.IsFolder)
+            if (args.IsFolder && (args.VirtualFolderCollectionType ?? string.Empty).Equals("Movies", StringComparison.OrdinalIgnoreCase))
             {
                 // Optimization to avoid running these tests against VF's
                 if (args.Parent != null && args.Parent.IsRoot)

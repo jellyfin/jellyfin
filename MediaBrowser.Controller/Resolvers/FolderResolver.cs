@@ -19,10 +19,10 @@ namespace MediaBrowser.Controller.Resolvers
         }
     }
 
-    public abstract class BaseFolderResolver<T> : BaseItemResolver<T>
-        where T : Folder, new ()
+    public abstract class BaseFolderResolver<TItemType> : BaseItemResolver<TItemType>
+        where TItemType : Folder, new()
     {
-        protected override void SetItemValues(T item, ItemResolveEventArgs args)
+        protected override void SetItemValues(TItemType item, ItemResolveEventArgs args)
         {
             base.SetItemValues(item, args);
 
@@ -32,7 +32,7 @@ namespace MediaBrowser.Controller.Resolvers
             PopulateFolderMetadata(item, args);
         }
 
-        private void PopulateFolderMetadata(Folder folder, ItemResolveEventArgs args)
+        private void PopulateFolderMetadata(TItemType folder, ItemResolveEventArgs args)
         {
             var metadataFile = args.GetFileByName("folder.xml");
 

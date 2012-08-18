@@ -8,14 +8,6 @@ namespace MediaBrowser.Model.Entities
     {
         public bool IsRoot { get; set; }
 
-        public bool IsVirtualFolder
-        {
-            get
-            {
-                return Parent != null && Parent.IsRoot;
-            }
-        }
-
         public BaseItem[] Children { get; set; }
 
         /// <summary>

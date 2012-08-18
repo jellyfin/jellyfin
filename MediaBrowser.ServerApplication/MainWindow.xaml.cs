@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Windows;
+using MediaBrowser.Common.Logging;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Progress;
 
@@ -26,11 +27,18 @@ namespace MediaBrowser.ServerApplication
             
             try
             {
+                DateTime now = DateTime.Now;
+
                 new Kernel().Init(progress);
+
+                double seconds = (DateTime.Now - now).TotalSeconds;
+
+                Logger.LogInfo("Kernel.Init completed in {0} seconds.", seconds);
             }
             catch (Exception ex)
             {
                 MessageBox.Show("There was an error launching Media Browser Server: " + ex.Message);
+                Close();
             }
             finally
             {

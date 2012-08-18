@@ -13,7 +13,7 @@ namespace MediaBrowser.TV.Resolvers
     {
         protected override Series Resolve(ItemResolveEventArgs args)
         {
-            if (args.IsFolder)
+            if (args.IsFolder && (args.VirtualFolderCollectionType ?? string.Empty).Equals("TV", StringComparison.OrdinalIgnoreCase))
             {
                 // Optimization to avoid running these tests against VF's
                 if (args.Parent != null && args.Parent.IsRoot)
@@ -42,6 +42,12 @@ namespace MediaBrowser.TV.Resolvers
         {
             base.SetItemValues(item, args);
 
+            // Read data from series.xml, if it exists
+            PopulateFolderMetadata(item, args);
+        }
+
+        private void PopulateFolderMetadata(Series item, ItemResolveEventArgs args)
+        {
             var metadataFile = args.GetFileByName("series.xml");
 
             if (metadataFile.HasValue)
