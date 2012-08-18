@@ -1,16 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.ApiInteraction
 {
     public class ApiClient : IDisposable
     {
+        public ApiClient(HttpClientHandler handler)
+        {
+            handler.AutomaticDecompression = DecompressionMethods.Deflate;
+
+            HttpClient = new HttpClient(handler);
+        }
+
         /// <summary>
         /// Gets or sets the server host name (myserver or 192.168.x.x)
         /// </summary>
@@ -32,7 +39,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public IHttpClient HttpClient { get; set; }
+        public HttpClient HttpClient { get; private set; }
         public IJsonSerializer JsonSerializer { get; set; }
 
         /// <summary>
@@ -84,26 +91,26 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// This is a helper to get a list of backdrop url's from a given ApiBaseItemWrapper. If the actual item does not have any backdrops it will return backdrops from the first parent that does.
         /// </summary>
-        /// <param name="itemWrapper">A given item.</param>
+        /// <param name="item">A given item.</param>
         /// <param name="width">Use if a fixed width is required. Aspect ratio will be preserved.</param>
         /// <param name="height">Use if a fixed height is required. Aspect ratio will be preserved.</param>
         /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
         /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
         /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
-        public IEnumerable<string> GetBackdropImageUrls(ApiBaseItemContainer itemWrapper, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
+        public IEnumerable<string> GetBackdropImageUrls(DTOBaseItem item, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
         {
             Guid? backdropItemId = null;
             int backdropCount = 0;
 
-            if (itemWrapper.Item.BackdropImagePaths == null || !itemWrapper.Item.BackdropImagePaths.Any())
+            if (item.BackdropCount == 0)
             {
-                backdropItemId = itemWrapper.ParentBackdropItemId;
-                backdropCount = itemWrapper.ParentBackdropCount ?? 0;
+                backdropItemId = item.ParentBackdropItemId;
+                backdropCount = item.ParentBackdropCount ?? 0;
             }
             else
             {
-                backdropItemId = itemWrapper.Item.Id;
-                backdropCount = itemWrapper.Item.BackdropImagePaths.Count();
+                backdropItemId = item.Id;
+                backdropCount = item.BackdropCount;
             }
 
             if (backdropItemId == null)
@@ -124,15 +131,15 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// This is a helper to get the logo image url from a given ApiBaseItemWrapper. If the actual item does not have a logo, it will return the logo from the first parent that does, or null.
         /// </summary>
-        /// <param name="itemWrapper">A given item.</param>
+        /// <param name="item">A given item.</param>
         /// <param name="width">Use if a fixed width is required. Aspect ratio will be preserved.</param>
         /// <param name="height">Use if a fixed height is required. Aspect ratio will be preserved.</param>
         /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
         /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
         /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
-        public string GetLogoImageUrl(ApiBaseItemContainer itemWrapper, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
+        public string GetLogoImageUrl(DTOBaseItem item, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
         {
-            Guid? logoItemId = !string.IsNullOrEmpty(itemWrapper.Item.LogoImagePath) ? itemWrapper.Item.Id : itemWrapper.ParentLogoItemId;
+            Guid? logoItemId = item.HasLogo ? item.Id : item.ParentLogoItemId;
 
             if (logoItemId.HasValue)
             {
@@ -153,7 +160,7 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets a BaseItem
         /// </summary>
-        public async Task<ApiBaseItemContainer> GetItemAsync(Guid id, Guid userId)
+        public async Task<DTOBaseItem> GetItemAsync(Guid id, Guid userId)
         {
             string url = ApiUrl + "/item?userId=" + userId.ToString();
 
@@ -164,7 +171,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await HttpClient.GetStreamAsync(url))
             {
-                return JsonSerializer.DeserializeFromStream<ApiBaseItemContainer>(stream);
+                return JsonSerializer.DeserializeFromStream<DTOBaseItem>(stream);
             }
         }
 
@@ -210,44 +217,54 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets all items that contain a given Year
         /// </summary>
-        public async Task<IEnumerable<ApiBaseItemContainer>> GetItemsWithYearAsync(string name, Guid userId)
+        public async Task<IEnumerable<DTOBaseItem>> GetItemsWithYearAsync(string name, Guid userId)
         {
             string url = ApiUrl + "/itemlist?listtype=itemswithyear&userId=" + userId.ToString() + "&name=" + name;
 
             using (Stream stream = await HttpClient.GetStreamAsync(url))
             {
-                return JsonSerializer.DeserializeFromStream<IEnumerable<ApiBaseItemContainer>>(stream);
+                return JsonSerializer.DeserializeFromStream<IEnumerable<DTOBaseItem>>(stream);
             }
         }
 
         /// <summary>
         /// Gets all items that contain a given Genre
         /// </summary>
-        public async Task<IEnumerable<ApiBaseItemContainer>> GetItemsWithGenreAsync(string name, Guid userId)
+        public async Task<IEnumerable<DTOBaseItem>> GetItemsWithGenreAsync(string name, Guid userId)
         {
             string url = ApiUrl + "/itemlist?listtype=itemswithgenre&userId=" + userId.ToString() + "&name=" + name;
 
             using (Stream stream = await HttpClient.GetStreamAsync(url))
             {
-                return JsonSerializer.DeserializeFromStream<IEnumerable<ApiBaseItemContainer>>(stream);
+                return JsonSerializer.DeserializeFromStream<IEnumerable<DTOBaseItem>>(stream);
             }
         }
 
         /// <summary>
         /// Gets all items that contain a given Person
         /// </summary>
-        public async Task<IEnumerable<ApiBaseItemContainer>> GetItemsWithPersonAsync(string name, PersonType? personType, Guid userId)
+        public async Task<IEnumerable<DTOBaseItem>> GetItemsWithPersonAsync(string name, Guid userId)
         {
             string url = ApiUrl + "/itemlist?listtype=itemswithperson&userId=" + userId.ToString() + "&name=" + name;
 
-            if (personType.HasValue)
+            using (Stream stream = await HttpClient.GetStreamAsync(url))
             {
-                url += "&persontype=" + personType.Value.ToString();
+                return JsonSerializer.DeserializeFromStream<IEnumerable<DTOBaseItem>>(stream);
             }
+        }
+        
+        /// <summary>
+        /// Gets all items that contain a given Person
+        /// </summary>
+        public async Task<IEnumerable<DTOBaseItem>> GetItemsWithPersonAsync(string name, string personType, Guid userId)
+        {
+            string url = ApiUrl + "/itemlist?listtype=itemswithperson&userId=" + userId.ToString() + "&name=" + name;
+
+            url += "&persontype=" + personType;
 
             using (Stream stream = await HttpClient.GetStreamAsync(url))
             {
-                return JsonSerializer.DeserializeFromStream<IEnumerable<ApiBaseItemContainer>>(stream);
+                return JsonSerializer.DeserializeFromStream<IEnumerable<DTOBaseItem>>(stream);
             }
         }
 
@@ -267,13 +284,13 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets all items that contain a given Studio
         /// </summary>
-        public async Task<IEnumerable<ApiBaseItemContainer>> GetItemsWithStudioAsync(string name, Guid userId)
+        public async Task<IEnumerable<DTOBaseItem>> GetItemsWithStudioAsync(string name, Guid userId)
         {
             string url = ApiUrl + "/itemlist?listtype=itemswithstudio&userId=" + userId.ToString() + "&name=" + name;
 
             using (Stream stream = await HttpClient.GetStreamAsync(url))
             {
-                return JsonSerializer.DeserializeFromStream<IEnumerable<ApiBaseItemContainer>>(stream);
+                return JsonSerializer.DeserializeFromStream<IEnumerable<DTOBaseItem>>(stream);
             }
         }
 

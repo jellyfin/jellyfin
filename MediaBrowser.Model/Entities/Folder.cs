@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -18,7 +16,6 @@ namespace MediaBrowser.Model.Entities
             }
         }
 
-        [IgnoreDataMember]
         public BaseItem[] Children { get; set; }
 
         /// <summary>
@@ -51,6 +48,23 @@ namespace MediaBrowser.Model.Entities
         }
 
         /// <summary>
+        /// Since it can be slow to make all of these calculations at once, this method will provide a way to get them all back together
+        /// </summary>
+        public ItemSpecialCounts GetSpecialCounts(User user)
+        {
+            ItemSpecialCounts counts = new ItemSpecialCounts();
+
+            IEnumerable<BaseItem> recursiveChildren = GetParentalAllowedRecursiveChildren(user);
+
+            counts.RecentlyAddedItemCount = GetRecentlyAddedItems(recursiveChildren, user).Count();
+            counts.RecentlyAddedUnPlayedItemCount = GetRecentlyAddedUnplayedItems(recursiveChildren, user).Count();
+            counts.InProgressItemCount = GetInProgressItems(recursiveChildren, user).Count();
+            counts.WatchedPercentage = GetWatchedPercentage(recursiveChildren, user);
+
+            return counts;
+        }
+
+        /// <summary>
         /// Finds all recursive items within a top-level parent that contain the given genre and are allowed for the current user
         /// </summary>
         public IEnumerable<BaseItem> GetItemsWithGenre(string genre, User user)
@@ -77,21 +91,30 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// Finds all recursive items within a top-level parent that contain the given person and are allowed for the current user
         /// </summary>
-        /// <param name="personType">Specify this to limit results to a specific PersonType</param>
-        public IEnumerable<BaseItem> GetItemsWithPerson(string person, PersonType? personType, User user)
+        public IEnumerable<BaseItem> GetItemsWithPerson(string person, User user)
         {
             return GetParentalAllowedRecursiveChildren(user).Where(c =>
             {
                 if (c.People != null)
                 {
-                    if (personType.HasValue)
-                    {
-                        return c.People.Any(p => p.Name.Equals(person, StringComparison.OrdinalIgnoreCase) && p.PersonType == personType.Value);
-                    }
-                    else
-                    {
-                        return c.People.Any(p => p.Name.Equals(person, StringComparison.OrdinalIgnoreCase));
-                    }
+                    return c.People.Any(p => p.Name.Equals(person, StringComparison.OrdinalIgnoreCase));
+                }
+
+                return false;
+            });
+        }
+
+        /// <summary>
+        /// Finds all recursive items within a top-level parent that contain the given person and are allowed for the current user
+        /// </summary>
+        /// <param name="personType">Specify this to limit results to a specific PersonType</param>
+        public IEnumerable<BaseItem> GetItemsWithPerson(string person, string personType, User user)
+        {
+            return GetParentalAllowedRecursiveChildren(user).Where(c =>
+            {
+                if (c.People != null)
+                {
+                    return c.People.Any(p => p.Name.Equals(person, StringComparison.OrdinalIgnoreCase) && p.Type == personType);
                 }
 
                 return false;
@@ -103,9 +126,7 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         public IEnumerable<BaseItem> GetRecentlyAddedItems(User user)
         {
-            DateTime now = DateTime.Now;
-
-            return GetParentalAllowedRecursiveChildren(user).Where(i => !(i is Folder) && (now - i.DateCreated).TotalDays < user.RecentItemDays);
+            return GetRecentlyAddedItems(GetParentalAllowedRecursiveChildren(user), user);
         }
 
         /// <summary>
@@ -113,12 +134,7 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         public IEnumerable<BaseItem> GetRecentlyAddedUnplayedItems(User user)
         {
-            return GetRecentlyAddedItems(user).Where(i =>
-            {
-                var userdata = user.GetItemData(i.Id);
-
-                return userdata == null || userdata.PlayCount == 0;
-            });
+            return GetRecentlyAddedUnplayedItems(GetParentalAllowedRecursiveChildren(user), user);
         }
 
         /// <summary>
@@ -126,45 +142,95 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         public IEnumerable<BaseItem> GetInProgressItems(User user)
         {
-            return GetParentalAllowedRecursiveChildren(user).Where(i =>
+            return GetInProgressItems(GetParentalAllowedRecursiveChildren(user), user);
+        }
+
+        private static IEnumerable<BaseItem> GetRecentlyAddedItems(IEnumerable<BaseItem> itemSet, User user)
+        {
+            DateTime now = DateTime.Now;
+
+            return itemSet.Where(i => !(i is Folder) && (now - i.DateCreated).TotalDays < user.RecentItemDays);
+        }
+
+        private static IEnumerable<BaseItem> GetRecentlyAddedUnplayedItems(IEnumerable<BaseItem> itemSet, User user)
+        {
+            return GetRecentlyAddedItems(itemSet, user).Where(i =>
+            {
+                var userdata = i.GetUserData(user);
+
+                return userdata == null || userdata.PlayCount == 0;
+            });
+        }
+
+        private static IEnumerable<BaseItem> GetInProgressItems(IEnumerable<BaseItem> itemSet, User user)
+        {
+            return itemSet.Where(i =>
             {
                 if (i is Folder)
                 {
                     return false;
                 }
 
-                var userdata = user.GetItemData(i.Id);
+                var userdata = i.GetUserData(user);
 
-                return userdata != null && userdata.PlaybackPosition.Ticks > 0;
+                return userdata != null && userdata.PlaybackPositionTicks > 0;
             });
         }
 
+        private static decimal GetWatchedPercentage(IEnumerable<BaseItem> itemSet, User user)
+        {
+            itemSet = itemSet.Where(i => !(i is Folder));
+
+            if (!itemSet.Any())
+            {
+                return 0;
+            }
+
+            decimal totalPercent = 0;
+
+            foreach (BaseItem item in itemSet)
+            {
+                UserItemData data = item.GetUserData(user);
+
+                if (data == null)
+                {
+                    continue;
+                }
+
+                if (data.PlayCount > 0)
+                {
+                    totalPercent += 100;
+                }
+                else if (data.PlaybackPositionTicks > 0 && item.RunTimeTicks.HasValue)
+                {
+                    decimal itemPercent = data.PlaybackPositionTicks;
+                    itemPercent /= item.RunTimeTicks.Value;
+                    totalPercent += itemPercent;
+                }
+            }
+
+            return totalPercent / itemSet.Count();
+        }
+        
         /// <summary>
         /// Finds an item by ID, recursively
         /// </summary>
-        public BaseItem FindById(Guid id)
+        public override BaseItem FindItemById(Guid id)
         {
-            if (Id == id)
+            var result = base.FindItemById(id);
+
+            if (result != null)
             {
-                return this;
+                return result;
             }
 
             foreach (BaseItem item in Children)
             {
-                var folder = item as Folder;
+                result = item.FindItemById(id);
 
-                if (folder != null)
+                if (result != null)
                 {
-                    var foundItem = folder.FindById(id);
-
-                    if (foundItem != null)
-                    {
-                        return foundItem;
-                    }
-                }
-                else if (item.Id == id)
-                {
-                    return item;
+                    return result;
                 }
             }
 

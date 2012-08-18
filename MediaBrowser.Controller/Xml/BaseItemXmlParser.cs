@@ -101,8 +101,24 @@ namespace MediaBrowser.Controller.Xml
                     break;
 
                 case "TagLine":
-                    item.Tagline = reader.ReadString();
-                    break;
+                    {
+                        var list = (item.Taglines ?? new string[] { }).ToList();
+                        var tagline = reader.ReadString();
+
+                        if (!list.Contains(tagline))
+                        {
+                            list.Add(tagline);
+                        }
+
+                        item.Taglines = list;
+                        break;
+                    }
+
+                case "TagLines":
+                    {
+                        FetchFromTaglinesNode(reader.ReadSubtree(), item);
+                        break;
+                    }
 
                 case "ContentRating":
                 case "MPAARating":
@@ -138,7 +154,7 @@ namespace MediaBrowser.Controller.Xml
                 case "Director":
                     {
                         var list = (item.People ?? new PersonInfo[] { }).ToList();
-                        list.AddRange(GetSplitValues(reader.ReadString(), '|').Select(v => new PersonInfo() { Name = v, PersonType = PersonType.Director }));
+                        list.AddRange(GetSplitValues(reader.ReadString(), '|').Select(v => new PersonInfo() { Name = v, Type = "Director" }));
 
                         item.People = list;
                         break;
@@ -146,7 +162,7 @@ namespace MediaBrowser.Controller.Xml
                 case "Writer":
                     {
                         var list = (item.People ?? new PersonInfo[] { }).ToList();
-                        list.AddRange(GetSplitValues(reader.ReadString(), '|').Select(v => new PersonInfo() { Name = v, PersonType = PersonType.Writer }));
+                        list.AddRange(GetSplitValues(reader.ReadString(), '|').Select(v => new PersonInfo() { Name = v, Type = "Writer" }));
 
                         item.People = list;
                         break;
@@ -156,7 +172,7 @@ namespace MediaBrowser.Controller.Xml
                 case "GuestStars":
                     {
                         var list = (item.People ?? new PersonInfo[] { }).ToList();
-                        list.AddRange(GetSplitValues(reader.ReadString(), '|').Select(v => new PersonInfo() { Name = v, PersonType = PersonType.Actor }));
+                        list.AddRange(GetSplitValues(reader.ReadString(), '|').Select(v => new PersonInfo() { Name = v, Type = "Actor" }));
 
                         item.People = list;
                         break;
@@ -287,7 +303,7 @@ namespace MediaBrowser.Controller.Xml
                             {
                                 AudioStream stream = FetchMediaInfoAudio(reader.ReadSubtree());
 
-                                List<AudioStream> streams = item.AudioStreams.ToList();
+                                List<AudioStream> streams = (item.AudioStreams ?? new AudioStream[] { }).ToList();
                                 streams.Add(stream);
                                 item.AudioStreams = streams;
 
@@ -322,6 +338,14 @@ namespace MediaBrowser.Controller.Xml
                 {
                     switch (reader.Name)
                     {
+                        case "Default":
+                            stream.IsDefault = reader.ReadString() == "True";
+                            break;
+
+                        case "Forced":
+                            stream.IsForced = reader.ReadString() == "True";
+                            break;
+
                         case "BitRate":
                             stream.BitRate = reader.ReadIntSafe();
                             break;
@@ -343,40 +367,40 @@ namespace MediaBrowser.Controller.Xml
                                     case "dts-es":
                                     case "dts-es matrix":
                                     case "dts-es discrete":
-                                        stream.AudioFormat = "DTS";
-                                        stream.AudioProfile = "ES";
+                                        stream.Format = "DTS";
+                                        stream.Profile = "ES";
                                         break;
                                     case "dts-hd hra":
                                     case "dts-hd high resolution":
-                                        stream.AudioFormat = "DTS";
-                                        stream.AudioProfile = "HRA";
+                                        stream.Format = "DTS";
+                                        stream.Profile = "HRA";
                                         break;
                                     case "dts ma":
                                     case "dts-hd ma":
                                     case "dts-hd master":
-                                        stream.AudioFormat = "DTS";
-                                        stream.AudioProfile = "MA";
+                                        stream.Format = "DTS";
+                                        stream.Profile = "MA";
                                         break;
                                     case "dolby digital":
                                     case "dolby digital surround ex":
                                     case "dolby surround":
-                                        stream.AudioFormat = "AC-3";
+                                        stream.Format = "AC-3";
                                         break;
                                     case "dolby digital plus":
-                                        stream.AudioFormat = "E-AC-3";
+                                        stream.Format = "E-AC-3";
                                         break;
                                     case "dolby truehd":
-                                        stream.AudioFormat = "AC-3";
-                                        stream.AudioProfile = "TrueHD";
+                                        stream.Format = "AC-3";
+                                        stream.Profile = "TrueHD";
                                         break;
                                     case "mp2":
-                                        stream.AudioFormat = "MPEG Audio";
-                                        stream.AudioProfile = "Layer 2";
+                                        stream.Format = "MPEG Audio";
+                                        stream.Profile = "Layer 2";
                                         break;
                                     case "other":
                                         break;
                                     default:
-                                        stream.AudioFormat = codec;
+                                        stream.Format = codec;
                                         break;
                                 }
 
@@ -412,7 +436,7 @@ namespace MediaBrowser.Controller.Xml
                             break;
 
                         case "BitRate":
-                            item.VideoBitRate = reader.ReadIntSafe();
+                            item.BitRate = reader.ReadIntSafe();
                             break;
 
                         case "FrameRate":
@@ -424,14 +448,14 @@ namespace MediaBrowser.Controller.Xml
                             break;
 
                         case "Duration":
-                            item.RunTimeInMilliseconds = reader.ReadIntSafe() * 60000;
+                            item.RunTimeTicks = TimeSpan.FromMinutes(reader.ReadIntSafe()).Ticks;
                             break;
 
                         case "DurationSeconds":
                             int seconds = reader.ReadIntSafe();
                             if (seconds > 0)
                             {
-                                item.RunTimeInMilliseconds = seconds * 1000;
+                                item.RunTimeTicks = TimeSpan.FromSeconds(seconds).Ticks;
                             }
                             break;
 
@@ -442,16 +466,16 @@ namespace MediaBrowser.Controller.Xml
                                 switch (videoCodec.ToLower())
                                 {
                                     case "sorenson h.263":
-                                        item.VideoCodec = "Sorenson H263";
+                                        item.Codec = "Sorenson H263";
                                         break;
                                     case "h.262":
-                                        item.VideoCodec = "MPEG-2 Video";
+                                        item.Codec = "MPEG-2 Video";
                                         break;
                                     case "h.264":
-                                        item.VideoCodec = "AVC";
+                                        item.Codec = "AVC";
                                         break;
                                     default:
-                                        item.VideoCodec = videoCodec;
+                                        item.Codec = videoCodec;
                                         break;
                                 }
 
@@ -497,6 +521,39 @@ namespace MediaBrowser.Controller.Xml
             }
 
             item.Subtitles = list;
+        }
+
+        private void FetchFromTaglinesNode(XmlReader reader, T item)
+        {
+            List<string> list = (item.Taglines ?? new string[] { }).ToList();
+
+            reader.MoveToContent();
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "Tagline":
+                            {
+                                string val = reader.ReadString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    list.Add(val);
+                                }
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+
+            item.Taglines = list;
         }
 
         private void FetchFromGenresNode(XmlReader reader, T item)
@@ -668,27 +725,8 @@ namespace MediaBrowser.Controller.Xml
                             break;
 
                         case "Type":
-                            {
-                                string type = reader.ReadString();
-
-                                if (type.Equals("Director", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    person.PersonType = PersonType.Director;
-                                }
-                                else if (type.Equals("Actor", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    person.PersonType = PersonType.Actor;
-                                }
-                                else if (type.Equals("Writer", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    person.PersonType = PersonType.Writer;
-                                }
-                                else if (type.Equals("Producer", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    person.PersonType = PersonType.Producer;
-                                }
-                                break;
-                            }
+                            person.Type = reader.ReadString();
+                            break;
 
                         case "Role":
                             person.Overview = reader.ReadString();

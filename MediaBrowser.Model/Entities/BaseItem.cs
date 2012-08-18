@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
-using MediaBrowser.Model.Users;
+using System.Linq;
 
 namespace MediaBrowser.Model.Entities
 {
-    public abstract class BaseItem : BaseEntity
+    public abstract class BaseItem : BaseEntity, IHasProviderIds
     {
         public string SortName { get; set; }
 
@@ -16,25 +15,25 @@ namespace MediaBrowser.Model.Entities
 
         public string Path { get; set; }
 
-        [IgnoreDataMember]
         public Folder Parent { get; set; }
 
         public string LogoImagePath { get; set; }
+
         public string ArtImagePath { get; set; }
+
         public string ThumbnailImagePath { get; set; }
+
         public string BannerImagePath { get; set; }
 
         public IEnumerable<string> BackdropImagePaths { get; set; }
 
         public string OfficialRating { get; set; }
         
-        [IgnoreDataMember]
         public string CustomRating { get; set; }
 
         public string Overview { get; set; }
-        public string Tagline { get; set; }
+        public IEnumerable<string> Taglines { get; set; }
 
-        [IgnoreDataMember]
         public IEnumerable<PersonInfo> People { get; set; }
 
         public IEnumerable<string> Studios { get; set; }
@@ -44,7 +43,7 @@ namespace MediaBrowser.Model.Entities
         public string DisplayMediaType { get; set; }
 
         public float? UserRating { get; set; }
-        public int? RunTimeInMilliseconds { get; set; }
+        public long? RunTimeTicks { get; set; }
 
         public string AspectRatio { get; set; }
         public int? ProductionYear { get; set; }
@@ -61,46 +60,26 @@ namespace MediaBrowser.Model.Entities
 
         public Dictionary<string, string> ProviderIds { get; set; }
 
-        /// <summary>
-        /// Gets a provider id
-        /// </summary>
-        public string GetProviderId(MetadataProviders provider)
-        {
-            return GetProviderId(provider.ToString());
-        }
+        public Dictionary<Guid, UserItemData> UserData { get; set; }
 
-        /// <summary>
-        /// Gets a provider id
-        /// </summary>
-        public string GetProviderId(string name)
+        public UserItemData GetUserData(User user)
         {
-            if (ProviderIds == null)
+            if (UserData == null || !UserData.ContainsKey(user.Id))
             {
                 return null;
             }
 
-            return ProviderIds[name];
+            return UserData[user.Id];
         }
 
-        /// <summary>
-        /// Sets a provider id
-        /// </summary>
-        public void SetProviderId(string name, string value)
+        public void AddUserData(User user, UserItemData data)
         {
-            if (ProviderIds == null)
+            if (UserData == null)
             {
-                ProviderIds = new Dictionary<string, string>();
+                UserData = new Dictionary<Guid, UserItemData>();
             }
 
-            ProviderIds[name] = value;
-        }
-
-        /// <summary>
-        /// Sets a provider id
-        /// </summary>
-        public void SetProviderId(MetadataProviders provider, string value)
-        {
-            SetProviderId(provider.ToString(), value);
+            UserData[user.Id] = data;
         }
 
         /// <summary>
@@ -109,6 +88,24 @@ namespace MediaBrowser.Model.Entities
         internal bool IsParentalAllowed(User user)
         {
             return true;
+        }
+
+        /// <summary>
+        /// Finds an item by ID, recursively
+        /// </summary>
+        public virtual BaseItem FindItemById(Guid id)
+        {
+            if (Id == id)
+            {
+                return this;
+            }
+
+            if (LocalTrailers != null)
+            {
+                return LocalTrailers.FirstOrDefault(i => i.Id == id);
+            }
+
+            return null;
         }
     }
 }

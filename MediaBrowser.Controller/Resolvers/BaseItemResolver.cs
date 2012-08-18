@@ -137,7 +137,10 @@ namespace MediaBrowser.Controller.Resolvers
                 }
             }
 
-            item.BackdropImagePaths = backdropFiles;
+            if (backdropFiles.Any())
+            {
+                item.BackdropImagePaths = backdropFiles;
+            }
         }
 
         protected virtual void PopulateLocalTrailers(T item, ItemResolveEventArgs args)

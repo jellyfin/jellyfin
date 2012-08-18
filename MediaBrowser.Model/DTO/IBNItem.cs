@@ -24,7 +24,7 @@ namespace MediaBrowser.Model.DTO
     public class BaseItemPerson
     {
         public PersonInfo PersonInfo { get; set; }
-        public string PrimaryImagePath { get; set; }
+        public bool HasImage { get; set; }
     }
 
     /// <summary>
@@ -33,6 +33,6 @@ namespace MediaBrowser.Model.DTO
     public class BaseItemStudio
     {
         public string Name { get; set; }
-        public string PrimaryImagePath { get; set; }
+        public bool HasImage { get; set; }
     }
 }

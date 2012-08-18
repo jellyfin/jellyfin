@@ -5,7 +5,6 @@ using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
