@@ -87,12 +87,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="FFMpeg\ffmpeg.exe" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="FFMpeg\readme.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
