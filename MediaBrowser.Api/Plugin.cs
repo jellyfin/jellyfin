@@ -85,6 +85,22 @@ namespace MediaBrowser.Api
             {
                 return new VideoHandler();
             }
+            else if (localPath.EndsWith("/api/person", StringComparison.OrdinalIgnoreCase))
+            {
+                return new PersonHandler();
+            }
+            else if (localPath.EndsWith("/api/genre", StringComparison.OrdinalIgnoreCase))
+            {
+                return new GenreHandler();
+            }
+            else if (localPath.EndsWith("/api/year", StringComparison.OrdinalIgnoreCase))
+            {
+                return new YearHandler();
+            }
+            else if (localPath.EndsWith("/api/studio", StringComparison.OrdinalIgnoreCase))
+            {
+                return new StudioHandler();
+            }
 
             return null;
         }

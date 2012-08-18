@@ -294,6 +294,58 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
+        /// <summary>
+        /// Gets a studio
+        /// </summary>
+        public async Task<IBNItem<Studio>> GetStudioAsync(Guid userId, string name)
+        {
+            string url = ApiUrl + "/studio?userId=" + userId.ToString() + "&name=" + name;
+
+            using (Stream stream = await HttpClient.GetStreamAsync(url))
+            {
+                return JsonSerializer.DeserializeFromStream<IBNItem<Studio>>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Gets a genre
+        /// </summary>
+        public async Task<IBNItem<Genre>> GetGenreAsync(Guid userId, string name)
+        {
+            string url = ApiUrl + "/genre?userId=" + userId.ToString() + "&name=" + name;
+
+            using (Stream stream = await HttpClient.GetStreamAsync(url))
+            {
+                return JsonSerializer.DeserializeFromStream<IBNItem<Genre>>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Gets a person
+        /// </summary>
+        public async Task<IBNItem<Person>> GetPersonAsync(Guid userId, string name)
+        {
+            string url = ApiUrl + "/person?userId=" + userId.ToString() + "&name=" + name;
+
+            using (Stream stream = await HttpClient.GetStreamAsync(url))
+            {
+                return JsonSerializer.DeserializeFromStream<IBNItem<Person>>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Gets a year
+        /// </summary>
+        public async Task<IBNItem<Year>> GetYearAsync(Guid userId, int year)
+        {
+            string url = ApiUrl + "/year?userId=" + userId.ToString() + "&year=" + year;
+
+            using (Stream stream = await HttpClient.GetStreamAsync(url))
+            {
+                return JsonSerializer.DeserializeFromStream<IBNItem<Year>>(stream);
+            }
+        }
+
         public void Dispose()
         {
             HttpClient.Dispose();

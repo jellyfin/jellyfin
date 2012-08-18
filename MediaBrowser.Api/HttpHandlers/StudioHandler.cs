@@ -9,11 +9,11 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Api.HttpHandlers
 {
     /// <summary>
-    /// Gets a single Person
+    /// Gets a single studio
     /// </summary>
-    public class PersonHandler : BaseJsonHandler<IBNItem<Person>>
+    public class StudioHandler : BaseJsonHandler<IBNItem<Studio>>
     {
-        protected override IBNItem<Person> GetObjectToSerialize()
+        protected override IBNItem<Studio> GetObjectToSerialize()
         {
             Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
             Guid userId = Guid.Parse(QueryString["userid"]);
@@ -21,13 +21,13 @@ namespace MediaBrowser.Api.HttpHandlers
 
             string name = QueryString["name"];
 
-            return GetPerson(parent, user, name);
+            return GetStudio(parent, user, name);
         }
 
         /// <summary>
-        /// Gets a Person
+        /// Gets a Studio
         /// </summary>
-        private IBNItem<Person> GetPerson(Folder parent, User user, string name)
+        private IBNItem<Studio> GetStudio(Folder parent, User user, string name)
         {
             int count = 0;
 
@@ -36,16 +36,16 @@ namespace MediaBrowser.Api.HttpHandlers
 
             foreach (var item in allItems)
             {
-                if (item.People != null && item.People.Any(s => s.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                if (item.Studios != null && item.Studios.Any(s => s.Equals(name, StringComparison.OrdinalIgnoreCase)))
                 {
                     count++;
                 }
             }
 
             // Get the original entity so that we can also supply the PrimaryImagePath
-            return new IBNItem<Person>()
+            return new IBNItem<Studio>()
             {
-                Item = Kernel.Instance.ItemController.GetPerson(name),
+                Item = Kernel.Instance.ItemController.GetStudio(name),
                 BaseItemCount = count
             };
         }
