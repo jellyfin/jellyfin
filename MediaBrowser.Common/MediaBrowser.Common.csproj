@@ -81,7 +81,6 @@
     <Compile Include="Net\Handlers\BaseJsonHandler.cs" />
     <Compile Include="Net\HttpServer.cs" />
     <Compile Include="Net\Request.cs" />
-    <Compile Include="Net\StreamExtensions.cs" />
     <Compile Include="Plugins\BasePlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serialization\XmlSerializer.cs" />
