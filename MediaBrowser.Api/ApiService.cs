@@ -95,6 +95,9 @@ namespace MediaBrowser.Api
             if (folder != null)
             {
                 dto.SpecialCounts = folder.GetSpecialCounts(user);
+
+                dto.IsRoot = folder.IsRoot;
+                dto.IsVirtualFolder = folder.IsVirtualFolder;
             }
             
             return dto;

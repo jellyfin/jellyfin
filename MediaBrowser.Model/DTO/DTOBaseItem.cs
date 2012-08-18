@@ -49,6 +49,16 @@ namespace MediaBrowser.Model.DTO
 
         public bool IsFolder { get; set; }
 
+        /// <summary>
+        /// If the item is a Folder this will determine if it's the Root or not
+        /// </summary>
+        public bool? IsRoot { get; set; }
+
+        /// <summary>
+        /// If the item is a Folder this will determine if it's a VF or not
+        /// </summary>
+        public bool? IsVirtualFolder { get; set; }
+        
         public Guid? ParentId { get; set; }
 
         public string Type { get; set; }
