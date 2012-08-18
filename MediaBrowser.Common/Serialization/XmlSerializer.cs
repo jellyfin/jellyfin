@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 
 namespace MediaBrowser.Common.Serialization
 {
@@ -10,22 +9,14 @@ namespace MediaBrowser.Common.Serialization
     {
         public static void SerializeToStream<T>(T obj, Stream stream)
         {
-            ServiceStack.Text.XmlSerializer.SerializeToStream(obj, stream);
+            GetSerializer<T>().Serialize(stream, obj);
         }
 
         public static void SerializeToFile<T>(T obj, string file)
         {
-            using (StreamWriter streamWriter = new StreamWriter(file))
+            using (FileStream stream = new FileStream(file, FileMode.Create))
             {
-                ServiceStack.Text.XmlSerializer.SerializeToWriter<T>(obj, streamWriter);
-            }
-        }
-
-        public static object DeserializeFromFile(Type type, string file)
-        {
-            using (Stream stream = File.OpenRead(file))
-            {
-                return ServiceStack.Text.XmlSerializer.DeserializeFromStream(type, stream);
+                GetSerializer<T>().Serialize(stream, obj);
             }
         }
 
@@ -33,18 +24,18 @@ namespace MediaBrowser.Common.Serialization
         {
             using (Stream stream = File.OpenRead(file))
             {
-                return ServiceStack.Text.XmlSerializer.DeserializeFromStream<T>(stream);
+                return (T)GetSerializer<T>().Deserialize(stream);
             }
         }
 
         public static T DeserializeFromStream<T>(Stream stream)
         {
-            return ServiceStack.Text.XmlSerializer.DeserializeFromStream<T>(stream);
+            return (T)GetSerializer<T>().Deserialize(stream);
         }
 
-        public static T DeserializeFromString<T>(string data)
+        private static System.Xml.Serialization.XmlSerializer GetSerializer<T>()
         {
-            return ServiceStack.Text.XmlSerializer.DeserializeFromString<T>(data);
+            return new System.Xml.Serialization.XmlSerializer(typeof(T));
         }
     }
 }

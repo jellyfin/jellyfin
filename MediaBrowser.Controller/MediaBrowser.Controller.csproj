@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\ServerApplicationPaths.cs" />
     <Compile Include="Configuration\ServerConfiguration.cs" />
     <Compile Include="Events\ItemResolveEventArgs.cs" />
     <Compile Include="IO\DirectoryWatchers.cs" />
