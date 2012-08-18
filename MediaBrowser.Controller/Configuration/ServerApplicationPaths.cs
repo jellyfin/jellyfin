@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Reflection;
 using MediaBrowser.Common.Configuration;
 
 namespace MediaBrowser.Controller.Configuration
@@ -150,5 +151,94 @@ namespace MediaBrowser.Controller.Configuration
             }
         }
 
+        private string _FFMpegDirectory = null;
+        /// <summary>
+        /// Gets the folder path to ffmpeg
+        /// </summary>
+        public string FFMpegDirectory
+        {
+            get
+            {
+                if (_FFMpegDirectory == null)
+                {
+                    _FFMpegDirectory = Path.Combine(Kernel.Instance.ApplicationPaths.ProgramDataPath, "FFMpeg");
+
+                    if (!Directory.Exists(_FFMpegDirectory))
+                    {
+                        Directory.CreateDirectory(_FFMpegDirectory);
+                    }
+                }
+
+                return _FFMpegDirectory;
+            }
+        }
+
+        private string _FFMpegPath = null;
+        /// <summary>
+        /// Gets the path to ffmpeg.exe
+        /// </summary>
+        public string FFMpegPath
+        {
+            get
+            {
+                if (_FFMpegPath == null)
+                {
+                    string filename = "ffmpeg.exe";
+
+                    _FFMpegPath = Path.Combine(FFMpegDirectory, filename);
+
+                    // Always re-extract the first time to handle new versions
+                    if (File.Exists(_FFMpegPath))
+                    {
+                        File.Delete(_FFMpegPath);
+                    }
+
+                    // Extract exe
+                    using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Controller.FFMpeg." + filename))
+                    {
+                        using (FileStream fileStream = new FileStream(_FFMpegPath, FileMode.Create))
+                        {
+                            stream.CopyTo(fileStream);
+                        }
+                    }
+                }
+
+                return _FFMpegPath;
+            }
+        }
+
+        private string _FFProbePath = null;
+        /// <summary>
+        /// Gets the path to ffprobe.exe
+        /// </summary>
+        public string FFProbePath
+        {
+            get
+            {
+                if (_FFProbePath == null)
+                {
+                    string filename = "ffprobe.exe";
+
+                    _FFProbePath = Path.Combine(FFMpegDirectory, filename);
+
+                    // Always re-extract the first time to handle new versions
+                    if (File.Exists(_FFProbePath))
+                    {
+                        File.Delete(_FFProbePath);
+                    }
+
+                    // Extract exe
+                    using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Controller.FFMpeg." + filename))
+                    {
+                        using (FileStream fileStream = new FileStream(_FFProbePath, FileMode.Create))
+                        {
+                            stream.CopyTo(fileStream);
+                        }
+                    }
+                }
+
+                return _FFProbePath;
+            }
+        }
     }
 }

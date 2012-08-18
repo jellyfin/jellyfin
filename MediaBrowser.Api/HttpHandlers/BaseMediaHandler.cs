@@ -164,8 +164,8 @@ namespace MediaBrowser.Api.HttpHandlers
             startInfo.RedirectStandardOutput = true;
             startInfo.RedirectStandardError = true;
 
-            startInfo.FileName = ApiService.FFMpegPath;
-            startInfo.WorkingDirectory = ApiService.FFMpegDirectory;
+            startInfo.FileName = Kernel.Instance.ApplicationPaths.FFMpegPath;
+            startInfo.WorkingDirectory = Kernel.Instance.ApplicationPaths.FFMpegDirectory;
             startInfo.Arguments = GetCommandLineArguments();
 
             Logger.LogInfo(startInfo.FileName + " " + startInfo.Arguments);
