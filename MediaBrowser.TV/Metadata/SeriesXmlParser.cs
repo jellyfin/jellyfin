@@ -61,22 +61,6 @@ namespace MediaBrowser.TV.Metadata
                     item.Status = reader.ReadString();
                     break;
 
-                case "Runtime":
-                    {
-                        string text = reader.ReadString();
-
-                        if (!string.IsNullOrWhiteSpace(text))
-                        {
-
-                            int runtime;
-                            if (int.TryParse(text.Split(' ')[0], out runtime))
-                            {
-                                item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
-                            }
-                        }
-                        break;
-                    }
-
                 default:
                     base.FetchDataFromXmlNode(reader, item);
                     break;

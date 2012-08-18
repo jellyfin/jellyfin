@@ -129,6 +129,22 @@ namespace MediaBrowser.Controller.Xml
                     item.CustomRating = reader.ReadString();
                     break;
 
+                case "Runtime":
+                case "RunningTime":
+                    {
+                        string text = reader.ReadString();
+
+                        if (!string.IsNullOrWhiteSpace(text))
+                        {
+                            int runtime;
+                            if (int.TryParse(text.Split(' ')[0], out runtime))
+                            {
+                                item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
+                            }
+                        }
+                        break;
+                    }
+
                 case "Genre":
                     {
                         var genres = (item.Genres ?? new string[] { }).ToList();
@@ -184,10 +200,15 @@ namespace MediaBrowser.Controller.Xml
 
                 case "ProductionYear":
                     {
-                        int ProductionYear;
-                        if (int.TryParse(reader.ReadString(), out ProductionYear) && ProductionYear > 1850)
+                        string val = reader.ReadString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
                         {
-                            item.ProductionYear = ProductionYear;
+                            int ProductionYear;
+                            if (int.TryParse(val, out ProductionYear) && ProductionYear > 1850)
+                            {
+                                item.ProductionYear = ProductionYear;
+                            }
                         }
 
                         break;
