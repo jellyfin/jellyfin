@@ -52,6 +52,8 @@
     <Compile Include="Configuration\ServerApplicationPaths.cs" />
     <Compile Include="Configuration\ServerConfiguration.cs" />
     <Compile Include="Events\ItemResolveEventArgs.cs" />
+    <Compile Include="FFMpeg\FFProbe.cs" />
+    <Compile Include="FFMpeg\FFProbeResult.cs" />
     <Compile Include="IO\DirectoryWatchers.cs" />
     <Compile Include="IO\Shortcut.cs" />
     <Compile Include="Library\ItemController.cs" />
