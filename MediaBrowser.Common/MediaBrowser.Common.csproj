@@ -61,8 +61,8 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration\ApplicationPaths.cs" />
     <Compile Include="Configuration\BaseApplicationConfiguration.cs" />
+    <Compile Include="Configuration\BaseApplicationPaths.cs" />
     <Compile Include="Drawing\DrawingUtils.cs" />
     <Compile Include="Events\GenericItemEventArgs.cs" />
     <Compile Include="Net\Handlers\StaticFileHandler.cs" />

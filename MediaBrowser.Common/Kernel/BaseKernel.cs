@@ -18,13 +18,16 @@ namespace MediaBrowser.Common.Kernel
     /// <summary>
     /// Represents a shared base kernel for both the UI and server apps
     /// </summary>
-    public abstract class BaseKernel<TConfigurationType> : IDisposable
+    public abstract class BaseKernel<TConfigurationType, TApplicationPathsType> : IDisposable
         where TConfigurationType : BaseApplicationConfiguration, new()
+        where TApplicationPathsType : BaseApplicationPaths, new()
     {
         /// <summary>
         /// Gets the current configuration
         /// </summary>
         public TConfigurationType Configuration { get; private set; }
+
+        public TApplicationPathsType ApplicationPaths { get; private set; }
 
         /// <summary>
         /// Gets the list of currently loaded plugins
@@ -45,7 +48,7 @@ namespace MediaBrowser.Common.Kernel
 
         public BaseKernel()
         {
-
+            ApplicationPaths = new TApplicationPathsType();
         }
 
         public virtual void Init(IProgress<TaskProgress> progress)
@@ -149,13 +152,13 @@ namespace MediaBrowser.Common.Kernel
             //Configuration information for anything other than server-specific configuration will have to come via the API... -ebr
 
             // Deserialize config
-            if (!File.Exists(ApplicationPaths.ConfigurationPath))
+            if (!File.Exists(ApplicationPaths.SystemConfigurationFilePath))
             {
                 Configuration = new TConfigurationType();
             }
             else
             {
-                Configuration = JsonSerializer.DeserializeFromFile<TConfigurationType>(ApplicationPaths.ConfigurationPath);
+                Configuration = XmlSerializer.DeserializeFromFile<TConfigurationType>(ApplicationPaths.SystemConfigurationFilePath);
             }
 
             Logger.LoggerInstance.LogSeverity = Configuration.LogSeverity;

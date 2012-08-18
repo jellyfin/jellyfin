@@ -208,7 +208,7 @@ namespace MediaBrowser.Api
             {
                 if (_FFMpegDirectory == null)
                 {
-                    _FFMpegDirectory = System.IO.Path.Combine(ApplicationPaths.ProgramDataPath, "ffmpeg");
+                    _FFMpegDirectory = System.IO.Path.Combine(Kernel.Instance.ApplicationPaths.ProgramDataPath, "ffmpeg");
 
                     if (!Directory.Exists(_FFMpegDirectory))
                     {

@@ -17,7 +17,7 @@ using MediaBrowser.Model.Progress;
 
 namespace MediaBrowser.Controller
 {
-    public class Kernel : BaseKernel<ServerConfiguration>
+    public class Kernel : BaseKernel<ServerConfiguration, ServerApplicationPaths>
     {
         public static Kernel Instance { get; private set; }
 
@@ -43,7 +43,7 @@ namespace MediaBrowser.Controller
         public IEnumerable<IBaseItemResolver> EntityResolvers { get; private set; }
 
         /// <summary>
-        /// Creates a kernal based on a Data path, which is akin to our current programdata path
+        /// Creates a kernel based on a Data path, which is akin to our current programdata path
         /// </summary>
         public Kernel()
             : base()

@@ -305,7 +305,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         public Person GetPerson(string name)
         {
-            string path = Path.Combine(ApplicationPaths.PeoplePath, name);
+            string path = Path.Combine(Kernel.Instance.ApplicationPaths.PeoplePath, name);
 
             return GetImagesByNameItem<Person>(path, name);
         }
@@ -315,7 +315,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         public Studio GetStudio(string name)
         {
-            string path = Path.Combine(ApplicationPaths.StudioPath, name);
+            string path = Path.Combine(Kernel.Instance.ApplicationPaths.StudioPath, name);
 
             return GetImagesByNameItem<Studio>(path, name);
         }
@@ -325,7 +325,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         public Genre GetGenre(string name)
         {
-            string path = Path.Combine(ApplicationPaths.GenrePath, name);
+            string path = Path.Combine(Kernel.Instance.ApplicationPaths.GenrePath, name);
 
             return GetImagesByNameItem<Genre>(path, name);
         }
@@ -335,7 +335,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         public Year GetYear(int value)
         {
-            string path = Path.Combine(ApplicationPaths.YearPath, value.ToString());
+            string path = Path.Combine(Kernel.Instance.ApplicationPaths.YearPath, value.ToString());
 
             return GetImagesByNameItem<Year>(path, value.ToString());
         }

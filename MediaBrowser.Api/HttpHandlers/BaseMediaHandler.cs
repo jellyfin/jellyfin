@@ -174,7 +174,7 @@ namespace MediaBrowser.Api.HttpHandlers
             process.StartInfo = startInfo;
 
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
-            FileStream logStream = new FileStream(Path.Combine(ApplicationPaths.LogDirectoryPath, "ffmpeg-" + Guid.NewGuid().ToString() + ".txt"), FileMode.Create);
+            FileStream logStream = new FileStream(Path.Combine(Kernel.Instance.ApplicationPaths.LogDirectoryPath, "ffmpeg-" + Guid.NewGuid().ToString() + ".txt"), FileMode.Create);
 
             try
             {
