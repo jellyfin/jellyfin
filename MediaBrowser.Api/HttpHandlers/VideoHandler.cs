@@ -48,11 +48,11 @@ namespace MediaBrowser.Api.HttpHandlers
                 return true;
             }
 
-            AudioStream audio = LibraryItem.AudioStreams.FirstOrDefault();
+            AudioStream audioStream = (LibraryItem.AudioStreams ?? new AudioStream[] { }).FirstOrDefault();
 
-            if (audio != null)
+            if (audioStream != null)
             {
-                if (RequiresAudioConversion(audio))
+                if (RequiresAudioConversion(audioStream))
                 {
                     return true;
                 }
@@ -121,7 +121,7 @@ namespace MediaBrowser.Api.HttpHandlers
 
         private string GetAudioArguments(string outputFormat)
         {
-            AudioStream audioStream = LibraryItem.AudioStreams.FirstOrDefault();
+            AudioStream audioStream = (LibraryItem.AudioStreams ?? new AudioStream[] { }).FirstOrDefault();
 
             if (audioStream == null)
             {
@@ -261,7 +261,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 }
             }
 
-            if (LibraryItem.VideoCodec.IndexOf("264", StringComparison.OrdinalIgnoreCase) != -1 || LibraryItem.VideoCodec.IndexOf("avc", StringComparison.OrdinalIgnoreCase) != -1)
+            if (LibraryItem.Codec.IndexOf("264", StringComparison.OrdinalIgnoreCase) != -1 || LibraryItem.Codec.IndexOf("avc", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return false;
             }
@@ -279,15 +279,15 @@ namespace MediaBrowser.Api.HttpHandlers
                 }
             }
 
-            if (audio.AudioFormat.IndexOf("aac", StringComparison.OrdinalIgnoreCase) != -1)
+            if (audio.Format.IndexOf("aac", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return false;
             }
-            if (audio.AudioFormat.IndexOf("ac-3", StringComparison.OrdinalIgnoreCase) != -1 || audio.AudioFormat.IndexOf("ac3", StringComparison.OrdinalIgnoreCase) != -1)
+            if (audio.Format.IndexOf("ac-3", StringComparison.OrdinalIgnoreCase) != -1 || audio.Format.IndexOf("ac3", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return false;
             }
-            if (audio.AudioFormat.IndexOf("mpeg", StringComparison.OrdinalIgnoreCase) != -1 || audio.AudioFormat.IndexOf("mp3", StringComparison.OrdinalIgnoreCase) != -1)
+            if (audio.Format.IndexOf("mpeg", StringComparison.OrdinalIgnoreCase) != -1 || audio.Format.IndexOf("mp3", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return false;
             }

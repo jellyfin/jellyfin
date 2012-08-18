@@ -6,28 +6,27 @@ namespace MediaBrowser.Model.Entities
     {
         public VideoType VideoType { get; set; }
 
-        private IEnumerable<string> _Subtitles = new string[] { };
-        public IEnumerable<string> Subtitles { get { return _Subtitles; } set { _Subtitles = value; } }
-
-        private IEnumerable<AudioStream> _AudioStreams = new AudioStream[] { };
-        public IEnumerable<AudioStream> AudioStreams { get { return _AudioStreams; } set { _AudioStreams = value; } }
+        public IEnumerable<string> Subtitles { get; set; }
+        public IEnumerable<AudioStream> AudioStreams { get; set; }
 
         public int Height { get; set; }
         public int Width { get; set; }
         public string ScanType { get; set; }
         public string FrameRate { get; set; }
-        public int VideoBitRate { get; set; }
-        public string VideoCodec { get; set; }
+        public int BitRate { get; set; }
+        public string Codec { get; set; }
     }
 
     public class AudioStream
     {
-        public string AudioFormat { get; set; }
-        public string AudioProfile { get; set; }
+        public string Format { get; set; }
+        public string Profile { get; set; }
         public string Language { get; set; }
         public int BitRate { get; set; }
         public int Channels { get; set; }
         public int SampleRate { get; set; }
+        public bool IsDefault { get; set; }
+        public bool IsForced { get; set; }
     }
 
     public enum VideoType

@@ -14,7 +14,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Progress;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller
 {
@@ -193,7 +192,7 @@ namespace MediaBrowser.Controller
                 return RootFolder;
             }
 
-            return RootFolder.FindById(id);
+            return RootFolder.FindItemById(id);
         }
 
         /// <summary>

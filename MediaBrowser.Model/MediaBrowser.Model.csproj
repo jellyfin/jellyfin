@@ -32,7 +32,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="DTO\ApiBaseItem.cs" />
+    <Compile Include="DTO\DTOBaseItem.cs" />
     <Compile Include="Entities\Audio.cs" />
     <Compile Include="Entities\BaseEntity.cs" />
     <Compile Include="Entities\BaseItem.cs" />
@@ -40,6 +40,8 @@
     <Compile Include="Entities\Folder.cs" />
     <Compile Include="Entities\Genre.cs" />
     <Compile Include="Entities\ImageType.cs" />
+    <Compile Include="Entities\IHasProviderIds.cs" />
+    <Compile Include="Entities\ItemSpecialCounts.cs" />
     <Compile Include="Entities\MetadataProviders.cs" />
     <Compile Include="Entities\Person.cs" />
     <Compile Include="Entities\Studio.cs" />
@@ -49,8 +51,8 @@
     <Compile Include="DTO\PluginInfo.cs" />
     <Compile Include="Progress\TaskProgress.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Users\User.cs" />
-    <Compile Include="Users\UserItemData.cs" />
+    <Compile Include="Entities\User.cs" />
+    <Compile Include="Entities\UserItemData.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

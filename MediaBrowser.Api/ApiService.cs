@@ -6,7 +6,6 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Api
 {
@@ -22,72 +21,91 @@ namespace MediaBrowser.Api
             return Kernel.Instance.GetItemById(guid);
         }
 
-        /// <summary>
-        /// Takes a BaseItem and returns the actual object that will be serialized by the api
-        /// </summary>
-        public static BaseItemContainer<BaseItem> GetSerializationObject(BaseItem item, bool includeChildren, Guid userId)
+        public static DTOBaseItem GetDTOBaseItem(BaseItem item, User user, 
+            bool includeChildren = true, 
+            bool includePeople = true)
         {
-            User user = Kernel.Instance.Users.First(u => u.Id == userId);
+            DTOBaseItem dto = new DTOBaseItem();
 
-            BaseItemContainer<BaseItem> wrapper = new BaseItemContainer<BaseItem>()
-            {
-                Item = item,
-                UserItemData = user.GetItemData(item.Id),
-                Type = item.GetType().Name,
-                IsFolder = (item is Folder)
-            };
+            dto.AspectRatio = item.AspectRatio;
+            dto.BackdropCount = item.BackdropImagePaths == null ? 0 : item.BackdropImagePaths.Count();
+            dto.DateCreated = item.DateCreated;
+            dto.DisplayMediaType = item.DisplayMediaType;
+            dto.Genres = item.Genres;
+            dto.HasArt = !string.IsNullOrEmpty(item.ArtImagePath);
+            dto.HasBanner = !string.IsNullOrEmpty(item.BannerImagePath);
+            dto.HasLogo = !string.IsNullOrEmpty(item.LogoImagePath);
+            dto.HasPrimaryImage = !string.IsNullOrEmpty(item.LogoImagePath);
+            dto.HasThumb = !string.IsNullOrEmpty(item.ThumbnailImagePath);
+            dto.Id = item.Id;
+            dto.IndexNumber = item.IndexNumber;
+            dto.IsFolder = item is Folder;
+            dto.LocalTrailerCount = item.LocalTrailers == null ? 0 : item.LocalTrailers.Count();
+            dto.Name = item.Name;
+            dto.OfficialRating = item.OfficialRating;
+            dto.Overview = item.Overview;
 
-            if (string.IsNullOrEmpty(item.LogoImagePath))
-            {
-                wrapper.ParentLogoItemId = GetParentLogoItemId(item);
-            }
-
-            if (item.BackdropImagePaths == null || !item.BackdropImagePaths.Any())
+            // If there are no backdrops, indicate what parent has them in case the UI wants to allow inheritance
+            if (dto.BackdropCount == 0)
             {
                 int backdropCount;
-                wrapper.ParentBackdropItemId = GetParentBackdropItemId(item, out backdropCount);
-                wrapper.ParentBackdropCount = backdropCount;
+                dto.ParentBackdropItemId = GetParentBackdropItemId(item, out backdropCount);
+                dto.ParentBackdropCount = backdropCount;
             }
 
             if (item.Parent != null)
             {
-                wrapper.ParentId = item.Parent.Id;
+                dto.ParentId = item.Parent.Id;
             }
+
+            // If there is no logo, indicate what parent has one in case the UI wants to allow inheritance
+            if (!dto.HasLogo)
+            {
+                dto.ParentLogoItemId = GetParentLogoItemId(item);
+            }
+
+            dto.Path = item.Path;
+
+            dto.PremiereDate = item.PremiereDate;
+            dto.ProductionYear = item.ProductionYear;
+            dto.ProviderIds = item.ProviderIds;
+            dto.RunTimeTicks = item.RunTimeTicks;
+            dto.SortName = item.SortName;
+            dto.Taglines = item.Taglines;
+            dto.TrailerUrl = item.TrailerUrl;
+            dto.Type = item.GetType().Name;
+            dto.UserRating = item.UserRating;
+
+            dto.UserData = item.GetUserData(user);
+
+            AttachStudios(dto, item);
 
             if (includeChildren)
             {
-                var folder = item as Folder;
-
-                if (folder != null)
-                {
-                    wrapper.Children = folder.GetParentalAllowedChildren(user).Select(c => GetSerializationObject(c, false, userId));
-                }
-
-                // Attach People by transforming them into BaseItemPerson (DTO)
-                if (item.People != null)
-                {
-                    wrapper.People = item.People.Select(p =>
-                    {
-                        BaseItemPerson baseItemPerson = new BaseItemPerson();
-
-                        baseItemPerson.PersonInfo = p;
-
-                        Person ibnObject = Kernel.Instance.ItemController.GetPerson(p.Name);
-
-                        if (ibnObject != null)
-                        {
-                            baseItemPerson.PrimaryImagePath = ibnObject.PrimaryImagePath;
-                        }
-
-                        return baseItemPerson;
-                    });
-                }
+                AttachChildren(dto, item, user);
             }
 
+            if (includePeople)
+            {
+                AttachPeople(dto, item);
+            }
+
+            Folder folder = item as Folder;
+
+            if (folder != null)
+            {
+                dto.SpecialCounts = folder.GetSpecialCounts(user);
+            }
+            
+            return dto;
+        }
+
+        private static void AttachStudios(DTOBaseItem dto, BaseItem item)
+        {
             // Attach Studios by transforming them into BaseItemStudio (DTO)
             if (item.Studios != null)
             {
-                wrapper.Studios = item.Studios.Select(s =>
+                dto.Studios = item.Studios.Select(s =>
                 {
                     BaseItemStudio baseItemStudio = new BaseItemStudio();
 
@@ -97,14 +115,47 @@ namespace MediaBrowser.Api
 
                     if (ibnObject != null)
                     {
-                        baseItemStudio.PrimaryImagePath = ibnObject.PrimaryImagePath;
+                        baseItemStudio.HasImage = !string.IsNullOrEmpty(ibnObject.PrimaryImagePath);
                     }
 
                     return baseItemStudio;
                 });
             }
+        }
 
-            return wrapper;
+        private static void AttachChildren(DTOBaseItem dto, BaseItem item, User user)
+        {
+            var folder = item as Folder;
+
+            if (folder != null)
+            {
+                dto.Children = folder.GetParentalAllowedChildren(user).Select(c => GetDTOBaseItem(c, user, false, false));
+            }
+
+            dto.LocalTrailers = item.LocalTrailers;
+        }
+
+        private static void AttachPeople(DTOBaseItem dto, BaseItem item)
+        {
+            // Attach People by transforming them into BaseItemPerson (DTO)
+            if (item.People != null)
+            {
+                dto.People = item.People.Select(p =>
+                {
+                    BaseItemPerson baseItemPerson = new BaseItemPerson();
+
+                    baseItemPerson.PersonInfo = p;
+
+                    Person ibnObject = Kernel.Instance.ItemController.GetPerson(p.Name);
+
+                    if (ibnObject != null)
+                    {
+                        baseItemPerson.HasImage = !string.IsNullOrEmpty(ibnObject.PrimaryImagePath);
+                    }
+
+                    return baseItemPerson;
+                });
+            }
         }
 
         private static Guid? GetParentBackdropItemId(BaseItem item, out int backdropCount)

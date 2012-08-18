@@ -5,18 +5,18 @@ using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public class ItemListHandler : BaseJsonHandler<IEnumerable<BaseItemContainer<BaseItem>>>
+    public class ItemListHandler : BaseJsonHandler<IEnumerable<DTOBaseItem>>
     {
-        protected override IEnumerable<BaseItemContainer<BaseItem>> GetObjectToSerialize()
+        protected override IEnumerable<DTOBaseItem> GetObjectToSerialize()
         {
+            User user = Kernel.Instance.Users.First(u => u.Id == UserId);
+
             return ItemsToSerialize.Select(i =>
             {
-                return ApiService.GetSerializationObject(i, false, UserId);
-
+                return ApiService.GetDTOBaseItem(i, user, includeChildren: false, includePeople: false);
             });
         }
 
@@ -27,7 +27,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 Folder parent = ApiService.GetItemById(ItemId) as Folder;
 
                 User user = Kernel.Instance.Users.First(u => u.Id == UserId);
-                
+
                 if (ListType.Equals("inprogressitems", StringComparison.OrdinalIgnoreCase))
                 {
                     return parent.GetInProgressItems(user);
@@ -76,7 +76,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 return Guid.Parse(QueryString["userid"]);
             }
         }
-        
+
         private string ListType
         {
             get

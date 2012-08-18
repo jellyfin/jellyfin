@@ -71,7 +71,7 @@ namespace MediaBrowser.TV.Metadata
                             int runtime;
                             if (int.TryParse(text.Split(' ')[0], out runtime))
                             {
-                                item.RunTimeInMilliseconds = runtime * 60000;
+                                item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
                             }
                         }
                         break;

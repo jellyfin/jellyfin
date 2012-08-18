@@ -1,13 +1,12 @@
-﻿using MediaBrowser.Model.Entities;
-using System;
+﻿using System;
 
-namespace MediaBrowser.Model.Users
+namespace MediaBrowser.Model.Entities
 {
     public class UserItemData
     {
         public UserItemRating Rating { get; set; }
 
-        public TimeSpan PlaybackPosition { get; set; }
+        public long PlaybackPositionTicks { get; set; }
 
         public int PlayCount { get; set; }
     }
