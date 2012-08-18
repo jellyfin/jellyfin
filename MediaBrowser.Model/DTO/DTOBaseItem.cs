@@ -4,6 +4,10 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.DTO
 {
+    /// <summary>
+    /// This is strictly used as a data transfer object from the api layer.
+    /// This holds information about a BaseItem in a format that is convenient for the client.
+    /// </summary>
     public class DTOBaseItem : IHasProviderIds
     {
         public string Name { get; set; }

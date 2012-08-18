@@ -9,25 +9,25 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Api.HttpHandlers
 {
     /// <summary>
-    /// Gets a single Person
+    /// Gets a single year
     /// </summary>
-    public class PersonHandler : BaseJsonHandler<IBNItem<Person>>
+    public class YearHandler : BaseJsonHandler<IBNItem<Year>>
     {
-        protected override IBNItem<Person> GetObjectToSerialize()
+        protected override IBNItem<Year> GetObjectToSerialize()
         {
             Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
             Guid userId = Guid.Parse(QueryString["userid"]);
             User user = Kernel.Instance.Users.First(u => u.Id == userId);
 
-            string name = QueryString["name"];
+            string year = QueryString["year"];
 
-            return GetPerson(parent, user, name);
+            return GetYear(parent, user, int.Parse(year));
         }
 
         /// <summary>
-        /// Gets a Person
+        /// Gets a Year
         /// </summary>
-        private IBNItem<Person> GetPerson(Folder parent, User user, string name)
+        private IBNItem<Year> GetYear(Folder parent, User user, int year)
         {
             int count = 0;
 
@@ -36,16 +36,16 @@ namespace MediaBrowser.Api.HttpHandlers
 
             foreach (var item in allItems)
             {
-                if (item.People != null && item.People.Any(s => s.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                if (item.ProductionYear.HasValue && item.ProductionYear.Value == year)
                 {
                     count++;
                 }
             }
 
             // Get the original entity so that we can also supply the PrimaryImagePath
-            return new IBNItem<Person>()
+            return new IBNItem<Year>()
             {
-                Item = Kernel.Instance.ItemController.GetPerson(name),
+                Item = Kernel.Instance.ItemController.GetYear(year),
                 BaseItemCount = count
             };
         }

@@ -23,7 +23,7 @@ namespace MediaBrowser.Api.HttpHandlers
         /// Gets all genres from all recursive children of a folder
         /// The CategoryInfo class is used to keep track of the number of times each genres appears
         /// </summary>
-        public IEnumerable<IBNItem<Genre>> GetAllGenres(Folder parent, User user)
+        private IEnumerable<IBNItem<Genre>> GetAllGenres(Folder parent, User user)
         {
             Dictionary<string, int> data = new Dictionary<string, int>();
 
