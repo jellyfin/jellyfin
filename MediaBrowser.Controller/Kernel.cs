@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Events;
