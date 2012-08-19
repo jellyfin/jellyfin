@@ -2,9 +2,9 @@
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Controller.Xml;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.TV.Entities;
+using MediaBrowser.TV.Metadata;
 
 namespace MediaBrowser.TV.Providers
 {
@@ -16,17 +16,14 @@ namespace MediaBrowser.TV.Providers
             return item is Series;
         }
 
-        public override Task Fetch(BaseItem item, ItemResolveEventArgs args)
+        public async override Task Fetch(BaseItem item, ItemResolveEventArgs args)
         {
-            return Task.Run(() =>
-            {
-                var metadataFile = args.GetFileByName("series.xml");
+            var metadataFile = args.GetFileByName("series.xml");
 
-                if (metadataFile.HasValue)
-                {
-                    new BaseItemXmlParser<Series>().Fetch(item as Series, metadataFile.Value.Key);
-                }
-            });
+            if (metadataFile.HasValue)
+            {
+                await new SeriesXmlParser().Fetch(item as Series, metadataFile.Value.Key);
+            }
         }
     }
 }
