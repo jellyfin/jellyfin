@@ -130,5 +130,13 @@ namespace MediaBrowser.Model.Entities
 
             return null;
         }
+
+        /// <summary>
+        /// Determines if the item is considered new based on user settings
+        /// </summary>
+        public bool IsRecentlyAdded(User user)
+        {
+            return (DateTime.Now - DateCreated).TotalDays < user.RecentItemDays;
+        }
     }
 }

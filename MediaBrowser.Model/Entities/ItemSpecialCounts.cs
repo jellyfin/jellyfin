@@ -9,6 +9,6 @@ namespace MediaBrowser.Model.Entities
         public int RecentlyAddedItemCount { get; set; }
         public int RecentlyAddedUnPlayedItemCount { get; set; }
         public int InProgressItemCount { get; set; }
-        public decimal WatchedPercentage { get; set; }
+        public decimal PlayedPercentage { get; set; }
     }
 }
