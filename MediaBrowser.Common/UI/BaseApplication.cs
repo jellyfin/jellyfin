@@ -16,6 +16,7 @@ namespace MediaBrowser.Common.UI
 
         protected async override void OnStartup(StartupEventArgs e)
         {
+            // Without this the app will shutdown after the splash screen closes
             this.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
             await LoadKernel();
@@ -48,6 +49,8 @@ namespace MediaBrowser.Common.UI
             {
                 MessageBox.Show("There was an error launching Media Browser: " + ex.Message);
                 splash.Close();
+
+                // Shutdown the app with an error code
                 Shutdown(1);
             }
         }
