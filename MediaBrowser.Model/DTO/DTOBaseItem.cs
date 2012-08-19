@@ -97,6 +97,6 @@ namespace MediaBrowser.Model.DTO
             return Type.Equals(type, StringComparison.OrdinalIgnoreCase);
         }
 
-        public bool IsRecentlyAdded { get; set; }
+        public bool IsNew { get; set; }
     }
 }
