@@ -6,7 +6,6 @@ using System.Linq;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Controller.Xml;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Movies.Entities;
 
@@ -92,13 +91,6 @@ namespace MediaBrowser.Movies.Resolvers
         protected override void SetItemValues(Movie item, ItemResolveEventArgs args)
         {
             base.SetItemValues(item, args);
-
-            var metadataFile = args.GetFileByName("movie.xml");
-
-            if (metadataFile.HasValue)
-            {
-                new BaseItemXmlParser<Movie>().Fetch(item, metadataFile.Value.Key);
-            }
 
             PopulateBonusFeatures(item, args);
         }

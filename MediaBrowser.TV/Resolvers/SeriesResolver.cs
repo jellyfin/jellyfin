@@ -4,7 +4,6 @@ using System.IO;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.TV.Entities;
-using MediaBrowser.TV.Metadata;
 
 namespace MediaBrowser.TV.Resolvers
 {
@@ -36,24 +35,6 @@ namespace MediaBrowser.TV.Resolvers
             }
 
             return null;
-        }
-
-        protected override void SetItemValues(Series item, ItemResolveEventArgs args)
-        {
-            base.SetItemValues(item, args);
-
-            // Read data from series.xml, if it exists
-            PopulateFolderMetadata(item, args);
-        }
-
-        private void PopulateFolderMetadata(Series item, ItemResolveEventArgs args)
-        {
-            var metadataFile = args.GetFileByName("series.xml");
-
-            if (metadataFile.HasValue)
-            {
-                new SeriesXmlParser().Fetch(item, metadataFile.Value.Key);
-            }
         }
     }
 }
