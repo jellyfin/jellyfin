@@ -6,19 +6,22 @@ namespace MediaBrowser.Common.Net.Handlers
 {
     public abstract class BaseJsonHandler<T> : BaseHandler
     {
-        public override string ContentType
+        public override Task<string> GetContentType()
         {
-            get { return MimeTypes.JsonMimeType; }
+            return Task.Run(() =>
+            {
+                return MimeTypes.JsonMimeType;
+            });
         }
 
         private bool _ObjectToSerializeEnsured = false;
         private T _ObjectToSerialize;
      
-        private void EnsureObjectToSerialize()
+        private async Task EnsureObjectToSerialize()
         {
             if (!_ObjectToSerializeEnsured)
             {
-                _ObjectToSerialize = GetObjectToSerialize();
+                _ObjectToSerialize = await GetObjectToSerialize();
 
                 if (_ObjectToSerialize == null)
                 {
@@ -29,30 +32,18 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        private T ObjectToSerialize
+        protected abstract Task<T> GetObjectToSerialize();
+
+        protected override async Task PrepareResponse()
         {
-            get
-            {
-                EnsureObjectToSerialize();
-                return _ObjectToSerialize;
-            }
+            await EnsureObjectToSerialize();
         }
 
-        protected abstract T GetObjectToSerialize();
-
-        protected override void PrepareResponse()
+        protected async override Task WriteResponseToOutputStream(Stream stream)
         {
-            base.PrepareResponse();
+            await EnsureObjectToSerialize();
 
-            EnsureObjectToSerialize();
-        }
-
-        protected override Task WriteResponseToOutputStream(Stream stream)
-        {
-            return Task.Run(() =>
-            {
-                JsonSerializer.SerializeToStream<T>(ObjectToSerialize, stream);
-            });
+            JsonSerializer.SerializeToStream<T>(_ObjectToSerialize, stream);
         }
     }
 }

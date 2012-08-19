@@ -14,9 +14,9 @@ namespace MediaBrowser.Common.Net.Handlers
 
         protected string ResourcePath { get; set; }
 
-        public override string ContentType
+        public override Task<string> GetContentType()
         {
-            get
+            return Task.Run(() =>
             {
                 string extension = Path.GetExtension(ResourcePath);
 
@@ -46,7 +46,7 @@ namespace MediaBrowser.Common.Net.Handlers
                 }
 
                 return "text/plain; charset=utf-8";
-            }
+            });
         }
 
         protected override Task WriteResponseToOutputStream(Stream stream)

@@ -12,12 +12,12 @@ namespace MediaBrowser.Controller.Providers
     [Export(typeof(BaseMetadataProvider))]
     public class AudioInfoProvider : BaseMetadataProvider
     {
-        public override bool Supports(BaseItem item)
+        public override bool Supports(BaseEntity item)
         {
             return item is Audio;
         }
 
-        public async override Task Fetch(BaseItem item, ItemResolveEventArgs args)
+        public async override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
         {
             Audio audio = item as Audio;
 
@@ -62,6 +62,7 @@ namespace MediaBrowser.Controller.Providers
         {
             base.Init();
 
+            // Do this now so that we don't have to do this on every operation, which would require us to create a lock in order to maintain thread-safety
             for (int i = 0; i <= 9; i++)
             {
                 EnsureDirectory(Path.Combine(Kernel.Instance.ApplicationPaths.FFProbeAudioCacheDirectory, i.ToString()));

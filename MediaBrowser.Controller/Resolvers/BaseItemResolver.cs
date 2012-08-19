@@ -2,13 +2,12 @@
 using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Events;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Resolvers
 {
     public abstract class BaseItemResolver<T> : IBaseItemResolver
-        where T : BaseItem, new ()
+        where T : BaseItem, new()
     {
         protected virtual T Resolve(ItemResolveEventArgs args)
         {
@@ -18,7 +17,7 @@ namespace MediaBrowser.Controller.Resolvers
         /// <summary>
         /// Sets initial values on the newly resolved item
         /// </summary>
-        protected virtual void SetItemValues(T item, ItemResolveEventArgs args)
+        protected virtual void SetInitialItemValues(T item, ItemResolveEventArgs args)
         {
             // If the subclass didn't specify this
             if (string.IsNullOrEmpty(item.Path))
@@ -38,33 +37,22 @@ namespace MediaBrowser.Controller.Resolvers
         public async Task<BaseItem> ResolvePath(ItemResolveEventArgs args)
         {
             T item = Resolve(args);
-            
+
             if (item != null)
             {
                 // Set initial values on the newly resolved item
-                SetItemValues(item, args);
+                SetInitialItemValues(item, args);
 
                 // Make sure the item has a name
                 EnsureName(item);
 
                 // Make sure DateCreated and DateModified have values
                 EnsureDates(item);
-                
-                await FetchMetadataFromProviders(item, args);
+
+                await Kernel.Instance.ExecuteMetadataProviders(item, args);
             }
 
             return item;
-        }
-
-        private async Task FetchMetadataFromProviders(T item, ItemResolveEventArgs args)
-        {
-            foreach (BaseMetadataProvider provider in Kernel.Instance.MetadataProviders)
-            {
-                if (provider.Supports(item))
-                {
-                    await provider.Fetch(item, args);
-                }
-            }
         }
 
         private void EnsureName(T item)

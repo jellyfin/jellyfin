@@ -75,7 +75,7 @@ namespace MediaBrowser.Controller.IO
             }
         }
 
-        private void TimerStopped(object stateInfo)
+        private async void TimerStopped(object stateInfo)
         {
             updateTimer.Dispose();
             updateTimer = null;
@@ -83,7 +83,7 @@ namespace MediaBrowser.Controller.IO
             List<string> paths = affectedPaths;
             affectedPaths = new List<string>();
 
-            //ProcessPathChanges(paths);
+            await ProcessPathChanges(paths);
         }
 
         private async Task ProcessPathChanges(IEnumerable<string> paths)
@@ -109,10 +109,7 @@ namespace MediaBrowser.Controller.IO
             }
             else
             {
-                /*Parallel.For(0, itemsToRefresh.Count, i =>
-                {
-                    Kernel.Instance.ReloadItem(itemsToRefresh[i]);
-                });*/
+                await Task.WhenAll(itemsToRefresh.Select(i => Kernel.Instance.ReloadItem(i)));
             }
         }
 

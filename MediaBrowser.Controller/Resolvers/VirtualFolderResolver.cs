@@ -18,7 +18,7 @@ namespace MediaBrowser.Controller.Resolvers
             return null;
         }
 
-        protected override void SetItemValues(VirtualFolder item, ItemResolveEventArgs args)
+        protected override void SetInitialItemValues(VirtualFolder item, ItemResolveEventArgs args)
         {
             // Set the name initially by stripping off the [CollectionType=...]
             // The name can always be overridden later by folder.xml
@@ -34,7 +34,7 @@ namespace MediaBrowser.Controller.Resolvers
                 item.CollectionType = pathName.Substring(index + srch.Length).TrimEnd(']');
             }
 
-            base.SetItemValues(item, args);
+            base.SetInitialItemValues(item, args);
         }
 
     }

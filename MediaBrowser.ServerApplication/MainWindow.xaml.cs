@@ -2,10 +2,9 @@
 using System.Diagnostics;
 using System.Windows;
 using MediaBrowser.Common.Logging;
+using MediaBrowser.Common.UI;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Progress;
-using System.Threading.Tasks;
-using MediaBrowser.Common.UI;
 
 namespace MediaBrowser.ServerApplication
 {

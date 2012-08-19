@@ -248,5 +248,47 @@ namespace MediaBrowser.Controller
 
             return list;
         }
+
+        internal async Task ExecuteMetadataProviders(BaseEntity item, ItemResolveEventArgs args)
+        {
+            var supportedProviders = Kernel.Instance.MetadataProviders.Where(i => i.Supports(item));
+
+            // Start with non-internet providers. Run them sequentially
+            foreach (BaseMetadataProvider provider in supportedProviders.Where(i => !i.RequiresInternet))
+            {
+                await provider.Fetch(item, args);
+            }
+
+            var internetProviders = supportedProviders.Where(i => i.RequiresInternet);
+
+            if (internetProviders.Any())
+            {
+                // Now execute internet providers in parallel
+                await Task.WhenAll(
+                    internetProviders.Select(i => i.Fetch(item, args))
+                    );
+            }
+        }
+
+        protected override void DisposeComposableParts()
+        {
+            base.DisposeComposableParts();
+
+            DisposeProviders();
+        }
+
+        /// <summary>
+        /// Disposes all providers
+        /// </summary>
+        private void DisposeProviders()
+        {
+            if (MetadataProviders != null)
+            {
+                foreach (var provider in MetadataProviders)
+                {
+                    provider.Dispose();
+                }
+            }
+        }
     }
 }
