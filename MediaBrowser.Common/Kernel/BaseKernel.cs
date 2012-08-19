@@ -252,5 +252,16 @@ namespace MediaBrowser.Common.Kernel
                 Logger.LoggerInstance.Dispose();
             }
         }
+
+        /// <summary>
+        /// Gets the current application version
+        /// </summary>
+        public Version ApplicationVersion
+        {
+            get
+            {
+                return GetType().Assembly.GetName().Version;
+            }
+        }
     }
 }
