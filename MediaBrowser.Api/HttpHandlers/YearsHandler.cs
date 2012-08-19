@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.DTO;
@@ -10,20 +11,20 @@ namespace MediaBrowser.Api.HttpHandlers
 {
     public class YearsHandler : BaseJsonHandler<IEnumerable<IBNItem<Year>>>
     {
-        protected override IEnumerable<IBNItem<Year>> GetObjectToSerialize()
+        protected override async Task<IEnumerable<IBNItem<Year>>> GetObjectToSerialize()
         {
             Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
             Guid userId = Guid.Parse(QueryString["userid"]);
             User user = Kernel.Instance.Users.First(u => u.Id == userId);
 
-            return GetAllYears(parent, user);
+            return await GetAllYears(parent, user);
         }
 
         /// <summary>
         /// Gets all years from all recursive children of a folder
         /// The CategoryInfo class is used to keep track of the number of times each year appears
         /// </summary>
-        private IEnumerable<IBNItem<Year>> GetAllYears(Folder parent, User user)
+        private async Task<IEnumerable<IBNItem<Year>>> GetAllYears(Folder parent, User user)
         {
             Dictionary<int, int> data = new Dictionary<int, int>();
 
@@ -49,25 +50,9 @@ namespace MediaBrowser.Api.HttpHandlers
                 }
             }
 
-            // Now go through the dictionary and create a Category for each studio
-            List<IBNItem<Year>> list = new List<IBNItem<Year>>();
+            IEnumerable<Year> entities = await Task.WhenAll<Year>(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetYear(key); }));
 
-            foreach (int key in data.Keys)
-            {
-                // Get the original entity so that we can also supply the PrimaryImagePath
-                Year entity = Kernel.Instance.ItemController.GetYear(key);
-
-                if (entity != null)
-                {
-                    list.Add(new IBNItem<Year>()
-                    {
-                        Item = entity,
-                        BaseItemCount = data[key]
-                    });
-                }
-            }
-
-            return list;
+            return entities.Select(e => new IBNItem<Year>() { Item = e, BaseItemCount = data[int.Parse(e.Name)] });
         }
     }
 }

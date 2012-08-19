@@ -1,8 +1,7 @@
 ﻿using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using MediaBrowser.Common.Configuration;
+using System.Threading.Tasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
@@ -21,7 +20,7 @@ namespace MediaBrowser.Api
             return Kernel.Instance.GetItemById(guid);
         }
 
-        public static DTOBaseItem GetDTOBaseItem(BaseItem item, User user, 
+        public async static Task<DTOBaseItem> GetDTOBaseItem(BaseItem item, User user, 
             bool includeChildren = true, 
             bool includePeople = true)
         {
@@ -79,16 +78,16 @@ namespace MediaBrowser.Api
 
             dto.UserData = item.GetUserData(user);
 
-            AttachStudios(dto, item);
+            await AttachStudios(dto, item);
 
             if (includeChildren)
             {
-                AttachChildren(dto, item, user);
+                await AttachChildren(dto, item, user);
             }
 
             if (includePeople)
             {
-                AttachPeople(dto, item);
+                await AttachPeople(dto, item);
             }
 
             Folder folder = item as Folder;
@@ -104,18 +103,20 @@ namespace MediaBrowser.Api
             return dto;
         }
 
-        private static void AttachStudios(DTOBaseItem dto, BaseItem item)
+        private static async Task AttachStudios(DTOBaseItem dto, BaseItem item)
         {
             // Attach Studios by transforming them into BaseItemStudio (DTO)
             if (item.Studios != null)
             {
+                IEnumerable<Studio> entities = await Task.WhenAll<Studio>(item.Studios.Select(c => Kernel.Instance.ItemController.GetStudio(c)));
+                
                 dto.Studios = item.Studios.Select(s =>
                 {
                     BaseItemStudio baseItemStudio = new BaseItemStudio();
 
                     baseItemStudio.Name = s;
 
-                    Studio ibnObject = Kernel.Instance.ItemController.GetStudio(s);
+                    Studio ibnObject = entities.First(i => i.Name.Equals(s, StringComparison.OrdinalIgnoreCase));
 
                     if (ibnObject != null)
                     {
@@ -127,30 +128,34 @@ namespace MediaBrowser.Api
             }
         }
 
-        private static void AttachChildren(DTOBaseItem dto, BaseItem item, User user)
+        private static async Task AttachChildren(DTOBaseItem dto, BaseItem item, User user)
         {
             var folder = item as Folder;
 
             if (folder != null)
             {
-                dto.Children = folder.GetParentalAllowedChildren(user).Select(c => GetDTOBaseItem(c, user, false, false));
+                IEnumerable<BaseItem> children = folder.GetParentalAllowedChildren(user);
+
+                dto.Children = await Task.WhenAll<DTOBaseItem>(children.Select(c => GetDTOBaseItem(c, user, false, false)));
             }
 
             dto.LocalTrailers = item.LocalTrailers;
         }
 
-        private static void AttachPeople(DTOBaseItem dto, BaseItem item)
+        private static async Task AttachPeople(DTOBaseItem dto, BaseItem item)
         {
             // Attach People by transforming them into BaseItemPerson (DTO)
             if (item.People != null)
             {
+                IEnumerable<Person> entities = await Task.WhenAll<Person>(item.People.Select(c => Kernel.Instance.ItemController.GetPerson(c.Name)));
+
                 dto.People = item.People.Select(p =>
                 {
                     BaseItemPerson baseItemPerson = new BaseItemPerson();
 
                     baseItemPerson.PersonInfo = p;
 
-                    Person ibnObject = Kernel.Instance.ItemController.GetPerson(p.Name);
+                    Person ibnObject = entities.First(i => i.Name.Equals(p.Name, StringComparison.OrdinalIgnoreCase));
 
                     if (ibnObject != null)
                     {

@@ -2,17 +2,16 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Progress;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.Kernel
 {
@@ -93,6 +92,8 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         protected void ReloadComposableParts()
         {
+            DisposeComposableParts();
+            
             // Gets all plugin assemblies by first reading all bytes of the .dll and calling Assembly.Load against that
             // This will prevent the .dll file from getting locked, and allow us to replace it when needed
             IEnumerable<Assembly> pluginAssemblies = Directory.GetFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.AllDirectories).Select(f => Assembly.Load(File.ReadAllBytes((f))));
@@ -203,8 +204,31 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         public virtual void Dispose()
         {
+            DisposeComposableParts();
             DisposeHttpServer();
             DisposeLogger();
+        }
+
+        /// <summary>
+        /// Disposes all objects gathered through MEF composable parts
+        /// </summary>
+        protected virtual void DisposeComposableParts()
+        {
+            DisposePlugins();
+        }
+
+        /// <summary>
+        /// Disposes all plugins
+        /// </summary>
+        private void DisposePlugins()
+        {
+            if (Plugins != null)
+            {
+                foreach (BasePlugin plugin in Plugins)
+                {
+                    plugin.Dispose();
+                }
+            }
         }
 
         /// <summary>

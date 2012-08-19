@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.DTO;
@@ -10,20 +11,20 @@ namespace MediaBrowser.Api.HttpHandlers
 {
     public class StudiosHandler : BaseJsonHandler<IEnumerable<IBNItem<Studio>>>
     {
-        protected override IEnumerable<IBNItem<Studio>> GetObjectToSerialize()
+        protected override async Task<IEnumerable<IBNItem<Studio>>> GetObjectToSerialize()
         {
             Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
             Guid userId = Guid.Parse(QueryString["userid"]);
             User user = Kernel.Instance.Users.First(u => u.Id == userId);
 
-            return GetAllStudios(parent, user);
+            return await GetAllStudios(parent, user);
         }
 
         /// <summary>
         /// Gets all studios from all recursive children of a folder
         /// The CategoryInfo class is used to keep track of the number of times each studio appears
         /// </summary>
-        private IEnumerable<IBNItem<Studio>> GetAllStudios(Folder parent, User user)
+        private async Task<IEnumerable<IBNItem<Studio>>> GetAllStudios(Folder parent, User user)
         {
             Dictionary<string, int> data = new Dictionary<string, int>();
 
@@ -52,25 +53,9 @@ namespace MediaBrowser.Api.HttpHandlers
                 }
             }
 
-            // Now go through the dictionary and create a Category for each studio
-            List<IBNItem<Studio>> list = new List<IBNItem<Studio>>();
+            IEnumerable<Studio> entities = await Task.WhenAll<Studio>(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetStudio(key); }));
 
-            foreach (string key in data.Keys)
-            {
-                // Get the original entity so that we can also supply the PrimaryImagePath
-                Studio entity = Kernel.Instance.ItemController.GetStudio(key);
-
-                if (entity != null)
-                {
-                    list.Add(new IBNItem<Studio>()
-                    {
-                        Item = entity,
-                        BaseItemCount = data[key]
-                    });
-                }
-            }
-
-            return list;
+            return entities.Select(e => new IBNItem<Studio>() { Item = e, BaseItemCount = data[e.Name] });
         }
     }
 }

@@ -21,9 +21,9 @@ namespace MediaBrowser.Controller.Resolvers
     public abstract class BaseFolderResolver<TItemType> : BaseItemResolver<TItemType>
         where TItemType : Folder, new()
     {
-        protected override void SetItemValues(TItemType item, ItemResolveEventArgs args)
+        protected override void SetInitialItemValues(TItemType item, ItemResolveEventArgs args)
         {
-            base.SetItemValues(item, args);
+            base.SetInitialItemValues(item, args);
 
             item.IsRoot = args.Parent == null;
         }

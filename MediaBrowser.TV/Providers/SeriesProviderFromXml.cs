@@ -11,12 +11,12 @@ namespace MediaBrowser.TV.Providers
     [Export(typeof(BaseMetadataProvider))]
     public class SeriesProviderFromXml : BaseMetadataProvider
     {
-        public override bool Supports(BaseItem item)
+        public override bool Supports(BaseEntity item)
         {
             return item is Series;
         }
 
-        public async override Task Fetch(BaseItem item, ItemResolveEventArgs args)
+        public async override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
         {
             var metadataFile = args.GetFileByName("series.xml");
 

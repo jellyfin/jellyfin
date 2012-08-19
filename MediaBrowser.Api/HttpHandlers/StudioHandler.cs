@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.DTO;
@@ -13,7 +14,7 @@ namespace MediaBrowser.Api.HttpHandlers
     /// </summary>
     public class StudioHandler : BaseJsonHandler<IBNItem<Studio>>
     {
-        protected override IBNItem<Studio> GetObjectToSerialize()
+        protected async override Task<IBNItem<Studio>> GetObjectToSerialize()
         {
             Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
             Guid userId = Guid.Parse(QueryString["userid"]);
@@ -21,13 +22,13 @@ namespace MediaBrowser.Api.HttpHandlers
 
             string name = QueryString["name"];
 
-            return GetStudio(parent, user, name);
+            return await GetStudio(parent, user, name);
         }
 
         /// <summary>
         /// Gets a Studio
         /// </summary>
-        private IBNItem<Studio> GetStudio(Folder parent, User user, string name)
+        private async Task<IBNItem<Studio>> GetStudio(Folder parent, User user, string name)
         {
             int count = 0;
 
@@ -45,7 +46,7 @@ namespace MediaBrowser.Api.HttpHandlers
             // Get the original entity so that we can also supply the PrimaryImagePath
             return new IBNItem<Studio>()
             {
-                Item = Kernel.Instance.ItemController.GetStudio(name),
+                Item = await Kernel.Instance.ItemController.GetStudio(name),
                 BaseItemCount = count
             };
         }
