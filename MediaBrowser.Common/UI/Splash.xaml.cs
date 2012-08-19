@@ -1,19 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Runtime.InteropServices;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using System.Windows;
 using System.Windows.Interop;
-using System.Windows.Shapes;
-
+using MediaBrowser.Common.Logging;
 using MediaBrowser.Model.Progress;
 
 namespace MediaBrowser.Common.UI
@@ -40,6 +29,12 @@ namespace MediaBrowser.Common.UI
 
         void progress_ProgressChanged(object sender, TaskProgress e)
         {
+            // If logging has loaded, put a message in the log.
+            if (Logger.LoggerInstance != null)
+            {
+                Logger.LogInfo(e.Description);
+            }
+
             this.lblProgress.Content = e.Description;
             this.pbProgress.Value = (double)e.PercentComplete;
         }
