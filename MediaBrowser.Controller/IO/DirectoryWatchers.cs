@@ -88,7 +88,7 @@ namespace MediaBrowser.Controller.IO
 
         private void ProcessPathChanges(IEnumerable<string> paths)
         {
-            List<BaseItem> itemsToRefresh = new List<BaseItem>();
+            /*List<BaseItem> itemsToRefresh = new List<BaseItem>();
 
             foreach (BaseItem item in paths.Select(p => GetAffectedBaseItem(p)))
             {
@@ -113,7 +113,7 @@ namespace MediaBrowser.Controller.IO
                 {
                     Kernel.Instance.ReloadItem(itemsToRefresh[i]);
                 });
-            }
+            }*/
         }
 
         private BaseItem GetAffectedBaseItem(string path)

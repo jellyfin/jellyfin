@@ -59,6 +59,11 @@
     <Compile Include="Library\ItemController.cs" />
     <Compile Include="Kernel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Providers\BaseMetadataProvider.cs" />
+    <Compile Include="Providers\AudioInfoProvider.cs" />
+    <Compile Include="Providers\FolderProviderFromXml.cs" />
+    <Compile Include="Providers\ImageFromMediaLocationProvider.cs" />
+    <Compile Include="Providers\LocalTrailerProvider.cs" />
     <Compile Include="Resolvers\AudioResolver.cs" />
     <Compile Include="Resolvers\BaseItemResolver.cs" />
     <Compile Include="Resolvers\FolderResolver.cs" />

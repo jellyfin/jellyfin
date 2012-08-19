@@ -151,6 +151,50 @@ namespace MediaBrowser.Controller.Configuration
             }
         }
 
+        private string _CacheDirectory = null;
+        /// <summary>
+        /// Gets the folder path to the cache directory
+        /// </summary>
+        public string CacheDirectory
+        {
+            get
+            {
+                if (_CacheDirectory == null)
+                {
+                    _CacheDirectory = Path.Combine(Kernel.Instance.ApplicationPaths.ProgramDataPath, "cache");
+
+                    if (!Directory.Exists(_CacheDirectory))
+                    {
+                        Directory.CreateDirectory(_CacheDirectory);
+                    }
+                }
+
+                return _CacheDirectory;
+            }
+        }
+
+        private string _FFProbeAudioCacheDirectory = null;
+        /// <summary>
+        /// Gets the folder path to the ffprobe audio cache directory
+        /// </summary>
+        public string FFProbeAudioCacheDirectory
+        {
+            get
+            {
+                if (_FFProbeAudioCacheDirectory == null)
+                {
+                    _FFProbeAudioCacheDirectory = Path.Combine(Kernel.Instance.ApplicationPaths.CacheDirectory, "ffprobe-audio");
+
+                    if (!Directory.Exists(_FFProbeAudioCacheDirectory))
+                    {
+                        Directory.CreateDirectory(_FFProbeAudioCacheDirectory);
+                    }
+                }
+
+                return _FFProbeAudioCacheDirectory;
+            }
+        }
+        
         private string _FFMpegDirectory = null;
         /// <summary>
         /// Gets the folder path to ffmpeg
@@ -221,7 +265,7 @@ namespace MediaBrowser.Controller.Configuration
 
                     _FFProbePath = Path.Combine(FFMpegDirectory, filename);
 
-                    // Always re-extract the first time to handle new versions
+                    /*// Always re-extract the first time to handle new versions
                     if (File.Exists(_FFProbePath))
                     {
                         File.Delete(_FFProbePath);
@@ -234,7 +278,7 @@ namespace MediaBrowser.Controller.Configuration
                         {
                             stream.CopyTo(fileStream);
                         }
-                    }
+                    }*/
                 }
 
                 return _FFProbePath;

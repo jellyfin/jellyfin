@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Resolvers;
@@ -58,67 +56,12 @@ namespace MediaBrowser.Controller.Library
         }
         #endregion
 
-        #region BaseItem Events
-        /// <summary>
-        /// Called when an item is being created.
-        /// This should be used to fill item values, such as metadata
-        /// </summary>
-        public event EventHandler<GenericItemEventArgs<BaseItem>> BaseItemCreating;
-
-        /// <summary>
-        /// Called when an item has been created.
-        /// This should be used to process or modify item values.
-        /// </summary>
-        public event EventHandler<GenericItemEventArgs<BaseItem>> BaseItemCreated;
-        #endregion
-
-        /// <summary>
-        /// Called when an item has been created
-        /// </summary>
-        private void OnBaseItemCreated(BaseItem item, Folder parent)
-        {
-            GenericItemEventArgs<BaseItem> args = new GenericItemEventArgs<BaseItem> { Item = item };
-
-            if (BaseItemCreating != null)
-            {
-                BaseItemCreating(this, args);
-            }
-
-            if (BaseItemCreated != null)
-            {
-                BaseItemCreated(this, args);
-            }
-        }
-
-        private void FireCreateEventsRecursive(Folder folder, Folder parent)
-        {
-            OnBaseItemCreated(folder, parent);
-
-            int count = folder.Children.Length;
-
-            Parallel.For(0, count, i =>
-            {
-                BaseItem item = folder.Children[i];
-
-                Folder childFolder = item as Folder;
-
-                if (childFolder != null)
-                {
-                    FireCreateEventsRecursive(childFolder, folder);
-                }
-                else
-                {
-                    OnBaseItemCreated(item, folder);
-                }
-            });
-        }
-
-        private BaseItem ResolveItem(ItemResolveEventArgs args)
+        private async Task<BaseItem> ResolveItem(ItemResolveEventArgs args)
         {
             // If that didn't pan out, try the slow ones
             foreach (IBaseItemResolver resolver in Kernel.Instance.EntityResolvers)
             {
-                var item = resolver.ResolvePath(args);
+                var item = await resolver.ResolvePath(args);
 
                 if (item != null)
                 {
@@ -132,39 +75,15 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Resolves a path into a BaseItem
         /// </summary>
-        public BaseItem GetItem(string path)
+        public async Task<BaseItem> GetItem(Folder parent, string path)
         {
-            return GetItem(null, path);
+            return await GetItemInternal(parent, path, File.GetAttributes(path));
         }
 
         /// <summary>
         /// Resolves a path into a BaseItem
         /// </summary>
-        public BaseItem GetItem(Folder parent, string path)
-        {
-            BaseItem item = GetItemInternal(parent, path, File.GetAttributes(path));
-
-            if (item != null)
-            {
-                var folder = item as Folder;
-
-                if (folder != null)
-                {
-                    FireCreateEventsRecursive(folder, parent);
-                }
-                else
-                {
-                    OnBaseItemCreated(item, parent);
-                }
-            }
-
-            return item;
-        }
-
-        /// <summary>
-        /// Resolves a path into a BaseItem
-        /// </summary>
-        private BaseItem GetItemInternal(Folder parent, string path, FileAttributes attributes)
+        private async Task<BaseItem> GetItemInternal(Folder parent, string path, FileAttributes attributes)
         {
             if (!OnPreBeginResolvePath(parent, path, attributes))
             {
@@ -201,14 +120,14 @@ namespace MediaBrowser.Controller.Library
                 return null;
             }
 
-            BaseItem item = ResolveItem(args);
+            BaseItem item = await ResolveItem(args);
 
             var folder = item as Folder;
 
             if (folder != null)
             {
                 // If it's a folder look for child entities
-                AttachChildren(folder, fileSystemChildren);
+                await AttachChildren(folder, fileSystemChildren);
             }
 
             return item;
@@ -217,30 +136,25 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Finds child BaseItems for a given Folder
         /// </summary>
-        private void AttachChildren(Folder folder, IEnumerable<KeyValuePair<string, FileAttributes>> fileSystemChildren)
+        private async Task AttachChildren(Folder folder, IEnumerable<KeyValuePair<string, FileAttributes>> fileSystemChildren)
         {
-            List<BaseItem> baseItemChildren = new List<BaseItem>();
+            KeyValuePair<string, FileAttributes>[] fileSystemChildrenArray = fileSystemChildren.ToArray();
 
-            int count = fileSystemChildren.Count();
+            int count = fileSystemChildrenArray.Length;
 
-            // Resolve the child folder paths into entities
-            Parallel.For(0, count, i =>
+            Task<BaseItem>[] tasks = new Task<BaseItem>[count];
+
+            for (int i = 0; i < count; i++)
             {
-                KeyValuePair<string, FileAttributes> child = fileSystemChildren.ElementAt(i);
+                var child = fileSystemChildrenArray[i];
 
-                BaseItem item = GetItemInternal(folder, child.Key, child.Value);
+                tasks[i] = GetItemInternal(folder, child.Key, child.Value);
+            }
 
-                if (item != null)
-                {
-                    lock (baseItemChildren)
-                    {
-                        baseItemChildren.Add(item);
-                    }
-                }
-            });
-
+            BaseItem[] baseItemChildren = await Task<BaseItem>.WhenAll(tasks);
+            
             // Sort them
-            folder.Children = baseItemChildren.OrderBy(f =>
+            folder.Children = baseItemChildren.Where(i => i != null).OrderBy(f =>
             {
                 return string.IsNullOrEmpty(f.SortName) ? f.Name : f.SortName;
 
@@ -363,7 +277,7 @@ namespace MediaBrowser.Controller.Library
         /// Creates an IBN item based on a given path
         /// </summary>
         private T CreateImagesByNameItem<T>(string path, string name)
-            where T : BaseEntity, new ()
+            where T : BaseEntity, new()
         {
             T item = new T();
 
