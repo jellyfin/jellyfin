@@ -38,6 +38,7 @@ namespace MediaBrowser.Api
             dto.HasPrimaryImage = !string.IsNullOrEmpty(item.LogoImagePath);
             dto.HasThumb = !string.IsNullOrEmpty(item.ThumbnailImagePath);
             dto.Id = item.Id;
+            dto.IsRecentlyAdded = item.IsRecentlyAdded(user);
             dto.IndexNumber = item.IndexNumber;
             dto.IsFolder = item is Folder;
             dto.LocalTrailerCount = item.LocalTrailers == null ? 0 : item.LocalTrailers.Count();

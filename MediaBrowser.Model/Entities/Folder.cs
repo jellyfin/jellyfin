@@ -51,7 +51,7 @@ namespace MediaBrowser.Model.Entities
             counts.RecentlyAddedItemCount = GetRecentlyAddedItems(recursiveChildren, user).Count();
             counts.RecentlyAddedUnPlayedItemCount = GetRecentlyAddedUnplayedItems(recursiveChildren, user).Count();
             counts.InProgressItemCount = GetInProgressItems(recursiveChildren, user).Count();
-            counts.WatchedPercentage = GetWatchedPercentage(recursiveChildren, user);
+            counts.PlayedPercentage = GetPlayedPercentage(recursiveChildren, user);
 
             return counts;
         }
@@ -139,9 +139,7 @@ namespace MediaBrowser.Model.Entities
 
         private static IEnumerable<BaseItem> GetRecentlyAddedItems(IEnumerable<BaseItem> itemSet, User user)
         {
-            DateTime now = DateTime.Now;
-
-            return itemSet.Where(i => !(i is Folder) && (now - i.DateCreated).TotalDays < user.RecentItemDays);
+            return itemSet.Where(i => !(i is Folder) && i.IsRecentlyAdded(user));
         }
 
         private static IEnumerable<BaseItem> GetRecentlyAddedUnplayedItems(IEnumerable<BaseItem> itemSet, User user)
@@ -169,7 +167,7 @@ namespace MediaBrowser.Model.Entities
             });
         }
 
-        private static decimal GetWatchedPercentage(IEnumerable<BaseItem> itemSet, User user)
+        private static decimal GetPlayedPercentage(IEnumerable<BaseItem> itemSet, User user)
         {
             itemSet = itemSet.Where(i => !(i is Folder));
 
@@ -203,7 +201,7 @@ namespace MediaBrowser.Model.Entities
 
             return totalPercent / itemSet.Count();
         }
-        
+
         /// <summary>
         /// Finds an item by ID, recursively
         /// </summary>
