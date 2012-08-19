@@ -5,11 +5,13 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Progress;
@@ -36,6 +38,12 @@ namespace MediaBrowser.Controller
         }
 
         /// <summary>
+        /// Gets the list of currently registered metadata prvoiders
+        /// </summary>
+        [ImportMany(typeof(BaseMetadataProvider))]
+        public IEnumerable<BaseMetadataProvider> MetadataProviders { get; private set; }
+
+        /// <summary>
         /// Gets the list of currently registered entity resolvers
         /// </summary>
         [ImportMany(typeof(IBaseItemResolver))]
@@ -56,33 +64,61 @@ namespace MediaBrowser.Controller
             ItemController.BeginResolvePath += ItemController_BeginResolvePath;
         }
 
-        public override void Init(IProgress<TaskProgress> progress)
+        public async override Task Init(IProgress<TaskProgress> progress)
         {
-            base.Init(progress);
+            await base.Init(progress);
 
             progress.Report(new TaskProgress() { Description = "Loading Users", PercentComplete = 15 });
             ReloadUsers();
 
             progress.Report(new TaskProgress() { Description = "Loading Media Library", PercentComplete = 20 });
-            ReloadRoot();
+            await ReloadRoot();
 
             progress.Report(new TaskProgress() { Description = "Loading Complete", PercentComplete = 100 });
         }
 
         protected override void OnComposablePartsLoaded()
         {
-            List<IBaseItemResolver> resolvers = EntityResolvers.ToList();
-
-            // Add the internal resolvers
-            resolvers.Add(new VideoResolver());
-            resolvers.Add(new AudioResolver());
-            resolvers.Add(new VirtualFolderResolver());
-            resolvers.Add(new FolderResolver());
-
-            EntityResolvers = resolvers;
+            AddCoreResolvers();
+            AddCoreProviders();
 
             // The base class will start up all the plugins
             base.OnComposablePartsLoaded();
+        }
+
+        private void AddCoreResolvers()
+        {
+            List<IBaseItemResolver> list = EntityResolvers.ToList();
+
+            // Add the core resolvers
+            list.AddRange(new IBaseItemResolver[]{
+                new AudioResolver(),
+                new VideoResolver(),
+                new VirtualFolderResolver(),
+                new FolderResolver()
+            });
+
+            EntityResolvers = list;
+        }
+
+        private void AddCoreProviders()
+        {
+            List<BaseMetadataProvider> list = MetadataProviders.ToList();
+
+            // Add the core resolvers
+            list.InsertRange(0, new BaseMetadataProvider[]{
+                new ImageFromMediaLocationProvider(),
+                new LocalTrailerProvider(),
+                new AudioInfoProvider(),
+                new FolderProviderFromXml()
+            });
+
+            MetadataProviders = list;
+
+            Parallel.ForEach(MetadataProviders, provider =>
+            {
+                provider.Init();
+            });
         }
 
         /// <summary>
@@ -129,7 +165,7 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Reloads the root media folder
         /// </summary>
-        public void ReloadRoot()
+        public async Task ReloadRoot()
         {
             if (!Directory.Exists(MediaRootFolderPath))
             {
@@ -138,7 +174,7 @@ namespace MediaBrowser.Controller
 
             DirectoryWatchers.Stop();
 
-            RootFolder = ItemController.GetItem(MediaRootFolderPath) as Folder;
+            RootFolder = await ItemController.GetItem(null, MediaRootFolderPath) as Folder;
 
             DirectoryWatchers.Start();
         }
@@ -152,23 +188,23 @@ namespace MediaBrowser.Controller
             }
         }
 
-        public void ReloadItem(BaseItem item)
+        public async Task ReloadItem(BaseItem item)
         {
             Folder folder = item as Folder;
 
             if (folder != null && folder.IsRoot)
             {
-                ReloadRoot();
+                await ReloadRoot();
             }
             else
             {
                 if (!Directory.Exists(item.Path) && !File.Exists(item.Path))
                 {
-                    ReloadItem(item.Parent);
+                    await ReloadItem(item.Parent);
                     return;
                 }
 
-                BaseItem newItem = ItemController.GetItem(item.Parent, item.Path);
+                BaseItem newItem = await ItemController.GetItem(item.Parent, item.Path);
 
                 List<BaseItem> children = item.Parent.Children.ToList();
 

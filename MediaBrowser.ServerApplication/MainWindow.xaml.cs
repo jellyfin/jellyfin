@@ -4,6 +4,8 @@ using System.Windows;
 using MediaBrowser.Common.Logging;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Progress;
+using System.Threading.Tasks;
+using MediaBrowser.Common.UI;
 
 namespace MediaBrowser.ServerApplication
 {
@@ -18,10 +20,10 @@ namespace MediaBrowser.ServerApplication
             LoadKernel();
         }
 
-        private void LoadKernel()
+        private async void LoadKernel()
         {
             Progress<TaskProgress> progress = new Progress<TaskProgress>();
-            Common.UI.Splash splash = new Common.UI.Splash(progress);
+            Splash splash = new Splash(progress);
 
             splash.Show();
             
@@ -29,11 +31,14 @@ namespace MediaBrowser.ServerApplication
             {
                 DateTime now = DateTime.Now;
 
-                new Kernel().Init(progress);
+                await new Kernel().Init(progress);
 
                 double seconds = (DateTime.Now - now).TotalSeconds;
 
                 Logger.LogInfo("Kernel.Init completed in {0} seconds.", seconds);
+
+                // Don't show the system tray icon until the kernel finishes.
+                this.MbTaskbarIcon.Visibility = System.Windows.Visibility.Visible;
             }
             catch (Exception ex)
             {
@@ -45,16 +50,6 @@ namespace MediaBrowser.ServerApplication
                 splash.Close();
             }
         }
-
-        #region Main Window Events
-
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            // Don't show the system tray icon until the app has loaded.
-            this.MbTaskbarIcon.Visibility = System.Windows.Visibility.Visible;
-        }
-
-        #endregion
 
         #region Context Menu events
 

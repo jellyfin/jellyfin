@@ -85,7 +85,7 @@ namespace MediaBrowser.Movies.Resolvers
             {
                 string[] allFiles = Directory.GetFileSystemEntries(trailerPath.Value.Key, "*", SearchOption.TopDirectoryOnly);
 
-                item.SpecialFeatures = allFiles.Select(f => Kernel.Instance.ItemController.GetItem(f)).OfType<Video>();
+                item.SpecialFeatures = allFiles.Select(f => Kernel.Instance.ItemController.GetItem(null, f)).OfType<Video>();
             }
         }
 

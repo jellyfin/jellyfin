@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Resolvers
@@ -33,19 +33,15 @@ namespace MediaBrowser.Controller.Resolvers
             }
 
             item.Id = Kernel.GetMD5(item.Path);
-            
-            PopulateImages(item, args);
-            PopulateLocalTrailers(item, args);
         }
 
-        public BaseItem ResolvePath(ItemResolveEventArgs args)
+        public async Task<BaseItem> ResolvePath(ItemResolveEventArgs args)
         {
             T item = Resolve(args);
             
             if (item != null)
             {
                 // Set initial values on the newly resolved item
-                
                 SetItemValues(item, args);
 
                 // Make sure the item has a name
@@ -53,9 +49,22 @@ namespace MediaBrowser.Controller.Resolvers
 
                 // Make sure DateCreated and DateModified have values
                 EnsureDates(item);
+                
+                await FetchMetadataFromProviders(item, args);
             }
 
             return item;
+        }
+
+        private async Task FetchMetadataFromProviders(T item, ItemResolveEventArgs args)
+        {
+            foreach (BaseMetadataProvider provider in Kernel.Instance.MetadataProviders)
+            {
+                if (provider.Supports(item))
+                {
+                    await provider.Fetch(item, args);
+                }
+            }
         }
 
         private void EnsureName(T item)
@@ -84,76 +93,6 @@ namespace MediaBrowser.Controller.Resolvers
                 item.DateModified = Path.IsPathRooted(item.Path) ? File.GetLastWriteTime(item.Path) : DateTime.Now;
             }
         }
-
-        /// <summary>
-        /// Fills in image paths based on files win the folder
-        /// </summary>
-        protected virtual void PopulateImages(T item, ItemResolveEventArgs args)
-        {
-            List<string> backdropFiles = new List<string>();
-
-            foreach (KeyValuePair<string,FileAttributes> file in args.FileSystemChildren)
-            {
-                if (file.Value.HasFlag(FileAttributes.Directory))
-                {
-                    continue;
-                }
-
-                string filePath = file.Key;
-
-                string ext = Path.GetExtension(filePath);
-
-                // Only support png and jpg files
-                if (!ext.EndsWith("png", StringComparison.OrdinalIgnoreCase) && !ext.EndsWith("jpg", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                string name = Path.GetFileNameWithoutExtension(filePath);
-
-                if (name.Equals("folder", StringComparison.OrdinalIgnoreCase))
-                {
-                    item.PrimaryImagePath = filePath;
-                }
-                else if (name.StartsWith("backdrop", StringComparison.OrdinalIgnoreCase))
-                {
-                    backdropFiles.Add(filePath);
-                }
-                if (name.Equals("logo", StringComparison.OrdinalIgnoreCase))
-                {
-                    item.LogoImagePath = filePath;
-                }
-                if (name.Equals("banner", StringComparison.OrdinalIgnoreCase))
-                {
-                    item.BannerImagePath = filePath;
-                }
-                if (name.Equals("art", StringComparison.OrdinalIgnoreCase))
-                {
-                    item.ArtImagePath = filePath;
-                }
-                if (name.Equals("thumb", StringComparison.OrdinalIgnoreCase))
-                {
-                    item.ThumbnailImagePath = filePath;
-                }
-            }
-
-            if (backdropFiles.Any())
-            {
-                item.BackdropImagePaths = backdropFiles;
-            }
-        }
-
-        protected virtual void PopulateLocalTrailers(T item, ItemResolveEventArgs args)
-        {
-            var trailerPath = args.GetFolderByName("trailers");
-
-            if (trailerPath.HasValue)
-            {
-                string[] allFiles = Directory.GetFileSystemEntries(trailerPath.Value.Key, "*", SearchOption.TopDirectoryOnly);
-
-                item.LocalTrailers = allFiles.Select(f => Kernel.Instance.ItemController.GetItem(f)).OfType<Video>();
-            }
-        }
     }
 
     /// <summary>
@@ -161,6 +100,6 @@ namespace MediaBrowser.Controller.Resolvers
     /// </summary>
     public interface IBaseItemResolver
     {
-        BaseItem ResolvePath(ItemResolveEventArgs args);
+        Task<BaseItem> ResolvePath(ItemResolveEventArgs args);
     }
 }

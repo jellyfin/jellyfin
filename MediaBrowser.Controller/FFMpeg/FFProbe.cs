@@ -1,13 +1,41 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Serialization;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.FFMpeg
 {
+    /// <summary>
+    /// Runs FFProbe against a media file and returns metadata.
+    /// </summary>
     public static class FFProbe
     {
-        public static FFProbeResult Run(string path)
+        public async static Task<FFProbeResult> Run(Audio item, string outputCachePath)
+        {
+            // Use try catch to avoid having to use File.Exists
+            try
+            {
+                using (FileStream stream = File.OpenRead(outputCachePath))
+                {
+                    return JsonSerializer.DeserializeFromStream<FFProbeResult>(stream);
+                }
+            }
+            catch (FileNotFoundException)
+            {
+            }
+
+            await Run(item.Path, outputCachePath);
+
+            using (FileStream stream = File.OpenRead(outputCachePath))
+            {
+                return JsonSerializer.DeserializeFromStream<FFProbeResult>(stream);
+            }
+        }
+
+        private async static Task Run(string input, string output)
         {
             ProcessStartInfo startInfo = new ProcessStartInfo();
 
@@ -21,12 +49,14 @@ namespace MediaBrowser.Controller.FFMpeg
 
             startInfo.FileName = Kernel.Instance.ApplicationPaths.FFProbePath;
             startInfo.WorkingDirectory = Kernel.Instance.ApplicationPaths.FFMpegDirectory;
-            startInfo.Arguments = string.Format("\"{0}\" -v quiet -print_format json -show_streams -show_format", path);
+            startInfo.Arguments = string.Format("\"{0}\" -v quiet -print_format json -show_streams -show_format", input);
 
-            Logger.LogInfo(startInfo.FileName + " " + startInfo.Arguments);
+            //Logger.LogInfo(startInfo.FileName + " " + startInfo.Arguments);
 
             Process process = new Process();
             process.StartInfo = startInfo;
+
+            FileStream stream = new FileStream(output, FileMode.Create);
 
             try
             {
@@ -36,17 +66,22 @@ namespace MediaBrowser.Controller.FFMpeg
                 // If we ever decide to disable the ffmpeg log then you must uncomment the below line.
                 process.BeginErrorReadLine();
 
-                FFProbeResult result = JsonSerializer.DeserializeFromStream<FFProbeResult>(process.StandardOutput.BaseStream);
+                await process.StandardOutput.BaseStream.CopyToAsync(stream);
 
                 process.WaitForExit();
 
-                Logger.LogInfo("FFMpeg exited with code " + process.ExitCode);
+                stream.Dispose();
 
-                return result;
+                if (process.ExitCode != 0)
+                {
+                    Logger.LogInfo("FFProbe exited with code {0} for {1}", process.ExitCode, input);
+                }
             }
             catch (Exception ex)
             {
                 Logger.LogException(ex);
+
+                stream.Dispose();
 
                 // Hate having to do this
                 try
@@ -56,8 +91,7 @@ namespace MediaBrowser.Controller.FFMpeg
                 catch
                 {
                 }
-
-                return null;
+                File.Delete(output);
             }
             finally
             {
