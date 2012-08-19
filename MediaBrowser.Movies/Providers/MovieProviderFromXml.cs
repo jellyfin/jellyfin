@@ -16,17 +16,14 @@ namespace MediaBrowser.Movies.Providers
             return item is Movie;
         }
 
-        public override Task Fetch(BaseItem item, ItemResolveEventArgs args)
+        public async override Task Fetch(BaseItem item, ItemResolveEventArgs args)
         {
-            return Task.Run(() =>
-            {
-                var metadataFile = args.GetFileByName("movie.xml");
+            var metadataFile = args.GetFileByName("movie.xml");
 
-                if (metadataFile.HasValue)
-                {
-                    new BaseItemXmlParser<Movie>().Fetch(item as Movie, metadataFile.Value.Key);
-                }
-            });
+            if (metadataFile.HasValue)
+            {
+                await new BaseItemXmlParser<Movie>().Fetch(item as Movie, metadataFile.Value.Key);
+            }
         }
     }
 }

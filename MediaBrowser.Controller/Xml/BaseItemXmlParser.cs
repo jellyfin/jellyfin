@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using MediaBrowser.Model.Entities;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Xml
 {
@@ -16,33 +17,37 @@ namespace MediaBrowser.Controller.Xml
         /// <summary>
         /// Fetches metadata for an item from one xml file
         /// </summary>
-        public virtual void Fetch(T item, string metadataFile)
+        public Task Fetch(T item, string metadataFile)
         {
-            // Use XmlReader for best performance
-            using (XmlReader reader = XmlReader.Create(metadataFile))
+            // Wrapping this for now until I have a chance to async the whole process
+            return Task.Run(() =>
             {
-                reader.MoveToContent();
-
-                // Loop through each element
-                while (reader.Read())
+                // Use XmlReader for best performance
+                using (XmlReader reader = XmlReader.Create(metadataFile))
                 {
-                    if (reader.NodeType == XmlNodeType.Element)
+                    reader.MoveToContent();
+
+                    // Loop through each element
+                    while (reader.Read())
                     {
-                        FetchDataFromXmlNode(reader, item);
+                        if (reader.NodeType == XmlNodeType.Element)
+                        {
+                            FetchDataFromXmlNode(reader, item);
+                        }
                     }
                 }
-            }
 
-            // If dates weren't supplied in metadata, use values from the xml file
-            if (item.DateCreated == DateTime.MinValue)
-            {
-                item.DateCreated = File.GetCreationTime(metadataFile);
-            }
+                // If dates weren't supplied in metadata, use values from the xml file
+                if (item.DateCreated == DateTime.MinValue)
+                {
+                    item.DateCreated = File.GetCreationTime(metadataFile);
+                }
 
-            if (item.DateModified == DateTime.MinValue)
-            {
-                item.DateModified = File.GetLastWriteTime(metadataFile);
-            }
+                if (item.DateModified == DateTime.MinValue)
+                {
+                    item.DateModified = File.GetLastWriteTime(metadataFile);
+                }
+            });
         }
 
         /// <summary>

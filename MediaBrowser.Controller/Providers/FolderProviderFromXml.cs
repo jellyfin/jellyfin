@@ -14,17 +14,14 @@ namespace MediaBrowser.Controller.Providers
             return item is Folder;
         }
 
-        public override Task Fetch(BaseItem item, ItemResolveEventArgs args)
+        public async override Task Fetch(BaseItem item, ItemResolveEventArgs args)
         {
-            return Task.Run(() =>
-            {
-                var metadataFile = args.GetFileByName("folder.xml");
+            var metadataFile = args.GetFileByName("folder.xml");
 
-                if (metadataFile.HasValue)
-                {
-                    new FolderXmlParser().Fetch(item as Folder, metadataFile.Value.Key);
-                }
-            });
+            if (metadataFile.HasValue)
+            {
+                await new FolderXmlParser().Fetch(item as Folder, metadataFile.Value.Key);
+            }
         }
     }
 }

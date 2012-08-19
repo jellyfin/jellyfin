@@ -19,21 +19,18 @@ namespace MediaBrowser.TV.Providers
             return item is Episode;
         }
 
-        public override Task Fetch(BaseItem item, ItemResolveEventArgs args)
+        public async override Task Fetch(BaseItem item, ItemResolveEventArgs args)
         {
-            return Task.Run(() =>
-            {
-                string metadataFolder = Path.Combine(args.Parent.Path, "metadata");
+            string metadataFolder = Path.Combine(args.Parent.Path, "metadata");
 
-                string episodeFileName = Path.GetFileName(item.Path);
+            string episodeFileName = Path.GetFileName(item.Path);
 
-                string metadataFile = Path.Combine(metadataFolder, Path.ChangeExtension(episodeFileName, ".xml"));
+            string metadataFile = Path.Combine(metadataFolder, Path.ChangeExtension(episodeFileName, ".xml"));
 
-                FetchMetadata(item as Episode, args.Parent as Season, metadataFile);
-            });
+            await FetchMetadata(item as Episode, args.Parent as Season, metadataFile);
         }
 
-        private void FetchMetadata(Episode item, Season season, string metadataFile)
+        private async Task FetchMetadata(Episode item, Season season, string metadataFile)
         {
             if (season == null)
             {
@@ -52,7 +49,7 @@ namespace MediaBrowser.TV.Providers
                 }
             }
 
-            new EpisodeXmlParser().Fetch(item, metadataFile);
+            await new EpisodeXmlParser().Fetch(item, metadataFile);
         }
     }
 }
