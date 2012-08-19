@@ -83,12 +83,12 @@ namespace MediaBrowser.Controller.IO
             List<string> paths = affectedPaths;
             affectedPaths = new List<string>();
 
-            ProcessPathChanges(paths);
+            //ProcessPathChanges(paths);
         }
 
-        private void ProcessPathChanges(IEnumerable<string> paths)
+        private async Task ProcessPathChanges(IEnumerable<string> paths)
         {
-            /*List<BaseItem> itemsToRefresh = new List<BaseItem>();
+            List<BaseItem> itemsToRefresh = new List<BaseItem>();
 
             foreach (BaseItem item in paths.Select(p => GetAffectedBaseItem(p)))
             {
@@ -105,15 +105,15 @@ namespace MediaBrowser.Controller.IO
                     return folder != null && folder.IsRoot;
                 }))
             {
-                Kernel.Instance.ReloadRoot();
+                await Kernel.Instance.ReloadRoot();
             }
             else
             {
-                Parallel.For(0, itemsToRefresh.Count, i =>
+                /*Parallel.For(0, itemsToRefresh.Count, i =>
                 {
                     Kernel.Instance.ReloadItem(itemsToRefresh[i]);
-                });
-            }*/
+                });*/
+            }
         }
 
         private BaseItem GetAffectedBaseItem(string path)

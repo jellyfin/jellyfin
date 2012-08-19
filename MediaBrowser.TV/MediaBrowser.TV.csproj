@@ -42,6 +42,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\Episode.cs" />
+    <Compile Include="Providers\EpisodeImageFromMediaLocationProvider.cs" />
+    <Compile Include="Providers\EpisodeProviderFromXml.cs" />
+    <Compile Include="Providers\SeriesProviderFromXml.cs" />
     <Compile Include="Resolvers\EpisodeResolver.cs" />
     <Compile Include="Metadata\EpisodeXmlParser.cs" />
     <Compile Include="Plugin.cs" />
