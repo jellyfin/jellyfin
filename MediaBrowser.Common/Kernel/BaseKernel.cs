@@ -18,7 +18,7 @@ namespace MediaBrowser.Common.Kernel
     /// <summary>
     /// Represents a shared base kernel for both the UI and server apps
     /// </summary>
-    public abstract class BaseKernel<TConfigurationType, TApplicationPathsType> : IDisposable
+    public abstract class BaseKernel<TConfigurationType, TApplicationPathsType> : IDisposable, IKernel
         where TConfigurationType : BaseApplicationConfiguration, new()
         where TApplicationPathsType : BaseApplicationPaths, new()
     {
@@ -263,5 +263,11 @@ namespace MediaBrowser.Common.Kernel
                 return GetType().Assembly.GetName().Version;
             }
         }
+    }
+
+    public interface IKernel
+    {
+        Task Init(IProgress<TaskProgress> progress);
+        void Dispose();
     }
 }

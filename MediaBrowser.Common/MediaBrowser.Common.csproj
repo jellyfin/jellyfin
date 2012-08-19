@@ -89,6 +89,7 @@
     <Compile Include="Plugins\BasePlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serialization\XmlSerializer.cs" />
+    <Compile Include="UI\BaseApplication.cs" />
     <Compile Include="UI\Splash.xaml.cs">
       <DependentUpon>Splash.xaml</DependentUpon>
     </Compile>
