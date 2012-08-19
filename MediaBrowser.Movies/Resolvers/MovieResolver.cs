@@ -88,9 +88,9 @@ namespace MediaBrowser.Movies.Resolvers
             }
         }
 
-        protected override void SetItemValues(Movie item, ItemResolveEventArgs args)
+        protected override void SetInitialItemValues(Movie item, ItemResolveEventArgs args)
         {
-            base.SetItemValues(item, args);
+            base.SetInitialItemValues(item, args);
 
             PopulateBonusFeatures(item, args);
         }

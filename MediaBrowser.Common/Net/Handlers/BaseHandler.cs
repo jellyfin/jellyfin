@@ -111,7 +111,7 @@ namespace MediaBrowser.Common.Net.Handlers
         /// <summary>
         /// Gets the MIME type to include in the response headers
         /// </summary>
-        public abstract string ContentType { get; }
+        public abstract Task<string> GetContentType();
 
         /// <summary>
         /// Gets the status code to include in the response headers
@@ -129,31 +129,9 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        private bool _LastDateModifiedDiscovered = false;
-        private DateTime? _LastDateModified = null;
-        /// <summary>
-        /// Gets the last date modified of the content being returned, if this can be determined.
-        /// This will be used to invalidate the cache, so it's not needed if CacheDuration is 0.
-        /// </summary>
-        public DateTime? LastDateModified
+        public virtual bool ShouldCompressResponse(string contentType)
         {
-            get
-            {
-                if (!_LastDateModifiedDiscovered)
-                {
-                    _LastDateModified = GetLastDateModified();
-                }
-
-                return _LastDateModified;
-            }
-        }
-        
-        public virtual bool CompressResponse
-        {
-            get
-            {
-                return true;
-            }
+            return true;
         }
 
         private bool ClientSupportsCompression
@@ -207,9 +185,11 @@ namespace MediaBrowser.Common.Net.Handlers
                 // When serving a range request, we need to return status code 206 to indicate a partial response body
                 StatusCode = SupportsByteRangeRequests && IsRangeRequest ? 206 : 200;
 
-                ctx.Response.ContentType = ContentType;
+                ctx.Response.ContentType = await GetContentType();
 
                 TimeSpan cacheDuration = CacheDuration;
+
+                DateTime? lastDateModified = await GetLastDateModified();
 
                 if (ctx.Request.Headers.AllKeys.Contains("If-Modified-Since"))
                 {
@@ -218,18 +198,20 @@ namespace MediaBrowser.Common.Net.Handlers
                     if (DateTime.TryParse(ctx.Request.Headers["If-Modified-Since"].Replace(" GMT", string.Empty), out ifModifiedSince))
                     {
                         // If the cache hasn't expired yet just return a 304
-                        if (IsCacheValid(ifModifiedSince, cacheDuration, LastDateModified))
+                        if (IsCacheValid(ifModifiedSince, cacheDuration, lastDateModified))
                         {
                             StatusCode = 304;
                         }
                     }
                 }
 
-                PrepareResponse();
+                await PrepareResponse();
 
                 if (IsResponseValid)
                 {
-                    await ProcessUncachedRequest(ctx, cacheDuration);
+                    bool compressResponse = ShouldCompressResponse(ctx.Response.ContentType) && ClientSupportsCompression;
+
+                    await ProcessUncachedRequest(ctx, compressResponse, cacheDuration, lastDateModified);
                 }
                 else
                 {
@@ -241,7 +223,7 @@ namespace MediaBrowser.Common.Net.Handlers
             {
                 // It might be too late if some response data has already been transmitted, but try to set this
                 ctx.Response.StatusCode = 500;
-                
+
                 Logger.LogException(ex);
             }
             finally
@@ -250,7 +232,7 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        private async Task ProcessUncachedRequest(HttpListenerContext ctx, TimeSpan cacheDuration)
+        private async Task ProcessUncachedRequest(HttpListenerContext ctx, bool compressResponse, TimeSpan cacheDuration, DateTime? lastDateModified)
         {
             long? totalContentLength = TotalContentLength;
 
@@ -270,7 +252,7 @@ namespace MediaBrowser.Common.Net.Handlers
             }
 
             // Add the compression header
-            if (CompressResponse && ClientSupportsCompression)
+            if (compressResponse)
             {
                 ctx.Response.AddHeader("Content-Encoding", CompressionMethod);
             }
@@ -278,7 +260,7 @@ namespace MediaBrowser.Common.Net.Handlers
             // Add caching headers
             if (cacheDuration.Ticks > 0)
             {
-                CacheResponse(ctx.Response, cacheDuration, LastDateModified);
+                CacheResponse(ctx.Response, cacheDuration, lastDateModified);
             }
 
             // Set the status code
@@ -289,7 +271,7 @@ namespace MediaBrowser.Common.Net.Handlers
                 // Finally, write the response data
                 Stream outputStream = ctx.Response.OutputStream;
 
-                if (CompressResponse && ClientSupportsCompression)
+                if (compressResponse)
                 {
                     if (CompressionMethod.Equals("deflate", StringComparison.OrdinalIgnoreCase))
                     {
@@ -321,10 +303,11 @@ namespace MediaBrowser.Common.Net.Handlers
         }
 
         /// <summary>
-        /// Gives subclasses a chance to do and prep work, and also to validate data and set an error status code, if needed
+        /// Gives subclasses a chance to do any prep work, and also to validate data and set an error status code, if needed
         /// </summary>
-        protected virtual void PrepareResponse()
+        protected virtual Task PrepareResponse()
         {
+            return Task.Run(() => { });
         }
 
         protected abstract Task WriteResponseToOutputStream(Stream stream);
@@ -372,9 +355,11 @@ namespace MediaBrowser.Common.Net.Handlers
             return null;
         }
 
-        protected virtual DateTime? GetLastDateModified()
+        protected virtual Task<DateTime?> GetLastDateModified()
         {
-            return null;
+            DateTime? value = null;
+
+            return Task.Run<DateTime?>(() => { return value; });
         }
 
         private bool IsResponseValid

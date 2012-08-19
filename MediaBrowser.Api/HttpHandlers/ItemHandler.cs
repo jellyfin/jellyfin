@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.DTO;
@@ -9,7 +10,7 @@ namespace MediaBrowser.Api.HttpHandlers
 {
     public class ItemHandler : BaseJsonHandler<DTOBaseItem>
     {
-        protected sealed override DTOBaseItem GetObjectToSerialize()
+        protected async override Task<DTOBaseItem> GetObjectToSerialize()
         {
             Guid userId = Guid.Parse(QueryString["userid"]);
             User user = Kernel.Instance.Users.First(u => u.Id == userId);
@@ -21,7 +22,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 return null;
             }
 
-            return ApiService.GetDTOBaseItem(item, user);
+            return await ApiService.GetDTOBaseItem(item, user);
         }
 
         protected virtual BaseItem ItemToSerialize

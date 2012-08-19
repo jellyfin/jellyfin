@@ -77,27 +77,22 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        public override bool CompressResponse
+        public override bool ShouldCompressResponse(string contentType)
         {
-            get
+            // Can't compress these
+            if (IsRangeRequest)
             {
-                // Can't compress these
-                if (IsRangeRequest)
-                {
-                    return false;
-                }
-
-                string contentType = ContentType;
-
-                // Don't compress media
-                if (contentType.StartsWith("audio/", StringComparison.OrdinalIgnoreCase) || contentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                // It will take some work to support compression within this handler
                 return false;
             }
+
+            // Don't compress media
+            if (contentType.StartsWith("audio/", StringComparison.OrdinalIgnoreCase) || contentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            // It will take some work to support compression within this handler
+            return false;
         }
 
         protected override long? GetTotalContentLength()
@@ -105,31 +100,32 @@ namespace MediaBrowser.Common.Net.Handlers
             return SourceStream.Length;
         }
 
-        protected override DateTime? GetLastDateModified()
+        protected override Task<DateTime?> GetLastDateModified()
         {
-            EnsureSourceStream();
-
-            if (SourceStream == null)
+            return Task.Run<DateTime?>(() =>
             {
-                return null;
-            }
+                EnsureSourceStream();
 
-            return File.GetLastWriteTime(Path);
+                if (SourceStream == null)
+                {
+                    return null;
+                }
+
+                return File.GetLastWriteTime(Path);
+            });
         }
 
-        public override string ContentType
+        public override Task<string> GetContentType()
         {
-            get
+            return Task.Run(() =>
             {
                 return MimeTypes.GetMimeType(Path);
-            }
+            });
         }
 
-        protected override void PrepareResponse()
+        protected override Task PrepareResponse()
         {
-            base.PrepareResponse();
-
-            EnsureSourceStream();
+            return Task.Run(() => { EnsureSourceStream(); });
         }
 
         protected async override Task WriteResponseToOutputStream(Stream stream)

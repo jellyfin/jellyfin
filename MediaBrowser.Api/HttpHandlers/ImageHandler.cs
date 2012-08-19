@@ -13,39 +13,57 @@ namespace MediaBrowser.Api.HttpHandlers
     public class ImageHandler : BaseHandler
     {
         private string _ImagePath = null;
-        private string ImagePath
+        private async Task<string> GetImagePath()
         {
-            get
+            if (_ImagePath == null)
             {
-                if (_ImagePath == null)
-                {
-                    _ImagePath = GetImagePath();
-                }
-
-                return _ImagePath;
+                _ImagePath = await DiscoverImagePath();
             }
+
+            return _ImagePath;
+        }
+
+        private async Task<string> DiscoverImagePath()
+        {
+            string path = QueryString["path"] ?? string.Empty;
+
+            if (!string.IsNullOrEmpty(path))
+            {
+                return path;
+            }
+
+            string personName = QueryString["personname"];
+
+            if (!string.IsNullOrEmpty(personName))
+            {
+                Person person = await Kernel.Instance.ItemController.GetPerson(personName);
+                
+                return person.PrimaryImagePath;
+            }
+
+            BaseItem item = ApiService.GetItemById(QueryString["id"]);
+
+            string imageIndex = QueryString["index"];
+            int index = string.IsNullOrEmpty(imageIndex) ? 0 : int.Parse(imageIndex);
+
+            return GetImagePathFromTypes(item, ImageType, index);
         }
 
         private Stream _SourceStream = null;
-        private Stream SourceStream
+        private async Task<Stream> GetSourceStream()
         {
-            get
-            {
-                EnsureSourceStream();
-
-                return _SourceStream;
-            }
+            await EnsureSourceStream();
+            return _SourceStream;
         }
 
-
         private bool _SourceStreamEnsured = false;
-        private void EnsureSourceStream()
+        private async Task EnsureSourceStream()
         {
             if (!_SourceStreamEnsured)
             {
                 try
                 {
-                    _SourceStream = File.OpenRead(ImagePath);
+                    _SourceStream = File.OpenRead(await GetImagePath());
                 }
                 catch (FileNotFoundException ex)
                 {
@@ -68,20 +86,17 @@ namespace MediaBrowser.Api.HttpHandlers
                 }
             }
         }
-        
-        public override string ContentType
-        {
-            get
-            {
-                EnsureSourceStream();
 
-                if (SourceStream == null)
-                {
-                    return null;
-                }
-                
-                return MimeTypes.GetMimeType(ImagePath);
+        public async override Task<string> GetContentType()
+        {
+            await EnsureSourceStream();
+
+            if (await GetSourceStream() == null)
+            {
+                return null;
             }
+
+            return MimeTypes.GetMimeType(await GetImagePath());
         }
 
         public override TimeSpan CacheDuration
@@ -92,16 +107,16 @@ namespace MediaBrowser.Api.HttpHandlers
             }
         }
 
-        protected override DateTime? GetLastDateModified()
+        protected async override Task<DateTime?> GetLastDateModified()
         {
-            EnsureSourceStream();
+            await EnsureSourceStream();
 
-            if (SourceStream == null)
+            if (await GetSourceStream() == null)
             {
                 return null;
             }
 
-            return File.GetLastWriteTime(ImagePath);
+            return File.GetLastWriteTime(await GetImagePath());
         }
 
         private int? Height
@@ -194,36 +209,9 @@ namespace MediaBrowser.Api.HttpHandlers
             }
         }
 
-        protected override Task WriteResponseToOutputStream(Stream stream)
+        protected override async Task WriteResponseToOutputStream(Stream stream)
         {
-            return Task.Run(() =>
-            {
-                ImageProcessor.ProcessImage(SourceStream, stream, Width, Height, MaxWidth, MaxHeight, Quality);
-            });
-        }
-
-        private string GetImagePath()
-        {
-            string path = QueryString["path"] ?? string.Empty;
-
-            if (!string.IsNullOrEmpty(path))
-            {
-                return path;
-            }
-
-            string personName = QueryString["personname"];
-
-            if (!string.IsNullOrEmpty(personName))
-            {
-                return Kernel.Instance.ItemController.GetPerson(personName).PrimaryImagePath;
-            }
-
-            BaseItem item = ApiService.GetItemById(QueryString["id"]);
-
-            string imageIndex = QueryString["index"];
-            int index = string.IsNullOrEmpty(imageIndex) ? 0 : int.Parse(imageIndex);
-
-            return GetImagePathFromTypes(item, ImageType, index);
+            ImageProcessor.ProcessImage(await GetSourceStream(), stream, Width, Height, MaxWidth, MaxHeight, Quality);
         }
 
         private string GetImagePathFromTypes(BaseItem item, ImageType imageType, int imageIndex)

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
@@ -7,9 +8,12 @@ namespace MediaBrowser.Api.HttpHandlers
 {
     class UsersHandler : BaseJsonHandler<IEnumerable<User>>
     {
-        protected override IEnumerable<User> GetObjectToSerialize()
+        protected override Task<IEnumerable<User>> GetObjectToSerialize()
         {
-            return Kernel.Instance.Users;
+            return Task.Run(() =>
+            {
+                return Kernel.Instance.Users;
+            });
         }
     }
 }

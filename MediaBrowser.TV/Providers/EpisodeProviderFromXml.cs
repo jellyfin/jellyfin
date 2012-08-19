@@ -14,20 +14,22 @@ namespace MediaBrowser.TV.Providers
     [Export(typeof(BaseMetadataProvider))]
     public class EpisodeProviderFromXml : BaseMetadataProvider
     {
-        public override bool Supports(BaseItem item)
+        public override bool Supports(BaseEntity item)
         {
             return item is Episode;
         }
 
-        public async override Task Fetch(BaseItem item, ItemResolveEventArgs args)
+        public async override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
         {
             string metadataFolder = Path.Combine(args.Parent.Path, "metadata");
 
-            string episodeFileName = Path.GetFileName(item.Path);
+            Episode episode = item as Episode;
+
+            string episodeFileName = Path.GetFileName(episode.Path);
 
             string metadataFile = Path.Combine(metadataFolder, Path.ChangeExtension(episodeFileName, ".xml"));
 
-            await FetchMetadata(item as Episode, args.Parent as Season, metadataFile);
+            await FetchMetadata(episode, args.Parent as Season, metadataFile);
         }
 
         private async Task FetchMetadata(Episode item, Season season, string metadataFile)

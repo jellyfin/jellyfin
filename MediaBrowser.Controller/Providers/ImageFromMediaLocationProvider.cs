@@ -12,13 +12,18 @@ namespace MediaBrowser.Controller.Providers
     [Export(typeof(BaseMetadataProvider))]
     public class ImageFromMediaLocationProvider : BaseMetadataProvider
     {
-        public override Task Fetch(BaseItem item, ItemResolveEventArgs args)
+        public override bool Supports(BaseEntity item)
+        {
+            return item is BaseItem;
+        }
+        
+        public override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
         {
             return Task.Run(() =>
             {
                 if (args.IsFolder)
                 {
-                    PopulateImages(item, args);
+                    PopulateImages(item as BaseItem, args);
                 }
             });
         }
