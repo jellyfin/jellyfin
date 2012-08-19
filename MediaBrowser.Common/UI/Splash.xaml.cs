@@ -21,9 +21,18 @@ namespace MediaBrowser.Common.UI
     /// </summary>
     public partial class Splash : Window
     {
-        public Splash(IProgress<TaskProgress> progress)
+
+        public Splash(Progress<TaskProgress> progress)
         {
             InitializeComponent();
+            
+            progress.ProgressChanged += progress_ProgressChanged;
+        }
+
+        void progress_ProgressChanged(object sender, TaskProgress e)
+        {
+            this.lblProgress.Content = e.Description;
+            this.pbProgress.Value = (double)e.PercentComplete;
         }
     }
 }
