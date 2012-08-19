@@ -66,15 +66,18 @@ namespace MediaBrowser.Controller
 
         public async override Task Init(IProgress<TaskProgress> progress)
         {
-            await base.Init(progress);
+            await Task.Run(async () =>
+            {
+                await base.Init(progress);
 
-            progress.Report(new TaskProgress() { Description = "Loading Users", PercentComplete = 15 });
-            ReloadUsers();
+                progress.Report(new TaskProgress() { Description = "Loading Users", PercentComplete = 15 });
+                ReloadUsers();
 
-            progress.Report(new TaskProgress() { Description = "Loading Media Library", PercentComplete = 20 });
-            await ReloadRoot();
+                progress.Report(new TaskProgress() { Description = "Loading Media Library", PercentComplete = 20 });
+                await ReloadRoot();
 
-            progress.Report(new TaskProgress() { Description = "Loading Complete", PercentComplete = 100 });
+                progress.Report(new TaskProgress() { Description = "Loading Complete", PercentComplete = 100 });
+            });
         }
 
         protected override void OnComposablePartsLoaded()
