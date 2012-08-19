@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Net.Handlers;
@@ -91,20 +90,17 @@ namespace MediaBrowser.Api.HttpHandlers
             }
         }
 
-        public override string ContentType
+        public override Task<string> GetContentType()
         {
-            get
+            return Task.Run(() =>
             {
                 return MimeTypes.GetMimeType("." + GetConversionOutputFormat());
-            }
+            });
         }
 
-        public override bool CompressResponse
+        public override bool ShouldCompressResponse(string contentType)
         {
-            get
-            {
-                return false;
-            }
+            return false;
         }
 
         public override async Task ProcessRequest(HttpListenerContext ctx)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -217,49 +218,49 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets a Person
         /// </summary>
-        public Person GetPerson(string name)
+        public async Task<Person> GetPerson(string name)
         {
             string path = Path.Combine(Kernel.Instance.ApplicationPaths.PeoplePath, name);
 
-            return GetImagesByNameItem<Person>(path, name);
+            return await GetImagesByNameItem<Person>(path, name);
         }
 
         /// <summary>
         /// Gets a Studio
         /// </summary>
-        public Studio GetStudio(string name)
+        public async Task<Studio> GetStudio(string name)
         {
             string path = Path.Combine(Kernel.Instance.ApplicationPaths.StudioPath, name);
 
-            return GetImagesByNameItem<Studio>(path, name);
+            return await GetImagesByNameItem<Studio>(path, name);
         }
 
         /// <summary>
         /// Gets a Genre
         /// </summary>
-        public Genre GetGenre(string name)
+        public async Task<Genre> GetGenre(string name)
         {
             string path = Path.Combine(Kernel.Instance.ApplicationPaths.GenrePath, name);
 
-            return GetImagesByNameItem<Genre>(path, name);
+            return await GetImagesByNameItem<Genre>(path, name);
         }
 
         /// <summary>
         /// Gets a Year
         /// </summary>
-        public Year GetYear(int value)
+        public async Task<Year> GetYear(int value)
         {
             string path = Path.Combine(Kernel.Instance.ApplicationPaths.YearPath, value.ToString());
 
-            return GetImagesByNameItem<Year>(path, value.ToString());
+            return await GetImagesByNameItem<Year>(path, value.ToString());
         }
 
-        private Dictionary<string, object> ImagesByNameItemCache = new Dictionary<string, object>();
+        private ConcurrentDictionary<string, object> ImagesByNameItemCache = new ConcurrentDictionary<string, object>();
 
         /// <summary>
         /// Generically retrieves an IBN item
         /// </summary>
-        private T GetImagesByNameItem<T>(string path, string name)
+        private async Task<T> GetImagesByNameItem<T>(string path, string name)
             where T : BaseEntity, new()
         {
             string key = path.ToLower();
@@ -267,7 +268,9 @@ namespace MediaBrowser.Controller.Library
             // Look for it in the cache, if it's not there, create it
             if (!ImagesByNameItemCache.ContainsKey(key))
             {
-                ImagesByNameItemCache[key] = CreateImagesByNameItem<T>(path, name);
+                T obj = await CreateImagesByNameItem<T>(path, name);
+                ImagesByNameItemCache[key] = obj;
+                return obj;
             }
 
             return ImagesByNameItemCache[key] as T;
@@ -276,7 +279,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Creates an IBN item based on a given path
         /// </summary>
-        private T CreateImagesByNameItem<T>(string path, string name)
+        private async Task<T> CreateImagesByNameItem<T>(string path, string name)
             where T : BaseEntity, new()
         {
             T item = new T();
@@ -284,25 +287,28 @@ namespace MediaBrowser.Controller.Library
             item.Name = name;
             item.Id = Kernel.GetMD5(path);
 
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
             {
-                item.DateCreated = Directory.GetCreationTime(path);
-                item.DateModified = Directory.GetLastAccessTime(path);
-                if (File.Exists(Path.Combine(path, "folder.jpg")))
-                {
-                    item.PrimaryImagePath = Path.Combine(path, "folder.jpg");
-                }
-                else if (File.Exists(Path.Combine(path, "folder.png")))
-                {
-                    item.PrimaryImagePath = Path.Combine(path, "folder.png");
-                }
+                Directory.CreateDirectory(path);
             }
-            else
-            {
-                DateTime now = DateTime.Now;
 
-                item.DateCreated = now;
-                item.DateModified = now;
+            item.DateCreated = Directory.GetCreationTime(path);
+            item.DateModified = Directory.GetLastAccessTime(path);
+
+            if (File.Exists(Path.Combine(path, "folder.jpg")))
+            {
+                item.PrimaryImagePath = Path.Combine(path, "folder.jpg");
+            }
+            else if (File.Exists(Path.Combine(path, "folder.png")))
+            {
+                item.PrimaryImagePath = Path.Combine(path, "folder.png");
+            }
+
+            var b = false;
+
+            if (b)
+            {
+                await Kernel.Instance.ExecuteMetadataProviders(item, null);
             }
 
             return item;

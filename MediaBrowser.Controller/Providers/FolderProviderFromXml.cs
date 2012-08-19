@@ -9,12 +9,12 @@ namespace MediaBrowser.Controller.Providers
     [Export(typeof(BaseMetadataProvider))]
     public class FolderProviderFromXml : BaseMetadataProvider
     {
-        public override bool Supports(BaseItem item)
+        public override bool Supports(BaseEntity item)
         {
             return item is Folder;
         }
 
-        public async override Task Fetch(BaseItem item, ItemResolveEventArgs args)
+        public async override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
         {
             var metadataFile = args.GetFileByName("folder.xml");
 

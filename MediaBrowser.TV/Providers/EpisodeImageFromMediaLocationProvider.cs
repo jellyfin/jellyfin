@@ -13,22 +13,24 @@ namespace MediaBrowser.TV.Providers
     [Export(typeof(BaseMetadataProvider))]
     public class EpisodeImageFromMediaLocationProvider : BaseMetadataProvider
     {
-        public override bool Supports(BaseItem item)
+        public override bool Supports(BaseEntity item)
         {
             return item is Episode;
         }
 
-        public override Task Fetch(BaseItem item, ItemResolveEventArgs args)
+        public override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
         {
             return Task.Run(() =>
             {
+                Episode episode = item as Episode;
+
                 string metadataFolder = Path.Combine(args.Parent.Path, "metadata");
 
-                string episodeFileName = Path.GetFileName(item.Path);
+                string episodeFileName = Path.GetFileName(episode.Path);
 
                 Season season = args.Parent as Season;
 
-                SetPrimaryImagePath(item as Episode, season, metadataFolder, episodeFileName);
+                SetPrimaryImagePath(episode, season, metadataFolder, episodeFileName);
             });
         }
 

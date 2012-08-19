@@ -10,8 +10,15 @@ namespace MediaBrowser.Controller.Providers
     [Export(typeof(BaseMetadataProvider))]
     public class LocalTrailerProvider : BaseMetadataProvider
     {
-        public async override Task Fetch(BaseItem item, ItemResolveEventArgs args)
+        public override bool Supports(BaseEntity item)
         {
+            return item is BaseItem;
+        }
+
+        public async override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
+        {
+            BaseItem baseItem = item as BaseItem;
+
             var trailerPath = args.GetFolderByName("trailers");
 
             if (trailerPath.HasValue)
@@ -32,7 +39,7 @@ namespace MediaBrowser.Controller.Providers
                     }
                 }
 
-                item.LocalTrailers = localTrailers;
+                baseItem.LocalTrailers = localTrailers;
             }
         }
     }

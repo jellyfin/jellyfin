@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml;
 using MediaBrowser.Model.Entities;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Xml
 {
