@@ -131,6 +131,14 @@ namespace MediaBrowser.Model.Entities
             return null;
         }
 
+        public virtual bool IsFolder
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// Determines if the item is considered new based on user settings
         /// </summary>

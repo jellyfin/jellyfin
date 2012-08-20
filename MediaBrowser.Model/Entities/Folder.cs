@@ -6,6 +6,14 @@ namespace MediaBrowser.Model.Entities
 {
     public class Folder : BaseItem
     {
+        public override bool IsFolder
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public bool IsRoot { get; set; }
 
         public BaseItem[] Children { get; set; }
@@ -139,7 +147,7 @@ namespace MediaBrowser.Model.Entities
 
         private static IEnumerable<BaseItem> GetRecentlyAddedItems(IEnumerable<BaseItem> itemSet, User user)
         {
-            return itemSet.Where(i => !(i is Folder) && i.IsRecentlyAdded(user));
+            return itemSet.Where(i => !(i.IsFolder) && i.IsRecentlyAdded(user));
         }
 
         private static IEnumerable<BaseItem> GetRecentlyAddedUnplayedItems(IEnumerable<BaseItem> itemSet, User user)
@@ -156,7 +164,7 @@ namespace MediaBrowser.Model.Entities
         {
             return itemSet.Where(i =>
             {
-                if (i is Folder)
+                if (i.IsFolder)
                 {
                     return false;
                 }
@@ -169,7 +177,7 @@ namespace MediaBrowser.Model.Entities
 
         private static decimal GetPlayedPercentage(IEnumerable<BaseItem> itemSet, User user)
         {
-            itemSet = itemSet.Where(i => !(i is Folder));
+            itemSet = itemSet.Where(i => !(i.IsFolder));
 
             if (!itemSet.Any())
             {
