@@ -6,5 +6,10 @@ namespace MediaBrowser.Model.Entities
         public int BitRate { get; set; }
         public int Channels { get; set; }
         public int SampleRate { get; set; }
+
+        public string Artist { get; set; }
+        public string Album { get; set; }
+        public string AlbumArtist { get; set; }
+        public string Composer { get; set; }
     }
 }

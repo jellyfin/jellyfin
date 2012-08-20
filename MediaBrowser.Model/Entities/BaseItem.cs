@@ -54,6 +54,7 @@ namespace MediaBrowser.Model.Entities
         
         public string CustomRating { get; set; }
 
+        public string Language { get; set; }
         public string Overview { get; set; }
         public IEnumerable<string> Taglines { get; set; }
 
@@ -76,6 +77,11 @@ namespace MediaBrowser.Model.Entities
         /// This could be episode number, album track number, etc.
         /// </summary>
         public int? IndexNumber { get; set; }
+
+        /// <summary>
+        /// For an episode this could be the season number, or for a song this could be the disc number.
+        /// </summary>
+        public int? ParentIndexNumber { get; set; }
 
         public IEnumerable<Video> LocalTrailers { get; set; }
 
