@@ -8,6 +8,11 @@ namespace MediaBrowser.Controller.Resolvers
     [Export(typeof(IBaseItemResolver))]
     public class AudioResolver : BaseItemResolver<Audio>
     {
+        public override ResolverPriority Priority
+        {
+            get { return ResolverPriority.Last; }
+        }
+        
         protected override Audio Resolve(ItemResolveEventArgs args)
         {
             // Return audio if the path is a file and has a matching extension

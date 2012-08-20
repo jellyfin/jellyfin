@@ -7,6 +7,11 @@ namespace MediaBrowser.Controller.Resolvers
     [Export(typeof(IBaseItemResolver))]
     public class FolderResolver : BaseFolderResolver<Folder>
     {
+        public override ResolverPriority Priority
+        {
+            get { return ResolverPriority.Last; }
+        }
+        
         protected override Folder Resolve(ItemResolveEventArgs args)
         {
             if (args.IsFolder)

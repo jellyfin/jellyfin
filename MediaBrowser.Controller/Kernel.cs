@@ -86,42 +86,10 @@ namespace MediaBrowser.Controller
 
         protected override void OnComposablePartsLoaded()
         {
-            AddCoreResolvers();
-            AddCoreProviders();
-
             // The base class will start up all the plugins
             base.OnComposablePartsLoaded();
-        }
-
-        private void AddCoreResolvers()
-        {
-            List<IBaseItemResolver> list = EntityResolvers.ToList();
-
-            // Add the core resolvers
-            list.AddRange(new IBaseItemResolver[]{
-                new AudioResolver(),
-                new VideoResolver(),
-                new VirtualFolderResolver(),
-                new FolderResolver()
-            });
-
-            EntityResolvers = list;
-        }
-
-        private void AddCoreProviders()
-        {
-            List<BaseMetadataProvider> list = MetadataProviders.ToList();
-
-            // Add the core resolvers
-            list.InsertRange(0, new BaseMetadataProvider[]{
-                new ImageFromMediaLocationProvider(),
-                new LocalTrailerProvider(),
-                new AudioInfoProvider(),
-                new FolderProviderFromXml()
-            });
-
-            MetadataProviders = list;
-
+            
+            // Initialize the metadata providers
             Parallel.ForEach(MetadataProviders, provider =>
             {
                 provider.Init();
@@ -264,19 +232,43 @@ namespace MediaBrowser.Controller
             // Get all supported providers
             var supportedProviders = Kernel.Instance.MetadataProviders.Where(i => i.Supports(item));
 
-            // Start with non-internet providers. Run them sequentially
-            foreach (BaseMetadataProvider provider in supportedProviders.Where(i => !i.RequiresInternet))
+            // First priority providers
+            var providers = supportedProviders.Where(i => !i.RequiresInternet && i.Priority == MetadataProviderPriority.First);
+            
+            if (providers.Any())
             {
-                await provider.Fetch(item, args);
+                await Task.WhenAll(
+                    providers.Select(i => i.Fetch(item, args))
+                    );
             }
 
-            var internetProviders = supportedProviders.Where(i => i.RequiresInternet);
+            // Second priority providers
+            providers = supportedProviders.Where(i => !i.RequiresInternet && i.Priority == MetadataProviderPriority.Second);
 
-            if (internetProviders.Any())
+            if (providers.Any())
             {
-                // Now execute internet providers in parallel
                 await Task.WhenAll(
-                    internetProviders.Select(i => i.Fetch(item, args))
+                    providers.Select(i => i.Fetch(item, args))
+                    );
+            }
+
+            // Lowest priority providers
+            providers = supportedProviders.Where(i => !i.RequiresInternet && i.Priority == MetadataProviderPriority.Last);
+
+            if (providers.Any())
+            {
+                await Task.WhenAll(
+                    providers.Select(i => i.Fetch(item, args))
+                    );
+            }
+            
+            // Execute internet providers
+            providers = supportedProviders.Where(i => i.RequiresInternet);
+
+            if (providers.Any())
+            {
+                await Task.WhenAll(
+                    providers.Select(i => i.Fetch(item, args))
                     );
             }
         }

@@ -99,8 +99,13 @@ namespace MediaBrowser.Common.Kernel
             IEnumerable<Assembly> pluginAssemblies = Directory.GetFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.AllDirectories).Select(f => Assembly.Load(File.ReadAllBytes((f))));
 
             var catalog = new AggregateCatalog(pluginAssemblies.Select(a => new AssemblyCatalog(a)));
+            
+            // Include composable parts in the Common assembly 
+            // Uncomment this if it's ever needed
             //catalog.Catalogs.Add(new AssemblyCatalog(Assembly.GetExecutingAssembly()));
-            //catalog.Catalogs.Add(new AssemblyCatalog(GetType().Assembly));
+            
+            // Include composable parts in the subclass assembly
+            catalog.Catalogs.Add(new AssemblyCatalog(GetType().Assembly));
 
             var container = new CompositionContainer(catalog);
 

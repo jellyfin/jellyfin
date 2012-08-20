@@ -16,6 +16,11 @@ namespace MediaBrowser.TV.Providers
             return item is Series;
         }
 
+        public override MetadataProviderPriority Priority
+        {
+            get { return MetadataProviderPriority.First; }
+        }
+
         public async override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
         {
             var metadataFile = args.GetFileByName("series.xml");

@@ -59,8 +59,8 @@ namespace MediaBrowser.Controller.Library
 
         private async Task<BaseItem> ResolveItem(ItemResolveEventArgs args)
         {
-            // If that didn't pan out, try the slow ones
-            foreach (IBaseItemResolver resolver in Kernel.Instance.EntityResolvers)
+            // Try first priority resolvers
+            foreach (IBaseItemResolver resolver in Kernel.Instance.EntityResolvers.Where(p => p.Priority == ResolverPriority.First))
             {
                 var item = await resolver.ResolvePath(args);
 
@@ -70,6 +70,39 @@ namespace MediaBrowser.Controller.Library
                 }
             }
 
+            // Try second priority resolvers
+            foreach (IBaseItemResolver resolver in Kernel.Instance.EntityResolvers.Where(p => p.Priority == ResolverPriority.Second))
+            {
+                var item = await resolver.ResolvePath(args);
+
+                if (item != null)
+                {
+                    return item;
+                }
+            }
+
+            // Try third priority resolvers
+            foreach (IBaseItemResolver resolver in Kernel.Instance.EntityResolvers.Where(p => p.Priority == ResolverPriority.Third))
+            {
+                var item = await resolver.ResolvePath(args);
+
+                if (item != null)
+                {
+                    return item;
+                }
+            }
+
+            // Try last priority resolvers
+            foreach (IBaseItemResolver resolver in Kernel.Instance.EntityResolvers.Where(p => p.Priority == ResolverPriority.Last))
+            {
+                var item = await resolver.ResolvePath(args);
+
+                if (item != null)
+                {
+                    return item;
+                }
+            }
+            
             return null;
         }
 
@@ -153,7 +186,7 @@ namespace MediaBrowser.Controller.Library
             }
 
             BaseItem[] baseItemChildren = await Task<BaseItem>.WhenAll(tasks);
-            
+
             // Sort them
             folder.Children = baseItemChildren.Where(i => i != null).OrderBy(f =>
             {

@@ -14,6 +14,14 @@ namespace MediaBrowser.Controller.Resolvers
             return null;
         }
 
+        public virtual ResolverPriority Priority
+        {
+            get
+            {
+                return ResolverPriority.First;
+            }
+        }
+
         /// <summary>
         /// Sets initial values on the newly resolved item
         /// </summary>
@@ -89,5 +97,14 @@ namespace MediaBrowser.Controller.Resolvers
     public interface IBaseItemResolver
     {
         Task<BaseItem> ResolvePath(ItemResolveEventArgs args);
+        ResolverPriority Priority { get; }
+    }
+
+    public enum ResolverPriority
+    {
+        First,
+        Second,
+        Third,
+        Last
     }
 }

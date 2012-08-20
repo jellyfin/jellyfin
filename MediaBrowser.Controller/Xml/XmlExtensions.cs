@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace MediaBrowser.Controller.Xml
@@ -10,9 +11,9 @@ namespace MediaBrowser.Controller.Xml
         /// <summary>
         /// Reads a float from the current element of an XmlReader
         /// </summary>
-        public static float ReadFloatSafe(this XmlReader reader)
+        public static async Task<float> ReadFloatSafe(this XmlReader reader)
         {
-            string valueString = reader.ReadElementContentAsString();
+            string valueString = await reader.ReadElementContentAsStringAsync();
 
             float value = 0;
 
@@ -28,9 +29,9 @@ namespace MediaBrowser.Controller.Xml
         /// <summary>
         /// Reads an int from the current element of an XmlReader
         /// </summary>
-        public static int ReadIntSafe(this XmlReader reader)
+        public static async Task<int> ReadIntSafe(this XmlReader reader)
         {
-            string valueString = reader.ReadElementContentAsString();
+            string valueString = await reader.ReadElementContentAsStringAsync();
 
             int value = 0;
 
@@ -41,14 +42,6 @@ namespace MediaBrowser.Controller.Xml
             }
 
             return value;
-        }
-
-        /// <summary>
-        /// Reads an int from the current element of an XmlReader
-        /// </summary>
-        public static string ReadString(this XmlReader reader)
-        {
-            return reader.ReadElementContentAsString();
         }
     }
 }

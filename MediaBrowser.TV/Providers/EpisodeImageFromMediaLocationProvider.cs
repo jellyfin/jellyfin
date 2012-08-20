@@ -18,6 +18,11 @@ namespace MediaBrowser.TV.Providers
             return item is Episode;
         }
 
+        public override MetadataProviderPriority Priority
+        {
+            get { return MetadataProviderPriority.First; }
+        }
+
         public override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
         {
             return Task.Run(() =>
