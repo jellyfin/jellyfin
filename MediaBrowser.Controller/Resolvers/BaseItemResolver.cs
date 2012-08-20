@@ -42,7 +42,7 @@ namespace MediaBrowser.Controller.Resolvers
             item.Id = Kernel.GetMD5(item.Path);
         }
 
-        public async Task<BaseItem> ResolvePath(ItemResolveEventArgs args)
+        public BaseItem ResolvePath(ItemResolveEventArgs args)
         {
             T item = Resolve(args);
 
@@ -56,8 +56,6 @@ namespace MediaBrowser.Controller.Resolvers
 
                 // Make sure DateCreated and DateModified have values
                 EnsureDates(item);
-
-                await Kernel.Instance.ExecuteMetadataProviders(item, args);
             }
 
             return item;
@@ -96,7 +94,7 @@ namespace MediaBrowser.Controller.Resolvers
     /// </summary>
     public interface IBaseItemResolver
     {
-        Task<BaseItem> ResolvePath(ItemResolveEventArgs args);
+        BaseItem ResolvePath(ItemResolveEventArgs args);
         ResolverPriority Priority { get; }
     }
 

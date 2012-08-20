@@ -57,12 +57,12 @@ namespace MediaBrowser.Controller.Library
         }
         #endregion
 
-        private async Task<BaseItem> ResolveItem(ItemResolveEventArgs args)
+        private BaseItem ResolveItem(ItemResolveEventArgs args)
         {
             // Try first priority resolvers
             foreach (IBaseItemResolver resolver in Kernel.Instance.EntityResolvers.Where(p => p.Priority == ResolverPriority.First))
             {
-                var item = await resolver.ResolvePath(args);
+                var item = resolver.ResolvePath(args);
 
                 if (item != null)
                 {
@@ -73,7 +73,7 @@ namespace MediaBrowser.Controller.Library
             // Try second priority resolvers
             foreach (IBaseItemResolver resolver in Kernel.Instance.EntityResolvers.Where(p => p.Priority == ResolverPriority.Second))
             {
-                var item = await resolver.ResolvePath(args);
+                var item = resolver.ResolvePath(args);
 
                 if (item != null)
                 {
@@ -84,7 +84,7 @@ namespace MediaBrowser.Controller.Library
             // Try third priority resolvers
             foreach (IBaseItemResolver resolver in Kernel.Instance.EntityResolvers.Where(p => p.Priority == ResolverPriority.Third))
             {
-                var item = await resolver.ResolvePath(args);
+                var item = resolver.ResolvePath(args);
 
                 if (item != null)
                 {
@@ -95,14 +95,14 @@ namespace MediaBrowser.Controller.Library
             // Try last priority resolvers
             foreach (IBaseItemResolver resolver in Kernel.Instance.EntityResolvers.Where(p => p.Priority == ResolverPriority.Last))
             {
-                var item = await resolver.ResolvePath(args);
+                var item = resolver.ResolvePath(args);
 
                 if (item != null)
                 {
                     return item;
                 }
             }
-            
+
             return null;
         }
 
@@ -111,7 +111,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         public async Task<BaseItem> GetItem(Folder parent, string path)
         {
-            return await GetItemInternal(parent, path, File.GetAttributes(path));
+            return await GetItemInternal(parent, path, File.GetAttributes(path)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -154,14 +154,19 @@ namespace MediaBrowser.Controller.Library
                 return null;
             }
 
-            BaseItem item = await ResolveItem(args);
+            BaseItem item = ResolveItem(args);
 
-            var folder = item as Folder;
-
-            if (folder != null)
+            if (item != null)
             {
-                // If it's a folder look for child entities
-                await AttachChildren(folder, fileSystemChildren);
+                await Kernel.Instance.ExecuteMetadataProviders(item, args);
+
+                var folder = item as Folder;
+
+                if (folder != null)
+                {
+                    // If it's a folder look for child entities
+                    await AttachChildren(folder, fileSystemChildren).ConfigureAwait(false);
+                }
             }
 
             return item;
@@ -185,7 +190,7 @@ namespace MediaBrowser.Controller.Library
                 tasks[i] = GetItemInternal(folder, child.Key, child.Value);
             }
 
-            BaseItem[] baseItemChildren = await Task<BaseItem>.WhenAll(tasks);
+            BaseItem[] baseItemChildren = await Task<BaseItem>.WhenAll(tasks).ConfigureAwait(false);
 
             // Sort them
             folder.Children = baseItemChildren.Where(i => i != null).OrderBy(f =>
@@ -255,7 +260,7 @@ namespace MediaBrowser.Controller.Library
         {
             string path = Path.Combine(Kernel.Instance.ApplicationPaths.PeoplePath, name);
 
-            return await GetImagesByNameItem<Person>(path, name);
+            return await GetImagesByNameItem<Person>(path, name).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -265,7 +270,7 @@ namespace MediaBrowser.Controller.Library
         {
             string path = Path.Combine(Kernel.Instance.ApplicationPaths.StudioPath, name);
 
-            return await GetImagesByNameItem<Studio>(path, name);
+            return await GetImagesByNameItem<Studio>(path, name).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -275,7 +280,7 @@ namespace MediaBrowser.Controller.Library
         {
             string path = Path.Combine(Kernel.Instance.ApplicationPaths.GenrePath, name);
 
-            return await GetImagesByNameItem<Genre>(path, name);
+            return await GetImagesByNameItem<Genre>(path, name).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -285,7 +290,7 @@ namespace MediaBrowser.Controller.Library
         {
             string path = Path.Combine(Kernel.Instance.ApplicationPaths.YearPath, value.ToString());
 
-            return await GetImagesByNameItem<Year>(path, value.ToString());
+            return await GetImagesByNameItem<Year>(path, value.ToString()).ConfigureAwait(false);
         }
 
         private ConcurrentDictionary<string, object> ImagesByNameItemCache = new ConcurrentDictionary<string, object>();
@@ -301,7 +306,7 @@ namespace MediaBrowser.Controller.Library
             // Look for it in the cache, if it's not there, create it
             if (!ImagesByNameItemCache.ContainsKey(key))
             {
-                T obj = await CreateImagesByNameItem<T>(path, name);
+                T obj = await CreateImagesByNameItem<T>(path, name).ConfigureAwait(false);
                 ImagesByNameItemCache[key] = obj;
                 return obj;
             }
@@ -333,7 +338,7 @@ namespace MediaBrowser.Controller.Library
             args.FileAttributes = File.GetAttributes(path);
             args.FileSystemChildren = Directory.GetFileSystemEntries(path, "*", SearchOption.TopDirectoryOnly).Select(f => new KeyValuePair<string, FileAttributes>(f, File.GetAttributes(f)));
 
-            await Kernel.Instance.ExecuteMetadataProviders(item, args);
+            await Kernel.Instance.ExecuteMetadataProviders(item, args).ConfigureAwait(false);
 
             return item;
         }

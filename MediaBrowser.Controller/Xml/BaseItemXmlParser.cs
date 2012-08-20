@@ -17,19 +17,19 @@ namespace MediaBrowser.Controller.Xml
         /// <summary>
         /// Fetches metadata for an item from one xml file
         /// </summary>
-        public async Task Fetch(T item, string metadataFile)
+        public void Fetch(T item, string metadataFile)
         {
             // Use XmlReader for best performance
-            using (XmlReader reader = XmlReader.Create(metadataFile, new XmlReaderSettings() { Async = true }))
+            using (XmlReader reader = XmlReader.Create(metadataFile, new XmlReaderSettings() { }))
             {
-                await reader.MoveToContentAsync();
+                reader.MoveToContent();
 
                 // Loop through each element
-                while (await reader.ReadAsync())
+                while (reader.Read())
                 {
                     if (reader.NodeType == XmlNodeType.Element)
                     {
-                        await FetchDataFromXmlNode(reader, item);
+                        FetchDataFromXmlNode(reader, item);
                     }
                 }
             }
@@ -49,14 +49,14 @@ namespace MediaBrowser.Controller.Xml
         /// <summary>
         /// Fetches metadata from one Xml Element
         /// </summary>
-        protected async virtual Task FetchDataFromXmlNode(XmlReader reader, T item)
+        protected virtual void FetchDataFromXmlNode(XmlReader reader, T item)
         {
             switch (reader.Name)
             {
                 // DateCreated
                 case "Added":
                     DateTime added;
-                    if (DateTime.TryParse(await reader.ReadElementContentAsStringAsync() ?? string.Empty, out added))
+                    if (DateTime.TryParse(reader.ReadElementContentAsString() ?? string.Empty, out added))
                     {
                         item.DateCreated = added;
                     }
@@ -65,7 +65,7 @@ namespace MediaBrowser.Controller.Xml
                 // DisplayMediaType
                 case "Type":
                     {
-                        item.DisplayMediaType = await reader.ReadElementContentAsStringAsync();
+                        item.DisplayMediaType = reader.ReadElementContentAsString();
 
                         switch (item.DisplayMediaType.ToLower())
                         {
@@ -85,26 +85,26 @@ namespace MediaBrowser.Controller.Xml
 
                 // TODO: Do we still need this?
                 case "banner":
-                    item.BannerImagePath = await reader.ReadElementContentAsStringAsync();
+                    item.BannerImagePath = reader.ReadElementContentAsString();
                     break;
 
                 case "LocalTitle":
-                    item.Name = await reader.ReadElementContentAsStringAsync();
+                    item.Name = reader.ReadElementContentAsString();
                     break;
 
                 case "SortTitle":
-                    item.SortName = await reader.ReadElementContentAsStringAsync();
+                    item.SortName = reader.ReadElementContentAsString();
                     break;
 
                 case "Overview":
                 case "Description":
-                    item.Overview = await reader.ReadElementContentAsStringAsync();
+                    item.Overview = reader.ReadElementContentAsString();
                     break;
 
                 case "TagLine":
                     {
                         var list = (item.Taglines ?? new string[] { }).ToList();
-                        var tagline = await reader.ReadElementContentAsStringAsync();
+                        var tagline = reader.ReadElementContentAsString();
 
                         if (!list.Contains(tagline))
                         {
@@ -117,23 +117,23 @@ namespace MediaBrowser.Controller.Xml
 
                 case "TagLines":
                     {
-                        await FetchFromTaglinesNode(reader.ReadSubtree(), item);
+                        FetchFromTaglinesNode(reader.ReadSubtree(), item);
                         break;
                     }
 
                 case "ContentRating":
                 case "MPAARating":
-                    item.OfficialRating = await reader.ReadElementContentAsStringAsync();
+                    item.OfficialRating = reader.ReadElementContentAsString();
                     break;
 
                 case "CustomRating":
-                    item.CustomRating = await reader.ReadElementContentAsStringAsync();
+                    item.CustomRating = reader.ReadElementContentAsString();
                     break;
 
                 case "Runtime":
                 case "RunningTime":
                     {
-                        string text = await reader.ReadElementContentAsStringAsync();
+                        string text = reader.ReadElementContentAsString();
 
                         if (!string.IsNullOrWhiteSpace(text))
                         {
@@ -149,20 +149,20 @@ namespace MediaBrowser.Controller.Xml
                 case "Genre":
                     {
                         var genres = (item.Genres ?? new string[] { }).ToList();
-                        genres.AddRange(GetSplitValues(await reader.ReadElementContentAsStringAsync(), '|'));
+                        genres.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|'));
 
                         item.Genres = genres;
                         break;
                     }
 
                 case "AspectRatio":
-                    item.AspectRatio = await reader.ReadElementContentAsStringAsync();
+                    item.AspectRatio = reader.ReadElementContentAsString();
                     break;
 
                 case "Network":
                     {
                         var studios = (item.Studios ?? new string[] { }).ToList();
-                        studios.AddRange(GetSplitValues(await reader.ReadElementContentAsStringAsync(), '|'));
+                        studios.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|'));
 
                         item.Studios = studios;
                         break;
@@ -171,7 +171,7 @@ namespace MediaBrowser.Controller.Xml
                 case "Director":
                     {
                         var list = (item.People ?? new PersonInfo[] { }).ToList();
-                        list.AddRange(GetSplitValues(await reader.ReadElementContentAsStringAsync(), '|').Select(v => new PersonInfo() { Name = v, Type = "Director" }));
+                        list.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo() { Name = v, Type = "Director" }));
 
                         item.People = list;
                         break;
@@ -179,7 +179,7 @@ namespace MediaBrowser.Controller.Xml
                 case "Writer":
                     {
                         var list = (item.People ?? new PersonInfo[] { }).ToList();
-                        list.AddRange(GetSplitValues(await reader.ReadElementContentAsStringAsync(), '|').Select(v => new PersonInfo() { Name = v, Type = "Writer" }));
+                        list.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo() { Name = v, Type = "Writer" }));
 
                         item.People = list;
                         break;
@@ -189,19 +189,19 @@ namespace MediaBrowser.Controller.Xml
                 case "GuestStars":
                     {
                         var list = (item.People ?? new PersonInfo[] { }).ToList();
-                        list.AddRange(GetSplitValues(await reader.ReadElementContentAsStringAsync(), '|').Select(v => new PersonInfo() { Name = v, Type = "Actor" }));
+                        list.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo() { Name = v, Type = "Actor" }));
 
                         item.People = list;
                         break;
                     }
 
                 case "Trailer":
-                    item.TrailerUrl = await reader.ReadElementContentAsStringAsync();
+                    item.TrailerUrl = reader.ReadElementContentAsString();
                     break;
 
                 case "ProductionYear":
                     {
-                        string val = await reader.ReadElementContentAsStringAsync();
+                        string val = reader.ReadElementContentAsString();
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
@@ -218,7 +218,7 @@ namespace MediaBrowser.Controller.Xml
                 case "Rating":
                 case "IMDBrating":
 
-                    string rating = await reader.ReadElementContentAsStringAsync();
+                    string rating = reader.ReadElementContentAsString();
 
                     if (!string.IsNullOrWhiteSpace(rating))
                     {
@@ -233,7 +233,7 @@ namespace MediaBrowser.Controller.Xml
 
                 case "FirstAired":
                     {
-                        string firstAired = await reader.ReadElementContentAsStringAsync();
+                        string firstAired = reader.ReadElementContentAsString();
 
                         if (!string.IsNullOrWhiteSpace(firstAired))
                         {
@@ -250,7 +250,7 @@ namespace MediaBrowser.Controller.Xml
                     }
 
                 case "TMDbId":
-                    string tmdb = await reader.ReadElementContentAsStringAsync();
+                    string tmdb = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(tmdb))
                     {
                         item.SetProviderId(MetadataProviders.Tmdb, tmdb);
@@ -258,7 +258,7 @@ namespace MediaBrowser.Controller.Xml
                     break;
 
                 case "TVcomId":
-                    string TVcomId = await reader.ReadElementContentAsStringAsync();
+                    string TVcomId = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(TVcomId))
                     {
                         item.SetProviderId(MetadataProviders.Tvcom, TVcomId);
@@ -268,7 +268,7 @@ namespace MediaBrowser.Controller.Xml
                 case "IMDB_ID":
                 case "IMDB":
                 case "IMDbId":
-                    string IMDbId = await reader.ReadElementContentAsStringAsync();
+                    string IMDbId = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(IMDbId))
                     {
                         item.SetProviderId(MetadataProviders.Imdb, IMDbId);
@@ -276,19 +276,19 @@ namespace MediaBrowser.Controller.Xml
                     break;
 
                 case "Genres":
-                    await FetchFromGenresNode(reader.ReadSubtree(), item);
+                    FetchFromGenresNode(reader.ReadSubtree(), item);
                     break;
 
                 case "Persons":
-                    await FetchDataFromPersonsNode(reader.ReadSubtree(), item);
+                    FetchDataFromPersonsNode(reader.ReadSubtree(), item);
                     break;
 
                 case "ParentalRating":
-                    await FetchFromParentalRatingNode(reader.ReadSubtree(), item);
+                    FetchFromParentalRatingNode(reader.ReadSubtree(), item);
                     break;
 
                 case "Studios":
-                    await FetchFromStudiosNode(reader.ReadSubtree(), item);
+                    FetchFromStudiosNode(reader.ReadSubtree(), item);
                     break;
 
                 case "MediaInfo":
@@ -297,22 +297,22 @@ namespace MediaBrowser.Controller.Xml
 
                         if (video != null)
                         {
-                            await FetchMediaInfo(reader.ReadSubtree(), video);
+                            FetchMediaInfo(reader.ReadSubtree(), video);
                         }
                         break;
                     }
 
                 default:
-                    await reader.SkipAsync();
+                    reader.Skip();
                     break;
             }
         }
 
-        private async Task FetchMediaInfo(XmlReader reader, Video item)
+        private void FetchMediaInfo(XmlReader reader, Video item)
         {
-            await reader.MoveToContentAsync();
+            reader.MoveToContent();
 
-            while (await reader.ReadAsync())
+            while (reader.Read())
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -320,7 +320,7 @@ namespace MediaBrowser.Controller.Xml
                     {
                         case "Audio":
                             {
-                                AudioStream stream = await FetchMediaInfoAudio(reader.ReadSubtree());
+                                AudioStream stream = FetchMediaInfoAudio(reader.ReadSubtree());
 
                                 List<AudioStream> streams = (item.AudioStreams ?? new AudioStream[] { }).ToList();
                                 streams.Add(stream);
@@ -330,59 +330,59 @@ namespace MediaBrowser.Controller.Xml
                             }
 
                         case "Video":
-                            await FetchMediaInfoVideo(reader.ReadSubtree(), item);
+                            FetchMediaInfoVideo(reader.ReadSubtree(), item);
                             break;
 
                         case "Subtitle":
-                            await FetchMediaInfoSubtitles(reader.ReadSubtree(), item);
+                            FetchMediaInfoSubtitles(reader.ReadSubtree(), item);
                             break;
 
                         default:
-                            await reader.SkipAsync();
+                            reader.Skip();
                             break;
                     }
                 }
             }
         }
 
-        private async Task<AudioStream> FetchMediaInfoAudio(XmlReader reader)
+        private AudioStream FetchMediaInfoAudio(XmlReader reader)
         {
             AudioStream stream = new AudioStream();
 
-            await reader.MoveToContentAsync();
+            reader.MoveToContent();
 
-            while (await reader.ReadAsync())
+            while (reader.Read())
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
                     switch (reader.Name)
                     {
                         case "Default":
-                            stream.IsDefault = await reader.ReadElementContentAsStringAsync() == "True";
+                            stream.IsDefault = reader.ReadElementContentAsString() == "True";
                             break;
 
                         case "Forced":
-                            stream.IsForced = await reader.ReadElementContentAsStringAsync() == "True";
+                            stream.IsForced = reader.ReadElementContentAsString() == "True";
                             break;
 
                         case "BitRate":
-                            stream.BitRate = await reader.ReadIntSafe();
+                            stream.BitRate = reader.ReadIntSafe();
                             break;
 
                         case "Channels":
-                            stream.Channels = await reader.ReadIntSafe();
+                            stream.Channels = reader.ReadIntSafe();
                             break;
 
                         case "Language":
-                            stream.Language = await reader.ReadElementContentAsStringAsync();
+                            stream.Language = reader.ReadElementContentAsString();
                             break;
 
                         case "Codec":
-                            stream.Codec = await reader.ReadElementContentAsStringAsync();
+                            stream.Codec = reader.ReadElementContentAsString();
                             break;
 
                         default:
-                            await reader.SkipAsync();
+                            reader.Skip();
                             break;
                     }
                 }
@@ -391,42 +391,42 @@ namespace MediaBrowser.Controller.Xml
             return stream;
         }
 
-        private async Task FetchMediaInfoVideo(XmlReader reader, Video item)
+        private void FetchMediaInfoVideo(XmlReader reader, Video item)
         {
-            await reader.MoveToContentAsync();
+            reader.MoveToContent();
 
-            while (await reader.ReadAsync())
+            while (reader.Read())
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
                     switch (reader.Name)
                     {
                         case "Width":
-                            item.Width = await reader.ReadIntSafe();
+                            item.Width = reader.ReadIntSafe();
                             break;
 
                         case "Height":
-                            item.Height = await reader.ReadIntSafe();
+                            item.Height = reader.ReadIntSafe();
                             break;
 
                         case "BitRate":
-                            item.BitRate = await reader.ReadIntSafe();
+                            item.BitRate = reader.ReadIntSafe();
                             break;
 
                         case "FrameRate":
-                            item.FrameRate = await reader.ReadElementContentAsStringAsync();
+                            item.FrameRate = reader.ReadElementContentAsString();
                             break;
 
                         case "ScanType":
-                            item.ScanType = await reader.ReadElementContentAsStringAsync();
+                            item.ScanType = reader.ReadElementContentAsString();
                             break;
 
                         case "Duration":
-                            item.RunTimeTicks = TimeSpan.FromMinutes(await reader.ReadIntSafe()).Ticks;
+                            item.RunTimeTicks = TimeSpan.FromMinutes(reader.ReadIntSafe()).Ticks;
                             break;
 
                         case "DurationSeconds":
-                            int seconds = await reader.ReadIntSafe();
+                            int seconds = reader.ReadIntSafe();
                             if (seconds > 0)
                             {
                                 item.RunTimeTicks = TimeSpan.FromSeconds(seconds).Ticks;
@@ -435,7 +435,7 @@ namespace MediaBrowser.Controller.Xml
 
                         case "Codec":
                             {
-                                string videoCodec = await reader.ReadElementContentAsStringAsync();
+                                string videoCodec = reader.ReadElementContentAsString();
 
                                 switch (videoCodec.ToLower())
                                 {
@@ -457,20 +457,20 @@ namespace MediaBrowser.Controller.Xml
                             }
 
                         default:
-                            await reader.SkipAsync();
+                            reader.Skip();
                             break;
                     }
                 }
             }
         }
 
-        private async Task FetchMediaInfoSubtitles(XmlReader reader, Video item)
+        private void FetchMediaInfoSubtitles(XmlReader reader, Video item)
         {
             List<string> list = (item.Subtitles ?? new string[] { }).ToList();
 
-            await reader.MoveToContentAsync();
+            reader.MoveToContent();
 
-            while (await reader.ReadAsync())
+            while (reader.Read())
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -478,7 +478,7 @@ namespace MediaBrowser.Controller.Xml
                     {
                         case "Language":
                             {
-                                string genre = await reader.ReadElementContentAsStringAsync();
+                                string genre = reader.ReadElementContentAsString();
 
                                 if (!string.IsNullOrWhiteSpace(genre))
                                 {
@@ -488,7 +488,7 @@ namespace MediaBrowser.Controller.Xml
                             }
 
                         default:
-                            await reader.SkipAsync();
+                            reader.Skip();
                             break;
                     }
                 }
@@ -497,13 +497,13 @@ namespace MediaBrowser.Controller.Xml
             item.Subtitles = list;
         }
 
-        private async Task FetchFromTaglinesNode(XmlReader reader, T item)
+        private void FetchFromTaglinesNode(XmlReader reader, T item)
         {
             List<string> list = (item.Taglines ?? new string[] { }).ToList();
 
-            await reader.MoveToContentAsync();
+            reader.MoveToContent();
 
-            while (await reader.ReadAsync())
+            while (reader.Read())
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -511,7 +511,7 @@ namespace MediaBrowser.Controller.Xml
                     {
                         case "Tagline":
                             {
-                                string val = await reader.ReadElementContentAsStringAsync();
+                                string val = reader.ReadElementContentAsString();
 
                                 if (!string.IsNullOrWhiteSpace(val))
                                 {
@@ -521,7 +521,7 @@ namespace MediaBrowser.Controller.Xml
                             }
 
                         default:
-                            await reader.SkipAsync();
+                            reader.Skip();
                             break;
                     }
                 }
@@ -530,13 +530,13 @@ namespace MediaBrowser.Controller.Xml
             item.Taglines = list;
         }
 
-        private async Task FetchFromGenresNode(XmlReader reader, T item)
+        private void FetchFromGenresNode(XmlReader reader, T item)
         {
             List<string> list = (item.Genres ?? new string[] { }).ToList();
 
-            await reader.MoveToContentAsync();
+            reader.MoveToContent();
 
-            while (await reader.ReadAsync())
+            while (reader.Read())
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -544,7 +544,7 @@ namespace MediaBrowser.Controller.Xml
                     {
                         case "Genre":
                             {
-                                string genre = await reader.ReadElementContentAsStringAsync();
+                                string genre = reader.ReadElementContentAsString();
 
                                 if (!string.IsNullOrWhiteSpace(genre))
                                 {
@@ -554,7 +554,7 @@ namespace MediaBrowser.Controller.Xml
                             }
 
                         default:
-                            await reader.SkipAsync();
+                            reader.Skip();
                             break;
                     }
                 }
@@ -563,13 +563,13 @@ namespace MediaBrowser.Controller.Xml
             item.Genres = list;
         }
 
-        private async Task FetchDataFromPersonsNode(XmlReader reader, T item)
+        private void FetchDataFromPersonsNode(XmlReader reader, T item)
         {
             List<PersonInfo> list = (item.People ?? new PersonInfo[] { }).ToList();
 
-            await reader.MoveToContentAsync();
+            reader.MoveToContent();
 
-            while (await reader.ReadAsync())
+            while (reader.Read())
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -577,12 +577,12 @@ namespace MediaBrowser.Controller.Xml
                     {
                         case "Person":
                             {
-                                list.Add(await GetPersonFromXmlNode(reader.ReadSubtree()));
+                                list.Add(GetPersonFromXmlNode(reader.ReadSubtree()));
                                 break;
                             }
 
                         default:
-                            await reader.SkipAsync();
+                            reader.Skip();
                             break;
                     }
                 }
@@ -591,13 +591,13 @@ namespace MediaBrowser.Controller.Xml
             item.People = list;
         }
 
-        private async Task FetchFromStudiosNode(XmlReader reader, T item)
+        private void FetchFromStudiosNode(XmlReader reader, T item)
         {
             List<string> list = (item.Studios ?? new string[] { }).ToList();
 
-            await reader.MoveToContentAsync();
+            reader.MoveToContent();
 
-            while (await reader.ReadAsync())
+            while (reader.Read())
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -605,7 +605,7 @@ namespace MediaBrowser.Controller.Xml
                     {
                         case "Studio":
                             {
-                                string studio = await reader.ReadElementContentAsStringAsync();
+                                string studio = reader.ReadElementContentAsString();
 
                                 if (!string.IsNullOrWhiteSpace(studio))
                                 {
@@ -615,7 +615,7 @@ namespace MediaBrowser.Controller.Xml
                             }
 
                         default:
-                            await reader.SkipAsync();
+                            reader.Skip();
                             break;
                     }
                 }
@@ -624,11 +624,11 @@ namespace MediaBrowser.Controller.Xml
             item.Studios = list;
         }
 
-        private async Task FetchFromParentalRatingNode(XmlReader reader, T item)
+        private void FetchFromParentalRatingNode(XmlReader reader, T item)
         {
-            await reader.MoveToContentAsync();
+            reader.MoveToContent();
 
-            while (await reader.ReadAsync())
+            while (reader.Read())
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -636,7 +636,7 @@ namespace MediaBrowser.Controller.Xml
                     {
                         case "Value":
                             {
-                                string ratingString = await reader.ReadElementContentAsStringAsync();
+                                string ratingString = reader.ReadElementContentAsString();
 
                                 int rating = 7;
 
@@ -675,39 +675,39 @@ namespace MediaBrowser.Controller.Xml
                             }
 
                         default:
-                            await reader.SkipAsync();
+                            reader.Skip();
                             break;
                     }
                 }
             }
         }
 
-        private async Task<PersonInfo> GetPersonFromXmlNode(XmlReader reader)
+        private PersonInfo GetPersonFromXmlNode(XmlReader reader)
         {
             PersonInfo person = new PersonInfo();
 
-            await reader.MoveToContentAsync();
+            reader.MoveToContent();
 
-            while (await reader.ReadAsync())
+            while (reader.Read())
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
                     switch (reader.Name)
                     {
                         case "Name":
-                            person.Name = await reader.ReadElementContentAsStringAsync();
+                            person.Name = reader.ReadElementContentAsString();
                             break;
 
                         case "Type":
-                            person.Type = await reader.ReadElementContentAsStringAsync();
+                            person.Type = reader.ReadElementContentAsString();
                             break;
 
                         case "Role":
-                            person.Overview = await reader.ReadElementContentAsStringAsync();
+                            person.Overview = reader.ReadElementContentAsString();
                             break;
 
                         default:
-                            await reader.SkipAsync();
+                            reader.Skip();
                             break;
                     }
                 }

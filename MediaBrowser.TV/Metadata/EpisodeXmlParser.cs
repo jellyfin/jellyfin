@@ -8,13 +8,13 @@ namespace MediaBrowser.TV.Metadata
 {
     public class EpisodeXmlParser : BaseItemXmlParser<Episode>
     {
-        protected override async Task FetchDataFromXmlNode(XmlReader reader, Episode item)
+        protected override void FetchDataFromXmlNode(XmlReader reader, Episode item)
         {
             switch (reader.Name)
             {
                 case "filename":
                     {
-                        string filename = await reader.ReadElementContentAsStringAsync();
+                        string filename = reader.ReadElementContentAsString();
 
                         if (!string.IsNullOrWhiteSpace(filename))
                         {
@@ -25,7 +25,7 @@ namespace MediaBrowser.TV.Metadata
                     }
                 case "SeasonNumber":
                     {
-                        string number = await reader.ReadElementContentAsStringAsync();
+                        string number = reader.ReadElementContentAsString();
 
                         if (!string.IsNullOrWhiteSpace(number))
                         {
@@ -36,7 +36,7 @@ namespace MediaBrowser.TV.Metadata
 
                 case "EpisodeNumber":
                     {
-                        string number = await reader.ReadElementContentAsStringAsync();
+                        string number = reader.ReadElementContentAsString();
 
                         if (!string.IsNullOrWhiteSpace(number))
                         {
@@ -46,11 +46,11 @@ namespace MediaBrowser.TV.Metadata
                     }
 
                 case "EpisodeName":
-                    item.Name = await reader.ReadElementContentAsStringAsync();
+                    item.Name = reader.ReadElementContentAsString();
                     break;
 
                 default:
-                    await base.FetchDataFromXmlNode(reader, item);
+                    base.FetchDataFromXmlNode(reader, item);
                     break;
             }
         }

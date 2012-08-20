@@ -31,7 +31,7 @@ namespace MediaBrowser.Controller.Providers
 
             string outputPath = Path.Combine(outputDirectory, item.Id + "-" + item.DateModified.Ticks + ".js");
 
-            FFProbeResult data = await FFProbe.Run(audio, outputPath);
+            FFProbeResult data = await FFProbe.Run(audio, outputPath).ConfigureAwait(false);
 
             MediaStream stream = data.streams.First(s => s.codec_type.Equals("audio", StringComparison.OrdinalIgnoreCase));
 

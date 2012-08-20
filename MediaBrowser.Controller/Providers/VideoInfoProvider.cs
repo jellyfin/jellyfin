@@ -43,7 +43,7 @@ namespace MediaBrowser.Controller.Providers
 
             string outputPath = Path.Combine(outputDirectory, item.Id + "-" + item.DateModified.Ticks + ".js");
 
-            FFProbeResult data = await FFProbe.Run(video, outputPath);
+            FFProbeResult data = await FFProbe.Run(video, outputPath).ConfigureAwait(false);
         }
 
         /// <summary>
