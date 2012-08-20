@@ -40,6 +40,7 @@ namespace MediaBrowser.Api
             dto.IsNew = item.IsRecentlyAdded(user);
             dto.IndexNumber = item.IndexNumber;
             dto.IsFolder = item.IsFolder;
+            dto.Language = item.Language;
             dto.LocalTrailerCount = item.LocalTrailers == null ? 0 : item.LocalTrailers.Count();
             dto.Name = item.Name;
             dto.OfficialRating = item.OfficialRating;
@@ -57,6 +58,8 @@ namespace MediaBrowser.Api
             {
                 dto.ParentId = item.Parent.Id;
             }
+
+            dto.ParentIndexNumber = item.ParentIndexNumber;
 
             // If there is no logo, indicate what parent has one in case the UI wants to allow inheritance
             if (!dto.HasLogo)

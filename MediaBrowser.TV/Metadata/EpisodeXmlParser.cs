@@ -22,14 +22,27 @@ namespace MediaBrowser.TV.Metadata
                         }
                         break;
                     }
-                case "EpisodeNumber":
-                    string number = reader.ReadString();
-
-                    if (!string.IsNullOrWhiteSpace(number))
+                case "SeasonNumber":
                     {
-                        item.IndexNumber = int.Parse(number);
+                        string number = reader.ReadString();
+
+                        if (!string.IsNullOrWhiteSpace(number))
+                        {
+                            item.ParentIndexNumber = int.Parse(number);
+                        }
+                        break;
                     }
-                    break;
+
+                case "EpisodeNumber":
+                    {
+                        string number = reader.ReadString();
+
+                        if (!string.IsNullOrWhiteSpace(number))
+                        {
+                            item.IndexNumber = int.Parse(number);
+                        }
+                        break;
+                    }
 
                 case "EpisodeName":
                     item.Name = reader.ReadString();

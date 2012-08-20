@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.FFMpeg
 {
@@ -47,7 +48,7 @@ namespace MediaBrowser.Controller.FFMpeg
         //public string pix_fmt { get; set; }
         //public int level { get; set; }
         public Dictionary<string,string> tags { get; set; }
-    }
+   }
 
     public class MediaFormat
     {

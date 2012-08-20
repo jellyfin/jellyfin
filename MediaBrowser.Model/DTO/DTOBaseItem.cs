@@ -32,6 +32,7 @@ namespace MediaBrowser.Model.DTO
         public int? ProductionYear { get; set; }
 
         public int? IndexNumber { get; set; }
+        public int? ParentIndexNumber { get; set; }
 
         public string TrailerUrl { get; set; }
 
@@ -43,6 +44,8 @@ namespace MediaBrowser.Model.DTO
         public bool HasThumb { get; set; }
         public bool HasPrimaryImage { get; set; }
 
+        public string Language { get; set; }
+        
         public int BackdropCount { get; set; }
 
         public IEnumerable<DTOBaseItem> Children { get; set; }
