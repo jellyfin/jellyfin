@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Providers
     {
         public override bool Supports(BaseEntity item)
         {
-            return item is BaseItem;
+            return true;
         }
         
         public override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
@@ -23,9 +23,49 @@ namespace MediaBrowser.Controller.Providers
             {
                 if (args.IsFolder)
                 {
-                    PopulateImages(item as BaseItem, args);
+                    var baseItem = item as BaseItem;
+
+                    if (baseItem != null)
+                    {
+                        PopulateImages(baseItem, args);
+                    }
+                    else
+                    {
+                        PopulateImages(item, args);
+                    }
                 }
             });
+        }
+
+        /// <summary>
+        /// Fills in image paths based on files win the folder
+        /// </summary>
+        private void PopulateImages(BaseEntity item, ItemResolveEventArgs args)
+        {
+            foreach (KeyValuePair<string, FileAttributes> file in args.FileSystemChildren)
+            {
+                if (file.Value.HasFlag(FileAttributes.Directory))
+                {
+                    continue;
+                }
+
+                string filePath = file.Key;
+
+                string ext = Path.GetExtension(filePath);
+
+                // Only support png and jpg files
+                if (!ext.EndsWith("png", StringComparison.OrdinalIgnoreCase) && !ext.EndsWith("jpg", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                string name = Path.GetFileNameWithoutExtension(filePath);
+
+                if (name.Equals("folder", StringComparison.OrdinalIgnoreCase))
+                {
+                    item.PrimaryImagePath = filePath;
+                }
+            }
         }
 
         /// <summary>

@@ -295,21 +295,12 @@ namespace MediaBrowser.Controller.Library
             item.DateCreated = Directory.GetCreationTime(path);
             item.DateModified = Directory.GetLastAccessTime(path);
 
-            if (File.Exists(Path.Combine(path, "folder.jpg")))
-            {
-                item.PrimaryImagePath = Path.Combine(path, "folder.jpg");
-            }
-            else if (File.Exists(Path.Combine(path, "folder.png")))
-            {
-                item.PrimaryImagePath = Path.Combine(path, "folder.png");
-            }
+            ItemResolveEventArgs args = new ItemResolveEventArgs();
+            args.Path = path;
+            args.FileAttributes = File.GetAttributes(path);
+            args.FileSystemChildren = Directory.GetFileSystemEntries(path, "*", SearchOption.TopDirectoryOnly).Select(f => new KeyValuePair<string, FileAttributes>(f, File.GetAttributes(f)));
 
-            var b = false;
-
-            if (b)
-            {
-                await Kernel.Instance.ExecuteMetadataProviders(item, null);
-            }
+            await Kernel.Instance.ExecuteMetadataProviders(item, args);
 
             return item;
         }
