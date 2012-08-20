@@ -55,6 +55,7 @@
     <Compile Include="FFMpeg\FFProbe.cs" />
     <Compile Include="FFMpeg\FFProbeResult.cs" />
     <Compile Include="IO\DirectoryWatchers.cs" />
+    <Compile Include="IO\FileData.cs" />
     <Compile Include="IO\Shortcut.cs" />
     <Compile Include="Library\ItemController.cs" />
     <Compile Include="Kernel.cs" />

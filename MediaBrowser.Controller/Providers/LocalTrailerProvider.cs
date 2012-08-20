@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.Providers
         {
             BaseItem baseItem = item as BaseItem;
 
-            var trailerPath = args.GetFolderByName("trailers");
+            var trailerPath = args.GetFileSystemEntryByName("trailers", true);
 
             if (trailerPath.HasValue)
             {

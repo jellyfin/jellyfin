@@ -21,7 +21,7 @@ namespace MediaBrowser.Controller.Providers
 
         public async override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
         {
-            var metadataFile = args.GetFileByName("folder.xml");
+            var metadataFile = args.GetFileSystemEntryByName("folder.xml", false);
 
             if (metadataFile.HasValue)
             {

@@ -3,6 +3,8 @@ using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Controller.IO;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Resolvers
 {
@@ -55,7 +57,7 @@ namespace MediaBrowser.Controller.Resolvers
                 EnsureName(item);
 
                 // Make sure DateCreated and DateModified have values
-                EnsureDates(item);
+                EnsureDates(item, args);
             }
 
             return item;
@@ -74,18 +76,33 @@ namespace MediaBrowser.Controller.Resolvers
         /// <summary>
         /// Ensures DateCreated and DateModified have values
         /// </summary>
-        private void EnsureDates(T item)
+        private void EnsureDates(T item, ItemResolveEventArgs args)
         {
-            // If the subclass didn't supply dates, add them here
-            if (item.DateCreated == DateTime.MinValue)
+            if (!Path.IsPathRooted(item.Path))
             {
-                item.DateCreated = Path.IsPathRooted(item.Path) ? File.GetCreationTime(item.Path) : DateTime.Now;
+                return;
             }
 
-            if (item.DateModified == DateTime.MinValue)
+            WIN32_FIND_DATA fileData = args.FileData;
+
+            // See if a different path came out of the resolver than what went in
+            if (!args.Path.Equals(item.Path, StringComparison.OrdinalIgnoreCase))
             {
-                item.DateModified = Path.IsPathRooted(item.Path) ? File.GetLastWriteTime(item.Path) : DateTime.Now;
+                KeyValuePair<string, WIN32_FIND_DATA>? childData = args.GetFileSystemEntry(item.Path, null);
+
+                if (childData != null)
+                {
+                    fileData = childData.Value.Value;
+                }
+                else
+                {
+                    fileData = FileData.GetFileData(item.Path);
+                }
             }
+
+            item.DateCreated = fileData.CreationTime;
+
+            item.DateModified = fileData.LastWriteTime;
         }
     }
 

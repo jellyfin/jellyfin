@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Controller.IO;
 
 namespace MediaBrowser.Controller.Events
 {
@@ -10,18 +11,25 @@ namespace MediaBrowser.Controller.Events
     /// </summary>
     public class ItemResolveEventArgs : PreBeginResolveEventArgs
     {
-        public IEnumerable<KeyValuePair<string, FileAttributes>> FileSystemChildren { get; set; }
+        public IEnumerable<KeyValuePair<string, WIN32_FIND_DATA>> FileSystemChildren { get; set; }
 
-        public KeyValuePair<string, FileAttributes>? GetFolderByName(string name)
+        public KeyValuePair<string, WIN32_FIND_DATA>? GetFileSystemEntry(string path, bool? isFolder)
         {
-            foreach (KeyValuePair<string, FileAttributes> entry in FileSystemChildren)
+            foreach (KeyValuePair<string, WIN32_FIND_DATA> entry in FileSystemChildren)
             {
-                if (!entry.Value.HasFlag(FileAttributes.Directory))
+                if (isFolder.HasValue)
                 {
-                    continue;
+                    if (isFolder.Value && entry.Value.IsDirectory)
+                    {
+                        continue;
+                    }
+                    else if (!isFolder.Value && !entry.Value.IsDirectory)
+                    {
+                        continue;
+                    }
                 }
 
-                if (System.IO.Path.GetFileName(entry.Key).Equals(name, StringComparison.OrdinalIgnoreCase))
+                if (entry.Key.Equals(path, StringComparison.OrdinalIgnoreCase))
                 {
                     return entry;
                 }
@@ -29,14 +37,21 @@ namespace MediaBrowser.Controller.Events
 
             return null;
         }
-
-        public KeyValuePair<string, FileAttributes>? GetFileByName(string name)
+        
+        public KeyValuePair<string, WIN32_FIND_DATA>? GetFileSystemEntryByName(string name, bool? isFolder)
         {
-            foreach (KeyValuePair<string, FileAttributes> entry in FileSystemChildren)
+            foreach (KeyValuePair<string, WIN32_FIND_DATA> entry in FileSystemChildren)
             {
-                if (entry.Value.HasFlag(FileAttributes.Directory))
+                if (isFolder.HasValue)
                 {
-                    continue;
+                    if (isFolder.Value && entry.Value.IsDirectory)
+                    {
+                        continue;
+                    }
+                    else if (!isFolder.Value && !entry.Value.IsDirectory)
+                    {
+                        continue;
+                    }
                 }
 
                 if (System.IO.Path.GetFileName(entry.Key).Equals(name, StringComparison.OrdinalIgnoreCase))
@@ -50,12 +65,12 @@ namespace MediaBrowser.Controller.Events
 
         public bool ContainsFile(string name)
         {
-            return GetFileByName(name) != null;
+            return GetFileSystemEntryByName(name, false) != null;
         }
 
         public bool ContainsFolder(string name)
         {
-            return GetFolderByName(name) != null;
+            return GetFileSystemEntryByName(name, true) != null;
         }
     }
 
@@ -71,7 +86,8 @@ namespace MediaBrowser.Controller.Events
 
         public bool Cancel { get; set; }
 
-        public FileAttributes FileAttributes { get; set; }
+        public FileAttributes FileAttributes { get { return FileData.dwFileAttributes; } }
+        public WIN32_FIND_DATA FileData { get; set; }
 
         public bool IsFolder
         {

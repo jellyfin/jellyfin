@@ -33,17 +33,6 @@ namespace MediaBrowser.Controller.Xml
                     }
                 }
             }
-
-            // If dates weren't supplied in metadata, use values from the xml file
-            if (item.DateCreated == DateTime.MinValue)
-            {
-                item.DateCreated = File.GetCreationTime(metadataFile);
-            }
-
-            if (item.DateModified == DateTime.MinValue)
-            {
-                item.DateModified = File.GetLastWriteTime(metadataFile);
-            }
         }
 
         /// <summary>
@@ -414,7 +403,7 @@ namespace MediaBrowser.Controller.Xml
                             break;
 
                         case "FrameRate":
-                            item.FrameRate = reader.ReadElementContentAsString();
+                            item.FrameRate = reader.ReadFloatSafe();
                             break;
 
                         case "ScanType":

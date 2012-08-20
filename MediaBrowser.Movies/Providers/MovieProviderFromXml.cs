@@ -23,7 +23,7 @@ namespace MediaBrowser.Movies.Providers
 
         public async override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
         {
-            var metadataFile = args.GetFileByName("movie.xml");
+            var metadataFile = args.GetFileSystemEntryByName("movie.xml", false);
 
             if (metadataFile.HasValue)
             {

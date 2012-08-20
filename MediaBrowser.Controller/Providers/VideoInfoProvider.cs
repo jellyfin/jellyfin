@@ -66,12 +66,7 @@ namespace MediaBrowser.Controller.Providers
                 return false;
             }
 
-            if (string.IsNullOrEmpty(video.FrameRate))
-            {
-                return false;
-            }
-
-            if (video.Height == 0 || video.Width == 0 || video.BitRate == 0)
+            if (video.FrameRate == 0 || video.Height == 0 || video.Width == 0 || video.BitRate == 0)
             {
                 return false;
             }

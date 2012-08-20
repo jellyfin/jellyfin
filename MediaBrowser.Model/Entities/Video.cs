@@ -12,7 +12,7 @@ namespace MediaBrowser.Model.Entities
         public int Height { get; set; }
         public int Width { get; set; }
         public string ScanType { get; set; }
-        public string FrameRate { get; set; }
+        public float FrameRate { get; set; }
         public int BitRate { get; set; }
         public string Codec { get; set; }
     }

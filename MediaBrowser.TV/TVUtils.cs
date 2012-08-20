@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
+using MediaBrowser.Controller.IO;
 
 namespace MediaBrowser.TV
 {
@@ -52,11 +53,11 @@ namespace MediaBrowser.TV
             return seasonPathExpressions.Any(r => r.IsMatch(path));
         }
 
-        public static bool IsSeriesFolder(string path, IEnumerable<KeyValuePair<string, FileAttributes>> fileSystemChildren)
+        public static bool IsSeriesFolder(string path, IEnumerable<KeyValuePair<string, WIN32_FIND_DATA>> fileSystemChildren)
         {
             foreach (var child in fileSystemChildren)
             {
-                if (child.Value.HasFlag(FileAttributes.Directory))
+                if (child.Value.IsDirectory)
                 {
                     if (IsSeasonFolder(child.Key))
                     {

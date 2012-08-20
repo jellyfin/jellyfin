@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Movies.Entities;
@@ -24,7 +25,7 @@ namespace MediaBrowser.Movies.Resolvers
                     return null;
                 }
 
-                var metadataFile = args.GetFileByName("movie.xml");
+                var metadataFile = args.GetFileSystemEntryByName("movie.xml", false);
 
                 if (metadataFile.HasValue || Path.GetFileName(args.Path).IndexOf("[tmdbid=", StringComparison.OrdinalIgnoreCase) != -1)
                 {
@@ -57,8 +58,8 @@ namespace MediaBrowser.Movies.Resolvers
                 ItemResolveEventArgs childArgs = new ItemResolveEventArgs()
                 {
                     Path = child.Key,
-                    FileAttributes = child.Value,
-                    FileSystemChildren = new KeyValuePair<string, FileAttributes>[] { }
+                    FileData = child.Value,
+                    FileSystemChildren = new KeyValuePair<string, WIN32_FIND_DATA>[] { }
                 };
 
                 var item = base.Resolve(childArgs);
@@ -78,7 +79,7 @@ namespace MediaBrowser.Movies.Resolvers
 
         private void PopulateBonusFeatures(Movie item, ItemResolveEventArgs args)
         {
-            var trailerPath = args.GetFolderByName("specials");
+            var trailerPath = args.GetFileSystemEntryByName("specials", true);
 
             if (trailerPath.HasValue)
             {
