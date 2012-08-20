@@ -113,8 +113,7 @@ namespace MediaBrowser.Api
                     AlbumArtist = audio.AlbumArtist,
                     Artist = audio.Artist,
                     BitRate = audio.BitRate,
-                    Channels = audio.Channels,
-                    Composer = audio.Composer
+                    Channels = audio.Channels
                 };
             }
 
