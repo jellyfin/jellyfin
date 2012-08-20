@@ -77,7 +77,7 @@ namespace MediaBrowser.Model.DTO
         public Guid? ParentBackdropItemId { get; set; }
         public int? ParentBackdropCount { get; set; }
 
-        public IEnumerable<Video> LocalTrailers { get; set; }
+        public IEnumerable<DTOBaseItem> LocalTrailers { get; set; }
         public int LocalTrailerCount { get; set; }
 
         /// <summary>
