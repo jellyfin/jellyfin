@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Controller.IO;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -47,9 +48,9 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         private void PopulateImages(BaseEntity item, ItemResolveEventArgs args)
         {
-            foreach (KeyValuePair<string, FileAttributes> file in args.FileSystemChildren)
+            foreach (KeyValuePair<string, WIN32_FIND_DATA> file in args.FileSystemChildren)
             {
-                if (file.Value.HasFlag(FileAttributes.Directory))
+                if (file.Value.IsDirectory)
                 {
                     continue;
                 }
@@ -80,9 +81,9 @@ namespace MediaBrowser.Controller.Providers
         {
             List<string> backdropFiles = new List<string>();
 
-            foreach (KeyValuePair<string, FileAttributes> file in args.FileSystemChildren)
+            foreach (KeyValuePair<string, WIN32_FIND_DATA> file in args.FileSystemChildren)
             {
-                if (file.Value.HasFlag(FileAttributes.Directory))
+                if (file.Value.IsDirectory)
                 {
                     continue;
                 }

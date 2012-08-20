@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
@@ -6,7 +7,6 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.FFMpeg;
 using MediaBrowser.Model.Entities;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Providers
 {

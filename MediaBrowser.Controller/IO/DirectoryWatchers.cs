@@ -83,7 +83,7 @@ namespace MediaBrowser.Controller.IO
             List<string> paths = affectedPaths;
             affectedPaths = new List<string>();
 
-            await ProcessPathChanges(paths);
+            await ProcessPathChanges(paths).ConfigureAwait(false);
         }
 
         private async Task ProcessPathChanges(IEnumerable<string> paths)
@@ -105,11 +105,11 @@ namespace MediaBrowser.Controller.IO
                     return folder != null && folder.IsRoot;
                 }))
             {
-                await Kernel.Instance.ReloadRoot();
+                await Kernel.Instance.ReloadRoot().ConfigureAwait(false);
             }
             else
             {
-                await Task.WhenAll(itemsToRefresh.Select(i => Kernel.Instance.ReloadItem(i)));
+                await Task.WhenAll(itemsToRefresh.Select(i => Kernel.Instance.ReloadItem(i))).ConfigureAwait(false);
             }
         }
 
