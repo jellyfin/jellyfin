@@ -42,13 +42,13 @@ namespace MediaBrowser.Controller
         /// Gets the list of currently registered metadata prvoiders
         /// </summary>
         [ImportMany(typeof(BaseMetadataProvider))]
-        public IEnumerable<BaseMetadataProvider> MetadataProviders { get; private set; }
+        public BaseMetadataProvider[] MetadataProviders { get; private set; }
 
         /// <summary>
         /// Gets the list of currently registered entity resolvers
         /// </summary>
         [ImportMany(typeof(IBaseItemResolver))]
-        public IEnumerable<IBaseItemResolver> EntityResolvers { get; private set; }
+        public IBaseItemResolver[] EntityResolvers { get; private set; }
 
         /// <summary>
         /// Creates a kernel based on a Data path, which is akin to our current programdata path
@@ -69,19 +69,19 @@ namespace MediaBrowser.Controller
         {
             await Task.Run(async () =>
             {
-                await base.Init(progress);
+                await base.Init(progress).ConfigureAwait(false);
 
                 progress.Report(new TaskProgress() { Description = "Loading Users", PercentComplete = 15 });
                 ReloadUsers();
 
                 progress.Report(new TaskProgress() { Description = "Extracting FFMpeg", PercentComplete = 20 });
-                await ExtractFFMpeg();
+                await ExtractFFMpeg().ConfigureAwait(false);
 
                 progress.Report(new TaskProgress() { Description = "Loading Media Library", PercentComplete = 25 });
-                await ReloadRoot();
+                await ReloadRoot().ConfigureAwait(false);
 
                 progress.Report(new TaskProgress() { Description = "Loading Complete", PercentComplete = 100 });
-            });
+            }).ConfigureAwait(false);
         }
 
         protected override void OnComposablePartsLoaded()
@@ -149,7 +149,7 @@ namespace MediaBrowser.Controller
 
             DirectoryWatchers.Stop();
 
-            RootFolder = await ItemController.GetItem(null, MediaRootFolderPath) as Folder;
+            RootFolder = await ItemController.GetItem(null, MediaRootFolderPath).ConfigureAwait(false) as Folder;
 
             DirectoryWatchers.Start();
         }
@@ -168,17 +168,17 @@ namespace MediaBrowser.Controller
 
             if (folder != null && folder.IsRoot)
             {
-                await ReloadRoot();
+                await ReloadRoot().ConfigureAwait(false);
             }
             else
             {
                 if (!Directory.Exists(item.Path) && !File.Exists(item.Path))
                 {
-                    await ReloadItem(item.Parent);
+                    await ReloadItem(item.Parent).ConfigureAwait(false);
                     return;
                 }
 
-                BaseItem newItem = await ItemController.GetItem(item.Parent, item.Path);
+                BaseItem newItem = await ItemController.GetItem(item.Parent, item.Path).ConfigureAwait(false);
 
                 List<BaseItem> children = item.Parent.Children.ToList();
 
@@ -238,7 +238,7 @@ namespace MediaBrowser.Controller
             {
                 await Task.WhenAll(
                     providers.Select(i => i.Fetch(item, args))
-                    );
+                    ).ConfigureAwait(false);
             }
 
             // Second priority providers
@@ -248,7 +248,7 @@ namespace MediaBrowser.Controller
             {
                 await Task.WhenAll(
                     providers.Select(i => i.Fetch(item, args))
-                    );
+                    ).ConfigureAwait(false);
             }
 
             // Third priority providers
@@ -258,7 +258,7 @@ namespace MediaBrowser.Controller
             {
                 await Task.WhenAll(
                     providers.Select(i => i.Fetch(item, args))
-                    );
+                    ).ConfigureAwait(false);
             }
             
             // Lowest priority providers
@@ -268,7 +268,7 @@ namespace MediaBrowser.Controller
             {
                 await Task.WhenAll(
                     providers.Select(i => i.Fetch(item, args))
-                    );
+                    ).ConfigureAwait(false);
             }
             
             // Execute internet providers
@@ -278,7 +278,7 @@ namespace MediaBrowser.Controller
             {
                 await Task.WhenAll(
                     providers.Select(i => i.Fetch(item, args))
-                    );
+                    ).ConfigureAwait(false);
             }
         }
 
@@ -289,8 +289,8 @@ namespace MediaBrowser.Controller
         private async Task ExtractFFMpeg()
         {
             // FFMpeg.exe
-            await ExtractFFMpeg(ApplicationPaths.FFMpegPath);
-            await ExtractFFMpeg(ApplicationPaths.FFProbePath);
+            await ExtractFFMpeg(ApplicationPaths.FFMpegPath).ConfigureAwait(false);
+            await ExtractFFMpeg(ApplicationPaths.FFProbePath).ConfigureAwait(false);
         }
 
         private async Task ExtractFFMpeg(string exe)
@@ -305,7 +305,7 @@ namespace MediaBrowser.Controller
             {
                 using (FileStream fileStream = new FileStream(exe, FileMode.Create))
                 {
-                    await stream.CopyToAsync(fileStream);
+                    await stream.CopyToAsync(fileStream).ConfigureAwait(false);
                 }
             }
         }

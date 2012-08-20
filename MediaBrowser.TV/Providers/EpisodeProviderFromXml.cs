@@ -34,7 +34,7 @@ namespace MediaBrowser.TV.Providers
 
             string metadataFile = Path.Combine(metadataFolder, Path.ChangeExtension(episodeFileName, ".xml"));
 
-            await FetchMetadata(episode, args.Parent as Season, metadataFile);
+            await FetchMetadata(episode, args.Parent as Season, metadataFile).ConfigureAwait(false);
         }
 
         private async Task FetchMetadata(Episode item, Season season, string metadataFile)
@@ -56,7 +56,7 @@ namespace MediaBrowser.TV.Providers
                 }
             }
 
-            await new EpisodeXmlParser().Fetch(item, metadataFile);
+            await Task.Run(() => { new EpisodeXmlParser().Fetch(item, metadataFile); }).ConfigureAwait(false);
         }
     }
 }

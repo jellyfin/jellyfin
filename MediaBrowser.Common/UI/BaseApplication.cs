@@ -22,7 +22,7 @@ namespace MediaBrowser.Common.UI
             // Without this the app will shutdown after the splash screen closes
             this.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-            await LoadKernel();
+            await LoadKernel().ConfigureAwait(false);
         }
 
         private async Task LoadKernel()

@@ -27,7 +27,7 @@ namespace MediaBrowser.Movies.Providers
 
             if (metadataFile.HasValue)
             {
-                await new BaseItemXmlParser<Movie>().Fetch(item as Movie, metadataFile.Value.Key);
+                await Task.Run(() => { new BaseItemXmlParser<Movie>().Fetch(item as Movie, metadataFile.Value.Key); }).ConfigureAwait(false);
             }
         }
     }

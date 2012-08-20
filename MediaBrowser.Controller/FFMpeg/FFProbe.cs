@@ -27,7 +27,7 @@ namespace MediaBrowser.Controller.FFMpeg
             {
             }
 
-            await Run(item.Path, outputCachePath);
+            await Run(item.Path, outputCachePath).ConfigureAwait(false);
 
             using (FileStream stream = File.OpenRead(outputCachePath))
             {
@@ -49,7 +49,7 @@ namespace MediaBrowser.Controller.FFMpeg
             {
             }
 
-            await Run(item.Path, outputCachePath);
+            await Run(item.Path, outputCachePath).ConfigureAwait(false);
 
             using (FileStream stream = File.OpenRead(outputCachePath))
             {
@@ -88,7 +88,7 @@ namespace MediaBrowser.Controller.FFMpeg
                 // If we ever decide to disable the ffmpeg log then you must uncomment the below line.
                 process.BeginErrorReadLine();
 
-                await process.StandardOutput.BaseStream.CopyToAsync(stream);
+                await process.StandardOutput.BaseStream.CopyToAsync(stream).ConfigureAwait(false);
 
                 process.WaitForExit();
 

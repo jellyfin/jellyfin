@@ -11,9 +11,9 @@ namespace MediaBrowser.Controller.Xml
         /// <summary>
         /// Reads a float from the current element of an XmlReader
         /// </summary>
-        public static async Task<float> ReadFloatSafe(this XmlReader reader)
+        public static float ReadFloatSafe(this XmlReader reader)
         {
-            string valueString = await reader.ReadElementContentAsStringAsync();
+            string valueString = reader.ReadElementContentAsString();
 
             float value = 0;
 
@@ -29,9 +29,9 @@ namespace MediaBrowser.Controller.Xml
         /// <summary>
         /// Reads an int from the current element of an XmlReader
         /// </summary>
-        public static async Task<int> ReadIntSafe(this XmlReader reader)
+        public static int ReadIntSafe(this XmlReader reader)
         {
-            string valueString = await reader.ReadElementContentAsStringAsync();
+            string valueString = reader.ReadElementContentAsString();
 
             int value = 0;
 

@@ -27,7 +27,7 @@ namespace MediaBrowser.TV.Providers
 
             if (metadataFile.HasValue)
             {
-                await new SeriesXmlParser().Fetch(item as Series, metadataFile.Value.Key);
+                await Task.Run(() => { new SeriesXmlParser().Fetch(item as Series, metadataFile.Value.Key); }).ConfigureAwait(false);
             }
         }
     }

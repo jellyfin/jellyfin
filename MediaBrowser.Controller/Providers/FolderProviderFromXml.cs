@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.Providers
 
             if (metadataFile.HasValue)
             {
-                await new FolderXmlParser().Fetch(item as Folder, metadataFile.Value.Key);
+                await Task.Run(() => { new FolderXmlParser().Fetch(item as Folder, metadataFile.Value.Key); }).ConfigureAwait(false);
             }
         }
     }

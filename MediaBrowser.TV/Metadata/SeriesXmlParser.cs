@@ -9,12 +9,12 @@ namespace MediaBrowser.TV.Metadata
 {
     public class SeriesXmlParser : BaseItemXmlParser<Series>
     {
-        protected async override Task FetchDataFromXmlNode(XmlReader reader, Series item)
+        protected override void FetchDataFromXmlNode(XmlReader reader, Series item)
         {
             switch (reader.Name)
             {
                 case "id":
-                    string id = await reader.ReadElementContentAsStringAsync();
+                    string id = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(id))
                     {
                         item.SetProviderId(MetadataProviders.Tvdb, id);
@@ -23,7 +23,7 @@ namespace MediaBrowser.TV.Metadata
 
                 case "Airs_DayOfWeek":
                     {
-                        string day = await reader.ReadElementContentAsStringAsync();
+                        string day = reader.ReadElementContentAsString();
 
                         if (!string.IsNullOrWhiteSpace(day))
                         {
@@ -51,19 +51,19 @@ namespace MediaBrowser.TV.Metadata
                     }
 
                 case "Airs_Time":
-                    item.AirTime = await reader.ReadElementContentAsStringAsync();
+                    item.AirTime = reader.ReadElementContentAsString();
                     break;
 
                 case "SeriesName":
-                    item.Name = await reader.ReadElementContentAsStringAsync();
+                    item.Name = reader.ReadElementContentAsString();
                     break;
 
                 case "Status":
-                    item.Status = await reader.ReadElementContentAsStringAsync();
+                    item.Status = reader.ReadElementContentAsString();
                     break;
 
                 default:
-                    await base.FetchDataFromXmlNode(reader, item);
+                    base.FetchDataFromXmlNode(reader, item);
                     break;
             }
         }
