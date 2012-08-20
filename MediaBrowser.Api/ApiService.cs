@@ -20,8 +20,8 @@ namespace MediaBrowser.Api
             return Kernel.Instance.GetItemById(guid);
         }
 
-        public async static Task<DTOBaseItem> GetDTOBaseItem(BaseItem item, User user, 
-            bool includeChildren = true, 
+        public async static Task<DTOBaseItem> GetDTOBaseItem(BaseItem item, User user,
+            bool includeChildren = true,
             bool includePeople = true)
         {
             DTOBaseItem dto = new DTOBaseItem();
@@ -102,7 +102,22 @@ namespace MediaBrowser.Api
                 dto.IsRoot = folder.IsRoot;
                 dto.IsVirtualFolder = folder is VirtualFolder;
             }
-            
+
+            Audio audio = item as Audio;
+
+            if (audio != null)
+            {
+                dto.AudioInfo = new AudioInfo()
+                {
+                    Album = audio.Album,
+                    AlbumArtist = audio.AlbumArtist,
+                    Artist = audio.Artist,
+                    BitRate = audio.BitRate,
+                    Channels = audio.Channels,
+                    Composer = audio.Composer
+                };
+            }
+
             return dto;
         }
 
@@ -112,7 +127,7 @@ namespace MediaBrowser.Api
             if (item.Studios != null)
             {
                 IEnumerable<Studio> entities = await Task.WhenAll<Studio>(item.Studios.Select(c => Kernel.Instance.ItemController.GetStudio(c)));
-                
+
                 dto.Studios = item.Studios.Select(s =>
                 {
                     BaseItemStudio baseItemStudio = new BaseItemStudio();

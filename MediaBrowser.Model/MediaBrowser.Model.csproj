@@ -32,6 +32,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="DTO\AudioInfo.cs" />
     <Compile Include="DTO\DTOBaseItem.cs" />
     <Compile Include="Entities\Audio.cs" />
     <Compile Include="Entities\BaseEntity.cs" />
