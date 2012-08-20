@@ -16,7 +16,12 @@ namespace MediaBrowser.Controller.Providers
         {
             return true;
         }
-        
+
+        public override MetadataProviderPriority Priority
+        {
+            get { return MetadataProviderPriority.First; }
+        }
+
         public override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
         {
             return Task.Run(() =>

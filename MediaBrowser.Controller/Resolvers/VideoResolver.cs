@@ -12,6 +12,10 @@ namespace MediaBrowser.Controller.Resolvers
     [Export(typeof(IBaseItemResolver))]
     public class VideoResolver : BaseVideoResolver<Video>
     {
+        public override ResolverPriority Priority
+        {
+            get { return ResolverPriority.Last; }
+        }
     }
 
     /// <summary>

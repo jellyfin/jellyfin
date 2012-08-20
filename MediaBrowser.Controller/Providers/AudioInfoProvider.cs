@@ -18,6 +18,11 @@ namespace MediaBrowser.Controller.Providers
             return item is Audio;
         }
 
+        public override MetadataProviderPriority Priority
+        {
+            get { return MetadataProviderPriority.First; }
+        }
+
         public async override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
         {
             Audio audio = item as Audio;

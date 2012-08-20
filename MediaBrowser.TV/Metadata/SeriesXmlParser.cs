@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Xml;
 using MediaBrowser.Controller.Xml;
 using MediaBrowser.Model.Entities;
@@ -8,12 +9,12 @@ namespace MediaBrowser.TV.Metadata
 {
     public class SeriesXmlParser : BaseItemXmlParser<Series>
     {
-        protected override void FetchDataFromXmlNode(XmlReader reader, Series item)
+        protected async override Task FetchDataFromXmlNode(XmlReader reader, Series item)
         {
             switch (reader.Name)
             {
                 case "id":
-                    string id = reader.ReadString();
+                    string id = await reader.ReadElementContentAsStringAsync();
                     if (!string.IsNullOrWhiteSpace(id))
                     {
                         item.SetProviderId(MetadataProviders.Tvdb, id);
@@ -22,7 +23,7 @@ namespace MediaBrowser.TV.Metadata
 
                 case "Airs_DayOfWeek":
                     {
-                        string day = reader.ReadString();
+                        string day = await reader.ReadElementContentAsStringAsync();
 
                         if (!string.IsNullOrWhiteSpace(day))
                         {
@@ -50,19 +51,19 @@ namespace MediaBrowser.TV.Metadata
                     }
 
                 case "Airs_Time":
-                    item.AirTime = reader.ReadString();
+                    item.AirTime = await reader.ReadElementContentAsStringAsync();
                     break;
 
                 case "SeriesName":
-                    item.Name = reader.ReadString();
+                    item.Name = await reader.ReadElementContentAsStringAsync();
                     break;
 
                 case "Status":
-                    item.Status = reader.ReadString();
+                    item.Status = await reader.ReadElementContentAsStringAsync();
                     break;
 
                 default:
-                    base.FetchDataFromXmlNode(reader, item);
+                    await base.FetchDataFromXmlNode(reader, item);
                     break;
             }
         }

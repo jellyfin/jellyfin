@@ -8,6 +8,11 @@ namespace MediaBrowser.Controller.Resolvers
     [Export(typeof(IBaseItemResolver))]
     public class VirtualFolderResolver : BaseFolderResolver<VirtualFolder>
     {
+        public override ResolverPriority Priority
+        {
+            get { return ResolverPriority.Third; }
+        }
+        
         protected override VirtualFolder Resolve(ItemResolveEventArgs args)
         {
             if (args.IsFolder && args.Parent != null && args.Parent.IsRoot)

@@ -19,6 +19,11 @@ namespace MediaBrowser.TV.Providers
             return item is Episode;
         }
 
+        public override MetadataProviderPriority Priority
+        {
+            get { return MetadataProviderPriority.First; }
+        }
+
         public async override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
         {
             string metadataFolder = Path.Combine(args.Parent.Path, "metadata");

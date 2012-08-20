@@ -16,6 +16,11 @@ namespace MediaBrowser.Movies.Providers
             return item is Movie;
         }
 
+        public override MetadataProviderPriority Priority
+        {
+            get { return MetadataProviderPriority.First; }
+        }
+
         public async override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
         {
             var metadataFile = args.GetFileByName("movie.xml");

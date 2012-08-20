@@ -32,5 +32,22 @@ namespace MediaBrowser.Controller.Providers
         }
 
         public abstract Task Fetch(BaseEntity item, ItemResolveEventArgs args);
+
+        public abstract MetadataProviderPriority Priority { get; }
+    }
+
+    /// <summary>
+    /// Determines when a provider should execute, relative to others
+    /// </summary>
+    public enum MetadataProviderPriority
+    {
+        // Run this provider at the beginning
+        First,
+
+        // Run this provider after all first priority providers
+        Second,
+
+        // Run this provider last
+        Last
     }
 }

@@ -14,6 +14,11 @@ namespace MediaBrowser.Controller.Providers
             return item is Folder;
         }
 
+        public override MetadataProviderPriority Priority
+        {
+            get { return MetadataProviderPriority.First; }
+        }
+
         public async override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
         {
             var metadataFile = args.GetFileByName("folder.xml");
