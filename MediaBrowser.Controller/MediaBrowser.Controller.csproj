@@ -64,6 +64,7 @@
     <Compile Include="Providers\FolderProviderFromXml.cs" />
     <Compile Include="Providers\ImageFromMediaLocationProvider.cs" />
     <Compile Include="Providers\LocalTrailerProvider.cs" />
+    <Compile Include="Providers\VideoInfoProvider.cs" />
     <Compile Include="Resolvers\AudioResolver.cs" />
     <Compile Include="Resolvers\BaseItemResolver.cs" />
     <Compile Include="Resolvers\FolderResolver.cs" />

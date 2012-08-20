@@ -252,6 +252,16 @@ namespace MediaBrowser.Controller
                     );
             }
 
+            // Third priority providers
+            providers = supportedProviders.Where(i => !i.RequiresInternet && i.Priority == MetadataProviderPriority.Third);
+
+            if (providers.Any())
+            {
+                await Task.WhenAll(
+                    providers.Select(i => i.Fetch(item, args))
+                    );
+            }
+            
             // Lowest priority providers
             providers = supportedProviders.Where(i => !i.RequiresInternet && i.Priority == MetadataProviderPriority.Last);
 

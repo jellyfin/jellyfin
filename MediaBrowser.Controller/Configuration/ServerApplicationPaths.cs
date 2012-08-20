@@ -193,6 +193,28 @@ namespace MediaBrowser.Controller.Configuration
                 return _FFProbeAudioCacheDirectory;
             }
         }
+
+        private string _FFProbeVideoCacheDirectory = null;
+        /// <summary>
+        /// Gets the folder path to the ffprobe video cache directory
+        /// </summary>
+        public string FFProbeVideoCacheDirectory
+        {
+            get
+            {
+                if (_FFProbeVideoCacheDirectory == null)
+                {
+                    _FFProbeVideoCacheDirectory = Path.Combine(Kernel.Instance.ApplicationPaths.CacheDirectory, "ffprobe-video");
+
+                    if (!Directory.Exists(_FFProbeVideoCacheDirectory))
+                    {
+                        Directory.CreateDirectory(_FFProbeVideoCacheDirectory);
+                    }
+                }
+
+                return _FFProbeVideoCacheDirectory;
+            }
+        }
         
         private string _FFMpegDirectory = null;
         /// <summary>

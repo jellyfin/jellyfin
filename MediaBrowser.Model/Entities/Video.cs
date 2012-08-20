@@ -19,8 +19,7 @@ namespace MediaBrowser.Model.Entities
 
     public class AudioStream
     {
-        public string Format { get; set; }
-        public string Profile { get; set; }
+        public string Codec { get; set; }
         public string Language { get; set; }
         public int BitRate { get; set; }
         public int Channels { get; set; }

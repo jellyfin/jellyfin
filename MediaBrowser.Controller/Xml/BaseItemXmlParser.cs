@@ -378,53 +378,8 @@ namespace MediaBrowser.Controller.Xml
                             break;
 
                         case "Codec":
-                            {
-                                string codec = await reader.ReadElementContentAsStringAsync();
-
-                                switch (codec.ToLower())
-                                {
-                                    case "dts-es":
-                                    case "dts-es matrix":
-                                    case "dts-es discrete":
-                                        stream.Format = "DTS";
-                                        stream.Profile = "ES";
-                                        break;
-                                    case "dts-hd hra":
-                                    case "dts-hd high resolution":
-                                        stream.Format = "DTS";
-                                        stream.Profile = "HRA";
-                                        break;
-                                    case "dts ma":
-                                    case "dts-hd ma":
-                                    case "dts-hd master":
-                                        stream.Format = "DTS";
-                                        stream.Profile = "MA";
-                                        break;
-                                    case "dolby digital":
-                                    case "dolby digital surround ex":
-                                    case "dolby surround":
-                                        stream.Format = "AC-3";
-                                        break;
-                                    case "dolby digital plus":
-                                        stream.Format = "E-AC-3";
-                                        break;
-                                    case "dolby truehd":
-                                        stream.Format = "AC-3";
-                                        stream.Profile = "TrueHD";
-                                        break;
-                                    case "mp2":
-                                        stream.Format = "MPEG Audio";
-                                        stream.Profile = "Layer 2";
-                                        break;
-                                    case "other":
-                                        break;
-                                    default:
-                                        stream.Format = codec;
-                                        break;
-                                }
-
-                                break;
-                            }
+                            stream.Codec = await reader.ReadElementContentAsStringAsync();
+                            break;
 
                         default:
                             await reader.SkipAsync();

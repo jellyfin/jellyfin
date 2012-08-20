@@ -47,6 +47,9 @@ namespace MediaBrowser.Controller.Providers
         // Run this provider after all first priority providers
         Second,
 
+        // Run this provider after all second priority providers
+        Third,
+
         // Run this provider last
         Last
     }
