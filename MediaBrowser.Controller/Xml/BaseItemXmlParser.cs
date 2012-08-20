@@ -17,37 +17,33 @@ namespace MediaBrowser.Controller.Xml
         /// <summary>
         /// Fetches metadata for an item from one xml file
         /// </summary>
-        public Task Fetch(T item, string metadataFile)
+        public async Task Fetch(T item, string metadataFile)
         {
-            // Wrapping this for now until I have a chance to async the whole process
-            return Task.Run(() =>
+            // Use XmlReader for best performance
+            using (XmlReader reader = XmlReader.Create(metadataFile, new XmlReaderSettings() { Async = true }))
             {
-                // Use XmlReader for best performance
-                using (XmlReader reader = XmlReader.Create(metadataFile))
-                {
-                    reader.MoveToContent();
+                await reader.MoveToContentAsync();
 
-                    // Loop through each element
-                    while (reader.Read())
+                // Loop through each element
+                while (await reader.ReadAsync())
+                {
+                    if (reader.NodeType == XmlNodeType.Element)
                     {
-                        if (reader.NodeType == XmlNodeType.Element)
-                        {
-                            FetchDataFromXmlNode(reader, item);
-                        }
+                        FetchDataFromXmlNode(reader, item);
                     }
                 }
+            }
 
-                // If dates weren't supplied in metadata, use values from the xml file
-                if (item.DateCreated == DateTime.MinValue)
-                {
-                    item.DateCreated = File.GetCreationTime(metadataFile);
-                }
+            // If dates weren't supplied in metadata, use values from the xml file
+            if (item.DateCreated == DateTime.MinValue)
+            {
+                item.DateCreated = File.GetCreationTime(metadataFile);
+            }
 
-                if (item.DateModified == DateTime.MinValue)
-                {
-                    item.DateModified = File.GetLastWriteTime(metadataFile);
-                }
-            });
+            if (item.DateModified == DateTime.MinValue)
+            {
+                item.DateModified = File.GetLastWriteTime(metadataFile);
+            }
         }
 
         /// <summary>
