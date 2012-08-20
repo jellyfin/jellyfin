@@ -1,7 +1,7 @@
 ﻿<Window x:Class="MediaBrowser.Common.UI.Splash"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MediaBrowser" Height="346" Width="600" ShowInTaskbar="False" ResizeMode="NoResize" WindowStartupLocation="CenterScreen"
+        Title="MediaBrowser" Height="346" Width="600" ShowInTaskbar="True" ResizeMode="NoResize" WindowStartupLocation="CenterScreen"
         WindowState="Normal" WindowStyle="SingleBorderWindow" Background="Black" Loaded="Splash_Loaded">
     <Grid Name="splashGrid">
         <Image HorizontalAlignment="Left" VerticalAlignment="Top" Height="225" Source="/MediaBrowser.Common;component/Resources/mblogo1000.png" Stretch="Fill" Grid.Row="0"/>
