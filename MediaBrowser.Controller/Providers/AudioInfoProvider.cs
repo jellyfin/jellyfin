@@ -78,8 +78,16 @@ namespace MediaBrowser.Controller.Providers
                 audio.Name = title;
             }
 
+            string composer = GetDictionaryValue(tags, "composer");
+
+            if (!string.IsNullOrEmpty(composer))
+            {
+                var list = (audio.People ?? new PersonInfo[] { }).ToList();
+                list.Add(new PersonInfo() { Name = composer, Type = "Composer" });
+                audio.People = list;
+            }
+
             audio.Album = GetDictionaryValue(tags, "album");
-            audio.Composer = GetDictionaryValue(tags, "composer");
             audio.Artist = GetDictionaryValue(tags, "artist");
             audio.AlbumArtist = GetDictionaryValue(tags, "albumartist") ?? GetDictionaryValue(tags, "album artist") ?? GetDictionaryValue(tags, "album_artist");
 
@@ -91,6 +99,36 @@ namespace MediaBrowser.Controller.Providers
             audio.ProductionYear = GetDictionaryNumericValue(tags, "date");
 
             audio.PremiereDate = GetDictionaryDateTime(tags, "retaildate") ?? GetDictionaryDateTime(tags, "retail date") ?? GetDictionaryDateTime(tags, "retail_date");
+
+            FetchGenres(audio, tags);
+
+            FetchStudios(audio, tags, "organization");
+            FetchStudios(audio, tags, "ensemble");
+            FetchStudios(audio, tags, "publisher");
+        }
+
+        private void FetchStudios(Audio audio, Dictionary<string, string> tags, string tagName)
+        {
+            string val = GetDictionaryValue(tags, tagName);
+
+            if (!string.IsNullOrEmpty(val))
+            {
+                var list = (audio.Studios ?? new string[] { }).ToList();
+                list.AddRange(val.Split('/'));
+                audio.Studios = list;
+            }
+        }
+        
+        private void FetchGenres(Audio audio, Dictionary<string, string> tags)
+        {
+            string val = GetDictionaryValue(tags, "genre");
+
+            if (!string.IsNullOrEmpty(val))
+            {
+                var list = (audio.Genres ?? new string[] { }).ToList();
+                list.AddRange(val.Split('/'));
+                audio.Genres = list;
+            }
         }
 
         private int? GetDictionaryDiscValue(Dictionary<string, string> tags)
@@ -123,7 +161,7 @@ namespace MediaBrowser.Controller.Providers
 
             return null;
         }
-        
+
         private string GetDictionaryValue(Dictionary<string, string> tags, string key)
         {
             string[] keys = tags.Keys.ToArray();
@@ -174,7 +212,7 @@ namespace MediaBrowser.Controller.Providers
 
             return null;
         }
-        
+
         private string GetOutputCachePath(BaseItem item)
         {
             string outputDirectory = Path.Combine(Kernel.Instance.ApplicationPaths.FFProbeAudioCacheDirectory, item.Id.ToString().Substring(0, 1));

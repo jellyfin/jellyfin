@@ -10,6 +10,5 @@ namespace MediaBrowser.Model.Entities
         public string Artist { get; set; }
         public string Album { get; set; }
         public string AlbumArtist { get; set; }
-        public string Composer { get; set; }
     }
 }
