@@ -279,15 +279,15 @@ namespace MediaBrowser.Api.HttpHandlers
                 }
             }
 
-            if (audio.Format.IndexOf("aac", StringComparison.OrdinalIgnoreCase) != -1)
+            if (audio.Codec.IndexOf("aac", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return false;
             }
-            if (audio.Format.IndexOf("ac-3", StringComparison.OrdinalIgnoreCase) != -1 || audio.Format.IndexOf("ac3", StringComparison.OrdinalIgnoreCase) != -1)
+            if (audio.Codec.IndexOf("ac-3", StringComparison.OrdinalIgnoreCase) != -1 || audio.Codec.IndexOf("ac3", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return false;
             }
-            if (audio.Format.IndexOf("mpeg", StringComparison.OrdinalIgnoreCase) != -1 || audio.Format.IndexOf("mp3", StringComparison.OrdinalIgnoreCase) != -1)
+            if (audio.Codec.IndexOf("mpeg", StringComparison.OrdinalIgnoreCase) != -1 || audio.Codec.IndexOf("mp3", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return false;
             }

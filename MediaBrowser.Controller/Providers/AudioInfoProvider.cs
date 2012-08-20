@@ -229,21 +229,26 @@ namespace MediaBrowser.Controller.Providers
         {
             base.Init();
 
+            EnsureCacheSubFolders(Kernel.Instance.ApplicationPaths.FFProbeAudioCacheDirectory);
+        }
+
+        internal static void EnsureCacheSubFolders(string root)
+        {
             // Do this now so that we don't have to do this on every operation, which would require us to create a lock in order to maintain thread-safety
             for (int i = 0; i <= 9; i++)
             {
-                EnsureDirectory(Path.Combine(Kernel.Instance.ApplicationPaths.FFProbeAudioCacheDirectory, i.ToString()));
+                EnsureDirectory(Path.Combine(root, i.ToString()));
             }
 
-            EnsureDirectory(Path.Combine(Kernel.Instance.ApplicationPaths.FFProbeAudioCacheDirectory, "a"));
-            EnsureDirectory(Path.Combine(Kernel.Instance.ApplicationPaths.FFProbeAudioCacheDirectory, "b"));
-            EnsureDirectory(Path.Combine(Kernel.Instance.ApplicationPaths.FFProbeAudioCacheDirectory, "c"));
-            EnsureDirectory(Path.Combine(Kernel.Instance.ApplicationPaths.FFProbeAudioCacheDirectory, "d"));
-            EnsureDirectory(Path.Combine(Kernel.Instance.ApplicationPaths.FFProbeAudioCacheDirectory, "e"));
-            EnsureDirectory(Path.Combine(Kernel.Instance.ApplicationPaths.FFProbeAudioCacheDirectory, "f"));
+            EnsureDirectory(Path.Combine(root, "a"));
+            EnsureDirectory(Path.Combine(root, "b"));
+            EnsureDirectory(Path.Combine(root, "c"));
+            EnsureDirectory(Path.Combine(root, "d"));
+            EnsureDirectory(Path.Combine(root, "e"));
+            EnsureDirectory(Path.Combine(root, "f"));
         }
 
-        private void EnsureDirectory(string path)
+        private static void EnsureDirectory(string path)
         {
             if (!Directory.Exists(path))
             {

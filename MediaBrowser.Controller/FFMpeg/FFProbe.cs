@@ -35,6 +35,28 @@ namespace MediaBrowser.Controller.FFMpeg
             }
         }
 
+        public async static Task<FFProbeResult> Run(Video item, string outputCachePath)
+        {
+            // Use try catch to avoid having to use File.Exists
+            try
+            {
+                using (FileStream stream = File.OpenRead(outputCachePath))
+                {
+                    return JsonSerializer.DeserializeFromStream<FFProbeResult>(stream);
+                }
+            }
+            catch (FileNotFoundException)
+            {
+            }
+
+            await Run(item.Path, outputCachePath);
+
+            using (FileStream stream = File.OpenRead(outputCachePath))
+            {
+                return JsonSerializer.DeserializeFromStream<FFProbeResult>(stream);
+            }
+        }
+
         private async static Task Run(string input, string output)
         {
             ProcessStartInfo startInfo = new ProcessStartInfo();
