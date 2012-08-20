@@ -25,22 +25,34 @@ namespace MediaBrowser.Api.HttpHandlers
 
         private async Task<string> DiscoverImagePath()
         {
-            string path = QueryString["path"] ?? string.Empty;
-
-            if (!string.IsNullOrEmpty(path))
-            {
-                return path;
-            }
-
             string personName = QueryString["personname"];
 
             if (!string.IsNullOrEmpty(personName))
             {
-                Person person = await Kernel.Instance.ItemController.GetPerson(personName);
-                
-                return person.PrimaryImagePath;
+                return (await Kernel.Instance.ItemController.GetPerson(personName)).PrimaryImagePath;
             }
 
+            string genreName = QueryString["genre"];
+
+            if (!string.IsNullOrEmpty(genreName))
+            {
+                return (await Kernel.Instance.ItemController.GetGenre(genreName)).PrimaryImagePath;
+            }
+
+            string year = QueryString["year"];
+
+            if (!string.IsNullOrEmpty(year))
+            {
+                return (await Kernel.Instance.ItemController.GetYear(int.Parse(year))).PrimaryImagePath;
+            }
+
+            string studio = QueryString["studio"];
+
+            if (!string.IsNullOrEmpty(studio))
+            {
+                return (await Kernel.Instance.ItemController.GetStudio(studio)).PrimaryImagePath;
+            }
+            
             BaseItem item = ApiService.GetItemById(QueryString["id"]);
 
             string imageIndex = QueryString["index"];
