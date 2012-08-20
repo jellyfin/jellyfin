@@ -154,12 +154,11 @@ namespace MediaBrowser.Controller
             DirectoryWatchers.Start();
         }
 
-        private static MD5CryptoServiceProvider md5Provider = new MD5CryptoServiceProvider();
         public static Guid GetMD5(string str)
         {
-            lock (md5Provider)
+            using (var provider = new MD5CryptoServiceProvider())
             {
-                return new Guid(md5Provider.ComputeHash(Encoding.Unicode.GetBytes(str)));
+                return new Guid(provider.ComputeHash(Encoding.Unicode.GetBytes(str)));
             }
         }
 
