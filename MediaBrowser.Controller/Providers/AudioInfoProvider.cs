@@ -91,8 +91,6 @@ namespace MediaBrowser.Controller.Providers
             audio.ProductionYear = GetDictionaryNumericValue(tags, "date");
 
             audio.PremiereDate = GetDictionaryDateTime(tags, "retaildate") ?? GetDictionaryDateTime(tags, "retail date") ?? GetDictionaryDateTime(tags, "retail_date");
-            
-            MediaBrowser.Common.Logging.Logger.LogInfo(tags.Comparer.GetType().Name.ToString());
         }
 
         private int? GetDictionaryDiscValue(Dictionary<string, string> tags)
