@@ -7,6 +7,9 @@ using MediaBrowser.Model.Progress;
 
 namespace MediaBrowser.Common.UI
 {
+    /// <summary>
+    /// Serves as a base Application class for both the UI and Server apps.
+    /// </summary>
     public abstract class BaseApplication : Application
     {
         private IKernel Kernel { get; set; }
