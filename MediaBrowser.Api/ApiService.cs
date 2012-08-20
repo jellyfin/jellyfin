@@ -39,7 +39,7 @@ namespace MediaBrowser.Api
             dto.Id = item.Id;
             dto.IsNew = item.IsRecentlyAdded(user);
             dto.IndexNumber = item.IndexNumber;
-            dto.IsFolder = item is Folder;
+            dto.IsFolder = item.IsFolder;
             dto.LocalTrailerCount = item.LocalTrailers == null ? 0 : item.LocalTrailers.Count();
             dto.Name = item.Name;
             dto.OfficialRating = item.OfficialRating;
@@ -139,7 +139,10 @@ namespace MediaBrowser.Api
                 dto.Children = await Task.WhenAll<DTOBaseItem>(children.Select(c => GetDTOBaseItem(c, user, false, false)));
             }
 
-            dto.LocalTrailers = item.LocalTrailers;
+            if (item.LocalTrailers != null && item.LocalTrailers.Any())
+            {
+                dto.LocalTrailers = await Task.WhenAll<DTOBaseItem>(item.LocalTrailers.Select(c => GetDTOBaseItem(c, user, false, false)));
+            }
         }
 
         private static async Task AttachPeople(DTOBaseItem dto, BaseItem item)
