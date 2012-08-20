@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Reflection;
 using MediaBrowser.Common.Configuration;
 
 namespace MediaBrowser.Controller.Configuration
@@ -227,24 +226,7 @@ namespace MediaBrowser.Controller.Configuration
             {
                 if (_FFMpegPath == null)
                 {
-                    string filename = "ffmpeg.exe";
-
-                    _FFMpegPath = Path.Combine(FFMpegDirectory, filename);
-
-                    // Always re-extract the first time to handle new versions
-                    if (File.Exists(_FFMpegPath))
-                    {
-                        File.Delete(_FFMpegPath);
-                    }
-
-                    // Extract exe
-                    using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Controller.FFMpeg." + filename))
-                    {
-                        using (FileStream fileStream = new FileStream(_FFMpegPath, FileMode.Create))
-                        {
-                            stream.CopyTo(fileStream);
-                        }
-                    }
+                    _FFMpegPath = Path.Combine(FFMpegDirectory, "ffmpeg.exe");
                 }
 
                 return _FFMpegPath;
@@ -261,24 +243,7 @@ namespace MediaBrowser.Controller.Configuration
             {
                 if (_FFProbePath == null)
                 {
-                    string filename = "ffprobe.exe";
-
-                    _FFProbePath = Path.Combine(FFMpegDirectory, filename);
-
-                    /*// Always re-extract the first time to handle new versions
-                    if (File.Exists(_FFProbePath))
-                    {
-                        File.Delete(_FFProbePath);
-                    }
-
-                    // Extract exe
-                    using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Controller.FFMpeg." + filename))
-                    {
-                        using (FileStream fileStream = new FileStream(_FFProbePath, FileMode.Create))
-                        {
-                            stream.CopyTo(fileStream);
-                        }
-                    }*/
+                    _FFProbePath = Path.Combine(FFMpegDirectory, "ffprobe.exe");
                 }
 
                 return _FFProbePath;

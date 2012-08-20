@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -73,7 +74,10 @@ namespace MediaBrowser.Controller
                 progress.Report(new TaskProgress() { Description = "Loading Users", PercentComplete = 15 });
                 ReloadUsers();
 
-                progress.Report(new TaskProgress() { Description = "Loading Media Library", PercentComplete = 20 });
+                progress.Report(new TaskProgress() { Description = "Extracting FFMpeg", PercentComplete = 20 });
+                await ExtractFFMpeg();
+
+                progress.Report(new TaskProgress() { Description = "Loading Media Library", PercentComplete = 25 });
                 await ReloadRoot();
 
                 progress.Report(new TaskProgress() { Description = "Loading Complete", PercentComplete = 100 });
@@ -252,8 +256,12 @@ namespace MediaBrowser.Controller
             return list;
         }
 
+        /// <summary>
+        /// Runs all metadata providers for an entity
+        /// </summary>
         internal async Task ExecuteMetadataProviders(BaseEntity item, ItemResolveEventArgs args)
         {
+            // Get all supported providers
             var supportedProviders = Kernel.Instance.MetadataProviders.Where(i => i.Supports(item));
 
             // Start with non-internet providers. Run them sequentially
@@ -270,6 +278,34 @@ namespace MediaBrowser.Controller
                 await Task.WhenAll(
                     internetProviders.Select(i => i.Fetch(item, args))
                     );
+            }
+        }
+
+        /// <summary>
+        /// Run these during Init.
+        /// Can't run do this on-demand because there will be multiple workers accessing them at once and we'd have to lock them
+        /// </summary>
+        private async Task ExtractFFMpeg()
+        {
+            // FFMpeg.exe
+            await ExtractFFMpeg(ApplicationPaths.FFMpegPath);
+            await ExtractFFMpeg(ApplicationPaths.FFProbePath);
+        }
+
+        private async Task ExtractFFMpeg(string exe)
+        {
+            if (File.Exists(exe))
+            {
+                File.Delete(exe);
+            }
+
+            // Extract exe
+            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Controller.FFMpeg." + Path.GetFileName(exe)))
+            {
+                using (FileStream fileStream = new FileStream(exe, FileMode.Create))
+                {
+                    await stream.CopyToAsync(fileStream);
+                }
             }
         }
 
