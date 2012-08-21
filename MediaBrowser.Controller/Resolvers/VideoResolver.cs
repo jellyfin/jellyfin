@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.Composition;
+﻿using System.ComponentModel.Composition;
 using System.IO;
 using MediaBrowser.Controller.Events;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Resolvers
@@ -51,8 +49,10 @@ namespace MediaBrowser.Controller.Resolvers
                 }
 
                 // Also check the subfolders for bluray or dvd
-                foreach (KeyValuePair<string, WIN32_FIND_DATA> folder in args.FileSystemChildren)
+                for (int i = 0; i < args.FileSystemChildren.Length; i++)
                 {
+                    var folder = args.FileSystemChildren[i];
+
                     if (!folder.Value.IsDirectory)
                     {
                         continue;

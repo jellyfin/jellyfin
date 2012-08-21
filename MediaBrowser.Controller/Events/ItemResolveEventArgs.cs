@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Events
 {
@@ -15,15 +15,17 @@ namespace MediaBrowser.Controller.Events
 
         public KeyValuePair<string, WIN32_FIND_DATA>? GetFileSystemEntry(string path, bool? isFolder)
         {
-            foreach (KeyValuePair<string, WIN32_FIND_DATA> entry in FileSystemChildren)
+            for (int i = 0; i < FileSystemChildren.Length; i++)
             {
+                KeyValuePair<string, WIN32_FIND_DATA> entry = FileSystemChildren[i];
+
                 if (isFolder.HasValue)
                 {
-                    if (isFolder.Value && entry.Value.IsDirectory)
+                    if (isFolder.Value && !entry.Value.IsDirectory)
                     {
                         continue;
                     }
-                    else if (!isFolder.Value && !entry.Value.IsDirectory)
+                    else if (!isFolder.Value && entry.Value.IsDirectory)
                     {
                         continue;
                     }
@@ -40,15 +42,17 @@ namespace MediaBrowser.Controller.Events
         
         public KeyValuePair<string, WIN32_FIND_DATA>? GetFileSystemEntryByName(string name, bool? isFolder)
         {
-            foreach (KeyValuePair<string, WIN32_FIND_DATA> entry in FileSystemChildren)
+            for (int i = 0; i < FileSystemChildren.Length; i++)
             {
+                KeyValuePair<string, WIN32_FIND_DATA> entry = FileSystemChildren[i];
+
                 if (isFolder.HasValue)
                 {
-                    if (isFolder.Value && entry.Value.IsDirectory)
+                    if (isFolder.Value && !entry.Value.IsDirectory)
                     {
                         continue;
                     }
-                    else if (!isFolder.Value && !entry.Value.IsDirectory)
+                    else if (!isFolder.Value && entry.Value.IsDirectory)
                     {
                         continue;
                     }

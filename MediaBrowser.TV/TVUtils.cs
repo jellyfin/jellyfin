@@ -53,10 +53,12 @@ namespace MediaBrowser.TV
             return seasonPathExpressions.Any(r => r.IsMatch(path));
         }
 
-        public static bool IsSeriesFolder(string path, IEnumerable<KeyValuePair<string, WIN32_FIND_DATA>> fileSystemChildren)
+        public static bool IsSeriesFolder(string path, KeyValuePair<string, WIN32_FIND_DATA>[] fileSystemChildren)
         {
-            foreach (var child in fileSystemChildren)
+            for (int i = 0; i < fileSystemChildren.Length; i++)
             {
+                var child = fileSystemChildren[i];
+
                 if (child.Value.IsDirectory)
                 {
                     if (IsSeasonFolder(child.Key))
@@ -71,22 +73,6 @@ namespace MediaBrowser.TV
                         return true;
                     }
                 }
-            }
-
-            return false;
-        }
-
-        public static bool IsEpisode(string fullPath)
-        {
-            bool isInSeason = IsSeasonFolder(Path.GetDirectoryName(fullPath));
-
-            if (isInSeason)
-            {
-                return true;
-            }
-            else if (EpisodeNumberFromFile(fullPath, isInSeason) != null)
-            {
-                return true;
             }
 
             return false;

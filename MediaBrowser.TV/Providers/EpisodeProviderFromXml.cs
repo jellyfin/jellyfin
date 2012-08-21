@@ -1,7 +1,5 @@
-﻿using System;
-using System.ComponentModel.Composition;
+﻿using System.ComponentModel.Composition;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Providers;
@@ -26,18 +24,22 @@ namespace MediaBrowser.TV.Providers
 
         public async override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
         {
-            string metadataFolder = Path.Combine(args.Parent.Path, "metadata");
+            await Task.Run(() =>
+            {
+                string metadataFolder = Path.Combine(args.Parent.Path, "metadata");
 
-            Episode episode = item as Episode;
+                Episode episode = item as Episode;
 
-            string episodeFileName = Path.GetFileName(episode.Path);
+                string episodeFileName = Path.GetFileName(episode.Path);
 
-            string metadataFile = Path.Combine(metadataFolder, Path.ChangeExtension(episodeFileName, ".xml"));
+                string metadataFile = Path.Combine(metadataFolder, Path.ChangeExtension(episodeFileName, ".xml"));
 
-            await FetchMetadata(episode, args.Parent as Season, metadataFile).ConfigureAwait(false);
+                FetchMetadata(episode, args.Parent as Season, metadataFile);
+
+            }).ConfigureAwait(false);
         }
 
-        private async Task FetchMetadata(Episode item, Season season, string metadataFile)
+        private void FetchMetadata(Episode item, Season season, string metadataFile)
         {
             if (season == null)
             {
@@ -50,13 +52,13 @@ namespace MediaBrowser.TV.Providers
             }
             else
             {
-                if (!season.MetadataFiles.Any(s => s.Equals(metadataFile, StringComparison.OrdinalIgnoreCase)))
+                if (!season.ContainsMetadataFile(metadataFile))
                 {
                     return;
                 }
             }
 
-            await Task.Run(() => { new EpisodeXmlParser().Fetch(item, metadataFile); }).ConfigureAwait(false);
+            new EpisodeXmlParser().Fetch(item, metadataFile);
         }
     }
 }
