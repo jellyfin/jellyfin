@@ -238,10 +238,15 @@ namespace MediaBrowser.Controller
             // Get all supported providers
             BaseMetadataProvider[] supportedProviders = Kernel.Instance.MetadataProviders.Where(i => i.Supports(item)).ToArray();
 
-            // Run them
+            // Run them sequentially in order of priority
             for (int i = 0; i < supportedProviders.Length; i++)
             {
                 var provider = supportedProviders[i];
+
+                if (provider.RequiresInternet && !Configuration.EnableInternetProviders)
+                {
+                    continue;
+                }
 
                 await provider.Fetch(item, args);
             }
