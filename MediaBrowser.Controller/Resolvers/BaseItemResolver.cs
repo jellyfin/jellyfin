@@ -81,7 +81,7 @@ namespace MediaBrowser.Controller.Resolvers
                 return;
             }
 
-            WIN32_FIND_DATA fileData = args.FileData;
+            WIN32_FIND_DATA fileData;
 
             // See if a different path came out of the resolver than what went in
             if (!args.Path.Equals(item.Path, StringComparison.OrdinalIgnoreCase))
@@ -96,6 +96,10 @@ namespace MediaBrowser.Controller.Resolvers
                 {
                     fileData = FileData.GetFileData(item.Path);
                 }
+            }
+            else
+            {
+                fileData = args.File.FileInfo;
             }
 
             item.DateCreated = fileData.CreationTime;

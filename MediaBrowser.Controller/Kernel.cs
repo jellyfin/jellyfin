@@ -110,7 +110,7 @@ namespace MediaBrowser.Controller
         /// </summary>
         void ItemController_PreBeginResolvePath(object sender, PreBeginResolveEventArgs e)
         {
-            if (e.IsHidden || e.IsSystemFile)
+            if (e.File.FileInfo.IsHidden || e.File.FileInfo.IsSystemFile)
             {
                 // Ignore hidden files and folders
                 e.Cancel = true;
@@ -129,13 +129,10 @@ namespace MediaBrowser.Controller
         /// </summary>
         void ItemController_BeginResolvePath(object sender, ItemResolveEventArgs e)
         {
-            if (e.IsFolder)
+            if (e.ContainsFile(".ignore"))
             {
-                if (e.ContainsFile(".ignore"))
-                {
-                    // Ignore any folders containing a file called .ignore
-                    e.Cancel = true;
-                }
+                // Ignore any folders containing a file called .ignore
+                e.Cancel = true;
             }
         }
 

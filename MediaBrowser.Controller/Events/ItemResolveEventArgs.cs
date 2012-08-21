@@ -84,35 +84,25 @@ namespace MediaBrowser.Controller.Events
     /// </summary>
     public class PreBeginResolveEventArgs : EventArgs
     {
-        public string Path { get; set; }
         public Folder Parent { get; set; }
 
         public bool Cancel { get; set; }
 
-        public FileAttributes FileAttributes { get { return FileData.dwFileAttributes; } }
-        public WIN32_FIND_DATA FileData { get; set; }
+        public LazyFileInfo File { get; set; }
 
-        public bool IsFolder
+        public string Path
         {
             get
             {
-                return FileAttributes.HasFlag(FileAttributes.Directory);
+                return File.Path;
             }
         }
 
-        public bool IsHidden
+        public bool IsDirectory
         {
             get
             {
-                return FileAttributes.HasFlag(FileAttributes.Hidden);
-            }
-        }
-
-        public bool IsSystemFile
-        {
-            get
-            {
-                return FileAttributes.HasFlag(FileAttributes.System);
+                return File.FileInfo.dwFileAttributes.HasFlag(FileAttributes.Directory);
             }
         }
 

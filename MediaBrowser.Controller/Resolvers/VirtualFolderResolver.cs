@@ -15,7 +15,7 @@ namespace MediaBrowser.Controller.Resolvers
         
         protected override VirtualFolder Resolve(ItemResolveEventArgs args)
         {
-            if (args.IsFolder && args.Parent != null && args.Parent.IsRoot)
+            if (args.IsDirectory && args.Parent != null && args.Parent.IsRoot)
             {
                 return new VirtualFolder();
             }
