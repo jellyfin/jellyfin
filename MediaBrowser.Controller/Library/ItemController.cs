@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.IO;
-using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Library
@@ -60,42 +59,9 @@ namespace MediaBrowser.Controller.Library
         private BaseItem ResolveItem(ItemResolveEventArgs args)
         {
             // Try first priority resolvers
-            foreach (IBaseItemResolver resolver in Kernel.Instance.EntityResolvers.Where(p => p.Priority == ResolverPriority.First))
+            for (int i = 0; i < Kernel.Instance.EntityResolvers.Length; i++)
             {
-                var item = resolver.ResolvePath(args);
-
-                if (item != null)
-                {
-                    return item;
-                }
-            }
-
-            // Try second priority resolvers
-            foreach (IBaseItemResolver resolver in Kernel.Instance.EntityResolvers.Where(p => p.Priority == ResolverPriority.Second))
-            {
-                var item = resolver.ResolvePath(args);
-
-                if (item != null)
-                {
-                    return item;
-                }
-            }
-
-            // Try third priority resolvers
-            foreach (IBaseItemResolver resolver in Kernel.Instance.EntityResolvers.Where(p => p.Priority == ResolverPriority.Third))
-            {
-                var item = resolver.ResolvePath(args);
-
-                if (item != null)
-                {
-                    return item;
-                }
-            }
-
-            // Try last priority resolvers
-            foreach (IBaseItemResolver resolver in Kernel.Instance.EntityResolvers.Where(p => p.Priority == ResolverPriority.Last))
-            {
-                var item = resolver.ResolvePath(args);
+                var item = Kernel.Instance.EntityResolvers[i].ResolvePath(args);
 
                 if (item != null)
                 {
@@ -109,29 +75,21 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Resolves a path into a BaseItem
         /// </summary>
-        public async Task<BaseItem> GetItem(Folder parent, string path)
+        public async Task<BaseItem> GetItem(string path, Folder parent = null, WIN32_FIND_DATA? fileInfo = null)
         {
-            WIN32_FIND_DATA fileData = FileData.GetFileData(path);
+            WIN32_FIND_DATA fileData = fileInfo ?? FileData.GetFileData(path);
 
-            return await GetItemInternal(parent, path, fileData).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Resolves a path into a BaseItem
-        /// </summary>
-        private async Task<BaseItem> GetItemInternal(Folder parent, string path, WIN32_FIND_DATA fileData)
-        {
             if (!OnPreBeginResolvePath(parent, path, fileData))
             {
                 return null;
             }
 
-            IEnumerable<KeyValuePair<string, WIN32_FIND_DATA>> fileSystemChildren;
+            KeyValuePair<string, WIN32_FIND_DATA>[] fileSystemChildren;
 
             // Gather child folder and files
             if (fileData.IsDirectory)
             {
-                fileSystemChildren = Directory.GetFileSystemEntries(path, "*", SearchOption.TopDirectoryOnly).Select(f => new KeyValuePair<string, WIN32_FIND_DATA>(f, FileData.GetFileData(f)));
+                fileSystemChildren = ConvertFileSystemEntries(Directory.GetFileSystemEntries(path, "*", SearchOption.TopDirectoryOnly));
 
                 bool isVirtualFolder = parent != null && parent.IsRoot;
                 fileSystemChildren = FilterChildFileSystemEntries(fileSystemChildren, isVirtualFolder);
@@ -177,19 +135,17 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Finds child BaseItems for a given Folder
         /// </summary>
-        private async Task AttachChildren(Folder folder, IEnumerable<KeyValuePair<string, WIN32_FIND_DATA>> fileSystemChildren)
+        private async Task AttachChildren(Folder folder, KeyValuePair<string, WIN32_FIND_DATA>[] fileSystemChildren)
         {
-            KeyValuePair<string, WIN32_FIND_DATA>[] fileSystemChildrenArray = fileSystemChildren.ToArray();
-
-            int count = fileSystemChildrenArray.Length;
+            int count = fileSystemChildren.Length;
 
             Task<BaseItem>[] tasks = new Task<BaseItem>[count];
 
             for (int i = 0; i < count; i++)
             {
-                var child = fileSystemChildrenArray[i];
+                var child = fileSystemChildren[i];
 
-                tasks[i] = GetItemInternal(folder, child.Key, child.Value);
+                tasks[i] = GetItem(child.Key, folder, child.Value);
             }
 
             BaseItem[] baseItemChildren = await Task<BaseItem>.WhenAll(tasks).ConfigureAwait(false);
@@ -199,25 +155,25 @@ namespace MediaBrowser.Controller.Library
             {
                 return string.IsNullOrEmpty(f.SortName) ? f.Name : f.SortName;
 
-            }).ToArray();
+            });
         }
 
         /// <summary>
         /// Transforms shortcuts into their actual paths
         /// </summary>
-        private List<KeyValuePair<string, WIN32_FIND_DATA>> FilterChildFileSystemEntries(IEnumerable<KeyValuePair<string, WIN32_FIND_DATA>> fileSystemChildren, bool flattenShortcuts)
+        private KeyValuePair<string, WIN32_FIND_DATA>[] FilterChildFileSystemEntries(KeyValuePair<string, WIN32_FIND_DATA>[] fileSystemChildren, bool flattenShortcuts)
         {
-            List<KeyValuePair<string, WIN32_FIND_DATA>> returnFiles = new List<KeyValuePair<string, WIN32_FIND_DATA>>();
+            KeyValuePair<string, WIN32_FIND_DATA>[] returnArray = new KeyValuePair<string, WIN32_FIND_DATA>[fileSystemChildren.Length];
+            List<KeyValuePair<string, WIN32_FIND_DATA>> resolvedShortcuts = new List<KeyValuePair<string, WIN32_FIND_DATA>>();
 
-            // Loop through each file
-            foreach (KeyValuePair<string, WIN32_FIND_DATA> file in fileSystemChildren)
+            for (int i = 0; i < fileSystemChildren.Length; i++)
             {
-                // Folders
+                KeyValuePair<string, WIN32_FIND_DATA> file = fileSystemChildren[i];
+
                 if (file.Value.IsDirectory)
                 {
-                    returnFiles.Add(file);
+                    returnArray[i] = file;
                 }
-
                 // If it's a shortcut, resolve it
                 else if (Shortcut.IsShortcut(file.Key))
                 {
@@ -225,34 +181,42 @@ namespace MediaBrowser.Controller.Library
                     WIN32_FIND_DATA newPathData = FileData.GetFileData(newPath);
 
                     // Find out if the shortcut is pointing to a directory or file
-
                     if (newPathData.IsDirectory)
                     {
                         // If we're flattening then get the shortcut's children
 
                         if (flattenShortcuts)
                         {
-                            IEnumerable<KeyValuePair<string, WIN32_FIND_DATA>> newChildren = Directory.GetFileSystemEntries(newPath, "*", SearchOption.TopDirectoryOnly).Select(f => new KeyValuePair<string, WIN32_FIND_DATA>(f, FileData.GetFileData(f)));
+                            returnArray[i] = file;
+                            KeyValuePair<string, WIN32_FIND_DATA>[] newChildren = ConvertFileSystemEntries(Directory.GetFileSystemEntries(newPath, "*", SearchOption.TopDirectoryOnly));
 
-                            returnFiles.AddRange(FilterChildFileSystemEntries(newChildren, false));
+                            resolvedShortcuts.AddRange(FilterChildFileSystemEntries(newChildren, false));
                         }
                         else
                         {
-                            returnFiles.Add(new KeyValuePair<string, WIN32_FIND_DATA>(newPath, newPathData));
+                            returnArray[i] = new KeyValuePair<string, WIN32_FIND_DATA>(newPath, newPathData);
                         }
                     }
                     else
                     {
-                        returnFiles.Add(new KeyValuePair<string, WIN32_FIND_DATA>(newPath, newPathData));
+                        returnArray[i] = new KeyValuePair<string, WIN32_FIND_DATA>(newPath, newPathData);
                     }
                 }
                 else
                 {
-                    returnFiles.Add(file);
+                    returnArray[i] = file;
                 }
             }
 
-            return returnFiles;
+            if (resolvedShortcuts.Count > 0)
+            {
+                resolvedShortcuts.InsertRange(0, returnArray);
+                return resolvedShortcuts.ToArray();
+            }
+            else
+            {
+                return returnArray;
+            }
         }
 
         /// <summary>
@@ -338,11 +302,25 @@ namespace MediaBrowser.Controller.Library
             ItemResolveEventArgs args = new ItemResolveEventArgs();
             args.Path = path;
             args.FileData = FileData.GetFileData(path);
-            args.FileSystemChildren = Directory.GetFileSystemEntries(path, "*", SearchOption.TopDirectoryOnly).Select(f => new KeyValuePair<string, WIN32_FIND_DATA>(f, FileData.GetFileData(f)));
+            args.FileSystemChildren = ConvertFileSystemEntries(Directory.GetFileSystemEntries(path, "*", SearchOption.TopDirectoryOnly));
 
             await Kernel.Instance.ExecuteMetadataProviders(item, args).ConfigureAwait(false);
 
             return item;
+        }
+
+        private KeyValuePair<string, WIN32_FIND_DATA>[] ConvertFileSystemEntries(string[] files)
+        {
+            KeyValuePair<string, WIN32_FIND_DATA>[] items = new KeyValuePair<string, WIN32_FIND_DATA>[files.Length];
+
+            for (int i = 0; i < files.Length; i++)
+            {
+                string file = files[i];
+
+                items[i] = new KeyValuePair<string, WIN32_FIND_DATA>(file, FileData.GetFileData(file));
+            }
+
+            return items;
         }
     }
 }
