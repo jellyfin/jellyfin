@@ -245,7 +245,7 @@ namespace MediaBrowser.Controller
                     continue;
                 }
 
-                await provider.Fetch(item, args);
+                await provider.Fetch(item, args).ConfigureAwait(false);
             }
         }
 
