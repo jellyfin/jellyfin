@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
@@ -19,7 +18,7 @@ namespace MediaBrowser.Movies.Resolvers
         {
             if (args.IsFolder && (args.VirtualFolderCollectionType ?? string.Empty).Equals("Movies", StringComparison.OrdinalIgnoreCase))
             {
-                var metadataFile = args.GetFileSystemEntryByName("movie.xml", false);
+                var metadataFile = args.GetFileSystemEntryByName("movie.xml");
 
                 if (metadataFile.HasValue || Path.GetFileName(args.Path).IndexOf("[tmdbid=", StringComparison.OrdinalIgnoreCase) != -1)
                 {
@@ -53,9 +52,9 @@ namespace MediaBrowser.Movies.Resolvers
 
                 ItemResolveEventArgs childArgs = new ItemResolveEventArgs()
                 {
-                    Path = child.Key,
-                    FileData = child.Value,
-                    FileSystemChildren = new KeyValuePair<string, WIN32_FIND_DATA>[] { }
+                    Path = child.Path,
+                    FileData = child.FileInfo,
+                    FileSystemChildren = new LazyFileInfo[] { }
                 };
 
                 var item = base.Resolve(childArgs);
@@ -79,7 +78,7 @@ namespace MediaBrowser.Movies.Resolvers
 
             if (trailerPath.HasValue)
             {
-                string[] allFiles = Directory.GetFileSystemEntries(trailerPath.Value.Key, "*", SearchOption.TopDirectoryOnly);
+                string[] allFiles = Directory.GetFileSystemEntries(trailerPath.Value.Path, "*", SearchOption.TopDirectoryOnly);
 
                 item.SpecialFeatures = allFiles.Select(f => Kernel.Instance.ItemController.GetItem(f)).OfType<Video>();
             }

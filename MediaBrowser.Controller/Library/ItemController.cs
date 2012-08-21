@@ -84,7 +84,7 @@ namespace MediaBrowser.Controller.Library
                 return null;
             }
 
-            KeyValuePair<string, WIN32_FIND_DATA>[] fileSystemChildren;
+            LazyFileInfo[] fileSystemChildren;
 
             // Gather child folder and files
             if (fileData.IsDirectory)
@@ -96,7 +96,7 @@ namespace MediaBrowser.Controller.Library
             }
             else
             {
-                fileSystemChildren = new KeyValuePair<string, WIN32_FIND_DATA>[] { };
+                fileSystemChildren = new LazyFileInfo[] { };
             }
 
             ItemResolveEventArgs args = new ItemResolveEventArgs()
@@ -135,7 +135,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Finds child BaseItems for a given Folder
         /// </summary>
-        private async Task AttachChildren(Folder folder, KeyValuePair<string, WIN32_FIND_DATA>[] fileSystemChildren)
+        private async Task AttachChildren(Folder folder, LazyFileInfo[] fileSystemChildren)
         {
             int count = fileSystemChildren.Length;
 
@@ -145,7 +145,7 @@ namespace MediaBrowser.Controller.Library
             {
                 var child = fileSystemChildren[i];
 
-                tasks[i] = GetItem(child.Key, folder, child.Value);
+                tasks[i] = GetItem(child.Path, folder, child.FileInfo);
             }
 
             BaseItem[] baseItemChildren = await Task<BaseItem>.WhenAll(tasks).ConfigureAwait(false);
@@ -161,23 +161,19 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Transforms shortcuts into their actual paths
         /// </summary>
-        private KeyValuePair<string, WIN32_FIND_DATA>[] FilterChildFileSystemEntries(KeyValuePair<string, WIN32_FIND_DATA>[] fileSystemChildren, bool flattenShortcuts)
+        private LazyFileInfo[] FilterChildFileSystemEntries(LazyFileInfo[] fileSystemChildren, bool flattenShortcuts)
         {
-            KeyValuePair<string, WIN32_FIND_DATA>[] returnArray = new KeyValuePair<string, WIN32_FIND_DATA>[fileSystemChildren.Length];
-            List<KeyValuePair<string, WIN32_FIND_DATA>> resolvedShortcuts = new List<KeyValuePair<string, WIN32_FIND_DATA>>();
+            LazyFileInfo[] returnArray = new LazyFileInfo[fileSystemChildren.Length];
+            List<LazyFileInfo> resolvedShortcuts = new List<LazyFileInfo>();
 
             for (int i = 0; i < fileSystemChildren.Length; i++)
             {
-                KeyValuePair<string, WIN32_FIND_DATA> file = fileSystemChildren[i];
+                LazyFileInfo file = fileSystemChildren[i];
 
-                if (file.Value.IsDirectory)
-                {
-                    returnArray[i] = file;
-                }
                 // If it's a shortcut, resolve it
-                else if (Shortcut.IsShortcut(file.Key))
+                if (Shortcut.IsShortcut(file.Path))
                 {
-                    string newPath = Shortcut.ResolveShortcut(file.Key);
+                    string newPath = Shortcut.ResolveShortcut(file.Path);
                     WIN32_FIND_DATA newPathData = FileData.GetFileData(newPath);
 
                     // Find out if the shortcut is pointing to a directory or file
@@ -188,18 +184,18 @@ namespace MediaBrowser.Controller.Library
                         if (flattenShortcuts)
                         {
                             returnArray[i] = file;
-                            KeyValuePair<string, WIN32_FIND_DATA>[] newChildren = ConvertFileSystemEntries(Directory.GetFileSystemEntries(newPath, "*", SearchOption.TopDirectoryOnly));
+                            LazyFileInfo[] newChildren = ConvertFileSystemEntries(Directory.GetFileSystemEntries(newPath, "*", SearchOption.TopDirectoryOnly));
 
                             resolvedShortcuts.AddRange(FilterChildFileSystemEntries(newChildren, false));
                         }
                         else
                         {
-                            returnArray[i] = new KeyValuePair<string, WIN32_FIND_DATA>(newPath, newPathData);
+                            returnArray[i] = new LazyFileInfo() { Path = newPath, FileInfo = newPathData };
                         }
                     }
                     else
                     {
-                        returnArray[i] = new KeyValuePair<string, WIN32_FIND_DATA>(newPath, newPathData);
+                        returnArray[i] = new LazyFileInfo() { Path = newPath, FileInfo = newPathData };
                     }
                 }
                 else
@@ -309,15 +305,15 @@ namespace MediaBrowser.Controller.Library
             return item;
         }
 
-        private KeyValuePair<string, WIN32_FIND_DATA>[] ConvertFileSystemEntries(string[] files)
+        private LazyFileInfo[] ConvertFileSystemEntries(string[] files)
         {
-            KeyValuePair<string, WIN32_FIND_DATA>[] items = new KeyValuePair<string, WIN32_FIND_DATA>[files.Length];
+            LazyFileInfo[] items = new LazyFileInfo[files.Length];
 
             for (int i = 0; i < files.Length; i++)
             {
                 string file = files[i];
 
-                items[i] = new KeyValuePair<string, WIN32_FIND_DATA>(file, FileData.GetFileData(file));
+                items[i] = new LazyFileInfo() { Path = file };
             }
 
             return items;

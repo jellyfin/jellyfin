@@ -50,12 +50,7 @@ namespace MediaBrowser.Controller.Providers
             {
                 var file = args.FileSystemChildren[i];
                 
-                if (file.Value.IsDirectory)
-                {
-                    continue;
-                }
-
-                string filePath = file.Key;
+                string filePath = file.Path;
 
                 string ext = Path.GetExtension(filePath);
 
@@ -85,12 +80,7 @@ namespace MediaBrowser.Controller.Providers
             {
                 var file = args.FileSystemChildren[i];
 
-                if (file.Value.IsDirectory)
-                {
-                    continue;
-                }
-
-                string filePath = file.Key;
+                string filePath = file.Path;
 
                 string ext = Path.GetExtension(filePath);
 

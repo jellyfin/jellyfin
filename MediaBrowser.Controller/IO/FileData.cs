@@ -93,4 +93,28 @@ namespace MediaBrowser.Controller.IO
         }
     }
 
+    public struct LazyFileInfo
+    {
+        public string Path { get; set; }
+
+        private WIN32_FIND_DATA? _FileInfo { get; set; }
+
+        public WIN32_FIND_DATA FileInfo
+        {
+            get
+            {
+                if (_FileInfo == null)
+                {
+                    _FileInfo = FileData.GetFileData(Path);
+                }
+
+                return _FileInfo.Value;
+            }
+            set
+            {
+                _FileInfo = value;
+            }
+        }
+    }
+
 }
