@@ -42,13 +42,14 @@ namespace MediaBrowser.Controller
         /// Gets the list of currently registered metadata prvoiders
         /// </summary>
         [ImportMany(typeof(BaseMetadataProvider))]
-        public BaseMetadataProvider[] MetadataProviders { get; private set; }
+        public IEnumerable<BaseMetadataProvider> MetadataProviders { get; private set; }
 
         /// <summary>
         /// Gets the list of currently registered entity resolvers
         /// </summary>
         [ImportMany(typeof(IBaseItemResolver))]
-        public IBaseItemResolver[] EntityResolvers { get; private set; }
+        private IEnumerable<IBaseItemResolver> EntityResolversEnumerable { get; set; }
+        internal IBaseItemResolver[] EntityResolvers { get; private set; }
 
         /// <summary>
         /// Creates a kernel based on a Data path, which is akin to our current programdata path
@@ -88,6 +89,12 @@ namespace MediaBrowser.Controller
         {
             // The base class will start up all the plugins
             base.OnComposablePartsLoaded();
+
+            // Sort the resolvers by priority
+            EntityResolvers = EntityResolversEnumerable.OrderBy(e => e.Priority).ToArray();
+
+            // Sort the providers by priority
+            MetadataProviders = MetadataProviders.OrderBy(e => e.Priority);
             
             // Initialize the metadata providers
             Parallel.ForEach(MetadataProviders, provider =>
@@ -149,7 +156,7 @@ namespace MediaBrowser.Controller
 
             DirectoryWatchers.Stop();
 
-            RootFolder = await ItemController.GetItem(null, MediaRootFolderPath).ConfigureAwait(false) as Folder;
+            RootFolder = await ItemController.GetItem(MediaRootFolderPath).ConfigureAwait(false) as Folder;
 
             DirectoryWatchers.Start();
         }
@@ -178,7 +185,7 @@ namespace MediaBrowser.Controller
                     return;
                 }
 
-                BaseItem newItem = await ItemController.GetItem(item.Parent, item.Path).ConfigureAwait(false);
+                BaseItem newItem = await ItemController.GetItem(item.Path, item.Parent).ConfigureAwait(false);
 
                 List<BaseItem> children = item.Parent.Children.ToList();
 
@@ -229,56 +236,14 @@ namespace MediaBrowser.Controller
         internal async Task ExecuteMetadataProviders(BaseEntity item, ItemResolveEventArgs args)
         {
             // Get all supported providers
-            var supportedProviders = Kernel.Instance.MetadataProviders.Where(i => i.Supports(item));
+            BaseMetadataProvider[] supportedProviders = Kernel.Instance.MetadataProviders.Where(i => i.Supports(item)).ToArray();
 
-            // First priority providers
-            var providers = supportedProviders.Where(i => !i.RequiresInternet && i.Priority == MetadataProviderPriority.First);
-            
-            if (providers.Any())
+            // Run them
+            for (int i = 0; i < supportedProviders.Length; i++)
             {
-                await Task.WhenAll(
-                    providers.Select(i => i.Fetch(item, args))
-                    ).ConfigureAwait(false);
-            }
+                var provider = supportedProviders[i];
 
-            // Second priority providers
-            providers = supportedProviders.Where(i => !i.RequiresInternet && i.Priority == MetadataProviderPriority.Second);
-
-            if (providers.Any())
-            {
-                await Task.WhenAll(
-                    providers.Select(i => i.Fetch(item, args))
-                    ).ConfigureAwait(false);
-            }
-
-            // Third priority providers
-            providers = supportedProviders.Where(i => !i.RequiresInternet && i.Priority == MetadataProviderPriority.Third);
-
-            if (providers.Any())
-            {
-                await Task.WhenAll(
-                    providers.Select(i => i.Fetch(item, args))
-                    ).ConfigureAwait(false);
-            }
-            
-            // Lowest priority providers
-            providers = supportedProviders.Where(i => !i.RequiresInternet && i.Priority == MetadataProviderPriority.Last);
-
-            if (providers.Any())
-            {
-                await Task.WhenAll(
-                    providers.Select(i => i.Fetch(item, args))
-                    ).ConfigureAwait(false);
-            }
-            
-            // Execute internet providers
-            providers = supportedProviders.Where(i => i.RequiresInternet);
-
-            if (providers.Any())
-            {
-                await Task.WhenAll(
-                    providers.Select(i => i.Fetch(item, args))
-                    ).ConfigureAwait(false);
+                await provider.Fetch(item, args);
             }
         }
 

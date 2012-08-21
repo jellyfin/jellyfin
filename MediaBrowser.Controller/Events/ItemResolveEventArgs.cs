@@ -11,7 +11,7 @@ namespace MediaBrowser.Controller.Events
     /// </summary>
     public class ItemResolveEventArgs : PreBeginResolveEventArgs
     {
-        public IEnumerable<KeyValuePair<string, WIN32_FIND_DATA>> FileSystemChildren { get; set; }
+        public KeyValuePair<string, WIN32_FIND_DATA>[] FileSystemChildren { get; set; }
 
         public KeyValuePair<string, WIN32_FIND_DATA>? GetFileSystemEntry(string path, bool? isFolder)
         {

@@ -42,15 +42,15 @@ namespace MediaBrowser.Controller.Providers
     public enum MetadataProviderPriority
     {
         // Run this provider at the beginning
-        First,
+        First = 1,
 
         // Run this provider after all first priority providers
-        Second,
+        Second = 2,
 
         // Run this provider after all second priority providers
-        Third,
+        Third = 3,
 
         // Run this provider last
-        Last
+        Last = 4
     }
 }

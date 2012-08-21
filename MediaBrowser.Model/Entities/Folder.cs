@@ -16,7 +16,7 @@ namespace MediaBrowser.Model.Entities
 
         public bool IsRoot { get; set; }
 
-        public BaseItem[] Children { get; set; }
+        public IEnumerable<BaseItem> Children { get; set; }
 
         /// <summary>
         /// Gets allowed children of an item

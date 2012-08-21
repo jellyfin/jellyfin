@@ -34,7 +34,7 @@ namespace MediaBrowser.Controller.Providers
 
                 foreach (string file in allFiles)
                 {
-                    BaseItem child = await Kernel.Instance.ItemController.GetItem(null, file).ConfigureAwait(false);
+                    BaseItem child = await Kernel.Instance.ItemController.GetItem(file).ConfigureAwait(false);
 
                     Video video = child as Video;
 

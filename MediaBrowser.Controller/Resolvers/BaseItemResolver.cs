@@ -117,9 +117,9 @@ namespace MediaBrowser.Controller.Resolvers
 
     public enum ResolverPriority
     {
-        First,
-        Second,
-        Third,
-        Last
+        First = 1,
+        Second = 2,
+        Third = 3,
+        Last = 4
     }
 }
