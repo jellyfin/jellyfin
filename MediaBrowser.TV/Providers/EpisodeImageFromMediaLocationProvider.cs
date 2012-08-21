@@ -46,14 +46,22 @@ namespace MediaBrowser.TV.Providers
                 Path.Combine(metadataFolder, Path.ChangeExtension(episodeFileName, ".png"))
             };
 
+            string image;
+
             if (season == null)
             {
                 // Gotta do this the slow way
-                item.PrimaryImagePath = imageFiles.FirstOrDefault(f => File.Exists(f));
+                image = imageFiles.FirstOrDefault(f => File.Exists(f));
             }
             else
             {
-                item.PrimaryImagePath = imageFiles.FirstOrDefault(f => season.ContainsMetadataFile(f));
+                image = imageFiles.FirstOrDefault(f => season.ContainsMetadataFile(f));
+            }
+
+            // If we found something, set PrimaryImagePath
+            if (!string.IsNullOrEmpty(image))
+            {
+                item.PrimaryImagePath = image;
             }
         }
     }

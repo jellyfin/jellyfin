@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.Xml
         public void Fetch(T item, string metadataFile)
         {
             // Use XmlReader for best performance
-            using (XmlReader reader = XmlReader.Create(metadataFile, new XmlReaderSettings() { }))
+            using (XmlReader reader = XmlReader.Create(metadataFile))
             {
                 reader.MoveToContent();
 
