@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.Providers
         {
             return Task.Run(() =>
             {
-                if (args.IsFolder)
+                if (args.IsDirectory)
                 {
                     var baseItem = item as BaseItem;
 

@@ -28,7 +28,7 @@ namespace MediaBrowser.TV
 
         void ItemController_PreBeginResolvePath(object sender, PreBeginResolveEventArgs e)
         {
-            if (e.IsFolder && System.IO.Path.GetFileName(e.Path).Equals("metadata", StringComparison.OrdinalIgnoreCase))
+            if (System.IO.Path.GetFileName(e.Path).Equals("metadata", StringComparison.OrdinalIgnoreCase) && e.IsDirectory)
             {
                 if (e.Parent is Season || e.Parent is Series)
                 {

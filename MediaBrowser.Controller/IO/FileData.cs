@@ -53,6 +53,22 @@ namespace MediaBrowser.Controller.IO
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = FileData.MAX_ALTERNATE)]
         public string cAlternate;
 
+        public bool IsHidden
+        {
+            get
+            {
+                return dwFileAttributes.HasFlag(FileAttributes.Hidden);
+            }
+        }
+
+        public bool IsSystemFile
+        {
+            get
+            {
+                return dwFileAttributes.HasFlag(FileAttributes.System);
+            }
+        }
+
         public bool IsDirectory
         {
             get

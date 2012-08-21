@@ -16,7 +16,7 @@ namespace MediaBrowser.Movies.Resolvers
     {
         protected override Movie Resolve(ItemResolveEventArgs args)
         {
-            if (args.IsFolder && (args.VirtualFolderCollectionType ?? string.Empty).Equals("Movies", StringComparison.OrdinalIgnoreCase))
+            if ((args.VirtualFolderCollectionType ?? string.Empty).Equals("Movies", StringComparison.OrdinalIgnoreCase) && args.IsDirectory)
             {
                 var metadataFile = args.GetFileSystemEntryByName("movie.xml");
 
@@ -52,8 +52,7 @@ namespace MediaBrowser.Movies.Resolvers
 
                 ItemResolveEventArgs childArgs = new ItemResolveEventArgs()
                 {
-                    Path = child.Path,
-                    FileData = child.FileInfo,
+                    File = child,
                     FileSystemChildren = new LazyFileInfo[] { }
                 };
 

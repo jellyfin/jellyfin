@@ -12,7 +12,7 @@ namespace MediaBrowser.Movies.Resolvers
     {
         protected override BoxSet Resolve(ItemResolveEventArgs args)
         {
-            if (args.IsFolder && (args.VirtualFolderCollectionType ?? string.Empty).Equals("Movies", StringComparison.OrdinalIgnoreCase))
+            if ((args.VirtualFolderCollectionType ?? string.Empty).Equals("Movies", StringComparison.OrdinalIgnoreCase) && args.IsDirectory)
             {
                 if (Path.GetFileName(args.Path).IndexOf("[boxset]", StringComparison.OrdinalIgnoreCase) != -1)
                 {

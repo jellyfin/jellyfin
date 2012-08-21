@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.Resolvers
         {
             // Return audio if the path is a file and has a matching extension
 
-            if (!args.IsFolder)
+            if (!args.IsDirectory)
             {
                 if (IsAudioFile(args.Path))
                 {

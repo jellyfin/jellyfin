@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.Resolvers
         protected override T Resolve(ItemResolveEventArgs args)
         {
             // If the path is a file check for a matching extensions
-            if (!args.IsFolder)
+            if (!args.IsDirectory)
             {
                 if (IsVideoFile(args.Path))
                 {

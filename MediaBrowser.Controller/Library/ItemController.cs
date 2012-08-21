@@ -23,9 +23,8 @@ namespace MediaBrowser.Controller.Library
         {
             PreBeginResolveEventArgs args = new PreBeginResolveEventArgs()
             {
-                Path = path,
                 Parent = parent,
-                FileData = fileData,
+                File = new LazyFileInfo() { Path = path, FileInfo = fileData },
                 Cancel = false
             };
 
@@ -101,9 +100,8 @@ namespace MediaBrowser.Controller.Library
 
             ItemResolveEventArgs args = new ItemResolveEventArgs()
             {
-                Path = path,
+                File = new LazyFileInfo() { Path = path, FileInfo = fileData },
                 FileSystemChildren = fileSystemChildren,
-                FileData = fileData,
                 Parent = parent,
                 Cancel = false
             };
@@ -296,8 +294,7 @@ namespace MediaBrowser.Controller.Library
             item.DateModified = Directory.GetLastAccessTime(path);
 
             ItemResolveEventArgs args = new ItemResolveEventArgs();
-            args.Path = path;
-            args.FileData = FileData.GetFileData(path);
+            args.File = new LazyFileInfo() { Path = path };
             args.FileSystemChildren = ConvertFileSystemEntries(Directory.GetFileSystemEntries(path, "*", SearchOption.TopDirectoryOnly));
 
             await Kernel.Instance.ExecuteMetadataProviders(item, args).ConfigureAwait(false);

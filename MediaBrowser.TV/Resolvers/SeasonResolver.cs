@@ -11,7 +11,7 @@ namespace MediaBrowser.TV.Resolvers
     {
         protected override Season Resolve(ItemResolveEventArgs args)
         {
-            if (args.IsFolder && args.Parent is Series)
+            if (args.Parent is Series && args.IsDirectory)
             {
                 Season season = new Season();
 
