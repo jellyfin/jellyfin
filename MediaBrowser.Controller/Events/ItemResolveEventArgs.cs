@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Entities;
@@ -11,55 +10,55 @@ namespace MediaBrowser.Controller.Events
     /// </summary>
     public class ItemResolveEventArgs : PreBeginResolveEventArgs
     {
-        public KeyValuePair<string, WIN32_FIND_DATA>[] FileSystemChildren { get; set; }
+        public LazyFileInfo[] FileSystemChildren { get; set; }
 
-        public KeyValuePair<string, WIN32_FIND_DATA>? GetFileSystemEntry(string path, bool? isFolder)
+        public LazyFileInfo? GetFileSystemEntry(string path, bool? isFolder = null)
         {
             for (int i = 0; i < FileSystemChildren.Length; i++)
             {
-                KeyValuePair<string, WIN32_FIND_DATA> entry = FileSystemChildren[i];
+                LazyFileInfo entry = FileSystemChildren[i];
 
-                if (isFolder.HasValue)
+                if (entry.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (isFolder.Value && !entry.Value.IsDirectory)
+                    if (isFolder.HasValue)
                     {
-                        continue;
+                        if (isFolder.Value && !entry.FileInfo.IsDirectory)
+                        {
+                            continue;
+                        }
+                        else if (!isFolder.Value && entry.FileInfo.IsDirectory)
+                        {
+                            continue;
+                        }
                     }
-                    else if (!isFolder.Value && entry.Value.IsDirectory)
-                    {
-                        continue;
-                    }
-                }
-
-                if (entry.Key.Equals(path, StringComparison.OrdinalIgnoreCase))
-                {
+                    
                     return entry;
                 }
             }
 
             return null;
         }
-        
-        public KeyValuePair<string, WIN32_FIND_DATA>? GetFileSystemEntryByName(string name, bool? isFolder)
+
+        public LazyFileInfo? GetFileSystemEntryByName(string name, bool? isFolder = null)
         {
             for (int i = 0; i < FileSystemChildren.Length; i++)
             {
-                KeyValuePair<string, WIN32_FIND_DATA> entry = FileSystemChildren[i];
+                LazyFileInfo entry = FileSystemChildren[i];
 
-                if (isFolder.HasValue)
+                if (System.IO.Path.GetFileName(entry.Path).Equals(name, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (isFolder.Value && !entry.Value.IsDirectory)
+                    if (isFolder.HasValue)
                     {
-                        continue;
+                        if (isFolder.Value && !entry.FileInfo.IsDirectory)
+                        {
+                            continue;
+                        }
+                        else if (!isFolder.Value && entry.FileInfo.IsDirectory)
+                        {
+                            continue;
+                        }
                     }
-                    else if (!isFolder.Value && entry.Value.IsDirectory)
-                    {
-                        continue;
-                    }
-                }
 
-                if (System.IO.Path.GetFileName(entry.Key).Equals(name, StringComparison.OrdinalIgnoreCase))
-                {
                     return entry;
                 }
             }

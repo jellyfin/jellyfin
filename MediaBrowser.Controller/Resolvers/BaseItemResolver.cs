@@ -1,10 +1,8 @@
 ﻿using System;
 using System.IO;
-using System.Threading.Tasks;
 using MediaBrowser.Controller.Events;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Controller.IO;
-using System.Collections.Generic;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Resolvers
 {
@@ -88,11 +86,11 @@ namespace MediaBrowser.Controller.Resolvers
             // See if a different path came out of the resolver than what went in
             if (!args.Path.Equals(item.Path, StringComparison.OrdinalIgnoreCase))
             {
-                KeyValuePair<string, WIN32_FIND_DATA>? childData = args.GetFileSystemEntry(item.Path, null);
+                LazyFileInfo? childData = args.GetFileSystemEntry(item.Path);
 
                 if (childData != null)
                 {
-                    fileData = childData.Value.Value;
+                    fileData = childData.Value.FileInfo;
                 }
                 else
                 {

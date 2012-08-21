@@ -28,7 +28,7 @@ namespace MediaBrowser.Controller.Providers
 
             if (trailerPath.HasValue)
             {
-                string[] allFiles = Directory.GetFileSystemEntries(trailerPath.Value.Key, "*", SearchOption.TopDirectoryOnly);
+                string[] allFiles = Directory.GetFileSystemEntries(trailerPath.Value.Path, "*", SearchOption.TopDirectoryOnly);
 
                 List<Video> localTrailers = new List<Video>();
 

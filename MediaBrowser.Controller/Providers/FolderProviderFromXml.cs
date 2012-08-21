@@ -21,11 +21,11 @@ namespace MediaBrowser.Controller.Providers
 
         public async override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
         {
-            var metadataFile = args.GetFileSystemEntryByName("folder.xml", false);
+            var metadataFile = args.GetFileSystemEntryByName("folder.xml");
 
             if (metadataFile.HasValue)
             {
-                await Task.Run(() => { new FolderXmlParser().Fetch(item as Folder, metadataFile.Value.Key); }).ConfigureAwait(false);
+                await Task.Run(() => { new FolderXmlParser().Fetch(item as Folder, metadataFile.Value.Path); }).ConfigureAwait(false);
             }
         }
     }

@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace MediaBrowser.Controller.Xml

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using MediaBrowser.Controller.IO;
 
@@ -53,22 +51,22 @@ namespace MediaBrowser.TV
             return seasonPathExpressions.Any(r => r.IsMatch(path));
         }
 
-        public static bool IsSeriesFolder(string path, KeyValuePair<string, WIN32_FIND_DATA>[] fileSystemChildren)
+        public static bool IsSeriesFolder(string path, LazyFileInfo[] fileSystemChildren)
         {
             for (int i = 0; i < fileSystemChildren.Length; i++)
             {
                 var child = fileSystemChildren[i];
 
-                if (child.Value.IsDirectory)
+                if (child.FileInfo.IsDirectory)
                 {
-                    if (IsSeasonFolder(child.Key))
+                    if (IsSeasonFolder(child.Path))
                     {
                         return true;
                     }
                 }
                 else
                 {
-                    if (!string.IsNullOrEmpty(EpisodeNumberFromFile(child.Key, false)))
+                    if (!string.IsNullOrEmpty(EpisodeNumberFromFile(child.Path, false)))
                     {
                         return true;
                     }
