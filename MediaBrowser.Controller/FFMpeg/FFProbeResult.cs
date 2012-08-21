@@ -44,7 +44,7 @@ namespace MediaBrowser.Controller.FFMpeg
         public int height { get; set; }
         //public int has_b_frames { get; set; }
         //public string sample_aspect_ratio { get; set; }
-        //public string display_aspect_ratio { get; set; }
+        public string display_aspect_ratio { get; set; }
         //public string pix_fmt { get; set; }
         //public int level { get; set; }
         public Dictionary<string,string> tags { get; set; }

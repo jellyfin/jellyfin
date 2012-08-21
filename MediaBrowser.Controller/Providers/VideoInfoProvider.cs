@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.Composition;
+﻿using System;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,7 +9,7 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Providers
 {
-    //[Export(typeof(BaseMetadataProvider))]
+    [Export(typeof(BaseMetadataProvider))]
     public class VideoInfoProvider : BaseMetadataProvider
     {
         public override bool Supports(BaseEntity item)
@@ -19,8 +20,7 @@ namespace MediaBrowser.Controller.Providers
         public override MetadataProviderPriority Priority
         {
             // Give this second priority
-            // Give metadata xml providers a chance to fill in data first
-            // Then we can skip this step whenever possible
+            // Give metadata xml providers a chance to fill in data first, so that we can skip this whenever possible
             get { return MetadataProviderPriority.Second; }
         }
 
@@ -46,6 +46,34 @@ namespace MediaBrowser.Controller.Providers
             FFProbeResult data = await FFProbe.Run(video, outputPath).ConfigureAwait(false);
         }
 
+        private void Fetch(Video video, FFProbeResult data)
+        {
+            if (!string.IsNullOrEmpty(data.format.duration))
+            {
+                video.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(data.format.duration)).Ticks;
+            }
+
+            if (!string.IsNullOrEmpty(data.format.bit_rate))
+            {
+                video.BitRate = int.Parse(data.format.bit_rate);
+            }
+
+            MediaStream videoStream = data.streams.FirstOrDefault(s => s.codec_type.Equals("video", StringComparison.OrdinalIgnoreCase));
+
+            if (videoStream != null)
+            {
+                FetchFromVideoStream(video, videoStream);
+            }
+        }
+
+        private void FetchFromVideoStream(Video video, MediaStream stream)
+        {
+            video.Codec = stream.codec_name;
+            video.Width = stream.width;
+            video.Height = stream.height;
+            video.AspectRatio = stream.display_aspect_ratio;
+        }
+        
         /// <summary>
         /// Determines if there's already enough info in the Video object to allow us to skip running ffprobe
         /// </summary>
@@ -56,12 +84,22 @@ namespace MediaBrowser.Controller.Providers
                 return false;
             }
 
+            if (string.IsNullOrEmpty(video.AspectRatio))
+            {
+                return false;
+            }
+
             if (string.IsNullOrEmpty(video.Codec))
             {
                 return false;
             }
 
             if (string.IsNullOrEmpty(video.ScanType))
+            {
+                return false;
+            }
+
+            if (!video.RunTimeTicks.HasValue || video.RunTimeTicks.Value == 0)
             {
                 return false;
             }
