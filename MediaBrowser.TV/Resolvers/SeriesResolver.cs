@@ -14,12 +14,6 @@ namespace MediaBrowser.TV.Resolvers
         {
             if (args.IsFolder && (args.VirtualFolderCollectionType ?? string.Empty).Equals("TV", StringComparison.OrdinalIgnoreCase))
             {
-                // Optimization to avoid running these tests against VF's
-                if (args.Parent != null && args.Parent.IsRoot)
-                {
-                    return null;
-                }
-
                 // Optimization to avoid running these tests against Seasons
                 if (args.Parent is Series)
                 {

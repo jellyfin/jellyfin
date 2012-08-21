@@ -32,8 +32,10 @@ namespace MediaBrowser.Controller.Providers
 
                 List<Video> localTrailers = new List<Video>();
 
-                foreach (string file in allFiles)
+                for (int i = 0; i < allFiles.Length; i++)
                 {
+                    string file = allFiles[i];
+
                     BaseItem child = await Kernel.Instance.ItemController.GetItem(file).ConfigureAwait(false);
 
                     Video video = child as Video;

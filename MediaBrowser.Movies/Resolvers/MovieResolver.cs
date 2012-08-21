@@ -19,12 +19,6 @@ namespace MediaBrowser.Movies.Resolvers
         {
             if (args.IsFolder && (args.VirtualFolderCollectionType ?? string.Empty).Equals("Movies", StringComparison.OrdinalIgnoreCase))
             {
-                // Optimization to avoid running these tests against VF's
-                if (args.Parent != null && args.Parent.IsRoot)
-                {
-                    return null;
-                }
-
                 var metadataFile = args.GetFileSystemEntryByName("movie.xml", false);
 
                 if (metadataFile.HasValue || Path.GetFileName(args.Path).IndexOf("[tmdbid=", StringComparison.OrdinalIgnoreCase) != -1)
@@ -53,8 +47,10 @@ namespace MediaBrowser.Movies.Resolvers
 
         private Movie GetMovie(ItemResolveEventArgs args)
         {
-            foreach (var child in args.FileSystemChildren)
+            for (var i = 0; i < args.FileSystemChildren.Length; i++)
             {
+                var child = args.FileSystemChildren[i];
+
                 ItemResolveEventArgs childArgs = new ItemResolveEventArgs()
                 {
                     Path = child.Key,

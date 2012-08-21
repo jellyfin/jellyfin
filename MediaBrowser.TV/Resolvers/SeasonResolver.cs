@@ -3,7 +3,6 @@ using System.IO;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.TV.Entities;
-using MediaBrowser.TV.Metadata;
 
 namespace MediaBrowser.TV.Resolvers
 {

@@ -53,7 +53,7 @@ namespace MediaBrowser.TV.Providers
             }
             else
             {
-                item.PrimaryImagePath = imageFiles.FirstOrDefault(f => season.MetadataFiles.Any(s => s.Equals(f, StringComparison.OrdinalIgnoreCase)));
+                item.PrimaryImagePath = imageFiles.FirstOrDefault(f => season.ContainsMetadataFile(f));
             }
         }
     }
