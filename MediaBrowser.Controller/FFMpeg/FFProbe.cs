@@ -13,48 +13,61 @@ namespace MediaBrowser.Controller.FFMpeg
     /// </summary>
     public static class FFProbe
     {
-        public async static Task<FFProbeResult> Run(Audio item, string outputCachePath)
+        public static FFProbeResult Run(Audio item)
         {
             // Use try catch to avoid having to use File.Exists
             try
             {
-                return GetCachedResult(outputCachePath);
+                return GetCachedResult(GetFFProbeAudioCachePath(item));
             }
             catch (FileNotFoundException)
             {
             }
 
-            await Run(item.Path, outputCachePath).ConfigureAwait(false);
+            FFProbeResult result = Run(item.Path);
 
-            return GetCachedResult(item.Path);
+            // Fire and forget
+            CacheResult(result, GetFFProbeAudioCachePath(item));
+
+            return result;
         }
 
-        public static FFProbeResult GetCachedResult(string path)
+        private static FFProbeResult GetCachedResult(string path)
         {
-            using (FileStream stream = File.OpenRead(path))
-            {
-                return JsonSerializer.DeserializeFromStream<FFProbeResult>(stream);
-            }
+            return JsvSerializer.DeserializeFromFile<FFProbeResult>(path);
         }
 
-        public async static Task<FFProbeResult> Run(Video item, string outputCachePath)
+        private static void CacheResult(FFProbeResult result, string outputCachePath)
+        {
+            Task.Run(() =>
+            {
+                JsvSerializer.SerializeToFile<FFProbeResult>(result, outputCachePath);
+            });
+        }
+
+        public static FFProbeResult Run(Video item)
         {
             // Use try catch to avoid having to use File.Exists
             try
             {
-                return GetCachedResult(outputCachePath);
+                return GetCachedResult(GetFFProbeVideoCachePath(item));
             }
             catch (FileNotFoundException)
             {
             }
 
-            await Run(item.Path, outputCachePath).ConfigureAwait(false);
+            FFProbeResult result = Run(item.Path);
 
-            return GetCachedResult(item.Path);
+            // Fire and forget
+            CacheResult(result, GetFFProbeVideoCachePath(item));
+
+            return result;
         }
 
-        private async static Task Run(string input, string output)
+        private static FFProbeResult Run(string input)
         {
+            MediaBrowser.Common.Logging.Logger.LogInfo(input);
+
             ProcessStartInfo startInfo = new ProcessStartInfo();
 
             startInfo.CreateNoWindow = true;
@@ -74,8 +87,6 @@ namespace MediaBrowser.Controller.FFMpeg
             Process process = new Process();
             process.StartInfo = startInfo;
 
-            FileStream stream = new FileStream(output, FileMode.Create);
-
             try
             {
                 process.Start();
@@ -84,22 +95,20 @@ namespace MediaBrowser.Controller.FFMpeg
                 // If we ever decide to disable the ffmpeg log then you must uncomment the below line.
                 process.BeginErrorReadLine();
 
-                await process.StandardOutput.BaseStream.CopyToAsync(stream).ConfigureAwait(false);
+                FFProbeResult result = JsonSerializer.DeserializeFromStream<FFProbeResult>(process.StandardOutput.BaseStream);
 
                 process.WaitForExit();
-
-                stream.Dispose();
 
                 if (process.ExitCode != 0)
                 {
                     Logger.LogInfo("FFProbe exited with code {0} for {1}", process.ExitCode, input);
                 }
+
+                return result;
             }
             catch (Exception ex)
             {
                 Logger.LogException(ex);
-
-                stream.Dispose();
 
                 // Hate having to do this
                 try
@@ -109,12 +118,27 @@ namespace MediaBrowser.Controller.FFMpeg
                 catch
                 {
                 }
-                File.Delete(output);
+
+                return null;
             }
             finally
             {
                 process.Dispose();
             }
+        }
+
+        private static string GetFFProbeAudioCachePath(BaseEntity item)
+        {
+            string outputDirectory = Path.Combine(Kernel.Instance.ApplicationPaths.FFProbeAudioCacheDirectory, item.Id.ToString().Substring(0, 1));
+
+            return Path.Combine(outputDirectory, item.Id + "-" + item.DateModified.Ticks + ".jsv");
+        }
+
+        private static string GetFFProbeVideoCachePath(BaseEntity item)
+        {
+            string outputDirectory = Path.Combine(Kernel.Instance.ApplicationPaths.FFProbeVideoCacheDirectory, item.Id.ToString().Substring(0, 1));
+
+            return Path.Combine(outputDirectory, item.Id + "-" + item.DateModified.Ticks + ".jsv");
         }
     }
 }
