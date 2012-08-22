@@ -83,11 +83,12 @@
     <Compile Include="Net\CollectionExtensions.cs" />
     <Compile Include="Net\Handlers\BaseEmbeddedResourceHandler.cs" />
     <Compile Include="Net\Handlers\BaseHandler.cs" />
-    <Compile Include="Net\Handlers\BaseJsonHandler.cs" />
+    <Compile Include="Net\Handlers\BaseSerializationHandler.cs" />
     <Compile Include="Net\HttpServer.cs" />
     <Compile Include="Net\Request.cs" />
     <Compile Include="Plugins\BasePlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Serialization\JsvSerializer.cs" />
     <Compile Include="Serialization\XmlSerializer.cs" />
     <Compile Include="UI\BaseApplication.cs" />
     <Compile Include="UI\Splash.xaml.cs">
