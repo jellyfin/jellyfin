@@ -14,27 +14,24 @@ namespace MediaBrowser.Api.HttpHandlers
     {
         protected override Task<IEnumerable<PluginInfo>> GetObjectToSerialize()
         {
-            return Task.Run(() =>
+            var plugins = Kernel.Instance.Plugins.Select(p =>
             {
-                var plugins = Kernel.Instance.Plugins.Select(p =>
+                return new PluginInfo()
                 {
-                    return new PluginInfo()
-                    {
-                        Path = p.Path,
-                        Name = p.Name,
-                        Enabled = p.Enabled,
-                        DownloadToUI = p.DownloadToUI,
-                        Version = p.Version
-                    };
-                });
-
-                if (QueryString["uionly"] == "1")
-                {
-                    plugins = plugins.Where(p => p.DownloadToUI);
-                }
-
-                return plugins;
+                    Path = p.Path,
+                    Name = p.Name,
+                    Enabled = p.Enabled,
+                    DownloadToUI = p.DownloadToUI,
+                    Version = p.Version
+                };
             });
+
+            if (QueryString["uionly"] == "1")
+            {
+                plugins = plugins.Where(p => p.DownloadToUI);
+            }
+
+            return Task.FromResult<IEnumerable<PluginInfo>>(plugins);
         }
     }
 }

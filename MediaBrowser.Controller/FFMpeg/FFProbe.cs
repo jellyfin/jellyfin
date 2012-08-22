@@ -18,10 +18,7 @@ namespace MediaBrowser.Controller.FFMpeg
             // Use try catch to avoid having to use File.Exists
             try
             {
-                using (FileStream stream = File.OpenRead(outputCachePath))
-                {
-                    return JsonSerializer.DeserializeFromStream<FFProbeResult>(stream);
-                }
+                return GetCachedResult(outputCachePath);
             }
             catch (FileNotFoundException)
             {
@@ -29,7 +26,12 @@ namespace MediaBrowser.Controller.FFMpeg
 
             await Run(item.Path, outputCachePath).ConfigureAwait(false);
 
-            using (FileStream stream = File.OpenRead(outputCachePath))
+            return GetCachedResult(item.Path);
+        }
+
+        public static FFProbeResult GetCachedResult(string path)
+        {
+            using (FileStream stream = File.OpenRead(path))
             {
                 return JsonSerializer.DeserializeFromStream<FFProbeResult>(stream);
             }
@@ -40,10 +42,7 @@ namespace MediaBrowser.Controller.FFMpeg
             // Use try catch to avoid having to use File.Exists
             try
             {
-                using (FileStream stream = File.OpenRead(outputCachePath))
-                {
-                    return JsonSerializer.DeserializeFromStream<FFProbeResult>(stream);
-                }
+                return GetCachedResult(outputCachePath);
             }
             catch (FileNotFoundException)
             {
@@ -51,10 +50,7 @@ namespace MediaBrowser.Controller.FFMpeg
 
             await Run(item.Path, outputCachePath).ConfigureAwait(false);
 
-            using (FileStream stream = File.OpenRead(outputCachePath))
-            {
-                return JsonSerializer.DeserializeFromStream<FFProbeResult>(stream);
-            }
+            return GetCachedResult(item.Path);
         }
 
         private async static Task Run(string input, string output)

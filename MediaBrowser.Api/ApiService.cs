@@ -81,16 +81,16 @@ namespace MediaBrowser.Api
 
             dto.UserData = item.GetUserData(user);
 
-            await AttachStudios(dto, item);
+            await AttachStudios(dto, item).ConfigureAwait(false);
 
             if (includeChildren)
             {
-                await AttachChildren(dto, item, user);
+                await AttachChildren(dto, item, user).ConfigureAwait(false);
             }
 
             if (includePeople)
             {
-                await AttachPeople(dto, item);
+                await AttachPeople(dto, item).ConfigureAwait(false);
             }
 
             Folder folder = item as Folder;
@@ -125,7 +125,7 @@ namespace MediaBrowser.Api
             // Attach Studios by transforming them into BaseItemStudio (DTO)
             if (item.Studios != null)
             {
-                IEnumerable<Studio> entities = await Task.WhenAll<Studio>(item.Studios.Select(c => Kernel.Instance.ItemController.GetStudio(c)));
+                IEnumerable<Studio> entities = await Task.WhenAll<Studio>(item.Studios.Select(c => Kernel.Instance.ItemController.GetStudio(c))).ConfigureAwait(false);
 
                 dto.Studios = item.Studios.Select(s =>
                 {
@@ -153,12 +153,12 @@ namespace MediaBrowser.Api
             {
                 IEnumerable<BaseItem> children = folder.GetParentalAllowedChildren(user);
 
-                dto.Children = await Task.WhenAll<DTOBaseItem>(children.Select(c => GetDTOBaseItem(c, user, false, false)));
+                dto.Children = await Task.WhenAll<DTOBaseItem>(children.Select(c => GetDTOBaseItem(c, user, false, false))).ConfigureAwait(false);
             }
 
             if (item.LocalTrailers != null && item.LocalTrailers.Any())
             {
-                dto.LocalTrailers = await Task.WhenAll<DTOBaseItem>(item.LocalTrailers.Select(c => GetDTOBaseItem(c, user, false, false)));
+                dto.LocalTrailers = await Task.WhenAll<DTOBaseItem>(item.LocalTrailers.Select(c => GetDTOBaseItem(c, user, false, false))).ConfigureAwait(false);
             }
         }
 
@@ -167,7 +167,7 @@ namespace MediaBrowser.Api
             // Attach People by transforming them into BaseItemPerson (DTO)
             if (item.People != null)
             {
-                IEnumerable<Person> entities = await Task.WhenAll<Person>(item.People.Select(c => Kernel.Instance.ItemController.GetPerson(c.Name)));
+                IEnumerable<Person> entities = await Task.WhenAll<Person>(item.People.Select(c => Kernel.Instance.ItemController.GetPerson(c.Name))).ConfigureAwait(false);
 
                 dto.People = item.People.Select(p =>
                 {

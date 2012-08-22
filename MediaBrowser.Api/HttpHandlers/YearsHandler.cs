@@ -11,13 +11,13 @@ namespace MediaBrowser.Api.HttpHandlers
 {
     public class YearsHandler : BaseJsonHandler<IEnumerable<IBNItem<Year>>>
     {
-        protected override async Task<IEnumerable<IBNItem<Year>>> GetObjectToSerialize()
+        protected override Task<IEnumerable<IBNItem<Year>>> GetObjectToSerialize()
         {
             Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
             Guid userId = Guid.Parse(QueryString["userid"]);
             User user = Kernel.Instance.Users.First(u => u.Id == userId);
 
-            return await GetAllYears(parent, user);
+            return GetAllYears(parent, user);
         }
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 }
             }
 
-            IEnumerable<Year> entities = await Task.WhenAll<Year>(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetYear(key); }));
+            IEnumerable<Year> entities = await Task.WhenAll<Year>(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetYear(key); })).ConfigureAwait(false);
 
             return entities.Select(e => new IBNItem<Year>() { Item = e, BaseItemCount = data[int.Parse(e.Name)] });
         }

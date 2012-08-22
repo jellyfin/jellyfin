@@ -11,13 +11,13 @@ namespace MediaBrowser.Api.HttpHandlers
 {
     public class StudiosHandler : BaseJsonHandler<IEnumerable<IBNItem<Studio>>>
     {
-        protected override async Task<IEnumerable<IBNItem<Studio>>> GetObjectToSerialize()
+        protected override Task<IEnumerable<IBNItem<Studio>>> GetObjectToSerialize()
         {
             Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
             Guid userId = Guid.Parse(QueryString["userid"]);
             User user = Kernel.Instance.Users.First(u => u.Id == userId);
 
-            return await GetAllStudios(parent, user);
+            return GetAllStudios(parent, user);
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 }
             }
 
-            IEnumerable<Studio> entities = await Task.WhenAll<Studio>(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetStudio(key); }));
+            IEnumerable<Studio> entities = await Task.WhenAll<Studio>(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetStudio(key); })).ConfigureAwait(false);
 
             return entities.Select(e => new IBNItem<Studio>() { Item = e, BaseItemCount = data[e.Name] });
         }

@@ -102,33 +102,30 @@ namespace MediaBrowser.Common.Net.Handlers
 
         protected override Task<DateTime?> GetLastDateModified()
         {
-            return Task.Run<DateTime?>(() =>
+            DateTime? value = null;
+
+            EnsureSourceStream();
+
+            if (SourceStream != null)
             {
-                EnsureSourceStream();
+                value = File.GetLastWriteTime(Path);
+            }
 
-                if (SourceStream == null)
-                {
-                    return null;
-                }
-
-                return File.GetLastWriteTime(Path);
-            });
+            return Task.FromResult<DateTime?>(value);
         }
 
         public override Task<string> GetContentType()
         {
-            return Task.Run(() =>
-            {
-                return MimeTypes.GetMimeType(Path);
-            });
+            return Task.FromResult<string>(MimeTypes.GetMimeType(Path));
         }
 
         protected override Task PrepareResponse()
         {
-            return Task.Run(() => { EnsureSourceStream(); });
+            EnsureSourceStream();
+            return Task.FromResult<object>(null);
         }
 
-        protected async override Task WriteResponseToOutputStream(Stream stream)
+        protected override Task WriteResponseToOutputStream(Stream stream)
         {
             if (IsRangeRequest)
             {
@@ -137,22 +134,22 @@ namespace MediaBrowser.Common.Net.Handlers
                 // If the requested range is "0-" and we know the total length, we can optimize by avoiding having to buffer the content into memory
                 if (requestedRange.Value == null && TotalContentLength != null)
                 {
-                    await ServeCompleteRangeRequest(requestedRange, stream);
+                    return ServeCompleteRangeRequest(requestedRange, stream);
                 }
                 else if (TotalContentLength.HasValue)
                 {
                     // This will have to buffer a portion of the content into memory
-                    await ServePartialRangeRequestWithKnownTotalContentLength(requestedRange, stream);
+                    return ServePartialRangeRequestWithKnownTotalContentLength(requestedRange, stream);
                 }
                 else
                 {
                     // This will have to buffer the entire content into memory
-                    await ServePartialRangeRequestWithUnknownTotalContentLength(requestedRange, stream);
+                    return ServePartialRangeRequestWithUnknownTotalContentLength(requestedRange, stream);
                 }
             }
             else
             {
-                await SourceStream.CopyToAsync(stream);
+                return SourceStream.CopyToAsync(stream);
             }
         }
 
@@ -170,7 +167,7 @@ namespace MediaBrowser.Common.Net.Handlers
         /// Handles a range request of "bytes=0-"
         /// This will serve the complete content and add the content-range header
         /// </summary>
-        private async Task ServeCompleteRangeRequest(KeyValuePair<long, long?> requestedRange, Stream responseStream)
+        private Task ServeCompleteRangeRequest(KeyValuePair<long, long?> requestedRange, Stream responseStream)
         {
             long totalContentLength = TotalContentLength.Value;
 
@@ -187,7 +184,7 @@ namespace MediaBrowser.Common.Net.Handlers
                 SourceStream.Position = rangeStart;
             }
 
-            await SourceStream.CopyToAsync(responseStream);
+            return SourceStream.CopyToAsync(responseStream);
         }
 
         /// <summary>
@@ -196,7 +193,7 @@ namespace MediaBrowser.Common.Net.Handlers
         private async Task ServePartialRangeRequestWithUnknownTotalContentLength(KeyValuePair<long, long?> requestedRange, Stream responseStream)
         {
             // Read the entire stream so that we can determine the length
-            byte[] bytes = await ReadBytes(SourceStream, 0, null);
+            byte[] bytes = await ReadBytes(SourceStream, 0, null).ConfigureAwait(false);
 
             long totalContentLength = bytes.LongLength;
 
@@ -208,7 +205,7 @@ namespace MediaBrowser.Common.Net.Handlers
             HttpListenerContext.Response.ContentLength64 = rangeLength;
             HttpListenerContext.Response.Headers["Content-Range"] = string.Format("bytes {0}-{1}/{2}", rangeStart, rangeEnd, totalContentLength);
 
-            await responseStream.WriteAsync(bytes, Convert.ToInt32(rangeStart), Convert.ToInt32(rangeLength));
+            await responseStream.WriteAsync(bytes, Convert.ToInt32(rangeStart), Convert.ToInt32(rangeLength)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -222,14 +219,14 @@ namespace MediaBrowser.Common.Net.Handlers
             long rangeLength = 1 + rangeEnd - rangeStart;
 
             // Only read the bytes we need
-            byte[] bytes = await ReadBytes(SourceStream, Convert.ToInt32(rangeStart), Convert.ToInt32(rangeLength));
+            byte[] bytes = await ReadBytes(SourceStream, Convert.ToInt32(rangeStart), Convert.ToInt32(rangeLength)).ConfigureAwait(false);
 
             // Content-Length is the length of what we're serving, not the original content
             HttpListenerContext.Response.ContentLength64 = rangeLength;
 
             HttpListenerContext.Response.Headers["Content-Range"] = string.Format("bytes {0}-{1}/{2}", rangeStart, rangeEnd, totalContentLength);
 
-            await responseStream.WriteAsync(bytes, 0, Convert.ToInt32(rangeLength));
+            await responseStream.WriteAsync(bytes, 0, Convert.ToInt32(rangeLength)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -252,9 +249,9 @@ namespace MediaBrowser.Common.Net.Handlers
                 using (MemoryStream ms = new MemoryStream())
                 {
                     int read;
-                    while ((read = await input.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                    while ((read = await input.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) > 0)
                     {
-                        await ms.WriteAsync(buffer, 0, read);
+                        await ms.WriteAsync(buffer, 0, read).ConfigureAwait(false);
                     }
                     return ms.ToArray();
                 }
@@ -265,9 +262,9 @@ namespace MediaBrowser.Common.Net.Handlers
 
                 using (MemoryStream ms = new MemoryStream())
                 {
-                    int read = await input.ReadAsync(buffer, 0, buffer.Length);
+                    int read = await input.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
 
-                    await ms.WriteAsync(buffer, 0, read);
+                    await ms.WriteAsync(buffer, 0, read).ConfigureAwait(false);
 
                     return ms.ToArray();
                 }

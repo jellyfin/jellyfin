@@ -116,14 +116,17 @@ namespace MediaBrowser.Controller.Library
 
             if (item != null)
             {
-                await Kernel.Instance.ExecuteMetadataProviders(item, args);
+                await Kernel.Instance.ExecuteMetadataProviders(item, args).ConfigureAwait(false);
 
-                var folder = item as Folder;
-
-                if (folder != null)
+                if (item.IsFolder)
                 {
                     // If it's a folder look for child entities
-                    await AttachChildren(folder, fileSystemChildren).ConfigureAwait(false);
+                    (item as Folder).Children = (await Task.WhenAll<BaseItem>(GetChildren(item as Folder, fileSystemChildren)).ConfigureAwait(false))
+                        .Where(i => i != null).OrderBy(f =>
+                        {
+                            return string.IsNullOrEmpty(f.SortName) ? f.Name : f.SortName;
+
+                        });
                 }
             }
 
@@ -133,27 +136,18 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Finds child BaseItems for a given Folder
         /// </summary>
-        private async Task AttachChildren(Folder folder, LazyFileInfo[] fileSystemChildren)
+        private Task<BaseItem>[] GetChildren(Folder folder, LazyFileInfo[] fileSystemChildren)
         {
-            int count = fileSystemChildren.Length;
+            Task<BaseItem>[] tasks = new Task<BaseItem>[fileSystemChildren.Length];
 
-            Task<BaseItem>[] tasks = new Task<BaseItem>[count];
-
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < fileSystemChildren.Length; i++)
             {
                 var child = fileSystemChildren[i];
 
                 tasks[i] = GetItem(child.Path, folder, child.FileInfo);
             }
 
-            BaseItem[] baseItemChildren = await Task<BaseItem>.WhenAll(tasks).ConfigureAwait(false);
-
-            // Sort them
-            folder.Children = baseItemChildren.Where(i => i != null).OrderBy(f =>
-            {
-                return string.IsNullOrEmpty(f.SortName) ? f.Name : f.SortName;
-
-            });
+            return tasks;
         }
 
         /// <summary>
@@ -216,41 +210,41 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets a Person
         /// </summary>
-        public async Task<Person> GetPerson(string name)
+        public Task<Person> GetPerson(string name)
         {
             string path = Path.Combine(Kernel.Instance.ApplicationPaths.PeoplePath, name);
 
-            return await GetImagesByNameItem<Person>(path, name).ConfigureAwait(false);
+            return GetImagesByNameItem<Person>(path, name);
         }
 
         /// <summary>
         /// Gets a Studio
         /// </summary>
-        public async Task<Studio> GetStudio(string name)
+        public Task<Studio> GetStudio(string name)
         {
             string path = Path.Combine(Kernel.Instance.ApplicationPaths.StudioPath, name);
 
-            return await GetImagesByNameItem<Studio>(path, name).ConfigureAwait(false);
+            return GetImagesByNameItem<Studio>(path, name);
         }
 
         /// <summary>
         /// Gets a Genre
         /// </summary>
-        public async Task<Genre> GetGenre(string name)
+        public Task<Genre> GetGenre(string name)
         {
             string path = Path.Combine(Kernel.Instance.ApplicationPaths.GenrePath, name);
 
-            return await GetImagesByNameItem<Genre>(path, name).ConfigureAwait(false);
+            return GetImagesByNameItem<Genre>(path, name);
         }
 
         /// <summary>
         /// Gets a Year
         /// </summary>
-        public async Task<Year> GetYear(int value)
+        public Task<Year> GetYear(int value)
         {
             string path = Path.Combine(Kernel.Instance.ApplicationPaths.YearPath, value.ToString());
 
-            return await GetImagesByNameItem<Year>(path, value.ToString()).ConfigureAwait(false);
+            return GetImagesByNameItem<Year>(path, value.ToString());
         }
 
         private ConcurrentDictionary<string, object> ImagesByNameItemCache = new ConcurrentDictionary<string, object>();
@@ -258,7 +252,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Generically retrieves an IBN item
         /// </summary>
-        private async Task<T> GetImagesByNameItem<T>(string path, string name)
+        private Task<T> GetImagesByNameItem<T>(string path, string name)
             where T : BaseEntity, new()
         {
             string key = path.ToLower();
@@ -266,12 +260,10 @@ namespace MediaBrowser.Controller.Library
             // Look for it in the cache, if it's not there, create it
             if (!ImagesByNameItemCache.ContainsKey(key))
             {
-                T obj = await CreateImagesByNameItem<T>(path, name).ConfigureAwait(false);
-                ImagesByNameItemCache[key] = obj;
-                return obj;
+                ImagesByNameItemCache[key] = CreateImagesByNameItem<T>(path, name);
             }
 
-            return ImagesByNameItemCache[key] as T;
+            return ImagesByNameItemCache[key] as Task<T>;
         }
 
         /// <summary>

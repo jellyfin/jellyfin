@@ -17,15 +17,15 @@ namespace MediaBrowser.Common.UI
         protected abstract IKernel InstantiateKernel();
         protected abstract Window InstantiateMainWindow();
 
-        protected async override void OnStartup(StartupEventArgs e)
+        protected override void OnStartup(StartupEventArgs e)
         {
             // Without this the app will shutdown after the splash screen closes
             this.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-            await LoadKernel().ConfigureAwait(false);
+            LoadKernel();
         }
 
-        private async Task LoadKernel()
+        private async void LoadKernel()
         {
             Kernel = InstantiateKernel();
 
@@ -40,9 +40,7 @@ namespace MediaBrowser.Common.UI
 
                 await Kernel.Init(progress);
 
-                double seconds = (DateTime.Now - now).TotalSeconds;
-
-                Logger.LogInfo("Kernel.Init completed in {0} seconds.", seconds);
+                Logger.LogInfo("Kernel.Init completed in {0} seconds.", (DateTime.Now - now).TotalSeconds);
                 splash.Close();
 
                 this.ShutdownMode = System.Windows.ShutdownMode.OnLastWindowClose;

@@ -11,13 +11,13 @@ namespace MediaBrowser.Api.HttpHandlers
 {
     public class GenresHandler : BaseJsonHandler<IEnumerable<IBNItem<Genre>>>
     {
-        protected override async Task<IEnumerable<IBNItem<Genre>>> GetObjectToSerialize()
+        protected override Task<IEnumerable<IBNItem<Genre>>> GetObjectToSerialize()
         {
             Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
             Guid userId = Guid.Parse(QueryString["userid"]);
             User user = Kernel.Instance.Users.First(u => u.Id == userId);
 
-            return await GetAllGenres(parent, user);
+            return GetAllGenres(parent, user);
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 }
             }
 
-            IEnumerable<Genre> entities = await Task.WhenAll<Genre>(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetGenre(key); }));
+            IEnumerable<Genre> entities = await Task.WhenAll<Genre>(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetGenre(key); })).ConfigureAwait(false);
 
             return entities.Select(e => new IBNItem<Genre>() { Item = e, BaseItemCount = data[e.Name] });
         }

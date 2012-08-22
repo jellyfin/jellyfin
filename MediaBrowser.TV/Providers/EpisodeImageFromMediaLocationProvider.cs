@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.Composition;
+﻿using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,7 +22,7 @@ namespace MediaBrowser.TV.Providers
             get { return MetadataProviderPriority.First; }
         }
 
-        public override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
+        public override Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
         {
             return Task.Run(() =>
             {

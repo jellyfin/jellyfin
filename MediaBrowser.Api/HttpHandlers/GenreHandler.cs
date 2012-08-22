@@ -14,7 +14,7 @@ namespace MediaBrowser.Api.HttpHandlers
     /// </summary>
     public class GenreHandler : BaseJsonHandler<IBNItem<Genre>>
     {
-        protected override async Task<IBNItem<Genre>> GetObjectToSerialize()
+        protected override Task<IBNItem<Genre>> GetObjectToSerialize()
         {
             Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
             Guid userId = Guid.Parse(QueryString["userid"]);
@@ -22,7 +22,7 @@ namespace MediaBrowser.Api.HttpHandlers
 
             string name = QueryString["name"];
 
-            return await GetGenre(parent, user, name);
+            return GetGenre(parent, user, name);
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace MediaBrowser.Api.HttpHandlers
             // Get the original entity so that we can also supply the PrimaryImagePath
             return new IBNItem<Genre>()
             {
-                Item = await Kernel.Instance.ItemController.GetGenre(name),
+                Item = await Kernel.Instance.ItemController.GetGenre(name).ConfigureAwait(false),
                 BaseItemCount = count
             };
         }

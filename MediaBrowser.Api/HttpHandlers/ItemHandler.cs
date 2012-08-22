@@ -10,7 +10,7 @@ namespace MediaBrowser.Api.HttpHandlers
 {
     public class ItemHandler : BaseJsonHandler<DTOBaseItem>
     {
-        protected async override Task<DTOBaseItem> GetObjectToSerialize()
+        protected override Task<DTOBaseItem> GetObjectToSerialize()
         {
             Guid userId = Guid.Parse(QueryString["userid"]);
             User user = Kernel.Instance.Users.First(u => u.Id == userId);
@@ -22,7 +22,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 return null;
             }
 
-            return await ApiService.GetDTOBaseItem(item, user);
+            return ApiService.GetDTOBaseItem(item, user);
         }
 
         protected virtual BaseItem ItemToSerialize
