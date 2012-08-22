@@ -39,8 +39,14 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
+        /// <summary>
+        /// Gets or sets the format to request from the server
+        /// The Data Serializer will have to be able to support it.
+        /// </summary>
+        public SerializationFormat SerializationFormat { get; set; }
+
         public HttpClient HttpClient { get; private set; }
-        public IJsonSerializer JsonSerializer { get; set; }
+        public IDataSerializer DataSerializer { get; set; }
 
         /// <summary>
         /// Gets an image url that can be used to download an image from the api
@@ -169,9 +175,9 @@ namespace MediaBrowser.ApiInteraction
                 url += "&id=" + id.ToString();
             }
 
-            using (Stream stream = await GetStreamAsync(url).ConfigureAwait(false))
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return JsonSerializer.DeserializeFromStream<DTOBaseItem>(stream);
+                return DataSerializer.DeserializeFromStream<DTOBaseItem>(stream);
             }
         }
 
@@ -182,9 +188,9 @@ namespace MediaBrowser.ApiInteraction
         {
             string url = ApiUrl + "/users";
 
-            using (Stream stream = await GetStreamAsync(url).ConfigureAwait(false))
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return JsonSerializer.DeserializeFromStream<IEnumerable<User>>(stream);
+                return DataSerializer.DeserializeFromStream<IEnumerable<User>>(stream);
             }
         }
 
@@ -195,9 +201,9 @@ namespace MediaBrowser.ApiInteraction
         {
             string url = ApiUrl + "/genres?userId=" + userId.ToString();
 
-            using (Stream stream = await GetStreamAsync(url).ConfigureAwait(false))
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return JsonSerializer.DeserializeFromStream<IEnumerable<IBNItem<Genre>>>(stream);
+                return DataSerializer.DeserializeFromStream<IEnumerable<IBNItem<Genre>>>(stream);
             }
         }
 
@@ -208,9 +214,9 @@ namespace MediaBrowser.ApiInteraction
         {
             string url = ApiUrl + "/years?userId=" + userId.ToString();
 
-            using (Stream stream = await GetStreamAsync(url).ConfigureAwait(false))
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return JsonSerializer.DeserializeFromStream<IEnumerable<IBNItem<Year>>>(stream);
+                return DataSerializer.DeserializeFromStream<IEnumerable<IBNItem<Year>>>(stream);
             }
         }
 
@@ -221,9 +227,9 @@ namespace MediaBrowser.ApiInteraction
         {
             string url = ApiUrl + "/itemlist?listtype=itemswithyear&userId=" + userId.ToString() + "&name=" + name;
 
-            using (Stream stream = await GetStreamAsync(url).ConfigureAwait(false))
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return JsonSerializer.DeserializeFromStream<IEnumerable<DTOBaseItem>>(stream);
+                return DataSerializer.DeserializeFromStream<IEnumerable<DTOBaseItem>>(stream);
             }
         }
 
@@ -234,9 +240,9 @@ namespace MediaBrowser.ApiInteraction
         {
             string url = ApiUrl + "/itemlist?listtype=itemswithgenre&userId=" + userId.ToString() + "&name=" + name;
 
-            using (Stream stream = await GetStreamAsync(url).ConfigureAwait(false))
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return JsonSerializer.DeserializeFromStream<IEnumerable<DTOBaseItem>>(stream);
+                return DataSerializer.DeserializeFromStream<IEnumerable<DTOBaseItem>>(stream);
             }
         }
 
@@ -247,12 +253,12 @@ namespace MediaBrowser.ApiInteraction
         {
             string url = ApiUrl + "/itemlist?listtype=itemswithperson&userId=" + userId.ToString() + "&name=" + name;
 
-            using (Stream stream = await GetStreamAsync(url).ConfigureAwait(false))
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return JsonSerializer.DeserializeFromStream<IEnumerable<DTOBaseItem>>(stream);
+                return DataSerializer.DeserializeFromStream<IEnumerable<DTOBaseItem>>(stream);
             }
         }
-        
+
         /// <summary>
         /// Gets all items that contain a given Person
         /// </summary>
@@ -262,9 +268,9 @@ namespace MediaBrowser.ApiInteraction
 
             url += "&persontype=" + personType;
 
-            using (Stream stream = await GetStreamAsync(url).ConfigureAwait(false))
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return JsonSerializer.DeserializeFromStream<IEnumerable<DTOBaseItem>>(stream);
+                return DataSerializer.DeserializeFromStream<IEnumerable<DTOBaseItem>>(stream);
             }
         }
 
@@ -275,9 +281,9 @@ namespace MediaBrowser.ApiInteraction
         {
             string url = ApiUrl + "/studios?userId=" + userId.ToString();
 
-            using (Stream stream = await GetStreamAsync(url).ConfigureAwait(false))
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return JsonSerializer.DeserializeFromStream<IEnumerable<IBNItem<Studio>>>(stream);
+                return DataSerializer.DeserializeFromStream<IEnumerable<IBNItem<Studio>>>(stream);
             }
         }
 
@@ -288,9 +294,9 @@ namespace MediaBrowser.ApiInteraction
         {
             string url = ApiUrl + "/itemlist?listtype=itemswithstudio&userId=" + userId.ToString() + "&name=" + name;
 
-            using (Stream stream = await GetStreamAsync(url).ConfigureAwait(false))
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return JsonSerializer.DeserializeFromStream<IEnumerable<DTOBaseItem>>(stream);
+                return DataSerializer.DeserializeFromStream<IEnumerable<DTOBaseItem>>(stream);
             }
         }
 
@@ -301,9 +307,9 @@ namespace MediaBrowser.ApiInteraction
         {
             string url = ApiUrl + "/studio?userId=" + userId.ToString() + "&name=" + name;
 
-            using (Stream stream = await GetStreamAsync(url).ConfigureAwait(false))
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return JsonSerializer.DeserializeFromStream<IBNItem<Studio>>(stream);
+                return DataSerializer.DeserializeFromStream<IBNItem<Studio>>(stream);
             }
         }
 
@@ -314,9 +320,9 @@ namespace MediaBrowser.ApiInteraction
         {
             string url = ApiUrl + "/genre?userId=" + userId.ToString() + "&name=" + name;
 
-            using (Stream stream = await GetStreamAsync(url).ConfigureAwait(false))
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return JsonSerializer.DeserializeFromStream<IBNItem<Genre>>(stream);
+                return DataSerializer.DeserializeFromStream<IBNItem<Genre>>(stream);
             }
         }
 
@@ -327,9 +333,9 @@ namespace MediaBrowser.ApiInteraction
         {
             string url = ApiUrl + "/person?userId=" + userId.ToString() + "&name=" + name;
 
-            using (Stream stream = await GetStreamAsync(url).ConfigureAwait(false))
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return JsonSerializer.DeserializeFromStream<IBNItem<Person>>(stream);
+                return DataSerializer.DeserializeFromStream<IBNItem<Person>>(stream);
             }
         }
 
@@ -340,20 +346,46 @@ namespace MediaBrowser.ApiInteraction
         {
             string url = ApiUrl + "/year?userId=" + userId.ToString() + "&year=" + year;
 
-            using (Stream stream = await GetStreamAsync(url).ConfigureAwait(false))
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return JsonSerializer.DeserializeFromStream<IBNItem<Year>>(stream);
+                return DataSerializer.DeserializeFromStream<IBNItem<Year>>(stream);
             }
         }
 
+        /// <summary>
+        /// This is a helper around getting a stream from the server that contains serialized data
+        /// </summary>
+        private Task<Stream> GetSerializedStreamAsync(string url)
+        {
+            if (url.IndexOf('?') == -1)
+            {
+                url += "?dataformat=" + SerializationFormat.ToString().ToLower();
+            }
+            else
+            {
+                url += "&dataformat=" + SerializationFormat.ToString().ToLower();
+            }
+
+            return GetStreamAsync(url);
+        }
+
+        /// <summary>
+        /// This is just a helper around HttpClient
+        /// </summary>
         private Task<Stream> GetStreamAsync(string url)
         {
-            return GetStreamAsync(url);
+            return HttpClient.GetStreamAsync(url);
         }
 
         public void Dispose()
         {
             HttpClient.Dispose();
         }
+    }
+
+    public enum SerializationFormat
+    {
+        Json,
+        Jsv
     }
 }

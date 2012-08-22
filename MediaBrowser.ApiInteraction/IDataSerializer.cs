@@ -6,7 +6,7 @@ namespace MediaBrowser.ApiInteraction
     /// <summary>
     /// Since ServiceStack Json is not portable, we need to abstract required json functions into an interface
     /// </summary>
-    public interface IJsonSerializer
+    public interface IDataSerializer
     {
         T DeserializeFromStream<T>(Stream stream);
     }
