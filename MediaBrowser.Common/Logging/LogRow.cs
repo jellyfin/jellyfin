@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Text;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Common.Logging
 {
@@ -9,27 +11,31 @@ namespace MediaBrowser.Common.Logging
         
         public LogSeverity Severity { get; set; }
         public string Message { get; set; }
-        public string Category { get; set; }
         public int ThreadId { get; set; }
         public string ThreadName { get; set; }
         public DateTime Time { get; set; }
 
         public override string ToString()
         {
-            StringBuilder builder = new StringBuilder();
-            builder.Append(Time.ToString(TimePattern))
-                .Append(" , ")
-                .Append(Enum.GetName(typeof(LogSeverity), Severity))
-                .Append(" , ")
-                .Append(Encode(Message))
-                .Append(" , ")
-                .Append(Encode(Category))
-                .Append(" , ")
-                .Append(ThreadId)
-                .Append(" , ")
-                .Append(Encode(ThreadName));
+            List<string> data = new List<string>();
 
-            return builder.ToString();
+            data.Add(Time.ToString(TimePattern));
+
+            data.Add(Severity.ToString());
+
+            if (!string.IsNullOrEmpty(Message))
+            {
+                data.Add(Encode(Message));
+            }
+
+            data.Add(ThreadId.ToString());
+
+            if (!string.IsNullOrEmpty(ThreadName))
+            {
+                data.Add(Encode(ThreadName));
+            }
+
+            return string.Join(" , ", data.ToArray());
         }
 
         private string Encode(string str)
