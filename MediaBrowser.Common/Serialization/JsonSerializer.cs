@@ -19,9 +19,9 @@ namespace MediaBrowser.Common.Serialization
         {
             Configure();
 
-            using (StreamWriter streamWriter = new StreamWriter(file))
+            using (Stream stream = File.Open(file, FileMode.Create))
             {
-                ServiceStack.Text.JsonSerializer.SerializeToWriter<T>(obj, streamWriter);
+                ServiceStack.Text.JsonSerializer.SerializeToStream<T>(obj, stream);
             }
         }
 
@@ -50,13 +50,6 @@ namespace MediaBrowser.Common.Serialization
             Configure();
 
             return ServiceStack.Text.JsonSerializer.DeserializeFromStream<T>(stream);
-        }
-
-        public static T DeserializeFromString<T>(string data)
-        {
-            Configure();
-
-            return ServiceStack.Text.JsonSerializer.DeserializeFromString<T>(data);
         }
 
         private static bool IsConfigured = false;

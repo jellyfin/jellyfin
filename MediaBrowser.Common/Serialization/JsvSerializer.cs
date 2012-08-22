@@ -18,5 +18,21 @@ namespace MediaBrowser.Common.Serialization
         {
             return ServiceStack.Text.TypeSerializer.DeserializeFromStream<T>(stream);
         }
+
+        public static void SerializeToFile<T>(T obj, string file)
+        {
+            using (Stream stream = File.Open(file, FileMode.Create))
+            {
+                ServiceStack.Text.TypeSerializer.SerializeToStream<T>(obj, stream);
+            }
+        }
+
+        public static T DeserializeFromFile<T>(string file)
+        {
+            using (Stream stream = File.OpenRead(file))
+            {
+                return ServiceStack.Text.TypeSerializer.DeserializeFromStream<T>(stream);
+            }
+        }
     }
 }
