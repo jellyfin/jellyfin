@@ -71,9 +71,8 @@ namespace MediaBrowser.Common.Logging
             {
                 Severity = severity,
                 Message = message,
-                Category = string.Empty,
                 ThreadId = currentThread.ManagedThreadId,
-                //ThreadName = currentThread.Name,
+                ThreadName = currentThread.Name,
                 Time = DateTime.Now
             };
 
