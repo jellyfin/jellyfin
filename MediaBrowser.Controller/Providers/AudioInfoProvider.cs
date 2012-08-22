@@ -4,6 +4,7 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Logging;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.FFMpeg;
 using MediaBrowser.Model.Entities;
@@ -35,6 +36,12 @@ namespace MediaBrowser.Controller.Providers
 
         private void Fetch(Audio audio, FFProbeResult data)
         {
+            if (data == null)
+            {
+                Logger.LogInfo("Null FFProbeResult for {0} {1}", audio.Id, audio.Name);
+                return;
+            }
+            
             MediaStream stream = data.streams.First(s => s.codec_type.Equals("audio", StringComparison.OrdinalIgnoreCase));
 
             string bitrate = null;
