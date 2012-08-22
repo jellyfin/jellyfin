@@ -91,7 +91,8 @@ namespace MediaBrowser.Model.DTO
         public ItemSpecialCounts SpecialCounts { get; set; }
 
         public AudioInfo AudioInfo { get; set; }
-        
+        public VideoInfo VideoInfo { get; set; }
+      
         public bool IsType(Type type)
         {
             return IsType(type.Name);

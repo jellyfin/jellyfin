@@ -321,8 +321,15 @@ namespace MediaBrowser.Controller.Xml
                             break;
 
                         case "Subtitle":
-                            FetchMediaInfoSubtitles(reader.ReadSubtree(), item);
-                            break;
+                            {
+                                SubtitleStream stream = FetchMediaInfoSubtitles(reader.ReadSubtree());
+
+                                List<SubtitleStream> streams = (item.Subtitles ?? new SubtitleStream[] { }).ToList();
+                                streams.Add(stream);
+                                item.Subtitles = streams;
+
+                                break;
+                            }
 
                         default:
                             reader.Skip();
@@ -346,10 +353,6 @@ namespace MediaBrowser.Controller.Xml
                     {
                         case "Default":
                             stream.IsDefault = reader.ReadElementContentAsString() == "True";
-                            break;
-
-                        case "Forced":
-                            stream.IsForced = reader.ReadElementContentAsString() == "True";
                             break;
 
                         case "BitRate":
@@ -451,9 +454,9 @@ namespace MediaBrowser.Controller.Xml
             }
         }
 
-        private void FetchMediaInfoSubtitles(XmlReader reader, Video item)
+        private SubtitleStream FetchMediaInfoSubtitles(XmlReader reader)
         {
-            List<string> list = (item.Subtitles ?? new string[] { }).ToList();
+            SubtitleStream stream = new SubtitleStream();
 
             reader.MoveToContent();
 
@@ -464,15 +467,16 @@ namespace MediaBrowser.Controller.Xml
                     switch (reader.Name)
                     {
                         case "Language":
-                            {
-                                string genre = reader.ReadElementContentAsString();
+                            stream.Language = reader.ReadElementContentAsString();
+                            break;
 
-                                if (!string.IsNullOrWhiteSpace(genre))
-                                {
-                                    list.Add(genre);
-                                }
-                                break;
-                            }
+                        case "Default":
+                            stream.IsDefault = reader.ReadElementContentAsString() == "True";
+                            break;
+
+                        case "Forced":
+                            stream.IsForced = reader.ReadElementContentAsString() == "True";
+                            break;
 
                         default:
                             reader.Skip();
@@ -481,7 +485,7 @@ namespace MediaBrowser.Controller.Xml
                 }
             }
 
-            item.Subtitles = list;
+            return stream;
         }
 
         private void FetchFromTaglinesNode(XmlReader reader, T item)

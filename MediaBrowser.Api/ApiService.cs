@@ -117,6 +117,22 @@ namespace MediaBrowser.Api
                 };
             }
 
+            Video video = item as Video;
+
+            if (video != null)
+            {
+                dto.VideoInfo = new VideoInfo()
+                {
+                    Height = video.Height,
+                    Width = video.Width,
+                    Codec = video.Codec,
+                    VideoType = video.VideoType,
+                    AudioStreams = video.AudioStreams,
+                    Subtitles = video.Subtitles,
+                    ScanType = video.ScanType
+                };
+            }
+
             return dto;
         }
 
