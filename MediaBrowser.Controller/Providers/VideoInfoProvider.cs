@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.FFMpeg;
 using MediaBrowser.Model.Entities;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -61,11 +62,25 @@ namespace MediaBrowser.Controller.Providers
                 video.BitRate = int.Parse(data.format.bit_rate);
             }
 
-            MediaStream videoStream = data.streams.FirstOrDefault(s => s.codec_type.Equals("video", StringComparison.OrdinalIgnoreCase));
+            // For now, only read info about first video stream
+            // Files with multiple video streams are possible, but extremely rare
+            bool foundVideo = false;
 
-            if (videoStream != null)
+            foreach (MediaStream stream in data.streams)
             {
-                FetchFromVideoStream(video, videoStream);
+                if (stream.codec_type.Equals("video", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!foundVideo)
+                    {
+                        FetchFromVideoStream(video, stream);
+                    }
+
+                    foundVideo = true;
+                }
+                else if (stream.codec_type.Equals("audio", StringComparison.OrdinalIgnoreCase))
+                {
+                    FetchFromAudioStream(video, stream);
+                }
             }
         }
 
@@ -75,6 +90,45 @@ namespace MediaBrowser.Controller.Providers
             video.Width = stream.width;
             video.Height = stream.height;
             video.AspectRatio = stream.display_aspect_ratio;
+
+            if (!string.IsNullOrEmpty(stream.avg_frame_rate))
+            {
+                string[] parts = stream.avg_frame_rate.Split('/');
+
+                if (parts.Length == 2)
+                {
+                    video.FrameRate = float.Parse(parts[0]) / float.Parse(parts[1]);
+                }
+                else
+                {
+                    video.FrameRate = float.Parse(parts[0]);
+                }
+            }
+        }
+
+        private void FetchFromAudioStream(Video video, MediaStream stream)
+        {
+            AudioStream audio = new AudioStream();
+
+            audio.Codec = stream.codec_name;
+
+            if (!string.IsNullOrEmpty(stream.bit_rate))
+            {
+                audio.BitRate = int.Parse(stream.bit_rate);
+            }
+
+            audio.Channels = stream.channels;
+
+            if (!string.IsNullOrEmpty(stream.sample_rate))
+            {
+                audio.SampleRate = int.Parse(stream.sample_rate);
+            }
+
+            audio.Language = AudioInfoProvider.GetDictionaryValue(stream.tags, "language");
+
+            List<AudioStream> streams = (video.AudioStreams ?? new AudioStream[] { }).ToList();
+            streams.Add(audio);
+            video.AudioStreams = streams;
         }
         
         /// <summary>

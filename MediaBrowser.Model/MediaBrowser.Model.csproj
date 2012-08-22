@@ -34,6 +34,7 @@
   <ItemGroup>
     <Compile Include="DTO\AudioInfo.cs" />
     <Compile Include="DTO\DTOBaseItem.cs" />
+    <Compile Include="DTO\VideoInfo.cs" />
     <Compile Include="Entities\Audio.cs" />
     <Compile Include="Entities\BaseEntity.cs" />
     <Compile Include="Entities\BaseItem.cs" />

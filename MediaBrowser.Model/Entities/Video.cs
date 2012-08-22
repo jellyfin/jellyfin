@@ -6,7 +6,7 @@ namespace MediaBrowser.Model.Entities
     {
         public VideoType VideoType { get; set; }
 
-        public IEnumerable<string> Subtitles { get; set; }
+        public IEnumerable<SubtitleStream> Subtitles { get; set; }
         public IEnumerable<AudioStream> AudioStreams { get; set; }
 
         public int Height { get; set; }
@@ -24,6 +24,12 @@ namespace MediaBrowser.Model.Entities
         public int BitRate { get; set; }
         public int Channels { get; set; }
         public int SampleRate { get; set; }
+        public bool IsDefault { get; set; }
+    }
+
+    public class SubtitleStream
+    {
+        public string Language { get; set; }
         public bool IsDefault { get; set; }
         public bool IsForced { get; set; }
     }

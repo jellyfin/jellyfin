@@ -144,37 +144,30 @@ namespace MediaBrowser.Controller.Providers
 
         private int? GetDictionaryDiscValue(Dictionary<string, string> tags)
         {
-            string[] keys = tags.Keys.ToArray();
+            string disc = GetDictionaryValue(tags, "disc");
 
-            for (int i = 0; i < keys.Length; i++)
+            if (!string.IsNullOrEmpty(disc))
             {
-                string currentKey = keys[i];
+                disc = disc.Split('/')[0];
 
-                if ("disc".Equals(currentKey, StringComparison.OrdinalIgnoreCase))
+                int num;
+
+                if (int.TryParse(disc, out num))
                 {
-                    string disc = tags[currentKey];
-
-                    if (!string.IsNullOrEmpty(disc))
-                    {
-                        disc = disc.Split('/')[0];
-
-                        int num;
-
-                        if (int.TryParse(disc, out num))
-                        {
-                            return num;
-                        }
-                    }
-
-                    break;
+                    return num;
                 }
             }
 
             return null;
         }
 
-        private string GetDictionaryValue(Dictionary<string, string> tags, string key)
+        internal static string GetDictionaryValue(Dictionary<string, string> tags, string key)
         {
+            if (tags == null)
+            {
+                return null;
+            }
+
             string[] keys = tags.Keys.ToArray();
 
             for (int i = 0; i < keys.Length; i++)

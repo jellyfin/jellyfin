@@ -33,7 +33,7 @@ namespace MediaBrowser.Controller.FFMpeg
         public int channels { get; set; }
         //public int bits_per_sample { get; set; }
         //public string r_frame_rate { get; set; }
-        //public string avg_frame_rate { get; set; }
+        public string avg_frame_rate { get; set; }
         //public string time_base { get; set; }
         //public string start_time { get; set; }
         public string duration { get; set; }
