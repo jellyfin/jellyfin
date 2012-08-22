@@ -26,6 +26,34 @@ namespace MediaBrowser.Api
         {
             DTOBaseItem dto = new DTOBaseItem();
 
+            List<Task> tasks = new List<Task>();
+
+            tasks.Add(AttachStudios(dto, item));
+
+            if (includeChildren)
+            {
+                tasks.Add(AttachChildren(dto, item, user));
+                tasks.Add(AttachLocalTrailers(dto, item, user));
+            }
+
+            if (includePeople)
+            {
+                tasks.Add(AttachPeople(dto, item));
+            }
+
+            // Make sure all the tasks we kicked off have completed.
+            if (tasks.Count > 0)
+            {
+                await Task.WhenAll(tasks).ConfigureAwait(false);
+            }
+
+            AttachBasicFields(dto, item, user);
+
+            return dto;
+        }
+
+        private static void AttachBasicFields(DTOBaseItem dto, BaseItem item, User user)
+        {
             dto.AspectRatio = item.AspectRatio;
             dto.BackdropCount = item.BackdropImagePaths == null ? 0 : item.BackdropImagePaths.Count();
             dto.DateCreated = item.DateCreated;
@@ -81,18 +109,6 @@ namespace MediaBrowser.Api
 
             dto.UserData = item.GetUserData(user);
 
-            await AttachStudios(dto, item).ConfigureAwait(false);
-
-            if (includeChildren)
-            {
-                await AttachChildren(dto, item, user).ConfigureAwait(false);
-            }
-
-            if (includePeople)
-            {
-                await AttachPeople(dto, item).ConfigureAwait(false);
-            }
-
             Folder folder = item as Folder;
 
             if (folder != null)
@@ -132,8 +148,6 @@ namespace MediaBrowser.Api
                     ScanType = video.ScanType
                 };
             }
-
-            return dto;
         }
 
         private static async Task AttachStudios(DTOBaseItem dto, BaseItem item)
@@ -171,13 +185,16 @@ namespace MediaBrowser.Api
 
                 dto.Children = await Task.WhenAll<DTOBaseItem>(children.Select(c => GetDTOBaseItem(c, user, false, false))).ConfigureAwait(false);
             }
+        }
 
+        private static async Task AttachLocalTrailers(DTOBaseItem dto, BaseItem item, User user)
+        {
             if (item.LocalTrailers != null && item.LocalTrailers.Any())
             {
                 dto.LocalTrailers = await Task.WhenAll<DTOBaseItem>(item.LocalTrailers.Select(c => GetDTOBaseItem(c, user, false, false))).ConfigureAwait(false);
             }
         }
-
+        
         private static async Task AttachPeople(DTOBaseItem dto, BaseItem item)
         {
             // Attach People by transforming them into BaseItemPerson (DTO)
