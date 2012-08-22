@@ -66,8 +66,6 @@ namespace MediaBrowser.Controller.FFMpeg
 
         private static FFProbeResult Run(string input)
         {
-            MediaBrowser.Common.Logging.Logger.LogInfo(input);
-
             ProcessStartInfo startInfo = new ProcessStartInfo();
 
             startInfo.CreateNoWindow = true;

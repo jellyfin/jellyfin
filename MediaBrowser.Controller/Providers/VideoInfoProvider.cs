@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Logging;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.FFMpeg;
 using MediaBrowser.Model.Entities;
@@ -47,6 +48,12 @@ namespace MediaBrowser.Controller.Providers
 
         private void Fetch(Video video, FFProbeResult data)
         {
+            if (data == null)
+            {
+                Logger.LogInfo("Null FFProbeResult for {0} {1}", video.Id, video.Name);
+                return;
+            }
+
             if (!string.IsNullOrEmpty(data.format.duration))
             {
                 video.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(data.format.duration)).Ticks;
