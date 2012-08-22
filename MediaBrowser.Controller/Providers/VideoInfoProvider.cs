@@ -7,6 +7,7 @@ using MediaBrowser.Common.Logging;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.FFMpeg;
 using MediaBrowser.Model.Entities;
+using System.IO;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -34,6 +35,12 @@ namespace MediaBrowser.Controller.Providers
                 if (video.VideoType != VideoType.VideoFile)
                 {
                     // Not supported yet
+                    return;
+                }
+
+                // For now
+                if (Path.GetExtension(video.Path).EndsWith("iso", StringComparison.OrdinalIgnoreCase))
+                {
                     return;
                 }
 
