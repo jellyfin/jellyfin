@@ -1,12 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.FFMpeg;
 using MediaBrowser.Model.Entities;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -27,27 +26,23 @@ namespace MediaBrowser.Controller.Providers
 
         public override async Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
         {
-            Video video = item as Video;
-
-            if (video.VideoType != VideoType.VideoFile)
+            await Task.Run(() =>
             {
-                // Not supported yet
-                return;
-            }
+                Video video = item as Video;
 
-            if (CanSkip(video))
-            {
-                return;
-            }
+                if (video.VideoType != VideoType.VideoFile)
+                {
+                    // Not supported yet
+                    return;
+                }
 
-            Fetch(video, await FFProbe.Run(video, GetFFProbeOutputPath(video)).ConfigureAwait(false));
-        }
+                if (CanSkip(video))
+                {
+                    return;
+                }
 
-        private string GetFFProbeOutputPath(Video item)
-        {
-            string outputDirectory = Path.Combine(Kernel.Instance.ApplicationPaths.FFProbeVideoCacheDirectory, item.Id.ToString().Substring(0, 1));
-
-            return Path.Combine(outputDirectory, item.Id + "-" + item.DateModified.Ticks + ".js");
+                Fetch(video, FFProbe.Run(video));
+            });
         }
 
         private void Fetch(Video video, FFProbeResult data)
