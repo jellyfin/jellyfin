@@ -20,10 +20,8 @@ namespace MediaBrowser.Controller.Providers
             get { return MetadataProviderPriority.First; }
         }
 
-        public async override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
+        public async override Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
         {
-            BaseItem baseItem = item as BaseItem;
-
             var trailerPath = args.GetFileSystemEntryByName("trailers", true);
 
             if (trailerPath.HasValue)
@@ -36,9 +34,7 @@ namespace MediaBrowser.Controller.Providers
                 {
                     string file = allFiles[i];
 
-                    BaseItem child = await Kernel.Instance.ItemController.GetItem(file).ConfigureAwait(false);
-
-                    Video video = child as Video;
+                    Video video = await Kernel.Instance.ItemController.GetItem(file).ConfigureAwait(false) as Video;
 
                     if (video != null)
                     {
@@ -46,7 +42,7 @@ namespace MediaBrowser.Controller.Providers
                     }
                 }
 
-                baseItem.LocalTrailers = localTrailers;
+                (item as BaseItem).LocalTrailers = localTrailers;
             }
         }
     }

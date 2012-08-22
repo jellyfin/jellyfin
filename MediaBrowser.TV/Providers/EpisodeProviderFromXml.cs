@@ -22,24 +22,21 @@ namespace MediaBrowser.TV.Providers
             get { return MetadataProviderPriority.First; }
         }
 
-        public async override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
+        public override Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
         {
-            await Task.Run(() =>
-            {
-                string metadataFolder = Path.Combine(args.Parent.Path, "metadata");
-
-                Episode episode = item as Episode;
-
-                string episodeFileName = Path.GetFileName(episode.Path);
-
-                string metadataFile = Path.Combine(metadataFolder, Path.ChangeExtension(episodeFileName, ".xml"));
-
-                FetchMetadata(episode, args.Parent as Season, metadataFile);
-
-            }).ConfigureAwait(false);
+            return Fetch(item, args);
         }
 
-        private void FetchMetadata(Episode item, Season season, string metadataFile)
+        private Task Fetch(BaseEntity item, ItemResolveEventArgs args)
+        {
+            string metadataFolder = Path.Combine(args.Parent.Path, "metadata");
+
+            string metadataFile = Path.Combine(metadataFolder, Path.ChangeExtension(Path.GetFileName(args.Path), ".xml"));
+
+            return FetchMetadata(item as Episode, args.Parent as Season, metadataFile);
+        }
+
+        private Task FetchMetadata(Episode item, Season season, string metadataFile)
         {
             if (season == null)
             {
@@ -47,18 +44,18 @@ namespace MediaBrowser.TV.Providers
                 // Need to validate it the slow way
                 if (!File.Exists(metadataFile))
                 {
-                    return;
+                    return Task.FromResult<object>(null);
                 }
             }
             else
             {
                 if (!season.ContainsMetadataFile(metadataFile))
                 {
-                    return;
+                    return Task.FromResult<object>(null);
                 }
             }
 
-            new EpisodeXmlParser().Fetch(item, metadataFile);
+            return Task.Run(() => { new EpisodeXmlParser().Fetch(item, metadataFile); });
         }
     }
 }

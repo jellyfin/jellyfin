@@ -185,11 +185,11 @@ namespace MediaBrowser.Common.Net.Handlers
                 // When serving a range request, we need to return status code 206 to indicate a partial response body
                 StatusCode = SupportsByteRangeRequests && IsRangeRequest ? 206 : 200;
 
-                ctx.Response.ContentType = await GetContentType();
+                ctx.Response.ContentType = await GetContentType().ConfigureAwait(false);
 
                 TimeSpan cacheDuration = CacheDuration;
 
-                DateTime? lastDateModified = await GetLastDateModified();
+                DateTime? lastDateModified = await GetLastDateModified().ConfigureAwait(false);
 
                 if (ctx.Request.Headers.AllKeys.Contains("If-Modified-Since"))
                 {
@@ -205,13 +205,13 @@ namespace MediaBrowser.Common.Net.Handlers
                     }
                 }
 
-                await PrepareResponse();
+                await PrepareResponse().ConfigureAwait(false);
 
                 if (IsResponseValid)
                 {
                     bool compressResponse = ShouldCompressResponse(ctx.Response.ContentType) && ClientSupportsCompression;
 
-                    await ProcessUncachedRequest(ctx, compressResponse, cacheDuration, lastDateModified);
+                    await ProcessUncachedRequest(ctx, compressResponse, cacheDuration, lastDateModified).ConfigureAwait(false);
                 }
                 else
                 {
@@ -285,7 +285,7 @@ namespace MediaBrowser.Common.Net.Handlers
                     outputStream = CompressedStream;
                 }
 
-                await WriteResponseToOutputStream(outputStream);
+                await WriteResponseToOutputStream(outputStream).ConfigureAwait(false);
             }
             else
             {
@@ -307,7 +307,7 @@ namespace MediaBrowser.Common.Net.Handlers
         /// </summary>
         protected virtual Task PrepareResponse()
         {
-            return Task.Run(() => { });
+            return Task.FromResult<object>(null);
         }
 
         protected abstract Task WriteResponseToOutputStream(Stream stream);
@@ -359,7 +359,7 @@ namespace MediaBrowser.Common.Net.Handlers
         {
             DateTime? value = null;
 
-            return Task.Run<DateTime?>(() => { return value; });
+            return Task.FromResult<DateTime?>(value);
         }
 
         private bool IsResponseValid

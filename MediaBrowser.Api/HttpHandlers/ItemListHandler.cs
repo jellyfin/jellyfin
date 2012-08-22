@@ -9,13 +9,13 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public class ItemListHandler : BaseJsonHandler<IEnumerable<DTOBaseItem>>
+    public class ItemListHandler : BaseJsonHandler<DTOBaseItem[]>
     {
-        protected override async Task<IEnumerable<DTOBaseItem>> GetObjectToSerialize()
+        protected override Task<DTOBaseItem[]> GetObjectToSerialize()
         {
             User user = Kernel.Instance.Users.First(u => u.Id == UserId);
 
-            return await Task.WhenAll<DTOBaseItem>(ItemsToSerialize.Select(i =>
+            return Task.WhenAll<DTOBaseItem>(ItemsToSerialize.Select(i =>
             {
                 return ApiService.GetDTOBaseItem(i, user, includeChildren: false, includePeople: false);
             }));

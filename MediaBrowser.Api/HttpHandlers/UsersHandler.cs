@@ -10,10 +10,7 @@ namespace MediaBrowser.Api.HttpHandlers
     {
         protected override Task<IEnumerable<User>> GetObjectToSerialize()
         {
-            return Task.Run(() =>
-            {
-                return Kernel.Instance.Users;
-            });
+            return Task.FromResult<IEnumerable<User>>(Kernel.Instance.Users);
         }
     }
 }

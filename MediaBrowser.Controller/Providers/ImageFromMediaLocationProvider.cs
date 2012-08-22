@@ -21,24 +21,23 @@ namespace MediaBrowser.Controller.Providers
             get { return MetadataProviderPriority.First; }
         }
 
-        public override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
+        public override Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
         {
-            return Task.Run(() =>
+            if (args.IsDirectory)
             {
-                if (args.IsDirectory)
-                {
-                    var baseItem = item as BaseItem;
+                var baseItem = item as BaseItem;
 
-                    if (baseItem != null)
-                    {
-                        PopulateImages(baseItem, args);
-                    }
-                    else
-                    {
-                        PopulateImages(item, args);
-                    }
+                if (baseItem != null)
+                {
+                    return Task.Run(() => { PopulateImages(baseItem, args); });
                 }
-            });
+                else
+                {
+                    return Task.Run(() => { PopulateImages(item, args); });
+                }
+            }
+
+            return Task.FromResult<object>(null);
         }
 
         /// <summary>
@@ -49,7 +48,7 @@ namespace MediaBrowser.Controller.Providers
             for (int i = 0; i < args.FileSystemChildren.Length; i++)
             {
                 var file = args.FileSystemChildren[i];
-                
+
                 string filePath = file.Path;
 
                 string ext = Path.GetExtension(filePath);

@@ -11,12 +11,11 @@ namespace MediaBrowser.Api.HttpHandlers
     {
         protected override Task<BasePluginConfiguration> GetObjectToSerialize()
         {
-            return Task.Run(() =>
-            {
-                string pluginName = QueryString["name"];
+            string pluginName = QueryString["name"];
 
-                return Kernel.Instance.Plugins.First(p => p.Name.Equals(pluginName, StringComparison.OrdinalIgnoreCase)).Configuration;
-            });
+            BasePluginConfiguration config = Kernel.Instance.Plugins.First(p => p.Name.Equals(pluginName, StringComparison.OrdinalIgnoreCase)).Configuration;
+
+            return Task.FromResult<BasePluginConfiguration>(config);
         }
     }
 }

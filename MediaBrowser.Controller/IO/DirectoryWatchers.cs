@@ -86,7 +86,7 @@ namespace MediaBrowser.Controller.IO
             await ProcessPathChanges(paths).ConfigureAwait(false);
         }
 
-        private async Task ProcessPathChanges(IEnumerable<string> paths)
+        private Task ProcessPathChanges(IEnumerable<string> paths)
         {
             List<BaseItem> itemsToRefresh = new List<BaseItem>();
 
@@ -105,11 +105,11 @@ namespace MediaBrowser.Controller.IO
                     return folder != null && folder.IsRoot;
                 }))
             {
-                await Kernel.Instance.ReloadRoot().ConfigureAwait(false);
+                return Kernel.Instance.ReloadRoot();
             }
             else
             {
-                await Task.WhenAll(itemsToRefresh.Select(i => Kernel.Instance.ReloadItem(i))).ConfigureAwait(false);
+                return Task.WhenAll(itemsToRefresh.Select(i => Kernel.Instance.ReloadItem(i)));
             }
         }
 

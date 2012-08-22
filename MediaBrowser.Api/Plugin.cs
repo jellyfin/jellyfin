@@ -22,13 +22,13 @@ namespace MediaBrowser.Api
         {
             var httpServer = Kernel.Instance.HttpServer;
 
-            httpServer.Where(ctx => ctx.Request.Url.LocalPath.IndexOf("/api/", StringComparison.OrdinalIgnoreCase) != -1).Subscribe(async (ctx) =>
+            httpServer.Where(ctx => ctx.Request.Url.LocalPath.IndexOf("/api/", StringComparison.OrdinalIgnoreCase) != -1).Subscribe((ctx) =>
             {
                 BaseHandler handler = GetHandler(ctx);
 
                 if (handler != null)
                 {
-                    await handler.ProcessRequest(ctx);
+                    handler.ProcessRequest(ctx);
                 }
             });
         }

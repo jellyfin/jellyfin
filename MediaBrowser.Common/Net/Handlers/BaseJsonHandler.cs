@@ -8,10 +8,7 @@ namespace MediaBrowser.Common.Net.Handlers
     {
         public override Task<string> GetContentType()
         {
-            return Task.Run(() =>
-            {
-                return MimeTypes.JsonMimeType;
-            });
+            return Task.FromResult<string>(MimeTypes.JsonMimeType);
         }
 
         private bool _ObjectToSerializeEnsured = false;
@@ -21,7 +18,7 @@ namespace MediaBrowser.Common.Net.Handlers
         {
             if (!_ObjectToSerializeEnsured)
             {
-                _ObjectToSerialize = await GetObjectToSerialize();
+                _ObjectToSerialize = await GetObjectToSerialize().ConfigureAwait(false);
 
                 if (_ObjectToSerialize == null)
                 {
@@ -34,9 +31,9 @@ namespace MediaBrowser.Common.Net.Handlers
 
         protected abstract Task<T> GetObjectToSerialize();
 
-        protected override async Task PrepareResponse()
+        protected override Task PrepareResponse()
         {
-            await EnsureObjectToSerialize();
+            return EnsureObjectToSerialize();
         }
 
         protected async override Task WriteResponseToOutputStream(Stream stream)

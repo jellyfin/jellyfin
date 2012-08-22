@@ -92,10 +92,7 @@ namespace MediaBrowser.Api.HttpHandlers
 
         public override Task<string> GetContentType()
         {
-            return Task.Run(() =>
-            {
-                return MimeTypes.GetMimeType("." + GetConversionOutputFormat());
-            });
+            return Task.FromResult<string>(MimeTypes.GetMimeType("." + GetConversionOutputFormat()));
         }
 
         public override bool ShouldCompressResponse(string contentType)
@@ -103,17 +100,17 @@ namespace MediaBrowser.Api.HttpHandlers
             return false;
         }
 
-        public override async Task ProcessRequest(HttpListenerContext ctx)
+        public override Task ProcessRequest(HttpListenerContext ctx)
         {
             HttpListenerContext = ctx;
 
             if (!RequiresConversion())
             {
-                await new StaticFileHandler() { Path = LibraryItem.Path }.ProcessRequest(ctx);
+                return new StaticFileHandler() { Path = LibraryItem.Path }.ProcessRequest(ctx);
             }
             else
             {
-                await base.ProcessRequest(ctx);
+                return base.ProcessRequest(ctx);
             }
         }
 
@@ -180,15 +177,15 @@ namespace MediaBrowser.Api.HttpHandlers
                 // If we ever decide to disable the ffmpeg log then you must uncomment the below line.
                 //process.BeginErrorReadLine();
 
-                Task debugLogTask = Task.Run(async () => { await process.StandardError.BaseStream.CopyToAsync(logStream); });
+                Task debugLogTask = process.StandardError.BaseStream.CopyToAsync(logStream);
 
-                await process.StandardOutput.BaseStream.CopyToAsync(stream);
+                await process.StandardOutput.BaseStream.CopyToAsync(stream).ConfigureAwait(false);
 
                 process.WaitForExit();
 
                 Logger.LogInfo("FFMpeg exited with code " + process.ExitCode);
 
-                await debugLogTask;
+                await debugLogTask.ConfigureAwait(false);
             }
             catch (Exception ex)
             {

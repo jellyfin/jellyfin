@@ -31,7 +31,7 @@ namespace MediaBrowser.Controller.Providers
             }
         }
 
-        public abstract Task Fetch(BaseEntity item, ItemResolveEventArgs args);
+        public abstract Task FetchAsync(BaseEntity item, ItemResolveEventArgs args);
 
         public abstract MetadataProviderPriority Priority { get; }
     }

@@ -23,16 +23,22 @@ namespace MediaBrowser.Controller.Providers
             get { return MetadataProviderPriority.First; }
         }
 
-        public async override Task Fetch(BaseEntity item, ItemResolveEventArgs args)
+        public async override Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
         {
             Audio audio = item as Audio;
 
+            Fetch(audio, await FFProbe.Run(audio, GetFFProbeOutputPath(item)).ConfigureAwait(false));
+        }
+
+        private string GetFFProbeOutputPath(BaseEntity item)
+        {
             string outputDirectory = Path.Combine(Kernel.Instance.ApplicationPaths.FFProbeAudioCacheDirectory, item.Id.ToString().Substring(0, 1));
 
-            string outputPath = Path.Combine(outputDirectory, item.Id + "-" + item.DateModified.Ticks + ".js");
+            return Path.Combine(outputDirectory, item.Id + "-" + item.DateModified.Ticks + ".js");
+        }
 
-            FFProbeResult data = await FFProbe.Run(audio, outputPath).ConfigureAwait(false);
-
+        private void Fetch(Audio audio, FFProbeResult data)
+        {
             MediaStream stream = data.streams.First(s => s.codec_type.Equals("audio", StringComparison.OrdinalIgnoreCase));
 
             string bitrate = null;

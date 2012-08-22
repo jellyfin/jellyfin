@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.Providers
             get { return MetadataProviderPriority.Second; }
         }
 
-        public override async Task Fetch(BaseEntity item, ItemResolveEventArgs args)
+        public override async Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
         {
             Video video = item as Video;
 
@@ -39,11 +39,14 @@ namespace MediaBrowser.Controller.Providers
                 return;
             }
 
+            Fetch(video, await FFProbe.Run(video, GetFFProbeOutputPath(video)).ConfigureAwait(false));
+        }
+
+        private string GetFFProbeOutputPath(Video item)
+        {
             string outputDirectory = Path.Combine(Kernel.Instance.ApplicationPaths.FFProbeVideoCacheDirectory, item.Id.ToString().Substring(0, 1));
 
-            string outputPath = Path.Combine(outputDirectory, item.Id + "-" + item.DateModified.Ticks + ".js");
-
-            FFProbeResult data = await FFProbe.Run(video, outputPath).ConfigureAwait(false);
+            return Path.Combine(outputDirectory, item.Id + "-" + item.DateModified.Ticks + ".js");
         }
 
         private void Fetch(Video video, FFProbeResult data)

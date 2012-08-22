@@ -68,21 +68,17 @@ namespace MediaBrowser.Controller
 
         public async override Task Init(IProgress<TaskProgress> progress)
         {
-            await Task.Run(async () =>
-            {
-                await base.Init(progress).ConfigureAwait(false);
+            ExtractFFMpeg();
+            
+            await base.Init(progress).ConfigureAwait(false);
 
-                progress.Report(new TaskProgress() { Description = "Loading Users", PercentComplete = 15 });
-                ReloadUsers();
+            progress.Report(new TaskProgress() { Description = "Loading Users", PercentComplete = 15 });
+            ReloadUsers();
 
-                progress.Report(new TaskProgress() { Description = "Extracting FFMpeg", PercentComplete = 20 });
-                await ExtractFFMpeg().ConfigureAwait(false);
+            progress.Report(new TaskProgress() { Description = "Loading Media Library", PercentComplete = 25 });
+            await ReloadRoot().ConfigureAwait(false);
 
-                progress.Report(new TaskProgress() { Description = "Loading Media Library", PercentComplete = 25 });
-                await ReloadRoot().ConfigureAwait(false);
-
-                progress.Report(new TaskProgress() { Description = "Loading Complete", PercentComplete = 100 });
-            }).ConfigureAwait(false);
+            progress.Report(new TaskProgress() { Description = "Loading Complete", PercentComplete = 100 });
         }
 
         protected override void OnComposablePartsLoaded()
@@ -245,22 +241,21 @@ namespace MediaBrowser.Controller
                     continue;
                 }
 
-                await provider.Fetch(item, args).ConfigureAwait(false);
+                await provider.FetchAsync(item, args).ConfigureAwait(false);
             }
+        }
+
+        private void ExtractFFMpeg()
+        {
+            ExtractFFMpeg(ApplicationPaths.FFMpegPath);
+            ExtractFFMpeg(ApplicationPaths.FFProbePath);
         }
 
         /// <summary>
         /// Run these during Init.
         /// Can't run do this on-demand because there will be multiple workers accessing them at once and we'd have to lock them
         /// </summary>
-        private async Task ExtractFFMpeg()
-        {
-            // FFMpeg.exe
-            await ExtractFFMpeg(ApplicationPaths.FFMpegPath).ConfigureAwait(false);
-            await ExtractFFMpeg(ApplicationPaths.FFProbePath).ConfigureAwait(false);
-        }
-
-        private async Task ExtractFFMpeg(string exe)
+        private async void ExtractFFMpeg(string exe)
         {
             if (File.Exists(exe))
             {

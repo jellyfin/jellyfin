@@ -29,28 +29,28 @@ namespace MediaBrowser.Api.HttpHandlers
 
             if (!string.IsNullOrEmpty(personName))
             {
-                return (await Kernel.Instance.ItemController.GetPerson(personName)).PrimaryImagePath;
+                return (await Kernel.Instance.ItemController.GetPerson(personName).ConfigureAwait(false)).PrimaryImagePath;
             }
 
             string genreName = QueryString["genre"];
 
             if (!string.IsNullOrEmpty(genreName))
             {
-                return (await Kernel.Instance.ItemController.GetGenre(genreName)).PrimaryImagePath;
+                return (await Kernel.Instance.ItemController.GetGenre(genreName).ConfigureAwait(false)).PrimaryImagePath;
             }
 
             string year = QueryString["year"];
 
             if (!string.IsNullOrEmpty(year))
             {
-                return (await Kernel.Instance.ItemController.GetYear(int.Parse(year))).PrimaryImagePath;
+                return (await Kernel.Instance.ItemController.GetYear(int.Parse(year)).ConfigureAwait(false)).PrimaryImagePath;
             }
 
             string studio = QueryString["studio"];
 
             if (!string.IsNullOrEmpty(studio))
             {
-                return (await Kernel.Instance.ItemController.GetStudio(studio)).PrimaryImagePath;
+                return (await Kernel.Instance.ItemController.GetStudio(studio).ConfigureAwait(false)).PrimaryImagePath;
             }
             
             BaseItem item = ApiService.GetItemById(QueryString["id"]);
@@ -64,7 +64,7 @@ namespace MediaBrowser.Api.HttpHandlers
         private Stream _SourceStream = null;
         private async Task<Stream> GetSourceStream()
         {
-            await EnsureSourceStream();
+            await EnsureSourceStream().ConfigureAwait(false);
             return _SourceStream;
         }
 
@@ -75,7 +75,7 @@ namespace MediaBrowser.Api.HttpHandlers
             {
                 try
                 {
-                    _SourceStream = File.OpenRead(await GetImagePath());
+                    _SourceStream = File.OpenRead(await GetImagePath().ConfigureAwait(false));
                 }
                 catch (FileNotFoundException ex)
                 {
@@ -101,14 +101,14 @@ namespace MediaBrowser.Api.HttpHandlers
 
         public async override Task<string> GetContentType()
         {
-            await EnsureSourceStream();
+            await EnsureSourceStream().ConfigureAwait(false);
 
-            if (await GetSourceStream() == null)
+            if (await GetSourceStream().ConfigureAwait(false) == null)
             {
                 return null;
             }
 
-            return MimeTypes.GetMimeType(await GetImagePath());
+            return MimeTypes.GetMimeType(await GetImagePath().ConfigureAwait(false));
         }
 
         public override TimeSpan CacheDuration
@@ -121,14 +121,14 @@ namespace MediaBrowser.Api.HttpHandlers
 
         protected async override Task<DateTime?> GetLastDateModified()
         {
-            await EnsureSourceStream();
+            await EnsureSourceStream().ConfigureAwait(false);
 
-            if (await GetSourceStream() == null)
+            if (await GetSourceStream().ConfigureAwait(false) == null)
             {
                 return null;
             }
 
-            return File.GetLastWriteTime(await GetImagePath());
+            return File.GetLastWriteTime(await GetImagePath().ConfigureAwait(false));
         }
 
         private int? Height
@@ -223,7 +223,7 @@ namespace MediaBrowser.Api.HttpHandlers
 
         protected override async Task WriteResponseToOutputStream(Stream stream)
         {
-            ImageProcessor.ProcessImage(await GetSourceStream(), stream, Width, Height, MaxWidth, MaxHeight, Quality);
+            ImageProcessor.ProcessImage(await GetSourceStream().ConfigureAwait(false), stream, Width, Height, MaxWidth, MaxHeight, Quality);
         }
 
         private string GetImagePathFromTypes(BaseItem item, ImageType imageType, int imageIndex)
