@@ -76,7 +76,7 @@ namespace MediaBrowser.Controller
             ReloadUsers();
 
             progress.Report(new TaskProgress() { Description = "Loading Media Library", PercentComplete = 25 });
-            await ReloadRoot().ConfigureAwait(false);
+            await ReloadRoot(allowInternetProviders: false).ConfigureAwait(false);
 
             progress.Report(new TaskProgress() { Description = "Loading Complete", PercentComplete = 100 });
         }
@@ -140,7 +140,7 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Reloads the root media folder
         /// </summary>
-        public async Task ReloadRoot()
+        public async Task ReloadRoot(bool allowInternetProviders = true)
         {
             if (!Directory.Exists(MediaRootFolderPath))
             {
@@ -149,7 +149,7 @@ namespace MediaBrowser.Controller
 
             DirectoryWatchers.Stop();
 
-            RootFolder = await ItemController.GetItem(MediaRootFolderPath).ConfigureAwait(false) as Folder;
+            RootFolder = await ItemController.GetItem(MediaRootFolderPath, allowInternetProviders: allowInternetProviders).ConfigureAwait(false) as Folder;
 
             DirectoryWatchers.Start();
         }
@@ -226,7 +226,7 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Runs all metadata providers for an entity
         /// </summary>
-        internal async Task ExecuteMetadataProviders(BaseEntity item, ItemResolveEventArgs args)
+        internal async Task ExecuteMetadataProviders(BaseEntity item, ItemResolveEventArgs args, bool allowInternetProviders = true)
         {
             // Get all supported providers
             BaseMetadataProvider[] supportedProviders = Kernel.Instance.MetadataProviders.Where(i => i.Supports(item)).ToArray();
@@ -236,7 +236,7 @@ namespace MediaBrowser.Controller
             {
                 var provider = supportedProviders[i];
 
-                if (provider.RequiresInternet && !Configuration.EnableInternetProviders)
+                if (provider.RequiresInternet && (!Configuration.EnableInternetProviders || !allowInternetProviders))
                 {
                     continue;
                 }
