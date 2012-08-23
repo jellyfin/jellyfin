@@ -112,6 +112,10 @@ namespace MediaBrowser.Controller.FFMpeg
             Process process = new Process();
             process.StartInfo = startInfo;
 
+            process.EnableRaisingEvents = true;
+
+            process.Exited += process_Exited;
+
             try
             {
                 process.Start();
@@ -137,10 +141,11 @@ namespace MediaBrowser.Controller.FFMpeg
 
                 return null;
             }
-            finally
-            {
-                process.Dispose();
-            }
+        }
+
+        static void process_Exited(object sender, EventArgs e)
+        {
+            (sender as Process).Dispose();
         }
 
         private static string GetFFProbeCachePath(Audio item)
