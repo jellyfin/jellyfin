@@ -194,7 +194,7 @@ namespace MediaBrowser.Api
                 dto.LocalTrailers = await Task.WhenAll<DTOBaseItem>(item.LocalTrailers.Select(c => GetDTOBaseItem(c, user, false, false))).ConfigureAwait(false);
             }
         }
-        
+
         private static async Task AttachPeople(DTOBaseItem dto, BaseItem item)
         {
             // Attach People by transforming them into BaseItemPerson (DTO)
@@ -255,6 +255,17 @@ namespace MediaBrowser.Api
             }
 
             return null;
+        }
+
+        public static IBNItem GetIBNItem(BaseEntity entity, int itemCount)
+        {
+            return new IBNItem()
+            {
+                Id = entity.Id,
+                BaseItemCount = itemCount,
+                HasPrimaryImage = !string.IsNullOrEmpty(entity.PrimaryImagePath),
+                Name = entity.Name
+            };
         }
     }
 }

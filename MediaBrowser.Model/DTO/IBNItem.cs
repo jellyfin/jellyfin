@@ -1,16 +1,24 @@
 ﻿using MediaBrowser.Model.Entities;
+using System;
 
 namespace MediaBrowser.Model.DTO
 {
     /// <summary>
     /// This is a stub class used by the api to get IBN types along with their item counts
     /// </summary>
-    public class IBNItem<T>
+    public class IBNItem
     {
         /// <summary>
-        /// The actual genre, year, studio, etc
+        /// The name of the person, genre, etc
         /// </summary>
-        public T Item { get; set; }
+        public string Name { get; set; }
+
+        /// <summary>
+        /// The id of the person, genre, etc
+        /// </summary>
+        public Guid Id { get; set; }
+
+        public bool HasPrimaryImage { get; set; }
 
         /// <summary>
         /// The number of items that have the genre, year, studio, etc
