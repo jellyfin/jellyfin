@@ -18,7 +18,7 @@ namespace MediaBrowser.Model.DTO
         /// </summary>
         public Guid Id { get; set; }
 
-        public bool HasPrimaryImage { get; set; }
+        public bool HasImage { get; set; }
 
         /// <summary>
         /// The number of items that have the genre, year, studio, etc
@@ -31,7 +31,9 @@ namespace MediaBrowser.Model.DTO
     /// </summary>
     public class BaseItemPerson
     {
-        public PersonInfo PersonInfo { get; set; }
+        public string Name { get; set; }
+        public string Overview { get; set; }
+        public string Type { get; set; }
         public bool HasImage { get; set; }
     }
 
