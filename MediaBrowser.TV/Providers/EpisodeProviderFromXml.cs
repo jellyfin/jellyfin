@@ -44,7 +44,6 @@ namespace MediaBrowser.TV.Providers
                 // Need to validate it the slow way
                 if (!File.Exists(metadataFile))
                 {
-                    await Task.FromResult<object>(null).ConfigureAwait(false);
                     return;
                 }
             }
@@ -52,7 +51,6 @@ namespace MediaBrowser.TV.Providers
             {
                 if (!season.ContainsMetadataFile(metadataFile))
                 {
-                    await Task.FromResult<object>(null).ConfigureAwait(false);
                     return;
                 }
             }
