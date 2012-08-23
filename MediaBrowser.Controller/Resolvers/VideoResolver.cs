@@ -30,7 +30,7 @@ namespace MediaBrowser.Controller.Resolvers
             {
                 if (IsVideoFile(args.Path))
                 {
-                    VideoType type = Path.GetExtension(args.Path).EndsWith("", System.StringComparison.OrdinalIgnoreCase) ? VideoType.Iso : VideoType.VideoFile;
+                    VideoType type = Path.GetExtension(args.Path).EndsWith("iso", System.StringComparison.OrdinalIgnoreCase) ? VideoType.Iso : VideoType.VideoFile;
 
                     return new T()
                     {
