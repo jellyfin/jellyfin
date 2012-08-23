@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
+﻿using System.IO;
 
 namespace MediaBrowser.Common.Serialization
 {
+    /// <summary>
+    /// Protocol buffers is google's binary serialization format. This is a .NET implementation of it.
+    /// You have to tag your classes with some annoying attributes, but in return you get the fastest serialization around with the smallest possible output.
+    /// </summary>
     public static class ProtobufSerializer
     {
         public static void SerializeToStream<T>(T obj, Stream stream)

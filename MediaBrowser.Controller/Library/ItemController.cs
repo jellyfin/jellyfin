@@ -67,7 +67,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Resolves a path into a BaseItem
         /// </summary>
-        public async Task<BaseItem> GetItem(string path, Folder parent = null, WIN32_FIND_DATA? fileInfo = null)
+        public async Task<BaseItem> GetItem(string path, Folder parent = null, WIN32_FIND_DATA? fileInfo = null, bool allowInternetProviders = true)
         {
             ItemResolveEventArgs args = new ItemResolveEventArgs()
             {
@@ -109,12 +109,12 @@ namespace MediaBrowser.Controller.Library
 
             if (item != null)
             {
-                await Kernel.Instance.ExecuteMetadataProviders(item, args).ConfigureAwait(false);
+                await Kernel.Instance.ExecuteMetadataProviders(item, args, allowInternetProviders: allowInternetProviders).ConfigureAwait(false);
 
                 if (item.IsFolder)
                 {
                     // If it's a folder look for child entities
-                    (item as Folder).Children = (await Task.WhenAll<BaseItem>(GetChildren(item as Folder, fileSystemChildren)).ConfigureAwait(false))
+                    (item as Folder).Children = (await Task.WhenAll<BaseItem>(GetChildren(item as Folder, fileSystemChildren, allowInternetProviders)).ConfigureAwait(false))
                         .Where(i => i != null).OrderBy(f =>
                         {
                             return string.IsNullOrEmpty(f.SortName) ? f.Name : f.SortName;
@@ -129,7 +129,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Finds child BaseItems for a given Folder
         /// </summary>
-        private Task<BaseItem>[] GetChildren(Folder folder, WIN32_FIND_DATA[] fileSystemChildren)
+        private Task<BaseItem>[] GetChildren(Folder folder, WIN32_FIND_DATA[] fileSystemChildren, bool allowInternetProviders)
         {
             Task<BaseItem>[] tasks = new Task<BaseItem>[fileSystemChildren.Length];
 
@@ -137,7 +137,7 @@ namespace MediaBrowser.Controller.Library
             {
                 var child = fileSystemChildren[i];
 
-                tasks[i] = GetItem(child.Path, folder, child);
+                tasks[i] = GetItem(child.Path, folder, child, allowInternetProviders: allowInternetProviders);
             }
 
             return tasks;

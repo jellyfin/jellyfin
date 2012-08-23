@@ -36,7 +36,7 @@ namespace MediaBrowser.TV.Providers
             return FetchMetadata(item as Episode, args.Parent as Season, metadataFile);
         }
 
-        private Task FetchMetadata(Episode item, Season season, string metadataFile)
+        private async Task FetchMetadata(Episode item, Season season, string metadataFile)
         {
             if (season == null)
             {
@@ -44,18 +44,18 @@ namespace MediaBrowser.TV.Providers
                 // Need to validate it the slow way
                 if (!File.Exists(metadataFile))
                 {
-                    return Task.FromResult<object>(null);
+                    await Task.FromResult<object>(null).ConfigureAwait(false);
                 }
             }
             else
             {
                 if (!season.ContainsMetadataFile(metadataFile))
                 {
-                    return Task.FromResult<object>(null);
+                    await Task.FromResult<object>(null).ConfigureAwait(false);
                 }
             }
 
-            return Task.Run(() => { new EpisodeXmlParser().Fetch(item, metadataFile); });
+            await Task.Run(() => { new EpisodeXmlParser().Fetch(item, metadataFile); }).ConfigureAwait(false);
         }
     }
 }

@@ -184,6 +184,7 @@ namespace MediaBrowser.Controller.Providers
 
             AudioInfoProvider.EnsureCacheSubFolders(Kernel.Instance.ApplicationPaths.FFProbeVideoCacheDirectory);
 
+            // This is an optimzation. Do this now so that it doesn't have to be done upon first serialization.
             ProtoBuf.Meta.RuntimeTypeModel.Default.Add(typeof(FFProbeResult), true);
             ProtoBuf.Meta.RuntimeTypeModel.Default.Add(typeof(MediaStream), true);
             ProtoBuf.Meta.RuntimeTypeModel.Default.Add(typeof(MediaFormat), true);
