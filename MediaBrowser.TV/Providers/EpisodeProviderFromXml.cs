@@ -45,6 +45,7 @@ namespace MediaBrowser.TV.Providers
                 if (!File.Exists(metadataFile))
                 {
                     await Task.FromResult<object>(null).ConfigureAwait(false);
+                    return;
                 }
             }
             else
@@ -52,6 +53,7 @@ namespace MediaBrowser.TV.Providers
                 if (!season.ContainsMetadataFile(metadataFile))
                 {
                     await Task.FromResult<object>(null).ConfigureAwait(false);
+                    return;
                 }
             }
 
