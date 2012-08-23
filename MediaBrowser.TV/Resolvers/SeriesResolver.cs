@@ -20,9 +20,7 @@ namespace MediaBrowser.TV.Resolvers
                     return null;
                 }
 
-                var metadataFile = args.GetFileSystemEntryByName("series.xml");
-
-                if (metadataFile.HasValue || Path.GetFileName(args.Path).IndexOf("[tvdbid=", StringComparison.OrdinalIgnoreCase) != -1 || TVUtils.IsSeriesFolder(args.Path, args.FileSystemChildren))
+                if (args.ContainsFile("series.xml") || Path.GetFileName(args.Path).IndexOf("[tvdbid=", StringComparison.OrdinalIgnoreCase) != -1 || TVUtils.IsSeriesFolder(args.Path, args.FileSystemChildren))
                 {
                     return new Series();
                 }

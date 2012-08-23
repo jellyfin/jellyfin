@@ -10,70 +10,47 @@ namespace MediaBrowser.Controller.Events
     /// </summary>
     public class ItemResolveEventArgs : PreBeginResolveEventArgs
     {
-        public LazyFileInfo[] FileSystemChildren { get; set; }
+        public WIN32_FIND_DATA[] FileSystemChildren { get; set; }
 
-        public LazyFileInfo? GetFileSystemEntry(string path, bool? isFolder = null)
+        public WIN32_FIND_DATA? GetFileSystemEntry(string path)
         {
             for (int i = 0; i < FileSystemChildren.Length; i++)
             {
-                LazyFileInfo entry = FileSystemChildren[i];
+                WIN32_FIND_DATA entry = FileSystemChildren[i];
 
                 if (entry.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (isFolder.HasValue)
-                    {
-                        if (isFolder.Value && !entry.FileInfo.IsDirectory)
-                        {
-                            continue;
-                        }
-                        else if (!isFolder.Value && entry.FileInfo.IsDirectory)
-                        {
-                            continue;
-                        }
-                    }
-                    
                     return entry;
                 }
             }
-
-            return null;
-        }
-
-        public LazyFileInfo? GetFileSystemEntryByName(string name, bool? isFolder = null)
-        {
-            for (int i = 0; i < FileSystemChildren.Length; i++)
-            {
-                LazyFileInfo entry = FileSystemChildren[i];
-
-                if (System.IO.Path.GetFileName(entry.Path).Equals(name, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (isFolder.HasValue)
-                    {
-                        if (isFolder.Value && !entry.FileInfo.IsDirectory)
-                        {
-                            continue;
-                        }
-                        else if (!isFolder.Value && entry.FileInfo.IsDirectory)
-                        {
-                            continue;
-                        }
-                    }
-
-                    return entry;
-                }
-            }
-
+           
             return null;
         }
 
         public bool ContainsFile(string name)
         {
-            return GetFileSystemEntryByName(name, false) != null;
+            for (int i = 0; i < FileSystemChildren.Length; i++)
+            {
+                if (System.IO.Path.GetFileName(FileSystemChildren[i].Path).Equals(name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public bool ContainsFolder(string name)
         {
-            return GetFileSystemEntryByName(name, true) != null;
+            for (int i = 0; i < FileSystemChildren.Length; i++)
+            {
+                if (System.IO.Path.GetFileName(FileSystemChildren[i].Path).Equals(name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 
@@ -88,21 +65,15 @@ namespace MediaBrowser.Controller.Events
 
         public bool Cancel { get; set; }
 
-        public LazyFileInfo File { get; set; }
+        public WIN32_FIND_DATA FileInfo { get; set; }
 
-        public string Path
-        {
-            get
-            {
-                return File.Path;
-            }
-        }
+        public string Path { get; set; }
 
         public bool IsDirectory
         {
             get
             {
-                return File.FileInfo.dwFileAttributes.HasFlag(FileAttributes.Directory);
+                return FileInfo.dwFileAttributes.HasFlag(FileAttributes.Directory);
             }
         }
 
@@ -133,5 +104,22 @@ namespace MediaBrowser.Controller.Events
                 return vf.CollectionType;
             }
         }
+
+        public bool IsHidden
+        {
+            get
+            {
+                return FileInfo.IsHidden;
+            }
+        }
+
+        public bool IsSystemFile
+        {
+            get
+            {
+                return FileInfo.IsSystemFile;
+            }
+        }
+
     }
 }

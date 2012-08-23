@@ -48,6 +48,11 @@ namespace MediaBrowser.Common.UI
             }
             catch (Exception ex)
             {
+                if (Logger.LoggerInstance != null)
+                {
+                    Logger.LogException(ex);
+                }
+
                 MessageBox.Show("There was an error launching Media Browser: " + ex.Message);
                 splash.Close();
 

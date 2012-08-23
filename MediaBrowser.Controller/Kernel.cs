@@ -69,7 +69,7 @@ namespace MediaBrowser.Controller
         public async override Task Init(IProgress<TaskProgress> progress)
         {
             ExtractFFMpeg();
-            
+
             await base.Init(progress).ConfigureAwait(false);
 
             progress.Report(new TaskProgress() { Description = "Loading Users", PercentComplete = 15 });
@@ -91,7 +91,7 @@ namespace MediaBrowser.Controller
 
             // Sort the providers by priority
             MetadataProviders = MetadataProviders.OrderBy(e => e.Priority);
-            
+
             // Initialize the metadata providers
             Parallel.ForEach(MetadataProviders, provider =>
             {
@@ -106,7 +106,7 @@ namespace MediaBrowser.Controller
         /// </summary>
         void ItemController_PreBeginResolvePath(object sender, PreBeginResolveEventArgs e)
         {
-            if (e.File.FileInfo.IsHidden || e.File.FileInfo.IsSystemFile)
+            if (e.IsHidden || e.IsSystemFile)
             {
                 // Ignore hidden files and folders
                 e.Cancel = true;

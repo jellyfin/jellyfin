@@ -8,6 +8,8 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Movies.Entities;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Movies.Resolvers
 {
@@ -18,9 +20,7 @@ namespace MediaBrowser.Movies.Resolvers
         {
             if ((args.VirtualFolderCollectionType ?? string.Empty).Equals("Movies", StringComparison.OrdinalIgnoreCase) && args.IsDirectory)
             {
-                var metadataFile = args.GetFileSystemEntryByName("movie.xml");
-
-                if (metadataFile.HasValue || Path.GetFileName(args.Path).IndexOf("[tmdbid=", StringComparison.OrdinalIgnoreCase) != -1)
+                if (args.ContainsFile("movie.xml") || Path.GetFileName(args.Path).IndexOf("[tmdbid=", StringComparison.OrdinalIgnoreCase) != -1)
                 {
                     return GetMovie(args) ?? new Movie();
                 }
@@ -52,8 +52,9 @@ namespace MediaBrowser.Movies.Resolvers
 
                 ItemResolveEventArgs childArgs = new ItemResolveEventArgs()
                 {
-                    File = child,
-                    FileSystemChildren = new LazyFileInfo[] { }
+                    FileInfo = child,
+                    FileSystemChildren = new WIN32_FIND_DATA[] { },
+                    Path = child.Path
                 };
 
                 var item = base.Resolve(childArgs);
@@ -71,23 +72,24 @@ namespace MediaBrowser.Movies.Resolvers
             return null;
         }
 
-        private void PopulateBonusFeatures(Movie item, ItemResolveEventArgs args)
+        /*private void PopulateBonusFeatures(Movie item, ItemResolveEventArgs args)
         {
-            var trailerPath = args.GetFileSystemEntryByName("specials", true);
-
-            if (trailerPath.HasValue)
+            if (args.ContainsFolder("specials"))
             {
-                string[] allFiles = Directory.GetFileSystemEntries(trailerPath.Value.Path, "*", SearchOption.TopDirectoryOnly);
+                List<Video> items = new List<Video>();
 
-                item.SpecialFeatures = allFiles.Select(f => Kernel.Instance.ItemController.GetItem(f)).OfType<Video>();
+                foreach (WIN32_FIND_DATA file in FileData.GetFileSystemEntries(Path.Combine(args.Path, "specials"), "*"))
+                {
+                    Video video = await Kernel.Instance.ItemController.GetItem(file.Path, fileInfo: file).ConfigureAwait(false) as Video;
+
+                    if (video != null)
+                    {
+                        items.Add(video);
+                    }
+                }
+
+                (item as BaseItem).LocalTrailers = items;
             }
-        }
-
-        protected override void SetInitialItemValues(Movie item, ItemResolveEventArgs args)
-        {
-            base.SetInitialItemValues(item, args);
-
-            PopulateBonusFeatures(item, args);
-        }
+        }*/
     }
 }

@@ -53,7 +53,7 @@ namespace MediaBrowser.Controller.Resolvers
                 {
                     var folder = args.FileSystemChildren[i];
 
-                    if (!folder.FileInfo.IsDirectory)
+                    if (!folder.IsDirectory)
                     {
                         continue;
                     }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.Composition;
+using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Providers;
@@ -23,11 +24,9 @@ namespace MediaBrowser.TV.Providers
 
         public override Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
         {
-            var metadataFile = args.GetFileSystemEntryByName("series.xml");
-
-            if (metadataFile.HasValue)
+            if (args.ContainsFile("series.xml"))
             {
-                return Task.Run(() => { new SeriesXmlParser().Fetch(item as Series, metadataFile.Value.Path); });
+                return Task.Run(() => { new SeriesXmlParser().Fetch(item as Series, Path.Combine(args.Path, "series.xml")); });
             }
 
             return Task.FromResult<object>(null);

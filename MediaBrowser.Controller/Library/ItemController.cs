@@ -19,15 +19,8 @@ namespace MediaBrowser.Controller.Library
         /// This gives listeners a chance to cancel the operation and cause the path to be ignored.
         /// </summary>
         public event EventHandler<PreBeginResolveEventArgs> PreBeginResolvePath;
-        private bool OnPreBeginResolvePath(Folder parent, string path, WIN32_FIND_DATA fileData)
+        private bool OnPreBeginResolvePath(PreBeginResolveEventArgs args)
         {
-            PreBeginResolveEventArgs args = new PreBeginResolveEventArgs()
-            {
-                Parent = parent,
-                File = new LazyFileInfo() { Path = path, FileInfo = fileData },
-                Cancel = false
-            };
-
             if (PreBeginResolvePath != null)
             {
                 PreBeginResolvePath(this, args);
@@ -76,35 +69,35 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         public async Task<BaseItem> GetItem(string path, Folder parent = null, WIN32_FIND_DATA? fileInfo = null)
         {
-            WIN32_FIND_DATA fileData = fileInfo ?? FileData.GetFileData(path);
+            ItemResolveEventArgs args = new ItemResolveEventArgs()
+            {
+                FileInfo = fileInfo ?? FileData.GetFileData(path),
+                Parent = parent,
+                Cancel = false,
+                Path = path
+            };
 
-            if (!OnPreBeginResolvePath(parent, path, fileData))
+            if (!OnPreBeginResolvePath(args))
             {
                 return null;
             }
 
-            LazyFileInfo[] fileSystemChildren;
+            WIN32_FIND_DATA[] fileSystemChildren;
 
             // Gather child folder and files
-            if (fileData.IsDirectory)
+            if (args.IsDirectory)
             {
-                fileSystemChildren = ConvertFileSystemEntries(Directory.GetFileSystemEntries(path, "*", SearchOption.TopDirectoryOnly));
+                fileSystemChildren = FileData.GetFileSystemEntries(path, "*").ToArray();
 
                 bool isVirtualFolder = parent != null && parent.IsRoot;
                 fileSystemChildren = FilterChildFileSystemEntries(fileSystemChildren, isVirtualFolder);
             }
             else
             {
-                fileSystemChildren = new LazyFileInfo[] { };
+                fileSystemChildren = new WIN32_FIND_DATA[] { };
             }
 
-            ItemResolveEventArgs args = new ItemResolveEventArgs()
-            {
-                File = new LazyFileInfo() { Path = path, FileInfo = fileData },
-                FileSystemChildren = fileSystemChildren,
-                Parent = parent,
-                Cancel = false
-            };
+            args.FileSystemChildren = fileSystemChildren;
 
             // Fire BeginResolvePath to see if anyone wants to cancel this operation
             if (!OnBeginResolvePath(args))
@@ -136,7 +129,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Finds child BaseItems for a given Folder
         /// </summary>
-        private Task<BaseItem>[] GetChildren(Folder folder, LazyFileInfo[] fileSystemChildren)
+        private Task<BaseItem>[] GetChildren(Folder folder, WIN32_FIND_DATA[] fileSystemChildren)
         {
             Task<BaseItem>[] tasks = new Task<BaseItem>[fileSystemChildren.Length];
 
@@ -144,7 +137,7 @@ namespace MediaBrowser.Controller.Library
             {
                 var child = fileSystemChildren[i];
 
-                tasks[i] = GetItem(child.Path, folder, child.FileInfo);
+                tasks[i] = GetItem(child.Path, folder, child);
             }
 
             return tasks;
@@ -153,14 +146,14 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Transforms shortcuts into their actual paths
         /// </summary>
-        private LazyFileInfo[] FilterChildFileSystemEntries(LazyFileInfo[] fileSystemChildren, bool flattenShortcuts)
+        private WIN32_FIND_DATA[] FilterChildFileSystemEntries(WIN32_FIND_DATA[] fileSystemChildren, bool flattenShortcuts)
         {
-            LazyFileInfo[] returnArray = new LazyFileInfo[fileSystemChildren.Length];
-            List<LazyFileInfo> resolvedShortcuts = new List<LazyFileInfo>();
+            WIN32_FIND_DATA[] returnArray = new WIN32_FIND_DATA[fileSystemChildren.Length];
+            List<WIN32_FIND_DATA> resolvedShortcuts = new List<WIN32_FIND_DATA>();
 
             for (int i = 0; i < fileSystemChildren.Length; i++)
             {
-                LazyFileInfo file = fileSystemChildren[i];
+                WIN32_FIND_DATA file = fileSystemChildren[i];
 
                 // If it's a shortcut, resolve it
                 if (Shortcut.IsShortcut(file.Path))
@@ -176,18 +169,18 @@ namespace MediaBrowser.Controller.Library
                         if (flattenShortcuts)
                         {
                             returnArray[i] = file;
-                            LazyFileInfo[] newChildren = ConvertFileSystemEntries(Directory.GetFileSystemEntries(newPath, "*", SearchOption.TopDirectoryOnly));
+                            WIN32_FIND_DATA[] newChildren = FileData.GetFileSystemEntries(newPath, "*").ToArray();
 
                             resolvedShortcuts.AddRange(FilterChildFileSystemEntries(newChildren, false));
                         }
                         else
                         {
-                            returnArray[i] = new LazyFileInfo() { Path = newPath, FileInfo = newPathData };
+                            returnArray[i] = newPathData;
                         }
                     }
                     else
                     {
-                        returnArray[i] = new LazyFileInfo() { Path = newPath, FileInfo = newPathData };
+                        returnArray[i] = newPathData;
                     }
                 }
                 else
@@ -286,26 +279,12 @@ namespace MediaBrowser.Controller.Library
             item.DateModified = Directory.GetLastAccessTime(path);
 
             ItemResolveEventArgs args = new ItemResolveEventArgs();
-            args.File = new LazyFileInfo() { Path = path };
-            args.FileSystemChildren = ConvertFileSystemEntries(Directory.GetFileSystemEntries(path, "*", SearchOption.TopDirectoryOnly));
+            args.FileInfo = FileData.GetFileData(path);
+            args.FileSystemChildren = FileData.GetFileSystemEntries(path, "*").ToArray();
 
             await Kernel.Instance.ExecuteMetadataProviders(item, args).ConfigureAwait(false);
 
             return item;
-        }
-
-        private LazyFileInfo[] ConvertFileSystemEntries(string[] files)
-        {
-            LazyFileInfo[] items = new LazyFileInfo[files.Length];
-
-            for (int i = 0; i < files.Length; i++)
-            {
-                string file = files[i];
-
-                items[i] = new LazyFileInfo() { Path = file };
-            }
-
-            return items;
         }
     }
 }
