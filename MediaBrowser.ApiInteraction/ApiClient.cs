@@ -197,26 +197,26 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets all Genres
         /// </summary>
-        public async Task<IEnumerable<IBNItem<Genre>>> GetAllGenresAsync(Guid userId)
+        public async Task<IEnumerable<IBNItem>> GetAllGenresAsync(Guid userId)
         {
             string url = ApiUrl + "/genres?userId=" + userId.ToString();
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<IEnumerable<IBNItem<Genre>>>(stream);
+                return DataSerializer.DeserializeFromStream<IEnumerable<IBNItem>>(stream);
             }
         }
 
         /// <summary>
         /// Gets all Years
         /// </summary>
-        public async Task<IEnumerable<IBNItem<Year>>> GetAllYearsAsync(Guid userId)
+        public async Task<IEnumerable<IBNItem>> GetAllYearsAsync(Guid userId)
         {
             string url = ApiUrl + "/years?userId=" + userId.ToString();
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<IEnumerable<IBNItem<Year>>>(stream);
+                return DataSerializer.DeserializeFromStream<IEnumerable<IBNItem>>(stream);
             }
         }
 
@@ -277,13 +277,13 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets all studious
         /// </summary>
-        public async Task<IEnumerable<IBNItem<Studio>>> GetAllStudiosAsync(Guid userId)
+        public async Task<IEnumerable<IBNItem>> GetAllStudiosAsync(Guid userId)
         {
             string url = ApiUrl + "/studios?userId=" + userId.ToString();
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<IEnumerable<IBNItem<Studio>>>(stream);
+                return DataSerializer.DeserializeFromStream<IEnumerable<IBNItem>>(stream);
             }
         }
 
@@ -303,52 +303,52 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets a studio
         /// </summary>
-        public async Task<IBNItem<Studio>> GetStudioAsync(Guid userId, string name)
+        public async Task<IBNItem> GetStudioAsync(Guid userId, string name)
         {
             string url = ApiUrl + "/studio?userId=" + userId.ToString() + "&name=" + name;
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<IBNItem<Studio>>(stream);
+                return DataSerializer.DeserializeFromStream<IBNItem>(stream);
             }
         }
 
         /// <summary>
         /// Gets a genre
         /// </summary>
-        public async Task<IBNItem<Genre>> GetGenreAsync(Guid userId, string name)
+        public async Task<IBNItem> GetGenreAsync(Guid userId, string name)
         {
             string url = ApiUrl + "/genre?userId=" + userId.ToString() + "&name=" + name;
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<IBNItem<Genre>>(stream);
+                return DataSerializer.DeserializeFromStream<IBNItem>(stream);
             }
         }
 
         /// <summary>
         /// Gets a person
         /// </summary>
-        public async Task<IBNItem<Person>> GetPersonAsync(Guid userId, string name)
+        public async Task<IBNItem> GetPersonAsync(Guid userId, string name)
         {
             string url = ApiUrl + "/person?userId=" + userId.ToString() + "&name=" + name;
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<IBNItem<Person>>(stream);
+                return DataSerializer.DeserializeFromStream<IBNItem>(stream);
             }
         }
 
         /// <summary>
         /// Gets a year
         /// </summary>
-        public async Task<IBNItem<Year>> GetYearAsync(Guid userId, int year)
+        public async Task<IBNItem> GetYearAsync(Guid userId, int year)
         {
             string url = ApiUrl + "/year?userId=" + userId.ToString() + "&year=" + year;
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<IBNItem<Year>>(stream);
+                return DataSerializer.DeserializeFromStream<IBNItem>(stream);
             }
         }
 

@@ -12,9 +12,9 @@ namespace MediaBrowser.Api.HttpHandlers
     /// <summary>
     /// Gets a single year
     /// </summary>
-    public class YearHandler : BaseJsonHandler<IBNItem<Year>>
+    public class YearHandler : BaseJsonHandler<IBNItem>
     {
-        protected override Task<IBNItem<Year>> GetObjectToSerialize()
+        protected override Task<IBNItem> GetObjectToSerialize()
         {
             Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
             Guid userId = Guid.Parse(QueryString["userid"]);
@@ -28,7 +28,7 @@ namespace MediaBrowser.Api.HttpHandlers
         /// <summary>
         /// Gets a Year
         /// </summary>
-        private async Task<IBNItem<Year>> GetYear(Folder parent, User user, int year)
+        private async Task<IBNItem> GetYear(Folder parent, User user, int year)
         {
             int count = 0;
 
@@ -44,11 +44,7 @@ namespace MediaBrowser.Api.HttpHandlers
             }
 
             // Get the original entity so that we can also supply the PrimaryImagePath
-            return new IBNItem<Year>()
-            {
-                Item = await Kernel.Instance.ItemController.GetYear(year).ConfigureAwait(false),
-                BaseItemCount = count
-            };
+            return ApiService.GetIBNItem(await Kernel.Instance.ItemController.GetYear(year).ConfigureAwait(false), count);
         }
     }
 }
