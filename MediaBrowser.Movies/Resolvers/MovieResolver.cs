@@ -1,8 +1,9 @@
 ﻿using System;
 using System.ComponentModel.Composition;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Movies.Entities;
 
 namespace MediaBrowser.Movies.Resolvers
@@ -20,6 +21,28 @@ namespace MediaBrowser.Movies.Resolvers
             }
 
             return null;
+        }
+
+        protected override void SetInitialItemValues(Movie item, ItemResolveEventArgs args)
+        {
+            base.SetInitialItemValues(item, args);
+
+            SetProviderIdFromPath(item);
+        }
+
+        private void SetProviderIdFromPath(Movie item)
+        {
+            string srch = "[tmdbid=";
+            int index = item.Path.IndexOf(srch, System.StringComparison.OrdinalIgnoreCase);
+
+            if (index != -1)
+            {
+                string id = item.Path.Substring(index + srch.Length);
+
+                id = id.Substring(0, id.IndexOf(']'));
+
+                item.SetProviderId(MetadataProviders.Tmdb, id);
+            }
         }
 
         private Movie GetMovie(ItemResolveEventArgs args)

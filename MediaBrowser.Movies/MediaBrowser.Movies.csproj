@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="Entities\BoxSet.cs" />
     <Compile Include="Providers\MovieProviderFromXml.cs" />
+    <Compile Include="Providers\MovieSpecialFeaturesProvider.cs" />
     <Compile Include="Resolvers\BoxSetResolver.cs" />
     <Compile Include="Entities\Movie.cs" />
     <Compile Include="Resolvers\MovieResolver.cs" />

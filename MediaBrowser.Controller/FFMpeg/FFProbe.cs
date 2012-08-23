@@ -13,12 +13,15 @@ namespace MediaBrowser.Controller.FFMpeg
     /// </summary>
     public static class FFProbe
     {
+        /// <summary>
+        /// Runs FFProbe against an Audio file, caches the result and returns the output
+        /// </summary>
         public static FFProbeResult Run(Audio item)
         {
             // Use try catch to avoid having to use File.Exists
             try
             {
-                return GetCachedResult(GetFFProbeAudioCachePath(item));
+                return GetCachedResult(GetFFProbeCachePath(item));
             }
             catch (FileNotFoundException)
             {
@@ -31,16 +34,22 @@ namespace MediaBrowser.Controller.FFMpeg
             FFProbeResult result = Run(item.Path);
 
             // Fire and forget
-            CacheResult(result, GetFFProbeAudioCachePath(item));
+            CacheResult(result, GetFFProbeCachePath(item));
 
             return result;
         }
 
+        /// <summary>
+        /// Gets the cached result of an FFProbe operation
+        /// </summary>
         private static FFProbeResult GetCachedResult(string path)
         {
             return ProtobufSerializer.DeserializeFromFile<FFProbeResult>(path);
         }
 
+        /// <summary>
+        /// Caches the result of an FFProbe operation
+        /// </summary>
         private static async void CacheResult(FFProbeResult result, string outputCachePath)
         {
             await Task.Run(() =>
@@ -56,12 +65,15 @@ namespace MediaBrowser.Controller.FFMpeg
             }).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Runs FFProbe against a Video file, caches the result and returns the output
+        /// </summary>
         public static FFProbeResult Run(Video item)
         {
             // Use try catch to avoid having to use File.Exists
             try
             {
-                return GetCachedResult(GetFFProbeVideoCachePath(item));
+                return GetCachedResult(GetFFProbeCachePath(item));
             }
             catch (FileNotFoundException)
             {
@@ -74,7 +86,7 @@ namespace MediaBrowser.Controller.FFMpeg
             FFProbeResult result = Run(item.Path);
 
             // Fire and forget
-            CacheResult(result, GetFFProbeVideoCachePath(item));
+            CacheResult(result, GetFFProbeCachePath(item));
 
             return result;
         }
@@ -131,14 +143,14 @@ namespace MediaBrowser.Controller.FFMpeg
             }
         }
 
-        private static string GetFFProbeAudioCachePath(BaseEntity item)
+        private static string GetFFProbeCachePath(Audio item)
         {
             string outputDirectory = Path.Combine(Kernel.Instance.ApplicationPaths.FFProbeAudioCacheDirectory, item.Id.ToString().Substring(0, 1));
 
             return Path.Combine(outputDirectory, item.Id + "-" + item.DateModified.Ticks + ".pb");
         }
 
-        private static string GetFFProbeVideoCachePath(BaseEntity item)
+        private static string GetFFProbeCachePath(Video item)
         {
             string outputDirectory = Path.Combine(Kernel.Instance.ApplicationPaths.FFProbeVideoCacheDirectory, item.Id.ToString().Substring(0, 1));
 

@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.Composition;
-using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Resolvers
