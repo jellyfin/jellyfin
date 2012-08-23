@@ -33,6 +33,9 @@
   <ItemGroup>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="protobuf-net">
+      <HintPath>..\packages\protobuf-net.2.0.0.480\lib\net40\protobuf-net.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Text, Version=3.9.5.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\ServiceStack.Text.3.9.5\lib\net35\ServiceStack.Text.dll</HintPath>
@@ -89,6 +92,7 @@
     <Compile Include="Plugins\BasePlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serialization\JsvSerializer.cs" />
+    <Compile Include="Serialization\ProtobufSerializer.cs" />
     <Compile Include="Serialization\XmlSerializer.cs" />
     <Compile Include="UI\BaseApplication.cs" />
     <Compile Include="UI\Splash.xaml.cs">

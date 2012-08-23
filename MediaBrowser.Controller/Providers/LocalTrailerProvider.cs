@@ -3,6 +3,7 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Providers
@@ -22,27 +23,21 @@ namespace MediaBrowser.Controller.Providers
 
         public async override Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
         {
-            var trailerPath = args.GetFileSystemEntryByName("trailers", true);
-
-            if (trailerPath.HasValue)
+            if (args.ContainsFolder("trailers"))
             {
-                string[] allFiles = Directory.GetFileSystemEntries(trailerPath.Value.Path, "*", SearchOption.TopDirectoryOnly);
+                List<Video> items = new List<Video>();
 
-                List<Video> localTrailers = new List<Video>();
-
-                for (int i = 0; i < allFiles.Length; i++)
+                foreach (WIN32_FIND_DATA file in FileData.GetFileSystemEntries(Path.Combine(args.Path, "trailers"), "*"))
                 {
-                    string file = allFiles[i];
-
-                    Video video = await Kernel.Instance.ItemController.GetItem(file).ConfigureAwait(false) as Video;
+                    Video video = await Kernel.Instance.ItemController.GetItem(file.Path, fileInfo: file).ConfigureAwait(false) as Video;
 
                     if (video != null)
                     {
-                        localTrailers.Add(video);
+                        items.Add(video);
                     }
                 }
 
-                (item as BaseItem).LocalTrailers = localTrailers;
+                (item as BaseItem).LocalTrailers = items;
             }
         }
     }

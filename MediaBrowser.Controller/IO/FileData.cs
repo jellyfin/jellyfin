@@ -2,6 +2,11 @@
 using System.IO;
 using System.Runtime.InteropServices;
 
+﻿using System.Runtime.ConstrainedExecution;
+using Microsoft.Win32.SafeHandles;
+using System.Collections.Generic;
+using System.Linq;
+
 namespace MediaBrowser.Controller.IO
 {
     public static class FileData
@@ -16,16 +21,67 @@ namespace MediaBrowser.Controller.IO
             if (handle == IntPtr.Zero)
                 throw new IOException("FindFirstFile failed");
             FindClose(handle);
+
+            data.Path = fileName;
             return data;
         }
 
-        [DllImport("kernel32")]
+        public static IEnumerable<WIN32_FIND_DATA> GetFileSystemEntries(string path, string searchPattern)
+        {
+            string lpFileName = Path.Combine(path, searchPattern);
+
+            WIN32_FIND_DATA lpFindFileData;
+            var handle = FindFirstFile(lpFileName, out lpFindFileData);
+
+            if (handle == IntPtr.Zero)
+            {
+                int hr = Marshal.GetLastWin32Error();
+                if (hr != 2 && hr != 0x12)
+                {
+                    throw new IOException("GetFileSystemEntries failed");
+                }
+                yield break;
+            }
+
+            if (IsValid(lpFindFileData.cFileName))
+            {
+                yield return lpFindFileData;
+            }
+
+            while (FindNextFile(handle, out lpFindFileData) != IntPtr.Zero)
+            {
+                if (IsValid(lpFindFileData.cFileName))
+                {
+                    lpFindFileData.Path = Path.Combine(path, lpFindFileData.cFileName);
+                    yield return lpFindFileData;
+                }
+            }
+
+            FindClose(handle);
+        }
+
+        private static bool IsValid(string cFileName)
+        {
+            if (cFileName.Equals(".", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+            if (cFileName.Equals("..", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern IntPtr FindFirstFile(string fileName, out WIN32_FIND_DATA data);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr FindNextFile(IntPtr hFindFile, out WIN32_FIND_DATA data);
 
         [DllImport("kernel32")]
         private static extern bool FindClose(IntPtr hFindFile);
-
-
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -107,30 +163,8 @@ namespace MediaBrowser.Controller.IO
             highBits = highBits << 32;
             return DateTime.FromFileTime(highBits + (long)filetime.dwLowDateTime);
         }
-    }
 
-    public struct LazyFileInfo
-    {
         public string Path { get; set; }
-
-        private WIN32_FIND_DATA? _FileInfo { get; set; }
-
-        public WIN32_FIND_DATA FileInfo
-        {
-            get
-            {
-                if (_FileInfo == null)
-                {
-                    _FileInfo = FileData.GetFileData(Path);
-                }
-
-                return _FileInfo.Value;
-            }
-            set
-            {
-                _FileInfo = value;
-            }
-        }
     }
 
 }

@@ -183,6 +183,10 @@ namespace MediaBrowser.Controller.Providers
             base.Init();
 
             AudioInfoProvider.EnsureCacheSubFolders(Kernel.Instance.ApplicationPaths.FFProbeVideoCacheDirectory);
+
+            ProtoBuf.Meta.RuntimeTypeModel.Default.Add(typeof(FFProbeResult), true);
+            ProtoBuf.Meta.RuntimeTypeModel.Default.Add(typeof(MediaStream), true);
+            ProtoBuf.Meta.RuntimeTypeModel.Default.Add(typeof(MediaFormat), true);
         }
     }
 }

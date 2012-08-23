@@ -51,13 +51,13 @@ namespace MediaBrowser.TV
             return seasonPathExpressions.Any(r => r.IsMatch(path));
         }
 
-        public static bool IsSeriesFolder(string path, LazyFileInfo[] fileSystemChildren)
+        public static bool IsSeriesFolder(string path, WIN32_FIND_DATA[] fileSystemChildren)
         {
             for (int i = 0; i < fileSystemChildren.Length; i++)
             {
                 var child = fileSystemChildren[i];
 
-                if (child.FileInfo.IsDirectory)
+                if (child.IsDirectory)
                 {
                     if (IsSeasonFolder(child.Path))
                     {

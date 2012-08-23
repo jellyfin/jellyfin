@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.Composition;
+using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Providers;
@@ -23,11 +24,9 @@ namespace MediaBrowser.Movies.Providers
 
         public override Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
         {
-            var metadataFile = args.GetFileSystemEntryByName("movie.xml");
-
-            if (metadataFile.HasValue)
+            if (args.ContainsFile("movie.xml"))
             {
-                return Task.Run(() => { new BaseItemXmlParser<Movie>().Fetch(item as Movie, metadataFile.Value.Path); });
+                return Task.Run(() => { new BaseItemXmlParser<Movie>().Fetch(item as Movie, Path.Combine(args.Path, "movie.xml")); });
             }
 
             return Task.FromResult<object>(null);

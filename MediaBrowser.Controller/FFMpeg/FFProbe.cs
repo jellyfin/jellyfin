@@ -23,6 +23,10 @@ namespace MediaBrowser.Controller.FFMpeg
             catch (FileNotFoundException)
             {
             }
+            catch (Exception ex)
+            {
+                Logger.LogException(ex);
+            }
 
             FFProbeResult result = Run(item.Path);
 
@@ -34,15 +38,22 @@ namespace MediaBrowser.Controller.FFMpeg
 
         private static FFProbeResult GetCachedResult(string path)
         {
-            return JsvSerializer.DeserializeFromFile<FFProbeResult>(path);
+            return ProtobufSerializer.DeserializeFromFile<FFProbeResult>(path);
         }
 
-        private static void CacheResult(FFProbeResult result, string outputCachePath)
+        private static async void CacheResult(FFProbeResult result, string outputCachePath)
         {
-            Task.Run(() =>
+            await Task.Run(() =>
             {
-                JsvSerializer.SerializeToFile<FFProbeResult>(result, outputCachePath);
-            });
+                try
+                {
+                    ProtobufSerializer.SerializeToFile<FFProbeResult>(result, outputCachePath);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogException(ex);
+                }
+            }).ConfigureAwait(false);
         }
 
         public static FFProbeResult Run(Video item)
@@ -54,6 +65,10 @@ namespace MediaBrowser.Controller.FFMpeg
             }
             catch (FileNotFoundException)
             {
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException(ex);
             }
 
             FFProbeResult result = Run(item.Path);
@@ -93,16 +108,7 @@ namespace MediaBrowser.Controller.FFMpeg
                 // If we ever decide to disable the ffmpeg log then you must uncomment the below line.
                 process.BeginErrorReadLine();
 
-                FFProbeResult result = JsonSerializer.DeserializeFromStream<FFProbeResult>(process.StandardOutput.BaseStream);
-
-                process.WaitForExit();
-
-                if (process.ExitCode != 0)
-                {
-                    Logger.LogInfo("FFProbe exited with code {0} for {1}", process.ExitCode, input);
-                }
-
-                return result;
+                return JsonSerializer.DeserializeFromStream<FFProbeResult>(process.StandardOutput.BaseStream);
             }
             catch (Exception ex)
             {
@@ -129,14 +135,14 @@ namespace MediaBrowser.Controller.FFMpeg
         {
             string outputDirectory = Path.Combine(Kernel.Instance.ApplicationPaths.FFProbeAudioCacheDirectory, item.Id.ToString().Substring(0, 1));
 
-            return Path.Combine(outputDirectory, item.Id + "-" + item.DateModified.Ticks + ".jsv");
+            return Path.Combine(outputDirectory, item.Id + "-" + item.DateModified.Ticks + ".pb");
         }
 
         private static string GetFFProbeVideoCachePath(BaseEntity item)
         {
             string outputDirectory = Path.Combine(Kernel.Instance.ApplicationPaths.FFProbeVideoCacheDirectory, item.Id.ToString().Substring(0, 1));
 
-            return Path.Combine(outputDirectory, item.Id + "-" + item.DateModified.Ticks + ".jsv");
+            return Path.Combine(outputDirectory, item.Id + "-" + item.DateModified.Ticks + ".pb");
         }
     }
 }

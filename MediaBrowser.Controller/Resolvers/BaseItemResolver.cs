@@ -81,30 +81,28 @@ namespace MediaBrowser.Controller.Resolvers
                 return;
             }
 
-            WIN32_FIND_DATA fileData;
-
             // See if a different path came out of the resolver than what went in
             if (!args.Path.Equals(item.Path, StringComparison.OrdinalIgnoreCase))
             {
-                LazyFileInfo? childData = args.GetFileSystemEntry(item.Path);
+                WIN32_FIND_DATA? childData = args.GetFileSystemEntry(item.Path);
 
                 if (childData != null)
                 {
-                    fileData = childData.Value.FileInfo;
+                    item.DateCreated = childData.Value.CreationTime;
+                    item.DateModified = childData.Value.LastWriteTime;
                 }
                 else
                 {
-                    fileData = FileData.GetFileData(item.Path);
+                    WIN32_FIND_DATA fileData = FileData.GetFileData(item.Path);
+                    item.DateCreated = fileData.CreationTime;
+                    item.DateModified = fileData.LastWriteTime;
                 }
             }
             else
             {
-                fileData = args.File.FileInfo;
+                item.DateCreated = args.FileInfo.CreationTime;
+                item.DateModified = args.FileInfo.LastWriteTime;
             }
-
-            item.DateCreated = fileData.CreationTime;
-
-            item.DateModified = fileData.LastWriteTime;
         }
     }
 
