@@ -9,6 +9,14 @@ namespace MediaBrowser.Api
 {
     public static class ImageProcessor
     {
+        /// <summary>
+        /// Resizes an image from a source stream and saves the result to an output stream
+        /// </summary>
+        /// <param name="width">Use if a fixed width is required. Aspect ratio will be preserved.</param>
+        /// <param name="height">Use if a fixed height is required. Aspect ratio will be preserved.</param>
+        /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
+        /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
+        /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
         public static void ProcessImage(Stream sourceImageStream, Stream toStream, int? width, int? height, int? maxWidth, int? maxHeight, int? quality)
         {
             Image originalImage = Image.FromStream(sourceImageStream);

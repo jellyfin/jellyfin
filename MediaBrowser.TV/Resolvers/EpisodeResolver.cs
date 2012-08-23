@@ -10,6 +10,7 @@ namespace MediaBrowser.TV.Resolvers
     {
         protected override Episode Resolve(ItemResolveEventArgs args)
         {
+            // If the parent is a Season or Series, then this is an Episode if the VideoResolver returns something
             if (args.Parent is Season || args.Parent is Series)
             {
                 return base.Resolve(args);

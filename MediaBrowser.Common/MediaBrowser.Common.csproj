@@ -67,7 +67,6 @@
     <Compile Include="Configuration\BaseApplicationConfiguration.cs" />
     <Compile Include="Configuration\BaseApplicationPaths.cs" />
     <Compile Include="Drawing\DrawingUtils.cs" />
-    <Compile Include="Events\GenericItemEventArgs.cs" />
     <Compile Include="Net\Handlers\StaticFileHandler.cs" />
     <Compile Include="Net\MimeTypes.cs" />
     <Compile Include="Properties\Resources.Designer.cs">

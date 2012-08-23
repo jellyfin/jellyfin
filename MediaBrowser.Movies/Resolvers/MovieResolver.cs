@@ -1,15 +1,9 @@
 ﻿using System;
 using System.ComponentModel.Composition;
-using System.IO;
-using System.Linq;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Movies.Entities;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Movies.Resolvers
 {
@@ -18,27 +12,11 @@ namespace MediaBrowser.Movies.Resolvers
     {
         protected override Movie Resolve(ItemResolveEventArgs args)
         {
+            // Must be a directory and under a 'Movies' VF
             if ((args.VirtualFolderCollectionType ?? string.Empty).Equals("Movies", StringComparison.OrdinalIgnoreCase) && args.IsDirectory)
             {
-                if (args.ContainsFile("movie.xml") || Path.GetFileName(args.Path).IndexOf("[tmdbid=", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    return GetMovie(args) ?? new Movie();
-                }
-
-                // If it's not a boxset, the only other allowed parent type is Folder
-                if (!(args.Parent is BoxSet))
-                {
-                    if (args.Parent != null && args.Parent.GetType() != typeof(Folder))
-                    {
-                        return null;
-                    }
-                }
-
-                // There's no metadata or [tmdb in the path, now we will have to work some magic to see if this is a Movie
-                if (args.Parent != null)
-                {
-                    return GetMovie(args);
-                }
+                // Return a movie if the video resolver finds something in the folder
+                return GetMovie(args);
             }
 
             return null;
@@ -46,6 +24,7 @@ namespace MediaBrowser.Movies.Resolvers
 
         private Movie GetMovie(ItemResolveEventArgs args)
         {
+            // Loop through each child file/folder and see if we find a video
             for (var i = 0; i < args.FileSystemChildren.Length; i++)
             {
                 var child = args.FileSystemChildren[i];

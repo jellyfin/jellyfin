@@ -15,6 +15,7 @@ namespace MediaBrowser.TV.Resolvers
             {
                 Season season = new Season();
 
+                // Gather these now so that the episode provider classes can utilize them instead of having to make their own file system calls
                 if (args.ContainsFolder("metadata"))
                 {
                     season.MetadataFiles = Directory.GetFiles(Path.Combine(args.Path, "metadata"), "*", SearchOption.TopDirectoryOnly);

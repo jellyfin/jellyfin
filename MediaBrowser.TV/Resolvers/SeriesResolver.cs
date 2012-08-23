@@ -20,6 +20,10 @@ namespace MediaBrowser.TV.Resolvers
                     return null;
                 }
 
+                // It's a Series if any of the following conditions are met:
+                // series.xml exists
+                // [tvdbid= is present in the path
+                // TVUtils.IsSeriesFolder returns true
                 if (args.ContainsFile("series.xml") || Path.GetFileName(args.Path).IndexOf("[tvdbid=", StringComparison.OrdinalIgnoreCase) != -1 || TVUtils.IsSeriesFolder(args.Path, args.FileSystemChildren))
                 {
                     return new Series();

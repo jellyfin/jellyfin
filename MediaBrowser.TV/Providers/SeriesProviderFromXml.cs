@@ -22,14 +22,17 @@ namespace MediaBrowser.TV.Providers
             get { return MetadataProviderPriority.First; }
         }
 
-        public override Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
+        public override async Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
+        {
+            await Task.Run(() => { Fetch(item, args); }).ConfigureAwait(false);
+        }
+
+        private void Fetch(BaseEntity item, ItemResolveEventArgs args)
         {
             if (args.ContainsFile("series.xml"))
             {
-                return Task.Run(() => { new SeriesXmlParser().Fetch(item as Series, Path.Combine(args.Path, "series.xml")); });
+                new SeriesXmlParser().Fetch(item as Series, Path.Combine(args.Path, "series.xml"));
             }
-
-            return Task.FromResult<object>(null);
         }
     }
 }

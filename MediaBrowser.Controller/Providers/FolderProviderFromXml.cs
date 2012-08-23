@@ -20,14 +20,17 @@ namespace MediaBrowser.Controller.Providers
             get { return MetadataProviderPriority.First; }
         }
 
-        public override Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
+        public async override Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
+        {
+            await Task.Run(() => { Fetch(item, args); }).ConfigureAwait(false);
+        }
+
+        private void Fetch(BaseEntity item, ItemResolveEventArgs args)
         {
             if (args.ContainsFile("folder.xml"))
             {
-                return Task.Run(() => { new FolderXmlParser().Fetch(item as Folder, Path.Combine(args.Path, "folder.xml")); });
+                new BaseItemXmlParser<Folder>().Fetch(item as Folder, Path.Combine(args.Path, "folder.xml"));
             }
-
-            return Task.FromResult<object>(null);
         }
     }
 }
