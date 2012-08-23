@@ -3,7 +3,7 @@ using System.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Entities;
 
-namespace MediaBrowser.Controller.Events
+namespace MediaBrowser.Controller.Library
 {
     /// <summary>
     /// This is an EventArgs object used when resolving a Path into a BaseItem

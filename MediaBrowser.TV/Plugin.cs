@@ -2,7 +2,7 @@
 using System.ComponentModel.Composition;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.TV.Entities;
 

@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;

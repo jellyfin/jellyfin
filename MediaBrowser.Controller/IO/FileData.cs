@@ -1,32 +1,61 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 
-﻿using System.Runtime.ConstrainedExecution;
-using Microsoft.Win32.SafeHandles;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace MediaBrowser.Controller.IO
 {
+    /// <summary>
+    /// Provides low level File access that is much faster than the File/Directory api's
+    /// </summary>
     public static class FileData
     {
         public const int MAX_PATH = 260;
         public const int MAX_ALTERNATE = 14;
 
-        public static WIN32_FIND_DATA GetFileData(string fileName)
+        /// <summary>
+        /// Gets information about a path
+        /// </summary>
+        public static WIN32_FIND_DATA GetFileData(string path)
         {
             WIN32_FIND_DATA data;
-            IntPtr handle = FindFirstFile(fileName, out data);
+            IntPtr handle = FindFirstFile(path, out data);
             if (handle == IntPtr.Zero)
                 throw new IOException("FindFirstFile failed");
             FindClose(handle);
 
-            data.Path = fileName;
+            data.Path = path;
             return data;
         }
 
+        /// <summary>
+        /// Gets all file system entries within a foler
+        /// </summary>
         public static IEnumerable<WIN32_FIND_DATA> GetFileSystemEntries(string path, string searchPattern)
+        {
+            return GetFileSystemEntries(path, searchPattern, true, true);
+        }
+
+        /// <summary>
+        /// Gets all files within a folder
+        /// </summary>
+        public static IEnumerable<WIN32_FIND_DATA> GetFiles(string path, string searchPattern)
+        {
+            return GetFileSystemEntries(path, searchPattern, true, false);
+        }
+
+        /// <summary>
+        /// Gets all sub-directories within a folder
+        /// </summary>
+        public static IEnumerable<WIN32_FIND_DATA> GetDirectories(string path, string searchPattern)
+        {
+            return GetFileSystemEntries(path, searchPattern, false, true);
+        }
+
+        /// <summary>
+        /// Gets all file system entries within a foler
+        /// </summary>
+        public static IEnumerable<WIN32_FIND_DATA> GetFileSystemEntries(string path, string searchPattern, bool includeFiles, bool includeDirectories)
         {
             string lpFileName = Path.Combine(path, searchPattern);
 
@@ -43,14 +72,14 @@ namespace MediaBrowser.Controller.IO
                 yield break;
             }
 
-            if (IsValid(lpFindFileData.cFileName))
+            if (IncludeInOutput(lpFindFileData.cFileName, lpFindFileData.dwFileAttributes, includeFiles, includeDirectories))
             {
                 yield return lpFindFileData;
             }
 
             while (FindNextFile(handle, out lpFindFileData) != IntPtr.Zero)
             {
-                if (IsValid(lpFindFileData.cFileName))
+                if (IncludeInOutput(lpFindFileData.cFileName, lpFindFileData.dwFileAttributes, includeFiles, includeDirectories))
                 {
                     lpFindFileData.Path = Path.Combine(path, lpFindFileData.cFileName);
                     yield return lpFindFileData;
@@ -60,13 +89,23 @@ namespace MediaBrowser.Controller.IO
             FindClose(handle);
         }
 
-        private static bool IsValid(string cFileName)
+        private static bool IncludeInOutput(string cFileName, FileAttributes attributes, bool includeFiles, bool includeDirectories)
         {
             if (cFileName.Equals(".", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
             if (cFileName.Equals("..", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (!includeFiles && !attributes.HasFlag(FileAttributes.Directory))
+            {
+                return false;
+            }
+
+            if (!includeDirectories && attributes.HasFlag(FileAttributes.Directory))
             {
                 return false;
             }

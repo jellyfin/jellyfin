@@ -2,21 +2,21 @@
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading.Tasks;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Movies.Entities;
 
-namespace MediaBrowser.Controller.Providers
+namespace MediaBrowser.Movies.Providers
 {
-    /// <summary>
-    /// Provides local trailers by checking the trailers subfolder
-    /// </summary>
     [Export(typeof(BaseMetadataProvider))]
-    public class LocalTrailerProvider : BaseMetadataProvider
+    public class MovieSpecialFeaturesProvider : BaseMetadataProvider
     {
         public override bool Supports(BaseEntity item)
         {
-            return item is BaseItem;
+            return item is Movie;
         }
 
         public override MetadataProviderPriority Priority
@@ -26,11 +26,11 @@ namespace MediaBrowser.Controller.Providers
 
         public async override Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
         {
-            if (args.ContainsFolder("trailers"))
+            if (args.ContainsFolder("specials"))
             {
                 List<Video> items = new List<Video>();
 
-                foreach (WIN32_FIND_DATA file in FileData.GetFileSystemEntries(Path.Combine(args.Path, "trailers"), "*"))
+                foreach (WIN32_FIND_DATA file in FileData.GetFileSystemEntries(Path.Combine(args.Path, "specials"), "*"))
                 {
                     Video video = await Kernel.Instance.ItemController.GetItem(file.Path, fileInfo: file).ConfigureAwait(false) as Video;
 
@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.Providers
                     }
                 }
 
-                (item as BaseItem).LocalTrailers = items;
+                (item as Movie).SpecialFeatures = items;
             }
         }
     }

@@ -1,8 +1,9 @@
 ﻿using System;
 using System.ComponentModel.Composition;
 using System.IO;
-using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.TV.Entities;
 
 namespace MediaBrowser.TV.Resolvers
@@ -31,6 +32,28 @@ namespace MediaBrowser.TV.Resolvers
             }
 
             return null;
+        }
+
+        protected override void SetInitialItemValues(Series item, ItemResolveEventArgs args)
+        {
+            base.SetInitialItemValues(item, args);
+
+            SetProviderIdFromPath(item);
+        }
+
+        private void SetProviderIdFromPath(Series item)
+        {
+            string srch = "[tvdbid=";
+            int index = item.Path.IndexOf(srch, System.StringComparison.OrdinalIgnoreCase);
+
+            if (index != -1)
+            {
+                string id = item.Path.Substring(index + srch.Length);
+
+                id = id.Substring(0, id.IndexOf(']'));
+
+                item.SetProviderId(MetadataProviders.Tvdb, id);
+            }
         }
     }
 }
