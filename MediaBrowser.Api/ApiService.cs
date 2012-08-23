@@ -206,7 +206,9 @@ namespace MediaBrowser.Api
                 {
                     BaseItemPerson baseItemPerson = new BaseItemPerson();
 
-                    baseItemPerson.PersonInfo = p;
+                    baseItemPerson.Name = p.Name;
+                    baseItemPerson.Overview = p.Overview;
+                    baseItemPerson.Type = p.Type;
 
                     Person ibnObject = entities.First(i => i.Name.Equals(p.Name, StringComparison.OrdinalIgnoreCase));
 
@@ -263,7 +265,7 @@ namespace MediaBrowser.Api
             {
                 Id = entity.Id,
                 BaseItemCount = itemCount,
-                HasPrimaryImage = !string.IsNullOrEmpty(entity.PrimaryImagePath),
+                HasImage = !string.IsNullOrEmpty(entity.PrimaryImagePath),
                 Name = entity.Name
             };
         }
