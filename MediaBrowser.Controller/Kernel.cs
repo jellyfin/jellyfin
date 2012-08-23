@@ -49,6 +49,11 @@ namespace MediaBrowser.Controller
         /// </summary>
         [ImportMany(typeof(IBaseItemResolver))]
         private IEnumerable<IBaseItemResolver> EntityResolversEnumerable { get; set; }
+
+        /// <summary>
+        /// Once MEF has loaded the resolvers, sort them by priority and store them in this array
+        /// Given the sheer number of times they'll be iterated over it'll be faster to loop through an array
+        /// </summary>
         internal IBaseItemResolver[] EntityResolvers { get; private set; }
 
         /// <summary>

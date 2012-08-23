@@ -22,14 +22,17 @@ namespace MediaBrowser.Movies.Providers
             get { return MetadataProviderPriority.First; }
         }
 
-        public override Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
+        public override async Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
+        {
+            await Task.Run(() => { Fetch(item, args); }).ConfigureAwait(false);
+        }
+
+        private void Fetch(BaseEntity item, ItemResolveEventArgs args)
         {
             if (args.ContainsFile("movie.xml"))
             {
-                return Task.Run(() => { new BaseItemXmlParser<Movie>().Fetch(item as Movie, Path.Combine(args.Path, "movie.xml")); });
+                new BaseItemXmlParser<Movie>().Fetch(item as Movie, Path.Combine(args.Path, "movie.xml"));
             }
-
-            return Task.FromResult<object>(null);
         }
     }
 }

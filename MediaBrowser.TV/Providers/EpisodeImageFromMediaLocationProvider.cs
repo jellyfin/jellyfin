@@ -40,6 +40,7 @@ namespace MediaBrowser.TV.Providers
 
         private void SetPrimaryImagePath(Episode item, Season season, string metadataFolder, string episodeFileName)
         {
+            // Look for the image file in the metadata folder, and if found, set PrimaryImagePath
             string[] imageFiles = new string[] {
                 Path.Combine(metadataFolder, Path.ChangeExtension(episodeFileName, ".jpg")),
                 Path.Combine(metadataFolder, Path.ChangeExtension(episodeFileName, ".png"))
@@ -49,7 +50,7 @@ namespace MediaBrowser.TV.Providers
 
             if (season == null)
             {
-                // Gotta do this the slow way
+                // Epsiode directly in Series folder. Gotta do this the slow way
                 image = imageFiles.FirstOrDefault(f => File.Exists(f));
             }
             else

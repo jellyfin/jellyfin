@@ -3,6 +3,9 @@ using MediaBrowser.Common.Configuration;
 
 namespace MediaBrowser.Controller.Configuration
 {
+    /// <summary>
+    /// Extends BaseApplicationPaths to add paths that are only applicable on the server
+    /// </summary>
     public class ServerApplicationPaths : BaseApplicationPaths
     {
         private string _rootFolderPath;

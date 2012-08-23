@@ -28,6 +28,7 @@ namespace MediaBrowser.TV
 
         void ItemController_PreBeginResolvePath(object sender, PreBeginResolveEventArgs e)
         {
+            // Don't try and resolve files with the metadata folder
             if (System.IO.Path.GetFileName(e.Path).Equals("metadata", StringComparison.OrdinalIgnoreCase) && e.IsDirectory)
             {
                 if (e.Parent is Season || e.Parent is Series)

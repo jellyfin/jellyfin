@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Configuration;
 using System.IO;
-using System.Configuration;
 using System.Reflection;
 
 namespace MediaBrowser.Common.Configuration
 {
+    /// <summary>
+    /// Provides a base class to hold common application paths used by both the UI and Server.
+    /// This can be subclassed to add application-specific paths.
+    /// </summary>
     public abstract class BaseApplicationPaths
     {
         private string _programDataPath;
