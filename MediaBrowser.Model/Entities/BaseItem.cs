@@ -56,13 +56,13 @@ namespace MediaBrowser.Model.Entities
 
         public string Language { get; set; }
         public string Overview { get; set; }
-        public IEnumerable<string> Taglines { get; set; }
+        public List<string> Taglines { get; set; }
 
-        public IEnumerable<PersonInfo> People { get; set; }
+        public List<PersonInfo> People { get; set; }
 
-        public IEnumerable<string> Studios { get; set; }
+        public List<string> Studios { get; set; }
 
-        public IEnumerable<string> Genres { get; set; }
+        public List<string> Genres { get; set; }
 
         public string DisplayMediaType { get; set; }
 

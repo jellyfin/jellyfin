@@ -128,7 +128,7 @@ namespace MediaBrowser.Controller.Providers
 
             audio.Language = AudioInfoProvider.GetDictionaryValue(stream.tags, "language");
 
-            List<AudioStream> streams = (video.AudioStreams ?? new AudioStream[] { }).ToList();
+            List<AudioStream> streams = video.AudioStreams ?? new List<AudioStream>();
             streams.Add(audio);
             video.AudioStreams = streams;
         }

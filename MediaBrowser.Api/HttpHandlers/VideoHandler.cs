@@ -48,7 +48,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 return true;
             }
 
-            AudioStream audioStream = (LibraryItem.AudioStreams ?? new AudioStream[] { }).FirstOrDefault();
+            AudioStream audioStream = (LibraryItem.AudioStreams ?? new List<AudioStream>()).FirstOrDefault();
 
             if (audioStream != null)
             {
@@ -121,7 +121,7 @@ namespace MediaBrowser.Api.HttpHandlers
 
         private string GetAudioArguments(string outputFormat)
         {
-            AudioStream audioStream = (LibraryItem.AudioStreams ?? new AudioStream[] { }).FirstOrDefault();
+            AudioStream audioStream = (LibraryItem.AudioStreams ?? new List<AudioStream>()).FirstOrDefault();
 
             if (audioStream == null)
             {

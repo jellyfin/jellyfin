@@ -90,7 +90,7 @@ namespace MediaBrowser.Controller.Xml
 
                 case "TagLine":
                     {
-                        var list = (item.Taglines ?? new string[] { }).ToList();
+                        var list = item.Taglines ?? new List<string>();
                         var tagline = reader.ReadElementContentAsString();
 
                         if (!list.Contains(tagline))
@@ -135,10 +135,10 @@ namespace MediaBrowser.Controller.Xml
 
                 case "Genre":
                     {
-                        var genres = (item.Genres ?? new string[] { }).ToList();
-                        genres.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|'));
+                        var list = item.Genres ?? new List<string>();
+                        list.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|'));
 
-                        item.Genres = genres;
+                        item.Genres = list;
                         break;
                     }
 
@@ -148,16 +148,16 @@ namespace MediaBrowser.Controller.Xml
 
                 case "Network":
                     {
-                        var studios = (item.Studios ?? new string[] { }).ToList();
-                        studios.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|'));
+                        var list = item.Studios ?? new List<string>();
+                        list.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|'));
 
-                        item.Studios = studios;
+                        item.Studios = list;
                         break;
                     }
 
                 case "Director":
                     {
-                        var list = (item.People ?? new PersonInfo[] { }).ToList();
+                        var list = item.People ?? new List<PersonInfo>();
                         list.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo() { Name = v, Type = "Director" }));
 
                         item.People = list;
@@ -165,7 +165,7 @@ namespace MediaBrowser.Controller.Xml
                     }
                 case "Writer":
                     {
-                        var list = (item.People ?? new PersonInfo[] { }).ToList();
+                        var list = item.People ?? new List<PersonInfo>();
                         list.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo() { Name = v, Type = "Writer" }));
 
                         item.People = list;
@@ -175,7 +175,7 @@ namespace MediaBrowser.Controller.Xml
                 case "Actors":
                 case "GuestStars":
                     {
-                        var list = (item.People ?? new PersonInfo[] { }).ToList();
+                        var list = item.People ?? new List<PersonInfo>();
                         list.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo() { Name = v, Type = "Actor" }));
 
                         item.People = list;
@@ -309,7 +309,7 @@ namespace MediaBrowser.Controller.Xml
                             {
                                 AudioStream stream = FetchMediaInfoAudio(reader.ReadSubtree());
 
-                                List<AudioStream> streams = (item.AudioStreams ?? new AudioStream[] { }).ToList();
+                                List<AudioStream> streams = item.AudioStreams ?? new List<AudioStream>();
                                 streams.Add(stream);
                                 item.AudioStreams = streams;
 
@@ -324,7 +324,7 @@ namespace MediaBrowser.Controller.Xml
                             {
                                 SubtitleStream stream = FetchMediaInfoSubtitles(reader.ReadSubtree());
 
-                                List<SubtitleStream> streams = (item.Subtitles ?? new SubtitleStream[] { }).ToList();
+                                List<SubtitleStream> streams = item.Subtitles ?? new List<SubtitleStream>();
                                 streams.Add(stream);
                                 item.Subtitles = streams;
 
@@ -490,7 +490,7 @@ namespace MediaBrowser.Controller.Xml
 
         private void FetchFromTaglinesNode(XmlReader reader, T item)
         {
-            List<string> list = (item.Taglines ?? new string[] { }).ToList();
+            var list = item.Taglines ?? new List<string>();
 
             reader.MoveToContent();
 
@@ -504,7 +504,7 @@ namespace MediaBrowser.Controller.Xml
                             {
                                 string val = reader.ReadElementContentAsString();
 
-                                if (!string.IsNullOrWhiteSpace(val))
+                                if (!string.IsNullOrWhiteSpace(val) && !list.Contains(val))
                                 {
                                     list.Add(val);
                                 }
@@ -523,7 +523,7 @@ namespace MediaBrowser.Controller.Xml
 
         private void FetchFromGenresNode(XmlReader reader, T item)
         {
-            List<string> list = (item.Genres ?? new string[] { }).ToList();
+            var list = item.Genres ?? new List<string>();
 
             reader.MoveToContent();
 
@@ -556,7 +556,7 @@ namespace MediaBrowser.Controller.Xml
 
         private void FetchDataFromPersonsNode(XmlReader reader, T item)
         {
-            List<PersonInfo> list = (item.People ?? new PersonInfo[] { }).ToList();
+            var list = item.People ?? new List<PersonInfo>();
 
             reader.MoveToContent();
 
@@ -584,7 +584,7 @@ namespace MediaBrowser.Controller.Xml
 
         private void FetchFromStudiosNode(XmlReader reader, T item)
         {
-            List<string> list = (item.Studios ?? new string[] { }).ToList();
+            var list = item.Studios ?? new List<string>();
 
             reader.MoveToContent();
 
