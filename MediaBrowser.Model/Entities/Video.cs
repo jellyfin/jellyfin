@@ -6,8 +6,8 @@ namespace MediaBrowser.Model.Entities
     {
         public VideoType VideoType { get; set; }
 
-        public IEnumerable<SubtitleStream> Subtitles { get; set; }
-        public IEnumerable<AudioStream> AudioStreams { get; set; }
+        public List<SubtitleStream> Subtitles { get; set; }
+        public List<AudioStream> AudioStreams { get; set; }
 
         public int Height { get; set; }
         public int Width { get; set; }

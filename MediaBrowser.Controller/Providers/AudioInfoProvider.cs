@@ -96,7 +96,7 @@ namespace MediaBrowser.Controller.Providers
 
             if (!string.IsNullOrEmpty(composer))
             {
-                var list = (audio.People ?? new PersonInfo[] { }).ToList();
+                var list = audio.People ?? new List<PersonInfo>();
                 list.Add(new PersonInfo() { Name = composer, Type = "Composer" });
                 audio.People = list;
             }
@@ -127,7 +127,7 @@ namespace MediaBrowser.Controller.Providers
 
             if (!string.IsNullOrEmpty(val))
             {
-                var list = (audio.Studios ?? new string[] { }).ToList();
+                var list = audio.Studios ?? new List<string>();
                 list.AddRange(val.Split('/'));
                 audio.Studios = list;
             }
@@ -139,7 +139,7 @@ namespace MediaBrowser.Controller.Providers
 
             if (!string.IsNullOrEmpty(val))
             {
-                var list = (audio.Genres ?? new string[] { }).ToList();
+                var list = audio.Genres ?? new List<string>();
                 list.AddRange(val.Split('/'));
                 audio.Genres = list;
             }

@@ -32,7 +32,7 @@ namespace MediaBrowser.Controller.Providers
 
                 if (baseItem != null)
                 {
-                    return Task.Run(() => { PopulateImages(baseItem, args); });
+                    return Task.Run(() => { PopulateBaseItemImages(baseItem, args); });
                 }
                 else
                 {
@@ -74,7 +74,7 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Fills in image paths based on files win the folder
         /// </summary>
-        private void PopulateImages(BaseItem item, ItemResolveEventArgs args)
+        private void PopulateBaseItemImages(BaseItem item, ItemResolveEventArgs args)
         {
             List<string> backdropFiles = new List<string>();
 
