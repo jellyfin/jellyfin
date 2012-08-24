@@ -200,17 +200,17 @@ namespace MediaBrowser.Api
             // Attach People by transforming them into BaseItemPerson (DTO)
             if (item.People != null)
             {
-                IEnumerable<Person> entities = await Task.WhenAll<Person>(item.People.Select(c => Kernel.Instance.ItemController.GetPerson(c.Name))).ConfigureAwait(false);
+                IEnumerable<Person> entities = await Task.WhenAll<Person>(item.People.Select(c => Kernel.Instance.ItemController.GetPerson(c.Key))).ConfigureAwait(false);
 
                 dto.People = item.People.Select(p =>
                 {
                     BaseItemPerson baseItemPerson = new BaseItemPerson();
 
-                    baseItemPerson.Name = p.Name;
-                    baseItemPerson.Overview = p.Overview;
-                    baseItemPerson.Type = p.Type;
+                    baseItemPerson.Name = p.Key;
+                    baseItemPerson.Overview = p.Value.Overview;
+                    baseItemPerson.Type = p.Value.Type;
 
-                    Person ibnObject = entities.First(i => i.Name.Equals(p.Name, StringComparison.OrdinalIgnoreCase));
+                    Person ibnObject = entities.First(i => i.Name.Equals(p.Key, StringComparison.OrdinalIgnoreCase));
 
                     if (ibnObject != null)
                     {

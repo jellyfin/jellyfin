@@ -16,12 +16,14 @@ namespace MediaBrowser.Controller.FFMpeg
         /// <summary>
         /// Runs FFProbe against an Audio file, caches the result and returns the output
         /// </summary>
-        public static FFProbeResult Run(Audio item)
+        public static FFProbeResult Run(BaseItem item, string cacheDirectory)
         {
+            string cachePath = GetFFProbeCachePath(item, cacheDirectory);
+
             // Use try catch to avoid having to use File.Exists
             try
             {
-                return GetCachedResult(GetFFProbeCachePath(item));
+                return GetCachedResult(cachePath);
             }
             catch (FileNotFoundException)
             {
@@ -34,7 +36,7 @@ namespace MediaBrowser.Controller.FFMpeg
             FFProbeResult result = Run(item.Path);
 
             // Fire and forget
-            CacheResult(result, GetFFProbeCachePath(item));
+            CacheResult(result, cachePath);
 
             return result;
         }
@@ -63,32 +65,6 @@ namespace MediaBrowser.Controller.FFMpeg
                     Logger.LogException(ex);
                 }
             }).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Runs FFProbe against a Video file, caches the result and returns the output
-        /// </summary>
-        public static FFProbeResult Run(Video item)
-        {
-            // Use try catch to avoid having to use File.Exists
-            try
-            {
-                return GetCachedResult(GetFFProbeCachePath(item));
-            }
-            catch (FileNotFoundException)
-            {
-            }
-            catch (Exception ex)
-            {
-                Logger.LogException(ex);
-            }
-
-            FFProbeResult result = Run(item.Path);
-
-            // Fire and forget
-            CacheResult(result, GetFFProbeCachePath(item));
-
-            return result;
         }
 
         private static FFProbeResult Run(string input)
@@ -148,16 +124,9 @@ namespace MediaBrowser.Controller.FFMpeg
             (sender as Process).Dispose();
         }
 
-        private static string GetFFProbeCachePath(Audio item)
+        private static string GetFFProbeCachePath(BaseItem item, string cacheDirectory)
         {
-            string outputDirectory = Path.Combine(Kernel.Instance.ApplicationPaths.FFProbeAudioCacheDirectory, item.Id.ToString().Substring(0, 1));
-
-            return Path.Combine(outputDirectory, item.Id + "-" + item.DateModified.Ticks + ".pb");
-        }
-
-        private static string GetFFProbeCachePath(Video item)
-        {
-            string outputDirectory = Path.Combine(Kernel.Instance.ApplicationPaths.FFProbeVideoCacheDirectory, item.Id.ToString().Substring(0, 1));
+            string outputDirectory = Path.Combine(cacheDirectory, item.Id.ToString().Substring(0, 1));
 
             return Path.Combine(outputDirectory, item.Id + "-" + item.DateModified.Ticks + ".pb");
         }

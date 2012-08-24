@@ -37,7 +37,7 @@ namespace MediaBrowser.Api.HttpHandlers
 
             foreach (var item in allItems)
             {
-                if (item.People != null && item.People.Any(s => s.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                if (item.People != null && item.People.ContainsKey(name))
                 {
                     count++;
                 }
