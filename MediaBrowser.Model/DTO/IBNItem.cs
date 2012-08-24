@@ -27,7 +27,7 @@ namespace MediaBrowser.Model.DTO
     }
 
     /// <summary>
-    /// This is used by BaseItemContainer
+    /// This is used by the api to get information about a Person within a BaseItem
     /// </summary>
     public class BaseItemPerson
     {
@@ -38,7 +38,7 @@ namespace MediaBrowser.Model.DTO
     }
 
     /// <summary>
-    /// This is used by BaseItemContainer
+    /// This is used by the api to get information about a studio within a BaseItem
     /// </summary>
     public class BaseItemStudio
     {

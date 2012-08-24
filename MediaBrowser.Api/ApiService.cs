@@ -107,6 +107,13 @@ namespace MediaBrowser.Api
             dto.Type = item.GetType().Name;
             dto.UserRating = item.UserRating;
 
+            VirtualFolder virtualFolder = item.VirtualFolder;
+
+            if (virtualFolder != null)
+            {
+                dto.VfType = virtualFolder.CollectionType;
+            }
+
             dto.UserData = item.GetUserData(user);
 
             Folder folder = item as Folder;
