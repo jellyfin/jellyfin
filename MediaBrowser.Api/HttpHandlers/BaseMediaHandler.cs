@@ -145,6 +145,8 @@ namespace MediaBrowser.Api.HttpHandlers
             return false;
         }
 
+        private FileStream LogFileStream { get; set; }
+
         protected async override Task WriteResponseToOutputStream(Stream stream)
         {
             ProcessStartInfo startInfo = new ProcessStartInfo();
@@ -167,25 +169,24 @@ namespace MediaBrowser.Api.HttpHandlers
             process.StartInfo = startInfo;
 
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
-            FileStream logStream = new FileStream(Path.Combine(Kernel.Instance.ApplicationPaths.LogDirectoryPath, "ffmpeg-" + Guid.NewGuid().ToString() + ".txt"), FileMode.Create);
+            LogFileStream = new FileStream(Path.Combine(Kernel.Instance.ApplicationPaths.LogDirectoryPath, "ffmpeg-" + Guid.NewGuid().ToString() + ".txt"), FileMode.Create);
+
+            process.EnableRaisingEvents = true;
+
+            process.Exited += process_Exited;
 
             try
             {
                 process.Start();
 
                 // MUST read both stdout and stderr asynchronously or a deadlock may occurr
-                // If we ever decide to disable the ffmpeg log then you must uncomment the below line.
-                //process.BeginErrorReadLine();
 
-                Task debugLogTask = process.StandardError.BaseStream.CopyToAsync(logStream);
+                // Kick off two tasks
+                Task mediaTask = process.StandardOutput.BaseStream.CopyToAsync(stream);
+                Task debugLogTask = process.StandardError.BaseStream.CopyToAsync(LogFileStream);
 
-                await process.StandardOutput.BaseStream.CopyToAsync(stream).ConfigureAwait(false);
-
-                process.WaitForExit();
-
-                Logger.LogInfo("FFMpeg exited with code " + process.ExitCode);
-
-                await debugLogTask.ConfigureAwait(false);
+                await mediaTask.ConfigureAwait(false);
+                //await debugLogTask.ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -200,11 +201,20 @@ namespace MediaBrowser.Api.HttpHandlers
                 {
                 }
             }
-            finally
+        }
+
+        void process_Exited(object sender, EventArgs e)
+        {
+            if (LogFileStream != null)
             {
-                logStream.Dispose();
-                process.Dispose();
+                LogFileStream.Dispose();
             }
+
+            Process process = sender as Process;
+
+            Logger.LogInfo("FFMpeg exited with code " + process.ExitCode);
+
+            process.Dispose();
         }
 
         /// <summary>
