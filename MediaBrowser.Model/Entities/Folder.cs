@@ -97,7 +97,7 @@ namespace MediaBrowser.Model.Entities
             {
                 if (c.People != null)
                 {
-                    return c.People.Any(p => p.Name.Equals(person, StringComparison.OrdinalIgnoreCase));
+                    return c.People.ContainsKey(person);
                 }
 
                 return false;
@@ -114,7 +114,7 @@ namespace MediaBrowser.Model.Entities
             {
                 if (c.People != null)
                 {
-                    return c.People.Any(p => p.Name.Equals(person, StringComparison.OrdinalIgnoreCase) && p.Type == personType);
+                    return c.People.ContainsKey(person) && c.People[person].Type.Equals(personType, StringComparison.OrdinalIgnoreCase);
                 }
 
                 return false;

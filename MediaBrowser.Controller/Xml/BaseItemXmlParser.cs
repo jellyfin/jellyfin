@@ -157,28 +157,28 @@ namespace MediaBrowser.Controller.Xml
 
                 case "Director":
                     {
-                        var list = item.People ?? new List<PersonInfo>();
-                        list.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo() { Name = v, Type = "Director" }));
-
-                        item.People = list;
+                        foreach (PersonInfo p in GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo() { Name = v, Type = "Director" }))
+                        {
+                            item.AddPerson(p);
+                        }
                         break;
                     }
                 case "Writer":
                     {
-                        var list = item.People ?? new List<PersonInfo>();
-                        list.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo() { Name = v, Type = "Writer" }));
-
-                        item.People = list;
+                        foreach (PersonInfo p in GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo() { Name = v, Type = "Writer" }))
+                        {
+                            item.AddPerson(p);
+                        }
                         break;
                     }
 
                 case "Actors":
                 case "GuestStars":
                     {
-                        var list = item.People ?? new List<PersonInfo>();
-                        list.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo() { Name = v, Type = "Actor" }));
-
-                        item.People = list;
+                        foreach (PersonInfo p in GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo() { Name = v, Type = "Actor" }))
+                        {
+                            item.AddPerson(p);
+                        }
                         break;
                     }
 
@@ -556,8 +556,6 @@ namespace MediaBrowser.Controller.Xml
 
         private void FetchDataFromPersonsNode(XmlReader reader, T item)
         {
-            var list = item.People ?? new List<PersonInfo>();
-
             reader.MoveToContent();
 
             while (reader.Read())
@@ -568,7 +566,7 @@ namespace MediaBrowser.Controller.Xml
                     {
                         case "Person":
                             {
-                                list.Add(GetPersonFromXmlNode(reader.ReadSubtree()));
+                                item.AddPerson(GetPersonFromXmlNode(reader.ReadSubtree()));
                                 break;
                             }
 
@@ -578,8 +576,6 @@ namespace MediaBrowser.Controller.Xml
                     }
                 }
             }
-
-            item.People = list;
         }
 
         private void FetchFromStudiosNode(XmlReader reader, T item)

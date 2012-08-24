@@ -11,13 +11,8 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Controller.Providers
 {
     [Export(typeof(BaseMetadataProvider))]
-    public class VideoInfoProvider : BaseMetadataProvider
+    public class VideoInfoProvider : BaseMediaInfoProvider<Video>
     {
-        public override bool Supports(BaseEntity item)
-        {
-            return item is Video;
-        }
-
         public override MetadataProviderPriority Priority
         {
             // Give this second priority
@@ -25,28 +20,12 @@ namespace MediaBrowser.Controller.Providers
             get { return MetadataProviderPriority.Second; }
         }
 
-        public override async Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
+        protected override string CacheDirectory
         {
-            await Task.Run(() =>
-            {
-                Video video = item as Video;
-
-                if (video.VideoType != VideoType.VideoFile)
-                {
-                    // Not supported yet
-                    return;
-                }
-
-                if (CanSkip(video))
-                {
-                    return;
-                }
-
-                Fetch(video, FFProbe.Run(video));
-            });
+            get { return Kernel.Instance.ApplicationPaths.FFProbeVideoCacheDirectory; }
         }
-
-        private void Fetch(Video video, FFProbeResult data)
+        
+        protected override void Fetch(Video video, FFProbeResult data)
         {
             if (data == null)
             {
@@ -126,7 +105,7 @@ namespace MediaBrowser.Controller.Providers
                 audio.SampleRate = int.Parse(stream.sample_rate);
             }
 
-            audio.Language = AudioInfoProvider.GetDictionaryValue(stream.tags, "language");
+            audio.Language = GetDictionaryValue(stream.tags, "language");
 
             List<AudioStream> streams = video.AudioStreams ?? new List<AudioStream>();
             streams.Add(audio);
@@ -136,8 +115,14 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Determines if there's already enough info in the Video object to allow us to skip running ffprobe
         /// </summary>
-        private bool CanSkip(Video video)
+        protected override bool CanSkipFFProbe(Video video)
         {
+            if (video.VideoType != VideoType.VideoFile)
+            {
+                // Not supported yet
+                return true;
+            }
+            
             if (video.AudioStreams == null || !video.AudioStreams.Any())
             {
                 return false;
@@ -174,8 +159,6 @@ namespace MediaBrowser.Controller.Providers
         public override void Init()
         {
             base.Init();
-
-            AudioInfoProvider.EnsureCacheSubFolders(Kernel.Instance.ApplicationPaths.FFProbeVideoCacheDirectory);
 
             // This is an optimzation. Do this now so that it doesn't have to be done upon first serialization.
             ProtoBuf.Meta.RuntimeTypeModel.Default.Add(typeof(FFProbeResult), true);

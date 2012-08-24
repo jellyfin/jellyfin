@@ -12,36 +12,26 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Controller.Providers
 {
     [Export(typeof(BaseMetadataProvider))]
-    public class AudioInfoProvider : BaseMetadataProvider
+    public class AudioInfoProvider : BaseMediaInfoProvider<Audio>
     {
-        public override bool Supports(BaseEntity item)
-        {
-            return item is Audio;
-        }
-
         public override MetadataProviderPriority Priority
         {
             get { return MetadataProviderPriority.First; }
         }
 
-        public override async Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
+        protected override string CacheDirectory
         {
-            await Task.Run(() =>
-            {
-                Audio audio = item as Audio;
-
-                Fetch(audio, FFProbe.Run(audio));
-            });
+            get { return Kernel.Instance.ApplicationPaths.FFProbeAudioCacheDirectory; }
         }
 
-        private void Fetch(Audio audio, FFProbeResult data)
+        protected override void Fetch(Audio audio, FFProbeResult data)
         {
             if (data == null)
             {
                 Logger.LogInfo("Null FFProbeResult for {0} {1}", audio.Id, audio.Name);
                 return;
             }
-            
+
             MediaStream stream = data.streams.First(s => s.codec_type.Equals("audio", StringComparison.OrdinalIgnoreCase));
 
             string bitrate = null;
@@ -96,9 +86,7 @@ namespace MediaBrowser.Controller.Providers
 
             if (!string.IsNullOrEmpty(composer))
             {
-                var list = audio.People ?? new List<PersonInfo>();
-                list.Add(new PersonInfo() { Name = composer, Type = "Composer" });
-                audio.People = list;
+                audio.AddPerson(new PersonInfo() { Name = composer, Type = "Composer" });
             }
 
             audio.Album = GetDictionaryValue(tags, "album");
@@ -132,7 +120,7 @@ namespace MediaBrowser.Controller.Providers
                 audio.Studios = list;
             }
         }
-        
+
         private void FetchGenres(Audio audio, Dictionary<string, string> tags)
         {
             string val = GetDictionaryValue(tags, "genre");
@@ -163,30 +151,102 @@ namespace MediaBrowser.Controller.Providers
 
             return null;
         }
+    }
 
-        internal static string GetDictionaryValue(Dictionary<string, string> tags, string key)
+    public abstract class BaseMediaInfoProvider<T> : BaseMetadataProvider
+        where T : BaseItem
+    {
+        protected abstract string CacheDirectory { get; }
+
+        public override bool Supports(BaseEntity item)
+        {
+            return item is T;
+        }
+
+        public override async Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
+        {
+            await Task.Run(() =>
+            {
+                T myItem = item as T;
+
+                if (CanSkipFFProbe(myItem))
+                {
+                    return;
+                }
+
+                FFProbeResult result = FFProbe.Run(myItem, CacheDirectory);
+
+                if (result.format.tags != null)
+                {
+                    result.format.tags = ConvertDictionaryToCaseInSensitive(result.format.tags);
+                }
+
+                foreach (MediaStream stream in result.streams)
+                {
+                    if (stream.tags != null)
+                    {
+                        stream.tags = ConvertDictionaryToCaseInSensitive(stream.tags);
+                    }
+                }
+
+                Fetch(myItem, result);
+            });
+        }
+
+        protected abstract void Fetch(T item, FFProbeResult result);
+
+        public override void Init()
+        {
+            base.Init();
+
+            EnsureCacheSubFolders(CacheDirectory);
+        }
+
+        private void EnsureCacheSubFolders(string root)
+        {
+            // Do this now so that we don't have to do this on every operation, which would require us to create a lock in order to maintain thread-safety
+            for (int i = 0; i <= 9; i++)
+            {
+                EnsureDirectory(Path.Combine(root, i.ToString()));
+            }
+
+            EnsureDirectory(Path.Combine(root, "a"));
+            EnsureDirectory(Path.Combine(root, "b"));
+            EnsureDirectory(Path.Combine(root, "c"));
+            EnsureDirectory(Path.Combine(root, "d"));
+            EnsureDirectory(Path.Combine(root, "e"));
+            EnsureDirectory(Path.Combine(root, "f"));
+        }
+
+        private void EnsureDirectory(string path)
+        {
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+        }
+
+        protected virtual bool CanSkipFFProbe(T item)
+        {
+            return false;
+        }
+
+        protected string GetDictionaryValue(Dictionary<string, string> tags, string key)
         {
             if (tags == null)
             {
                 return null;
             }
 
-            string[] keys = tags.Keys.ToArray();
-
-            for (int i = 0; i < keys.Length; i++)
+            if (!tags.ContainsKey(key))
             {
-                string currentKey = keys[i];
-
-                if (key.Equals(currentKey, StringComparison.OrdinalIgnoreCase))
-                {
-                    return tags[currentKey];
-                }
+                return null;
             }
 
-            return null;
+            return tags[key];
         }
 
-        private int? GetDictionaryNumericValue(Dictionary<string, string> tags, string key)
+        protected int? GetDictionaryNumericValue(Dictionary<string, string> tags, string key)
         {
             string val = GetDictionaryValue(tags, key);
 
@@ -203,7 +263,7 @@ namespace MediaBrowser.Controller.Providers
             return null;
         }
 
-        private DateTime? GetDictionaryDateTime(Dictionary<string, string> tags, string key)
+        protected DateTime? GetDictionaryDateTime(Dictionary<string, string> tags, string key)
         {
             string val = GetDictionaryValue(tags, key);
 
@@ -219,43 +279,17 @@ namespace MediaBrowser.Controller.Providers
 
             return null;
         }
-
-        private string GetOutputCachePath(BaseItem item)
+        
+        private Dictionary<string, string> ConvertDictionaryToCaseInSensitive(Dictionary<string, string> dict)
         {
-            string outputDirectory = Path.Combine(Kernel.Instance.ApplicationPaths.FFProbeAudioCacheDirectory, item.Id.ToString().Substring(0, 1));
+            Dictionary<string, string> newDict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            return Path.Combine(outputDirectory, item.Id + "-" + item.DateModified.Ticks + ".js");
-        }
-
-        public override void Init()
-        {
-            base.Init();
-
-            EnsureCacheSubFolders(Kernel.Instance.ApplicationPaths.FFProbeAudioCacheDirectory);
-        }
-
-        internal static void EnsureCacheSubFolders(string root)
-        {
-            // Do this now so that we don't have to do this on every operation, which would require us to create a lock in order to maintain thread-safety
-            for (int i = 0; i <= 9; i++)
+            foreach (string key in dict.Keys)
             {
-                EnsureDirectory(Path.Combine(root, i.ToString()));
+                newDict[key] = dict[key];
             }
 
-            EnsureDirectory(Path.Combine(root, "a"));
-            EnsureDirectory(Path.Combine(root, "b"));
-            EnsureDirectory(Path.Combine(root, "c"));
-            EnsureDirectory(Path.Combine(root, "d"));
-            EnsureDirectory(Path.Combine(root, "e"));
-            EnsureDirectory(Path.Combine(root, "f"));
-        }
-
-        private static void EnsureDirectory(string path)
-        {
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
+            return newDict;
         }
     }
 }

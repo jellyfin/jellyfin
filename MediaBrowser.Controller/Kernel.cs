@@ -41,7 +41,13 @@ namespace MediaBrowser.Controller
         /// Gets the list of currently registered metadata prvoiders
         /// </summary>
         [ImportMany(typeof(BaseMetadataProvider))]
-        public IEnumerable<BaseMetadataProvider> MetadataProviders { get; private set; }
+        private IEnumerable<BaseMetadataProvider> MetadataProvidersEnumerable { get; set; }
+        
+        /// <summary>
+        /// Once MEF has loaded the resolvers, sort them by priority and store them in this array
+        /// Given the sheer number of times they'll be iterated over it'll be faster to loop through an array
+        /// </summary>
+        private BaseMetadataProvider[] MetadataProviders { get; set; }
 
         /// <summary>
         /// Gets the list of currently registered entity resolvers
@@ -92,9 +98,9 @@ namespace MediaBrowser.Controller
 
             // Sort the resolvers by priority
             EntityResolvers = EntityResolversEnumerable.OrderBy(e => e.Priority).ToArray();
-
+            
             // Sort the providers by priority
-            MetadataProviders = MetadataProviders.OrderBy(e => e.Priority);
+            MetadataProviders = MetadataProvidersEnumerable.OrderBy(e => e.Priority).ToArray();
 
             // Initialize the metadata providers
             Parallel.ForEach(MetadataProviders, provider =>
@@ -232,13 +238,15 @@ namespace MediaBrowser.Controller
         /// </summary>
         internal async Task ExecuteMetadataProviders(BaseEntity item, ItemResolveEventArgs args, bool allowInternetProviders = true)
         {
-            // Get all supported providers
-            BaseMetadataProvider[] supportedProviders = Kernel.Instance.MetadataProviders.Where(i => i.Supports(item)).ToArray();
-
             // Run them sequentially in order of priority
-            for (int i = 0; i < supportedProviders.Length; i++)
+            for (int i = 0; i < MetadataProviders.Length; i++)
             {
-                var provider = supportedProviders[i];
+                var provider = MetadataProviders[i];
+
+                if (!provider.Supports(item))
+                {
+                    continue;
+                }
 
                 if (provider.RequiresInternet && (!Configuration.EnableInternetProviders || !allowInternetProviders))
                 {

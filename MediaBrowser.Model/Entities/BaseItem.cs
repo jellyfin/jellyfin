@@ -58,7 +58,10 @@ namespace MediaBrowser.Model.Entities
         public string Overview { get; set; }
         public List<string> Taglines { get; set; }
 
-        public List<PersonInfo> People { get; set; }
+        /// <summary>
+        /// Using a Dictionary to prevent duplicates
+        /// </summary>
+        public Dictionary<string,PersonInfo> People { get; set; }
 
         public List<string> Studios { get; set; }
 
@@ -151,6 +154,16 @@ namespace MediaBrowser.Model.Entities
         public bool IsRecentlyAdded(User user)
         {
             return (DateTime.Now - DateCreated).TotalDays < user.RecentItemDays;
+        }
+
+        public void AddPerson(PersonInfo person)
+        {
+            if (People == null)
+            {
+                People = new Dictionary<string, PersonInfo>(StringComparer.OrdinalIgnoreCase);
+            }
+
+            People[person.Name] = person;
         }
     }
 }
