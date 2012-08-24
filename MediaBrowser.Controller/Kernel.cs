@@ -243,12 +243,14 @@ namespace MediaBrowser.Controller
             {
                 var provider = MetadataProviders[i];
 
-                if (!provider.Supports(item))
+                // Skip if internet providers are currently disabled
+                if (provider.RequiresInternet && (!Configuration.EnableInternetProviders || !allowInternetProviders))
                 {
                     continue;
                 }
 
-                if (provider.RequiresInternet && (!Configuration.EnableInternetProviders || !allowInternetProviders))
+                // Skip if the provider doesn't support the current item
+                if (!provider.Supports(item))
                 {
                     continue;
                 }
