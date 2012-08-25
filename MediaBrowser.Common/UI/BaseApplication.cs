@@ -1,9 +1,13 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media.Imaging;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Logging;
 using MediaBrowser.Model.Progress;
+using System.Reflection;
 
 namespace MediaBrowser.Common.UI
 {
@@ -66,6 +70,19 @@ namespace MediaBrowser.Common.UI
             base.OnExit(e);
 
             Kernel.Dispose();
+        }
+
+        public BitmapImage GetLogoImage()
+        {
+            BitmapImage bitmap = new BitmapImage();
+
+            bitmap.CacheOption = BitmapCacheOption.Default;
+
+            bitmap.BeginInit();
+            bitmap.StreamSource = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Common.Resources.mblogo.png");
+            bitmap.EndInit();
+
+            return bitmap;
         }
     }
 }
