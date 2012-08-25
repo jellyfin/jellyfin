@@ -355,6 +355,10 @@ namespace MediaBrowser.Controller.Xml
                             stream.IsDefault = reader.ReadElementContentAsString() == "True";
                             break;
 
+                        case "SamplingRate":
+                            stream.SampleRate = reader.ReadIntSafe();
+                            break;
+
                         case "BitRate":
                             stream.BitRate = reader.ReadIntSafe();
                             break;
