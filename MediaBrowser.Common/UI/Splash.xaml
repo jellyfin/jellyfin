@@ -3,21 +3,22 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         Title="MediaBrowser" 
-        Height="346" 
-        Width="600" 
+        Height="280" 
+        Width="520" 
         ShowInTaskbar="True" 
         ResizeMode="NoResize" 
         WindowStartupLocation="CenterScreen"
-        WindowState="Normal">
+        WindowState="Normal" 
+        FontSize="14">
     <Window.Background>
         <RadialGradientBrush>
-            <GradientStop Color="Black" Offset="1"/>
-            <GradientStop Color="#333333"/>
+            <GradientStop Color="#f8f8f8" Offset="1"/>
+            <GradientStop Color="#ffffff"/>
         </RadialGradientBrush>
     </Window.Background>
     <Grid Name="splashGrid">
-        <Image HorizontalAlignment="Left" VerticalAlignment="Top" Height="225" Source="/MediaBrowser.Common;component/Resources/mblogo1000.png" Stretch="Fill" Grid.Row="0"/>
-        <ProgressBar Name="pbProgress" Minimum="0" Maximum="100" HorizontalAlignment="Left" Height="24" Margin="30,150,30,0" Width="540" Grid.Row="1"/>
-        <Label Name="lblProgress" Content="Label" Margin="0,240,10,0" VerticalContentAlignment="Center" HorizontalAlignment="Center" Foreground="White" Grid.Row="2"/>
+        <Image HorizontalAlignment="Left" VerticalAlignment="Top" Source="/MediaBrowser.Common;component/Resources/mblogo.png" Stretch="Uniform" Grid.Row="0" Margin="10 10 10 10"/>
+        <ProgressBar Name="pbProgress" Minimum="0" Maximum="100" HorizontalAlignment="Left" Height="24" Margin="30,110,30,0" Width="460" Grid.Row="1"/>
+        <Label Name="lblProgress" Content="Label" Margin="0,190,10,0" VerticalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="2"/>
     </Grid>
 </Controls:MetroWindow>
