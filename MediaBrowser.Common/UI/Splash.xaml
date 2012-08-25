@@ -1,11 +1,19 @@
-﻿<Window x:Class="MediaBrowser.Common.UI.Splash"
+﻿<Controls:MetroWindow x:Class="MediaBrowser.Common.UI.Splash"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MediaBrowser" Height="346" Width="600" ShowInTaskbar="True" ResizeMode="NoResize" WindowStartupLocation="CenterScreen"
-        WindowState="Normal" WindowStyle="SingleBorderWindow" Background="Black" Loaded="Splash_Loaded">
+        xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        Title="MediaBrowser" 
+        Height="346" 
+        Width="600" 
+        ShowInTaskbar="True" 
+        ResizeMode="NoResize" 
+        WindowStartupLocation="CenterScreen"
+        WindowState="Normal" 
+        Background="Black">
+    
     <Grid Name="splashGrid">
         <Image HorizontalAlignment="Left" VerticalAlignment="Top" Height="225" Source="/MediaBrowser.Common;component/Resources/mblogo1000.png" Stretch="Fill" Grid.Row="0"/>
         <ProgressBar Name="pbProgress" Minimum="0" Maximum="100" HorizontalAlignment="Left" Height="24" Margin="30,150,30,0" Width="540" Grid.Row="1"/>
         <Label Name="lblProgress" Content="Label" Margin="0,240,10,0" VerticalContentAlignment="Center" HorizontalAlignment="Center" Foreground="White" Grid.Row="2"/>
     </Grid>
-</Window>
+</Controls:MetroWindow>
