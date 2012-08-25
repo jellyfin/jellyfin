@@ -35,8 +35,11 @@ namespace MediaBrowser.Controller.FFMpeg
 
             FFProbeResult result = Run(item.Path);
 
-            // Fire and forget
-            CacheResult(result, cachePath);
+            if (result != null)
+            {
+                // Fire and forget
+                CacheResult(result, cachePath);
+            }
 
             return result;
         }

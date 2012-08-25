@@ -26,12 +26,6 @@ namespace MediaBrowser.Controller.Providers
 
         protected override void Fetch(Audio audio, FFProbeResult data)
         {
-            if (data == null)
-            {
-                Logger.LogInfo("Null FFProbeResult for {0} {1}", audio.Id, audio.Name);
-                return;
-            }
-
             MediaStream stream = data.streams.First(s => s.codec_type.Equals("audio", StringComparison.OrdinalIgnoreCase));
 
             string bitrate = null;
@@ -176,16 +170,25 @@ namespace MediaBrowser.Controller.Providers
 
                 FFProbeResult result = FFProbe.Run(myItem, CacheDirectory);
 
-                if (result.format.tags != null)
+                if (result == null)
+                {
+                    Logger.LogInfo("Null FFProbeResult for {0} {1}", item.Id, item.Name);
+                    return;
+                }
+
+                if (result.format != null && result.format.tags != null)
                 {
                     result.format.tags = ConvertDictionaryToCaseInSensitive(result.format.tags);
                 }
 
-                foreach (MediaStream stream in result.streams)
+                if (result.streams != null)
                 {
-                    if (stream.tags != null)
+                    foreach (MediaStream stream in result.streams)
                     {
-                        stream.tags = ConvertDictionaryToCaseInSensitive(stream.tags);
+                        if (stream.tags != null)
+                        {
+                            stream.tags = ConvertDictionaryToCaseInSensitive(stream.tags);
+                        }
                     }
                 }
 
