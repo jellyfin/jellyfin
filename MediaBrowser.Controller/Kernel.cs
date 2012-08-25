@@ -269,7 +269,7 @@ namespace MediaBrowser.Controller
         /// Run these during Init.
         /// Can't run do this on-demand because there will be multiple workers accessing them at once and we'd have to lock them
         /// </summary>
-        private async void ExtractFFMpeg(string exe)
+        private void ExtractFFMpeg(string exe)
         {
             if (File.Exists(exe))
             {
@@ -281,7 +281,7 @@ namespace MediaBrowser.Controller
             {
                 using (FileStream fileStream = new FileStream(exe, FileMode.Create))
                 {
-                    await stream.CopyToAsync(fileStream).ConfigureAwait(false);
+                    stream.CopyTo(fileStream);
                 }
             }
         }
