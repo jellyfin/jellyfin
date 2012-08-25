@@ -12,8 +12,8 @@
         FontSize="14">
     <Window.Background>
         <RadialGradientBrush>
-            <GradientStop Color="#f8f8f8" Offset="1"/>
-            <GradientStop Color="#ffffff"/>
+            <GradientStop Color="#ffffff" Offset="1"/>
+            <GradientStop Color="#f8f8f8"/>
         </RadialGradientBrush>
     </Window.Background>
     <Grid Name="splashGrid">
