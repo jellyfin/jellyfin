@@ -35,6 +35,8 @@ namespace MediaBrowser.Common.UI
         {
             // Setting this in markup throws an exception at runtime
             ShowTitleBar = false;
+
+            imgLogo.Source = (Application.Current as BaseApplication).GetLogoImage();
         }
     }
 }

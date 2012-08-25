@@ -17,7 +17,7 @@
         </RadialGradientBrush>
     </Window.Background>
     <Grid Name="splashGrid">
-        <Image HorizontalAlignment="Left" VerticalAlignment="Top" Source="/MediaBrowser.Common;component/Resources/mblogo.png" Stretch="Uniform" Grid.Row="0" Margin="10 10 10 10"/>
+        <Image x:Name="imgLogo" HorizontalAlignment="Left" VerticalAlignment="Top" Stretch="Uniform" Grid.Row="0" Margin="10 10 10 10"/>
         <ProgressBar Name="pbProgress" Minimum="0" Maximum="100" HorizontalAlignment="Left" Height="24" Margin="30,110,30,0" Width="460" Grid.Row="1"/>
         <Label Name="lblProgress" Content="Label" Margin="0,190,10,0" VerticalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="2"/>
     </Grid>
