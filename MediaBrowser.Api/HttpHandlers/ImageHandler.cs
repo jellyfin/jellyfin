@@ -52,7 +52,15 @@ namespace MediaBrowser.Api.HttpHandlers
             {
                 return (await Kernel.Instance.ItemController.GetStudio(studio).ConfigureAwait(false)).PrimaryImagePath;
             }
-            
+
+            string userId = QueryString["userid"];
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                Guid userIdGuid = new Guid(userId);
+                return Kernel.Instance.Users.First(u => u.Id == userIdGuid).PrimaryImagePath;
+            }
+
             BaseItem item = ApiService.GetItemById(QueryString["id"]);
 
             string imageIndex = QueryString["index"];
