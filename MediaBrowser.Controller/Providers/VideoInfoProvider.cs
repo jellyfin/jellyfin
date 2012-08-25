@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Logging;
 using MediaBrowser.Controller.FFMpeg;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Providers
