@@ -1,4 +1,4 @@
-﻿using System.Linq;
+﻿using System;
 using System.Text.RegularExpressions;
 using MediaBrowser.Controller.IO;
 
@@ -6,15 +6,15 @@ namespace MediaBrowser.TV
 {
     public static class TVUtils
     {
-        private static readonly Regex[] seasonPathExpressions = new Regex[] {
-                        new Regex(@".+\\[s|S]eason\s?(?<seasonnumber>\d{1,2})$"),
-                        new Regex(@".+\\[s|S]æson\s?(?<seasonnumber>\d{1,2})$"),
-                        new Regex(@".+\\[t|T]emporada\s?(?<seasonnumber>\d{1,2})$"),
-                        new Regex(@".+\\[s|S]aison\s?(?<seasonnumber>\d{1,2})$"),
-                        new Regex(@".+\\[s|S]taffel\s?(?<seasonnumber>\d{1,2})$"),
-                        new Regex(@".+\\[s|S](?<seasonnumber>\d{1,2})$"),
-                        new Regex(@".+\\[s|S]eason\s?(?<seasonnumber>\d{1,2})[^\\]*$")
-
+        /// <summary>
+        /// A season folder must contain one of these somewhere in the name
+        /// </summary>
+        private static string[] SeasonFolderNames = new string[] { 
+            "season",
+            "sæson",
+            "temporada",
+            "saison",
+            "staffel"
         };
 
         /// <summary>
@@ -28,27 +28,74 @@ namespace MediaBrowser.TV
         /// The most restrictive expressions should appear first
         /// </remarks>
         private static readonly Regex[] episodeExpressions = new Regex[] {
-                        new Regex(@".*\\[s|S]?(?<seasonnumber>\d{1,2})[x|X](?<epnumber>\d{1,3})[^\\]*$"),   // 01x02 blah.avi S01x01 balh.avi
-                        new Regex(@".*\\[s|S](?<seasonnumber>\d{1,2})x?[e|E](?<epnumber>\d{1,3})[^\\]*$"), // S01E02 blah.avi, S01xE01 blah.avi
-                        new Regex(@".*\\(?<seriesname>[^\\]*)[s|S]?(?<seasonnumber>\d{1,2})[x|X](?<epnumber>\d{1,3})[^\\]*$"),   // 01x02 blah.avi S01x01 balh.avi
-                        new Regex(@".*\\(?<seriesname>[^\\]*)[s|S](?<seasonnumber>\d{1,2})[x|X|\.]?[e|E](?<epnumber>\d{1,3})[^\\]*$") // S01E02 blah.avi, S01xE01 blah.avi
+                        new Regex(@".*\\[s|S]?(?<seasonnumber>\d{1,2})[x|X](?<epnumber>\d{1,3})[^\\]*$", RegexOptions.Compiled),   // 01x02 blah.avi S01x01 balh.avi
+                        new Regex(@".*\\[s|S](?<seasonnumber>\d{1,2})x?[e|E](?<epnumber>\d{1,3})[^\\]*$", RegexOptions.Compiled), // S01E02 blah.avi, S01xE01 blah.avi
+                        new Regex(@".*\\(?<seriesname>[^\\]*)[s|S]?(?<seasonnumber>\d{1,2})[x|X](?<epnumber>\d{1,3})[^\\]*$", RegexOptions.Compiled),   // 01x02 blah.avi S01x01 balh.avi
+                        new Regex(@".*\\(?<seriesname>[^\\]*)[s|S](?<seasonnumber>\d{1,2})[x|X|\.]?[e|E](?<epnumber>\d{1,3})[^\\]*$", RegexOptions.Compiled) // S01E02 blah.avi, S01xE01 blah.avi
         };
         /// <summary>
         /// To avoid the following matching movies they are only valid when contained in a folder which has been matched as a being season
         /// </summary>
         private static readonly Regex[] episodeExpressionsInASeasonFolder = new Regex[] {
-                        new Regex(@".*\\(?<epnumber>\d{1,2})\s?-\s?[^\\]*$"), // 01 - blah.avi, 01-blah.avi
-                        new Regex(@".*\\(?<epnumber>\d{1,2})[^\d\\]*[^\\]*$"), // 01.avi, 01.blah.avi "01 - 22 blah.avi" 
-                        new Regex(@".*\\(?<seasonnumber>\d)(?<epnumber>\d{1,2})[^\d\\]+[^\\]*$"), // 01.avi, 01.blah.avi
-                        new Regex(@".*\\\D*\d+(?<epnumber>\d{2})") // hell0 - 101 -  hello.avi
+                        new Regex(@".*\\(?<epnumber>\d{1,2})\s?-\s?[^\\]*$", RegexOptions.Compiled), // 01 - blah.avi, 01-blah.avi
+                        new Regex(@".*\\(?<epnumber>\d{1,2})[^\d\\]*[^\\]*$", RegexOptions.Compiled), // 01.avi, 01.blah.avi "01 - 22 blah.avi" 
+                        new Regex(@".*\\(?<seasonnumber>\d)(?<epnumber>\d{1,2})[^\d\\]+[^\\]*$", RegexOptions.Compiled), // 01.avi, 01.blah.avi
+                        new Regex(@".*\\\D*\d+(?<epnumber>\d{2})", RegexOptions.Compiled) // hell0 - 101 -  hello.avi
 
         };
 
+        public static int? GetSeasonNumberFromPath(string path)
+        {
+            // Look for one of the season folder names
+            foreach (string name in SeasonFolderNames)
+            {
+                int index = path.IndexOf(name, StringComparison.OrdinalIgnoreCase);
+
+                if (index != -1)
+                {
+                    return GetSeasonNumberFromPathSubstring(path.Substring(index + name.Length));
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Extracts the season number from the second half of the Season folder name (everything after "Season", or "Staffel")
+        /// </summary>
+        private static int? GetSeasonNumberFromPathSubstring(string path)
+        {
+            int numericStart = -1;
+            int length = 0;
+
+            // Find out where the numbers start, and then keep going until they end
+            for (int i = 0; i < path.Length; i++)
+            {
+                if (char.IsNumber(path, i))
+                {
+                    if (numericStart == -1)
+                    {
+                        numericStart = i;
+                    }
+                    length++;
+                }
+                else if (numericStart != -1)
+                {
+                    break;
+                }
+            }
+
+            if (numericStart == -1)
+            {
+                return null;
+            }
+
+            return int.Parse(path.Substring(numericStart, length));
+        }
+
         public static bool IsSeasonFolder(string path)
         {
-            path = path.ToLower();
-
-            return seasonPathExpressions.Any(r => r.IsMatch(path));
+            return GetSeasonNumberFromPath(path) != null;
         }
 
         public static bool IsSeriesFolder(string path, WIN32_FIND_DATA[] fileSystemChildren)

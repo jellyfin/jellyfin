@@ -107,13 +107,6 @@ namespace MediaBrowser.Api
             dto.Type = item.GetType().Name;
             dto.UserRating = item.UserRating;
 
-            VirtualFolder virtualFolder = item.VirtualFolder;
-
-            if (virtualFolder != null)
-            {
-                dto.VfType = virtualFolder.CollectionType;
-            }
-
             dto.UserData = item.GetUserData(user);
 
             Folder folder = item as Folder;
@@ -123,7 +116,7 @@ namespace MediaBrowser.Api
                 dto.SpecialCounts = folder.GetSpecialCounts(user);
 
                 dto.IsRoot = folder.IsRoot;
-                dto.IsVirtualFolder = folder is VirtualFolder;
+                dto.IsVirtualFolder = folder.Parent != null && folder.Parent.IsRoot;
             }
 
             Audio audio = item as Audio;

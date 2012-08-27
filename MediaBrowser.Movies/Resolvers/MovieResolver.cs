@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.Composition;
+﻿using System.ComponentModel.Composition;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
@@ -14,8 +13,17 @@ namespace MediaBrowser.Movies.Resolvers
         protected override Movie Resolve(ItemResolveEventArgs args)
         {
             // Must be a directory and under a 'Movies' VF
-            if ((args.VirtualFolderCollectionType ?? string.Empty).Equals("Movies", StringComparison.OrdinalIgnoreCase) && args.IsDirectory)
+            if (args.IsDirectory)
             {
+                // If the parent is not a boxset, the only other allowed parent type is Folder		
+                if (!(args.Parent is BoxSet))
+                {
+                    if (args.Parent != null && args.Parent.GetType() != typeof(Folder))
+                    {
+                        return null;
+                    }
+                }
+
                 // Return a movie if the video resolver finds something in the folder
                 return GetMovie(args);
             }
@@ -73,25 +81,5 @@ namespace MediaBrowser.Movies.Resolvers
 
             return null;
         }
-
-        /*private void PopulateBonusFeatures(Movie item, ItemResolveEventArgs args)
-        {
-            if (args.ContainsFolder("specials"))
-            {
-                List<Video> items = new List<Video>();
-
-                foreach (WIN32_FIND_DATA file in FileData.GetFileSystemEntries(Path.Combine(args.Path, "specials"), "*"))
-                {
-                    Video video = await Kernel.Instance.ItemController.GetItem(file.Path, fileInfo: file).ConfigureAwait(false) as Video;
-
-                    if (video != null)
-                    {
-                        items.Add(video);
-                    }
-                }
-
-                (item as BaseItem).LocalTrailers = items;
-            }
-        }*/
     }
 }

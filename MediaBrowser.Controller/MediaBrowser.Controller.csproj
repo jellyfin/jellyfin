@@ -77,7 +77,6 @@
     <Compile Include="Resolvers\BaseItemResolver.cs" />
     <Compile Include="Resolvers\FolderResolver.cs" />
     <Compile Include="Resolvers\VideoResolver.cs" />
-    <Compile Include="Resolvers\VirtualFolderResolver.cs" />
     <Compile Include="Xml\BaseItemXmlParser.cs" />
     <Compile Include="Xml\XmlExtensions.cs" />
   </ItemGroup>

@@ -13,7 +13,7 @@ namespace MediaBrowser.TV.Resolvers
     {
         protected override Series Resolve(ItemResolveEventArgs args)
         {
-            if (args.IsDirectory && (args.VirtualFolderCollectionType ?? string.Empty).Equals("TV", StringComparison.OrdinalIgnoreCase))
+            if (args.IsDirectory)
             {
                 // Optimization to avoid running these tests against Seasons
                 if (args.Parent is Series)
