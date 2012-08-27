@@ -84,11 +84,6 @@ namespace MediaBrowser.Model.DTO
         public int LocalTrailerCount { get; set; }
 
         /// <summary>
-        /// Holds the virtual folder collection type
-        /// </summary>
-        public string VfType { get; set; }
-
-        /// <summary>
         /// User data for this item based on the user it's being requested for
         /// </summary>
         public UserItemData UserData { get; set; }

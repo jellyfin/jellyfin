@@ -31,7 +31,7 @@ namespace MediaBrowser.Controller.Library
         {
             for (int i = 0; i < FileSystemChildren.Length; i++)
             {
-                if (System.IO.Path.GetFileName(FileSystemChildren[i].Path).Equals(name, StringComparison.OrdinalIgnoreCase))
+                if (FileSystemChildren[i].cFileName.Equals(name, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -42,15 +42,7 @@ namespace MediaBrowser.Controller.Library
 
         public bool ContainsFolder(string name)
         {
-            for (int i = 0; i < FileSystemChildren.Length; i++)
-            {
-                if (System.IO.Path.GetFileName(FileSystemChildren[i].Path).Equals(name, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return ContainsFile(name);
         }
     }
 
@@ -74,34 +66,6 @@ namespace MediaBrowser.Controller.Library
             get
             {
                 return FileInfo.dwFileAttributes.HasFlag(FileAttributes.Directory);
-            }
-        }
-
-        public VirtualFolder VirtualFolder
-        {
-            get
-            {
-                if (Parent != null)
-                {
-                    return Parent.VirtualFolder;
-                }
-
-                return null;
-            }
-        }
-
-        public string VirtualFolderCollectionType
-        {
-            get
-            {
-                VirtualFolder vf = VirtualFolder;
-
-                if (vf == null)
-                {
-                    return null;
-                }
-
-                return vf.CollectionType;
             }
         }
 

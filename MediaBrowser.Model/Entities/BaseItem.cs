@@ -6,29 +6,6 @@ namespace MediaBrowser.Model.Entities
 {
     public abstract class BaseItem : BaseEntity, IHasProviderIds
     {
-        /// <summary>
-        /// Goes up the tree to find the virtual folder parent
-        /// </summary>
-        public VirtualFolder VirtualFolder
-        {
-            get
-            {
-                var vf = this as VirtualFolder;
-
-                if (vf != null)
-                {
-                    return vf;
-                }
-
-                if (Parent != null)
-                {
-                    return Parent.VirtualFolder;
-                }
-
-                return null;
-            }
-        }
-
         public string SortName { get; set; }
 
         /// <summary>

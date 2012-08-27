@@ -227,9 +227,40 @@ namespace MediaBrowser.Controller
 
             user.Name = "Default User";
             user.Id = Guid.Parse("5d1cf7fce25943b790d140095457a42b");
+            user.PrimaryImagePath = "D:\\Video\\TV\\Archer (2009)\\folder.jpg";
 
             list.Add(user);
+            
+            user = new User();
+            user.Name = "Test User 1";
+            user.Id = Guid.NewGuid();
+            list.Add(user);
 
+            user = new User();
+            user.Name = "Test User 2";
+            user.Id = Guid.NewGuid();
+            list.Add(user);
+
+            user = new User();
+            user.Name = "Test User 3";
+            user.Id = Guid.NewGuid();
+            list.Add(user);
+
+            user = new User();
+            user.Name = "Test User 4";
+            user.Id = Guid.NewGuid();
+            list.Add(user);
+
+            user = new User();
+            user.Name = "Test User 5";
+            user.Id = Guid.NewGuid();
+            list.Add(user);
+
+            user = new User();
+            user.Name = "Test User 6";
+            user.Id = Guid.NewGuid();
+            list.Add(user);
+            
             return list;
         }
 
