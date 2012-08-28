@@ -204,9 +204,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         public Task<Person> GetPerson(string name)
         {
-            string path = Path.Combine(Kernel.Instance.ApplicationPaths.PeoplePath, name);
-
-            return GetImagesByNameItem<Person>(path, name);
+            return GetImagesByNameItem<Person>(Kernel.Instance.ApplicationPaths.PeoplePath, name);
         }
 
         /// <summary>
@@ -214,9 +212,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         public Task<Studio> GetStudio(string name)
         {
-            string path = Path.Combine(Kernel.Instance.ApplicationPaths.StudioPath, name);
-
-            return GetImagesByNameItem<Studio>(path, name);
+            return GetImagesByNameItem<Studio>(Kernel.Instance.ApplicationPaths.StudioPath, name);
         }
 
         /// <summary>
@@ -224,9 +220,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         public Task<Genre> GetGenre(string name)
         {
-            string path = Path.Combine(Kernel.Instance.ApplicationPaths.GenrePath, name);
-
-            return GetImagesByNameItem<Genre>(path, name);
+            return GetImagesByNameItem<Genre>(Kernel.Instance.ApplicationPaths.GenrePath, name);
         }
 
         /// <summary>
@@ -234,12 +228,10 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         public Task<Year> GetYear(int value)
         {
-            string path = Path.Combine(Kernel.Instance.ApplicationPaths.YearPath, value.ToString());
-
-            return GetImagesByNameItem<Year>(path, value.ToString());
+            return GetImagesByNameItem<Year>(Kernel.Instance.ApplicationPaths.YearPath, value.ToString());
         }
 
-        private ConcurrentDictionary<string, object> ImagesByNameItemCache = new ConcurrentDictionary<string, object>();
+        private ConcurrentDictionary<string, object> ImagesByNameItemCache = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Generically retrieves an IBN item
@@ -247,7 +239,9 @@ namespace MediaBrowser.Controller.Library
         private Task<T> GetImagesByNameItem<T>(string path, string name)
             where T : BaseEntity, new()
         {
-            string key = path.ToLower();
+            name = FileData.GetValidFilename(name);
+
+            string key = Path.Combine(path, name);
 
             // Look for it in the cache, if it's not there, create it
             if (!ImagesByNameItemCache.ContainsKey(key))
