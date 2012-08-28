@@ -116,7 +116,7 @@ namespace MediaBrowser.Api
                 dto.SpecialCounts = folder.GetSpecialCounts(user);
 
                 dto.IsRoot = folder.IsRoot;
-                dto.IsVirtualFolder = folder.Parent != null && folder.Parent.IsRoot;
+                dto.IsVirtualFolder = folder.IsVirtualFolder;
             }
 
             Audio audio = item as Audio;

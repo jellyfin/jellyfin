@@ -24,6 +24,12 @@ namespace MediaBrowser.Movies.Resolvers
                     }
                 }
 
+                // Optimization to avoid running all these tests against VF's
+                if (args.Parent != null && args.Parent.IsVirtualFolder)
+                {
+                    return null;
+                }
+
                 // Return a movie if the video resolver finds something in the folder
                 return GetMovie(args);
             }
