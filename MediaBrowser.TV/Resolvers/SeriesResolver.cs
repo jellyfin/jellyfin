@@ -15,6 +15,12 @@ namespace MediaBrowser.TV.Resolvers
         {
             if (args.IsDirectory)
             {
+                // Optimization to avoid running all these tests against VF's
+                if (args.Parent != null && args.Parent.IsVirtualFolder)
+                {
+                    return null;
+                }
+                
                 // Optimization to avoid running these tests against Seasons
                 if (args.Parent is Series)
                 {
