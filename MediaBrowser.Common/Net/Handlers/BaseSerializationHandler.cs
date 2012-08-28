@@ -1,11 +1,11 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Serialization;
-using System;
 
 namespace MediaBrowser.Common.Net.Handlers
 {
-    public abstract class BaseJsonHandler<T> : BaseHandler
+    public abstract class BaseSerializationHandler<T> : BaseHandler
     {
         public SerializationFormat SerializationFormat
         {
@@ -28,6 +28,8 @@ namespace MediaBrowser.Common.Net.Handlers
             {
                 case Handlers.SerializationFormat.Jsv:
                     return Task.FromResult<string>("text/plain");
+                case Handlers.SerializationFormat.Protobuf:
+                    return Task.FromResult<string>("application/x-protobuf");
                 default:
                     return Task.FromResult<string>(MimeTypes.JsonMimeType);
             }
@@ -67,6 +69,9 @@ namespace MediaBrowser.Common.Net.Handlers
                 case Handlers.SerializationFormat.Jsv:
                     JsvSerializer.SerializeToStream<T>(_ObjectToSerialize, stream);
                     break;
+                case Handlers.SerializationFormat.Protobuf:
+                    ProtobufSerializer.SerializeToStream<T>(_ObjectToSerialize, stream);
+                    break;
                 default:
                     JsonSerializer.SerializeToStream<T>(_ObjectToSerialize, stream);
                     break;
@@ -77,7 +82,8 @@ namespace MediaBrowser.Common.Net.Handlers
     public enum SerializationFormat
     {
         Json,
-        Jsv
+        Jsv,
+        Protobuf
     }
 
 }
