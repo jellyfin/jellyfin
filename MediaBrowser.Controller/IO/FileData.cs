@@ -121,6 +121,22 @@ namespace MediaBrowser.Controller.IO
 
         [DllImport("kernel32")]
         private static extern bool FindClose(IntPtr hFindFile);
+
+        private const char SpaceChar = ' ';
+        private static char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
+        
+        /// <summary>
+        /// Takes a filename and removes invalid characters
+        /// </summary>
+        public static string GetValidFilename(string filename)
+        {
+            foreach (char c in InvalidFileNameChars)
+            {
+                filename = filename.Replace(c, SpaceChar);
+            }
+
+            return filename;
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]

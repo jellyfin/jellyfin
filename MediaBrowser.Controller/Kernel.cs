@@ -15,6 +15,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Progress;
+using MediaBrowser.Common.Logging;
 
 namespace MediaBrowser.Controller
 {
@@ -286,7 +287,14 @@ namespace MediaBrowser.Controller
                     continue;
                 }
 
-                await provider.FetchAsync(item, args).ConfigureAwait(false);
+                try
+                {
+                    await provider.FetchAsync(item, args).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogException(ex);
+                }
             }
         }
 
