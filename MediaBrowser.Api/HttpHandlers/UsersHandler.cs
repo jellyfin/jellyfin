@@ -6,7 +6,7 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    class UsersHandler : BaseJsonHandler<IEnumerable<User>>
+    class UsersHandler : BaseSerializationHandler<IEnumerable<User>>
     {
         protected override Task<IEnumerable<User>> GetObjectToSerialize()
         {

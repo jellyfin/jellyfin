@@ -7,7 +7,7 @@ using MediaBrowser.Model.Plugins;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public class PluginConfigurationHandler : BaseJsonHandler<BasePluginConfiguration>
+    public class PluginConfigurationHandler : BaseSerializationHandler<BasePluginConfiguration>
     {
         protected override Task<BasePluginConfiguration> GetObjectToSerialize()
         {
