@@ -25,7 +25,7 @@ namespace MediaBrowser.Movies.Resolvers
                 }
 
                 // Optimization to avoid running all these tests against VF's
-                if (args.Parent != null && args.Parent.IsVirtualFolder)
+                if (args.Parent != null && args.Parent.IsRoot)
                 {
                     return null;
                 }
