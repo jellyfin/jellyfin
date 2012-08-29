@@ -58,7 +58,12 @@ namespace MediaBrowser.Api
             dto.BackdropCount = item.BackdropImagePaths == null ? 0 : item.BackdropImagePaths.Count();
             dto.DateCreated = item.DateCreated;
             dto.DisplayMediaType = item.DisplayMediaType;
-            dto.Genres = item.Genres;
+
+            if (item.Genres != null)
+            {
+                dto.Genres = item.Genres.ToArray();
+            }
+            
             dto.HasArt = !string.IsNullOrEmpty(item.ArtImagePath);
             dto.HasBanner = !string.IsNullOrEmpty(item.BannerImagePath);
             dto.HasLogo = !string.IsNullOrEmpty(item.LogoImagePath);
@@ -102,7 +107,12 @@ namespace MediaBrowser.Api
             dto.ProviderIds = item.ProviderIds;
             dto.RunTimeTicks = item.RunTimeTicks;
             dto.SortName = item.SortName;
-            dto.Taglines = item.Taglines;
+
+            if (item.Taglines != null)
+            {
+                dto.Taglines = item.Taglines.ToArray();
+            }
+
             dto.TrailerUrl = item.TrailerUrl;
             dto.Type = item.GetType().Name;
             dto.UserRating = item.UserRating;
@@ -143,10 +153,18 @@ namespace MediaBrowser.Api
                     Width = video.Width,
                     Codec = video.Codec,
                     VideoType = video.VideoType,
-                    AudioStreams = video.AudioStreams,
-                    Subtitles = video.Subtitles,
                     ScanType = video.ScanType
                 };
+
+                if (video.AudioStreams != null)
+                {
+                    dto.VideoInfo.AudioStreams = video.AudioStreams.ToArray();
+                }
+
+                if (video.Subtitles != null)
+                {
+                    dto.VideoInfo.Subtitles = video.Subtitles.ToArray();
+                }
             }
         }
 
@@ -155,23 +173,21 @@ namespace MediaBrowser.Api
             // Attach Studios by transforming them into BaseItemStudio (DTO)
             if (item.Studios != null)
             {
-                IEnumerable<Studio> entities = await Task.WhenAll<Studio>(item.Studios.Select(c => Kernel.Instance.ItemController.GetStudio(c))).ConfigureAwait(false);
+                Studio[] entities = await Task.WhenAll<Studio>(item.Studios.Select(c => Kernel.Instance.ItemController.GetStudio(c))).ConfigureAwait(false);
 
-                dto.Studios = item.Studios.Select(s =>
+                dto.Studios = new BaseItemStudio[entities.Length];
+
+                for (int i = 0; i < entities.Length; i++)
                 {
+                    Studio entity = entities[i];
                     BaseItemStudio baseItemStudio = new BaseItemStudio();
 
-                    baseItemStudio.Name = s;
+                    baseItemStudio.Name = entity.Name;
 
-                    Studio ibnObject = entities.First(i => i.Name.Equals(s, StringComparison.OrdinalIgnoreCase));
+                    baseItemStudio.HasImage = !string.IsNullOrEmpty(entity.PrimaryImagePath);
 
-                    if (ibnObject != null)
-                    {
-                        baseItemStudio.HasImage = !string.IsNullOrEmpty(ibnObject.PrimaryImagePath);
-                    }
-
-                    return baseItemStudio;
-                }).ToArray();
+                    dto.Studios[i] = baseItemStudio;
+                }
             }
         }
 

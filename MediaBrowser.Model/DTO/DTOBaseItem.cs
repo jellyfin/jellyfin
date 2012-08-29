@@ -37,10 +37,10 @@ namespace MediaBrowser.Model.DTO
         public string Overview { get; set; }
 
         [ProtoMember(9)]
-        public IList<string> Taglines { get; set; }
+        public string[] Taglines { get; set; }
 
         [ProtoMember(10)]
-        public IList<string> Genres { get; set; }
+        public string[] Genres { get; set; }
 
         [ProtoMember(11)]
         public string DisplayMediaType { get; set; }

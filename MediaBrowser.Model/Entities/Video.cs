@@ -49,7 +49,7 @@ namespace MediaBrowser.Model.Entities
         [ProtoMember(2)]
         public bool IsDefault { get; set; }
 
-        [ProtoMember(2)]
+        [ProtoMember(3)]
         public bool IsForced { get; set; }
     }
 

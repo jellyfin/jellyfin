@@ -9,9 +9,9 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public class GenresHandler : BaseJsonHandler<IEnumerable<IBNItem>>
+    public class GenresHandler : BaseJsonHandler<IBNItem[]>
     {
-        protected override Task<IEnumerable<IBNItem>> GetObjectToSerialize()
+        protected override Task<IBNItem[]> GetObjectToSerialize()
         {
             Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
             Guid userId = Guid.Parse(QueryString["userid"]);
@@ -24,7 +24,7 @@ namespace MediaBrowser.Api.HttpHandlers
         /// Gets all genres from all recursive children of a folder
         /// The CategoryInfo class is used to keep track of the number of times each genres appears
         /// </summary>
-        private async Task<IEnumerable<IBNItem>> GetAllGenres(Folder parent, User user)
+        private async Task<IBNItem[]> GetAllGenres(Folder parent, User user)
         {
             Dictionary<string, int> data = new Dictionary<string, int>();
 
@@ -53,9 +53,20 @@ namespace MediaBrowser.Api.HttpHandlers
                 }
             }
 
-            IEnumerable<Genre> entities = await Task.WhenAll<Genre>(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetGenre(key); })).ConfigureAwait(false);
+            // Get the Genre objects
+            Genre[] entities = await Task.WhenAll<Genre>(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetGenre(key); })).ConfigureAwait(false);
 
-            return entities.Select(e => ApiService.GetIBNItem(e, data[e.Name]));
+            // Convert to an array of IBNItem
+            IBNItem[] items = new IBNItem[entities.Length];
+
+            for (int i = 0; i < entities.Length; i++)
+            {
+                Genre e = entities[i];
+
+                items[i] = ApiService.GetIBNItem(e, data[e.Name]);
+            }
+
+            return items;
         }
     }
 }

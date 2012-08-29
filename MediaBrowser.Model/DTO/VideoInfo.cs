@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Entities;
 using ProtoBuf;
 
 namespace MediaBrowser.Model.DTO
@@ -23,9 +22,9 @@ namespace MediaBrowser.Model.DTO
         public VideoType VideoType { get; set; }
 
         [ProtoMember(6)]
-        public IEnumerable<SubtitleStream> Subtitles { get; set; }
+        public SubtitleStream[] Subtitles { get; set; }
 
         [ProtoMember(7)]
-        public IEnumerable<AudioStream> AudioStreams { get; set; }
+        public AudioStream[] AudioStreams { get; set; }
     }
 }
