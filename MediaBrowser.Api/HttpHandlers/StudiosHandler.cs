@@ -9,9 +9,9 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public class StudiosHandler : BaseJsonHandler<IEnumerable<IBNItem>>
+    public class StudiosHandler : BaseJsonHandler<IBNItem[]>
     {
-        protected override Task<IEnumerable<IBNItem>> GetObjectToSerialize()
+        protected override Task<IBNItem[]> GetObjectToSerialize()
         {
             Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
             Guid userId = Guid.Parse(QueryString["userid"]);
@@ -24,7 +24,7 @@ namespace MediaBrowser.Api.HttpHandlers
         /// Gets all studios from all recursive children of a folder
         /// The CategoryInfo class is used to keep track of the number of times each studio appears
         /// </summary>
-        private async Task<IEnumerable<IBNItem>> GetAllStudios(Folder parent, User user)
+        private async Task<IBNItem[]> GetAllStudios(Folder parent, User user)
         {
             Dictionary<string, int> data = new Dictionary<string, int>();
 
@@ -53,9 +53,20 @@ namespace MediaBrowser.Api.HttpHandlers
                 }
             }
 
-            IEnumerable<Studio> entities = await Task.WhenAll<Studio>(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetStudio(key); })).ConfigureAwait(false);
+            // Get the Studio objects
+            Studio[] entities = await Task.WhenAll<Studio>(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetStudio(key); })).ConfigureAwait(false);
 
-            return entities.Select(e => ApiService.GetIBNItem(e, data[e.Name]));
+            // Convert to an array of IBNItem
+            IBNItem[] items = new IBNItem[entities.Length];
+
+            for (int i = 0; i < entities.Length; i++)
+            {
+                Studio e = entities[i];
+
+                items[i] = ApiService.GetIBNItem(e, data[e.Name]);
+            }
+
+            return items;
         }
     }
 }

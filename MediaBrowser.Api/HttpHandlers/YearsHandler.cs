@@ -9,9 +9,9 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public class YearsHandler : BaseJsonHandler<IEnumerable<IBNItem>>
+    public class YearsHandler : BaseJsonHandler<IBNItem[]>
     {
-        protected override Task<IEnumerable<IBNItem>> GetObjectToSerialize()
+        protected override Task<IBNItem[]> GetObjectToSerialize()
         {
             Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
             Guid userId = Guid.Parse(QueryString["userid"]);
@@ -24,7 +24,7 @@ namespace MediaBrowser.Api.HttpHandlers
         /// Gets all years from all recursive children of a folder
         /// The CategoryInfo class is used to keep track of the number of times each year appears
         /// </summary>
-        private async Task<IEnumerable<IBNItem>> GetAllYears(Folder parent, User user)
+        private async Task<IBNItem[]> GetAllYears(Folder parent, User user)
         {
             Dictionary<int, int> data = new Dictionary<int, int>();
 
@@ -50,9 +50,20 @@ namespace MediaBrowser.Api.HttpHandlers
                 }
             }
 
-            IEnumerable<Year> entities = await Task.WhenAll<Year>(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetYear(key); })).ConfigureAwait(false);
+            // Get the Year objects
+            Year[] entities = await Task.WhenAll<Year>(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetYear(key); })).ConfigureAwait(false);
 
-            return entities.Select(e => ApiService.GetIBNItem(e, data[int.Parse(e.Name)]));
+            // Convert to an array of IBNItem
+            IBNItem[] items = new IBNItem[entities.Length];
+
+            for (int i = 0; i < entities.Length; i++)
+            {
+                Year e = entities[i];
+
+                items[i] = ApiService.GetIBNItem(e, data[int.Parse(e.Name)]);
+            }
+
+            return items;
         }
     }
 }
