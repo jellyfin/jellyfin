@@ -8,6 +8,11 @@ namespace MediaBrowser.ApiInteraction
     /// </summary>
     public interface IDataSerializer
     {
-        T DeserializeFromStream<T>(Stream stream);
+        T DeserializeJsonFromStream<T>(Stream stream);
+        T DeserializeJsvFromStream<T>(Stream stream);
+        T DeserializeProtobufFromStream<T>(Stream stream);
+
+        bool CanDeserializeJsv { get; }
+        bool CanDeserializeProtobuf { get; }
     }
 }
