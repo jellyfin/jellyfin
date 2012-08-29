@@ -40,10 +40,27 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Gets or sets the format to request from the server
-        /// The Data Serializer will have to be able to support it.
+        /// Gets the data format to request from the server
         /// </summary>
-        public SerializationFormat SerializationFormat { get; set; }
+        private SerializationFormat SerializationFormat
+        {
+            get
+            {
+                // First try Protobuf since it has the best performance
+                if (DataSerializer.CanDeserializeProtobuf)
+                {
+                    return ApiInteraction.SerializationFormat.Protobuf;
+                }
+
+                // Next best is jsv
+                if (DataSerializer.CanDeserializeJsv)
+                {
+                    return ApiInteraction.SerializationFormat.Jsv;
+                }
+
+                return ApiInteraction.SerializationFormat.Json;
+            }
+        }
 
         public HttpClient HttpClient { get; private set; }
         public IDataSerializer DataSerializer { get; set; }
@@ -288,7 +305,7 @@ namespace MediaBrowser.ApiInteraction
 
             return url;
         }
-        
+
         /// <summary>
         /// This is a helper to get a list of backdrop url's from a given ApiBaseItemWrapper. If the actual item does not have any backdrops it will return backdrops from the first parent that does.
         /// </summary>
@@ -372,20 +389,20 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<DTOBaseItem>(stream);
+                return DeserializeFromStream<DTOBaseItem>(stream);
             }
         }
 
         /// <summary>
         /// Gets all Users
         /// </summary>
-        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        public async Task<IEnumerable<DTOUser>> GetAllUsersAsync()
         {
             string url = ApiUrl + "/users";
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<IEnumerable<User>>(stream);
+                return DeserializeFromStream<DTOUser[]>(stream);
             }
         }
 
@@ -398,7 +415,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<IEnumerable<IBNItem>>(stream);
+                return DeserializeFromStream<IBNItem[]>(stream);
             }
         }
 
@@ -411,7 +428,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<IEnumerable<IBNItem>>(stream);
+                return DeserializeFromStream<IBNItem[]>(stream);
             }
         }
 
@@ -424,7 +441,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<IEnumerable<DTOBaseItem>>(stream);
+                return DeserializeFromStream<DTOBaseItem[]>(stream);
             }
         }
 
@@ -437,7 +454,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<IEnumerable<DTOBaseItem>>(stream);
+                return DeserializeFromStream<DTOBaseItem[]>(stream);
             }
         }
 
@@ -450,7 +467,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<IEnumerable<DTOBaseItem>>(stream);
+                return DeserializeFromStream<DTOBaseItem[]>(stream);
             }
         }
 
@@ -465,7 +482,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<IEnumerable<DTOBaseItem>>(stream);
+                return DeserializeFromStream<DTOBaseItem[]>(stream);
             }
         }
 
@@ -478,7 +495,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<IEnumerable<IBNItem>>(stream);
+                return DeserializeFromStream<IBNItem[]>(stream);
             }
         }
 
@@ -491,7 +508,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<IEnumerable<DTOBaseItem>>(stream);
+                return DeserializeFromStream<DTOBaseItem[]>(stream);
             }
         }
 
@@ -504,7 +521,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<IBNItem>(stream);
+                return DeserializeFromStream<IBNItem>(stream);
             }
         }
 
@@ -517,7 +534,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<IBNItem>(stream);
+                return DeserializeFromStream<IBNItem>(stream);
             }
         }
 
@@ -530,7 +547,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<IBNItem>(stream);
+                return DeserializeFromStream<IBNItem>(stream);
             }
         }
 
@@ -543,7 +560,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<IBNItem>(stream);
+                return DeserializeFromStream<IBNItem>(stream);
             }
         }
 
@@ -564,6 +581,25 @@ namespace MediaBrowser.ApiInteraction
             return GetStreamAsync(url);
         }
 
+        private T DeserializeFromStream<T>(Stream stream)
+        {
+            return DeserializeFromStream<T>(stream, SerializationFormat);
+        }
+
+        private T DeserializeFromStream<T>(Stream stream, SerializationFormat format)
+        {
+            if (format == ApiInteraction.SerializationFormat.Protobuf)
+            {
+                return DataSerializer.DeserializeProtobufFromStream<T>(stream);
+            }
+            if (format == ApiInteraction.SerializationFormat.Jsv)
+            {
+                return DataSerializer.DeserializeJsvFromStream<T>(stream);
+            }
+
+            return DataSerializer.DeserializeJsonFromStream<T>(stream);
+        }
+
         /// <summary>
         /// This is just a helper around HttpClient
         /// </summary>
@@ -581,6 +617,7 @@ namespace MediaBrowser.ApiInteraction
     public enum SerializationFormat
     {
         Json,
-        Jsv
+        Jsv,
+        Protobuf
     }
 }

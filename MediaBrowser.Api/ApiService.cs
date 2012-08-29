@@ -171,7 +171,7 @@ namespace MediaBrowser.Api
                     }
 
                     return baseItemStudio;
-                });
+                }).ToArray();
             }
         }
 
@@ -218,7 +218,7 @@ namespace MediaBrowser.Api
                     }
 
                     return baseItemPerson;
-                });
+                }).ToArray();
             }
         }
 
@@ -267,6 +267,16 @@ namespace MediaBrowser.Api
                 BaseItemCount = itemCount,
                 HasImage = !string.IsNullOrEmpty(entity.PrimaryImagePath),
                 Name = entity.Name
+            };
+        }
+
+        public static DTOUser GetDTOUser(User user)
+        {
+            return new DTOUser()
+            {
+                Id = user.Id,
+                Name = user.Name,
+                HasImage = !string.IsNullOrEmpty(user.PrimaryImagePath)
             };
         }
     }

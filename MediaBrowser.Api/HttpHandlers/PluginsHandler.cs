@@ -10,7 +10,7 @@ namespace MediaBrowser.Api.HttpHandlers
     /// <summary>
     /// Provides information about installed plugins
     /// </summary>
-    public class PluginsHandler : BaseSerializationHandler<IEnumerable<PluginInfo>>
+    public class PluginsHandler : BaseJsonHandler<IEnumerable<PluginInfo>>
     {
         protected override Task<IEnumerable<PluginInfo>> GetObjectToSerialize()
         {

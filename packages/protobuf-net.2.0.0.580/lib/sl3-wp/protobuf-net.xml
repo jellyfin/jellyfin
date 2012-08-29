@@ -191,6 +191,223 @@
             as group-delimited.
             </summary>
         </member>
+        <member name="T:ProtoBuf.Extensible">
+            <summary>
+            Simple base class for supporting unexpected fields allowing
+            for loss-less round-tips/merge, even if the data is not understod.
+            The additional fields are (by default) stored in-memory in a buffer.
+            </summary>
+            <remarks>As an example of an alternative implementation, you might
+            choose to use the file system (temporary files) as the back-end, tracking
+            only the paths [such an object would ideally be IDisposable and use
+            a finalizer to ensure that the files are removed].</remarks>
+            <seealso cref="T:ProtoBuf.IExtensible"/>
+        </member>
+        <member name="T:ProtoBuf.IExtensible">
+            <summary>
+            Indicates that the implementing type has support for protocol-buffer
+            <see cref="T:ProtoBuf.IExtension">extensions</see>.
+            </summary>
+            <remarks>Can be implemented by deriving from Extensible.</remarks>
+        </member>
+        <member name="M:ProtoBuf.IExtensible.GetExtensionObject(System.Boolean)">
+            <summary>
+            Retrieves the <see cref="T:ProtoBuf.IExtension">extension</see> object for the current
+            instance, optionally creating it if it does not already exist.
+            </summary>
+            <param name="createIfMissing">Should a new extension object be
+            created if it does not already exist?</param>
+            <returns>The extension object if it exists (or was created), or null
+            if the extension object does not exist or is not available.</returns>
+            <remarks>The <c>createIfMissing</c> argument is false during serialization,
+            and true during deserialization upon encountering unexpected fields.</remarks>
+        </member>
+        <member name="M:ProtoBuf.Extensible.GetExtensionObject(System.Boolean)">
+            <summary>
+            Retrieves the <see cref="T:ProtoBuf.IExtension">extension</see> object for the current
+            instance, optionally creating it if it does not already exist.
+            </summary>
+            <param name="createIfMissing">Should a new extension object be
+            created if it does not already exist?</param>
+            <returns>The extension object if it exists (or was created), or null
+            if the extension object does not exist or is not available.</returns>
+            <remarks>The <c>createIfMissing</c> argument is false during serialization,
+            and true during deserialization upon encountering unexpected fields.</remarks>
+        </member>
+        <member name="M:ProtoBuf.Extensible.GetExtensionObject(ProtoBuf.IExtension@,System.Boolean)">
+            <summary>
+            Provides a simple, default implementation for <see cref="T:ProtoBuf.IExtension">extension</see> support,
+            optionally creating it if it does not already exist. Designed to be called by
+            classes implementing <see cref="T:ProtoBuf.IExtensible"/>.
+            </summary>
+            <param name="createIfMissing">Should a new extension object be
+            created if it does not already exist?</param>
+            <param name="extensionObject">The extension field to check (and possibly update).</param>
+            <returns>The extension object if it exists (or was created), or null
+            if the extension object does not exist or is not available.</returns>
+            <remarks>The <c>createIfMissing</c> argument is false during serialization,
+            and true during deserialization upon encountering unexpected fields.</remarks>
+        </member>
+        <member name="M:ProtoBuf.Extensible.AppendValue``1(ProtoBuf.IExtensible,System.Int32,``0)">
+            <summary>
+            Appends the value as an additional (unexpected) data-field for the instance.
+            Note that for non-repeated sub-objects, this equates to a merge operation;
+            for repeated sub-objects this adds a new instance to the set; for simple
+            values the new value supercedes the old value.
+            </summary>
+            <remarks>Note that appending a value does not remove the old value from
+            the stream; avoid repeatedly appending values for the same field.</remarks>
+            <typeparam name="TValue">The type of the value to append.</typeparam>
+            <param name="instance">The extensible object to append the value to.</param>
+            <param name="tag">The field identifier; the tag should not be defined as a known data-field for the instance.</param>
+            <param name="value">The value to append.</param>
+        </member>
+        <member name="M:ProtoBuf.Extensible.AppendValue``1(ProtoBuf.IExtensible,System.Int32,ProtoBuf.DataFormat,``0)">
+            <summary>
+            Appends the value as an additional (unexpected) data-field for the instance.
+            Note that for non-repeated sub-objects, this equates to a merge operation;
+            for repeated sub-objects this adds a new instance to the set; for simple
+            values the new value supercedes the old value.
+            </summary>
+            <remarks>Note that appending a value does not remove the old value from
+            the stream; avoid repeatedly appending values for the same field.</remarks>
+            <typeparam name="TValue">The data-type of the field.</typeparam>
+            <param name="format">The data-format to use when encoding the value.</param>
+            <param name="instance">The extensible object to append the value to.</param>
+            <param name="tag">The field identifier; the tag should not be defined as a known data-field for the instance.</param>
+            <param name="value">The value to append.</param>
+        </member>
+        <member name="M:ProtoBuf.Extensible.GetValue``1(ProtoBuf.IExtensible,System.Int32)">
+            <summary>
+            Queries an extensible object for an additional (unexpected) data-field for the instance.
+            The value returned is the composed value after merging any duplicated content; if the
+            value is "repeated" (a list), then use GetValues instead.
+            </summary>
+            <typeparam name="TValue">The data-type of the field.</typeparam>
+            <param name="instance">The extensible object to obtain the value from.</param>
+            <param name="tag">The field identifier; the tag should not be defined as a known data-field for the instance.</param>
+            <returns>The effective value of the field, or the default value if not found.</returns>
+        </member>
+        <member name="M:ProtoBuf.Extensible.GetValue``1(ProtoBuf.IExtensible,System.Int32,ProtoBuf.DataFormat)">
+            <summary>
+            Queries an extensible object for an additional (unexpected) data-field for the instance.
+            The value returned is the composed value after merging any duplicated content; if the
+            value is "repeated" (a list), then use GetValues instead.
+            </summary>
+            <typeparam name="TValue">The data-type of the field.</typeparam>
+            <param name="instance">The extensible object to obtain the value from.</param>
+            <param name="tag">The field identifier; the tag should not be defined as a known data-field for the instance.</param>
+            <param name="format">The data-format to use when decoding the value.</param>
+            <returns>The effective value of the field, or the default value if not found.</returns>
+        </member>
+        <member name="M:ProtoBuf.Extensible.TryGetValue``1(ProtoBuf.IExtensible,System.Int32,``0@)">
+            <summary>
+            Queries an extensible object for an additional (unexpected) data-field for the instance.
+            The value returned (in "value") is the composed value after merging any duplicated content;
+            if the value is "repeated" (a list), then use GetValues instead.
+            </summary>
+            <typeparam name="TValue">The data-type of the field.</typeparam>
+            <param name="value">The effective value of the field, or the default value if not found.</param>
+            <param name="instance">The extensible object to obtain the value from.</param>
+            <param name="tag">The field identifier; the tag should not be defined as a known data-field for the instance.</param>
+            <returns>True if data for the field was present, false otherwise.</returns>
+        </member>
+        <member name="M:ProtoBuf.Extensible.TryGetValue``1(ProtoBuf.IExtensible,System.Int32,ProtoBuf.DataFormat,``0@)">
+            <summary>
+            Queries an extensible object for an additional (unexpected) data-field for the instance.
+            The value returned (in "value") is the composed value after merging any duplicated content;
+            if the value is "repeated" (a list), then use GetValues instead.
+            </summary>
+            <typeparam name="TValue">The data-type of the field.</typeparam>
+            <param name="value">The effective value of the field, or the default value if not found.</param>
+            <param name="instance">The extensible object to obtain the value from.</param>
+            <param name="tag">The field identifier; the tag should not be defined as a known data-field for the instance.</param>
+            <param name="format">The data-format to use when decoding the value.</param>
+            <returns>True if data for the field was present, false otherwise.</returns>
+        </member>
+        <member name="M:ProtoBuf.Extensible.TryGetValue``1(ProtoBuf.IExtensible,System.Int32,ProtoBuf.DataFormat,System.Boolean,``0@)">
+            <summary>
+            Queries an extensible object for an additional (unexpected) data-field for the instance.
+            The value returned (in "value") is the composed value after merging any duplicated content;
+            if the value is "repeated" (a list), then use GetValues instead.
+            </summary>
+            <typeparam name="TValue">The data-type of the field.</typeparam>
+            <param name="value">The effective value of the field, or the default value if not found.</param>
+            <param name="instance">The extensible object to obtain the value from.</param>
+            <param name="tag">The field identifier; the tag should not be defined as a known data-field for the instance.</param>
+            <param name="format">The data-format to use when decoding the value.</param>
+            <param name="allowDefinedTag">Allow tags that are present as part of the definition; for example, to query unknown enum values.</param>
+            <returns>True if data for the field was present, false otherwise.</returns>
+        </member>
+        <member name="M:ProtoBuf.Extensible.GetValues``1(ProtoBuf.IExtensible,System.Int32)">
+            <summary>
+            Queries an extensible object for an additional (unexpected) data-field for the instance.
+            Each occurrence of the field is yielded separately, making this usage suitable for "repeated"
+            (list) fields.
+            </summary>
+            <remarks>The extended data is processed lazily as the enumerator is iterated.</remarks>
+            <typeparam name="TValue">The data-type of the field.</typeparam>
+            <param name="instance">The extensible object to obtain the value from.</param>
+            <param name="tag">The field identifier; the tag should not be defined as a known data-field for the instance.</param>
+            <returns>An enumerator that yields each occurrence of the field.</returns>
+        </member>
+        <member name="M:ProtoBuf.Extensible.GetValues``1(ProtoBuf.IExtensible,System.Int32,ProtoBuf.DataFormat)">
+            <summary>
+            Queries an extensible object for an additional (unexpected) data-field for the instance.
+            Each occurrence of the field is yielded separately, making this usage suitable for "repeated"
+            (list) fields.
+            </summary>
+            <remarks>The extended data is processed lazily as the enumerator is iterated.</remarks>
+            <typeparam name="TValue">The data-type of the field.</typeparam>
+            <param name="instance">The extensible object to obtain the value from.</param>
+            <param name="tag">The field identifier; the tag should not be defined as a known data-field for the instance.</param>
+            <param name="format">The data-format to use when decoding the value.</param>
+            <returns>An enumerator that yields each occurrence of the field.</returns>
+        </member>
+        <member name="M:ProtoBuf.Extensible.TryGetValue(ProtoBuf.Meta.TypeModel,System.Type,ProtoBuf.IExtensible,System.Int32,ProtoBuf.DataFormat,System.Boolean,System.Object@)">
+            <summary>
+            Queries an extensible object for an additional (unexpected) data-field for the instance.
+            The value returned (in "value") is the composed value after merging any duplicated content;
+            if the value is "repeated" (a list), then use GetValues instead.
+            </summary>
+            <param name="type">The data-type of the field.</param>
+            <param name="model">The model to use for configuration.</param>
+            <param name="value">The effective value of the field, or the default value if not found.</param>
+            <param name="instance">The extensible object to obtain the value from.</param>
+            <param name="tag">The field identifier; the tag should not be defined as a known data-field for the instance.</param>
+            <param name="format">The data-format to use when decoding the value.</param>
+            <param name="allowDefinedTag">Allow tags that are present as part of the definition; for example, to query unknown enum values.</param>
+            <returns>True if data for the field was present, false otherwise.</returns>
+        </member>
+        <member name="M:ProtoBuf.Extensible.GetValues(ProtoBuf.Meta.TypeModel,System.Type,ProtoBuf.IExtensible,System.Int32,ProtoBuf.DataFormat)">
+            <summary>
+            Queries an extensible object for an additional (unexpected) data-field for the instance.
+            Each occurrence of the field is yielded separately, making this usage suitable for "repeated"
+            (list) fields.
+            </summary>
+            <remarks>The extended data is processed lazily as the enumerator is iterated.</remarks>
+            <param name="model">The model to use for configuration.</param>
+            <param name="type">The data-type of the field.</param>
+            <param name="instance">The extensible object to obtain the value from.</param>
+            <param name="tag">The field identifier; the tag should not be defined as a known data-field for the instance.</param>
+            <param name="format">The data-format to use when decoding the value.</param>
+            <returns>An enumerator that yields each occurrence of the field.</returns>
+        </member>
+        <member name="M:ProtoBuf.Extensible.AppendValue(ProtoBuf.Meta.TypeModel,ProtoBuf.IExtensible,System.Int32,ProtoBuf.DataFormat,System.Object)">
+            <summary>
+            Appends the value as an additional (unexpected) data-field for the instance.
+            Note that for non-repeated sub-objects, this equates to a merge operation;
+            for repeated sub-objects this adds a new instance to the set; for simple
+            values the new value supercedes the old value.
+            </summary>
+            <remarks>Note that appending a value does not remove the old value from
+            the stream; avoid repeatedly appending values for the same field.</remarks>
+            <param name="model">The model to use for configuration.</param>
+            <param name="format">The data-format to use when encoding the value.</param>
+            <param name="instance">The extensible object to append the value to.</param>
+            <param name="tag">The field identifier; the tag should not be defined as a known data-field for the instance.</param>
+            <param name="value">The value to append.</param>
+        </member>
         <member name="T:ProtoBuf.ExtensibleUtil">
             <summary>
             This class acts as an internal wrapper allowing us to do a dynamic
@@ -206,15 +423,12 @@
             the caller must respect the fields defined for the type they pass in.
             </summary>
         </member>
-        <member name="M:ProtoBuf.ExtensibleUtil.GetExtendedValuesTyped``2(``0,System.Int32,ProtoBuf.DataFormat,System.Boolean,System.Boolean)">
+        <member name="M:ProtoBuf.ExtensibleUtil.GetExtendedValues(ProtoBuf.Meta.TypeModel,System.Type,ProtoBuf.IExtensible,System.Int32,ProtoBuf.DataFormat,System.Boolean,System.Boolean)">
             <summary>
-            Reads the given value(s) from the instance's stream; the serializer
-            is inferred from TValue and format. For singletons, each occurrence
-            is merged [only applies for sub-objects], and the composed
-            value if yielded once; otherwise ("repeated") each occurrence
-            is yielded separately.
+            All this does is call GetExtendedValuesTyped with the correct type for "instance";
+            this ensures that we don't get issues with subclasses declaring conflicting types -
+            the caller must respect the fields defined for the type they pass in.
             </summary>
-            <remarks>Needs to be public to be callable thru reflection in Silverlight</remarks>
         </member>
         <member name="M:ProtoBuf.ExtensibleUtil.AppendExtendValueTyped``2(ProtoBuf.Meta.TypeModel,``0,System.Int32,ProtoBuf.DataFormat,``1)">
             <summary>
@@ -238,25 +452,6 @@
             - with missing types
             - existing on WinRT
             </summary>
-        </member>
-        <member name="T:ProtoBuf.IExtensible">
-            <summary>
-            Indicates that the implementing type has support for protocol-buffer
-            <see cref="T:ProtoBuf.IExtension">extensions</see>.
-            </summary>
-            <remarks>Can be implemented by deriving from <see cref="!:Extensible"/>.</remarks>
-        </member>
-        <member name="M:ProtoBuf.IExtensible.GetExtensionObject(System.Boolean)">
-            <summary>
-            Retrieves the <see cref="T:ProtoBuf.IExtension">extension</see> object for the current
-            instance, optionally creating it if it does not already exist.
-            </summary>
-            <param name="createIfMissing">Should a new extension object be
-            created if it does not already exist?</param>
-            <returns>The extension object if it exists (or was created), or null
-            if the extension object does not exist or is not available.</returns>
-            <remarks>The <c>createIfMissing</c> argument is false during serialization,
-            and true during deserialization upon encountering unexpected fields.</remarks>
         </member>
         <member name="T:ProtoBuf.ImplicitFields">
             <summary>
@@ -286,30 +481,226 @@
             this acts as a state/implementation serializer. Ordering beings from ImplicitFirstTag.
             </summary>
         </member>
-        <member name="T:ProtoBuf.Meta.TypeFormatEventArgs">
+        <member name="T:ProtoBuf.Meta.CallbackSet">
             <summary>
-            Event arguments needed to perform type-formatting functions; this could be resolving a Type to a string suitable for serialization, or could
-            be requesting a Type from a string. If no changes are made, a default implementation will be used (from the assembly-qualified names).
+            Represents the set of serialization callbacks to be used when serializing/deserializing a type.
             </summary>
         </member>
-        <member name="P:ProtoBuf.Meta.TypeFormatEventArgs.Type">
+        <member name="P:ProtoBuf.Meta.CallbackSet.BeforeSerialize">
+            <summary>Called before serializing an instance</summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.CallbackSet.BeforeDeserialize">
+            <summary>Called before deserializing an instance</summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.CallbackSet.AfterSerialize">
+            <summary>Called after serializing an instance</summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.CallbackSet.AfterDeserialize">
+            <summary>Called after deserializing an instance</summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.CallbackSet.NonTrivial">
             <summary>
-            The type involved in this map; if this is initially null, a Type is expected to be provided for the string in FormattedName.
+            True if any callback is set, else False
             </summary>
         </member>
-        <member name="P:ProtoBuf.Meta.TypeFormatEventArgs.FormattedName">
+        <member name="T:ProtoBuf.Meta.MetaType">
             <summary>
-            The formatted-name involved in this map; if this is initially null, a formatted-name is expected from the type in Type.
+            Represents a type at runtime for use with protobuf, allowing the field mappings (etc) to be defined
             </summary>
         </member>
-        <member name="T:ProtoBuf.Meta.TypeFormatEventHandler">
+        <member name="M:ProtoBuf.Meta.MetaType.ToString">
             <summary>
-            Delegate type used to perform type-formatting functions; the sender originates as the type-model.
+            Get the name of the type being represented
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Meta.MetaType.AddSubType(System.Int32,System.Type)">
+            <summary>
+            Adds a known sub-type to the inheritance model
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Meta.MetaType.AddSubType(System.Int32,System.Type,ProtoBuf.DataFormat)">
+            <summary>
+            Adds a known sub-type to the inheritance model
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Meta.MetaType.GetSubtypes">
+            <summary>
+            Obtains the subtypes that are defined for the current type
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Meta.MetaType.SetCallbacks(System.Reflection.MethodInfo,System.Reflection.MethodInfo,System.Reflection.MethodInfo,System.Reflection.MethodInfo)">
+            <summary>
+            Assigns the callbacks to use during serialiation/deserialization.
+            </summary>
+            <param name="beforeSerialize">The method (or null) called before serialization begins.</param>
+            <param name="afterSerialize">The method (or null) called when serialization is complete.</param>
+            <param name="beforeDeserialize">The method (or null) called before deserialization begins (or when a new instance is created during deserialization).</param>
+            <param name="afterDeserialize">The method (or null) called when deserialization is complete.</param>
+            <returns>The set of callbacks.</returns>
+        </member>
+        <member name="M:ProtoBuf.Meta.MetaType.SetCallbacks(System.String,System.String,System.String,System.String)">
+            <summary>
+            Assigns the callbacks to use during serialiation/deserialization.
+            </summary>
+            <param name="beforeSerialize">The name of the method (or null) called before serialization begins.</param>
+            <param name="afterSerialize">The name of the method (or null) called when serialization is complete.</param>
+            <param name="beforeDeserialize">The name of the method (or null) called before deserialization begins (or when a new instance is created during deserialization).</param>
+            <param name="afterDeserialize">The name of the method (or null) called when deserialization is complete.</param>
+            <returns>The set of callbacks.</returns>
+        </member>
+        <member name="M:ProtoBuf.Meta.MetaType.SetFactory(System.Reflection.MethodInfo)">
+            <summary>
+            Designate a factory-method to use to create instances of this type
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Meta.MetaType.SetFactory(System.String)">
+            <summary>
+            Designate a factory-method to use to create instances of this type
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Meta.MetaType.ThrowIfFrozen">
+            <summary>
+            Throws an exception if the type has been made immutable
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Meta.MetaType.Add(System.Int32,System.String)">
+            <summary>
+            Adds a member (by name) to the MetaType
+            </summary>        
+        </member>
+        <member name="M:ProtoBuf.Meta.MetaType.AddField(System.Int32,System.String)">
+            <summary>
+            Adds a member (by name) to the MetaType, returning the ValueMember rather than the fluent API.
+            This is otherwise identical to Add.
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Meta.MetaType.Add(System.String)">
+            <summary>
+            Adds a member (by name) to the MetaType
+            </summary>     
+        </member>
+        <member name="M:ProtoBuf.Meta.MetaType.SetSurrogate(System.Type)">
+            <summary>
+            Performs serialization of this type via a surrogate; all
+            other serialization options are ignored and handled
+            by the surrogate's configuration.
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Meta.MetaType.Add(System.String[])">
+            <summary>
+            Adds a set of members (by name) to the MetaType
+            </summary>     
+        </member>
+        <member name="M:ProtoBuf.Meta.MetaType.Add(System.Int32,System.String,System.Object)">
+            <summary>
+            Adds a member (by name) to the MetaType
+            </summary>        
+        </member>
+        <member name="M:ProtoBuf.Meta.MetaType.Add(System.Int32,System.String,System.Type,System.Type)">
+            <summary>
+            Adds a member (by name) to the MetaType, including an itemType and defaultType for representing lists
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Meta.MetaType.AddField(System.Int32,System.String,System.Type,System.Type)">
+            <summary>
+            Adds a member (by name) to the MetaType, including an itemType and defaultType for representing lists, returning the ValueMember rather than the fluent API.
+            This is otherwise identical to Add.
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.MetaType.BaseType">
+            <summary>
+            Gets the base-type for this type
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.MetaType.IncludeSerializerMethod">
+            <summary>
+            When used to compile a model, should public serialization/deserialzation methods
+            be included for this type?
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.MetaType.AsReferenceDefault">
+            <summary>
+            Should this type be treated as a reference by default?
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.MetaType.HasCallbacks">
+            <summary>
+            Indicates whether the current type has defined callbacks 
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.MetaType.HasSubtypes">
+            <summary>
+            Indicates whether the current type has defined subtypes
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.MetaType.Callbacks">
+            <summary>
+            Returns the set of callbacks defined for this type
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.MetaType.Name">
+            <summary>
+            Gets or sets the name of this contract.
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.MetaType.Type">
+            <summary>
+            The runtime type that the meta-type represents
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.MetaType.UseConstructor">
+            <summary>
+            Gets or sets whether the type should use a parameterless constructor (the default),
+            or whether the type should skip the constructor completely. This option is not supported
+            on compact-framework.
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.MetaType.ConstructType">
+            <summary>
+            The concrete type to create when a new instance of this type is needed; this may be useful when dealing
+            with dynamic proxies, or with interface-based APIs
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.MetaType.Item(System.Int32)">
+            <summary>
+            Returns the ValueMember that matchs a given field number, or null if not found
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.MetaType.Item(System.Reflection.MemberInfo)">
+            <summary>
+            Returns the ValueMember that matchs a given member (property/field), or null if not found
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.MetaType.EnumPassthru">
+            <summary>
+            Gets or sets a value indicating that an enum should be treated directly as an int/short/etc, rather
+            than enforcing .proto enum rules. This is useful *in particul* for [Flags] enums.
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.MetaType.IgnoreListHandling">
+            <summary>
+            Gets or sets a value indicating that this type should NOT be treated as a list, even if it has
+            familiar list-like characteristics (enumerable, add, etc)
+            </summary>
+        </member>
+        <member name="T:ProtoBuf.Meta.RuntimeTypeModel">
+            <summary>
+            Provides protobuf serialization support for a number of types that can be defined at runtime
             </summary>
         </member>
         <member name="T:ProtoBuf.Meta.TypeModel">
             <summary>
             Provides protobuf serialization support for a number of types
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Meta.TypeModel.MapType(System.Type)">
+            <summary>
+            Resolve a System.Type to the compiler-specific type
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Meta.TypeModel.MapType(System.Type,System.Boolean)">
+            <summary>
+            Resolve a System.Type to the compiler-specific type
             </summary>
         </member>
         <member name="M:ProtoBuf.Meta.TypeModel.TrySerializeAuxiliaryType(ProtoBuf.ProtoWriter,System.Type,ProtoBuf.DataFormat,System.Int32,System.Object,System.Boolean)">
@@ -541,6 +932,14 @@
              - IList sets of any type handled by TryDeserializeAuxiliaryType
             </summary>
         </member>
+        <member name="M:ProtoBuf.Meta.TypeModel.Create">
+            <summary>
+            Creates a new runtime model, to which the caller
+            can add support for a range of types. A model
+            can be used "as is", or can be compiled for
+            optimal performance.
+            </summary>
+        </member>
         <member name="M:ProtoBuf.Meta.TypeModel.ResolveProxies(System.Type)">
             <summary>
             Applies common proxy scenarios, resolving the actual type to consider
@@ -612,6 +1011,13 @@
             will, if forced, try to serialize such</remarks>
             <returns>True if this type is recognised as a serializable entity, else false</returns>
         </member>
+        <member name="M:ProtoBuf.Meta.TypeModel.GetSchema(System.Type)">
+            <summary>
+            Suggest a .proto definition for the given type
+            </summary>
+            <param name="type">The type to generate a .proto definition for, or <c>null</c> to generate a .proto that represents the entire model</param>
+            <returns>The .proto definition as a string</returns>
+        </member>
         <member name="E:ProtoBuf.Meta.TypeModel.DynamicTypeFormatting">
             <summary>
             Used to provide custom services for writing and parsing type names when using dynamic types. Both parsing and formatting
@@ -641,6 +1047,309 @@
         <member name="F:ProtoBuf.Meta.TypeModel.CallbackType.AfterDeserialize">
             <summary>
             Invoked after an object is deserialized
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Meta.RuntimeTypeModel.GetTypes">
+            <summary>
+            Returns a sequence of the Type instances that can be
+            processed by this model.
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Meta.RuntimeTypeModel.GetSchema(System.Type)">
+            <summary>
+            Suggest a .proto definition for the given type
+            </summary>
+            <param name="type">The type to generate a .proto definition for, or <c>null</c> to generate a .proto that represents the entire model</param>
+            <returns>The .proto definition as a string</returns>
+        </member>
+        <member name="M:ProtoBuf.Meta.RuntimeTypeModel.Add(System.Type,System.Boolean)">
+            <summary>
+            Adds support for an additional type in this model, optionally
+            appplying inbuilt patterns. If the type is already known to the
+            model, the existing type is returned **without** applying
+            any additional behaviour.
+            </summary>
+            <remarks>Inbuilt patterns include:
+            [ProtoContract]/[ProtoMember(n)]
+            [DataContract]/[DataMember(Order=n)]
+            [XmlType]/[XmlElement(Order=n)]
+            [On{Des|S}erializ{ing|ed}]
+            ShouldSerialize*/*Specified
+            </remarks>
+            <param name="type">The type to be supported</param>
+            <param name="applyDefaultBehaviour">Whether to apply the inbuilt configuration patterns (via attributes etc), or
+            just add the type with no additional configuration (the type must then be manually configured).</param>
+            <returns>The MetaType representing this type, allowing
+            further configuration.</returns>
+        </member>
+        <member name="M:ProtoBuf.Meta.RuntimeTypeModel.ThrowIfFrozen">
+            <summary>
+            Verifies that the model is still open to changes; if not, an exception is thrown
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Meta.RuntimeTypeModel.Freeze">
+            <summary>
+            Prevents further changes to this model
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Meta.RuntimeTypeModel.GetKeyImpl(System.Type)">
+            <summary>
+            Provides the key that represents a given type in the current model.
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Meta.RuntimeTypeModel.Serialize(System.Int32,System.Object,ProtoBuf.ProtoWriter)">
+            <summary>
+            Writes a protocol-buffer representation of the given instance to the supplied stream.
+            </summary>
+            <param name="key">Represents the type (including inheritance) to consider.</param>
+            <param name="value">The existing instance to be serialized (cannot be null).</param>
+            <param name="dest">The destination stream to write to.</param>
+        </member>
+        <member name="M:ProtoBuf.Meta.RuntimeTypeModel.Deserialize(System.Int32,System.Object,ProtoBuf.ProtoReader)">
+            <summary>
+            Applies a protocol-buffer stream to an existing instance (which may be null).
+            </summary>
+            <param name="key">Represents the type (including inheritance) to consider.</param>
+            <param name="value">The existing instance to be modified (can be null).</param>
+            <param name="source">The binary stream to apply to the instance (cannot be null).</param>
+            <returns>The updated instance; this may be different to the instance argument if
+            either the original instance was null, or the stream defines a known sub-type of the
+            original instance.</returns>
+        </member>
+        <member name="P:ProtoBuf.Meta.RuntimeTypeModel.InferTagFromNameDefault">
+            <summary>
+            Global default that
+            enables/disables automatic tag generation based on the existing name / order
+            of the defined members. See <seealso cref="P:ProtoBuf.ProtoContractAttribute.InferTagFromName"/>
+            for usage and <b>important warning</b> / explanation.
+            You must set the global default before attempting to serialize/deserialize any
+            impacted type.
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.RuntimeTypeModel.AutoAddProtoContractTypesOnly">
+            <summary>
+            Global default that determines whether types are considered serializable
+            if they have [DataContract] / [XmlType]. With this enabled, <b>ONLY</b>
+            types marked as [ProtoContract] are added automatically.
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.RuntimeTypeModel.UseImplicitZeroDefaults">
+            <summary>
+            Global switch that enables or disables the implicit
+            handling of "zero defaults"; meanning: if no other default is specified,
+            it assumes bools always default to false, integers to zero, etc.
+            
+            If this is disabled, no such assumptions are made and only *explicit*
+            default values are processed. This is enabled by default to 
+            preserve similar logic to v1.
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.RuntimeTypeModel.AllowParseableTypes">
+            <summary>
+            Global switch that determines whether types with a <c>.ToString()</c> and a <c>Parse(string)</c>
+            should be serialized as strings.
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.RuntimeTypeModel.Default">
+            <summary>
+            The default model, used to support ProtoBuf.Serializer
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.RuntimeTypeModel.Item(System.Type)">
+            <summary>
+            Obtains the MetaType associated with a given Type for the current model,
+            allowing additional configuration.
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.RuntimeTypeModel.AutoAddMissingTypes">
+            <summary>
+            Should support for unexpected types be added automatically?
+            If false, an exception is thrown when unexpected types
+            are encountered.
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.RuntimeTypeModel.MetadataTimeoutMilliseconds">
+            <summary>
+            The amount of time to wait if there are concurrent metadata access operations
+            </summary>
+        </member>
+        <member name="E:ProtoBuf.Meta.RuntimeTypeModel.LockContended">
+            <summary>
+            If a lock-contention is detected, this event signals the *owner* of the lock responsible for the blockage, indicating
+            what caused the problem; this is only raised if the lock-owning code successfully completes.
+            </summary>
+        </member>
+        <member name="T:ProtoBuf.Meta.LockContentedEventArgs">
+            <summary>
+            Contains the stack-trace of the owning code when a lock-contention scenario is detected
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.LockContentedEventArgs.OwnerStackTrace">
+            <summary>
+            The stack-trace of the code that owned the lock when a lock-contention scenario occurred
+            </summary>
+        </member>
+        <member name="T:ProtoBuf.Meta.LockContentedEventHandler">
+            <summary>
+            Event-type that is raised when a lock-contention scenario is detected
+            </summary>
+        </member>
+        <member name="T:ProtoBuf.Meta.SubType">
+            <summary>
+            Represents an inherited type in a type hierarchy.
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Meta.SubType.#ctor(System.Int32,ProtoBuf.Meta.MetaType,ProtoBuf.DataFormat)">
+            <summary>
+            Creates a new SubType instance.
+            </summary>
+            <param name="fieldNumber">The field-number that is used to encapsulate the data (as a nested
+            message) for the derived dype.</param>
+            <param name="derivedType">The sub-type to be considered.</param>
+            <param name="format">Specific encoding style to use; in particular, Grouped can be used to avoid buffering, but is not the default.</param>
+        </member>
+        <member name="P:ProtoBuf.Meta.SubType.FieldNumber">
+            <summary>
+            The field-number that is used to encapsulate the data (as a nested
+            message) for the derived dype.
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.SubType.DerivedType">
+            <summary>
+            The sub-type to be considered.
+            </summary>
+        </member>
+        <member name="T:ProtoBuf.Meta.TypeFormatEventArgs">
+            <summary>
+            Event arguments needed to perform type-formatting functions; this could be resolving a Type to a string suitable for serialization, or could
+            be requesting a Type from a string. If no changes are made, a default implementation will be used (from the assembly-qualified names).
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.TypeFormatEventArgs.Type">
+            <summary>
+            The type involved in this map; if this is initially null, a Type is expected to be provided for the string in FormattedName.
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.TypeFormatEventArgs.FormattedName">
+            <summary>
+            The formatted-name involved in this map; if this is initially null, a formatted-name is expected from the type in Type.
+            </summary>
+        </member>
+        <member name="T:ProtoBuf.Meta.TypeFormatEventHandler">
+            <summary>
+            Delegate type used to perform type-formatting functions; the sender originates as the type-model.
+            </summary>
+        </member>
+        <member name="T:ProtoBuf.Meta.ValueMember">
+            <summary>
+            Represents a member (property/field) that is mapped to a protobuf field
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Meta.ValueMember.#ctor(ProtoBuf.Meta.RuntimeTypeModel,System.Type,System.Int32,System.Reflection.MemberInfo,System.Type,System.Type,System.Type,ProtoBuf.DataFormat,System.Object)">
+            <summary>
+            Creates a new ValueMember instance
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Meta.ValueMember.#ctor(ProtoBuf.Meta.RuntimeTypeModel,System.Int32,System.Type,System.Type,System.Type,ProtoBuf.DataFormat)">
+            <summary>
+            Creates a new ValueMember instance
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Meta.ValueMember.SetSpecified(System.Reflection.MethodInfo,System.Reflection.MethodInfo)">
+            <summary>
+            Specifies methods for working with optional data members.
+            </summary>
+            <param name="getSpecified">Provides a method (null for none) to query whether this member should
+            be serialized; it must be of the form "bool {Method}()". The member is only serialized if the
+            method returns true.</param>
+            <param name="setSpecified">Provides a method (null for none) to indicate that a member was
+            deserialized; it must be of the form "void {Method}(bool)", and will be called with "true"
+            when data is found.</param>
+        </member>
+        <member name="P:ProtoBuf.Meta.ValueMember.FieldNumber">
+            <summary>
+            The number that identifies this member in a protobuf stream
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.ValueMember.Member">
+            <summary>
+            Gets the member (field/property) which this member relates to.
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.ValueMember.ItemType">
+            <summary>
+            Within a list / array / etc, the type of object for each item in the list (especially useful with ArrayList)
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.ValueMember.MemberType">
+            <summary>
+            The underlying type of the member
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.ValueMember.DefaultType">
+            <summary>
+            For abstract types (IList etc), the type of concrete object to create (if required)
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.ValueMember.ParentType">
+            <summary>
+            The type the defines the member
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.ValueMember.DefaultValue">
+            <summary>
+            The default value of the item (members with this value will not be serialized)
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.ValueMember.DataFormat">
+            <summary>
+            Specifies the rules used to process the field; this is used to determine the most appropriate
+            wite-type, but also to describe subtypes <i>within</i> that wire-type (such as SignedVariant)
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.ValueMember.IsStrict">
+            <summary>
+            Indicates whether this field should follow strict encoding rules; this means (for example) that if a "fixed32"
+            is encountered when "variant" is defined, then it will fail (throw an exception) when parsing. Note that
+            when serializing the defined type is always used.
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.ValueMember.IsPacked">
+            <summary>
+            Indicates whether this field should use packed encoding (which can save lots of space for repeated primitive values).
+            This option only applies to list/array data of primitive types (int, double, etc).
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.ValueMember.OverwriteList">
+            <summary>
+            Indicates whether this field should *repace* existing values (the default is false, meaning *append*).
+            This option only applies to list/array data.
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.ValueMember.IsRequired">
+            <summary>
+            Indicates whether this field is mandatory.
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.ValueMember.AsReference">
+            <summary>
+            Enables full object-tracking/full-graph support.
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.ValueMember.DynamicType">
+            <summary>
+            Embeds the type information into the stream, allowing usage with types not known in advance.
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.ValueMember.Name">
+            <summary>
+            Gets the logical name for this member in the schema (this is not critical for binary serialization, but may be used
+            when inferring a schema).
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.ValueMember.SupportNull">
+            <summary>
+            Should lists have extended support for null values? Note this makes the serialization less efficient.
             </summary>
         </member>
         <member name="T:ProtoBuf.PrefixStyle">
@@ -710,7 +1419,7 @@
             care to increase the Order for new elements, otherwise data corruption
             may occur.
             </summary>
-            <remarks>If not explicitly specified, the default is assumed from <see cref="!:Serializer.GlobalOptions.InferTagFromName"/>.</remarks>
+            <remarks>If not explicitly specified, the default is assumed from Serializer.GlobalOptions.InferTagFromName.</remarks>
         </member>
         <member name="P:ProtoBuf.ProtoContractAttribute.InferTagFromNameHasValue">
             <summary>
@@ -1180,6 +1889,11 @@
             Utility method, not intended for public use; this helps maintain the root object is complex scenarios
             </summary>
         </member>
+        <member name="M:ProtoBuf.ProtoReader.ReadType">
+            <summary>
+            Reads a Type from the stream, using the model's DynamicTypeFormatting if appropriate; supported wire-types: String
+            </summary>
+        </member>
         <member name="P:ProtoBuf.ProtoReader.FieldNumber">
             <summary>
             Gets the number of the field being processed.
@@ -1367,6 +2081,11 @@
             Specifies a known root object to use during reference-tracked serialization
             </summary>
         </member>
+        <member name="M:ProtoBuf.ProtoWriter.WriteType(System.Type,ProtoBuf.ProtoWriter)">
+            <summary>
+            Writes a Type to the stream, using the model's DynamicTypeFormatting if appropriate; supported wire-types: String
+            </summary>
+        </member>
         <member name="P:ProtoBuf.ProtoWriter.Context">
             <summary>
             Addition information about this serialization operation.
@@ -1375,6 +2094,16 @@
         <member name="T:ProtoBuf.SerializationContext">
             <summary>
             Additional information about a serialization operation
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.SerializationContext.op_Implicit(ProtoBuf.SerializationContext)~System.Runtime.Serialization.StreamingContext">
+            <summary>
+            Convert a SerializationContext to a StreamingContext
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.SerializationContext.op_Implicit(System.Runtime.Serialization.StreamingContext)~ProtoBuf.SerializationContext">
+            <summary>
+            Convert a StreamingContext to a SerializationContext
             </summary>
         </member>
         <member name="P:ProtoBuf.SerializationContext.Context">
@@ -1405,6 +2134,154 @@
             The data is treated as repeated message with field number 1.
             </summary>
         </member>
+        <member name="M:ProtoBuf.Serializer.GetProto``1">
+            <summary>
+            Suggest a .proto definition for the given type
+            </summary>
+            <typeparam name="T">The type to generate a .proto definition for</typeparam>
+            <returns>The .proto definition as a string</returns>
+        </member>
+        <member name="M:ProtoBuf.Serializer.DeepClone``1(``0)">
+            <summary>
+            Create a deep clone of the supplied instance; any sub-items are also cloned.
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Serializer.Merge``1(System.IO.Stream,``0)">
+            <summary>
+            Applies a protocol-buffer stream to an existing instance.
+            </summary>
+            <typeparam name="T">The type being merged.</typeparam>
+            <param name="instance">The existing instance to be modified (can be null).</param>
+            <param name="source">The binary stream to apply to the instance (cannot be null).</param>
+            <returns>The updated instance; this may be different to the instance argument if
+            either the original instance was null, or the stream defines a known sub-type of the
+            original instance.</returns>
+        </member>
+        <member name="M:ProtoBuf.Serializer.Deserialize``1(System.IO.Stream)">
+            <summary>
+            Creates a new instance from a protocol-buffer stream
+            </summary>
+            <typeparam name="T">The type to be created.</typeparam>
+            <param name="source">The binary stream to apply to the new instance (cannot be null).</param>
+            <returns>A new, initialized instance.</returns>
+        </member>
+        <member name="M:ProtoBuf.Serializer.Serialize``1(System.IO.Stream,``0)">
+            <summary>
+            Writes a protocol-buffer representation of the given instance to the supplied stream.
+            </summary>
+            <param name="instance">The existing instance to be serialized (cannot be null).</param>
+            <param name="destination">The destination stream to write to.</param>
+        </member>
+        <member name="M:ProtoBuf.Serializer.ChangeType``2(``0)">
+            <summary>
+            Serializes a given instance and deserializes it as a different type;
+            this can be used to translate between wire-compatible objects (where
+            two .NET types represent the same data), or to promote/demote a type
+            through an inheritance hierarchy.
+            </summary>
+            <remarks>No assumption of compatibility is made between the types.</remarks>
+            <typeparam name="TFrom">The type of the object being copied.</typeparam>
+            <typeparam name="TTo">The type of the new object to be created.</typeparam>
+            <param name="instance">The existing instance to use as a template.</param>
+            <returns>A new instane of type TNewType, with the data from TOldType.</returns>
+        </member>
+        <member name="M:ProtoBuf.Serializer.PrepareSerializer``1">
+            <summary>
+            Precompiles the serializer for a given type.
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Serializer.DeserializeItems``1(System.IO.Stream,ProtoBuf.PrefixStyle,System.Int32)">
+            <summary>
+            Reads a sequence of consecutive length-prefixed items from a stream, using
+            either base-128 or fixed-length prefixes. Base-128 prefixes with a tag
+            are directly comparable to serializing multiple items in succession
+            (use the <see cref="F:ProtoBuf.Serializer.ListItemTag"/> tag to emulate the implicit behavior
+            when serializing a list/array). When a tag is
+            specified, any records with different tags are silently omitted. The
+            tag is ignored. The tag is ignores for fixed-length prefixes.
+            </summary>
+            <typeparam name="T">The type of object to deserialize.</typeparam>
+            <param name="source">The binary stream containing the serialized records.</param>
+            <param name="style">The prefix style used in the data.</param>
+            <param name="fieldNumber">The tag of records to return (if non-positive, then no tag is
+            expected and all records are returned).</param>
+            <returns>The sequence of deserialized objects.</returns>
+        </member>
+        <member name="M:ProtoBuf.Serializer.DeserializeWithLengthPrefix``1(System.IO.Stream,ProtoBuf.PrefixStyle)">
+            <summary>
+            Creates a new instance from a protocol-buffer stream that has a length-prefix
+            on data (to assist with network IO).
+            </summary>
+            <typeparam name="T">The type to be created.</typeparam>
+            <param name="source">The binary stream to apply to the new instance (cannot be null).</param>
+            <param name="style">How to encode the length prefix.</param>
+            <returns>A new, initialized instance.</returns>
+        </member>
+        <member name="M:ProtoBuf.Serializer.DeserializeWithLengthPrefix``1(System.IO.Stream,ProtoBuf.PrefixStyle,System.Int32)">
+            <summary>
+            Creates a new instance from a protocol-buffer stream that has a length-prefix
+            on data (to assist with network IO).
+            </summary>
+            <typeparam name="T">The type to be created.</typeparam>
+            <param name="source">The binary stream to apply to the new instance (cannot be null).</param>
+            <param name="style">How to encode the length prefix.</param>
+            <param name="fieldNumber">The expected tag of the item (only used with base-128 prefix style).</param>
+            <returns>A new, initialized instance.</returns>
+        </member>
+        <member name="M:ProtoBuf.Serializer.MergeWithLengthPrefix``1(System.IO.Stream,``0,ProtoBuf.PrefixStyle)">
+            <summary>
+            Applies a protocol-buffer stream to an existing instance, using length-prefixed
+            data - useful with network IO.
+            </summary>
+            <typeparam name="T">The type being merged.</typeparam>
+            <param name="instance">The existing instance to be modified (can be null).</param>
+            <param name="source">The binary stream to apply to the instance (cannot be null).</param>
+            <param name="style">How to encode the length prefix.</param>
+            <returns>The updated instance; this may be different to the instance argument if
+            either the original instance was null, or the stream defines a known sub-type of the
+            original instance.</returns>
+        </member>
+        <member name="M:ProtoBuf.Serializer.SerializeWithLengthPrefix``1(System.IO.Stream,``0,ProtoBuf.PrefixStyle)">
+            <summary>
+            Writes a protocol-buffer representation of the given instance to the supplied stream,
+            with a length-prefix. This is useful for socket programming,
+            as DeserializeWithLengthPrefix/MergeWithLengthPrefix can be used to read the single object back
+            from an ongoing stream.
+            </summary>
+            <typeparam name="T">The type being serialized.</typeparam>
+            <param name="instance">The existing instance to be serialized (cannot be null).</param>
+            <param name="style">How to encode the length prefix.</param>
+            <param name="destination">The destination stream to write to.</param>
+        </member>
+        <member name="M:ProtoBuf.Serializer.SerializeWithLengthPrefix``1(System.IO.Stream,``0,ProtoBuf.PrefixStyle,System.Int32)">
+            <summary>
+            Writes a protocol-buffer representation of the given instance to the supplied stream,
+            with a length-prefix. This is useful for socket programming,
+            as DeserializeWithLengthPrefix/MergeWithLengthPrefix can be used to read the single object back
+            from an ongoing stream.
+            </summary>
+            <typeparam name="T">The type being serialized.</typeparam>
+            <param name="instance">The existing instance to be serialized (cannot be null).</param>
+            <param name="style">How to encode the length prefix.</param>
+            <param name="destination">The destination stream to write to.</param>
+            <param name="fieldNumber">The tag used as a prefix to each record (only used with base-128 style prefixes).</param>
+        </member>
+        <member name="M:ProtoBuf.Serializer.TryReadLengthPrefix(System.IO.Stream,ProtoBuf.PrefixStyle,System.Int32@)">
+            <summary>Indicates the number of bytes expected for the next message.</summary>
+            <param name="source">The stream containing the data to investigate for a length.</param>
+            <param name="style">The algorithm used to encode the length.</param>
+            <param name="length">The length of the message, if it could be identified.</param>
+            <returns>True if a length could be obtained, false otherwise.</returns>
+        </member>
+        <member name="M:ProtoBuf.Serializer.TryReadLengthPrefix(System.Byte[],System.Int32,System.Int32,ProtoBuf.PrefixStyle,System.Int32@)">
+            <summary>Indicates the number of bytes expected for the next message.</summary>
+            <param name="buffer">The buffer containing the data to investigate for a length.</param>
+            <param name="index">The offset of the first byte to read from the buffer.</param>
+            <param name="count">The number of bytes to read from the buffer.</param>
+            <param name="style">The algorithm used to encode the length.</param>
+            <param name="length">The length of the message, if it could be identified.</param>
+            <returns>True if a length could be obtained, false otherwise.</returns>
+        </member>
         <member name="M:ProtoBuf.Serializer.FlushPool">
             <summary>
             Releases any internal buffers that have been reserved for efficiency; this does not affect any serialization
@@ -1412,9 +2289,113 @@
             of having to re-allocate a new buffer for the next operation, rather than re-use prior buffers).
             </summary>
         </member>
+        <member name="T:ProtoBuf.Serializer.NonGeneric">
+            <summary>
+            Provides non-generic access to the default serializer.
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Serializer.NonGeneric.DeepClone(System.Object)">
+            <summary>
+            Create a deep clone of the supplied instance; any sub-items are also cloned.
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Serializer.NonGeneric.Serialize(System.IO.Stream,System.Object)">
+            <summary>
+            Writes a protocol-buffer representation of the given instance to the supplied stream.
+            </summary>
+            <param name="instance">The existing instance to be serialized (cannot be null).</param>
+            <param name="dest">The destination stream to write to.</param>
+        </member>
+        <member name="M:ProtoBuf.Serializer.NonGeneric.Deserialize(System.Type,System.IO.Stream)">
+            <summary>
+            Creates a new instance from a protocol-buffer stream
+            </summary>
+            <param name="type">The type to be created.</param>
+            <param name="source">The binary stream to apply to the new instance (cannot be null).</param>
+            <returns>A new, initialized instance.</returns>
+        </member>
+        <member name="M:ProtoBuf.Serializer.NonGeneric.Merge(System.IO.Stream,System.Object)">
+            <summary>Applies a protocol-buffer stream to an existing instance.</summary>
+            <param name="instance">The existing instance to be modified (cannot be null).</param>
+            <param name="source">The binary stream to apply to the instance (cannot be null).</param>
+            <returns>The updated instance</returns>
+        </member>
+        <member name="M:ProtoBuf.Serializer.NonGeneric.SerializeWithLengthPrefix(System.IO.Stream,System.Object,ProtoBuf.PrefixStyle,System.Int32)">
+            <summary>
+            Writes a protocol-buffer representation of the given instance to the supplied stream,
+            with a length-prefix. This is useful for socket programming,
+            as DeserializeWithLengthPrefix/MergeWithLengthPrefix can be used to read the single object back
+            from an ongoing stream.
+            </summary>
+            <param name="instance">The existing instance to be serialized (cannot be null).</param>
+            <param name="style">How to encode the length prefix.</param>
+            <param name="destination">The destination stream to write to.</param>
+            <param name="fieldNumber">The tag used as a prefix to each record (only used with base-128 style prefixes).</param>
+        </member>
+        <member name="M:ProtoBuf.Serializer.NonGeneric.TryDeserializeWithLengthPrefix(System.IO.Stream,ProtoBuf.PrefixStyle,ProtoBuf.Serializer.TypeResolver,System.Object@)">
+            <summary>
+            Applies a protocol-buffer stream to an existing instance (or null), using length-prefixed
+            data - useful with network IO.
+            </summary>
+            <param name="value">The existing instance to be modified (can be null).</param>
+            <param name="source">The binary stream to apply to the instance (cannot be null).</param>
+            <param name="style">How to encode the length prefix.</param>
+            <param name="resolver">Used to resolve types on a per-field basis.</param>
+            <returns>The updated instance; this may be different to the instance argument if
+            either the original instance was null, or the stream defines a known sub-type of the
+            original instance.</returns>
+        </member>
+        <member name="M:ProtoBuf.Serializer.NonGeneric.CanSerialize(System.Type)">
+            <summary>
+            Indicates whether the supplied type is explicitly modelled by the model
+            </summary>
+        </member>
+        <member name="T:ProtoBuf.Serializer.GlobalOptions">
+            <summary>
+            Global switches that change the behavior of protobuf-net
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Serializer.GlobalOptions.InferTagFromName">
+            <summary>
+            <see cref="P:ProtoBuf.Meta.RuntimeTypeModel.InferTagFromNameDefault"/>
+            </summary>
+        </member>
         <member name="T:ProtoBuf.Serializer.TypeResolver">
             <summary>
             Maps a field-number to a type
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Serializers.IProtoSerializer.Write(System.Object,ProtoBuf.ProtoWriter)">
+            <summary>
+            Perform the steps necessary to serialize this data.
+            </summary>
+            <param name="value">The value to be serialized.</param>
+            <param name="dest">The writer entity that is accumulating the output data.</param>
+        </member>
+        <member name="M:ProtoBuf.Serializers.IProtoSerializer.Read(System.Object,ProtoBuf.ProtoReader)">
+            <summary>
+            Perform the steps necessary to deserialize this data.
+            </summary>
+            <param name="value">The current value, if appropriate.</param>
+            <param name="source">The reader providing the input data.</param>
+            <returns>The updated / replacement value.</returns>
+        </member>
+        <member name="P:ProtoBuf.Serializers.IProtoSerializer.ExpectedType">
+            <summary>
+            The type that this serializer is intended to work for.
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Serializers.IProtoSerializer.RequiresOldValue">
+            <summary>
+            Indicates whether a Read operation <em>replaces</em> the existing value, or
+            <em>extends</em> the value. If false, the "value" parameter to Read is
+            discarded, and should be passed in as null.
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Serializers.IProtoSerializer.ReturnsValue">
+            <summary>
+            Now all Read operations return a value (although most do); if false no
+            value should be expected.
             </summary>
         </member>
         <member name="T:ProtoBuf.SubItemToken">

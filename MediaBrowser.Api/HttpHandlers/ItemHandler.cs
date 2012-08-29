@@ -8,7 +8,7 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public class ItemHandler : BaseSerializationHandler<DTOBaseItem>
+    public class ItemHandler : BaseJsonHandler<DTOBaseItem>
     {
         protected override Task<DTOBaseItem> GetObjectToSerialize()
         {

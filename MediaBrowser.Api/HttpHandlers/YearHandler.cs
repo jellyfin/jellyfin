@@ -12,7 +12,7 @@ namespace MediaBrowser.Api.HttpHandlers
     /// <summary>
     /// Gets a single year
     /// </summary>
-    public class YearHandler : BaseSerializationHandler<IBNItem>
+    public class YearHandler : BaseJsonHandler<IBNItem>
     {
         protected override Task<IBNItem> GetObjectToSerialize()
         {

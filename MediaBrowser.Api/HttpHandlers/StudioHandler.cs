@@ -12,7 +12,7 @@ namespace MediaBrowser.Api.HttpHandlers
     /// <summary>
     /// Gets a single studio
     /// </summary>
-    public class StudioHandler : BaseSerializationHandler<IBNItem>
+    public class StudioHandler : BaseJsonHandler<IBNItem>
     {
         protected override Task<IBNItem> GetObjectToSerialize()
         {

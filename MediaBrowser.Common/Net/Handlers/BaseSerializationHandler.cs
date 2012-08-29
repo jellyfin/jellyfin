@@ -5,7 +5,7 @@ using MediaBrowser.Common.Serialization;
 
 namespace MediaBrowser.Common.Net.Handlers
 {
-    public abstract class BaseSerializationHandler<T> : BaseHandler
+    public abstract class BaseJsonHandler<T> : BaseHandler
     {
         public SerializationFormat SerializationFormat
         {

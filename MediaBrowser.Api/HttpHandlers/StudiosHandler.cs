@@ -9,7 +9,7 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public class StudiosHandler : BaseSerializationHandler<IEnumerable<IBNItem>>
+    public class StudiosHandler : BaseJsonHandler<IEnumerable<IBNItem>>
     {
         protected override Task<IEnumerable<IBNItem>> GetObjectToSerialize()
         {
