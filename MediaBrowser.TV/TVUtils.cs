@@ -100,15 +100,32 @@ namespace MediaBrowser.TV
 
         public static bool IsSeriesFolder(string path, WIN32_FIND_DATA[] fileSystemChildren)
         {
+            // A folder with more than 3 non-season folders in will not becounted as a series
+            int nonSeriesFolders = 0;
+
             for (int i = 0; i < fileSystemChildren.Length; i++)
             {
                 var child = fileSystemChildren[i];
+
+                if (child.IsHidden || child.IsSystemFile)
+                {
+                    continue;
+                }
 
                 if (child.IsDirectory)
                 {
                     if (IsSeasonFolder(child.Path))
                     {
                         return true;
+                    }
+                    else
+                    {
+                        nonSeriesFolders++;
+
+                        if (nonSeriesFolders >= 3)
+                        {
+                            return false;
+                        }
                     }
                 }
                 else
