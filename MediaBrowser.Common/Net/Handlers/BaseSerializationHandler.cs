@@ -77,6 +77,11 @@ namespace MediaBrowser.Common.Net.Handlers
                     break;
             }
         }
+
+        public override bool ShouldCompressResponse(string contentType)
+        {
+            return SerializationFormat != Handlers.SerializationFormat.Protobuf;
+        }
     }
 
     public enum SerializationFormat
