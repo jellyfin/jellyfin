@@ -41,13 +41,13 @@ namespace MediaBrowser.Api
                 tasks.Add(AttachPeople(dto, item));
             }
 
+            AttachBasicFields(dto, item, user);
+            
             // Make sure all the tasks we kicked off have completed.
             if (tasks.Count > 0)
             {
                 await Task.WhenAll(tasks).ConfigureAwait(false);
             }
-
-            AttachBasicFields(dto, item, user);
 
             return dto;
         }
@@ -67,7 +67,7 @@ namespace MediaBrowser.Api
             dto.HasArt = !string.IsNullOrEmpty(item.ArtImagePath);
             dto.HasBanner = !string.IsNullOrEmpty(item.BannerImagePath);
             dto.HasLogo = !string.IsNullOrEmpty(item.LogoImagePath);
-            dto.HasPrimaryImage = !string.IsNullOrEmpty(item.LogoImagePath);
+            dto.HasPrimaryImage = !string.IsNullOrEmpty(item.PrimaryImagePath);
             dto.HasThumb = !string.IsNullOrEmpty(item.ThumbnailImagePath);
             dto.Id = item.Id;
             dto.IsNew = item.IsRecentlyAdded(user);
