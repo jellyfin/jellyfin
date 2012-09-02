@@ -68,18 +68,5 @@ namespace MediaBrowser.Common.UI
 
             Kernel.Dispose();
         }
-
-        public BitmapImage GetLogoImage()
-        {
-            BitmapImage bitmap = new BitmapImage();
-
-            bitmap.CacheOption = BitmapCacheOption.Default;
-
-            bitmap.BeginInit();
-            bitmap.StreamSource = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Common.Resources.mblogo.png");
-            bitmap.EndInit();
-
-            return bitmap;
-        }
     }
 }

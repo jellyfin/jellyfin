@@ -11,13 +11,14 @@
         WindowState="Normal" 
         FontSize="14">
     <Window.Background>
-        <RadialGradientBrush>
-            <GradientStop Color="#ffffff" Offset="1"/>
-            <GradientStop Color="#f8f8f8"/>
+        <RadialGradientBrush RadiusX=".75" RadiusY=".75">
+            <GradientStop Color="White" Offset="0.0"/>
+            <GradientStop Color="WhiteSmoke" Offset="0.65"/>
+            <GradientStop Color="#cfcfcf" Offset="1.0"/>
         </RadialGradientBrush>
     </Window.Background>
     <Grid Name="splashGrid">
-        <Image x:Name="imgLogo" HorizontalAlignment="Left" VerticalAlignment="Top" Stretch="Uniform" Grid.Row="0" Margin="10 10 10 10"/>
+        <Image x:Name="imgLogo" HorizontalAlignment="Left" VerticalAlignment="Top" Stretch="Uniform" Grid.Row="0" Margin="10 10 10 10" Source="../Resources/Images/mblogoblack.png"/>
         <ProgressBar Name="pbProgress" Minimum="0" Maximum="100" HorizontalAlignment="Left" Height="24" Margin="30,110,30,0" Width="460" Grid.Row="1"/>
         <Label Name="lblProgress" Content="Label" Margin="0,190,10,0" VerticalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="2"/>
     </Grid>

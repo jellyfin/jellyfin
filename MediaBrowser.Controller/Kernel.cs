@@ -249,7 +249,7 @@ namespace MediaBrowser.Controller
             user.Id = Guid.NewGuid();
             list.Add(user);
 
-            user = new User();
+            /*user = new User();
             user.Name = "Test User 4";
             user.Id = Guid.NewGuid();
             list.Add(user);
@@ -262,7 +262,7 @@ namespace MediaBrowser.Controller
             user = new User();
             user.Name = "Test User 6";
             user.Id = Guid.NewGuid();
-            list.Add(user);
+            list.Add(user);*/
             
             return list;
         }
