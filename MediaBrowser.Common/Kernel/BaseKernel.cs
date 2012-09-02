@@ -6,11 +6,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Serialization;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Progress;
 
 namespace MediaBrowser.Common.Kernel
@@ -93,17 +93,17 @@ namespace MediaBrowser.Common.Kernel
         protected void ReloadComposableParts()
         {
             DisposeComposableParts();
-            
+
             // Gets all plugin assemblies by first reading all bytes of the .dll and calling Assembly.Load against that
             // This will prevent the .dll file from getting locked, and allow us to replace it when needed
             IEnumerable<Assembly> pluginAssemblies = Directory.GetFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.AllDirectories).Select(f => Assembly.Load(File.ReadAllBytes((f))));
 
             var catalog = new AggregateCatalog(pluginAssemblies.Select(a => new AssemblyCatalog(a)));
-            
+
             // Include composable parts in the Common assembly 
             // Uncomment this if it's ever needed
             //catalog.Catalogs.Add(new AssemblyCatalog(Assembly.GetExecutingAssembly()));
-            
+
             // Include composable parts in the subclass assembly
             catalog.Catalogs.Add(new AssemblyCatalog(GetType().Assembly));
 
@@ -171,7 +171,7 @@ namespace MediaBrowser.Common.Kernel
                 Configuration = XmlSerializer.DeserializeFromFile<TConfigurationType>(ApplicationPaths.SystemConfigurationFilePath);
             }
 
-            Logger.LoggerInstance.LogSeverity = Configuration.LogSeverity;
+            Logger.LoggerInstance.LogSeverity = Configuration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info;
         }
 
         /// <summary>

@@ -58,8 +58,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration\ServerApplicationPaths.cs" />
-    <Compile Include="Configuration\ServerConfiguration.cs" />
+    <Compile Include="ServerApplicationPaths.cs" />
     <Compile Include="Library\ItemResolveEventArgs.cs" />
     <Compile Include="FFMpeg\FFProbe.cs" />
     <Compile Include="FFMpeg\FFProbeResult.cs" />

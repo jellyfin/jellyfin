@@ -74,8 +74,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration\BaseApplicationConfiguration.cs" />
-    <Compile Include="Configuration\BaseApplicationPaths.cs" />
+    <Compile Include="Kernel\BaseApplicationPaths.cs" />
     <Compile Include="Drawing\DrawingUtils.cs" />
     <Compile Include="Net\Handlers\StaticFileHandler.cs" />
     <Compile Include="Net\MimeTypes.cs" />

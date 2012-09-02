@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Weather;
@@ -568,7 +569,20 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets weather information for the default location as set in configuration
         /// </summary>
-        public async Task<WeatherInfo> GetWeatherInfo()
+        public async Task<ServerConfiguration> GetServerConfigurationAsync()
+        {
+            string url = ApiUrl + "/ServerConfiguration";
+
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ServerConfiguration>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Gets weather information for the default location as set in configuration
+        /// </summary>
+        public async Task<WeatherInfo> GetWeatherInfoAsync()
         {
             string url = ApiUrl + "/weather";
 
@@ -581,7 +595,7 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets weather information for a specific zip code
         /// </summary>
-        public async Task<WeatherInfo> GetWeatherInfo(string zipCode)
+        public async Task<WeatherInfo> GetWeatherInfoAsync(string zipCode)
         {
             string url = ApiUrl + "/weather?zipcode=" + zipCode;
 

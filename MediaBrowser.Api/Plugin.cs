@@ -105,6 +105,10 @@ namespace MediaBrowser.Api
             {
                 return new WeatherHandler();
             }
+            else if (localPath.EndsWith("/api/cerverconfiguration", StringComparison.OrdinalIgnoreCase))
+            {
+                return new ServerConfigurationHandler();
+            }
 
             return null;
         }
