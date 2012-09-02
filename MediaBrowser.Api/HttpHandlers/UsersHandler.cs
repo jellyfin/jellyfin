@@ -7,7 +7,7 @@ using MediaBrowser.Model.DTO;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    class UsersHandler : BaseJsonHandler<IEnumerable<DTOUser>>
+    class UsersHandler : BaseSerializationHandler<IEnumerable<DTOUser>>
     {
         protected override Task<IEnumerable<DTOUser>> GetObjectToSerialize()
         {

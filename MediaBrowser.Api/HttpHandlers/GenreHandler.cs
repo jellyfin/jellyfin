@@ -12,7 +12,7 @@ namespace MediaBrowser.Api.HttpHandlers
     /// <summary>
     /// Gets a single genre
     /// </summary>
-    public class GenreHandler : BaseJsonHandler<IBNItem>
+    public class GenreHandler : BaseSerializationHandler<IBNItem>
     {
         protected override Task<IBNItem> GetObjectToSerialize()
         {
