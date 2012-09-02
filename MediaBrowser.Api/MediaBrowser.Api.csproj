@@ -57,6 +57,7 @@
     <Compile Include="ApiService.cs" />
     <Compile Include="HttpHandlers\AudioHandler.cs" />
     <Compile Include="HttpHandlers\BaseMediaHandler.cs" />
+    <Compile Include="HttpHandlers\DefaultUserHandler.cs" />
     <Compile Include="HttpHandlers\GenreHandler.cs" />
     <Compile Include="HttpHandlers\GenresHandler.cs" />
     <Compile Include="HttpHandlers\ImageHandler.cs" />

@@ -105,9 +105,13 @@ namespace MediaBrowser.Api
             {
                 return new WeatherHandler();
             }
-            else if (localPath.EndsWith("/api/cerverconfiguration", StringComparison.OrdinalIgnoreCase))
+            else if (localPath.EndsWith("/api/serverconfiguration", StringComparison.OrdinalIgnoreCase))
             {
                 return new ServerConfigurationHandler();
+            }
+            else if (localPath.EndsWith("/api/defaultuser", StringComparison.OrdinalIgnoreCase))
+            {
+                return new DefaultUserHandler();
             }
 
             return null;
