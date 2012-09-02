@@ -5,5 +5,13 @@ namespace MediaBrowser.Model.Configuration
     {
         public bool EnableInternetProviders { get; set; }
         public string WeatherZipCode { get; set; }
+        public bool EnableUserProfiles { get; set; }
+
+        public ServerConfiguration()
+            : base()
+        {
+            EnableUserProfiles = true;
+            WeatherZipCode = "02116";
+        }
     }
 }
