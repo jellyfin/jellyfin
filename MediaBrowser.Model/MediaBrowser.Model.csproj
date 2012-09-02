@@ -61,6 +61,7 @@
     <Compile Include="Weather\WeatherForecast.cs" />
     <Compile Include="Weather\WeatherInfo.cs" />
     <Compile Include="Weather\WeatherStatus.cs" />
+    <Compile Include="Weather\WeatherUnits.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="protobuf-net">

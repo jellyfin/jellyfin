@@ -62,7 +62,7 @@ namespace MediaBrowser.Common.Net.Handlers
 
         protected async override Task WriteResponseToOutputStream(Stream stream)
         {
-            await EnsureObjectToSerialize();
+            await EnsureObjectToSerialize().ConfigureAwait(false);
 
             switch (SerializationFormat)
             {

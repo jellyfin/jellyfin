@@ -573,9 +573,9 @@ namespace MediaBrowser.ApiInteraction
         {
             string url = ApiUrl + "/ServerConfiguration";
 
-            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            using (Stream stream = await GetSerializedStreamAsync(url, ApiInteraction.SerializationFormat.Json).ConfigureAwait(false))
             {
-                return DeserializeFromStream<ServerConfiguration>(stream);
+                return DeserializeFromStream<ServerConfiguration>(stream, ApiInteraction.SerializationFormat.Json);
             }
         }
 
@@ -623,18 +623,26 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         private Task<Stream> GetSerializedStreamAsync(string url)
         {
+            return GetSerializedStreamAsync(url, SerializationFormat);
+        }
+
+        /// <summary>
+        /// This is a helper around getting a stream from the server that contains serialized data
+        /// </summary>
+        private Task<Stream> GetSerializedStreamAsync(string url, SerializationFormat serializationFormat)
+        {
             if (url.IndexOf('?') == -1)
             {
-                url += "?dataformat=" + SerializationFormat.ToString().ToLower();
+                url += "?dataformat=" + serializationFormat.ToString().ToLower();
             }
             else
             {
-                url += "&dataformat=" + SerializationFormat.ToString().ToLower();
+                url += "&dataformat=" + serializationFormat.ToString().ToLower();
             }
 
             return GetStreamAsync(url);
         }
-
+        
         private T DeserializeFromStream<T>(Stream stream)
         {
             return DeserializeFromStream<T>(stream, SerializationFormat);
