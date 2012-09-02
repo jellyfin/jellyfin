@@ -41,6 +41,14 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         public HttpServer HttpServer { get; private set; }
 
+        protected virtual string HttpServerUrlPrefix
+        {
+            get
+            {
+                return "http://+:" + Configuration.HttpServerPortNumber + "/mediabrowser/";
+            }
+        }
+
         /// <summary>
         /// Gets the kernel context. The UI kernel will have to override this.
         /// </summary>
@@ -181,7 +189,7 @@ namespace MediaBrowser.Common.Kernel
         {
             DisposeHttpServer();
 
-            HttpServer = new HttpServer("http://+:" + Configuration.HttpServerPortNumber + "/mediabrowser/");
+            HttpServer = new HttpServer(HttpServerUrlPrefix);
         }
 
         /// <summary>

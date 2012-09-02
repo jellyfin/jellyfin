@@ -53,12 +53,18 @@ namespace MediaBrowser.Controller.Weather
         {
             WeatherInfo info = new WeatherInfo();
 
-            if (data.current_condition.Any())
+            if (data.current_condition != null)
             {
-                info.CurrentWeather = data.current_condition.First().ToWeatherStatus();
+                if (data.current_condition.Any())
+                {
+                    info.CurrentWeather = data.current_condition.First().ToWeatherStatus();
+                }
             }
 
-            info.Forecasts = data.weather.Select(w => w.ToWeatherForecast()).ToArray();
+            if (data.weather != null)
+            {
+                info.Forecasts = data.weather.Select(w => w.ToWeatherForecast()).ToArray();
+            }
 
             return info;
         }
