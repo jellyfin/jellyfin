@@ -9,12 +9,12 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Logging;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Weather;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Progress;
 

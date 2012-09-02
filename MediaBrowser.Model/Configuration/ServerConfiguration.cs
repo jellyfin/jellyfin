@@ -1,6 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
-
-namespace MediaBrowser.Controller.Configuration
+﻿
+namespace MediaBrowser.Model.Configuration
 {
     public class ServerConfiguration : BaseApplicationConfiguration
     {

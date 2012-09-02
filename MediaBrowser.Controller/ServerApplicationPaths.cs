@@ -1,7 +1,7 @@
 ﻿using System.IO;
-using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Kernel;
 
-namespace MediaBrowser.Controller.Configuration
+namespace MediaBrowser.Controller
 {
     /// <summary>
     /// Extends BaseApplicationPaths to add paths that are only applicable on the server

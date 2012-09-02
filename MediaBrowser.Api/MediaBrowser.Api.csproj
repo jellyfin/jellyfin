@@ -65,6 +65,7 @@
     <Compile Include="HttpHandlers\PersonHandler.cs" />
     <Compile Include="HttpHandlers\PluginConfigurationHandler.cs" />
     <Compile Include="HttpHandlers\PluginsHandler.cs" />
+    <Compile Include="HttpHandlers\ServerConfigurationHandler.cs" />
     <Compile Include="HttpHandlers\StudioHandler.cs" />
     <Compile Include="HttpHandlers\StudiosHandler.cs" />
     <Compile Include="HttpHandlers\UsersHandler.cs" />

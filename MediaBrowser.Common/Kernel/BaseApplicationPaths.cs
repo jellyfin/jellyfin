@@ -2,7 +2,7 @@
 using System.IO;
 using System.Reflection;
 
-namespace MediaBrowser.Common.Configuration
+namespace MediaBrowser.Common.Kernel
 {
     /// <summary>
     /// Provides a base class to hold common application paths used by both the UI and Server.
