@@ -117,6 +117,10 @@ namespace MediaBrowser.Controller.Xml
                     item.CustomRating = reader.ReadElementContentAsString();
                     break;
 
+                case "CustomPin":
+                    item.CustomPin = reader.ReadElementContentAsString();
+                    break;
+
                 case "Runtime":
                 case "RunningTime":
                     {

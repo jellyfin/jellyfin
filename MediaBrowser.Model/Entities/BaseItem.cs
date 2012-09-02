@@ -30,6 +30,7 @@ namespace MediaBrowser.Model.Entities
         public string OfficialRating { get; set; }
         
         public string CustomRating { get; set; }
+        public string CustomPin { get; set; }
 
         public string Language { get; set; }
         public string Overview { get; set; }
