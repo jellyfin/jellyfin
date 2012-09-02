@@ -79,7 +79,7 @@ namespace MediaBrowser.Common.Kernel
 
             DateTime now = DateTime.Now;
 
-            LogFilePath = Path.Combine(ApplicationPaths.LogDirectoryPath, Assembly.GetExecutingAssembly().GetType().Name + "-" + now.ToString("dMyyyy") + "-" + now.Ticks + ".log");
+            LogFilePath = Path.Combine(ApplicationPaths.LogDirectoryPath, "log-" + now.ToString("dMyyyy") + "-" + now.Ticks + ".log");
 
             FileStream fs = new FileStream(LogFilePath, FileMode.Append, FileAccess.Write, FileShare.Read);
 
