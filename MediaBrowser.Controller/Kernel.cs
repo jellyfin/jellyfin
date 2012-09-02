@@ -14,6 +14,7 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Controller.Weather;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Progress;
 
@@ -24,6 +25,7 @@ namespace MediaBrowser.Controller
         public static Kernel Instance { get; private set; }
 
         public ItemController ItemController { get; private set; }
+        public WeatherClient WeatherClient { get; private set; }
 
         public IEnumerable<User> Users { get; private set; }
         public Folder RootFolder { get; private set; }
@@ -72,6 +74,7 @@ namespace MediaBrowser.Controller
 
             ItemController = new ItemController();
             DirectoryWatchers = new DirectoryWatchers();
+            WeatherClient = new WeatherClient();
 
             ItemController.PreBeginResolvePath += ItemController_PreBeginResolvePath;
             ItemController.BeginResolvePath += ItemController_BeginResolvePath;
@@ -228,7 +231,6 @@ namespace MediaBrowser.Controller
 
             user.Name = "Default User";
             user.Id = Guid.Parse("5d1cf7fce25943b790d140095457a42b");
-            //user.PrimaryImagePath = "D:\\Video\\TV\\Archer (2009)\\folder.jpg";
 
             list.Add(user);
             

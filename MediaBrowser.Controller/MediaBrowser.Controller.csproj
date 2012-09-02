@@ -37,6 +37,8 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="System.Reactive.Core, Version=2.0.20823.0, Culture=neutral, PublicKeyToken=f300afd708cefcd3, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Rx-Core.2.0.20823\lib\Net45\System.Reactive.Core.dll</HintPath>
@@ -77,6 +79,7 @@
     <Compile Include="Resolvers\BaseItemResolver.cs" />
     <Compile Include="Resolvers\FolderResolver.cs" />
     <Compile Include="Resolvers\VideoResolver.cs" />
+    <Compile Include="Weather\WeatherClient.cs" />
     <Compile Include="Xml\BaseItemXmlParser.cs" />
     <Compile Include="Xml\XmlExtensions.cs" />
   </ItemGroup>

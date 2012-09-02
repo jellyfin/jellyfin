@@ -12,7 +12,7 @@ namespace MediaBrowser.Api.HttpHandlers
     /// <summary>
     /// Gets a single Person
     /// </summary>
-    public class PersonHandler : BaseJsonHandler<IBNItem>
+    public class PersonHandler : BaseSerializationHandler<IBNItem>
     {
         protected override Task<IBNItem> GetObjectToSerialize()
         {

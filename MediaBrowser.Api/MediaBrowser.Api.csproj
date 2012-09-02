@@ -69,6 +69,7 @@
     <Compile Include="HttpHandlers\StudiosHandler.cs" />
     <Compile Include="HttpHandlers\UsersHandler.cs" />
     <Compile Include="HttpHandlers\VideoHandler.cs" />
+    <Compile Include="HttpHandlers\WeatherHandler.cs" />
     <Compile Include="HttpHandlers\YearHandler.cs" />
     <Compile Include="HttpHandlers\YearsHandler.cs" />
     <Compile Include="ImageProcessor.cs" />

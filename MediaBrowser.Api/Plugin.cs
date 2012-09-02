@@ -101,6 +101,10 @@ namespace MediaBrowser.Api
             {
                 return new StudioHandler();
             }
+            else if (localPath.EndsWith("/api/weather", StringComparison.OrdinalIgnoreCase))
+            {
+                return new WeatherHandler();
+            }
 
             return null;
         }
