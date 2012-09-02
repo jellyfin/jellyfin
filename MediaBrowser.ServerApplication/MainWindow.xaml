@@ -4,7 +4,7 @@
         xmlns:tb="http://www.hardcodet.net/taskbar"
         Title="MainWindow" Height="350" Width="525" AllowsTransparency="True" Background="Transparent" WindowStyle="None" ShowInTaskbar="False">
     <Grid>
-        <tb:TaskbarIcon Name="MbTaskbarIcon" IconSource="/Icons/Icon.ico" ToolTipText="MediaBrowser Server">
+        <tb:TaskbarIcon Name="MbTaskbarIcon" IconSource="/Resources/Images/Icon.ico" ToolTipText="MediaBrowser Server">
 
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu Background="White">
