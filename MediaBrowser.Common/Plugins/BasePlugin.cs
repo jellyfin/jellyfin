@@ -24,7 +24,7 @@ namespace MediaBrowser.Common.Plugins
             }
         }
 
-        protected override Type ConfigurationType
+        public override Type ConfigurationType
         {
             get { return typeof(TConfigurationType); }
         }
@@ -35,12 +35,12 @@ namespace MediaBrowser.Common.Plugins
     /// </summary>
     public abstract class BasePlugin : IDisposable
     {
-        private IKernel Kernel { get; set; }
+        public IKernel IKernel { get; set; }
 
         /// <summary>
         /// Gets or sets the plugin's current context
         /// </summary>
-        protected KernelContext Context { get { return Kernel.KernelContext; } }
+        protected KernelContext Context { get { return IKernel.KernelContext; } }
 
         /// <summary>
         /// Gets the name of the plugin
@@ -50,7 +50,7 @@ namespace MediaBrowser.Common.Plugins
         /// <summary>
         /// Gets the type of configuration this plugin uses
         /// </summary>
-        protected abstract Type ConfigurationType { get; }
+        public abstract Type ConfigurationType { get; }
 
         /// <summary>
         /// Gets the plugin version
@@ -74,6 +74,8 @@ namespace MediaBrowser.Common.Plugins
             }
         }
 
+        public DateTime ConfigurationDateLastModified { get; private set; }
+
         /// <summary>
         /// Gets the path to the assembly file
         /// </summary>
@@ -81,7 +83,7 @@ namespace MediaBrowser.Common.Plugins
         {
             get
             {
-                return Path.Combine(Kernel.ApplicationPaths.PluginsPath, AssemblyFileName);
+                return Path.Combine(IKernel.ApplicationPaths.PluginsPath, AssemblyFileName);
             }
         }
 
@@ -102,7 +104,7 @@ namespace MediaBrowser.Common.Plugins
         {
             get
             {
-                return Path.Combine(Kernel.ApplicationPaths.PluginConfigurationsPath, ConfigurationFileName);
+                return Path.Combine(IKernel.ApplicationPaths.PluginConfigurationsPath, ConfigurationFileName);
             }
         }
 
@@ -118,7 +120,7 @@ namespace MediaBrowser.Common.Plugins
                 {
                     // Give the folder name the same name as the config file name
                     // We can always make this configurable if/when needed
-                    _DataFolderPath = Path.Combine(Kernel.ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(ConfigurationFileName));
+                    _DataFolderPath = Path.Combine(IKernel.ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(ConfigurationFileName));
 
                     if (!Directory.Exists(_DataFolderPath))
                     {
@@ -154,7 +156,7 @@ namespace MediaBrowser.Common.Plugins
         /// </summary>
         public void Initialize(IKernel kernel)
         {
-            Kernel = kernel;
+            IKernel = kernel;
 
             ReloadConfiguration();
 
@@ -183,12 +185,14 @@ namespace MediaBrowser.Common.Plugins
             if (!File.Exists(ConfigurationFilePath))
             {
                 Configuration = Activator.CreateInstance(ConfigurationType) as BasePluginConfiguration;
+                XmlSerializer.SerializeToFile(Configuration, ConfigurationFilePath);
             }
             else
             {
                 Configuration = XmlSerializer.DeserializeFromFile(ConfigurationType, ConfigurationFilePath) as BasePluginConfiguration;
-                Configuration.DateLastModified = File.GetLastWriteTime(ConfigurationFilePath);
             }
+
+            ConfigurationDateLastModified = File.GetLastWriteTime(ConfigurationFilePath);
         }
     }
 }

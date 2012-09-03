@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace MediaBrowser.Common.Serialization
 {
@@ -18,6 +19,11 @@ namespace MediaBrowser.Common.Serialization
             return ProtoBuf.Serializer.Deserialize<T>(stream);
         }
 
+        public static object DeserializeFromStream(Stream stream, Type type)
+        {
+            throw new NotImplementedException();
+        }
+        
         public static void SerializeToFile<T>(T obj, string file)
         {
             using (Stream stream = File.Open(file, FileMode.Create))

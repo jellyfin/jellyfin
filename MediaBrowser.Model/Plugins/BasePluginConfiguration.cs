@@ -7,9 +7,6 @@ namespace MediaBrowser.Model.Plugins
     {
         public bool Enabled { get; set; }
 
-        [IgnoreDataMember]
-        public DateTime DateLastModified { get; set; }
-
         public BasePluginConfiguration()
         {
             Enabled = true;
