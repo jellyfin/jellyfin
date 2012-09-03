@@ -148,6 +148,12 @@ namespace MediaBrowser.Common.Net
                 return "application/x-mpegURL";
             }
 
+            // Misc
+            else if (ext.EndsWith("dll", StringComparison.OrdinalIgnoreCase))
+            {
+                return "application/x-msdownload";
+            }
+
             throw new InvalidOperationException("Argument not supported: " + path);
         }
     }

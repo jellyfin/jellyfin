@@ -67,6 +67,7 @@
     <Compile Include="HttpHandlers\ItemHandler.cs" />
     <Compile Include="HttpHandlers\ItemListHandler.cs" />
     <Compile Include="HttpHandlers\PersonHandler.cs" />
+    <Compile Include="HttpHandlers\PluginAssemblyHandler.cs" />
     <Compile Include="HttpHandlers\PluginConfigurationHandler.cs" />
     <Compile Include="HttpHandlers\PluginsHandler.cs" />
     <Compile Include="HttpHandlers\ServerConfigurationHandler.cs" />

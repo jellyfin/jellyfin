@@ -23,5 +23,11 @@ namespace MediaBrowser.Model.DTO
 
         [ProtoMember(5)]
         public string Version { get; set; }
+
+        [ProtoMember(6)]
+        public string AssemblyFileName { get; set; }
+
+        [ProtoMember(7)]
+        public string ConfigurationFileName { get; set; }
     }
 }

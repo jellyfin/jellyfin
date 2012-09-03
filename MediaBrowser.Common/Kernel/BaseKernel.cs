@@ -59,21 +59,18 @@ namespace MediaBrowser.Common.Kernel
             ApplicationPaths = new TApplicationPathsType();
         }
 
-        public virtual Task Init(IProgress<TaskProgress> progress)
+        public virtual async Task Init(IProgress<TaskProgress> progress)
         {
-            return Task.Run(() =>
-            {
-                ReloadLogger();
+            ReloadLogger();
 
-                progress.Report(new TaskProgress() { Description = "Loading configuration", PercentComplete = 0 });
-                ReloadConfiguration();
+            progress.Report(new TaskProgress() { Description = "Loading configuration", PercentComplete = 0 });
+            ReloadConfiguration();
 
-                progress.Report(new TaskProgress() { Description = "Starting Http server", PercentComplete = 5 });
-                ReloadHttpServer();
+            progress.Report(new TaskProgress() { Description = "Starting Http server", PercentComplete = 5 });
+            ReloadHttpServer();
 
-                progress.Report(new TaskProgress() { Description = "Loading Plugins", PercentComplete = 10 });
-                ReloadComposableParts();
-            });
+            progress.Report(new TaskProgress() { Description = "Loading Plugins", PercentComplete = 10 });
+            await ReloadComposableParts().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -98,10 +95,25 @@ namespace MediaBrowser.Common.Kernel
         /// Uses MEF to locate plugins
         /// Subclasses can use this to locate types within plugins
         /// </summary>
-        protected void ReloadComposableParts()
+        protected virtual Task ReloadComposableParts()
         {
-            DisposeComposableParts();
+            return Task.Run(() =>
+            {
+                DisposeComposableParts();
 
+                var container = GetCompositionContainer(includeCurrentAssembly: true);
+
+                container.ComposeParts(this);
+
+                OnComposablePartsLoaded();
+
+                container.Catalog.Dispose();
+                container.Dispose();
+            });
+        }
+
+        public CompositionContainer GetCompositionContainer(bool includeCurrentAssembly = false)
+        {
             // Gets all plugin assemblies by first reading all bytes of the .dll and calling Assembly.Load against that
             // This will prevent the .dll file from getting locked, and allow us to replace it when needed
             IEnumerable<Assembly> pluginAssemblies = Directory.GetFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.TopDirectoryOnly).Select(f => Assembly.Load(File.ReadAllBytes((f))));
@@ -112,17 +124,13 @@ namespace MediaBrowser.Common.Kernel
             // Uncomment this if it's ever needed
             //catalog.Catalogs.Add(new AssemblyCatalog(Assembly.GetExecutingAssembly()));
 
-            // Include composable parts in the subclass assembly
-            catalog.Catalogs.Add(new AssemblyCatalog(GetType().Assembly));
+            if (includeCurrentAssembly)
+            {
+                // Include composable parts in the subclass assembly
+                catalog.Catalogs.Add(new AssemblyCatalog(GetType().Assembly));
+            }
 
-            var container = new CompositionContainer(catalog);
-
-            container.ComposeParts(this);
-
-            OnComposablePartsLoaded();
-
-            catalog.Dispose();
-            container.Dispose();
+            return new CompositionContainer(catalog);
         }
 
         /// <summary>

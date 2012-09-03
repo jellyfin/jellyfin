@@ -113,6 +113,10 @@ namespace MediaBrowser.Api
             {
                 return new DefaultUserHandler();
             }
+            else if (localPath.EndsWith("/api/pluginassembly", StringComparison.OrdinalIgnoreCase))
+            {
+                return new PluginAssemblyHandler();
+            }
 
             return null;
         }

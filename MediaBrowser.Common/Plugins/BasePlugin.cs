@@ -64,6 +64,28 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <summary>
+        /// Gets the name the assembly file
+        /// </summary>
+        public string AssemblyFileName
+        {
+            get
+            {
+                return GetType().Assembly.GetName().Name + ".dll";
+            }
+        }
+
+        /// <summary>
+        /// Gets the path to the assembly file
+        /// </summary>
+        public string AssemblyFilePath
+        {
+            get
+            {
+                return Path.Combine(Kernel.ApplicationPaths.PluginsPath, AssemblyFileName);
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the current plugin configuration
         /// </summary>
         public BasePluginConfiguration Configuration { get; protected set; }

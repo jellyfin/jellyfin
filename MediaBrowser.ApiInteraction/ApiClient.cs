@@ -569,7 +569,7 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets a list of plugins installed on the server
         /// </summary>
-        public async Task<PluginInfo[]> GetInstalledPlugins()
+        public async Task<PluginInfo[]> GetInstalledPluginsAsync()
         {
             string url = ApiUrl + "/plugins";
 
@@ -578,7 +578,17 @@ namespace MediaBrowser.ApiInteraction
                 return DeserializeFromStream<PluginInfo[]>(stream);
             }
         }
-        
+
+        /// <summary>
+        /// Gets a list of plugins installed on the server
+        /// </summary>
+        public Task<Stream> GetPluginAssemblyAsync(PluginInfo plugin)
+        {
+            string url = ApiUrl + "/pluginassembly?assemblyfilename=" + plugin.AssemblyFileName;
+
+            return GetStreamAsync(url);
+        }
+
         /// <summary>
         /// Gets weather information for the default location as set in configuration
         /// </summary>
@@ -655,7 +665,7 @@ namespace MediaBrowser.ApiInteraction
 
             return GetStreamAsync(url);
         }
-        
+
         private T DeserializeFromStream<T>(Stream stream)
         {
             return DeserializeFromStream<T>(stream, SerializationFormat);
