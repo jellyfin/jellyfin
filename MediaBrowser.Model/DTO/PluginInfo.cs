@@ -22,6 +22,6 @@ namespace MediaBrowser.Model.DTO
         public DateTime ConfigurationDateLastModified { get; set; }
 
         [ProtoMember(5)]
-        public Version Version { get; set; }
+        public string Version { get; set; }
     }
 }

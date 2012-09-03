@@ -567,6 +567,19 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Gets a list of plugins installed on the server
+        /// </summary>
+        public async Task<PluginInfo[]> GetInstalledPlugins()
+        {
+            string url = ApiUrl + "/plugins";
+
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<PluginInfo[]>(stream);
+            }
+        }
+        
+        /// <summary>
         /// Gets weather information for the default location as set in configuration
         /// </summary>
         public async Task<ServerConfiguration> GetServerConfigurationAsync()
