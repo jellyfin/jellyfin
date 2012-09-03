@@ -18,7 +18,6 @@ namespace MediaBrowser.Api.HttpHandlers
             {
                 return new PluginInfo()
                 {
-                    Path = p.Path,
                     Name = p.Name,
                     Enabled = p.Enabled,
                     DownloadToUI = p.DownloadToUI,

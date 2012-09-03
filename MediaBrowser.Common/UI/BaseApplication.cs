@@ -5,6 +5,8 @@ using System.Windows.Media.Imaging;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Logging;
 using MediaBrowser.Model.Progress;
+using System.Runtime.InteropServices;
+using System.Security;
 
 namespace MediaBrowser.Common.UI
 {

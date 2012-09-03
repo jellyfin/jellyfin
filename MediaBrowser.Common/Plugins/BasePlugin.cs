@@ -35,10 +35,12 @@ namespace MediaBrowser.Common.Plugins
     /// </summary>
     public abstract class BasePlugin : IDisposable
     {
+        private IKernel Kernel { get; set; }
+
         /// <summary>
         /// Gets or sets the plugin's current context
         /// </summary>
-        public KernelContext Context { get; set; }
+        protected KernelContext Context { get { return Kernel.KernelContext; } }
 
         /// <summary>
         /// Gets the name of the plugin
@@ -51,25 +53,58 @@ namespace MediaBrowser.Common.Plugins
         protected abstract Type ConfigurationType { get; }
 
         /// <summary>
-        /// Gets or sets the path to the plugin's folder
+        /// Gets the plugin version
         /// </summary>
-        public string Path { get; set; }
-
-        /// <summary>
-        /// Gets or sets the plugin version
-        /// </summary>
-        public Version Version { get; set; }
+        public Version Version
+        {
+            get
+            {
+                return GetType().Assembly.GetName().Version;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the current plugin configuration
         /// </summary>
         public BasePluginConfiguration Configuration { get; protected set; }
 
-        protected string ConfigurationPath
+        /// <summary>
+        /// Gets the name of the configuration file. Subclasses should override
+        /// </summary>
+        public virtual string ConfigurationFileName { get { return Name + ".xml"; } }
+
+        /// <summary>
+        /// Gets the full path to the configuration file
+        /// </summary>
+        public string ConfigurationFilePath
         {
             get
             {
-                return System.IO.Path.Combine(Path, "config.js");
+                return Path.Combine(Kernel.ApplicationPaths.PluginConfigurationsPath, ConfigurationFileName);
+            }
+        }
+
+        private string _DataFolderPath = null;
+        /// <summary>
+        /// Gets the full path to the data folder, where the plugin can store any miscellaneous files needed
+        /// </summary>
+        public string DataFolderPath
+        {
+            get
+            {
+                if (_DataFolderPath == null)
+                {
+                    // Give the folder name the same name as the config file name
+                    // We can always make this configurable if/when needed
+                    _DataFolderPath = Path.Combine(Kernel.ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(ConfigurationFileName));
+
+                    if (!Directory.Exists(_DataFolderPath))
+                    {
+                        Directory.CreateDirectory(_DataFolderPath);
+                    }
+                }
+
+                return _DataFolderPath;
             }
         }
 
@@ -78,14 +113,6 @@ namespace MediaBrowser.Common.Plugins
             get
             {
                 return Configuration.Enabled;
-            }
-        }
-
-        public DateTime ConfigurationDateLastModified
-        {
-            get
-            {
-                return Configuration.DateLastModified;
             }
         }
 
@@ -103,7 +130,22 @@ namespace MediaBrowser.Common.Plugins
         /// <summary>
         /// Starts the plugin.
         /// </summary>
-        public virtual void Init()
+        public void Initialize(IKernel kernel)
+        {
+            Kernel = kernel;
+
+            ReloadConfiguration();
+
+            if (Enabled)
+            {
+                InitializeInternal();
+            }
+        }
+
+        /// <summary>
+        /// Starts the plugin.
+        /// </summary>
+        protected virtual void InitializeInternal()
         {
         }
 
@@ -116,14 +158,14 @@ namespace MediaBrowser.Common.Plugins
 
         public void ReloadConfiguration()
         {
-            if (!File.Exists(ConfigurationPath))
+            if (!File.Exists(ConfigurationFilePath))
             {
                 Configuration = Activator.CreateInstance(ConfigurationType) as BasePluginConfiguration;
             }
             else
             {
-                Configuration = JsonSerializer.DeserializeFromFile(ConfigurationType, ConfigurationPath) as BasePluginConfiguration;
-                Configuration.DateLastModified = File.GetLastWriteTime(ConfigurationPath);
+                Configuration = JsonSerializer.DeserializeFromFile(ConfigurationType, ConfigurationFilePath) as BasePluginConfiguration;
+                Configuration.DateLastModified = File.GetLastWriteTime(ConfigurationFilePath);
             }
         }
     }

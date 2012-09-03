@@ -16,7 +16,7 @@ namespace MediaBrowser.TV
             get { return "TV"; }
         }
 
-        public override void Init()
+        protected override void InitializeInternal()
         {
             Kernel.Instance.ItemController.PreBeginResolvePath += ItemController_PreBeginResolvePath;
         }
