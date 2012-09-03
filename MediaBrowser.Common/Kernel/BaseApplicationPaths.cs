@@ -47,6 +47,27 @@ namespace MediaBrowser.Common.Kernel
             }
         }
 
+        private string _pluginConfigurationsPath;
+        /// <summary>
+        /// Gets the path to the plugin configurations directory
+        /// </summary>
+        public string PluginConfigurationsPath
+        {
+            get
+            {
+                if (_pluginConfigurationsPath == null)
+                {
+                    _pluginConfigurationsPath = Path.Combine(PluginsPath, "configurations");
+                    if (!Directory.Exists(_pluginConfigurationsPath))
+                    {
+                        Directory.CreateDirectory(_pluginConfigurationsPath);
+                    }
+                }
+
+                return _pluginConfigurationsPath;
+            }
+        }
+
         private string _logDirectoryPath;
         /// <summary>
         /// Gets the path to the log directory

@@ -50,9 +50,9 @@ namespace MediaBrowser.Common.Kernel
         }
 
         /// <summary>
-        /// Gets the kernel context. The UI kernel will have to override this.
+        /// Gets the kernel context. Subclasses will have to override.
         /// </summary>
-        protected KernelContext KernelContext { get { return KernelContext.Server; } }
+        public abstract KernelContext KernelContext { get; }
 
         public BaseKernel()
         {
@@ -104,7 +104,7 @@ namespace MediaBrowser.Common.Kernel
 
             // Gets all plugin assemblies by first reading all bytes of the .dll and calling Assembly.Load against that
             // This will prevent the .dll file from getting locked, and allow us to replace it when needed
-            IEnumerable<Assembly> pluginAssemblies = Directory.GetFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.AllDirectories).Select(f => Assembly.Load(File.ReadAllBytes((f))));
+            IEnumerable<Assembly> pluginAssemblies = Directory.GetFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.TopDirectoryOnly).Select(f => Assembly.Load(File.ReadAllBytes((f))));
 
             var catalog = new AggregateCatalog(pluginAssemblies.Select(a => new AssemblyCatalog(a)));
 
@@ -144,20 +144,7 @@ namespace MediaBrowser.Common.Kernel
         {
             foreach (BasePlugin plugin in Plugins)
             {
-                Assembly assembly = plugin.GetType().Assembly;
-                AssemblyName assemblyName = assembly.GetName();
-
-                plugin.Version = assemblyName.Version;
-                plugin.Path = Path.Combine(ApplicationPaths.PluginsPath, assemblyName.Name);
-
-                plugin.Context = KernelContext;
-
-                plugin.ReloadConfiguration();
-
-                if (plugin.Enabled)
-                {
-                    plugin.Init();
-                }
+                plugin.Initialize(this);
             }
         }
 
@@ -276,10 +263,18 @@ namespace MediaBrowser.Common.Kernel
                 return GetType().Assembly.GetName().Version;
             }
         }
+
+        BaseApplicationPaths IKernel.ApplicationPaths
+        {
+            get { return ApplicationPaths; }
+        }
     }
 
     public interface IKernel
     {
+        BaseApplicationPaths ApplicationPaths { get; }
+        KernelContext KernelContext { get; }
+
         Task Init(IProgress<TaskProgress> progress);
         void Dispose();
     }

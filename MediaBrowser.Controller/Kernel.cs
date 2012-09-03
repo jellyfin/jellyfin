@@ -40,12 +40,17 @@ namespace MediaBrowser.Controller
             }
         }
 
+        public override KernelContext KernelContext
+        {
+            get { return KernelContext.Server; }
+        }
+
         /// <summary>
         /// Gets the list of currently registered metadata prvoiders
         /// </summary>
         [ImportMany(typeof(BaseMetadataProvider))]
         private IEnumerable<BaseMetadataProvider> MetadataProvidersEnumerable { get; set; }
-        
+
         /// <summary>
         /// Once MEF has loaded the resolvers, sort them by priority and store them in this array
         /// Given the sheer number of times they'll be iterated over it'll be faster to loop through an array
@@ -102,7 +107,7 @@ namespace MediaBrowser.Controller
 
             // Sort the resolvers by priority
             EntityResolvers = EntityResolversEnumerable.OrderBy(e => e.Priority).ToArray();
-            
+
             // Sort the providers by priority
             MetadataProviders = MetadataProvidersEnumerable.OrderBy(e => e.Priority).ToArray();
 
@@ -233,7 +238,7 @@ namespace MediaBrowser.Controller
             user.Id = Guid.Parse("5d1cf7fce25943b790d140095457a42b");
 
             list.Add(user);
-            
+
             user = new User();
             user.Name = "Test User 1";
             user.Id = Guid.NewGuid();
@@ -263,7 +268,7 @@ namespace MediaBrowser.Controller
             user.Name = "Test User 6";
             user.Id = Guid.NewGuid();
             list.Add(user);*/
-            
+
             return list;
         }
 

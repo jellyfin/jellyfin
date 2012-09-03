@@ -13,18 +13,15 @@ namespace MediaBrowser.Model.DTO
         public string Name { get; set; }
 
         [ProtoMember(2)]
-        public string Path { get; set; }
-
-        [ProtoMember(3)]
         public bool Enabled { get; set; }
 
-        [ProtoMember(4)]
+        [ProtoMember(3)]
         public bool DownloadToUI { get; set; }
 
-        [ProtoMember(5)]
+        [ProtoMember(4)]
         public DateTime ConfigurationDateLastModified { get; set; }
 
-        [ProtoMember(6)]
+        [ProtoMember(5)]
         public Version Version { get; set; }
     }
 }
