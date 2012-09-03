@@ -22,7 +22,8 @@ namespace MediaBrowser.Api.HttpHandlers
                     Enabled = p.Enabled,
                     DownloadToUI = p.DownloadToUI,
                     Version = p.Version.ToString(),
-                    AssemblyFileName = p.AssemblyFileName
+                    AssemblyFileName = p.AssemblyFileName,
+                    ConfigurationDateLastModified = p.ConfigurationDateLastModified
                 };
             });
 

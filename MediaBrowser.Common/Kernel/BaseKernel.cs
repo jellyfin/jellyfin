@@ -168,6 +168,7 @@ namespace MediaBrowser.Common.Kernel
             if (!File.Exists(ApplicationPaths.SystemConfigurationFilePath))
             {
                 Configuration = new TConfigurationType();
+                XmlSerializer.SerializeToFile(Configuration, ApplicationPaths.SystemConfigurationFilePath);
             }
             else
             {

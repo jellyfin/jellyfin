@@ -52,6 +52,13 @@ namespace MediaBrowser.Common.Serialization
             return ServiceStack.Text.JsonSerializer.DeserializeFromStream<T>(stream);
         }
 
+        public static object DeserializeFromStream(Stream stream, Type type)
+        {
+            Configure();
+
+            return ServiceStack.Text.JsonSerializer.DeserializeFromStream(type, stream);
+        }
+
         private static bool IsConfigured = false;
         private static void Configure()
         {

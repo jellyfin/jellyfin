@@ -590,15 +590,34 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Gets weather information for the default location as set in configuration
+        /// Gets the current server configuration
         /// </summary>
         public async Task<ServerConfiguration> GetServerConfigurationAsync()
         {
             string url = ApiUrl + "/ServerConfiguration";
 
-            using (Stream stream = await GetSerializedStreamAsync(url, ApiInteraction.SerializationFormat.Json).ConfigureAwait(false))
+            // At the moment this can't be retrieved in protobuf format
+            SerializationFormat format = DataSerializer.CanDeserializeJsv ? SerializationFormat.Jsv : ApiInteraction.SerializationFormat.Json;
+
+            using (Stream stream = await GetSerializedStreamAsync(url, format).ConfigureAwait(false))
             {
-                return DeserializeFromStream<ServerConfiguration>(stream, ApiInteraction.SerializationFormat.Json);
+                return DeserializeFromStream<ServerConfiguration>(stream, format);
+            }
+        }
+
+        /// <summary>
+        /// Gets weather information for the default location as set in configuration
+        /// </summary>
+        public async Task<object> GetPluginConfigurationAsync(PluginInfo plugin, Type configurationType)
+        {
+            string url = ApiUrl + "/PluginConfiguration?assemblyfilename=" + plugin.AssemblyFileName;
+
+            // At the moment this can't be retrieved in protobuf format
+            SerializationFormat format = DataSerializer.CanDeserializeJsv ? SerializationFormat.Jsv : ApiInteraction.SerializationFormat.Json;
+
+            using (Stream stream = await GetSerializedStreamAsync(url, format).ConfigureAwait(false))
+            {
+                return DeserializeFromStream(stream, format, configurationType);
             }
         }
 
@@ -683,6 +702,20 @@ namespace MediaBrowser.ApiInteraction
             }
 
             return DataSerializer.DeserializeJsonFromStream<T>(stream);
+        }
+
+        private object DeserializeFromStream(Stream stream, SerializationFormat format, Type type)
+        {
+            if (format == ApiInteraction.SerializationFormat.Protobuf)
+            {
+                return DataSerializer.DeserializeProtobufFromStream(stream, type);
+            }
+            if (format == ApiInteraction.SerializationFormat.Jsv)
+            {
+                return DataSerializer.DeserializeJsvFromStream(stream, type);
+            }
+
+            return DataSerializer.DeserializeJsonFromStream(stream, type);
         }
 
         /// <summary>

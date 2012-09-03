@@ -11,9 +11,9 @@ namespace MediaBrowser.Api.HttpHandlers
     {
         protected override Task<BasePluginConfiguration> GetObjectToSerialize()
         {
-            string pluginName = QueryString["name"];
+            string name = QueryString["assemblyfilename"];
 
-            BasePluginConfiguration config = Kernel.Instance.Plugins.First(p => p.Name.Equals(pluginName, StringComparison.OrdinalIgnoreCase)).Configuration;
+            BasePluginConfiguration config = Kernel.Instance.Plugins.First(p => p.AssemblyFileName.Equals(name, StringComparison.OrdinalIgnoreCase)).Configuration;
 
             return Task.FromResult<BasePluginConfiguration>(config);
         }

@@ -39,6 +39,14 @@ namespace MediaBrowser.Common.Serialization
             }
         }
 
+        public static void SerializeToFile(object obj, string file)
+        {
+            using (FileStream stream = new FileStream(file, FileMode.Create))
+            {
+                ServiceStack.Text.XmlSerializer.SerializeToStream(obj, stream);
+            }
+        }
+        
         public static object DeserializeFromFile(Type type, string file)
         {
             using (Stream stream = File.OpenRead(file))

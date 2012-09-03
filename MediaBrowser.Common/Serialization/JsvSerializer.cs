@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace MediaBrowser.Common.Serialization
 {
@@ -19,11 +20,16 @@ namespace MediaBrowser.Common.Serialization
             return ServiceStack.Text.TypeSerializer.DeserializeFromStream<T>(stream);
         }
 
+        public static object DeserializeFromStream(Stream stream, Type type)
+        {
+            return ServiceStack.Text.TypeSerializer.DeserializeFromStream(type, stream);
+        }
+
         public static void SerializeToFile<T>(T obj, string file)
         {
             using (Stream stream = File.Open(file, FileMode.Create))
             {
-                ServiceStack.Text.TypeSerializer.SerializeToStream<T>(obj, stream);
+                SerializeToStream<T>(obj, stream);
             }
         }
 
@@ -31,7 +37,7 @@ namespace MediaBrowser.Common.Serialization
         {
             using (Stream stream = File.OpenRead(file))
             {
-                return ServiceStack.Text.TypeSerializer.DeserializeFromStream<T>(stream);
+                return DeserializeFromStream<T>(stream);
             }
         }
     }

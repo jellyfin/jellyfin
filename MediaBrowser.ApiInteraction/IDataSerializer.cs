@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace MediaBrowser.ApiInteraction
 {
@@ -10,6 +11,10 @@ namespace MediaBrowser.ApiInteraction
         T DeserializeJsonFromStream<T>(Stream stream);
         T DeserializeJsvFromStream<T>(Stream stream);
         T DeserializeProtobufFromStream<T>(Stream stream);
+
+        object DeserializeJsonFromStream(Stream stream, Type type);
+        object DeserializeJsvFromStream(Stream stream, Type type);
+        object DeserializeProtobufFromStream(Stream stream, Type type);
 
         bool CanDeserializeJsv { get; }
         bool CanDeserializeProtobuf { get; }
