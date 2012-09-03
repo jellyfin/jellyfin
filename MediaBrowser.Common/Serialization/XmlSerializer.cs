@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace MediaBrowser.Common.Serialization
 {
@@ -9,14 +10,14 @@ namespace MediaBrowser.Common.Serialization
     {
         public static void SerializeToStream<T>(T obj, Stream stream)
         {
-            GetSerializer<T>().Serialize(stream, obj);
+            GetSerializer(typeof(T)).Serialize(stream, obj);
         }
 
         public static void SerializeToFile<T>(T obj, string file)
         {
             using (FileStream stream = new FileStream(file, FileMode.Create))
             {
-                GetSerializer<T>().Serialize(stream, obj);
+                GetSerializer(typeof(T)).Serialize(stream, obj);
             }
         }
 
@@ -24,18 +25,26 @@ namespace MediaBrowser.Common.Serialization
         {
             using (Stream stream = File.OpenRead(file))
             {
-                return (T)GetSerializer<T>().Deserialize(stream);
+                return (T)GetSerializer(typeof(T)).Deserialize(stream);
+            }
+        }
+
+        public static object DeserializeFromFile(Type type, string file)
+        {
+            using (Stream stream = File.OpenRead(file))
+            {
+                return GetSerializer(type).Deserialize(stream);
             }
         }
 
         public static T DeserializeFromStream<T>(Stream stream)
         {
-            return (T)GetSerializer<T>().Deserialize(stream);
+            return (T)GetSerializer(typeof(T)).Deserialize(stream);
         }
 
-        private static System.Xml.Serialization.XmlSerializer GetSerializer<T>()
+        private static System.Xml.Serialization.XmlSerializer GetSerializer(Type type)
         {
-            return new System.Xml.Serialization.XmlSerializer(typeof(T));
+            return new System.Xml.Serialization.XmlSerializer(type);
         }
     }
 }

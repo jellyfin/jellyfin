@@ -164,7 +164,7 @@ namespace MediaBrowser.Common.Plugins
             }
             else
             {
-                Configuration = JsonSerializer.DeserializeFromFile(ConfigurationType, ConfigurationFilePath) as BasePluginConfiguration;
+                Configuration = XmlSerializer.DeserializeFromFile(ConfigurationType, ConfigurationFilePath) as BasePluginConfiguration;
                 Configuration.DateLastModified = File.GetLastWriteTime(ConfigurationFilePath);
             }
         }
