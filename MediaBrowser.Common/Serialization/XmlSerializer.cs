@@ -10,14 +10,24 @@ namespace MediaBrowser.Common.Serialization
     {
         public static void SerializeToStream<T>(T obj, Stream stream)
         {
-            GetSerializer(typeof(T)).Serialize(stream, obj);
+            ServiceStack.Text.XmlSerializer.SerializeToStream(obj, stream);
+        }
+
+        public static T DeserializeFromStream<T>(Stream stream)
+        {
+            return ServiceStack.Text.XmlSerializer.DeserializeFromStream<T>(stream);
+        }
+
+        public static object DeserializeFromStream(Type type, Stream stream)
+        {
+            return ServiceStack.Text.XmlSerializer.DeserializeFromStream(type, stream);
         }
 
         public static void SerializeToFile<T>(T obj, string file)
         {
             using (FileStream stream = new FileStream(file, FileMode.Create))
             {
-                GetSerializer(typeof(T)).Serialize(stream, obj);
+                SerializeToStream<T>(obj, stream);
             }
         }
 
@@ -25,7 +35,7 @@ namespace MediaBrowser.Common.Serialization
         {
             using (Stream stream = File.OpenRead(file))
             {
-                return (T)GetSerializer(typeof(T)).Deserialize(stream);
+                return DeserializeFromStream<T>(stream);
             }
         }
 
@@ -33,18 +43,8 @@ namespace MediaBrowser.Common.Serialization
         {
             using (Stream stream = File.OpenRead(file))
             {
-                return GetSerializer(type).Deserialize(stream);
+                return DeserializeFromStream(type, stream);
             }
-        }
-
-        public static T DeserializeFromStream<T>(Stream stream)
-        {
-            return (T)GetSerializer(typeof(T)).Deserialize(stream);
-        }
-
-        private static System.Xml.Serialization.XmlSerializer GetSerializer(Type type)
-        {
-            return new System.Xml.Serialization.XmlSerializer(type);
         }
     }
 }
