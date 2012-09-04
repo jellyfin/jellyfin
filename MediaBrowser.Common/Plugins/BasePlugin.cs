@@ -74,7 +74,22 @@ namespace MediaBrowser.Common.Plugins
             }
         }
 
-        public DateTime ConfigurationDateLastModified { get; private set; }
+        private DateTime? _ConfigurationDateLastModified = null;
+        public DateTime ConfigurationDateLastModified
+        {
+            get
+            {
+                if (_ConfigurationDateLastModified == null)
+                {
+                    if (File.Exists(ConfigurationFilePath))
+                    {
+                        _ConfigurationDateLastModified = File.GetLastWriteTime(ConfigurationFilePath);
+                    }
+                }
+
+                return _ConfigurationDateLastModified ?? DateTime.MinValue;
+            }
+        }
 
         /// <summary>
         /// Gets the path to the assembly file
@@ -192,7 +207,8 @@ namespace MediaBrowser.Common.Plugins
                 Configuration = XmlSerializer.DeserializeFromFile(ConfigurationType, ConfigurationFilePath) as BasePluginConfiguration;
             }
 
-            ConfigurationDateLastModified = File.GetLastWriteTime(ConfigurationFilePath);
+            // Reset this so it will be loaded again next time it's accessed
+            _ConfigurationDateLastModified = null;
         }
     }
 }
