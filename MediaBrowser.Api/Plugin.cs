@@ -15,7 +15,7 @@ namespace MediaBrowser.Api
     {
         public override string Name
         {
-            get { return "WebAPI"; }
+            get { return "Media Browser API"; }
         }
 
         protected override void InitializeInternal()
@@ -37,88 +37,93 @@ namespace MediaBrowser.Api
         {
             string localPath = ctx.Request.Url.LocalPath;
 
-            if (localPath.EndsWith("/api/item", StringComparison.OrdinalIgnoreCase))
+            if (IsUrlMatch("/api/item", localPath))
             {
                 return new ItemHandler();
             }
-            else if (localPath.EndsWith("/api/image", StringComparison.OrdinalIgnoreCase))
+            else if (IsUrlMatch("/api/image", localPath))
             {
                 return new ImageHandler();
             }
-            else if (localPath.EndsWith("/api/users", StringComparison.OrdinalIgnoreCase))
+            else if (IsUrlMatch("/api/users", localPath))
             {
                 return new UsersHandler();
             }
-            else if (localPath.EndsWith("/api/itemlist", StringComparison.OrdinalIgnoreCase))
+            else if (IsUrlMatch("/api/itemlist", localPath))
             {
                 return new ItemListHandler();
             }
-            else if (localPath.EndsWith("/api/genres", StringComparison.OrdinalIgnoreCase))
+            else if (IsUrlMatch("/api/genres", localPath))
             {
                 return new GenresHandler();
             }
-            else if (localPath.EndsWith("/api/years", StringComparison.OrdinalIgnoreCase))
+            else if (IsUrlMatch("/api/years", localPath))
             {
                 return new YearsHandler();
             }
-            else if (localPath.EndsWith("/api/studios", StringComparison.OrdinalIgnoreCase))
+            else if (IsUrlMatch("/api/studios", localPath))
             {
                 return new StudiosHandler();
             }
-            else if (localPath.EndsWith("/api/plugins", StringComparison.OrdinalIgnoreCase))
+            else if (IsUrlMatch("/api/plugins", localPath))
             {
                 return new PluginsHandler();
             }
-            else if (localPath.EndsWith("/api/pluginconfiguration", StringComparison.OrdinalIgnoreCase))
+            else if (IsUrlMatch("/api/pluginconfiguration", localPath))
             {
                 return new PluginConfigurationHandler();
             }
-            else if (localPath.EndsWith("/api/static", StringComparison.OrdinalIgnoreCase))
+            else if (IsUrlMatch("/api/static", localPath))
             {
                 return new StaticFileHandler();
             }
-            else if (localPath.EndsWith("/api/audio", StringComparison.OrdinalIgnoreCase))
+            else if (IsUrlMatch("/api/audio", localPath))
             {
                 return new AudioHandler();
             }
-            else if (localPath.EndsWith("/api/video", StringComparison.OrdinalIgnoreCase))
+            else if (IsUrlMatch("/api/video", localPath))
             {
                 return new VideoHandler();
             }
-            else if (localPath.EndsWith("/api/person", StringComparison.OrdinalIgnoreCase))
+            else if (IsUrlMatch("/api/person", localPath))
             {
                 return new PersonHandler();
             }
-            else if (localPath.EndsWith("/api/genre", StringComparison.OrdinalIgnoreCase))
+            else if (IsUrlMatch("/api/genre", localPath))
             {
                 return new GenreHandler();
             }
-            else if (localPath.EndsWith("/api/year", StringComparison.OrdinalIgnoreCase))
+            else if (IsUrlMatch("/api/year", localPath))
             {
                 return new YearHandler();
             }
-            else if (localPath.EndsWith("/api/studio", StringComparison.OrdinalIgnoreCase))
+            else if (IsUrlMatch("/api/studio", localPath))
             {
                 return new StudioHandler();
             }
-            else if (localPath.EndsWith("/api/weather", StringComparison.OrdinalIgnoreCase))
+            else if (IsUrlMatch("/api/weather", localPath))
             {
                 return new WeatherHandler();
             }
-            else if (localPath.EndsWith("/api/serverconfiguration", StringComparison.OrdinalIgnoreCase))
+            else if (IsUrlMatch("/api/serverconfiguration", localPath))
             {
                 return new ServerConfigurationHandler();
             }
-            else if (localPath.EndsWith("/api/defaultuser", StringComparison.OrdinalIgnoreCase))
+            else if (IsUrlMatch("/api/defaultuser", localPath))
             {
                 return new DefaultUserHandler();
             }
-            else if (localPath.EndsWith("/api/pluginassembly", StringComparison.OrdinalIgnoreCase))
+            else if (IsUrlMatch("/api/pluginassembly", localPath))
             {
                 return new PluginAssemblyHandler();
             }
 
             return null;
+        }
+
+        private bool IsUrlMatch(string url, string localPath)
+        {
+            return localPath.EndsWith(url, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
