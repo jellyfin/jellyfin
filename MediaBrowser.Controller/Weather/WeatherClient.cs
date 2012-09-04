@@ -31,6 +31,11 @@ namespace MediaBrowser.Controller.Weather
 
         public async Task<WeatherInfo> GetWeatherInfoAsync(string zipCode)
         {
+            if (string.IsNullOrWhiteSpace(zipCode))
+            {
+                return null;
+            }
+
             int numDays = 5;
             string apiKey = "24902f60f1231941120109";
 
