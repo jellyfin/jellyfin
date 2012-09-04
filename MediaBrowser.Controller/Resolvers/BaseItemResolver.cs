@@ -88,20 +88,20 @@ namespace MediaBrowser.Controller.Resolvers
 
                 if (childData != null)
                 {
-                    item.DateCreated = childData.Value.CreationTime;
-                    item.DateModified = childData.Value.LastWriteTime;
+                    item.DateCreated = childData.Value.CreationTimeUtc;
+                    item.DateModified = childData.Value.LastWriteTimeUtc;
                 }
                 else
                 {
                     WIN32_FIND_DATA fileData = FileData.GetFileData(item.Path);
-                    item.DateCreated = fileData.CreationTime;
-                    item.DateModified = fileData.LastWriteTime;
+                    item.DateCreated = fileData.CreationTimeUtc;
+                    item.DateModified = fileData.LastWriteTimeUtc;
                 }
             }
             else
             {
-                item.DateCreated = args.FileInfo.CreationTime;
-                item.DateModified = args.FileInfo.LastWriteTime;
+                item.DateCreated = args.FileInfo.CreationTimeUtc;
+                item.DateModified = args.FileInfo.LastWriteTimeUtc;
             }
         }
     }

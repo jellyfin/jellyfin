@@ -167,7 +167,8 @@ namespace MediaBrowser.Common.Net.Handlers
         {
             HttpListenerContext = ctx;
 
-            Logger.LogInfo("Http Server received request at: " + ctx.Request.Url.ToString());
+            string url = ctx.Request.Url.ToString();
+            Logger.LogInfo("Http Server received request at: " + url);
             Logger.LogInfo("Http Headers: " + string.Join(",", ctx.Request.Headers.AllKeys.Select(k => k + "=" + ctx.Request.Headers[k])));
 
             ctx.Response.AddHeader("Access-Control-Allow-Origin", "*");
@@ -195,10 +196,10 @@ namespace MediaBrowser.Common.Net.Handlers
                 {
                     DateTime ifModifiedSince;
 
-                    if (DateTime.TryParse(ctx.Request.Headers["If-Modified-Since"].Replace(" GMT", string.Empty), out ifModifiedSince))
+                    if (DateTime.TryParse(ctx.Request.Headers["If-Modified-Since"], out ifModifiedSince))
                     {
                         // If the cache hasn't expired yet just return a 304
-                        if (IsCacheValid(ifModifiedSince, cacheDuration, lastDateModified))
+                        if (IsCacheValid(ifModifiedSince.ToUniversalTime(), cacheDuration, lastDateModified))
                         {
                             StatusCode = 304;
                         }
@@ -206,6 +207,8 @@ namespace MediaBrowser.Common.Net.Handlers
                 }
 
                 await PrepareResponse().ConfigureAwait(false);
+
+                Logger.LogInfo("Responding with status code {0} for url {1}", StatusCode, url);
 
                 if (IsResponseValid)
                 {
@@ -295,10 +298,12 @@ namespace MediaBrowser.Common.Net.Handlers
 
         private void CacheResponse(HttpListenerResponse response, TimeSpan duration, DateTime? dateModified)
         {
-            DateTime lastModified = dateModified ?? DateTime.Now;
+            DateTime now = DateTime.UtcNow;
+
+            DateTime lastModified = dateModified ?? now;
 
             response.Headers[HttpResponseHeader.CacheControl] = "public, max-age=" + Convert.ToInt32(duration.TotalSeconds);
-            response.Headers[HttpResponseHeader.Expires] = DateTime.Now.Add(duration).ToString("r");
+            response.Headers[HttpResponseHeader.Expires] = now.Add(duration).ToString("r");
             response.Headers[HttpResponseHeader.LastModified] = lastModified.ToString("r");
         }
 
@@ -334,7 +339,7 @@ namespace MediaBrowser.Common.Net.Handlers
 
             DateTime cacheExpirationDate = ifModifiedSince.Add(cacheDuration);
 
-            if (DateTime.Now < cacheExpirationDate)
+            if (DateTime.UtcNow < cacheExpirationDate)
             {
                 return true;
             }
@@ -347,7 +352,7 @@ namespace MediaBrowser.Common.Net.Handlers
         /// </summary>
         private DateTime NormalizeDateForComparison(DateTime date)
         {
-            return new DateTime(date.Year, date.Month, date.Day, date.Hour, date.Minute, date.Second);
+            return new DateTime(date.Year, date.Month, date.Day, date.Hour, date.Minute, date.Second, date.Kind);
         }
 
         protected virtual long? GetTotalContentLength()

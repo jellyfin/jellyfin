@@ -83,7 +83,7 @@ namespace MediaBrowser.Common.Plugins
                 {
                     if (File.Exists(ConfigurationFilePath))
                     {
-                        _ConfigurationDateLastModified = File.GetLastWriteTime(ConfigurationFilePath);
+                        _ConfigurationDateLastModified = File.GetLastWriteTimeUtc(ConfigurationFilePath);
                     }
                 }
 

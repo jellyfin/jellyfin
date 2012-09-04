@@ -131,7 +131,7 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         public bool IsRecentlyAdded(User user)
         {
-            return (DateTime.Now - DateCreated).TotalDays < user.RecentItemDays;
+            return (DateTime.UtcNow - DateCreated).TotalDays < user.RecentItemDays;
         }
 
         public void AddPerson(PersonInfo person)

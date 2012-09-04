@@ -268,8 +268,8 @@ namespace MediaBrowser.Controller.Library
                 Directory.CreateDirectory(path);
             }
 
-            item.DateCreated = Directory.GetCreationTime(path);
-            item.DateModified = Directory.GetLastAccessTime(path);
+            item.DateCreated = Directory.GetCreationTimeUtc(path);
+            item.DateModified = Directory.GetLastWriteTimeUtc(path);
 
             ItemResolveEventArgs args = new ItemResolveEventArgs();
             args.FileInfo = FileData.GetFileData(path);

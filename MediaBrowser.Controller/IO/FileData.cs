@@ -188,7 +188,7 @@ namespace MediaBrowser.Controller.IO
             }
         }
 
-        public DateTime CreationTime
+        public DateTime CreationTimeUtc
         {
             get
             {
@@ -196,7 +196,7 @@ namespace MediaBrowser.Controller.IO
             }
         }
 
-        public DateTime LastAccessTime
+        public DateTime LastAccessTimeUtc
         {
             get
             {
@@ -204,7 +204,7 @@ namespace MediaBrowser.Controller.IO
             }
         }
 
-        public DateTime LastWriteTime
+        public DateTime LastWriteTimeUtc
         {
             get
             {
@@ -216,7 +216,7 @@ namespace MediaBrowser.Controller.IO
         {
             long highBits = filetime.dwHighDateTime;
             highBits = highBits << 32;
-            return DateTime.FromFileTime(highBits + (long)filetime.dwLowDateTime);
+            return DateTime.FromFileTimeUtc(highBits + (long)filetime.dwLowDateTime);
         }
 
         public string Path { get; set; }

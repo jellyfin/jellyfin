@@ -276,7 +276,7 @@ namespace MediaBrowser.Controller.Providers
 
                 if (DateTime.TryParse(val, out i))
                 {
-                    return i;
+                    return i.ToUniversalTime();
                 }
             }
 

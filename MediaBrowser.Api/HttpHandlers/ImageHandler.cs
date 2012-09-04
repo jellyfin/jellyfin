@@ -136,7 +136,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 return null;
             }
 
-            return File.GetLastWriteTime(await GetImagePath().ConfigureAwait(false));
+            return File.GetLastWriteTimeUtc(await GetImagePath().ConfigureAwait(false));
         }
 
         private int? Height
