@@ -35,11 +35,11 @@ namespace MediaBrowser.Common.UI
 
             try
             {
-                DateTime now = DateTime.Now;
+                DateTime now = DateTime.UtcNow;
 
                 await Kernel.Init(progress);
 
-                Logger.LogInfo("Kernel.Init completed in {0} seconds.", (DateTime.Now - now).TotalSeconds);
+                Logger.LogInfo("Kernel.Init completed in {0} seconds.", (DateTime.UtcNow - now).TotalSeconds);
                 splash.Close();
 
                 this.ShutdownMode = System.Windows.ShutdownMode.OnLastWindowClose;

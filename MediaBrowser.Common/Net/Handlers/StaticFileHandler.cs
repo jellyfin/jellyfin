@@ -108,7 +108,7 @@ namespace MediaBrowser.Common.Net.Handlers
 
             if (SourceStream != null)
             {
-                value = File.GetLastWriteTime(Path);
+                value = File.GetLastWriteTimeUtc(Path);
             }
 
             return Task.FromResult<DateTime?>(value);

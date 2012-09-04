@@ -45,7 +45,7 @@ namespace MediaBrowser.Controller.Xml
                     DateTime added;
                     if (DateTime.TryParse(reader.ReadElementContentAsString() ?? string.Empty, out added))
                     {
-                        item.DateCreated = added;
+                        item.DateCreated = added.ToUniversalTime();
                     }
                     break;
 
@@ -232,7 +232,7 @@ namespace MediaBrowser.Controller.Xml
 
                             if (DateTime.TryParse(firstAired, out airDate) && airDate.Year > 1850)
                             {
-                                item.PremiereDate = airDate;
+                                item.PremiereDate = airDate.ToUniversalTime();
                                 item.ProductionYear = airDate.Year;
                             }
                         }
