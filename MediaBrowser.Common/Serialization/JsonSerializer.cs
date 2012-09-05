@@ -64,9 +64,9 @@ namespace MediaBrowser.Common.Serialization
         {
             if (!IsConfigured)
             {
+                ServiceStack.Text.JsConfig.DateHandler = ServiceStack.Text.JsonDateHandler.ISO8601;
                 ServiceStack.Text.JsConfig.ExcludeTypeInfo = true;
                 ServiceStack.Text.JsConfig.IncludeNullValues = false;
-
                 IsConfigured = true;
             }
         }
