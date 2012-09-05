@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>precompile</name>
+    </assembly>
+    <members>
+        <member name="T:ProtoBuf.Precompile.PreCompileContext">
+            <summary>
+            Defines the rules for a precompilation operation
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Precompile.PreCompileContext.SanityCheck">
+            <summary>
+            Check the context for obvious errrs
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Precompile.PreCompileContext.Execute">
+            <summary>
+            Perform the precompilation operation
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Precompile.PreCompileContext.GetUsage">
+            <summary>
+            Return the syntax guide for the utility
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Precompile.PreCompileContext.Framework">
+            <summary>
+            The target framework to use
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Precompile.PreCompileContext.ProbePaths">
+            <summary>
+            Locations to check for referenced assemblies
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Precompile.PreCompileContext.Inputs">
+            <summary>
+            The paths for assemblies to process
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Precompile.PreCompileContext.TypeName">
+            <summary>
+            The type name of the serializer to generate
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Precompile.PreCompileContext.AssemblyName">
+            <summary>
+            The name of the assembly to generate
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Precompile.PreCompileContext.Help">
+            <summary>
+            Show help
+            </summary>
+        </member>
+        <member name="T:ProtoBuf.Precompile.CommandLineAttribute">
+            <summary>
+            Defines a mapping from command-line attributes to properties
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Precompile.CommandLineAttribute.TryParse``1(System.String[],``0@)">
+            <summary>
+            Attempt to parse the incoming command-line switches, matching by prefix
+            onto properties of the specified type
+            </summary>
+        </member>
+        <member name="M:ProtoBuf.Precompile.CommandLineAttribute.#ctor(System.String)">
+            <summary>
+            Create a new CommandLineAttribute object for the given prefix
+            </summary>
+        </member>
+        <member name="P:ProtoBuf.Precompile.CommandLineAttribute.Prefix">
+            <summary>
+            The prefix to recognise this command-line switch
+            </summary>
+        </member>
+    </members>
+</doc>

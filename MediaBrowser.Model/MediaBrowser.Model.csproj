@@ -65,7 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="protobuf-net">
-      <HintPath>..\packages\protobuf-net.2.0.0.580\lib\sl4\protobuf-net.dll</HintPath>
+      <HintPath>..\protobuf-net\Full\portable\protobuf-net.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />

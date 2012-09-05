@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Model", "MediaBrowser.Model\MediaBrowser.Model.csproj", "{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.ApiInteraction", "MediaBrowser.ApiInteraction\MediaBrowser.ApiInteraction.csproj", "{921C0F64-FDA7-4E9F-9E73-0CB0EEDB2422}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{F0E0E64C-2A6F-4E35-9533-D53AC07C2CD1}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\packages.config = .nuget\packages.config
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.ApiInteraction.Metro", "MediaBrowser.ApiInteraction.Metro\MediaBrowser.ApiInteraction.Metro.csproj", "{94CEA07A-307C-4663-AA43-7BD852808574}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{921C0F64-FDA7-4E9F-9E73-0CB0EEDB2422}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{921C0F64-FDA7-4E9F-9E73-0CB0EEDB2422}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{921C0F64-FDA7-4E9F-9E73-0CB0EEDB2422}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{921C0F64-FDA7-4E9F-9E73-0CB0EEDB2422}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94CEA07A-307C-4663-AA43-7BD852808574}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94CEA07A-307C-4663-AA43-7BD852808574}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94CEA07A-307C-4663-AA43-7BD852808574}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94CEA07A-307C-4663-AA43-7BD852808574}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

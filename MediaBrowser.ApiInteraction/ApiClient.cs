@@ -18,6 +18,8 @@ namespace MediaBrowser.ApiInteraction
             handler.AutomaticDecompression = DecompressionMethods.Deflate;
 
             HttpClient = new HttpClient(handler);
+
+            DataSerializer.Configure();
         }
 
         /// <summary>
@@ -48,24 +50,11 @@ namespace MediaBrowser.ApiInteraction
         {
             get
             {
-                // First try Protobuf since it has the best performance
-                if (DataSerializer.CanDeserializeProtobuf)
-                {
-                    return ApiInteraction.SerializationFormat.Protobuf;
-                }
-
-                // Next best is jsv
-                if (DataSerializer.CanDeserializeJsv)
-                {
-                    return ApiInteraction.SerializationFormat.Jsv;
-                }
-
-                return ApiInteraction.SerializationFormat.Json;
+                return ApiInteraction.SerializationFormat.Jsv;
             }
         }
 
         public HttpClient HttpClient { get; private set; }
-        public IDataSerializer DataSerializer { get; set; }
 
         /// <summary>
         /// Gets an image url that can be used to download an image from the api
@@ -597,7 +586,7 @@ namespace MediaBrowser.ApiInteraction
             string url = ApiUrl + "/ServerConfiguration";
 
             // At the moment this can't be retrieved in protobuf format
-            SerializationFormat format = DataSerializer.CanDeserializeJsv ? SerializationFormat.Jsv : ApiInteraction.SerializationFormat.Json;
+            SerializationFormat format = SerializationFormat.Jsv;
 
             using (Stream stream = await GetSerializedStreamAsync(url, format).ConfigureAwait(false))
             {
@@ -613,7 +602,7 @@ namespace MediaBrowser.ApiInteraction
             string url = ApiUrl + "/PluginConfiguration?assemblyfilename=" + plugin.AssemblyFileName;
 
             // At the moment this can't be retrieved in protobuf format
-            SerializationFormat format = DataSerializer.CanDeserializeJsv ? SerializationFormat.Jsv : ApiInteraction.SerializationFormat.Json;
+            SerializationFormat format = SerializationFormat.Jsv;
 
             using (Stream stream = await GetSerializedStreamAsync(url, format).ConfigureAwait(false))
             {
@@ -708,7 +697,7 @@ namespace MediaBrowser.ApiInteraction
         {
             if (format == ApiInteraction.SerializationFormat.Protobuf)
             {
-                return DataSerializer.DeserializeProtobufFromStream(stream, type);
+                throw new NotImplementedException();
             }
             if (format == ApiInteraction.SerializationFormat.Jsv)
             {
@@ -730,12 +719,5 @@ namespace MediaBrowser.ApiInteraction
         {
             HttpClient.Dispose();
         }
-    }
-
-    public enum SerializationFormat
-    {
-        Json,
-        Jsv,
-        Protobuf
     }
 }

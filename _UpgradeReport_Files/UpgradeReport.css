@@ -1,0 +1,118 @@
+﻿/* Body style, for the entire document */
+body
+{
+    background: #F3F3F4;
+    color: #1E1E1F;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    padding: 0;
+    margin: 0;
+}
+
+/* Header1 style, used for the main title */
+h1
+{
+    padding: 10px 0px 10px 10px;
+    font-size: 21pt;
+    background-color: #E2E2E2;
+    border-bottom: 1px #C1C1C2 solid; 
+    color: #201F20;
+    margin: 0;
+    font-weight: normal;
+}
+
+/* Header2 style, used for "Overview" and other sections */
+h2
+{
+    font-size: 18pt;
+    font-weight: normal;
+    padding: 15px 0 5px 0;
+    margin: 0;
+}
+
+/* Header3 style, used for sub-sections, such as project name */
+h3
+{
+    font-weight: normal;
+    font-size: 15pt;
+    margin: 0;
+    padding: 15px 0 5px 0;
+    background-color: transparent;
+}
+
+/* Color all hyperlinks one color */
+a
+{
+    color: #1382CE;
+}
+
+/* Table styles */ 
+table
+{
+    border-spacing: 0 0;
+    border-collapse: collapse;
+    font-size: 10pt;
+}
+
+table th
+{
+    background: #E7E7E8;
+    text-align: left;
+    text-decoration: none;
+    font-weight: normal;
+    padding: 3px 6px 3px 6px;
+}
+
+table td
+{
+    vertical-align: top;
+    padding: 3px 6px 5px 5px;
+    margin: 0px;
+    border: 1px solid #E7E7E8;
+    background: #F7F7F8;
+}
+
+/* Local link is a style for hyperlinks that link to file:/// content, there are lots so color them as 'normal' text until the user mouse overs */
+.localLink
+{
+    color: #1E1E1F;
+    background: #EEEEED;
+    text-decoration: none;
+}
+
+.localLink:hover
+{
+    color: #1382CE;
+    background: #FFFF99;
+    text-decoration: none;
+}
+
+/* Center text, used in the over views cells that contain message level counts */ 
+.textCentered
+{
+    text-align: center;
+}
+
+/* The message cells in message tables should take up all avaliable space */
+.messageCell
+{
+    width: 100%;
+}
+
+/* Padding around the content after the h1 */ 
+#content 
+{
+	padding: 0px 12px 12px 12px; 
+}
+
+/* The overview table expands to width, with a max width of 97% */ 
+#overview table
+{
+    width: auto;
+    max-width: 75%; 
+}
+
+/* The messages tables are always 97% width */
+#messages table
+{
+    width: 97%;
+}
