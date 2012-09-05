@@ -35,12 +35,12 @@ namespace MediaBrowser.Common.Plugins
     /// </summary>
     public abstract class BasePlugin : IDisposable
     {
-        public IKernel IKernel { get; set; }
+        private IKernel Kernel { get; set; }
 
         /// <summary>
         /// Gets or sets the plugin's current context
         /// </summary>
-        protected KernelContext Context { get { return IKernel.KernelContext; } }
+        protected KernelContext Context { get { return Kernel.KernelContext; } }
 
         /// <summary>
         /// Gets the name of the plugin
@@ -98,7 +98,7 @@ namespace MediaBrowser.Common.Plugins
         {
             get
             {
-                return Path.Combine(IKernel.ApplicationPaths.PluginsPath, AssemblyFileName);
+                return Path.Combine(Kernel.ApplicationPaths.PluginsPath, AssemblyFileName);
             }
         }
 
@@ -119,7 +119,7 @@ namespace MediaBrowser.Common.Plugins
         {
             get
             {
-                return Path.Combine(IKernel.ApplicationPaths.PluginConfigurationsPath, ConfigurationFileName);
+                return Path.Combine(Kernel.ApplicationPaths.PluginConfigurationsPath, ConfigurationFileName);
             }
         }
 
@@ -135,7 +135,7 @@ namespace MediaBrowser.Common.Plugins
                 {
                     // Give the folder name the same name as the config file name
                     // We can always make this configurable if/when needed
-                    _DataFolderPath = Path.Combine(IKernel.ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(ConfigurationFileName));
+                    _DataFolderPath = Path.Combine(Kernel.ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(ConfigurationFileName));
 
                     if (!Directory.Exists(_DataFolderPath))
                     {
@@ -166,18 +166,26 @@ namespace MediaBrowser.Common.Plugins
             }
         }
 
+        public void Initialize(IKernel kernel)
+        {
+            Initialize(kernel, true);
+        }
+
         /// <summary>
         /// Starts the plugin.
         /// </summary>
-        public void Initialize(IKernel kernel)
+        public void Initialize(IKernel kernel, bool loadFeatures)
         {
-            IKernel = kernel;
+            Kernel = kernel;
 
-            ReloadConfiguration();
-
-            if (Enabled)
+            if (loadFeatures)
             {
-                InitializeInternal();
+                ReloadConfiguration();
+
+                if (Enabled)
+                {
+                    InitializeInternal();
+                }
             }
         }
 
