@@ -49,7 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="protobuf-net">
-      <HintPath>..\protobuf-net\Full\netcore45\protobuf-net.dll</HintPath>
+      <HintPath>..\protobuf-net\Full\portable\protobuf-net.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\packages\ServiceStack.Text.3.9.5\lib\sl5\ServiceStack.Text.dll</HintPath>
