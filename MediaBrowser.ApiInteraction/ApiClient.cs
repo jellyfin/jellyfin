@@ -657,7 +657,9 @@ namespace MediaBrowser.ApiInteraction
             string url = ApiUrl + "/UserAuthentication?userId=" + userId;
             url += "&dataformat=" + SerializationFormat.ToString();
 
-            HttpContent content = new StringContent("password=" + password, Encoding.UTF8, "application/x-www-form-urlencoded");
+            string postContent = string.Format("userid={0}&password={1}", userId, password);
+
+            HttpContent content = new StringContent(postContent, Encoding.UTF8, "application/x-www-form-urlencoded");
 
             HttpResponseMessage msg = await HttpClient.PostAsync(url, content).ConfigureAwait(false);
 
