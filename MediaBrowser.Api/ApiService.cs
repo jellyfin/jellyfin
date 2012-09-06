@@ -293,7 +293,9 @@ namespace MediaBrowser.Api
                 Id = user.Id,
                 Name = user.Name,
                 HasImage = !string.IsNullOrEmpty(user.PrimaryImagePath),
-                HasPassword = !string.IsNullOrEmpty(user.Password)
+                HasPassword = !string.IsNullOrEmpty(user.Password),
+                LastActivityDate = user.LastActivityDate,
+                LastLoginDate = user.LastLoginDate
             };
         }
     }

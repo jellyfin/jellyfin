@@ -17,5 +17,11 @@ namespace MediaBrowser.Model.DTO
 
         [ProtoMember(4)]
         public bool HasPassword { get; set; }
+
+        [ProtoMember(5)]
+        public DateTime? LastLoginDate { get; set; }
+
+        [ProtoMember(6)]
+        public DateTime? LastActivityDate { get; set; }
     }
 }

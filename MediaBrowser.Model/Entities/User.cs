@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace MediaBrowser.Model.Entities
 {
     public class User : BaseEntity
@@ -13,5 +14,8 @@ namespace MediaBrowser.Model.Entities
         {
             RecentItemDays = 14;
         }
+
+        public DateTime? LastLoginDate { get; set; }
+        public DateTime? LastActivityDate { get; set; }
     }
 }
