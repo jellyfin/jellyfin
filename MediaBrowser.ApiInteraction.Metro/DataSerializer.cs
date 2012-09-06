@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
+using Newtonsoft.Json;
 using ProtoBuf;
-using ServiceStack.Text;
 
 namespace MediaBrowser.ApiInteraction
 {
@@ -15,10 +15,16 @@ namespace MediaBrowser.ApiInteraction
             }
             if (format == ApiInteraction.SerializationFormats.Jsv)
             {
-                return TypeSerializer.DeserializeFromStream<T>(stream);
+                throw new NotImplementedException();
             }
 
-            return JsonSerializer.DeserializeFromStream<T>(stream);
+            using (StreamReader streamReader = new StreamReader(stream))
+            {
+                using (JsonReader jsonReader = new JsonTextReader(streamReader))
+                {
+                    return JsonSerializer.Create(new JsonSerializerSettings()).Deserialize<T>(jsonReader);
+                }
+            }
         }
 
         public static object DeserializeFromStream(Stream stream, SerializationFormats format, Type type)
@@ -29,17 +35,20 @@ namespace MediaBrowser.ApiInteraction
             }
             if (format == ApiInteraction.SerializationFormats.Jsv)
             {
-                return TypeSerializer.DeserializeFromStream(type, stream);
+                throw new NotImplementedException();
             }
 
-            return JsonSerializer.DeserializeFromStream(type, stream);
+            using (StreamReader streamReader = new StreamReader(stream))
+            {
+                using (JsonReader jsonReader = new JsonTextReader(streamReader))
+                {
+                    return JsonSerializer.Create(new JsonSerializerSettings()).Deserialize(jsonReader, type);
+                }
+            }
         }
 
         public static void Configure()
         {
-            JsConfig.DateHandler = ServiceStack.Text.JsonDateHandler.ISO8601;
-            JsConfig.ExcludeTypeInfo = true;
-            JsConfig.IncludeNullValues = false;
         }
 
         public static bool CanDeSerializeJsv
