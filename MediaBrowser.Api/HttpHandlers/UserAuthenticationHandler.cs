@@ -12,7 +12,7 @@ namespace MediaBrowser.Api.HttpHandlers
     {
         protected override async Task<AuthenticationResult> GetObjectToSerialize()
         {
-            Guid userId = Guid.Parse(await GetFormValue("userId").ConfigureAwait(false));
+            Guid userId = Guid.Parse(await GetFormValue("userid").ConfigureAwait(false));
             User user = Kernel.Instance.Users.First(u => u.Id == userId);
 
             string password = await GetFormValue("password").ConfigureAwait(false);

@@ -654,9 +654,9 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         public async Task<AuthenticationResult> AuthenticateUser(Guid userId, string password)
         {
-            string url = ApiUrl + "/UserAuthentication?userId=" + userId;
-            url += "&dataformat=" + SerializationFormat.ToString();
+            string url = ApiUrl + "/UserAuthentication?dataformat=" + SerializationFormat.ToString();
 
+            // Create the post body
             string postContent = string.Format("userid={0}&password={1}", userId, password);
 
             HttpContent content = new StringContent(postContent, Encoding.UTF8, "application/x-www-form-urlencoded");
