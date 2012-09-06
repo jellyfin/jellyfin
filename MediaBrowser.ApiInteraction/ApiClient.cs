@@ -45,11 +45,11 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets the data format to request from the server
         /// </summary>
-        private SerializationFormat SerializationFormat
+        private SerializationFormats SerializationFormat
         {
             get
             {
-                return ApiInteraction.SerializationFormat.Protobuf;
+                return ApiInteraction.SerializationFormats.Protobuf;
             }
         }
 
@@ -585,11 +585,11 @@ namespace MediaBrowser.ApiInteraction
             string url = ApiUrl + "/ServerConfiguration";
 
             // At the moment this can't be retrieved in protobuf format
-            SerializationFormat format = SerializationFormat.Jsv;
+            SerializationFormats format = DataSerializer.CanDeSerializeJsv ? SerializationFormats.Jsv : SerializationFormats.Json;
 
             using (Stream stream = await GetSerializedStreamAsync(url, format).ConfigureAwait(false))
             {
-                return DeserializeFromStream<ServerConfiguration>(stream, format);
+                return DataSerializer.DeserializeFromStream<ServerConfiguration>(stream, format);
             }
         }
 
@@ -601,11 +601,11 @@ namespace MediaBrowser.ApiInteraction
             string url = ApiUrl + "/PluginConfiguration?assemblyfilename=" + plugin.AssemblyFileName;
 
             // At the moment this can't be retrieved in protobuf format
-            SerializationFormat format = SerializationFormat.Jsv;
+            SerializationFormats format = DataSerializer.CanDeSerializeJsv ? SerializationFormats.Jsv : SerializationFormats.Json;
 
             using (Stream stream = await GetSerializedStreamAsync(url, format).ConfigureAwait(false))
             {
-                return DeserializeFromStream(stream, format, configurationType);
+                return DataSerializer.DeserializeFromStream(stream, format, configurationType);
             }
         }
 
@@ -659,7 +659,7 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// This is a helper around getting a stream from the server that contains serialized data
         /// </summary>
-        private Task<Stream> GetSerializedStreamAsync(string url, SerializationFormat serializationFormat)
+        private Task<Stream> GetSerializedStreamAsync(string url, SerializationFormats serializationFormat)
         {
             if (url.IndexOf('?') == -1)
             {
@@ -675,35 +675,7 @@ namespace MediaBrowser.ApiInteraction
 
         private T DeserializeFromStream<T>(Stream stream)
         {
-            return DeserializeFromStream<T>(stream, SerializationFormat);
-        }
-
-        private T DeserializeFromStream<T>(Stream stream, SerializationFormat format)
-        {
-            if (format == ApiInteraction.SerializationFormat.Protobuf)
-            {
-                return DataSerializer.DeserializeProtobufFromStream<T>(stream);
-            }
-            if (format == ApiInteraction.SerializationFormat.Jsv)
-            {
-                return DataSerializer.DeserializeJsvFromStream<T>(stream);
-            }
-
-            return DataSerializer.DeserializeJsonFromStream<T>(stream);
-        }
-
-        private object DeserializeFromStream(Stream stream, SerializationFormat format, Type type)
-        {
-            if (format == ApiInteraction.SerializationFormat.Protobuf)
-            {
-                throw new NotImplementedException();
-            }
-            if (format == ApiInteraction.SerializationFormat.Jsv)
-            {
-                return DataSerializer.DeserializeJsvFromStream(stream, type);
-            }
-
-            return DataSerializer.DeserializeJsonFromStream(stream, type);
+            return DataSerializer.DeserializeFromStream<T>(stream, SerializationFormat);
         }
 
         /// <summary>

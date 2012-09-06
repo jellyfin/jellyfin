@@ -7,29 +7,32 @@ namespace MediaBrowser.ApiInteraction
 {
     public static class DataSerializer
     {
-        public static T DeserializeJsonFromStream<T>(Stream stream)
+        public static T DeserializeFromStream<T>(Stream stream, SerializationFormats format)
         {
+            if (format == ApiInteraction.SerializationFormats.Protobuf)
+            {
+                return Serializer.Deserialize<T>(stream);
+            }
+            if (format == ApiInteraction.SerializationFormats.Jsv)
+            {
+                return TypeSerializer.DeserializeFromStream<T>(stream);
+            }
+
             return JsonSerializer.DeserializeFromStream<T>(stream);
         }
 
-        public static T DeserializeJsvFromStream<T>(Stream stream)
+        public static object DeserializeFromStream(Stream stream, SerializationFormats format, Type type)
         {
-            return TypeSerializer.DeserializeFromStream<T>(stream);
-        }
+            if (format == ApiInteraction.SerializationFormats.Protobuf)
+            {
+                throw new NotImplementedException();
+            }
+            if (format == ApiInteraction.SerializationFormats.Jsv)
+            {
+                return TypeSerializer.DeserializeFromStream(type, stream);
+            }
 
-        public static object DeserializeJsvFromStream(Stream stream, Type type)
-        {
-            return TypeSerializer.DeserializeFromStream(type, stream);
-        }
-
-        public static object DeserializeJsonFromStream(Stream stream, Type type)
-        {
             return JsonSerializer.DeserializeFromStream(type, stream);
-        }
-        
-        public static T DeserializeProtobufFromStream<T>(Stream stream)
-        {
-            return Serializer.Deserialize<T>(stream);
         }
 
         public static void Configure()
@@ -38,12 +41,13 @@ namespace MediaBrowser.ApiInteraction
             JsConfig.ExcludeTypeInfo = true;
             JsConfig.IncludeNullValues = false;
         }
-    }
 
-    public enum SerializationFormat
-    {
-        Json,
-        Jsv,
-        Protobuf
+        public static bool CanDeSerializeJsv
+        {
+            get
+            {
+                return true;
+            }
+        }
     }
 }

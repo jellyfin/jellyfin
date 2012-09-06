@@ -45,6 +45,9 @@
     <Compile Include="..\MediaBrowser.ApiInteraction\DataSerializer.cs">
       <Link>DataSerializer.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\SerializationFormats.cs">
+      <Link>SerializationFormats.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

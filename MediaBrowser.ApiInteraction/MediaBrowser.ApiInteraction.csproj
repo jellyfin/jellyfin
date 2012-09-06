@@ -49,6 +49,7 @@
     <Compile Include="ApiClient.cs" />
     <Compile Include="DataSerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SerializationFormats.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
