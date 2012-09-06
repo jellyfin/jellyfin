@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -50,7 +49,7 @@ namespace MediaBrowser.ApiInteraction
         {
             get
             {
-                return ApiInteraction.SerializationFormat.Jsv;
+                return ApiInteraction.SerializationFormat.Protobuf;
             }
         }
 
@@ -306,7 +305,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
         /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
         /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
-        public IEnumerable<string> GetBackdropImageUrls(DTOBaseItem item, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
+        public string[] GetBackdropImageUrls(DTOBaseItem item, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
         {
             Guid? backdropItemId = null;
             int backdropCount = 0;
@@ -327,11 +326,11 @@ namespace MediaBrowser.ApiInteraction
                 return new string[] { };
             }
 
-            List<string> files = new List<string>();
+            string[] files = new string[backdropCount];
 
             for (int i = 0; i < backdropCount; i++)
             {
-                files.Add(GetImageUrl(backdropItemId.Value, ImageType.Backdrop, i, width, height, maxWidth, maxHeight, quality));
+                files[i] = GetImageUrl(backdropItemId.Value, ImageType.Backdrop, i, width, height, maxWidth, maxHeight, quality);
             }
 
             return files;
@@ -387,7 +386,7 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets all Users
         /// </summary>
-        public async Task<IEnumerable<DTOUser>> GetAllUsersAsync()
+        public async Task<DTOUser[]> GetAllUsersAsync()
         {
             string url = ApiUrl + "/users";
 
@@ -400,7 +399,7 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets all Genres
         /// </summary>
-        public async Task<IEnumerable<IBNItem>> GetAllGenresAsync(Guid userId)
+        public async Task<IBNItem[]> GetAllGenresAsync(Guid userId)
         {
             string url = ApiUrl + "/genres?userId=" + userId.ToString();
 
@@ -413,7 +412,7 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets all Years
         /// </summary>
-        public async Task<IEnumerable<IBNItem>> GetAllYearsAsync(Guid userId)
+        public async Task<IBNItem[]> GetAllYearsAsync(Guid userId)
         {
             string url = ApiUrl + "/years?userId=" + userId.ToString();
 
@@ -426,7 +425,7 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets all items that contain a given Year
         /// </summary>
-        public async Task<IEnumerable<DTOBaseItem>> GetItemsWithYearAsync(string name, Guid userId)
+        public async Task<DTOBaseItem[]> GetItemsWithYearAsync(string name, Guid userId)
         {
             string url = ApiUrl + "/itemlist?listtype=itemswithyear&userId=" + userId.ToString() + "&name=" + name;
 
@@ -439,7 +438,7 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets all items that contain a given Genre
         /// </summary>
-        public async Task<IEnumerable<DTOBaseItem>> GetItemsWithGenreAsync(string name, Guid userId)
+        public async Task<DTOBaseItem[]> GetItemsWithGenreAsync(string name, Guid userId)
         {
             string url = ApiUrl + "/itemlist?listtype=itemswithgenre&userId=" + userId.ToString() + "&name=" + name;
 
@@ -452,7 +451,7 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets all items that contain a given Person
         /// </summary>
-        public async Task<IEnumerable<DTOBaseItem>> GetItemsWithPersonAsync(string name, Guid userId)
+        public async Task<DTOBaseItem[]> GetItemsWithPersonAsync(string name, Guid userId)
         {
             string url = ApiUrl + "/itemlist?listtype=itemswithperson&userId=" + userId.ToString() + "&name=" + name;
 
@@ -465,7 +464,7 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets all items that contain a given Person
         /// </summary>
-        public async Task<IEnumerable<DTOBaseItem>> GetItemsWithPersonAsync(string name, string personType, Guid userId)
+        public async Task<DTOBaseItem[]> GetItemsWithPersonAsync(string name, string personType, Guid userId)
         {
             string url = ApiUrl + "/itemlist?listtype=itemswithperson&userId=" + userId.ToString() + "&name=" + name;
 
@@ -480,7 +479,7 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets all studious
         /// </summary>
-        public async Task<IEnumerable<IBNItem>> GetAllStudiosAsync(Guid userId)
+        public async Task<IBNItem[]> GetAllStudiosAsync(Guid userId)
         {
             string url = ApiUrl + "/studios?userId=" + userId.ToString();
 
@@ -493,7 +492,7 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets all items that contain a given Studio
         /// </summary>
-        public async Task<IEnumerable<DTOBaseItem>> GetItemsWithStudioAsync(string name, Guid userId)
+        public async Task<DTOBaseItem[]> GetItemsWithStudioAsync(string name, Guid userId)
         {
             string url = ApiUrl + "/itemlist?listtype=itemswithstudio&userId=" + userId.ToString() + "&name=" + name;
 
