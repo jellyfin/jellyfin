@@ -19,7 +19,7 @@ namespace MediaBrowser.Api.HttpHandlers
 
             return new AuthenticationResult()
             {
-                Success = true
+                Success = Kernel.GetMD5(password).Equals(user.Password)
             }; 
         }
     }

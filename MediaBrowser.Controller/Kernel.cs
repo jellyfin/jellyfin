@@ -240,17 +240,20 @@ namespace MediaBrowser.Controller
             list.Add(user);
 
             user = new User();
-            user.Name = "Test User 1";
+            user.Name = "Abobader";
+            user.Id = Guid.NewGuid();
+            user.LastLoginDate = DateTime.Now.AddDays(-1);
+            user.LastActivityDate = DateTime.Now.AddHours(-3);
+            user.Password = GetMD5("1234").ToString();
+            list.Add(user);
+
+            user = new User();
+            user.Name = "Scottisafool";
             user.Id = Guid.NewGuid();
             list.Add(user);
 
             user = new User();
-            user.Name = "Test User 2";
-            user.Id = Guid.NewGuid();
-            list.Add(user);
-
-            user = new User();
-            user.Name = "Test User 3";
+            user.Name = "Redshirt";
             user.Id = Guid.NewGuid();
             list.Add(user);
 
