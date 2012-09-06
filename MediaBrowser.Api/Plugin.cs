@@ -18,7 +18,7 @@ namespace MediaBrowser.Api
             get { return "Media Browser API"; }
         }
 
-        protected override void InitializeInternal()
+        protected override void InitializeOnServer()
         {
             var httpServer = Kernel.Instance.HttpServer;
 
