@@ -51,8 +51,8 @@
     <Reference Include="protobuf-net">
       <HintPath>..\protobuf-net\Full\portable\protobuf-net.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceStack.Text">
-      <HintPath>..\packages\ServiceStack.Text.3.9.5\lib\sl5\ServiceStack.Text.dll</HintPath>
+    <Reference Include="ServiceStack.Text.WP">
+      <HintPath>..\packages\ServiceStack.Text.3.9.5\lib\sl4-windowsphone71\ServiceStack.Text.WP.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
