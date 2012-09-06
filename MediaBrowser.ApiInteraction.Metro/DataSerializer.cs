@@ -13,18 +13,22 @@ namespace MediaBrowser.ApiInteraction
             {
                 return Serializer.Deserialize<T>(stream);
             }
-            if (format == ApiInteraction.SerializationFormats.Jsv)
+            else if (format == ApiInteraction.SerializationFormats.Jsv)
             {
                 throw new NotImplementedException();
             }
-
-            using (StreamReader streamReader = new StreamReader(stream))
+            else if (format == ApiInteraction.SerializationFormats.Json)
             {
-                using (JsonReader jsonReader = new JsonTextReader(streamReader))
+                using (StreamReader streamReader = new StreamReader(stream))
                 {
-                    return JsonSerializer.Create(new JsonSerializerSettings()).Deserialize<T>(jsonReader);
+                    using (JsonReader jsonReader = new JsonTextReader(streamReader))
+                    {
+                        return JsonSerializer.Create(new JsonSerializerSettings()).Deserialize<T>(jsonReader);
+                    }
                 }
             }
+
+            throw new NotImplementedException();
         }
 
         public static object DeserializeFromStream(Stream stream, SerializationFormats format, Type type)
@@ -33,18 +37,22 @@ namespace MediaBrowser.ApiInteraction
             {
                 throw new NotImplementedException();
             }
-            if (format == ApiInteraction.SerializationFormats.Jsv)
+            else if (format == ApiInteraction.SerializationFormats.Jsv)
             {
                 throw new NotImplementedException();
             }
-
-            using (StreamReader streamReader = new StreamReader(stream))
+            else if (format == ApiInteraction.SerializationFormats.Json)
             {
-                using (JsonReader jsonReader = new JsonTextReader(streamReader))
+                using (StreamReader streamReader = new StreamReader(stream))
                 {
-                    return JsonSerializer.Create(new JsonSerializerSettings()).Deserialize(jsonReader, type);
+                    using (JsonReader jsonReader = new JsonTextReader(streamReader))
+                    {
+                        return JsonSerializer.Create(new JsonSerializerSettings()).Deserialize(jsonReader, type);
+                    }
                 }
             }
+
+            throw new NotImplementedException();
         }
 
         public static void Configure()

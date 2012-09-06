@@ -7,6 +7,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Weather;
+using System.Text;
 
 namespace MediaBrowser.ApiInteraction
 {
@@ -649,6 +650,24 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Authenticates a user and returns the result
+        /// </summary>
+        public async Task<AuthenticationResult> AuthenticateUser(Guid userId, string password)
+        {
+            string url = ApiUrl + "/UserAuthentication?userId=" + userId;
+            url += "&dataformat=" + SerializationFormat.ToString();
+
+            HttpContent content = new StringContent("password=" + password, Encoding.UTF8, "application/x-www-form-urlencoded");
+
+            HttpResponseMessage msg = await HttpClient.PostAsync(url, content).ConfigureAwait(false);
+
+            using (Stream stream = await msg.Content.ReadAsStreamAsync().ConfigureAwait(false))
+            {
+                return DeserializeFromStream<AuthenticationResult>(stream);
+            }
+        }
+
+        /// <summary>
         /// This is a helper around getting a stream from the server that contains serialized data
         /// </summary>
         private Task<Stream> GetSerializedStreamAsync(string url)
@@ -663,11 +682,11 @@ namespace MediaBrowser.ApiInteraction
         {
             if (url.IndexOf('?') == -1)
             {
-                url += "?dataformat=" + serializationFormat.ToString().ToLower();
+                url += "?dataformat=" + serializationFormat.ToString();
             }
             else
             {
-                url += "&dataformat=" + serializationFormat.ToString().ToLower();
+                url += "&dataformat=" + serializationFormat.ToString();
             }
 
             return GetStreamAsync(url);

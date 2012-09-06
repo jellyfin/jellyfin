@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using MediaBrowser.Common.Logging;
 
 namespace MediaBrowser.Common.Net.Handlers
@@ -373,6 +376,66 @@ namespace MediaBrowser.Common.Net.Handlers
             {
                 return StatusCode == 200 || StatusCode == 206;
             }
+        }
+
+        private Hashtable _FormValues = null;
+
+        /// <summary>
+        /// Gets a value from form POST data
+        /// </summary>
+        protected async Task<string> GetFormValue(string name)
+        {
+            if (_FormValues == null)
+            {
+                _FormValues = await GetFormValues(HttpListenerContext.Request).ConfigureAwait(false);
+            }
+
+            if (_FormValues.ContainsKey(name))
+            {
+                return _FormValues[name].ToString();
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Extracts form POST data from a request
+        /// </summary>
+        private async Task<Hashtable> GetFormValues(HttpListenerRequest request)
+        {
+            Hashtable formVars = new Hashtable();
+
+            if (request.HasEntityBody)
+            {
+                if (request.ContentType.Equals("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
+                {
+                    using (Stream requestBody = request.InputStream)
+                    {
+                        using (StreamReader reader = new StreamReader(requestBody, request.ContentEncoding))
+                        {
+                            string s = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                            string[] pairs = s.Split('&');
+
+                            for (int x = 0; x < pairs.Length; x++)
+                            {
+                                string pair = pairs[x];
+
+                                int index = pair.IndexOf('=');
+
+                                if (index != -1)
+                                {
+                                    string name = pair.Substring(0, index);
+                                    string value = pair.Substring(index + 1);
+                                    formVars.Add(name, value);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return formVars;
         }
     }
 }

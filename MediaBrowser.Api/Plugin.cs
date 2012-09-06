@@ -117,6 +117,10 @@ namespace MediaBrowser.Api
             {
                 return new PluginAssemblyHandler();
             }
+            else if (IsUrlMatch("/api/UserAuthentication", localPath))
+            {
+                return new UserAuthenticationHandler();
+            }
 
             return null;
         }

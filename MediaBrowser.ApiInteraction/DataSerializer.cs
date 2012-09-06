@@ -13,12 +13,16 @@ namespace MediaBrowser.ApiInteraction
             {
                 return Serializer.Deserialize<T>(stream);
             }
-            if (format == ApiInteraction.SerializationFormats.Jsv)
+            else if (format == ApiInteraction.SerializationFormats.Jsv)
             {
                 return TypeSerializer.DeserializeFromStream<T>(stream);
             }
+            else if (format == ApiInteraction.SerializationFormats.Json)
+            {
+                return JsonSerializer.DeserializeFromStream<T>(stream);
+            }
 
-            return JsonSerializer.DeserializeFromStream<T>(stream);
+            throw new NotImplementedException();
         }
 
         public static object DeserializeFromStream(Stream stream, SerializationFormats format, Type type)
@@ -27,12 +31,16 @@ namespace MediaBrowser.ApiInteraction
             {
                 throw new NotImplementedException();
             }
-            if (format == ApiInteraction.SerializationFormats.Jsv)
+            else if (format == ApiInteraction.SerializationFormats.Jsv)
             {
                 return TypeSerializer.DeserializeFromStream(type, stream);
             }
+            else if (format == ApiInteraction.SerializationFormats.Json)
+            {
+                return JsonSerializer.DeserializeFromStream(type, stream);
+            }
 
-            return JsonSerializer.DeserializeFromStream(type, stream);
+            throw new NotImplementedException();
         }
 
         public static void Configure()
