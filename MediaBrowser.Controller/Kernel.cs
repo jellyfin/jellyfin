@@ -242,8 +242,8 @@ namespace MediaBrowser.Controller
             user = new User();
             user.Name = "Abobader";
             user.Id = Guid.NewGuid();
-            user.LastLoginDate = DateTime.Now.AddDays(-1);
-            user.LastActivityDate = DateTime.Now.AddHours(-3);
+            user.LastLoginDate = DateTime.UtcNow.AddDays(-1);
+            user.LastActivityDate = DateTime.UtcNow.AddHours(-3);
             user.Password = GetMD5("1234").ToString();
             list.Add(user);
 
