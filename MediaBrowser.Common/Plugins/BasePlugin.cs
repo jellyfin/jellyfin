@@ -184,22 +184,58 @@ namespace MediaBrowser.Common.Plugins
 
                 if (Enabled)
                 {
-                    InitializeInternal();
+                    if (kernel.KernelContext == KernelContext.Server)
+                    {
+                        InitializeOnServer();
+                    }
+                    else if (kernel.KernelContext == KernelContext.UI)
+                    {
+                        InitializeInUI();
+                    }
                 }
             }
         }
 
         /// <summary>
-        /// Starts the plugin.
+        /// Starts the plugin on the server
         /// </summary>
-        protected virtual void InitializeInternal()
+        protected virtual void InitializeOnServer()
+        {
+        }
+
+        /// <summary>
+        /// Starts the plugin in the UI
+        /// </summary>
+        protected virtual void InitializeInUI()
         {
         }
 
         /// <summary>
         /// Disposes the plugins. Undos all actions performed during Init.
         /// </summary>
-        public virtual void Dispose()
+        public void Dispose()
+        {
+            if (Context == KernelContext.Server)
+            {
+                DisposeOnServer();
+            }
+            else if (Context == KernelContext.UI)
+            {
+                InitializeInUI();
+            }
+        }
+
+        /// <summary>
+        /// Disposes the plugin on the server
+        /// </summary>
+        protected virtual void DisposeOnServer()
+        {
+        }
+
+        /// <summary>
+        /// Disposes the plugin in the UI
+        /// </summary>
+        protected virtual void DisposeInUI()
         {
         }
 
