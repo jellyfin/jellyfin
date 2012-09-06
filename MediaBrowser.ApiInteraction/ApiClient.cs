@@ -652,7 +652,7 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Authenticates a user and returns the result
         /// </summary>
-        public async Task<AuthenticationResult> AuthenticateUser(Guid userId, string password)
+        public async Task<AuthenticationResult> AuthenticateUserAsync(Guid userId, string password)
         {
             string url = ApiUrl + "/UserAuthentication?dataformat=" + SerializationFormat.ToString();
 

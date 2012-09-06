@@ -17,12 +17,10 @@ namespace MediaBrowser.Api.HttpHandlers
 
             string password = await GetFormValue("password").ConfigureAwait(false);
 
-            AuthenticationResult result = new AuthenticationResult()
+            return new AuthenticationResult()
             {
                 Success = true
-            };
-
-            return result;
+            }; 
         }
     }
 }
