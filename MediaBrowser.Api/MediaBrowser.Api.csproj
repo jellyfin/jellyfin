@@ -73,6 +73,7 @@
     <Compile Include="HttpHandlers\ServerConfigurationHandler.cs" />
     <Compile Include="HttpHandlers\StudioHandler.cs" />
     <Compile Include="HttpHandlers\StudiosHandler.cs" />
+    <Compile Include="HttpHandlers\UserAuthenticationHandler.cs" />
     <Compile Include="HttpHandlers\UsersHandler.cs" />
     <Compile Include="HttpHandlers\VideoHandler.cs" />
     <Compile Include="HttpHandlers\WeatherHandler.cs" />

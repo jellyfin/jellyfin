@@ -14,5 +14,8 @@ namespace MediaBrowser.Model.DTO
 
         [ProtoMember(3)]
         public bool HasImage { get; set; }
+
+        [ProtoMember(4)]
+        public bool HasPassword { get; set; }
     }
 }
