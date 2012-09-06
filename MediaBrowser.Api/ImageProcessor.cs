@@ -54,26 +54,6 @@ namespace MediaBrowser.Api
             originalImage.Dispose();
         }
 
-        private static Graphics GetThumbnailGraphics(Image originalImage, Bitmap thumbnail)
-        {
-            thumbnail = new Bitmap(originalImage);
-            return Graphics.FromImage(thumbnail);
-            /*try
-            {
-                return Graphics.FromImage(thumbnail);
-            }
-            catch
-            {
-                Bitmap tmp = new Bitmap(thumbnail.Width, thumbnail.Height);
-                tmp.c
-
-                Graphics graphics = Graphics.FromImage(tmp);
-                graphics.DrawImage(thumbnail, new Rectangle(0, 0, tmp.Width, tmp.Height), 0, 0, tmp.Width, tmp.Height, GraphicsUnit.Pixel);
-
-                return graphics;
-            }*/
-        }
-
         private static void Write(Image originalImage, Image newImage, Stream toStream, int? quality)
         {
             // Use special save methods for jpeg and png that will result in a much higher quality image
