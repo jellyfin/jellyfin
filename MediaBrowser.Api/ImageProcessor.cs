@@ -23,10 +23,22 @@ namespace MediaBrowser.Api
 
             Size newSize = DrawingUtils.Resize(originalImage.Size, width, height, maxWidth, maxHeight);
 
-            Bitmap thumbnail = new Bitmap(newSize.Width, newSize.Height, originalImage.PixelFormat);
+            Bitmap thumbnail;
+
+            // Graphics.FromImage will throw an exception if the PixelFormat is Indexed, so we need to handle that here
+            if (originalImage.PixelFormat.HasFlag(PixelFormat.Indexed))
+            {
+                thumbnail = new Bitmap(originalImage, newSize.Width, newSize.Height);
+            }
+            else
+            {
+                thumbnail = new Bitmap(newSize.Width, newSize.Height, originalImage.PixelFormat);
+            }
+
             thumbnail.SetResolution(originalImage.HorizontalResolution, originalImage.VerticalResolution);
 
             Graphics thumbnailGraph = Graphics.FromImage(thumbnail);
+
             thumbnailGraph.CompositingQuality = CompositingQuality.HighQuality;
             thumbnailGraph.SmoothingMode = SmoothingMode.HighQuality;
             thumbnailGraph.InterpolationMode = InterpolationMode.HighQualityBicubic;
@@ -41,7 +53,27 @@ namespace MediaBrowser.Api
             thumbnail.Dispose();
             originalImage.Dispose();
         }
-        
+
+        private static Graphics GetThumbnailGraphics(Image originalImage, Bitmap thumbnail)
+        {
+            thumbnail = new Bitmap(originalImage);
+            return Graphics.FromImage(thumbnail);
+            /*try
+            {
+                return Graphics.FromImage(thumbnail);
+            }
+            catch
+            {
+                Bitmap tmp = new Bitmap(thumbnail.Width, thumbnail.Height);
+                tmp.c
+
+                Graphics graphics = Graphics.FromImage(tmp);
+                graphics.DrawImage(thumbnail, new Rectangle(0, 0, tmp.Width, tmp.Height), 0, 0, tmp.Width, tmp.Height, GraphicsUnit.Pixel);
+
+                return graphics;
+            }*/
+        }
+
         private static void Write(Image originalImage, Image newImage, Stream toStream, int? quality)
         {
             // Use special save methods for jpeg and png that will result in a much higher quality image
