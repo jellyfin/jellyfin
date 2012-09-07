@@ -1,7 +1,7 @@
-﻿using System;
-using System.IO;
-using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
+using System;
+using System.IO;
 
 namespace MediaBrowser.ApiInteraction
 {
