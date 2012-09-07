@@ -1,4 +1,10 @@
-﻿using System;
+﻿using MediaBrowser.Common.Logging;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Plugins;
+using MediaBrowser.Common.Serialization;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Progress;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
@@ -6,12 +12,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Logging;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Plugins;
-using MediaBrowser.Common.Serialization;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Progress;
 
 namespace MediaBrowser.Common.Kernel
 {

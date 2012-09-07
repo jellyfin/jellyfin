@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Logging;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -17,6 +8,15 @@ using MediaBrowser.Controller.Weather;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Progress;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller
 {
@@ -181,6 +181,55 @@ namespace MediaBrowser.Controller
             }
         }
 
+        /// <summary>
+        /// Gets the default user to use when EnableUserProfiles is false
+        /// </summary>
+        public User GetDefaultUser()
+        {
+            User user = Users.FirstOrDefault();
+
+            return user;
+        }
+
+        /// <summary>
+        /// Persists a User
+        /// </summary>
+        public void SaveUser(User user)
+        {
+
+        }
+
+        /// <summary>
+        /// Authenticates a User and returns a result indicating whether or not it succeeded
+        /// </summary>
+        public AuthenticationResult AuthenticateUser(User user, string password)
+        {
+            AuthenticationResult result = new AuthenticationResult();
+
+            // When EnableUserProfiles is false, only the default User can login
+            if (!Configuration.EnableUserProfiles)
+            {
+                result.Success = user.Id == GetDefaultUser().Id;
+            }
+            else if (string.IsNullOrEmpty(user.Password))
+            {
+                result.Success = true;
+            }
+            else
+            {
+                result.Success = GetMD5(password).Equals(user.Password);
+
+                // Update LastActivityDate and LastLoginDate, then save
+                if (result.Success)
+                {
+                    user.LastActivityDate = user.LastLoginDate = DateTime.UtcNow;
+                    SaveUser(user);
+                }
+            }
+
+            return result;
+        }
+
         public async Task ReloadItem(BaseItem item)
         {
             Folder folder = item as Folder;
@@ -236,7 +285,6 @@ namespace MediaBrowser.Controller
 
             user.Name = "Default User";
             user.Id = Guid.Parse("5d1cf7fce25943b790d140095457a42b");
-            user.PrimaryImagePath = @"g:\Mel.jpg";
             list.Add(user);
 
             user = new User();
@@ -245,19 +293,16 @@ namespace MediaBrowser.Controller
             user.LastLoginDate = DateTime.UtcNow.AddDays(-1);
             user.LastActivityDate = DateTime.UtcNow.AddHours(-3);
             user.Password = GetMD5("1234").ToString();
-            user.PrimaryImagePath = @"g:\abobader.jpg";
             list.Add(user);
 
             user = new User();
             user.Name = "Scottisafool";
             user.Id = Guid.NewGuid();
-            user.PrimaryImagePath = @"g:\Scott.jpg";
             list.Add(user);
 
             user = new User();
             user.Name = "Redshirt";
             user.Id = Guid.NewGuid();
-            user.PrimaryImagePath = @"g:\redshirt.png";
             list.Add(user);
 
             /*user = new User();

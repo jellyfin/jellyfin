@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Weather;
 using System;
 using System.IO;
@@ -82,12 +83,29 @@ namespace MediaBrowser.ApiInteraction
         public async Task<DTOBaseItem[]> GetRecentlyAddedItemsAsync(Guid userId)
         {
             string url = ApiUrl + "/itemlist?listtype=recentlyaddeditems&userId=" + userId.ToString();
-            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(true))
+
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
                 return DeserializeFromStream<DTOBaseItem[]>(stream);
             }
-        } 
+        }
 
+        /// <summary>
+        /// Gets recently added items within a specific folder
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        public async Task<DTOBaseItem[]> GetRecentlyAddedItemsAsync(Guid userId, Guid folderId)
+        {
+            string url = ApiUrl + "/itemlist?listtype=recentlyaddeditems&userId=" + userId.ToString();
+
+            url += "&id=" + folderId.ToString();
+
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<DTOBaseItem[]>(stream);
+            }
+        }
+        
         /// <summary>
         /// Gets all Years
         /// </summary>
