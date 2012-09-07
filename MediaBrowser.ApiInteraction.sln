@@ -12,12 +12,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{F0E0E6
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.ApiInteraction.Metro", "MediaBrowser.ApiInteraction.Metro\MediaBrowser.ApiInteraction.Metro.csproj", "{94CEA07A-307C-4663-AA43-7BD852808574}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.ApiInteraction.Portable", "MediaBrowser.ApiInteraction.Portable\MediaBrowser.ApiInteraction.Portable.csproj", "{756B93D2-5FFA-4B8D-BDCA-127476F1E6FB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{756B93D2-5FFA-4B8D-BDCA-127476F1E6FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{756B93D2-5FFA-4B8D-BDCA-127476F1E6FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{756B93D2-5FFA-4B8D-BDCA-127476F1E6FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{756B93D2-5FFA-4B8D-BDCA-127476F1E6FB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}.Release|Any CPU.ActiveCfg = Release|Any CPU
