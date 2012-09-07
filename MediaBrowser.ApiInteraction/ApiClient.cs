@@ -105,6 +105,20 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Gets the recently added items
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <returns></returns>
+        public async Task<DTOBaseItem[]> GetRecentlyAddedItemsAsync(Guid userId)
+        {
+            string url = ApiUrl + "/itemlist?listtype=recentlyaddeditems&userId=" + userId.ToString();
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(true))
+            {
+                return DeserializeFromStream<DTOBaseItem[]>(stream);
+            }
+        } 
+
+        /// <summary>
         /// Gets all Years
         /// </summary>
         public async Task<IBNItem[]> GetAllYearsAsync(Guid userId)
