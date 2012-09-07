@@ -1,12 +1,12 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Logging;
+﻿using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
@@ -57,8 +57,7 @@ namespace MediaBrowser.Api.HttpHandlers
 
             if (!string.IsNullOrEmpty(userId))
             {
-                Guid userIdGuid = new Guid(userId);
-                return Kernel.Instance.Users.First(u => u.Id == userIdGuid).PrimaryImagePath;
+                return ApiService.GetUserById(userId, false).PrimaryImagePath;
             }
 
             BaseItem item = ApiService.GetItemById(QueryString["id"]);

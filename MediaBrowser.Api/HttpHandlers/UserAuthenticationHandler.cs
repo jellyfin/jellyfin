@@ -1,10 +1,7 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Net.Handlers;
+﻿using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
-using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
@@ -12,15 +9,12 @@ namespace MediaBrowser.Api.HttpHandlers
     {
         protected override async Task<AuthenticationResult> GetObjectToSerialize()
         {
-            Guid userId = Guid.Parse(await GetFormValue("userid").ConfigureAwait(false));
-            User user = Kernel.Instance.Users.First(u => u.Id == userId);
+            string userId = await GetFormValue("userid").ConfigureAwait(false);
+            User user = ApiService.GetUserById(userId, false);
 
             string password = await GetFormValue("password").ConfigureAwait(false);
 
-            return new AuthenticationResult()
-            {
-                Success = Kernel.GetMD5(password).Equals(user.Password)
-            }; 
+            return Kernel.Instance.AuthenticateUser(user, password);
         }
     }
 }

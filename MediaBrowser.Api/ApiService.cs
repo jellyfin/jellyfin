@@ -1,10 +1,10 @@
-﻿using System;
+﻿using MediaBrowser.Controller;
+using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Controller;
-using MediaBrowser.Model.DTO;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api
 {
@@ -13,6 +13,9 @@ namespace MediaBrowser.Api
     /// </summary>
     public static class ApiService
     {
+        /// <summary>
+        /// Gets an Item by Id, or the root item if none is supplied
+        /// </summary>
         public static BaseItem GetItemById(string id)
         {
             Guid guid = string.IsNullOrEmpty(id) ? Guid.Empty : new Guid(id);
@@ -20,6 +23,52 @@ namespace MediaBrowser.Api
             return Kernel.Instance.GetItemById(guid);
         }
 
+        /// <summary>
+        /// Gets a User by Id
+        /// </summary>
+        /// <param name="logActivity">Whether or not to update the user's LastActivityDate</param>
+        public static User GetUserById(string id, bool logActivity)
+        {
+            Guid guid = new Guid(id);
+
+            User user = Kernel.Instance.Users.FirstOrDefault(u => u.Id == guid);
+
+            if (logActivity)
+            {
+                LogUserActivity(user);
+            }
+
+            return user;
+        }
+
+        /// <summary>
+        /// Gets the default User
+        /// </summary>
+        /// <param name="logActivity">Whether or not to update the user's LastActivityDate</param>
+        public static User GetDefaultUser(bool logActivity)
+        {
+            User user = Kernel.Instance.GetDefaultUser();
+
+            if (logActivity)
+            {
+                LogUserActivity(user);
+            }
+
+            return user;
+        }
+
+        /// <summary>
+        /// Updates LastActivityDate for a given User
+        /// </summary>
+        public static void LogUserActivity(User user)
+        {
+            user.LastActivityDate = DateTime.UtcNow;
+            Kernel.Instance.SaveUser(user);
+        }
+
+        /// <summary>
+        /// Converts a BaseItem to a DTOBaseItem
+        /// </summary>
         public async static Task<DTOBaseItem> GetDTOBaseItem(BaseItem item, User user,
             bool includeChildren = true,
             bool includePeople = true)
@@ -52,6 +101,9 @@ namespace MediaBrowser.Api
             return dto;
         }
 
+        /// <summary>
+        /// Sets simple property values on a DTOBaseItem
+        /// </summary>
         private static void AttachBasicFields(DTOBaseItem dto, BaseItem item, User user)
         {
             dto.AspectRatio = item.AspectRatio;
@@ -168,6 +220,9 @@ namespace MediaBrowser.Api
             }
         }
 
+        /// <summary>
+        /// Attaches Studio DTO's to a DTOBaseItem
+        /// </summary>
         private static async Task AttachStudios(DTOBaseItem dto, BaseItem item)
         {
             // Attach Studios by transforming them into BaseItemStudio (DTO)
@@ -191,6 +246,9 @@ namespace MediaBrowser.Api
             }
         }
 
+        /// <summary>
+        /// Attaches child DTO's to a DTOBaseItem
+        /// </summary>
         private static async Task AttachChildren(DTOBaseItem dto, BaseItem item, User user)
         {
             var folder = item as Folder;
@@ -203,6 +261,9 @@ namespace MediaBrowser.Api
             }
         }
 
+        /// <summary>
+        /// Attaches trailer DTO's to a DTOBaseItem
+        /// </summary>
         private static async Task AttachLocalTrailers(DTOBaseItem dto, BaseItem item, User user)
         {
             if (item.LocalTrailers != null && item.LocalTrailers.Any())
@@ -211,6 +272,9 @@ namespace MediaBrowser.Api
             }
         }
 
+        /// <summary>
+        /// Attaches People DTO's to a DTOBaseItem
+        /// </summary>
         private static async Task AttachPeople(DTOBaseItem dto, BaseItem item)
         {
             // Attach People by transforming them into BaseItemPerson (DTO)
@@ -238,6 +302,9 @@ namespace MediaBrowser.Api
             }
         }
 
+        /// <summary>
+        /// If an item does not any backdrops, this can be used to find the first parent that does have one
+        /// </summary>
         private static Guid? GetParentBackdropItemId(BaseItem item, out int backdropCount)
         {
             backdropCount = 0;
@@ -258,6 +325,9 @@ namespace MediaBrowser.Api
             return null;
         }
 
+        /// <summary>
+        /// If an item does not have a logo, this can be used to find the first parent that does have one
+        /// </summary>
         private static Guid? GetParentLogoItemId(BaseItem item)
         {
             var parent = item.Parent;
@@ -275,6 +345,9 @@ namespace MediaBrowser.Api
             return null;
         }
 
+        /// <summary>
+        /// Gets an ImagesByName entity along with the number of items containing it
+        /// </summary>
         public static IBNItem GetIBNItem(BaseEntity entity, int itemCount)
         {
             return new IBNItem()
@@ -286,6 +359,9 @@ namespace MediaBrowser.Api
             };
         }
 
+        /// <summary>
+        /// Converts a User to a DTOUser
+        /// </summary>
         public static DTOUser GetDTOUser(User user)
         {
             return new DTOUser()

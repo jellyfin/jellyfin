@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Net.Handlers;
+﻿using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
@@ -14,8 +13,7 @@ namespace MediaBrowser.Api.HttpHandlers
         protected override Task<IBNItem[]> GetObjectToSerialize()
         {
             Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
-            Guid userId = Guid.Parse(QueryString["userid"]);
-            User user = Kernel.Instance.Users.First(u => u.Id == userId);
+            User user = ApiService.GetUserById(QueryString["userid"], true);
 
             return GetAllGenres(parent, user);
         }

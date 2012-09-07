@@ -1,7 +1,6 @@
-﻿using System;
-using ProtoBuf;
+﻿using ProtoBuf;
 
-namespace MediaBrowser.Model.DTO
+namespace MediaBrowser.Model.Entities
 {
     [ProtoContract]
     public class AuthenticationResult
