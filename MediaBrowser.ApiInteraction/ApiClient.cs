@@ -353,7 +353,12 @@ namespace MediaBrowser.ApiInteraction
             string url = ApiUrl + "/UserAuthentication?dataformat=" + SerializationFormat.ToString();
 
             // Create the post body
-            string postContent = string.Format("userid={0}&password={1}", userId, password);
+            string postContent = string.Format("userid={0}", userId);
+
+            if (!string.IsNullOrEmpty(password))
+            {
+                postContent += "&password=" + password;
+            }
 
             HttpContent content = new StringContent(postContent, Encoding.UTF8, "application/x-www-form-urlencoded");
 
