@@ -42,6 +42,9 @@
     <Compile Include="..\MediaBrowser.ApiInteraction\ApiClient.cs">
       <Link>ApiClient.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\BaseApiClient.cs">
+      <Link>BaseApiClient.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\SerializationFormats.cs">
       <Link>SerializationFormats.cs</Link>
     </Compile>
