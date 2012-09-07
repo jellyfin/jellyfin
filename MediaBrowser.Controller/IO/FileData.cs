@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Common.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -12,6 +13,7 @@ namespace MediaBrowser.Controller.IO
     {
         public const int MAX_PATH = 260;
         public const int MAX_ALTERNATE = 14;
+        public static IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
 
         /// <summary>
         /// Gets information about a path
@@ -20,8 +22,21 @@ namespace MediaBrowser.Controller.IO
         {
             WIN32_FIND_DATA data;
             IntPtr handle = FindFirstFile(path, out data);
+
+            if (handle == INVALID_HANDLE_VALUE && !Path.HasExtension(path))
+            {
+                Logger.LogInfo("Handle came back invalid for {0}. Since this is a directory we'll try appending \\*.", path);
+                
+                FindClose(handle);
+
+                handle = FindFirstFile(Path.Combine(path, "*"), out data);
+            }
+
             if (handle == IntPtr.Zero)
+            {
                 throw new IOException("FindFirstFile failed");
+            }
+            
             FindClose(handle);
 
             data.Path = path;

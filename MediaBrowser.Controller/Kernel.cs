@@ -217,7 +217,7 @@ namespace MediaBrowser.Controller
             }
             else
             {
-                result.Success = GetMD5(password).Equals(user.Password);
+                result.Success = GetMD5((password ?? string.Empty)).Equals(user.Password);
 
                 // Update LastActivityDate and LastLoginDate, then save
                 if (result.Success)
