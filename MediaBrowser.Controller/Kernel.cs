@@ -236,7 +236,7 @@ namespace MediaBrowser.Controller
 
             user.Name = "Default User";
             user.Id = Guid.Parse("5d1cf7fce25943b790d140095457a42b");
-
+            user.PrimaryImagePath = @"g:\Mel.jpg";
             list.Add(user);
 
             user = new User();
@@ -245,16 +245,19 @@ namespace MediaBrowser.Controller
             user.LastLoginDate = DateTime.UtcNow.AddDays(-1);
             user.LastActivityDate = DateTime.UtcNow.AddHours(-3);
             user.Password = GetMD5("1234").ToString();
+            user.PrimaryImagePath = @"g:\abobader.jpg";
             list.Add(user);
 
             user = new User();
             user.Name = "Scottisafool";
             user.Id = Guid.NewGuid();
+            user.PrimaryImagePath = @"g:\Scott.jpg";
             list.Add(user);
 
             user = new User();
             user.Name = "Redshirt";
             user.Id = Guid.NewGuid();
+            user.PrimaryImagePath = @"g:\redshirt.png";
             list.Add(user);
 
             /*user = new User();
