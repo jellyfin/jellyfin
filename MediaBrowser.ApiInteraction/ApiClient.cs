@@ -76,13 +76,18 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Gets the recently added items
+        /// Gets in-progress items
         /// </summary>
         /// <param name="userId">The user id.</param>
-        /// <returns></returns>
-        public async Task<DTOBaseItem[]> GetRecentlyAddedItemsAsync(Guid userId)
+        /// <param name="folderId">(Optional) Specify a folder Id to localize the search to a specific folder.</param>
+        public async Task<DTOBaseItem[]> GetInProgressItemsItemsAsync(Guid userId, Guid? folderId = null)
         {
-            string url = ApiUrl + "/itemlist?listtype=recentlyaddeditems&userId=" + userId.ToString();
+            string url = ApiUrl + "/itemlist?listtype=inprogressitems&userId=" + userId.ToString();
+
+            if (folderId.HasValue)
+            {
+                url += "&id=" + folderId.ToString();
+            }
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
@@ -91,21 +96,45 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Gets recently added items within a specific folder
+        /// Gets recently added items
         /// </summary>
         /// <param name="userId">The user id.</param>
-        public async Task<DTOBaseItem[]> GetRecentlyAddedItemsAsync(Guid userId, Guid folderId)
+        /// <param name="folderId">(Optional) Specify a folder Id to localize the search to a specific folder.</param>
+        public async Task<DTOBaseItem[]> GetRecentlyAddedItemsAsync(Guid userId, Guid? folderId = null)
         {
             string url = ApiUrl + "/itemlist?listtype=recentlyaddeditems&userId=" + userId.ToString();
 
-            url += "&id=" + folderId.ToString();
+            if (folderId.HasValue)
+            {
+                url += "&id=" + folderId.ToString();
+            }
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
                 return DeserializeFromStream<DTOBaseItem[]>(stream);
             }
         }
-        
+
+        /// <summary>
+        /// Gets recently added items that are unplayed.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="folderId">(Optional) Specify a folder Id to localize the search to a specific folder.</param>
+        public async Task<DTOBaseItem[]> GetRecentlyAddedUnplayedItemsAsync(Guid userId, Guid? folderId = null)
+        {
+            string url = ApiUrl + "/itemlist?listtype=recentlyaddedunplayeditems&userId=" + userId.ToString();
+
+            if (folderId.HasValue)
+            {
+                url += "&id=" + folderId.ToString();
+            }
+
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<DTOBaseItem[]>(stream);
+            }
+        }
+
         /// <summary>
         /// Gets all Years
         /// </summary>
