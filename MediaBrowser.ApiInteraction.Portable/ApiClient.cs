@@ -9,9 +9,5 @@ namespace MediaBrowser.ApiInteraction.Portable
 {
     public class ApiClient : BaseApiClient
     {
-        private HttpWebRequest GetNewRequest(string url)
-        {
-            HttpWebRequest request = HttpWebRequest.CreateHttp(url);
-        }
     }
 }
