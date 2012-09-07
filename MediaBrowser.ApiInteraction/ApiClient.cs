@@ -1,13 +1,12 @@
-﻿using System;
+﻿using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Weather;
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.DTO;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Weather;
 
 namespace MediaBrowser.ApiInteraction
 {
@@ -60,35 +59,6 @@ namespace MediaBrowser.ApiInteraction
             {
                 return DeserializeFromStream<DTOUser[]>(stream);
             }
-        }
-
-        public void GetAllUsersAsync(Action<DTOUser[]> callback)
-        {
-            string url = ApiUrl + "/users";
-
-            HttpWebRequest request = HttpWebRequest.CreateHttp(url);
-
-            request.BeginGetResponse(new AsyncCallback(result =>
-            {
-                HttpWebResponse response = (result.AsyncState as HttpWebRequest).EndGetResponse(result) as HttpWebResponse;
-
-                Stream stream = response.GetResponseStream();
-
-            }), request);
-        }
-
-        public void GetData<T>(string url, SerializationFormats serializationFormat, Action<T> callback)
-        {
-            HttpWebRequest request = HttpWebRequest.CreateHttp(url);
-            //request.AutomaticDecompression = DecompressionMethods.Deflate;
-
-            request.BeginGetResponse(new AsyncCallback(result =>
-            {
-                HttpWebResponse response = (result.AsyncState as HttpWebRequest).EndGetResponse(result) as HttpWebResponse;
-
-                Stream stream = response.GetResponseStream();
-
-            }), request);
         }
 
         /// <summary>

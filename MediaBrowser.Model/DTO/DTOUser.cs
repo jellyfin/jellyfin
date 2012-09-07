@@ -1,5 +1,5 @@
-﻿using System;
-using ProtoBuf;
+﻿using ProtoBuf;
+using System;
 
 namespace MediaBrowser.Model.DTO
 {
