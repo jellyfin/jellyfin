@@ -218,13 +218,13 @@ namespace MediaBrowser.Controller
             else
             {
                 result.Success = GetMD5((password ?? string.Empty)).Equals(user.Password);
+            }
 
-                // Update LastActivityDate and LastLoginDate, then save
-                if (result.Success)
-                {
-                    user.LastActivityDate = user.LastLoginDate = DateTime.UtcNow;
-                    SaveUser(user);
-                }
+            // Update LastActivityDate and LastLoginDate, then save
+            if (result.Success)
+            {
+                user.LastActivityDate = user.LastLoginDate = DateTime.UtcNow;
+                SaveUser(user);
             }
 
             return result;

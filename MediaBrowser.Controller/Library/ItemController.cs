@@ -1,11 +1,11 @@
-﻿using System;
+﻿using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.Entities;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Library
 {
