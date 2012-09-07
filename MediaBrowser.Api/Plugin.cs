@@ -1,12 +1,12 @@
-﻿using System;
-using System.ComponentModel.Composition;
-using System.Net;
-using System.Reactive.Linq;
-using MediaBrowser.Api.HttpHandlers;
+﻿using MediaBrowser.Api.HttpHandlers;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Plugins;
+using System;
+using System.ComponentModel.Composition;
+using System.Net;
+using System.Reactive.Linq;
 
 namespace MediaBrowser.Api
 {
