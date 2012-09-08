@@ -336,11 +336,24 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Gets weather information for the default location as set in configuration
+        /// Gets the default user
         /// </summary>
         public async Task<DTOUser> GetDefaultUserAsync()
         {
-            string url = ApiUrl + "/defaultuser";
+            string url = ApiUrl + "/user";
+
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<DTOUser>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Gets a user by id
+        /// </summary>
+        public async Task<DTOUser> GetUserAsync(Guid id)
+        {
+            string url = ApiUrl + "/user?id=" + id.ToString();
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
