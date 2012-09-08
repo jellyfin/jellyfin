@@ -50,6 +50,8 @@
     <Compile Include="Entities\IHasProviderIds.cs" />
     <Compile Include="Entities\ItemSpecialCounts.cs" />
     <Compile Include="Entities\MetadataProviders.cs" />
+    <Compile Include="Entities\Movies\BoxSet.cs" />
+    <Compile Include="Entities\Movies\Movie.cs" />
     <Compile Include="Entities\Person.cs" />
     <Compile Include="Entities\Studio.cs" />
     <Compile Include="Entities\Video.cs" />

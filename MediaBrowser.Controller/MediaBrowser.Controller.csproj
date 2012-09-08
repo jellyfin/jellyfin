@@ -57,6 +57,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Providers\Movies\MovieProviderFromXml.cs" />
+    <Compile Include="Providers\Movies\MovieSpecialFeaturesProvider.cs" />
+    <Compile Include="Resolvers\Movies\BoxSetResolver.cs" />
+    <Compile Include="Resolvers\Movies\MovieResolver.cs" />
     <Compile Include="ServerApplicationPaths.cs" />
     <Compile Include="Library\ItemResolveEventArgs.cs" />
     <Compile Include="FFMpeg\FFProbe.cs" />

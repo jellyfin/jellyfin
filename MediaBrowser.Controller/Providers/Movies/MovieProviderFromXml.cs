@@ -1,13 +1,12 @@
-﻿using System.ComponentModel.Composition;
-using System.IO;
-using System.Threading.Tasks;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Xml;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Movies.Entities;
+using MediaBrowser.Model.Entities.Movies;
+using System.ComponentModel.Composition;
+using System.IO;
+using System.Threading.Tasks;
 
-namespace MediaBrowser.Movies.Providers
+namespace MediaBrowser.Controller.Providers.Movies
 {
     [Export(typeof(BaseMetadataProvider))]
     public class MovieProviderFromXml : BaseMetadataProvider

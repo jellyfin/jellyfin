@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MediaBrowser.Model.Entities;
 
-namespace MediaBrowser.Movies.Entities
+namespace MediaBrowser.Model.Entities.Movies
 {
     public class Movie : Video
     {
