@@ -60,14 +60,6 @@
       <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
       <Name>MediaBrowser.Model</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Movies\MediaBrowser.Movies.csproj">
-      <Project>{92b9f802-4415-438f-90e1-44602135ea41}</Project>
-      <Name>MediaBrowser.Movies</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.TV\MediaBrowser.TV.csproj">
-      <Project>{32dfc600-cd2f-4b2d-b39a-3b4c6c32f9b4}</Project>
-      <Name>MediaBrowser.TV</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

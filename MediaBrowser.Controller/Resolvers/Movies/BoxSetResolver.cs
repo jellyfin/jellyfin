@@ -1,11 +1,10 @@
-﻿using System;
+﻿using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities.Movies;
+using System;
 using System.ComponentModel.Composition;
 using System.IO;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Movies.Entities;
 
-namespace MediaBrowser.Movies.Resolvers
+namespace MediaBrowser.Controller.Resolvers.Movies
 {
     [Export(typeof(IBaseItemResolver))]
     public class BoxSetResolver : BaseFolderResolver<BoxSet>

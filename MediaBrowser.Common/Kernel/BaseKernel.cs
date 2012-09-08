@@ -150,10 +150,6 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         protected virtual void OnComposablePartsLoaded()
         {
-            // This event handler will allow any plugin to reference another
-            AppDomain.CurrentDomain.AssemblyResolve -= new ResolveEventHandler(CurrentDomain_AssemblyResolve);
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
-
             StartPlugins();
         }
 
@@ -213,26 +209,6 @@ namespace MediaBrowser.Common.Kernel
                     handler.ProcessRequest(ctx);
                 }
             });
-        }
-
-        /// <summary>
-        /// This snippet will allow any plugin to reference another
-        /// </summary>
-        Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            AssemblyName assemblyName = new AssemblyName(args.Name);
-
-            // Look for the .dll recursively within the plugins directory
-            string dll = Directory.GetFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.AllDirectories)
-                .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == assemblyName.Name);
-
-            // If we found a matching assembly, load it now
-            if (!string.IsNullOrEmpty(dll))
-            {
-                return Assembly.Load(File.ReadAllBytes(dll));
-            }
-
-            return null;
         }
 
         /// <summary>

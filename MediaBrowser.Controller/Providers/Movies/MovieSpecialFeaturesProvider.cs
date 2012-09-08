@@ -1,15 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Entities.Movies;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading.Tasks;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Movies.Entities;
 
-namespace MediaBrowser.Movies.Providers
+namespace MediaBrowser.Controller.Providers.Movies
 {
     [Export(typeof(BaseMetadataProvider))]
     public class MovieSpecialFeaturesProvider : BaseMetadataProvider

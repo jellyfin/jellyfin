@@ -1,11 +1,10 @@
-﻿using System.ComponentModel.Composition;
-using MediaBrowser.Controller.IO;
+﻿using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Movies.Entities;
+using MediaBrowser.Model.Entities.Movies;
+using System.ComponentModel.Composition;
 
-namespace MediaBrowser.Movies.Resolvers
+namespace MediaBrowser.Controller.Resolvers.Movies
 {
     [Export(typeof(IBaseItemResolver))]
     public class MovieResolver : BaseVideoResolver<Movie>
