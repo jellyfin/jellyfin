@@ -1,6 +1,6 @@
 ﻿using ProtoBuf;
 
-namespace MediaBrowser.Model.Entities
+namespace MediaBrowser.Model.Authentication
 {
     [ProtoContract]
     public class AuthenticationResult

@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Model.Configuration;
+﻿using MediaBrowser.Model.Authentication;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.DTO;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Weather;
 using System;
 using System.Collections.Generic;
