@@ -95,7 +95,6 @@
     <Compile Include="Logging\LogRow.cs" />
     <Compile Include="Logging\LogSeverity.cs" />
     <Compile Include="Logging\StreamLogger.cs" />
-    <Compile Include="Net\CollectionExtensions.cs" />
     <Compile Include="Net\Handlers\BaseEmbeddedResourceHandler.cs" />
     <Compile Include="Net\Handlers\BaseHandler.cs" />
     <Compile Include="Net\Handlers\BaseSerializationHandler.cs" />
