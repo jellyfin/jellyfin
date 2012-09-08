@@ -22,6 +22,7 @@ namespace MediaBrowser.Controller.IO
         {
             WIN32_FIND_DATA data;
             IntPtr handle = FindFirstFile(path, out data);
+            bool getFilename = false;
 
             if (handle == INVALID_HANDLE_VALUE && !Path.HasExtension(path))
             {
@@ -32,12 +33,19 @@ namespace MediaBrowser.Controller.IO
                     FindClose(handle);
 
                     handle = FindFirstFile(Path.Combine(path, "*"), out data);
+
+                    getFilename = true;
                 }
             }
 
             if (handle == IntPtr.Zero)
             {
                 throw new IOException("FindFirstFile failed");
+            }
+
+            if (getFilename)
+            {
+                data.cFileName = Path.GetFileName(path);
             }
             
             FindClose(handle);
