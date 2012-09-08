@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Net;
 
 namespace MediaBrowser.Api
 {
@@ -373,6 +374,11 @@ namespace MediaBrowser.Api
                 LastActivityDate = user.LastActivityDate,
                 LastLoginDate = user.LastLoginDate
             };
+        }
+
+        public static bool IsApiUrlMatch(string url, HttpListenerRequest request)
+        {
+            return request.Url.LocalPath.EndsWith(url, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

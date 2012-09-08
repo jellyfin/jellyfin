@@ -3,6 +3,8 @@ using MediaBrowser.Controller;
 using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.HttpHandlers
@@ -10,8 +12,14 @@ namespace MediaBrowser.Api.HttpHandlers
     /// <summary>
     /// Gets a single year
     /// </summary>
+    [Export(typeof(BaseHandler))]
     public class YearHandler : BaseSerializationHandler<IBNItem>
     {
+        public override bool HandlesRequest(HttpListenerRequest request)
+        {
+            return ApiService.IsApiUrlMatch("year", request);
+        }
+        
         protected override Task<IBNItem> GetObjectToSerialize()
         {
             Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;

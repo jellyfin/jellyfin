@@ -1,12 +1,20 @@
 ﻿using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
+using System.ComponentModel.Composition;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
+    [Export(typeof(BaseHandler))]
     class UserAuthenticationHandler : BaseSerializationHandler<AuthenticationResult>
     {
+        public override bool HandlesRequest(HttpListenerRequest request)
+        {
+            return ApiService.IsApiUrlMatch("UserAuthentication", request);
+        }
+        
         protected override async Task<AuthenticationResult> GetObjectToSerialize()
         {
             string userId = await GetFormValue("userid").ConfigureAwait(false);

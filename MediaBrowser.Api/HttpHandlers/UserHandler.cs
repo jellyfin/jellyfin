@@ -1,12 +1,20 @@
 ﻿using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
+using System.ComponentModel.Composition;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
+    [Export(typeof(BaseHandler))]
     class UserHandler : BaseSerializationHandler<DTOUser>
     {
+        public override bool HandlesRequest(HttpListenerRequest request)
+        {
+            return ApiService.IsApiUrlMatch("user", request);
+        }
+        
         protected override Task<DTOUser> GetObjectToSerialize()
         {
             string id = QueryString["id"];
