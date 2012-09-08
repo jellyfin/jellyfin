@@ -10,6 +10,13 @@
         WindowStartupLocation="CenterScreen"
         WindowState="Normal" 
         FontSize="14">
+    <Window.Resources>
+        <ResourceDictionary>
+            <Style TargetType="{x:Type Controls:WindowCommands}">
+                <Setter Property="Visibility" Value="Hidden" />
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
     <Window.Background>
         <RadialGradientBrush RadiusX=".75" RadiusY=".75">
             <GradientStop Color="White" Offset="0.0"/>
