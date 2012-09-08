@@ -313,12 +313,9 @@ namespace MediaBrowser.ApiInteraction
         {
             string url = ApiUrl + "/ServerConfiguration";
 
-            // At the moment this can't be retrieved in protobuf format
-            SerializationFormats format = DataSerializer.CanDeSerializeJsv ? SerializationFormats.Jsv : SerializationFormats.Json;
-
-            using (Stream stream = await GetSerializedStreamAsync(url, format).ConfigureAwait(false))
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DataSerializer.DeserializeFromStream<ServerConfiguration>(stream, format);
+                return DeserializeFromStream<ServerConfiguration>(stream);
             }
         }
 

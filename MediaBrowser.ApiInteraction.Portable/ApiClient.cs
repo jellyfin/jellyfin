@@ -269,10 +269,7 @@ namespace MediaBrowser.ApiInteraction.Portable
         {
             string url = ApiUrl + "/ServerConfiguration";
 
-            // At the moment this can't be retrieved in protobuf format
-            SerializationFormats format = DataSerializer.CanDeSerializeJsv ? SerializationFormats.Jsv : SerializationFormats.Json;
-
-            GetDataAsync(url, callback, format);
+            GetDataAsync(url, callback);
         }
 
         /// <summary>
