@@ -25,11 +25,14 @@ namespace MediaBrowser.Controller.IO
 
             if (handle == INVALID_HANDLE_VALUE && !Path.HasExtension(path))
             {
-                Logger.LogInfo("Handle came back invalid for {0}. Since this is a directory we'll try appending \\*.", path);
-                
-                FindClose(handle);
+                if (!path.EndsWith("*"))
+                {
+                    Logger.LogInfo("Handle came back invalid for {0}. Since this is a directory we'll try appending \\*.", path);
 
-                handle = FindFirstFile(Path.Combine(path, "*"), out data);
+                    FindClose(handle);
+
+                    handle = FindFirstFile(Path.Combine(path, "*"), out data);
+                }
             }
 
             if (handle == IntPtr.Zero)
