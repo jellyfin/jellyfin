@@ -11,7 +11,7 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Providers
 {
-    [Export(typeof(BaseMetadataProvider))]
+    //[Export(typeof(BaseMetadataProvider))]
     public class AudioInfoProvider : BaseMediaInfoProvider<Audio>
     {
         public override MetadataProviderPriority Priority
