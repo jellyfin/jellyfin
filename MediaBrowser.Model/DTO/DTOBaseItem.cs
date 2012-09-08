@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Entities;
 using ProtoBuf;
+using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.DTO
 {
@@ -155,7 +155,13 @@ namespace MediaBrowser.Model.DTO
 
         [ProtoMember(43)]
         public VideoInfo VideoInfo { get; set; }
-      
+
+        [ProtoMember(44)]
+        public VideoInfo SeriesInfo { get; set; }
+
+        [ProtoMember(45)]
+        public bool IsNew { get; set; }
+        
         public bool IsType(Type type)
         {
             return IsType(type.Name);
@@ -165,8 +171,5 @@ namespace MediaBrowser.Model.DTO
         {
             return Type.Equals(type, StringComparison.OrdinalIgnoreCase);
         }
-
-        [ProtoMember(44)]
-        public bool IsNew { get; set; }
     }
 }

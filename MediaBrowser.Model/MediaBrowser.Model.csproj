@@ -35,6 +35,7 @@
     <Compile Include="Configuration\BaseApplicationConfiguration.cs" />
     <Compile Include="Configuration\ServerConfiguration.cs" />
     <Compile Include="DTO\AudioInfo.cs" />
+    <Compile Include="DTO\SeriesInfo.cs" />
     <Compile Include="Entities\AuthenticationResult.cs" />
     <Compile Include="DTO\DTOBaseItem.cs" />
     <Compile Include="DTO\DTOUser.cs" />
