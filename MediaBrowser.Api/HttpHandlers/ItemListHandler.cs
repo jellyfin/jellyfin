@@ -3,13 +3,21 @@ using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
+    [Export(typeof(BaseHandler))]
     public class ItemListHandler : BaseSerializationHandler<DTOBaseItem[]>
     {
+        public override bool HandlesRequest(HttpListenerRequest request)
+        {
+            return ApiService.IsApiUrlMatch("itemlist", request);
+        }
+        
         protected override Task<DTOBaseItem[]> GetObjectToSerialize()
         {
             User user = ApiService.GetUserById(QueryString["userid"], true);

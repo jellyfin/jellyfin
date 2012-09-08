@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Common.Logging;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -6,15 +7,14 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
-using System.Web;
-using MediaBrowser.Common.Logging;
 
 namespace MediaBrowser.Common.Net.Handlers
 {
     public abstract class BaseHandler
     {
+        public abstract bool HandlesRequest(HttpListenerRequest request);
+
         private Stream CompressedStream { get; set; }
 
         public virtual bool? UseChunkedEncoding

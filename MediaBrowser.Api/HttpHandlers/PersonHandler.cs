@@ -3,6 +3,8 @@ using MediaBrowser.Controller;
 using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.HttpHandlers
@@ -10,8 +12,14 @@ namespace MediaBrowser.Api.HttpHandlers
     /// <summary>
     /// Gets a single Person
     /// </summary>
+    [Export(typeof(BaseHandler))]
     public class PersonHandler : BaseSerializationHandler<IBNItem>
     {
+        public override bool HandlesRequest(HttpListenerRequest request)
+        {
+            return ApiService.IsApiUrlMatch("person", request);
+        }
+        
         protected override Task<IBNItem> GetObjectToSerialize()
         {
             Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;

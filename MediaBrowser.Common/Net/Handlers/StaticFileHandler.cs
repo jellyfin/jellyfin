@@ -1,15 +1,20 @@
-﻿using System;
+﻿using MediaBrowser.Common.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Logging;
 
 namespace MediaBrowser.Common.Net.Handlers
 {
     public class StaticFileHandler : BaseHandler
     {
+        public override bool HandlesRequest(HttpListenerRequest request)
+        {
+            return false;
+        }
+
         private string _Path;
         public virtual string Path
         {

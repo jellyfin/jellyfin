@@ -4,7 +4,9 @@ using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.HttpHandlers
@@ -12,8 +14,14 @@ namespace MediaBrowser.Api.HttpHandlers
     /// <summary>
     /// Gets a single genre
     /// </summary>
+    [Export(typeof(BaseHandler))]
     public class GenreHandler : BaseSerializationHandler<IBNItem>
     {
+        public override bool HandlesRequest(HttpListenerRequest request)
+        {
+            return ApiService.IsApiUrlMatch("genre", request);
+        }
+        
         protected override Task<IBNItem> GetObjectToSerialize()
         {
             Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;

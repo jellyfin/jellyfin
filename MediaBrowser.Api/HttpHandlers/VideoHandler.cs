@@ -1,18 +1,27 @@
-﻿using System;
+﻿using MediaBrowser.Common.Drawing;
+using MediaBrowser.Common.Net.Handlers;
+using MediaBrowser.Model.Entities;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Common.Drawing;
-using MediaBrowser.Model.Entities;
+using System.Net;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
     /// <summary>
     /// Supported output formats: mkv,m4v,mp4,asf,wmv,mov,webm,ogv,3gp,avi,ts,flv
     /// </summary>
+    [Export(typeof(BaseHandler))]
     class VideoHandler : BaseMediaHandler<Video>
     {
+        public override bool HandlesRequest(HttpListenerRequest request)
+        {
+            return ApiService.IsApiUrlMatch("video", request);
+        }
+        
         /// <summary>
         /// We can output these files directly, but we can't encode them
         /// </summary>

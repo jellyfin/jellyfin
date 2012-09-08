@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Configuration;
@@ -36,10 +37,21 @@ namespace MediaBrowser.Common.Kernel
         public IEnumerable<BasePlugin> Plugins { get; private set; }
 
         /// <summary>
+        /// Gets the list of currently registered http handlers
+        /// </summary>
+        [ImportMany(typeof(BaseHandler))]
+        private IEnumerable<BaseHandler> HttpHandlers { get; set; }
+
+        /// <summary>
         /// Both the UI and server will have a built-in HttpServer.
         /// People will inevitably want remote control apps so it's needed in the UI too.
         /// </summary>
         public HttpServer HttpServer { get; private set; }
+
+        /// <summary>
+        /// This subscribes to HttpListener requests and finds the appropate BaseHandler to process it
+        /// </summary>
+        private IDisposable HttpListener { get; set; }
 
         protected virtual string HttpServerUrlPrefix
         {
@@ -186,6 +198,21 @@ namespace MediaBrowser.Common.Kernel
             DisposeHttpServer();
 
             HttpServer = new HttpServer(HttpServerUrlPrefix);
+
+            HttpListener = HttpServer.Subscribe((ctx) =>
+            {
+                BaseHandler handler = HttpHandlers.FirstOrDefault(h => h.HandlesRequest(ctx.Request));
+
+                // Find the appropiate http handler
+                if (handler != null)
+                {
+                    // Need to create a new instance because handlers are currently stateful
+                    handler = Activator.CreateInstance(handler.GetType()) as BaseHandler;
+
+                    // No need to await this, despite the compiler warning
+                    handler.ProcessRequest(ctx);
+                }
+            });
         }
 
         /// <summary>
@@ -248,6 +275,11 @@ namespace MediaBrowser.Common.Kernel
             if (HttpServer != null)
             {
                 HttpServer.Dispose();
+            }
+
+            if (HttpListener != null)
+            {
+                HttpListener.Dispose();
             }
         }
 

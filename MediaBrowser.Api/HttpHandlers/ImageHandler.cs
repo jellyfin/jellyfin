@@ -4,14 +4,22 @@ using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
 using System;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
+    [Export(typeof(BaseHandler))]
     public class ImageHandler : BaseHandler
     {
+        public override bool HandlesRequest(HttpListenerRequest request)
+        {
+            return ApiService.IsApiUrlMatch("image", request);
+        }
+        
         private string _ImagePath = null;
         private async Task<string> GetImagePath()
         {

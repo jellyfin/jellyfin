@@ -1,15 +1,24 @@
-﻿using System.Collections.Generic;
+﻿using MediaBrowser.Common.Net.Handlers;
+using MediaBrowser.Model.Entities;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Model.Entities;
+using System.Net;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
     /// <summary>
     /// Supported output formats are: mp3,flac,ogg,wav,asf,wma,aac
     /// </summary>
+    [Export(typeof(BaseHandler))]
     public class AudioHandler : BaseMediaHandler<Audio>
     {
+        public override bool HandlesRequest(HttpListenerRequest request)
+        {
+            return ApiService.IsApiUrlMatch("audio", request);
+        }
+
         /// <summary>
         /// Overriding to provide mp3 as a default, since pretty much every device supports it
         /// </summary>
