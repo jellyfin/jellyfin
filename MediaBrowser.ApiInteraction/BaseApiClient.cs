@@ -5,6 +5,9 @@ using System.IO;
 
 namespace MediaBrowser.ApiInteraction
 {
+    /// <summary>
+    /// Provides api methods that are usable on all platforms
+    /// </summary>
     public abstract class BaseApiClient : IDisposable
     {
         public BaseApiClient()
