@@ -109,9 +109,9 @@ namespace MediaBrowser.Api
             {
                 return new ServerConfigurationHandler();
             }
-            else if (IsUrlMatch("/api/defaultuser", localPath))
+            else if (IsUrlMatch("/api/user", localPath))
             {
-                return new DefaultUserHandler();
+                return new UserHandler();
             }
             else if (IsUrlMatch("/api/pluginassembly", localPath))
             {

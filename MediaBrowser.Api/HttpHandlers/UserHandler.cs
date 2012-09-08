@@ -5,11 +5,13 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    class DefaultUserHandler : BaseSerializationHandler<DTOUser>
+    class UserHandler : BaseSerializationHandler<DTOUser>
     {
         protected override Task<DTOUser> GetObjectToSerialize()
         {
-            User user = ApiService.GetDefaultUser(false);
+            string id = QueryString["id"];
+
+            User user = string.IsNullOrEmpty(id) ? ApiService.GetDefaultUser(false) : ApiService.GetUserById(id, false); ;
 
             DTOUser dto = ApiService.GetDTOUser(user);
 

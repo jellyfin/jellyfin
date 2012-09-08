@@ -407,7 +407,7 @@ namespace MediaBrowser.Common.Net.Handlers
 
             if (request.HasEntityBody)
             {
-                if (request.ContentType.Equals("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
+                if (request.ContentType.IndexOf("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase) != -1)
                 {
                     using (Stream requestBody = request.InputStream)
                     {
