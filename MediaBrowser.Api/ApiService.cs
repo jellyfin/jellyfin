@@ -378,6 +378,8 @@ namespace MediaBrowser.Api
 
         public static bool IsApiUrlMatch(string url, HttpListenerRequest request)
         {
+            url = "/api/" + url;
+
             return request.Url.LocalPath.EndsWith(url, StringComparison.OrdinalIgnoreCase);
         }
     }
