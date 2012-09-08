@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
+using MediaBrowser.Model.Authentication;
 using MediaBrowser.Model.Entities;
 using System.ComponentModel.Composition;
 using System.Net;
