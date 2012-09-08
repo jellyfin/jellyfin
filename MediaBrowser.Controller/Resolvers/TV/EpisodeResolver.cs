@@ -1,9 +1,8 @@
-﻿using System.ComponentModel.Composition;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.TV.Entities;
+﻿using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities.TV;
+using System.ComponentModel.Composition;
 
-namespace MediaBrowser.TV.Resolvers
+namespace MediaBrowser.Controller.Resolvers.TV
 {
     [Export(typeof(IBaseItemResolver))]
     public class EpisodeResolver : BaseVideoResolver<Episode>

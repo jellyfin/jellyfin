@@ -59,8 +59,17 @@
   <ItemGroup>
     <Compile Include="Providers\Movies\MovieProviderFromXml.cs" />
     <Compile Include="Providers\Movies\MovieSpecialFeaturesProvider.cs" />
+    <Compile Include="Providers\TV\EpisodeImageFromMediaLocationProvider.cs" />
+    <Compile Include="Providers\TV\EpisodeProviderFromXml.cs" />
+    <Compile Include="Providers\TV\EpisodeXmlParser.cs" />
+    <Compile Include="Providers\TV\SeriesProviderFromXml.cs" />
+    <Compile Include="Providers\TV\SeriesXmlParser.cs" />
     <Compile Include="Resolvers\Movies\BoxSetResolver.cs" />
     <Compile Include="Resolvers\Movies\MovieResolver.cs" />
+    <Compile Include="Resolvers\TV\EpisodeResolver.cs" />
+    <Compile Include="Resolvers\TV\SeasonResolver.cs" />
+    <Compile Include="Resolvers\TV\SeriesResolver.cs" />
+    <Compile Include="Resolvers\TV\TVUtils.cs" />
     <Compile Include="ServerApplicationPaths.cs" />
     <Compile Include="Library\ItemResolveEventArgs.cs" />
     <Compile Include="FFMpeg\FFProbe.cs" />
@@ -82,7 +91,7 @@
     <Compile Include="Resolvers\FolderResolver.cs" />
     <Compile Include="Resolvers\VideoResolver.cs" />
     <Compile Include="Weather\WeatherClient.cs" />
-    <Compile Include="Xml\BaseItemXmlParser.cs" />
+    <Compile Include="Providers\BaseItemXmlParser.cs" />
     <Compile Include="Xml\XmlExtensions.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,8 +1,8 @@
-﻿using System;
+﻿using MediaBrowser.Controller.IO;
+using System;
 using System.Text.RegularExpressions;
-using MediaBrowser.Controller.IO;
 
-namespace MediaBrowser.TV
+namespace MediaBrowser.Controller.Resolvers.TV
 {
     public static class TVUtils
     {

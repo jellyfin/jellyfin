@@ -44,20 +44,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Entities\Episode.cs" />
-    <Compile Include="Providers\EpisodeImageFromMediaLocationProvider.cs" />
-    <Compile Include="Providers\EpisodeProviderFromXml.cs" />
-    <Compile Include="Providers\SeriesProviderFromXml.cs" />
-    <Compile Include="Resolvers\EpisodeResolver.cs" />
-    <Compile Include="Metadata\EpisodeXmlParser.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Entities\Season.cs" />
-    <Compile Include="Resolvers\SeasonResolver.cs" />
-    <Compile Include="Entities\Series.cs" />
-    <Compile Include="Resolvers\SeriesResolver.cs" />
-    <Compile Include="Metadata\SeriesXmlParser.cs" />
-    <Compile Include="TVUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">

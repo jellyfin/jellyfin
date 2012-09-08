@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using MediaBrowser.Model.Entities;
 
-namespace MediaBrowser.TV.Entities
+namespace MediaBrowser.Model.Entities.TV
 {
     public class Series : Folder
     {

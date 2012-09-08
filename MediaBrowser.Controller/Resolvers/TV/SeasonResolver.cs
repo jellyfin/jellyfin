@@ -1,10 +1,9 @@
-﻿using System.ComponentModel.Composition;
+﻿using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities.TV;
+using System.ComponentModel.Composition;
 using System.IO;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.TV.Entities;
 
-namespace MediaBrowser.TV.Resolvers
+namespace MediaBrowser.Controller.Resolvers.TV
 {
     [Export(typeof(IBaseItemResolver))]
     public class SeasonResolver : BaseFolderResolver<Season>

@@ -1,13 +1,12 @@
-﻿using System.ComponentModel.Composition;
+﻿using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Entities.TV;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.TV.Entities;
 
-namespace MediaBrowser.TV.Providers
+namespace MediaBrowser.Controller.Providers.TV
 {
     [Export(typeof(BaseMetadataProvider))]
     public class EpisodeImageFromMediaLocationProvider : BaseMetadataProvider
