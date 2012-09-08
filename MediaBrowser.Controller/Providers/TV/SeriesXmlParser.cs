@@ -1,10 +1,9 @@
-﻿using System;
+﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Entities.TV;
+using System;
 using System.Xml;
-using MediaBrowser.Controller.Xml;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.TV.Entities;
 
-namespace MediaBrowser.TV.Metadata
+namespace MediaBrowser.Controller.Providers.TV
 {
     public class SeriesXmlParser : BaseItemXmlParser<Series>
     {

@@ -1,10 +1,11 @@
-﻿using System;
+﻿using MediaBrowser.Controller.Xml;
+using MediaBrowser.Model.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
-using MediaBrowser.Model.Entities;
 
-namespace MediaBrowser.Controller.Xml
+namespace MediaBrowser.Controller.Providers
 {
     /// <summary>
     /// Provides a base class for parsing metadata xml

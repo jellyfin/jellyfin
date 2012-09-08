@@ -54,6 +54,9 @@
     <Compile Include="Entities\Movies\Movie.cs" />
     <Compile Include="Entities\Person.cs" />
     <Compile Include="Entities\Studio.cs" />
+    <Compile Include="Entities\TV\Episode.cs" />
+    <Compile Include="Entities\TV\Season.cs" />
+    <Compile Include="Entities\TV\Series.cs" />
     <Compile Include="Entities\Video.cs" />
     <Compile Include="Entities\Year.cs" />
     <Compile Include="Plugins\BasePluginConfiguration.cs" />

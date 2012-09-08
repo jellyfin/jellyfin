@@ -157,7 +157,7 @@ namespace MediaBrowser.Model.DTO
         public VideoInfo VideoInfo { get; set; }
 
         [ProtoMember(44)]
-        public VideoInfo SeriesInfo { get; set; }
+        public SeriesInfo SeriesInfo { get; set; }
 
         [ProtoMember(45)]
         public bool IsNew { get; set; }

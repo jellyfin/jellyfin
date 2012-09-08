@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Logging;
-using MediaBrowser.Controller.FFMpeg;
+﻿using MediaBrowser.Controller.FFMpeg;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Providers
 {
-    //[Export(typeof(BaseMetadataProvider))]
+    [Export(typeof(BaseMetadataProvider))]
     public class AudioInfoProvider : BaseMediaInfoProvider<Audio>
     {
         public override MetadataProviderPriority Priority
@@ -161,7 +159,7 @@ namespace MediaBrowser.Controller.Providers
         {
             await Task.Run(() =>
             {
-                T myItem = item as T;
+                /*T myItem = item as T;
 
                 if (CanSkipFFProbe(myItem))
                 {
@@ -192,42 +190,11 @@ namespace MediaBrowser.Controller.Providers
                     }
                 }
 
-                Fetch(myItem, result);
+                Fetch(myItem, result);*/
             });
         }
 
         protected abstract void Fetch(T item, FFProbeResult result);
-
-        public override void Init()
-        {
-            base.Init();
-
-            EnsureCacheSubFolders(CacheDirectory);
-        }
-
-        private void EnsureCacheSubFolders(string root)
-        {
-            // Do this now so that we don't have to do this on every operation, which would require us to create a lock in order to maintain thread-safety
-            for (int i = 0; i <= 9; i++)
-            {
-                EnsureDirectory(Path.Combine(root, i.ToString()));
-            }
-
-            EnsureDirectory(Path.Combine(root, "a"));
-            EnsureDirectory(Path.Combine(root, "b"));
-            EnsureDirectory(Path.Combine(root, "c"));
-            EnsureDirectory(Path.Combine(root, "d"));
-            EnsureDirectory(Path.Combine(root, "e"));
-            EnsureDirectory(Path.Combine(root, "f"));
-        }
-
-        private void EnsureDirectory(string path)
-        {
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
-        }
 
         protected virtual bool CanSkipFFProbe(T item)
         {

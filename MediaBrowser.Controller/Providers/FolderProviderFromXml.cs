@@ -1,9 +1,8 @@
-﻿using System.ComponentModel.Composition;
+﻿using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Xml;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Providers
 {

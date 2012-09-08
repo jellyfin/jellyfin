@@ -1,13 +1,13 @@
-﻿using System;
+﻿using MediaBrowser.Controller.FFMpeg;
+using MediaBrowser.Model.Entities;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
-using MediaBrowser.Controller.FFMpeg;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Providers
 {
-    //[Export(typeof(BaseMetadataProvider))]
+    [Export(typeof(BaseMetadataProvider))]
     public class VideoInfoProvider : BaseMediaInfoProvider<Video>
     {
         public override MetadataProviderPriority Priority
@@ -162,16 +162,6 @@ namespace MediaBrowser.Controller.Providers
             }
             
             return true;
-        }
-
-        public override void Init()
-        {
-            base.Init();
-
-            // This is an optimzation. Do this now so that it doesn't have to be done upon first serialization.
-            ProtoBuf.Meta.RuntimeTypeModel.Default.Add(typeof(FFProbeResult), true);
-            ProtoBuf.Meta.RuntimeTypeModel.Default.Add(typeof(MediaStream), true);
-            ProtoBuf.Meta.RuntimeTypeModel.Default.Add(typeof(MediaFormat), true);
         }
     }
 }

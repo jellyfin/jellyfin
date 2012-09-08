@@ -8,6 +8,7 @@ using MediaBrowser.Controller.Weather;
 using MediaBrowser.Model.Authentication;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Entities.TV;
 using MediaBrowser.Model.Progress;
 using System;
 using System.Collections.Generic;
@@ -111,12 +112,6 @@ namespace MediaBrowser.Controller
 
             // Sort the providers by priority
             MetadataProviders = MetadataProvidersEnumerable.OrderBy(e => e.Priority).ToArray();
-
-            // Initialize the metadata providers
-            Parallel.ForEach(MetadataProviders, provider =>
-            {
-                provider.Init();
-            });
         }
 
         /// <summary>
@@ -126,16 +121,25 @@ namespace MediaBrowser.Controller
         /// </summary>
         void ItemController_PreBeginResolvePath(object sender, PreBeginResolveEventArgs e)
         {
+            // Ignore hidden files and folders
             if (e.IsHidden || e.IsSystemFile)
             {
-                // Ignore hidden files and folders
                 e.Cancel = true;
             }
 
+            // Ignore any folders named "trailers"
             else if (Path.GetFileName(e.Path).Equals("trailers", StringComparison.OrdinalIgnoreCase))
             {
-                // Ignore any folders named "trailers"
                 e.Cancel = true;
+            }
+
+            // Don't try and resolve files within the season metadata folder
+            else if (Path.GetFileName(e.Path).Equals("metadata", StringComparison.OrdinalIgnoreCase) && e.IsDirectory)
+            {
+                if (e.Parent is Season || e.Parent is Series)
+                {
+                    e.Cancel = true;
+                }
             }
         }
 
@@ -380,27 +384,6 @@ namespace MediaBrowser.Controller
                 using (FileStream fileStream = new FileStream(exe, FileMode.Create))
                 {
                     stream.CopyTo(fileStream);
-                }
-            }
-        }
-
-        protected override void DisposeComposableParts()
-        {
-            base.DisposeComposableParts();
-
-            DisposeProviders();
-        }
-
-        /// <summary>
-        /// Disposes all providers
-        /// </summary>
-        private void DisposeProviders()
-        {
-            if (MetadataProviders != null)
-            {
-                foreach (var provider in MetadataProviders)
-                {
-                    provider.Dispose();
                 }
             }
         }

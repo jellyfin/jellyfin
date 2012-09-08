@@ -1,11 +1,12 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Entities.TV;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
@@ -92,7 +93,7 @@ namespace MediaBrowser.Api
             }
 
             AttachBasicFields(dto, item, user);
-            
+
             // Make sure all the tasks we kicked off have completed.
             if (tasks.Count > 0)
             {
@@ -116,7 +117,7 @@ namespace MediaBrowser.Api
             {
                 dto.Genres = item.Genres.ToArray();
             }
-            
+
             dto.HasArt = !string.IsNullOrEmpty(item.ArtImagePath);
             dto.HasBanner = !string.IsNullOrEmpty(item.BannerImagePath);
             dto.HasLogo = !string.IsNullOrEmpty(item.LogoImagePath);
@@ -182,6 +183,7 @@ namespace MediaBrowser.Api
                 dto.IsVirtualFolder = folder.IsVirtualFolder;
             }
 
+            // Add AudioInfo
             Audio audio = item as Audio;
 
             if (audio != null)
@@ -196,6 +198,7 @@ namespace MediaBrowser.Api
                 };
             }
 
+            // Add VideoInfo
             Video video = item as Video;
 
             if (video != null)
@@ -218,6 +221,21 @@ namespace MediaBrowser.Api
                 {
                     dto.VideoInfo.Subtitles = video.Subtitles.ToArray();
                 }
+            }
+
+            // Add SeriesInfo
+            Series series = item as Series;
+
+            if (series != null)
+            {
+                DayOfWeek[] airDays = series.AirDays == null ? new DayOfWeek[] { } : series.AirDays.ToArray(); ;
+
+                dto.SeriesInfo = new SeriesInfo()
+                {
+                    AirDays = airDays,
+                    AirTime = series.AirTime,
+                    Status = series.Status
+                };
             }
         }
 

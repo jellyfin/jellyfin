@@ -1,26 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
-using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Providers
 {
-    public abstract class BaseMetadataProvider : IDisposable
+    public abstract class BaseMetadataProvider
     {
-        /// <summary>
-        /// If the provider needs any startup routines, add them here
-        /// </summary>
-        public virtual void Init()
-        {
-        }
-
-        /// <summary>
-        /// Disposes anything created during Init
-        /// </summary>
-        public virtual void Dispose()
-        {
-        }
-
         public abstract bool Supports(BaseEntity item);
 
         public virtual bool RequiresInternet
