@@ -36,6 +36,7 @@ namespace MediaBrowser.Controller.Resolvers
             {
                 case ".mp3":
                 case ".wma":
+                case ".aac":
                 case ".acc":
                 case ".flac":
                 case ".m4a":
