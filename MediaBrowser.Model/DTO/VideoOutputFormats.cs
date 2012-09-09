@@ -5,11 +5,18 @@ namespace MediaBrowser.Model.DTO
     /// These are the audio output formats that the api is cabaple of streaming
     /// This does not limit the inputs, only the outputs.
     /// </summary>
-    public enum AudioOutputFormats
+    public enum VideoOutputFormats
     {
-        Aac,
-        Flac,
-        Mp3,
-        Wma
+        Avi,
+        Asf,
+        M4v,
+        Mkv,
+        Mov,
+        Mp4,
+        Ogv,
+        ThreeGP,
+        Ts,
+        Webm,
+        Wmv
     }
 }

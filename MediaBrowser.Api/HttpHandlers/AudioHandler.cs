@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
@@ -27,7 +26,7 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             get
             {
-                return new AudioOutputFormats[] { AudioOutputFormats.Aac, AudioOutputFormats.Flac, AudioOutputFormats.Wav, AudioOutputFormats.Wma };
+                return new AudioOutputFormats[] { AudioOutputFormats.Aac, AudioOutputFormats.Flac, AudioOutputFormats.Wma };
             }
         }
 

@@ -356,24 +356,80 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="itemId">The id of the item</param>
         /// <param name="supportedOutputFormats">List all the output formats the decice is capable of playing. The more, the better, as it will decrease the likelyhood of having to encode, which will put a load on the server.</param>
-        /// <param name="maxChannels">The maximum number of channels that the device can play. Omit this if it doesn't matter. Phones and tablets should generally specify 2.</param>
-        /// <param name="maxSampleRate">The maximum sample rate that the device can play. This should generally be omitted. If there's a problem, try 44100.</param>
-        public string GetAudioStreamUrl(Guid itemId, IEnumerable<AudioOutputFormats> supportedOutputFormats, int? maxChannels = null, int? maxSampleRate = null)
+        /// <param name="maxAudioChannels">The maximum number of channels that the device can play. Omit this if it doesn't matter. Phones and tablets should generally specify 2.</param>
+        /// <param name="maxAudioSampleRate">The maximum sample rate that the device can play. This should generally be omitted. The server will default this to 44100, so only override if a different max is needed.</param>
+        public string GetAudioStreamUrl(Guid itemId, IEnumerable<AudioOutputFormats> supportedOutputFormats, int? maxAudioChannels = null, int? maxAudioSampleRate = null)
         {
             string url = ApiUrl + "/audio";
 
             url += "?outputformats=" + string.Join(",", supportedOutputFormats.Select(s => s.ToString()).ToArray());
 
-            if (maxChannels.HasValue)
+            if (maxAudioChannels.HasValue)
             {
-                url += "&audiochannels=" + maxChannels.Value;
+                url += "&audiochannels=" + maxAudioChannels.Value;
             }
 
-            if (maxSampleRate.HasValue)
+            if (maxAudioSampleRate.HasValue)
             {
-                url += "&audiosamplerate=" + maxSampleRate.Value;
+                url += "&audiosamplerate=" + maxAudioSampleRate.Value;
             }
 
+            return url;
+        }
+
+        /// <summary>
+        /// Gets the url needed to stream a video file
+        /// </summary>
+        /// <param name="itemId">The id of the item</param>
+        /// <param name="supportedOutputFormats">List all the output formats the decice is capable of playing. The more, the better, as it will decrease the likelyhood of having to encode, which will put a load on the server.</param>
+        /// <param name="maxAudioChannels">The maximum number of channels that the device can play. Omit this if it doesn't matter. Phones and tablets should generally specify 2.</param>
+        /// <param name="maxAudioSampleRate">The maximum sample rate that the device can play. This should generally be omitted. The server will default this to 44100, so only override if a different max is needed.</param>
+        /// <param name="width">Specify this is a fixed video width is required</param>
+        /// <param name="height">Specify this is a fixed video height is required</param>
+        /// <param name="maxWidth">Specify this is a max video width is required</param>
+        /// <param name="maxHeight">Specify this is a max video height is required</param>
+        public string GetVideoStreamUrl(Guid itemId, 
+            IEnumerable<VideoOutputFormats> supportedOutputFormats, 
+            int? maxAudioChannels = null, 
+            int? maxAudioSampleRate = null, 
+            int? width = null, 
+            int? height = null, 
+            int? maxWidth = null, 
+            int? maxHeight = null)
+        {
+            string url = ApiUrl + "/video";
+
+            url += "?outputformats=" + string.Join(",", supportedOutputFormats.Select(s => s.ToString()).ToArray());
+
+            if (maxAudioChannels.HasValue)
+            {
+                url += "&audiochannels=" + maxAudioChannels.Value;
+            }
+
+            if (maxAudioSampleRate.HasValue)
+            {
+                url += "&audiosamplerate=" + maxAudioSampleRate.Value;
+            }
+
+            if (width.HasValue)
+            {
+                url += "&width=" + width.Value;
+            }
+
+            if (height.HasValue)
+            {
+                url += "&height=" + height.Value;
+            }
+
+            if (maxWidth.HasValue)
+            {
+                url += "&maxWidth=" + maxWidth.Value;
+            }
+
+            if (maxHeight.HasValue)
+            {
+                url += "&maxHeight=" + maxHeight.Value;
+            }
             return url;
         }
 

@@ -83,7 +83,7 @@ namespace MediaBrowser.Api.HttpHandlers
 
                 if (string.IsNullOrEmpty(val))
                 {
-                    return null;
+                    return 44100;
                 }
 
                 return int.Parse(val);
