@@ -51,6 +51,9 @@
     <Reference Include="protobuf-net">
       <HintPath>..\protobuf-net\Full\portable\protobuf-net.dll</HintPath>
     </Reference>
+    <Reference Include="ProtobufModelSerializer">
+      <HintPath>..\MediaBrowser.Model\bin\ProtobufModelSerializer.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">

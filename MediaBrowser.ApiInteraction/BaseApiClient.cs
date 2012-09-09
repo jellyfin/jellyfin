@@ -350,6 +350,7 @@ namespace MediaBrowser.ApiInteraction
         }
 
         protected T DeserializeFromStream<T>(Stream stream)
+            where T : class
         {
             return DataSerializer.DeserializeFromStream<T>(stream, SerializationFormat);
         }
