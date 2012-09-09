@@ -17,5 +17,16 @@ namespace MediaBrowser.Model.Entities
 
         public DateTime? LastLoginDate { get; set; }
         public DateTime? LastActivityDate { get; set; }
+
+        /// <summary>
+        /// This allows the user to configure how they want to rate items
+        /// </summary>
+        public ItemRatingMode ItemRatingMode { get; set; }
+    }
+
+    public enum ItemRatingMode
+    {
+        LikeOrDislike,
+        Numeric
     }
 }
