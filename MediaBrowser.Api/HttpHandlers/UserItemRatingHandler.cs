@@ -41,16 +41,9 @@ namespace MediaBrowser.Api.HttpHandlers
                 data.Rating = null;
             }
 
-            // If the user's rating mode is set to like/dislike
-            else if (user.ItemRatingMode == ItemRatingMode.LikeOrDislike)
+            else
             {
                 data.Likes = QueryString["likes"] == "1";
-            }
-
-            // If the user's rating mode is set to numeric
-            else if (user.ItemRatingMode == ItemRatingMode.Numeric)
-            {
-                data.Rating = float.Parse(QueryString["value"]);
             }
 
             return Task.FromResult<DTOUserItemData>(ApiService.GetDTOUserItemData(data));

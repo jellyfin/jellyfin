@@ -471,22 +471,6 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Updates a user's rating for an item, based on a numeric scale
-        /// </summary>
-        public async Task<DTOUserItemData> UpdateUserItemRatingAsync(Guid itemId, Guid userId, float value)
-        {
-            string url = ApiUrl + "/UserItemRating?id=" + itemId;
-
-            url += "&userid=" + userId;
-            url += "&value=" + value;
-
-            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
-            {
-                return DeserializeFromStream<DTOUserItemData>(stream);
-            }
-        }
-
-        /// <summary>
         /// Updates a user's rating for an item, based on likes or dislikes
         /// </summary>
         public async Task<DTOUserItemData> UpdateUserItemRatingAsync(Guid itemId, Guid userId, bool likes)

@@ -24,8 +24,5 @@ namespace MediaBrowser.Model.DTO
 
         [ProtoMember(6)]
         public DateTime? LastActivityDate { get; set; }
-
-        [ProtoMember(7)]
-        public ItemRatingMode ItemRatingMode { get; set; }
     }
 }
