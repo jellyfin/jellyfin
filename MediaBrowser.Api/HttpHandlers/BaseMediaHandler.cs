@@ -13,36 +13,36 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
-    public abstract class BaseMediaHandler<T> : BaseHandler
-        where T : BaseItem, new()
+    public abstract class BaseMediaHandler<TBaseItemType, TOutputType> : BaseHandler
+        where TBaseItemType : BaseItem, new()
     {
         /// <summary>
         /// Supported values: mp3,flac,ogg,wav,asf,wma,aac
         /// </summary>
-        protected virtual IEnumerable<string> OutputFormats
+        protected virtual IEnumerable<TOutputType> OutputFormats
         {
             get
             {
-                return QueryString["outputformats"].Split(',');
+                return QueryString["outputformats"].Split(',').Select(o => (TOutputType)Enum.Parse(typeof(TOutputType), o, true));
             }
         }
 
         /// <summary>
         /// These formats can be outputted directly but cannot be encoded to
         /// </summary>
-        protected virtual IEnumerable<string> UnsupportedOutputEncodingFormats
+        protected virtual IEnumerable<TOutputType> UnsupportedOutputEncodingFormats
         {
             get
             {
-                return new string[] { };
+                return new TOutputType[] { };
             }
         }
 
-        private T _LibraryItem;
+        private TBaseItemType _LibraryItem;
         /// <summary>
         /// Gets the library item that will be played, if any
         /// </summary>
-        protected T LibraryItem
+        protected TBaseItemType LibraryItem
         {
             get
             {
@@ -52,7 +52,7 @@ namespace MediaBrowser.Api.HttpHandlers
 
                     if (!string.IsNullOrEmpty(id))
                     {
-                        _LibraryItem = Kernel.Instance.GetItemById(Guid.Parse(id)) as T;
+                        _LibraryItem = Kernel.Instance.GetItemById(Guid.Parse(id)) as TBaseItemType;
                     }
                 }
 
@@ -83,7 +83,7 @@ namespace MediaBrowser.Api.HttpHandlers
 
                 if (string.IsNullOrEmpty(val))
                 {
-                    return 44100;
+                    return null;
                 }
 
                 return int.Parse(val);
@@ -119,19 +119,19 @@ namespace MediaBrowser.Api.HttpHandlers
         /// <summary>
         /// Gets the format we'll be converting to
         /// </summary>
-        protected virtual string GetConversionOutputFormat()
+        protected virtual TOutputType GetConversionOutputFormat()
         {
-            return OutputFormats.First(f => !UnsupportedOutputEncodingFormats.Any(s => s.Equals(f, StringComparison.OrdinalIgnoreCase)));
+            return OutputFormats.First(f => !UnsupportedOutputEncodingFormats.Any(s => s.ToString().Equals(f.ToString(), StringComparison.OrdinalIgnoreCase)));
         }
 
         protected virtual bool RequiresConversion()
         {
             string currentFormat = Path.GetExtension(LibraryItem.Path).Replace(".", string.Empty);
 
-            if (OutputFormats.Any(f => currentFormat.EndsWith(f, StringComparison.OrdinalIgnoreCase)))
+            if (OutputFormats.Any(f => currentFormat.EndsWith(f.ToString(), StringComparison.OrdinalIgnoreCase)))
             {
                 // We can output these files directly, but we can't encode them
-                if (UnsupportedOutputEncodingFormats.Any(f => currentFormat.EndsWith(f, StringComparison.OrdinalIgnoreCase)))
+                if (UnsupportedOutputEncodingFormats.Any(f => currentFormat.EndsWith(f.ToString(), StringComparison.OrdinalIgnoreCase)))
                 {
                     return false;
                 }

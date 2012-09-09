@@ -1,7 +1,9 @@
 ﻿using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace MediaBrowser.ApiInteraction
 {
@@ -347,6 +349,32 @@ namespace MediaBrowser.ApiInteraction
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the url needed to stream an audio file
+        /// </summary>
+        /// <param name="itemId">The id of the item</param>
+        /// <param name="supportedOutputFormats">List all the output formats the decice is capable of playing. The more, the better, as it will decrease the likelyhood of having to encode, which will put a load on the server.</param>
+        /// <param name="maxChannels">The maximum number of channels that the device can play. Omit this if it doesn't matter. Phones and tablets should generally specify 2.</param>
+        /// <param name="maxSampleRate">The maximum sample rate that the device can play. This should generally be omitted. If there's a problem, try 44100.</param>
+        public string GetAudioStreamUrl(Guid itemId, IEnumerable<AudioOutputFormats> supportedOutputFormats, int? maxChannels = null, int? maxSampleRate = null)
+        {
+            string url = ApiUrl + "/audio";
+
+            url += "?outputformats=" + string.Join(",", supportedOutputFormats.Select(s => s.ToString()).ToArray());
+
+            if (maxChannels.HasValue)
+            {
+                url += "&audiochannels=" + maxChannels.Value;
+            }
+
+            if (maxSampleRate.HasValue)
+            {
+                url += "&audiosamplerate=" + maxSampleRate.Value;
+            }
+
+            return url;
         }
 
         protected T DeserializeFromStream<T>(Stream stream)

@@ -1,9 +1,10 @@
 ﻿using MediaBrowser.Common.Net.Handlers;
+using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
-using System.Linq;
 using System.Net;
 
 namespace MediaBrowser.Api.HttpHandlers
@@ -12,7 +13,7 @@ namespace MediaBrowser.Api.HttpHandlers
     /// Supported output formats are: mp3,flac,ogg,wav,asf,wma,aac
     /// </summary>
     [Export(typeof(BaseHandler))]
-    public class AudioHandler : BaseMediaHandler<Audio>
+    public class AudioHandler : BaseMediaHandler<Audio, AudioOutputFormats>
     {
         public override bool HandlesRequest(HttpListenerRequest request)
         {
@@ -20,54 +21,29 @@ namespace MediaBrowser.Api.HttpHandlers
         }
 
         /// <summary>
-        /// Overriding to provide mp3 as a default, since pretty much every device supports it
+        /// We can output these formats directly, but we cannot encode to them.
         /// </summary>
-        protected override IEnumerable<string> OutputFormats
+        protected override IEnumerable<AudioOutputFormats> UnsupportedOutputEncodingFormats
         {
             get
             {
-                IEnumerable<string> vals = base.OutputFormats;
-
-                return vals.Any() ? vals : new string[] { "mp3" };
+                return new AudioOutputFormats[] { AudioOutputFormats.Aac, AudioOutputFormats.Flac, AudioOutputFormats.Wav, AudioOutputFormats.Wma };
             }
         }
 
-        /// <summary>
-        /// We can output these files directly, but we can't encode them
-        /// </summary>
-        protected override IEnumerable<string> UnsupportedOutputEncodingFormats
+        private int? GetMaxAcceptedBitRate(AudioOutputFormats audioFormat)
         {
-            get
-            {
-                return new string[] { "wma", "aac" };
-            }
-        }
-
-        public IEnumerable<int> AudioBitRates
-        {
-            get
-            {
-                string val = QueryString["audiobitrates"];
-
-                if (string.IsNullOrEmpty(val))
-                {
-                    return new int[] { };
-                }
-
-                return val.Split(',').Select(v => int.Parse(v));
-            }
+            return GetMaxAcceptedBitRate(audioFormat.ToString());
         }
 
         private int? GetMaxAcceptedBitRate(string audioFormat)
         {
-            if (!AudioBitRates.Any())
+            if (audioFormat.Equals("mp3", System.StringComparison.OrdinalIgnoreCase))
             {
-                return null;
+                return 320000;
             }
 
-            int index = OutputFormats.ToList().IndexOf(audioFormat);
-
-            return AudioBitRates.ElementAt(index);
+            return null;
         }
 
         /// <summary>
@@ -81,7 +57,7 @@ namespace MediaBrowser.Api.HttpHandlers
             }
 
             string currentFormat = Path.GetExtension(LibraryItem.Path).Replace(".", string.Empty);
-            
+
             int? bitrate = GetMaxAcceptedBitRate(currentFormat);
 
             // If the bitrate is greater than our desired bitrate, we need to transcode
@@ -113,7 +89,7 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             List<string> audioTranscodeParams = new List<string>();
 
-            string outputFormat = GetConversionOutputFormat();
+            AudioOutputFormats outputFormat = GetConversionOutputFormat();
 
             int? bitrate = GetMaxAcceptedBitRate(outputFormat);
 
