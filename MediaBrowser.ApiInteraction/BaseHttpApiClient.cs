@@ -455,6 +455,54 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Clears a user's rating for an item
+        /// </summary>
+        public async Task<DTOUserItemData> ClearUserItemRatingAsync(Guid itemId, Guid userId)
+        {
+            string url = ApiUrl + "/UserItemRating?id=" + itemId;
+
+            url += "&userid=" + userId;
+            url += "&clear=1";
+
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<DTOUserItemData>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Updates a user's rating for an item, based on a numeric scale
+        /// </summary>
+        public async Task<DTOUserItemData> UpdateUserItemRatingAsync(Guid itemId, Guid userId, float value)
+        {
+            string url = ApiUrl + "/UserItemRating?id=" + itemId;
+
+            url += "&userid=" + userId;
+            url += "&value=" + value;
+
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<DTOUserItemData>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Updates a user's rating for an item, based on likes or dislikes
+        /// </summary>
+        public async Task<DTOUserItemData> UpdateUserItemRatingAsync(Guid itemId, Guid userId, bool likes)
+        {
+            string url = ApiUrl + "/UserItemRating?id=" + itemId;
+
+            url += "&userid=" + userId;
+            url += "&likes=" + (likes ? "1" : "0");
+
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<DTOUserItemData>(stream);
+            }
+        }
+
+        /// <summary>
         /// Authenticates a user and returns the result
         /// </summary>
         public async Task<AuthenticationResult> AuthenticateUserAsync(Guid userId, string password)
