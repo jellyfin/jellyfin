@@ -171,7 +171,7 @@ namespace MediaBrowser.Api
             dto.Type = item.GetType().Name;
             dto.UserRating = item.UserRating;
 
-            dto.UserData = item.GetUserData(user);
+            dto.UserData = GetDTOUserItemData(item.GetUserData(user));
 
             Folder folder = item as Folder;
 
@@ -391,6 +391,26 @@ namespace MediaBrowser.Api
                 HasPassword = !string.IsNullOrEmpty(user.Password),
                 LastActivityDate = user.LastActivityDate,
                 LastLoginDate = user.LastLoginDate
+            };
+        }
+
+        /// <summary>
+        /// Converts a UserItemData to a DTOUserItemData
+        /// </summary>
+        public static DTOUserItemData GetDTOUserItemData(UserItemData data)
+        {
+            if (data == null)
+            {
+                return null;
+            }
+
+            return new DTOUserItemData()
+            {
+                IsFavorite = data.IsFavorite,
+                Likes = data.Likes,
+                PlaybackPositionTicks = data.PlaybackPositionTicks,
+                PlayCount = data.PlayCount,
+                Rating = data.Rating
             };
         }
 

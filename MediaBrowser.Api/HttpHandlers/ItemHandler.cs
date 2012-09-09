@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
+    /// <summary>
+    /// Provides a handler to retrieve a single item
+    /// </summary>
     [Export(typeof(BaseHandler))]
     public class ItemHandler : BaseSerializationHandler<DTOBaseItem>
     {
@@ -19,7 +22,7 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             User user = ApiService.GetUserById(QueryString["userid"], true);
 
-            BaseItem item = ItemToSerialize;
+            BaseItem item = ApiService.GetItemById(QueryString["id"]);
 
             if (item == null)
             {
@@ -27,14 +30,6 @@ namespace MediaBrowser.Api.HttpHandlers
             }
 
             return ApiService.GetDTOBaseItem(item, user);
-        }
-
-        protected virtual BaseItem ItemToSerialize
-        {
-            get
-            {
-                return ApiService.GetItemById(QueryString["id"]);
-            }
         }
     }
 }

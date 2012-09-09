@@ -60,6 +60,7 @@
     <Compile Include="ApiService.cs" />
     <Compile Include="HttpHandlers\AudioHandler.cs" />
     <Compile Include="HttpHandlers\BaseMediaHandler.cs" />
+    <Compile Include="HttpHandlers\FavoriteStatusHandler.cs" />
     <Compile Include="HttpHandlers\UserHandler.cs" />
     <Compile Include="HttpHandlers\GenreHandler.cs" />
     <Compile Include="HttpHandlers\GenresHandler.cs" />

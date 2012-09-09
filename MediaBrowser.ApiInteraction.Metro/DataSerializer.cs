@@ -19,7 +19,6 @@ namespace MediaBrowser.ApiInteraction
         {
             if (format == ApiInteraction.SerializationFormats.Protobuf)
             {
-                //return Serializer.Deserialize<T>(stream);
                 return ProtobufModelSerializer.Deserialize(stream, null, typeof(T)) as T;
             }
             else if (format == ApiInteraction.SerializationFormats.Jsv)
@@ -44,7 +43,6 @@ namespace MediaBrowser.ApiInteraction
         {
             if (format == ApiInteraction.SerializationFormats.Protobuf)
             {
-                //throw new NotImplementedException();
                 return ProtobufModelSerializer.Deserialize(stream, null, type);
             }
             else if (format == ApiInteraction.SerializationFormats.Jsv)

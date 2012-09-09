@@ -17,7 +17,7 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             return ApiService.IsApiUrlMatch("itemlist", request);
         }
-        
+
         protected override Task<DTOBaseItem[]> GetObjectToSerialize()
         {
             User user = ApiService.GetUserById(QueryString["userid"], true);
@@ -59,6 +59,10 @@ namespace MediaBrowser.Api.HttpHandlers
             else if (ListType.Equals("itemswithperson", StringComparison.OrdinalIgnoreCase))
             {
                 return parent.GetItemsWithPerson(QueryString["name"], null, user);
+            }
+            else if (ListType.Equals("favorites", StringComparison.OrdinalIgnoreCase))
+            {
+                return parent.GetFavoriteItems(user);
             }
 
             throw new InvalidOperationException();

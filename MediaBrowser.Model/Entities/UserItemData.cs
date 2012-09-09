@@ -1,25 +1,67 @@
 ﻿using System;
-using ProtoBuf;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Model.Entities
 {
-    [ProtoContract]
     public class UserItemData
     {
-        [ProtoMember(1)]
-        public UserItemRating Rating { get; set; }
+        private float? _Rating = null;
+        /// <summary>
+        /// Gets or sets the users 0-10 rating
+        /// </summary>
+        public float? Rating
+        {
+            get
+            {
+                return _Rating;
+            }
+            set
+            {
+                if (value.HasValue)
+                {
+                    if (value.Value < 0 || value.Value > 10)
+                    {
+                        throw new InvalidOperationException("A 0-10 rating is required for UserItemData.");
+                    }
+                }
 
-        [ProtoMember(2)]
+                _Rating = value;
+            }
+        }
+
         public long PlaybackPositionTicks { get; set; }
 
-        [ProtoMember(3)]
         public int PlayCount { get; set; }
-    }
 
-    public enum UserItemRating
-    {
-        Likes,
-        Dislikes,
-        Favorite
+        public bool IsFavorite { get; set; }
+
+        /// <summary>
+        /// This is an interpreted property to indicate likes or dislikes
+        /// This should never be serialized.
+        /// </summary>
+        [IgnoreDataMember]
+        public bool? Likes
+        {
+            get
+            {
+                if (Rating != null)
+                {
+                    return Rating >= 6.5;
+                }
+
+                return null;
+            }
+            set
+            {
+                if (value.HasValue)
+                {
+                    Rating = value.Value ? 10 : 1;
+                }
+                else
+                {
+                    Rating = null;
+                }
+            }
+        }
     }
 }
