@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Drawing;
 using MediaBrowser.Common.Net.Handlers;
+using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ namespace MediaBrowser.Api.HttpHandlers
     /// Supported output formats: mkv,m4v,mp4,asf,wmv,mov,webm,ogv,3gp,avi,ts,flv
     /// </summary>
     [Export(typeof(BaseHandler))]
-    class VideoHandler : BaseMediaHandler<Video, string>
+    class VideoHandler : BaseMediaHandler<Video, VideoOutputFormats>
     {
         public override bool HandlesRequest(HttpListenerRequest request)
         {
@@ -25,17 +26,20 @@ namespace MediaBrowser.Api.HttpHandlers
         /// <summary>
         /// We can output these files directly, but we can't encode them
         /// </summary>
-        protected override IEnumerable<string> UnsupportedOutputEncodingFormats
+        protected override IEnumerable<VideoOutputFormats> UnsupportedOutputEncodingFormats
         {
             get
             {
                 // mp4, 3gp, mov - muxer does not support non-seekable output
                 // avi, mov, mkv, m4v - can't stream these when encoding. the player will try to download them completely before starting playback.
                 // wmv - can't seem to figure out the output format name
-                return new string[] { "mp4", "3gp", "m4v", "mkv", "avi", "mov", "wmv" };
+                return new VideoOutputFormats[] { VideoOutputFormats.Mp4, VideoOutputFormats.ThreeGP, VideoOutputFormats.M4v, VideoOutputFormats.Mkv, VideoOutputFormats.Avi, VideoOutputFormats.Mov, VideoOutputFormats.Wmv };
             }
         }
 
+        /// <summary>
+        /// Determines whether or not we can just output the original file directly
+        /// </summary>
         protected override bool RequiresConversion()
         {
             string currentFormat = Path.GetExtension(LibraryItem.Path).Replace(".", string.Empty);
@@ -52,11 +56,13 @@ namespace MediaBrowser.Api.HttpHandlers
                 return true;
             }
 
+            // See if the video requires conversion
             if (RequiresVideoConversion())
             {
                 return true;
             }
 
+            // See if the audio requires conversion
             AudioStream audioStream = (LibraryItem.AudioStreams ?? new List<AudioStream>()).FirstOrDefault();
 
             if (audioStream != null)
@@ -72,24 +78,24 @@ namespace MediaBrowser.Api.HttpHandlers
         }
 
         /// <summary>
-        /// Translates the file extension to the format param that follows "-f" on the ffmpeg command line
+        /// Translates the output file extension to the format param that follows "-f" on the ffmpeg command line
         /// </summary>
-        private string GetFFMpegOutputFormat(string outputFormat)
+        private string GetFFMpegOutputFormat(VideoOutputFormats outputFormat)
         {
-            if (outputFormat.Equals("mkv", StringComparison.OrdinalIgnoreCase))
+            if (outputFormat == VideoOutputFormats.Mkv)
             {
                 return "matroska";
             }
-            else if (outputFormat.Equals("ts", StringComparison.OrdinalIgnoreCase))
+            else if (outputFormat == VideoOutputFormats.Ts)
             {
                 return "mpegts";
             }
-            else if (outputFormat.Equals("ogv", StringComparison.OrdinalIgnoreCase))
+            else if (outputFormat == VideoOutputFormats.Ogv)
             {
                 return "ogg";
             }
 
-            return outputFormat;
+            return outputFormat.ToString().ToLower();
         }
 
         /// <summary>
@@ -99,7 +105,7 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             List<string> audioTranscodeParams = new List<string>();
 
-            string outputFormat = GetConversionOutputFormat();
+            VideoOutputFormats outputFormat = GetConversionOutputFormat();
 
             return string.Format("-i \"{0}\" -threads 0 {1} {2} -f {3} -",
                 LibraryItem.Path,
@@ -109,14 +115,20 @@ namespace MediaBrowser.Api.HttpHandlers
                 );
         }
 
-        private string GetVideoArguments(string outputFormat)
+        /// <summary>
+        /// Gets video arguments to pass to ffmpeg
+        /// </summary>
+        private string GetVideoArguments(VideoOutputFormats outputFormat)
         {
+            // Get the output codec name
             string codec = GetVideoCodec(outputFormat);
 
             string args = "-vcodec " + codec;
 
+            // If we're encoding video, add additional params
             if (!codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
+                // Add resolution params, if specified
                 if (Width.HasValue || Height.HasValue || MaxHeight.HasValue || MaxWidth.HasValue)
                 {
                     Size size = DrawingUtils.Resize(LibraryItem.Width, LibraryItem.Height, Width, Height, MaxWidth, MaxHeight);
@@ -128,21 +140,28 @@ namespace MediaBrowser.Api.HttpHandlers
             return args;
         }
 
-        private string GetAudioArguments(string outputFormat)
+        /// <summary>
+        /// Gets audio arguments to pass to ffmpeg
+        /// </summary>
+        private string GetAudioArguments(VideoOutputFormats outputFormat)
         {
             AudioStream audioStream = (LibraryItem.AudioStreams ?? new List<AudioStream>()).FirstOrDefault();
 
+            // If the video doesn't have an audio stream, return empty
             if (audioStream == null)
             {
                 return string.Empty;
             }
 
+            // Get the output codec name
             string codec = GetAudioCodec(audioStream, outputFormat);
 
             string args = "-acodec " + codec;
 
+            // If we're encoding audio, add additional params
             if (!codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
+                // Add the number of audio channels
                 int? channels = GetNumAudioChannelsParam(codec, audioStream.Channels);
 
                 if (channels.HasValue)
@@ -150,6 +169,7 @@ namespace MediaBrowser.Api.HttpHandlers
                     args += " -ac " + channels.Value;
                 }
 
+                // Add the audio sample rate
                 int? sampleRate = GetSampleRateParam(audioStream.SampleRate);
 
                 if (sampleRate.HasValue)
@@ -162,26 +182,32 @@ namespace MediaBrowser.Api.HttpHandlers
             return args;
         }
 
-        private string GetVideoCodec(string outputFormat)
+        /// <summary>
+        /// Gets the name of the output video codec
+        /// </summary>
+        private string GetVideoCodec(VideoOutputFormats outputFormat)
         {
-            if (outputFormat.Equals("webm"))
+            // Some output containers require specific codecs
+
+            if (outputFormat == VideoOutputFormats.Webm)
             {
                 // Per webm specification, it must be vpx
                 return "libvpx";
             }
-            else if (outputFormat.Equals("asf"))
+            else if (outputFormat == VideoOutputFormats.Asf)
             {
                 return "wmv2";
             }
-            else if (outputFormat.Equals("wmv"))
+            else if (outputFormat == VideoOutputFormats.Wmv)
             {
                 return "wmv2";
             }
-            else if (outputFormat.Equals("ogv"))
+            else if (outputFormat == VideoOutputFormats.Ogv)
             {
                 return "libtheora";
             }
 
+            // Skip encoding when possible
             if (!RequiresVideoConversion())
             {
                 return "copy";
@@ -190,27 +216,32 @@ namespace MediaBrowser.Api.HttpHandlers
             return "libx264";
         }
 
-        private string GetAudioCodec(AudioStream audioStream, string outputFormat)
+        /// <summary>
+        /// Gets the name of the output audio codec
+        /// </summary>
+        private string GetAudioCodec(AudioStream audioStream, VideoOutputFormats outputFormat)
         {
-            if (outputFormat.Equals("webm"))
+            // Some output containers require specific codecs
+            
+            if (outputFormat == VideoOutputFormats.Webm)
             {
                 // Per webm specification, it must be vorbis
                 return "libvorbis";
             }
-            else if (outputFormat.Equals("asf"))
+            else if (outputFormat == VideoOutputFormats.Asf)
             {
                 return "wmav2";
             }
-            else if (outputFormat.Equals("wmv"))
+            else if (outputFormat == VideoOutputFormats.Wmv)
             {
                 return "wmav2";
             }
-            else if (outputFormat.Equals("ogv"))
+            else if (outputFormat == VideoOutputFormats.Ogv)
             {
                 return "libvorbis";
             }
 
-            // See if we can just copy the stream
+            // Skip encoding when possible
             if (!RequiresAudioConversion(audioStream))
             {
                 return "copy";
@@ -219,6 +250,9 @@ namespace MediaBrowser.Api.HttpHandlers
             return "libvo_aacenc";
         }
 
+        /// <summary>
+        /// Gets the number of audio channels to specify on the command line
+        /// </summary>
         private int? GetNumAudioChannelsParam(string audioCodec, int libraryItemChannels)
         {
             if (libraryItemChannels > 2)
@@ -238,9 +272,14 @@ namespace MediaBrowser.Api.HttpHandlers
             return GetNumAudioChannelsParam(libraryItemChannels);
         }
 
+        /// <summary>
+        /// Determines if the video stream requires encoding
+        /// </summary>
         private bool RequiresVideoConversion()
         {
             // Check dimensions
+
+            // If a specific width is required, validate that
             if (Width.HasValue)
             {
                 if (Width.Value != LibraryItem.Width)
@@ -248,6 +287,8 @@ namespace MediaBrowser.Api.HttpHandlers
                     return true;
                 }
             }
+
+            // If a specific height is required, validate that
             if (Height.HasValue)
             {
                 if (Height.Value != LibraryItem.Height)
@@ -255,6 +296,8 @@ namespace MediaBrowser.Api.HttpHandlers
                     return true;
                 }
             }
+
+            // If a max width is required, validate that
             if (MaxWidth.HasValue)
             {
                 if (MaxWidth.Value < LibraryItem.Width)
@@ -262,6 +305,8 @@ namespace MediaBrowser.Api.HttpHandlers
                     return true;
                 }
             }
+
+            // If a max height is required, validate that
             if (MaxHeight.HasValue)
             {
                 if (MaxHeight.Value < LibraryItem.Height)
@@ -270,6 +315,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 }
             }
 
+            // If the codec is already h264, don't encode
             if (LibraryItem.Codec.IndexOf("264", StringComparison.OrdinalIgnoreCase) != -1 || LibraryItem.Codec.IndexOf("avc", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return false;
@@ -278,8 +324,13 @@ namespace MediaBrowser.Api.HttpHandlers
             return false;
         }
 
+        /// <summary>
+        /// Determines if the audio stream requires encoding
+        /// </summary>
         private bool RequiresAudioConversion(AudioStream audio)
         {
+
+            // If the input stream has more audio channels than the client can handle, we need to encode
             if (AudioChannels.HasValue)
             {
                 if (audio.Channels > AudioChannels.Value)
@@ -288,14 +339,18 @@ namespace MediaBrowser.Api.HttpHandlers
                 }
             }
 
+            // Aac, ac-3 and mp3 are all pretty much universally supported. No need to encode them
+
             if (audio.Codec.IndexOf("aac", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return false;
             }
+
             if (audio.Codec.IndexOf("ac-3", StringComparison.OrdinalIgnoreCase) != -1 || audio.Codec.IndexOf("ac3", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return false;
             }
+
             if (audio.Codec.IndexOf("mpeg", StringComparison.OrdinalIgnoreCase) != -1 || audio.Codec.IndexOf("mp3", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return false;
@@ -304,6 +359,9 @@ namespace MediaBrowser.Api.HttpHandlers
             return true;
         }
 
+        /// <summary>
+        /// Gets the fixed output video height, in pixels
+        /// </summary>
         private int? Height
         {
             get
@@ -319,6 +377,9 @@ namespace MediaBrowser.Api.HttpHandlers
             }
         }
 
+        /// <summary>
+        /// Gets the fixed output video width, in pixels
+        /// </summary>
         private int? Width
         {
             get
@@ -334,6 +395,9 @@ namespace MediaBrowser.Api.HttpHandlers
             }
         }
 
+        /// <summary>
+        /// Gets the maximum output video height, in pixels
+        /// </summary>
         private int? MaxHeight
         {
             get
@@ -349,6 +413,9 @@ namespace MediaBrowser.Api.HttpHandlers
             }
         }
 
+        /// <summary>
+        /// Gets the maximum output video width, in pixels
+        /// </summary>
         private int? MaxWidth
         {
             get

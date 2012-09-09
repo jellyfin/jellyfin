@@ -41,6 +41,7 @@
     <Compile Include="DTO\DTOBaseItem.cs" />
     <Compile Include="DTO\DTOUser.cs" />
     <Compile Include="DTO\VideoInfo.cs" />
+    <Compile Include="DTO\VideoOutputFormats.cs" />
     <Compile Include="Entities\Audio.cs" />
     <Compile Include="Entities\BaseEntity.cs" />
     <Compile Include="Entities\BaseItem.cs" />
