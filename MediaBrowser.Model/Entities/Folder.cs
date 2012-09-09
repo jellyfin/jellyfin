@@ -97,6 +97,24 @@ namespace MediaBrowser.Model.Entities
         }
 
         /// <summary>
+        /// Finds all recursive items within a top-level parent that the user has marked as a favorite
+        /// </summary>
+        public IEnumerable<BaseItem> GetFavoriteItems(User user)
+        {
+            return GetParentalAllowedRecursiveChildren(user).Where(c =>
+            {
+                UserItemData data = c.GetUserData(user);
+
+                if (data != null)
+                {
+                    return data.IsFavorite;
+                }
+
+                return false;
+            });
+        }
+
+        /// <summary>
         /// Finds all recursive items within a top-level parent that contain the given person and are allowed for the current user
         /// </summary>
         public IEnumerable<BaseItem> GetItemsWithPerson(string person, User user)

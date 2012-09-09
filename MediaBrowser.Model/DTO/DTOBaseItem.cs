@@ -145,7 +145,7 @@ namespace MediaBrowser.Model.DTO
         /// User data for this item based on the user it's being requested for
         /// </summary>
         [ProtoMember(40)]
-        public UserItemData UserData { get; set; }
+        public DTOUserItemData UserData { get; set; }
 
         [ProtoMember(41)]
         public ItemSpecialCounts SpecialCounts { get; set; }
