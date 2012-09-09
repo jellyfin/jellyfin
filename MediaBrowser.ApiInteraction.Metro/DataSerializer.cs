@@ -1,17 +1,26 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.IO;
-using Newtonsoft.Json;
-using ProtoBuf;
 
 namespace MediaBrowser.ApiInteraction
 {
     public static class DataSerializer
     {
+        /// <summary>
+        /// This is an auto-generated Protobuf Serialization assembly for best performance.
+        /// It is created during the Model project's post-build event.
+        /// This means that this class can currently only handle types within the Model project.
+        /// If we need to, we can always add a param indicating whether or not the model serializer should be used.
+        /// </summary>
+        private static ProtobufModelSerializer ProtobufModelSerializer = new ProtobufModelSerializer();
+        
         public static T DeserializeFromStream<T>(Stream stream, SerializationFormats format)
+            where T : class
         {
             if (format == ApiInteraction.SerializationFormats.Protobuf)
             {
-                return Serializer.Deserialize<T>(stream);
+                //return Serializer.Deserialize<T>(stream);
+                return ProtobufModelSerializer.Deserialize(stream, null, typeof(T)) as T;
             }
             else if (format == ApiInteraction.SerializationFormats.Jsv)
             {
@@ -35,7 +44,8 @@ namespace MediaBrowser.ApiInteraction
         {
             if (format == ApiInteraction.SerializationFormats.Protobuf)
             {
-                throw new NotImplementedException();
+                //throw new NotImplementedException();
+                return ProtobufModelSerializer.Deserialize(stream, null, type);
             }
             else if (format == ApiInteraction.SerializationFormats.Jsv)
             {

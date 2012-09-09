@@ -59,6 +59,9 @@
     <Reference Include="protobuf-net">
       <HintPath>..\protobuf-net\Full\portable\protobuf-net.dll</HintPath>
     </Reference>
+    <Reference Include="ProtobufModelSerializer">
+      <HintPath>..\MediaBrowser.Model\bin\ProtobufModelSerializer.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

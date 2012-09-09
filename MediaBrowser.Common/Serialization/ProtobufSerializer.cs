@@ -9,21 +9,33 @@ namespace MediaBrowser.Common.Serialization
     /// </summary>
     public static class ProtobufSerializer
     {
+        /// <summary>
+        /// This is an auto-generated Protobuf Serialization assembly for best performance.
+        /// It is created during the Model project's post-build event.
+        /// This means that this class can currently only handle types within the Model project.
+        /// If we need to, we can always add a param indicating whether or not the model serializer should be used.
+        /// </summary>
+        private static ProtobufModelSerializer ProtobufModelSerializer = new ProtobufModelSerializer();
+
         public static void SerializeToStream<T>(T obj, Stream stream)
         {
-            ProtoBuf.Serializer.Serialize<T>(stream, obj);
+            //new ProtobufModelSerializer.Serialize(stream, typeof(T));
+            ProtoBuf.Serializer.Serialize(stream, obj);
         }
 
         public static T DeserializeFromStream<T>(Stream stream)
+            where T : class
         {
-            return ProtoBuf.Serializer.Deserialize<T>(stream);
+            //return ProtoBuf.Serializer.Deserialize<T>(stream);
+            return ProtobufModelSerializer.Deserialize(stream, null, typeof(T)) as T;
         }
 
         public static object DeserializeFromStream(Stream stream, Type type)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+            return ProtobufModelSerializer.Deserialize(stream, null, type);
         }
-        
+
         public static void SerializeToFile<T>(T obj, string file)
         {
             using (Stream stream = File.Open(file, FileMode.Create))
@@ -33,6 +45,7 @@ namespace MediaBrowser.Common.Serialization
         }
 
         public static T DeserializeFromFile<T>(string file)
+            where T : class
         {
             using (Stream stream = File.OpenRead(file))
             {

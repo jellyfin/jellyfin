@@ -348,6 +348,7 @@ namespace MediaBrowser.ApiInteraction.Portable
         /// Performs a GET request, and deserializes the response stream to an object of Type T
         /// </summary>
         private void GetDataAsync<T>(string url, Action<T> callback)
+            where T : class
         {
             GetDataAsync<T>(url, callback, SerializationFormat);
         }
@@ -356,6 +357,7 @@ namespace MediaBrowser.ApiInteraction.Portable
         /// Performs a GET request, and deserializes the response stream to an object of Type T
         /// </summary>
         private void GetDataAsync<T>(string url, Action<T> callback, SerializationFormats serializationFormat)
+            where T : class
         {
             if (url.IndexOf('?') == -1)
             {
@@ -422,6 +424,7 @@ namespace MediaBrowser.ApiInteraction.Portable
         /// Performs a POST request, and deserializes the response stream to an object of Type T
         /// </summary>
         private void PostDataAsync<T>(string url, Dictionary<string, string> formValues, Action<T> callback, SerializationFormats serializationFormat)
+            where T : class
         {
             if (url.IndexOf('?') == -1)
             {
@@ -445,7 +448,7 @@ namespace MediaBrowser.ApiInteraction.Portable
                 {
                     // Construct the body
                     string postBody = string.Join("&", formValues.Keys.Select(s => string.Format("{0}={1}", s, formValues[s])).ToArray());
-                    
+
                     // Convert the string into a byte array. 
                     byte[] byteArray = Encoding.UTF8.GetBytes(postBody);
 

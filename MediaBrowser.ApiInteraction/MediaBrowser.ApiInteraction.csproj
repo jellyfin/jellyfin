@@ -33,6 +33,9 @@
     <Reference Include="protobuf-net">
       <HintPath>..\protobuf-net\Full\net30\protobuf-net.dll</HintPath>
     </Reference>
+    <Reference Include="ProtobufModelSerializer">
+      <HintPath>..\MediaBrowser.Model\bin\ProtobufModelSerializer.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\packages\ServiceStack.Text.3.9.5\lib\net35\ServiceStack.Text.dll</HintPath>
     </Reference>
