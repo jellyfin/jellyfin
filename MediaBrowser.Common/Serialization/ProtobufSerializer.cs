@@ -19,20 +19,17 @@ namespace MediaBrowser.Common.Serialization
 
         public static void SerializeToStream<T>(T obj, Stream stream)
         {
-            //new ProtobufModelSerializer.Serialize(stream, typeof(T));
-            ProtoBuf.Serializer.Serialize(stream, obj);
+            ProtobufModelSerializer.Serialize(stream, obj);
         }
 
         public static T DeserializeFromStream<T>(Stream stream)
             where T : class
         {
-            //return ProtoBuf.Serializer.Deserialize<T>(stream);
             return ProtobufModelSerializer.Deserialize(stream, null, typeof(T)) as T;
         }
 
         public static object DeserializeFromStream(Stream stream, Type type)
         {
-            //throw new NotImplementedException();
             return ProtobufModelSerializer.Deserialize(stream, null, type);
         }
 
