@@ -5,10 +5,13 @@ using MediaBrowser.Model.Weather;
 using System;
 using System.IO;
 using System.Net;
-using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Entities;
+#if WINDOWS_PHONE
+using SharpGIS;
+#else
+using System.Net.Http;
+#endif
 
 namespace MediaBrowser.ApiInteraction
 {
@@ -17,6 +20,14 @@ namespace MediaBrowser.ApiInteraction
     /// </summary>
     public abstract class BaseHttpApiClient : BaseApiClient
     {
+#if WINDOWS_PHONE
+        public BaseHttpApiClient()
+        {
+            HttpClient = new GZipWebClient();
+        }
+
+        private WebClient HttpClient { get; set; }
+#else
         public BaseHttpApiClient(HttpClientHandler handler)
             : base()
         {
@@ -26,6 +37,7 @@ namespace MediaBrowser.ApiInteraction
         }
 
         private HttpClient HttpClient { get; set; }
+#endif
 
         /// <summary>
         /// Gets an image stream based on a url
@@ -501,6 +513,16 @@ namespace MediaBrowser.ApiInteraction
                 postContent += "&password=" + password;
             }
 
+#if WINDOWS_PHONE
+            HttpClient.Headers["Content-Type"] = "application/x-www-form-urlencoded";
+            var result = await HttpClient.UploadStringTaskAsync(url, "POST", postContent);
+
+            var byteArray = Encoding.UTF8.GetBytes(result);
+            using (MemoryStream stream = new MemoryStream(byteArray))
+            {
+                return DeserializeFromStream<AuthenticationResult>(stream);
+            }
+#else
             HttpContent content = new StringContent(postContent, Encoding.UTF8, "application/x-www-form-urlencoded");
 
             HttpResponseMessage msg = await HttpClient.PostAsync(url, content).ConfigureAwait(false);
@@ -509,6 +531,7 @@ namespace MediaBrowser.ApiInteraction
             {
                 return DeserializeFromStream<AuthenticationResult>(stream);
             }
+#endif
         }
 
         /// <summary>
@@ -541,12 +564,18 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         private Task<Stream> GetStreamAsync(string url)
         {
+#if WINDOWS_PHONE
+            return HttpClient.OpenReadTaskAsync(url);
+#else
             return HttpClient.GetStreamAsync(url);
+#endif
         }
 
         public override void Dispose()
         {
+#if !WINDOWS_PHONE
             HttpClient.Dispose();
+#endif
         }
     }
 }
