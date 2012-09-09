@@ -413,19 +413,6 @@ namespace MediaBrowser.ApiInteraction.Portable
         }
 
         /// <summary>
-        /// Updates a user's rating for an item, based on a numeric scale
-        /// </summary>
-        public void UpdateUserItemRatingAsync(Guid itemId, Guid userId, float value, Action<DTOUserItemData> callback)
-        {
-            string url = ApiUrl + "/UserItemRating?id=" + itemId;
-
-            url += "&userid=" + userId;
-            url += "&value=" + value;
-
-            GetDataAsync(url, callback);
-        }
-
-        /// <summary>
         /// Updates a user's rating for an item, based on likes or dislikes
         /// </summary>
         public void UpdateUserItemRatingAsync(Guid itemId, Guid userId, bool likes, Action<DTOUserItemData> callback)
