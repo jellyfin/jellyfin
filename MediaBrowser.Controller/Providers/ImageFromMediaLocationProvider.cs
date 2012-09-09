@@ -110,7 +110,7 @@ namespace MediaBrowser.Controller.Providers
                 {
                     item.BannerImagePath = filePath;
                 }
-                if (name.Equals("art", StringComparison.OrdinalIgnoreCase))
+                if (name.Equals("clearart", StringComparison.OrdinalIgnoreCase))
                 {
                     item.ArtImagePath = filePath;
                 }
