@@ -368,6 +368,17 @@ namespace MediaBrowser.ApiInteraction.Portable
         }
 
         /// <summary>
+        /// Gets special features for a Movie
+        /// </summary>
+        public void GetMovieSpecialFeaturesAsync(Guid itemId, Guid userId, Action<DTOBaseItem[]> callback)
+        {
+            string url = ApiUrl + "/MovieSpecialFeatures?id=" + itemId;
+            url += "&userid=" + userId;
+
+            GetDataAsync(url, callback);
+        }
+
+        /// <summary>
         /// Authenticates a user and returns the result
         /// </summary>
         public void AuthenticateUserAsync(Guid userId, string password, Action<AuthenticationResult> callback)

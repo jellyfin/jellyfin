@@ -160,6 +160,9 @@ namespace MediaBrowser.Model.DTO
         public SeriesInfo SeriesInfo { get; set; }
 
         [ProtoMember(45)]
+        public MovieInfo MovieInfo { get; set; }
+
+        [ProtoMember(46)]
         public bool IsNew { get; set; }
         
         public bool IsType(Type type)

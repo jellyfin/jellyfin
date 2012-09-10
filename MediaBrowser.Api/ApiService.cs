@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Entities.Movies;
 
 namespace MediaBrowser.Api
 {
@@ -235,6 +236,19 @@ namespace MediaBrowser.Api
                     AirDays = airDays,
                     AirTime = series.AirTime,
                     Status = series.Status
+                };
+            }
+
+            // Add MovieInfo
+            Movie movie = item as Movie;
+
+            if (movie != null)
+            {
+                int specialFeatureCount = movie.SpecialFeatures == null ? 0 : movie.SpecialFeatures.Count();
+
+                dto.MovieInfo = new MovieInfo()
+                {
+                    SpecialFeatureCount = specialFeatureCount
                 };
             }
         }
