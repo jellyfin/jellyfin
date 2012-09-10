@@ -451,6 +451,20 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Gets special features for a Movie
+        /// </summary>
+        public async Task<DTOBaseItem[]> GetMovieSpecialFeaturesAsync(Guid itemId, Guid userId)
+        {
+            string url = ApiUrl + "/MovieSpecialFeatures?id=" + itemId;
+            url += "&userid=" + userId;
+
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<DTOBaseItem[]>(stream);
+            }
+        }
+
+        /// <summary>
         /// Updates a user's favorite status for an item and returns the updated UserItemData object.
         /// </summary>
         public async Task<DTOUserItemData> UpdateFavoriteStatusAsync(Guid itemId, Guid userId, bool isFavorite)

@@ -37,6 +37,7 @@
     <Compile Include="DTO\AudioInfo.cs" />
     <Compile Include="DTO\AudioOutputFormats.cs" />
     <Compile Include="DTO\DTOUserItemData.cs" />
+    <Compile Include="DTO\MovieInfo.cs" />
     <Compile Include="DTO\SeriesInfo.cs" />
     <Compile Include="Authentication\AuthenticationResult.cs" />
     <Compile Include="DTO\DTOBaseItem.cs" />
