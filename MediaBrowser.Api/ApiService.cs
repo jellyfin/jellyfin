@@ -172,7 +172,7 @@ namespace MediaBrowser.Api
             dto.Type = item.GetType().Name;
             dto.UserRating = item.UserRating;
 
-            dto.UserData = GetDTOUserItemData(item.GetUserData(user));
+            dto.UserData = GetDTOUserItemData(item.GetUserData(user, false));
 
             Folder folder = item as Folder;
 

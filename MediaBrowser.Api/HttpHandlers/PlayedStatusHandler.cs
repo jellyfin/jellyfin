@@ -8,14 +8,14 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Api.HttpHandlers
 {
     /// <summary>
-    /// Provides a handler to set user favorite status for an item
+    /// Provides a handler to set played status for an item
     /// </summary>
     [Export(typeof(BaseHandler))]
-    public class FavoriteStatusHandler : BaseSerializationHandler<DTOUserItemData>
+    public class PlayedStatusHandler : BaseSerializationHandler<DTOUserItemData>
     {
         public override bool HandlesRequest(HttpListenerRequest request)
         {
-            return ApiService.IsApiUrlMatch("FavoriteStatus", request);
+            return ApiService.IsApiUrlMatch("PlayedStatus", request);
         }
 
         protected override Task<DTOUserItemData> GetObjectToSerialize()
@@ -26,11 +26,11 @@ namespace MediaBrowser.Api.HttpHandlers
             // Get the user
             User user = ApiService.GetUserById(QueryString["userid"], true);
 
-            // Get the user data for this item
-            UserItemData data = item.GetUserData(user, true);
+            bool wasPlayed = QueryString["played"] == "1";
 
-            // Set favorite status
-            data.IsFavorite = QueryString["isfavorite"] == "1";
+            item.SetPlayedStatus(user, wasPlayed);
+
+            UserItemData data = item.GetUserData(user, true);
 
             return Task.FromResult<DTOUserItemData>(ApiService.GetDTOUserItemData(data));
         }

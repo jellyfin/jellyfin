@@ -465,6 +465,22 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Updates played status for an item
+        /// </summary>
+        public async Task<DTOUserItemData> UpdatePlayedStatusAsync(Guid itemId, Guid userId, bool wasPlayed)
+        {
+            string url = ApiUrl + "/PlayedStatus?id=" + itemId;
+
+            url += "&userid=" + userId;
+            url += "&played=" + (wasPlayed ? "1" : "0");
+
+            using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<DTOUserItemData>(stream);
+            }
+        }
+
+        /// <summary>
         /// Updates a user's favorite status for an item and returns the updated UserItemData object.
         /// </summary>
         public async Task<DTOUserItemData> UpdateFavoriteStatusAsync(Guid itemId, Guid userId, bool isFavorite)

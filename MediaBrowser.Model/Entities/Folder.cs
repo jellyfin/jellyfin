@@ -103,7 +103,7 @@ namespace MediaBrowser.Model.Entities
         {
             return GetParentalAllowedRecursiveChildren(user).Where(c =>
             {
-                UserItemData data = c.GetUserData(user);
+                UserItemData data = c.GetUserData(user, false);
 
                 if (data != null)
                 {
@@ -171,21 +171,30 @@ namespace MediaBrowser.Model.Entities
             return GetInProgressItems(GetParentalAllowedRecursiveChildren(user), user);
         }
 
+        /// <summary>
+        /// Takes a list of items and returns the ones that are recently added
+        /// </summary>
         private static IEnumerable<BaseItem> GetRecentlyAddedItems(IEnumerable<BaseItem> itemSet, User user)
         {
             return itemSet.Where(i => !(i.IsFolder) && i.IsRecentlyAdded(user));
         }
 
+        /// <summary>
+        /// Takes a list of items and returns the ones that are recently added and unplayed
+        /// </summary>
         private static IEnumerable<BaseItem> GetRecentlyAddedUnplayedItems(IEnumerable<BaseItem> itemSet, User user)
         {
             return GetRecentlyAddedItems(itemSet, user).Where(i =>
             {
-                var userdata = i.GetUserData(user);
+                var userdata = i.GetUserData(user, false);
 
                 return userdata == null || userdata.PlayCount == 0;
             });
         }
 
+        /// <summary>
+        /// Takes a list of items and returns the ones that are in progress
+        /// </summary>
         private static IEnumerable<BaseItem> GetInProgressItems(IEnumerable<BaseItem> itemSet, User user)
         {
             return itemSet.Where(i =>
@@ -195,12 +204,15 @@ namespace MediaBrowser.Model.Entities
                     return false;
                 }
 
-                var userdata = i.GetUserData(user);
+                var userdata = i.GetUserData(user, false);
 
                 return userdata != null && userdata.PlaybackPositionTicks > 0;
             });
         }
 
+        /// <summary>
+        /// Gets the total played percentage for a set of items
+        /// </summary>
         private static decimal GetPlayedPercentage(IEnumerable<BaseItem> itemSet, User user)
         {
             itemSet = itemSet.Where(i => !(i.IsFolder));
@@ -214,7 +226,7 @@ namespace MediaBrowser.Model.Entities
 
             foreach (BaseItem item in itemSet)
             {
-                UserItemData data = item.GetUserData(user);
+                UserItemData data = item.GetUserData(user, false);
 
                 if (data == null)
                 {
@@ -234,6 +246,20 @@ namespace MediaBrowser.Model.Entities
             }
 
             return totalPercent / itemSet.Count();
+        }
+
+        /// <summary>
+        /// Marks the item as either played or unplayed
+        /// </summary>
+        public override void SetPlayedStatus(User user, bool wasPlayed)
+        {
+            base.SetPlayedStatus(user, wasPlayed);
+
+            // Now sweep through recursively and update status
+            foreach (BaseItem item in GetParentalAllowedChildren(user))
+            {
+                item.SetPlayedStatus(user, wasPlayed);
+            }
         }
 
         /// <summary>

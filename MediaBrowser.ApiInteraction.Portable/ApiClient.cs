@@ -411,6 +411,19 @@ namespace MediaBrowser.ApiInteraction.Portable
         }
 
         /// <summary>
+        /// Updates played status for an item
+        /// </summary>
+        public void UpdatePlayedStatusAsync(Guid itemId, Guid userId, bool wasPlayed, Action<DTOUserItemData> callback)
+        {
+            string url = ApiUrl + "/PlayedStatus?id=" + itemId;
+
+            url += "&userid=" + userId;
+            url += "&played=" + (wasPlayed ? "1" : "0");
+
+            GetDataAsync(url, callback);
+        }
+
+        /// <summary>
         /// Clears a user's rating for an item
         /// </summary>
         public void ClearUserItemRatingAsync(Guid itemId, Guid userId, Action<DTOUserItemData> callback)
