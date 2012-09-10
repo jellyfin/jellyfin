@@ -7,7 +7,7 @@ namespace MediaBrowser.Common.Logging
     /// <summary>
     /// Provides a Logger that can write to any Stream
     /// </summary>
-    public class StreamLogger : BaseLogger
+    public class StreamLogger : ThreadedLogger
     {
         private Stream Stream { get; set; }
 
@@ -17,7 +17,7 @@ namespace MediaBrowser.Common.Logging
             Stream = stream;
         }
 
-        protected override void LogEntry(LogRow row)
+        protected override void AsyncLogMessage(LogRow row)
         {
             byte[] bytes = new UTF8Encoding().GetBytes(row.ToString() + Environment.NewLine);
             Stream.Write(bytes, 0, bytes.Length);

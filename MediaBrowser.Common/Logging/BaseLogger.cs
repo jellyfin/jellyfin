@@ -79,6 +79,10 @@ namespace MediaBrowser.Common.Logging
             LogEntry(row);
         }
 
+        protected virtual void Flush()
+        {
+        }
+
         public virtual void Dispose()
         {
         }
