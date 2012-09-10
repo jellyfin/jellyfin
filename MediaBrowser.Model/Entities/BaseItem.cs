@@ -72,17 +72,24 @@ namespace MediaBrowser.Model.Entities
 
         public Dictionary<Guid, UserItemData> UserData { get; set; }
 
-        public UserItemData GetUserData(User user)
+        public UserItemData GetUserData(User user, bool createIfNull)
         {
             if (UserData == null || !UserData.ContainsKey(user.Id))
             {
-                return null;
+                if (createIfNull)
+                {
+                    AddUserData(user, new UserItemData());
+                }
+                else
+                {
+                    return null;
+                }
             }
 
             return UserData[user.Id];
         }
 
-        public void AddUserData(User user, UserItemData data)
+        private void AddUserData(User user, UserItemData data)
         {
             if (UserData == null)
             {
@@ -142,6 +149,24 @@ namespace MediaBrowser.Model.Entities
             }
 
             People[person.Name] = person;
+        }
+
+        /// <summary>
+        /// Marks the item as either played or unplayed
+        /// </summary>
+        public virtual void SetPlayedStatus(User user, bool wasPlayed)
+        {
+            UserItemData data = GetUserData(user, true);
+
+            if (wasPlayed)
+            {
+                data.PlayCount = Math.Max(data.PlayCount, 1);
+            }
+            else
+            {
+                data.PlayCount = 0;
+                data.PlaybackPositionTicks = 0;
+            }
         }
     }
 }

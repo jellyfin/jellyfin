@@ -27,13 +27,7 @@ namespace MediaBrowser.Api.HttpHandlers
             User user = ApiService.GetUserById(QueryString["userid"], true);
 
             // Get the user data for this item
-            UserItemData data = item.GetUserData(user);
-
-            if (data == null)
-            {
-                data = new UserItemData();
-                item.AddUserData(user, data);
-            }
+            UserItemData data = item.GetUserData(user, true);
 
             // If clearing the rating, set it to null
             if (QueryString["clear"] == "1")
