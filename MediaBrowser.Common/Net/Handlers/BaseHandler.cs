@@ -25,19 +25,19 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        private bool _TotalContentLengthDiscovered;
-        private long? _TotalContentLength;
+        private bool _totalContentLengthDiscovered;
+        private long? _totalContentLength;
         public long? TotalContentLength
         {
             get
             {
-                if (!_TotalContentLengthDiscovered)
+                if (!_totalContentLengthDiscovered)
                 {
-                    _TotalContentLength = GetTotalContentLength();
-                    _TotalContentLengthDiscovered = true;
+                    _totalContentLength = GetTotalContentLength();
+                    _totalContentLengthDiscovered = true;
                 }
 
-                return _TotalContentLength;
+                return _totalContentLength;
             }
         }
 
@@ -65,14 +65,14 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        private List<KeyValuePair<long, long?>> _RequestedRanges;
+        private List<KeyValuePair<long, long?>> _requestedRanges;
         protected IEnumerable<KeyValuePair<long, long?>> RequestedRanges
         {
             get
             {
-                if (_RequestedRanges == null)
+                if (_requestedRanges == null)
                 {
-                    _RequestedRanges = new List<KeyValuePair<long, long?>>();
+                    _requestedRanges = new List<KeyValuePair<long, long?>>();
 
                     if (IsRangeRequest)
                     {
@@ -95,12 +95,12 @@ namespace MediaBrowser.Common.Net.Handlers
                                 end = long.Parse(vals[1]);
                             }
 
-                            _RequestedRanges.Add(new KeyValuePair<long, long?>(start, end));
+                            _requestedRanges.Add(new KeyValuePair<long, long?>(start, end));
                         }
                     }
                 }
 
-                return _RequestedRanges;
+                return _requestedRanges;
             }
         }
 
@@ -379,21 +379,21 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        private Hashtable _FormValues;
+        private Hashtable _formValues;
 
         /// <summary>
         /// Gets a value from form POST data
         /// </summary>
         protected async Task<string> GetFormValue(string name)
         {
-            if (_FormValues == null)
+            if (_formValues == null)
             {
-                _FormValues = await GetFormValues(HttpListenerContext.Request).ConfigureAwait(false);
+                _formValues = await GetFormValues(HttpListenerContext.Request).ConfigureAwait(false);
             }
 
-            if (_FormValues.ContainsKey(name))
+            if (_formValues.ContainsKey(name))
             {
-                return _FormValues[name].ToString();
+                return _formValues[name].ToString();
             }
 
             return null;
@@ -404,7 +404,7 @@ namespace MediaBrowser.Common.Net.Handlers
         /// </summary>
         private async Task<Hashtable> GetFormValues(HttpListenerRequest request)
         {
-            Hashtable formVars = new Hashtable();
+            var formVars = new Hashtable();
 
             if (request.HasEntityBody)
             {
@@ -412,7 +412,7 @@ namespace MediaBrowser.Common.Net.Handlers
                 {
                     using (Stream requestBody = request.InputStream)
                     {
-                        using (StreamReader reader = new StreamReader(requestBody, request.ContentEncoding))
+                        using (var reader = new StreamReader(requestBody, request.ContentEncoding))
                         {
                             string s = await reader.ReadToEndAsync().ConfigureAwait(false);
 

@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Common.Kernel
 {
     /// <summary>
-    /// Represents a shared base kernel for both the UI and server apps
+    /// Represents a shared base kernel for both the Ui and server apps
     /// </summary>
     public abstract class BaseKernel<TConfigurationType, TApplicationPathsType> : IDisposable, IKernel
         where TConfigurationType : BaseApplicationConfiguration, new()
@@ -44,8 +44,8 @@ namespace MediaBrowser.Common.Kernel
         private IEnumerable<BaseHandler> HttpHandlers { get; set; }
 
         /// <summary>
-        /// Both the UI and server will have a built-in HttpServer.
-        /// People will inevitably want remote control apps so it's needed in the UI too.
+        /// Both the Ui and server will have a built-in HttpServer.
+        /// People will inevitably want remote control apps so it's needed in the Ui too.
         /// </summary>
         public HttpServer HttpServer { get; private set; }
 

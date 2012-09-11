@@ -15,11 +15,11 @@ namespace MediaBrowser.Common.UI
         {
             InitializeComponent();
             
-            progress.ProgressChanged += progress_ProgressChanged;
-            Loaded+=Splash_Loaded;
+            progress.ProgressChanged += ProgressChanged;
+            Loaded+=SplashLoaded;
         }
 
-        void progress_ProgressChanged(object sender, TaskProgress e)
+        void ProgressChanged(object sender, TaskProgress e)
         {
             // If logging has loaded, put a message in the log.
             if (Logger.LoggerInstance != null)
@@ -31,7 +31,7 @@ namespace MediaBrowser.Common.UI
             pbProgress.Value = (double)e.PercentComplete;
         }
 
-        private void Splash_Loaded(object sender, RoutedEventArgs e)
+        private void SplashLoaded(object sender, RoutedEventArgs e)
         {
             // Setting this in markup throws an exception at runtime
             ShowTitleBar = false;

@@ -23,9 +23,7 @@ namespace MediaBrowser.ServerApplication
 
         private void cmVisitCT_click(object sender, RoutedEventArgs e)
         {
-            using (Process process = Process.Start("http://community.mediabrowser.tv/"))
-            {
-            }
+            App.OpenUrl("http://community.mediabrowser.tv/");
         }
 
         private void cmExit_click(object sender, RoutedEventArgs e)

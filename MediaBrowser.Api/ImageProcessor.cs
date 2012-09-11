@@ -79,7 +79,7 @@ namespace MediaBrowser.Api
                 quality = 90;
             }
 
-            using (EncoderParameters encoderParameters = new EncoderParameters(1))
+            using (var encoderParameters = new EncoderParameters(1))
             {
                 encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, quality.Value);
                 newImage.Save(target, GetImageCodeInfo("image/jpeg"), encoderParameters);

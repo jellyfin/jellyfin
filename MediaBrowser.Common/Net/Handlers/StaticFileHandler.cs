@@ -15,42 +15,42 @@ namespace MediaBrowser.Common.Net.Handlers
             return false;
         }
 
-        private string _Path;
+        private string _path;
         public virtual string Path
         {
             get
             {
-                if (!string.IsNullOrWhiteSpace(_Path))
+                if (!string.IsNullOrWhiteSpace(_path))
                 {
-                    return _Path;
+                    return _path;
                 }
 
                 return QueryString["path"];
             }
             set
             {
-                _Path = value;
+                _path = value;
             }
         }
 
-        private bool _SourceStreamEnsured;
-        private Stream _SourceStream;
+        private bool _sourceStreamEnsured;
+        private Stream _sourceStream;
         private Stream SourceStream
         {
             get
             {
                 EnsureSourceStream();
-                return _SourceStream;
+                return _sourceStream;
             }
         }
 
         private void EnsureSourceStream()
         {
-            if (!_SourceStreamEnsured)
+            if (!_sourceStreamEnsured)
             {
                 try
                 {
-                    _SourceStream = File.OpenRead(Path);
+                    _sourceStream = File.OpenRead(Path);
                 }
                 catch (FileNotFoundException ex)
                 {
@@ -69,7 +69,7 @@ namespace MediaBrowser.Common.Net.Handlers
                 }
                 finally
                 {
-                    _SourceStreamEnsured = true;
+                    _sourceStreamEnsured = true;
                 }
             }
         }
@@ -245,9 +245,9 @@ namespace MediaBrowser.Common.Net.Handlers
 
             if (count == null)
             {
-                byte[] buffer = new byte[16 * 1024];
+                var buffer = new byte[16 * 1024];
 
-                using (MemoryStream ms = new MemoryStream())
+                using (var ms = new MemoryStream())
                 {
                     int read;
                     while ((read = await input.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) > 0)
@@ -259,9 +259,9 @@ namespace MediaBrowser.Common.Net.Handlers
             }
             else
             {
-                byte[] buffer = new byte[count.Value];
+                var buffer = new byte[count.Value];
 
-                using (MemoryStream ms = new MemoryStream())
+                using (var ms = new MemoryStream())
                 {
                     int read = await input.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
 

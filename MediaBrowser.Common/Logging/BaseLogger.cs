@@ -25,7 +25,7 @@ namespace MediaBrowser.Common.Logging
 
         public void LogException(string message, Exception exception, params object[] paramList)
         {
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
 
             if (exception != null)
             {
@@ -67,7 +67,7 @@ namespace MediaBrowser.Common.Logging
 
             Thread currentThread = Thread.CurrentThread;
 
-            LogRow row = new LogRow
+            var row = new LogRow
             {
                 Severity = severity,
                 Message = message,

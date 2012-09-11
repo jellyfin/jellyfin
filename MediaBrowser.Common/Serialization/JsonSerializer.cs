@@ -59,15 +59,15 @@ namespace MediaBrowser.Common.Serialization
             return ServiceStack.Text.JsonSerializer.DeserializeFromStream(type, stream);
         }
 
-        private static bool IsConfigured;
+        private static bool _isConfigured;
         private static void Configure()
         {
-            if (!IsConfigured)
+            if (!_isConfigured)
             {
                 ServiceStack.Text.JsConfig.DateHandler = ServiceStack.Text.JsonDateHandler.ISO8601;
                 ServiceStack.Text.JsConfig.ExcludeTypeInfo = true;
                 ServiceStack.Text.JsConfig.IncludeNullValues = false;
-                IsConfigured = true;
+                _isConfigured = true;
             }
         }
     }

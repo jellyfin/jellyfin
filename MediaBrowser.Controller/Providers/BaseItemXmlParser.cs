@@ -347,7 +347,7 @@ namespace MediaBrowser.Controller.Providers
 
         private AudioStream FetchMediaInfoAudio(XmlReader reader)
         {
-            AudioStream stream = new AudioStream();
+            var stream = new AudioStream();
 
             reader.MoveToContent();
 
@@ -466,7 +466,7 @@ namespace MediaBrowser.Controller.Providers
 
         private SubtitleStream FetchMediaInfoSubtitles(XmlReader reader)
         {
-            SubtitleStream stream = new SubtitleStream();
+            var stream = new SubtitleStream();
 
             reader.MoveToContent();
 
@@ -681,7 +681,7 @@ namespace MediaBrowser.Controller.Providers
 
         private PersonInfo GetPersonFromXmlNode(XmlReader reader)
         {
-            PersonInfo person = new PersonInfo();
+            var person = new PersonInfo();
 
             reader.MoveToContent();
 

@@ -15,17 +15,17 @@ namespace MediaBrowser.Api.HttpHandlers
     /// Gets a single studio
     /// </summary>
     [Export(typeof(BaseHandler))]
-    public class StudioHandler : BaseSerializationHandler<IBNItem>
+    public class StudioHandler : BaseSerializationHandler<IbnItem>
     {
         public override bool HandlesRequest(HttpListenerRequest request)
         {
             return ApiService.IsApiUrlMatch("studio", request);
         }
-        
-        protected override Task<IBNItem> GetObjectToSerialize()
+
+        protected override Task<IbnItem> GetObjectToSerialize()
         {
-            Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
-            User user = ApiService.GetUserById(QueryString["userid"], true);
+            var parent = ApiService.GetItemById(QueryString["id"]) as Folder;
+            var user = ApiService.GetUserById(QueryString["userid"], true);
 
             string name = QueryString["name"];
 
@@ -35,7 +35,7 @@ namespace MediaBrowser.Api.HttpHandlers
         /// <summary>
         /// Gets a Studio
         /// </summary>
-        private async Task<IBNItem> GetStudio(Folder parent, User user, string name)
+        private async Task<IbnItem> GetStudio(Folder parent, User user, string name)
         {
             int count = 0;
 
@@ -51,7 +51,7 @@ namespace MediaBrowser.Api.HttpHandlers
             }
 
             // Get the original entity so that we can also supply the PrimaryImagePath
-            return ApiService.GetIBNItem(await Kernel.Instance.ItemController.GetStudio(name).ConfigureAwait(false), count);
+            return ApiService.GetIbnItem(await Kernel.Instance.ItemController.GetStudio(name).ConfigureAwait(false), count);
         }
     }
 }

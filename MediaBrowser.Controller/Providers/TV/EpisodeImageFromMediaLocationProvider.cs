@@ -25,13 +25,13 @@ namespace MediaBrowser.Controller.Providers.TV
         {
             return Task.Run(() =>
             {
-                Episode episode = item as Episode;
+                var episode = item as Episode;
 
                 string metadataFolder = Path.Combine(args.Parent.Path, "metadata");
 
                 string episodeFileName = Path.GetFileName(episode.Path);
 
-                Season season = args.Parent as Season;
+                var season = args.Parent as Season;
 
                 SetPrimaryImagePath(episode, season, metadataFolder, episodeFileName);
             });
@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.Providers.TV
         private void SetPrimaryImagePath(Episode item, Season season, string metadataFolder, string episodeFileName)
         {
             // Look for the image file in the metadata folder, and if found, set PrimaryImagePath
-            string[] imageFiles = new string[] {
+            var imageFiles = new string[] {
                 Path.Combine(metadataFolder, Path.ChangeExtension(episodeFileName, ".jpg")),
                 Path.Combine(metadataFolder, Path.ChangeExtension(episodeFileName, ".png"))
             };

@@ -18,7 +18,7 @@ namespace MediaBrowser.Controller.FFMpeg
         /// </summary>
         public static FFProbeResult Run(BaseItem item, string cacheDirectory)
         {
-            string cachePath = GetFFProbeCachePath(item, cacheDirectory);
+            string cachePath = GetFfProbeCachePath(item, cacheDirectory);
 
             // Use try catch to avoid having to use File.Exists
             try
@@ -72,7 +72,7 @@ namespace MediaBrowser.Controller.FFMpeg
 
         private static FFProbeResult Run(string input)
         {
-            ProcessStartInfo startInfo = new ProcessStartInfo();
+            var startInfo = new ProcessStartInfo { };
 
             startInfo.CreateNoWindow = true;
 
@@ -88,12 +88,12 @@ namespace MediaBrowser.Controller.FFMpeg
 
             //Logger.LogInfo(startInfo.FileName + " " + startInfo.Arguments);
 
-            Process process = new Process();
+            var process = new Process { };
             process.StartInfo = startInfo;
 
             process.EnableRaisingEvents = true;
 
-            process.Exited += process_Exited;
+            process.Exited += ProcessExited;
 
             try
             {
@@ -122,12 +122,12 @@ namespace MediaBrowser.Controller.FFMpeg
             }
         }
 
-        static void process_Exited(object sender, EventArgs e)
+        static void ProcessExited(object sender, EventArgs e)
         {
             (sender as Process).Dispose();
         }
 
-        private static string GetFFProbeCachePath(BaseItem item, string cacheDirectory)
+        private static string GetFfProbeCachePath(BaseItem item, string cacheDirectory)
         {
             string outputDirectory = Path.Combine(cacheDirectory, item.Id.ToString().Substring(0, 1));
 

@@ -13,17 +13,17 @@ namespace MediaBrowser.Api.HttpHandlers
     /// Gets a single year
     /// </summary>
     [Export(typeof(BaseHandler))]
-    public class YearHandler : BaseSerializationHandler<IBNItem>
+    public class YearHandler : BaseSerializationHandler<IbnItem>
     {
         public override bool HandlesRequest(HttpListenerRequest request)
         {
             return ApiService.IsApiUrlMatch("year", request);
         }
-        
-        protected override Task<IBNItem> GetObjectToSerialize()
+
+        protected override Task<IbnItem> GetObjectToSerialize()
         {
-            Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
-            User user = ApiService.GetUserById(QueryString["userid"], true);
+            var parent = ApiService.GetItemById(QueryString["id"]) as Folder;
+            var user = ApiService.GetUserById(QueryString["userid"], true);
 
             string year = QueryString["year"];
 
@@ -33,7 +33,7 @@ namespace MediaBrowser.Api.HttpHandlers
         /// <summary>
         /// Gets a Year
         /// </summary>
-        private async Task<IBNItem> GetYear(Folder parent, User user, int year)
+        private async Task<IbnItem> GetYear(Folder parent, User user, int year)
         {
             int count = 0;
 
@@ -49,7 +49,7 @@ namespace MediaBrowser.Api.HttpHandlers
             }
 
             // Get the original entity so that we can also supply the PrimaryImagePath
-            return ApiService.GetIBNItem(await Kernel.Instance.ItemController.GetYear(year).ConfigureAwait(false), count);
+            return ApiService.GetIbnItem(await Kernel.Instance.ItemController.GetYear(year).ConfigureAwait(false), count);
         }
     }
 }

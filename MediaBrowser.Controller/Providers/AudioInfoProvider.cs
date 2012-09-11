@@ -249,7 +249,7 @@ namespace MediaBrowser.Controller.Providers
         
         private Dictionary<string, string> ConvertDictionaryToCaseInSensitive(Dictionary<string, string> dict)
         {
-            Dictionary<string, string> newDict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var newDict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (string key in dict.Keys)
             {

@@ -19,7 +19,7 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             string id = QueryString["id"];
 
-            User user = string.IsNullOrEmpty(id) ? ApiService.GetDefaultUser(false) : ApiService.GetUserById(id, false); ;
+            User user = string.IsNullOrEmpty(id) ? ApiService.GetDefaultUser(false) : ApiService.GetUserById(id, false);
 
             DtoUser dto = ApiService.GetDtoUser(user);
 

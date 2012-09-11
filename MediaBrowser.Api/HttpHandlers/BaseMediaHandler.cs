@@ -147,7 +147,7 @@ namespace MediaBrowser.Api.HttpHandlers
 
         protected async override Task WriteResponseToOutputStream(Stream stream)
         {
-            ProcessStartInfo startInfo = new ProcessStartInfo();
+            var startInfo = new ProcessStartInfo{};
 
             startInfo.CreateNoWindow = true;
 
@@ -163,7 +163,7 @@ namespace MediaBrowser.Api.HttpHandlers
 
             Logger.LogInfo(startInfo.FileName + " " + startInfo.Arguments);
 
-            Process process = new Process();
+            var process = new Process{};
             process.StartInfo = startInfo;
 
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
@@ -208,7 +208,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 LogFileStream.Dispose();
             }
 
-            Process process = sender as Process;
+            var process = sender as Process;
 
             Logger.LogInfo("FFMpeg exited with code " + process.ExitCode);
 

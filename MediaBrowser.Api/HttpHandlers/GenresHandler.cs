@@ -11,16 +11,16 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Api.HttpHandlers
 {
     [Export(typeof(BaseHandler))]
-    public class GenresHandler : BaseSerializationHandler<IBNItem[]>
+    public class GenresHandler : BaseSerializationHandler<IbnItem[]>
     {
         public override bool HandlesRequest(HttpListenerRequest request)
         {
             return ApiService.IsApiUrlMatch("genres", request);
         }
-        
-        protected override Task<IBNItem[]> GetObjectToSerialize()
+
+        protected override Task<IbnItem[]> GetObjectToSerialize()
         {
-            Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
+            var parent = ApiService.GetItemById(QueryString["id"]) as Folder;
             User user = ApiService.GetUserById(QueryString["userid"], true);
 
             return GetAllGenres(parent, user);
@@ -30,9 +30,9 @@ namespace MediaBrowser.Api.HttpHandlers
         /// Gets all genres from all recursive children of a folder
         /// The CategoryInfo class is used to keep track of the number of times each genres appears
         /// </summary>
-        private async Task<IBNItem[]> GetAllGenres(Folder parent, User user)
+        private async Task<IbnItem[]> GetAllGenres(Folder parent, User user)
         {
-            Dictionary<string, int> data = new Dictionary<string, int>();
+            var data = new Dictionary<string, int>();
 
             // Get all the allowed recursive children
             IEnumerable<BaseItem> allItems = parent.GetParentalAllowedRecursiveChildren(user);
@@ -60,16 +60,16 @@ namespace MediaBrowser.Api.HttpHandlers
             }
 
             // Get the Genre objects
-            Genre[] entities = await Task.WhenAll(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetGenre(key); })).ConfigureAwait(false);
+            Genre[] entities = await Task.WhenAll(data.Keys.Select(key => Kernel.Instance.ItemController.GetGenre(key))).ConfigureAwait(false);
 
             // Convert to an array of IBNItem
-            IBNItem[] items = new IBNItem[entities.Length];
+            var items = new IbnItem[entities.Length];
 
             for (int i = 0; i < entities.Length; i++)
             {
                 Genre e = entities[i];
 
-                items[i] = ApiService.GetIBNItem(e, data[e.Name]);
+                items[i] = ApiService.GetIbnItem(e, data[e.Name]);
             }
 
             return items;

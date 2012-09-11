@@ -18,7 +18,7 @@ namespace MediaBrowser.Controller.IO
 
         public void Start()
         {
-            List<string> pathsToWatch = new List<string>();
+            var pathsToWatch = new List<string>();
 
             var rootFolder = Kernel.Instance.RootFolder;
 
@@ -42,7 +42,7 @@ namespace MediaBrowser.Controller.IO
 
             foreach (string path in pathsToWatch)
             {
-                FileSystemWatcher watcher = new FileSystemWatcher(path, "*");
+                var watcher = new FileSystemWatcher(path, "*") { };
 
                 watcher.IncludeSubdirectories = true;
 
@@ -88,7 +88,7 @@ namespace MediaBrowser.Controller.IO
 
         private Task ProcessPathChanges(IEnumerable<string> paths)
         {
-            List<BaseItem> itemsToRefresh = new List<BaseItem>();
+            var itemsToRefresh = new List<BaseItem>();
 
             foreach (BaseItem item in paths.Select(p => GetAffectedBaseItem(p)))
             {

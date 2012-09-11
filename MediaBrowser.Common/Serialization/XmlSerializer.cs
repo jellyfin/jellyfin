@@ -25,7 +25,7 @@ namespace MediaBrowser.Common.Serialization
 
         public static void SerializeToFile<T>(T obj, string file)
         {
-            using (FileStream stream = new FileStream(file, FileMode.Create))
+            using (var stream = new FileStream(file, FileMode.Create))
             {
                 SerializeToStream(obj, stream);
             }
@@ -41,7 +41,7 @@ namespace MediaBrowser.Common.Serialization
 
         public static void SerializeToFile(object obj, string file)
         {
-            using (FileStream stream = new FileStream(file, FileMode.Create))
+            using (var stream = new FileStream(file, FileMode.Create))
             {
                 ServiceStack.Text.XmlSerializer.SerializeToStream(obj, stream);
             }

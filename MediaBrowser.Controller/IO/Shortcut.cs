@@ -167,12 +167,12 @@ namespace MediaBrowser.Controller.IO
 
         public static string ResolveShortcut(string filename)
         {
-            ShellLink link = new ShellLink();
+            var link = new ShellLink();
             ((IPersistFile)link).Load(filename, STGM_READ);
             // TODO: if I can get hold of the hwnd call resolve first. This handles moved and renamed files.  
             // ((IShellLinkW)link).Resolve(hwnd, 0) 
-            StringBuilder sb = new StringBuilder(MAX_PATH);
-            WIN32_FIND_DATAW data = new WIN32_FIND_DATAW();
+            var sb = new StringBuilder(MAX_PATH);
+            var data = new WIN32_FIND_DATAW();
             ((IShellLinkW)link).GetPath(sb, sb.Capacity, out data, 0);
             return sb.ToString();
         }

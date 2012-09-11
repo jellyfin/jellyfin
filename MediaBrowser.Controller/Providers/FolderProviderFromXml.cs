@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.Providers
         {
             if (args.ContainsFile("folder.xml"))
             {
-                await Task.Run(() => { Fetch(item, args); }).ConfigureAwait(false);
+                await Task.Run(() => Fetch(item, args)).ConfigureAwait(false);
             }
         }
 

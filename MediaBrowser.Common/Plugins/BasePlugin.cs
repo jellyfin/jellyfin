@@ -74,20 +74,20 @@ namespace MediaBrowser.Common.Plugins
             }
         }
 
-        private DateTime? _ConfigurationDateLastModified;
+        private DateTime? _configurationDateLastModified;
         public DateTime ConfigurationDateLastModified
         {
             get
             {
-                if (_ConfigurationDateLastModified == null)
+                if (_configurationDateLastModified == null)
                 {
                     if (File.Exists(ConfigurationFilePath))
                     {
-                        _ConfigurationDateLastModified = File.GetLastWriteTimeUtc(ConfigurationFilePath);
+                        _configurationDateLastModified = File.GetLastWriteTimeUtc(ConfigurationFilePath);
                     }
                 }
 
-                return _ConfigurationDateLastModified ?? DateTime.MinValue;
+                return _configurationDateLastModified ?? DateTime.MinValue;
             }
         }
 
@@ -123,7 +123,7 @@ namespace MediaBrowser.Common.Plugins
             }
         }
 
-        private string _DataFolderPath;
+        private string _dataFolderPath;
         /// <summary>
         /// Gets the full path to the data folder, where the plugin can store any miscellaneous files needed
         /// </summary>
@@ -131,19 +131,19 @@ namespace MediaBrowser.Common.Plugins
         {
             get
             {
-                if (_DataFolderPath == null)
+                if (_dataFolderPath == null)
                 {
                     // Give the folder name the same name as the config file name
                     // We can always make this configurable if/when needed
-                    _DataFolderPath = Path.Combine(Kernel.ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(ConfigurationFileName));
+                    _dataFolderPath = Path.Combine(Kernel.ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(ConfigurationFileName));
 
-                    if (!Directory.Exists(_DataFolderPath))
+                    if (!Directory.Exists(_dataFolderPath))
                     {
-                        Directory.CreateDirectory(_DataFolderPath);
+                        Directory.CreateDirectory(_dataFolderPath);
                     }
                 }
 
-                return _DataFolderPath;
+                return _dataFolderPath;
             }
         }
 
@@ -156,9 +156,9 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <summary>
-        /// Returns true or false indicating if the plugin should be downloaded and run within the UI.
+        /// Returns true or false indicating if the plugin should be downloaded and run within the Ui.
         /// </summary>
-        public virtual bool DownloadToUI
+        public virtual bool DownloadToUi
         {
             get
             {
@@ -188,9 +188,9 @@ namespace MediaBrowser.Common.Plugins
                     {
                         InitializeOnServer();
                     }
-                    else if (kernel.KernelContext == KernelContext.UI)
+                    else if (kernel.KernelContext == KernelContext.Ui)
                     {
-                        InitializeInUI();
+                        InitializeInUi();
                     }
                 }
             }
@@ -204,9 +204,9 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <summary>
-        /// Starts the plugin in the UI
+        /// Starts the plugin in the Ui
         /// </summary>
-        protected virtual void InitializeInUI()
+        protected virtual void InitializeInUi()
         {
         }
 
@@ -219,9 +219,9 @@ namespace MediaBrowser.Common.Plugins
             {
                 DisposeOnServer();
             }
-            else if (Context == KernelContext.UI)
+            else if (Context == KernelContext.Ui)
             {
-                InitializeInUI();
+                InitializeInUi();
             }
         }
 
@@ -233,9 +233,9 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <summary>
-        /// Disposes the plugin in the UI
+        /// Disposes the plugin in the Ui
         /// </summary>
-        protected virtual void DisposeInUI()
+        protected virtual void DisposeInUi()
         {
         }
 
@@ -252,7 +252,7 @@ namespace MediaBrowser.Common.Plugins
             }
 
             // Reset this so it will be loaded again next time it's accessed
-            _ConfigurationDateLastModified = null;
+            _configurationDateLastModified = null;
         }
     }
 }

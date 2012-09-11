@@ -22,15 +22,12 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             User user = ApiService.GetUserById(QueryString["userid"], true);
 
-            return Task.WhenAll(GetItemsToSerialize(user).Select(i =>
-            {
-                return ApiService.GetDtoBaseItem(i, user, includeChildren: false, includePeople: false);
-            }));
+            return Task.WhenAll(GetItemsToSerialize(user).Select(i => ApiService.GetDtoBaseItem(i, user, includeChildren: false, includePeople: false)));
         }
 
         private IEnumerable<BaseItem> GetItemsToSerialize(User user)
         {
-            Folder parent = ApiService.GetItemById(ItemId) as Folder;
+            var parent = ApiService.GetItemById(ItemId) as Folder;
 
             if (ListType.Equals("inprogressitems", StringComparison.OrdinalIgnoreCase))
             {
