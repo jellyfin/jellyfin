@@ -1,5 +1,7 @@
 ﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Logging;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -7,8 +9,6 @@ using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Weather;
 using MediaBrowser.Model.Authentication;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Entities.TV;
 using MediaBrowser.Model.Progress;
 using System;
 using System.Collections.Generic;

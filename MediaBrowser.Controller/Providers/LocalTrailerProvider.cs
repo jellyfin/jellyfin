@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Controller.IO;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;

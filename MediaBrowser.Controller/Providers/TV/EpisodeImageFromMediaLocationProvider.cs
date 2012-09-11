@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Entities.TV;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;

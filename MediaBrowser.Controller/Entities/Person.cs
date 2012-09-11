@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.Model.Entities
+namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
     /// This is the full Person object that can be retrieved with all of it's data.

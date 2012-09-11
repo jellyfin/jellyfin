@@ -1,7 +1,7 @@
-﻿using System;
-using System.IO;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
-using MediaBrowser.Model.Entities;
+using System;
+using System.IO;
 
 namespace MediaBrowser.Controller.Library
 {

@@ -1,8 +1,9 @@
 ﻿using MediaBrowser.Controller;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Entities.Movies;
-using MediaBrowser.Model.Entities.TV;
 using System;
 using System.Collections.Generic;
 using System.Linq;

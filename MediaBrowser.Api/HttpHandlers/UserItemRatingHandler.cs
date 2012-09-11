@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Net.Handlers;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
 using System.ComponentModel.Composition;

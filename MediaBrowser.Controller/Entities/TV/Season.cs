@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MediaBrowser.Model.Entities.TV
+namespace MediaBrowser.Controller.Entities.TV
 {
     public class Season : Folder
     {

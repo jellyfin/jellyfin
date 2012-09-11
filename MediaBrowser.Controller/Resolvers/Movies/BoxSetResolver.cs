@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities.Movies;
+﻿using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Library;
 using System;
 using System.ComponentModel.Composition;
 using System.IO;

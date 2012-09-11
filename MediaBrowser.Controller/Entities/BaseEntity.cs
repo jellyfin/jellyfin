@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MediaBrowser.Model.Entities
+namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
     /// Provides a base entity for all of our types

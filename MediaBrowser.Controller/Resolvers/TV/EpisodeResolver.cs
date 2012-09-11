@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities.TV;
+﻿using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using System.ComponentModel.Composition;
 
 namespace MediaBrowser.Controller.Resolvers.TV

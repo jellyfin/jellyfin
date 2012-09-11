@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Entities.TV;
+﻿using MediaBrowser.Controller.Entities.TV;
 using System.IO;
 using System.Xml;
 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MediaBrowser.Model.Entities.Movies
+namespace MediaBrowser.Controller.Entities.Movies
 {
     public class Movie : Video
     {

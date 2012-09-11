@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.Model.Entities.TV
+namespace MediaBrowser.Controller.Entities.TV
 {
     public class Episode : Video
     {

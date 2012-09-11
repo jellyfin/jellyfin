@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.Model.Entities.Movies
+namespace MediaBrowser.Controller.Entities.Movies
 {
     public class BoxSet : Folder
     {
