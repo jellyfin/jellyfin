@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace MediaBrowser.Model.Entities
+namespace MediaBrowser.Controller.Entities
 {
     public class UserItemData
     {
