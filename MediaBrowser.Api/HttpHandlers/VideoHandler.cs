@@ -34,7 +34,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 // mp4, 3gp, mov - muxer does not support non-seekable output
                 // avi, mov, mkv, m4v - can't stream these when encoding. the player will try to download them completely before starting playback.
                 // wmv - can't seem to figure out the output format name
-                return new VideoOutputFormats[] { VideoOutputFormats.Mp4, VideoOutputFormats.ThreeGP, VideoOutputFormats.M4v, VideoOutputFormats.Mkv, VideoOutputFormats.Avi, VideoOutputFormats.Mov, VideoOutputFormats.Wmv };
+                return new VideoOutputFormats[] { VideoOutputFormats.Mp4, VideoOutputFormats.ThreeGp, VideoOutputFormats.M4V, VideoOutputFormats.Mkv, VideoOutputFormats.Avi, VideoOutputFormats.Mov, VideoOutputFormats.Wmv };
             }
         }
 
@@ -87,11 +87,11 @@ namespace MediaBrowser.Api.HttpHandlers
             {
                 return "matroska";
             }
-            else if (outputFormat == VideoOutputFormats.Ts)
+            if (outputFormat == VideoOutputFormats.Ts)
             {
                 return "mpegts";
             }
-            else if (outputFormat == VideoOutputFormats.Ogv)
+            if (outputFormat == VideoOutputFormats.Ogv)
             {
                 return "ogg";
             }
@@ -104,8 +104,6 @@ namespace MediaBrowser.Api.HttpHandlers
         /// </summary>
         protected override string GetCommandLineArguments()
         {
-            List<string> audioTranscodeParams = new List<string>();
-
             VideoOutputFormats outputFormat = GetConversionOutputFormat();
 
             return string.Format("-i \"{0}\" -threads 0 {1} {2} -f {3} -",
@@ -195,15 +193,15 @@ namespace MediaBrowser.Api.HttpHandlers
                 // Per webm specification, it must be vpx
                 return "libvpx";
             }
-            else if (outputFormat == VideoOutputFormats.Asf)
+            if (outputFormat == VideoOutputFormats.Asf)
             {
                 return "wmv2";
             }
-            else if (outputFormat == VideoOutputFormats.Wmv)
+            if (outputFormat == VideoOutputFormats.Wmv)
             {
                 return "wmv2";
             }
-            else if (outputFormat == VideoOutputFormats.Ogv)
+            if (outputFormat == VideoOutputFormats.Ogv)
             {
                 return "libtheora";
             }
@@ -223,21 +221,21 @@ namespace MediaBrowser.Api.HttpHandlers
         private string GetAudioCodec(AudioStream audioStream, VideoOutputFormats outputFormat)
         {
             // Some output containers require specific codecs
-            
+
             if (outputFormat == VideoOutputFormats.Webm)
             {
                 // Per webm specification, it must be vorbis
                 return "libvorbis";
             }
-            else if (outputFormat == VideoOutputFormats.Asf)
+            if (outputFormat == VideoOutputFormats.Asf)
             {
                 return "wmav2";
             }
-            else if (outputFormat == VideoOutputFormats.Wmv)
+            if (outputFormat == VideoOutputFormats.Wmv)
             {
                 return "wmav2";
             }
-            else if (outputFormat == VideoOutputFormats.Ogv)
+            if (outputFormat == VideoOutputFormats.Ogv)
             {
                 return "libvorbis";
             }
@@ -263,7 +261,7 @@ namespace MediaBrowser.Api.HttpHandlers
                     // libvo_aacenc currently only supports two channel output
                     return 2;
                 }
-                else if (audioCodec.Equals("wmav2"))
+                if (audioCodec.Equals("wmav2"))
                 {
                     // wmav2 currently only supports two channel output
                     return 2;

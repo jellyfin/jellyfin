@@ -18,25 +18,25 @@ namespace MediaBrowser.Api.HttpHandlers
             return ApiService.IsApiUrlMatch("pluginconfiguration", request);
         }
         
-        private BasePlugin _Plugin = null;
+        private BasePlugin _plugin;
         private BasePlugin Plugin
         {
             get
             {
-                if (_Plugin == null)
+                if (_plugin == null)
                 {
                     string name = QueryString["assemblyfilename"];
 
-                    _Plugin = Kernel.Instance.Plugins.First(p => p.AssemblyFileName.Equals(name, StringComparison.OrdinalIgnoreCase));
+                    _plugin = Kernel.Instance.Plugins.First(p => p.AssemblyFileName.Equals(name, StringComparison.OrdinalIgnoreCase));
                 }
 
-                return _Plugin;
+                return _plugin;
             }
         }
 
         protected override Task<BasePluginConfiguration> GetObjectToSerialize()
         {
-            return Task.FromResult<BasePluginConfiguration>(Plugin.Configuration);
+            return Task.FromResult(Plugin.Configuration);
         }
 
         public override TimeSpan CacheDuration

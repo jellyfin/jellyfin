@@ -19,7 +19,7 @@ namespace MediaBrowser.Api.HttpHandlers
         
         protected override Task<ServerConfiguration> GetObjectToSerialize()
         {
-            return Task.FromResult<ServerConfiguration>(Kernel.Instance.Configuration);
+            return Task.FromResult(Kernel.Instance.Configuration);
         }
 
         public override TimeSpan CacheDuration

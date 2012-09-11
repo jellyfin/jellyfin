@@ -12,7 +12,7 @@ namespace MediaBrowser.Common.Serialization
     {
         public static void SerializeToStream<T>(T obj, Stream stream)
         {
-            ServiceStack.Text.TypeSerializer.SerializeToStream<T>(obj, stream);
+            ServiceStack.Text.TypeSerializer.SerializeToStream(obj, stream);
         }
 
         public static T DeserializeFromStream<T>(Stream stream)
@@ -29,7 +29,7 @@ namespace MediaBrowser.Common.Serialization
         {
             using (Stream stream = File.Open(file, FileMode.Create))
             {
-                SerializeToStream<T>(obj, stream);
+                SerializeToStream(obj, stream);
             }
         }
 

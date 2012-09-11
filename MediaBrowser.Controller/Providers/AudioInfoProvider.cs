@@ -26,9 +26,6 @@ namespace MediaBrowser.Controller.Providers
         {
             MediaStream stream = data.streams.First(s => s.codec_type.Equals("audio", StringComparison.OrdinalIgnoreCase));
 
-            string bitrate = null;
-            string duration = null;
-
             audio.Channels = stream.channels;
 
             if (!string.IsNullOrEmpty(stream.sample_rate))
@@ -36,8 +33,8 @@ namespace MediaBrowser.Controller.Providers
                 audio.SampleRate = int.Parse(stream.sample_rate);
             }
 
-            bitrate = stream.bit_rate;
-            duration = stream.duration;
+            string bitrate = stream.bit_rate;
+            string duration = stream.duration;
 
             if (string.IsNullOrEmpty(bitrate))
             {
@@ -78,7 +75,7 @@ namespace MediaBrowser.Controller.Providers
 
             if (!string.IsNullOrEmpty(composer))
             {
-                audio.AddPerson(new PersonInfo() { Name = composer, Type = "Composer" });
+                audio.AddPerson(new PersonInfo { Name = composer, Type = "Composer" });
             }
 
             audio.Album = GetDictionaryValue(tags, "album");

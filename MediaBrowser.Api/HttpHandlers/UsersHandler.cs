@@ -10,16 +10,16 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Api.HttpHandlers
 {
     [Export(typeof(BaseHandler))]
-    class UsersHandler : BaseSerializationHandler<IEnumerable<DTOUser>>
+    class UsersHandler : BaseSerializationHandler<IEnumerable<DtoUser>>
     {
         public override bool HandlesRequest(HttpListenerRequest request)
         {
             return ApiService.IsApiUrlMatch("users", request);
         }
         
-        protected override Task<IEnumerable<DTOUser>> GetObjectToSerialize()
+        protected override Task<IEnumerable<DtoUser>> GetObjectToSerialize()
         {
-            return Task.FromResult<IEnumerable<DTOUser>>(Kernel.Instance.Users.Select(u => ApiService.GetDTOUser(u)));
+            return Task.FromResult(Kernel.Instance.Users.Select(u => ApiService.GetDtoUser(u)));
         }
     }
 }

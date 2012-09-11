@@ -27,7 +27,7 @@ namespace MediaBrowser.Common.Serialization
         {
             using (FileStream stream = new FileStream(file, FileMode.Create))
             {
-                SerializeToStream<T>(obj, stream);
+                SerializeToStream(obj, stream);
             }
         }
 

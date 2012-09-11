@@ -33,7 +33,7 @@ namespace MediaBrowser.Controller.Resolvers
                 {
                     VideoType type = Path.GetExtension(args.Path).EndsWith("iso", System.StringComparison.OrdinalIgnoreCase) ? VideoType.Iso : VideoType.VideoFile;
 
-                    return new T()
+                    return new T
                     {
                         VideoType = type,
                         Path = args.Path
@@ -77,15 +77,15 @@ namespace MediaBrowser.Controller.Resolvers
         {
             if (folder.IndexOf("video_ts", System.StringComparison.OrdinalIgnoreCase) != -1)
             {
-                return new T()
+                return new T
                 {
-                    VideoType = VideoType.DVD,
+                    VideoType = VideoType.Dvd,
                     Path = Path.GetDirectoryName(folder)
                 };
             }
             if (folder.IndexOf("bdmv", System.StringComparison.OrdinalIgnoreCase) != -1)
             {
-                return new T()
+                return new T
                 {
                     VideoType = VideoType.BluRay,
                     Path = Path.GetDirectoryName(folder)

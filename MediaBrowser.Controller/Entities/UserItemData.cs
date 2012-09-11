@@ -5,7 +5,7 @@ namespace MediaBrowser.Controller.Entities
 {
     public class UserItemData
     {
-        private float? _Rating = null;
+        private float? _Rating;
         /// <summary>
         /// Gets or sets the users 0-10 rating
         /// </summary>

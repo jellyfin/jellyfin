@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.DTO;
-using MediaBrowser.Model.Entities;
 using System.ComponentModel.Composition;
 using System.Net;
 using System.Threading.Tasks;
@@ -12,14 +11,14 @@ namespace MediaBrowser.Api.HttpHandlers
     /// Provides a handler to set user favorite status for an item
     /// </summary>
     [Export(typeof(BaseHandler))]
-    public class FavoriteStatusHandler : BaseSerializationHandler<DTOUserItemData>
+    public class FavoriteStatusHandler : BaseSerializationHandler<DtoUserItemData>
     {
         public override bool HandlesRequest(HttpListenerRequest request)
         {
             return ApiService.IsApiUrlMatch("FavoriteStatus", request);
         }
 
-        protected override Task<DTOUserItemData> GetObjectToSerialize()
+        protected override Task<DtoUserItemData> GetObjectToSerialize()
         {
             // Get the item
             BaseItem item = ApiService.GetItemById(QueryString["id"]);
@@ -33,7 +32,7 @@ namespace MediaBrowser.Api.HttpHandlers
             // Set favorite status
             data.IsFavorite = QueryString["isfavorite"] == "1";
 
-            return Task.FromResult<DTOUserItemData>(ApiService.GetDTOUserItemData(data));
+            return Task.FromResult(ApiService.GetDtoUserItemData(data));
         }
     }
 }

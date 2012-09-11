@@ -67,7 +67,7 @@ namespace MediaBrowser.Common.Logging
 
             Thread currentThread = Thread.CurrentThread;
 
-            LogRow row = new LogRow()
+            LogRow row = new LogRow
             {
                 Severity = severity,
                 Message = message,

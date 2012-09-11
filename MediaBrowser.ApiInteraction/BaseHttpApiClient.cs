@@ -50,7 +50,7 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets a BaseItem
         /// </summary>
-        public async Task<DTOBaseItem> GetItemAsync(Guid id, Guid userId)
+        public async Task<DtoBaseItem> GetItemAsync(Guid id, Guid userId)
         {
             string url = ApiUrl + "/item?userId=" + userId.ToString();
 
@@ -61,20 +61,20 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DTOBaseItem>(stream);
+                return DeserializeFromStream<DtoBaseItem>(stream);
             }
         }
 
         /// <summary>
         /// Gets all Users
         /// </summary>
-        public async Task<DTOUser[]> GetAllUsersAsync()
+        public async Task<DtoUser[]> GetAllUsersAsync()
         {
             string url = ApiUrl + "/users";
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DTOUser[]>(stream);
+                return DeserializeFromStream<DtoUser[]>(stream);
             }
         }
 
@@ -96,7 +96,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <param name="folderId">(Optional) Specify a folder Id to localize the search to a specific folder.</param>
-        public async Task<DTOBaseItem[]> GetInProgressItemsItemsAsync(Guid userId, Guid? folderId = null)
+        public async Task<DtoBaseItem[]> GetInProgressItemsItemsAsync(Guid userId, Guid? folderId = null)
         {
             string url = ApiUrl + "/itemlist?listtype=inprogressitems&userId=" + userId.ToString();
 
@@ -107,7 +107,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DTOBaseItem[]>(stream);
+                return DeserializeFromStream<DtoBaseItem[]>(stream);
             }
         }
 
@@ -116,7 +116,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <param name="folderId">(Optional) Specify a folder Id to localize the search to a specific folder.</param>
-        public async Task<DTOBaseItem[]> GetRecentlyAddedItemsAsync(Guid userId, Guid? folderId = null)
+        public async Task<DtoBaseItem[]> GetRecentlyAddedItemsAsync(Guid userId, Guid? folderId = null)
         {
             string url = ApiUrl + "/itemlist?listtype=recentlyaddeditems&userId=" + userId.ToString();
 
@@ -127,7 +127,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DTOBaseItem[]>(stream);
+                return DeserializeFromStream<DtoBaseItem[]>(stream);
             }
         }
 
@@ -136,7 +136,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <param name="folderId">(Optional) Specify a folder Id to localize the search to a specific folder.</param>
-        public async Task<DTOBaseItem[]> GetFavoriteItemsAsync(Guid userId, Guid? folderId = null)
+        public async Task<DtoBaseItem[]> GetFavoriteItemsAsync(Guid userId, Guid? folderId = null)
         {
             string url = ApiUrl + "/itemlist?listtype=favorites&userId=" + userId.ToString();
 
@@ -147,7 +147,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DTOBaseItem[]>(stream);
+                return DeserializeFromStream<DtoBaseItem[]>(stream);
             }
         }
 
@@ -156,7 +156,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <param name="folderId">(Optional) Specify a folder Id to localize the search to a specific folder.</param>
-        public async Task<DTOBaseItem[]> GetRecentlyAddedUnplayedItemsAsync(Guid userId, Guid? folderId = null)
+        public async Task<DtoBaseItem[]> GetRecentlyAddedUnplayedItemsAsync(Guid userId, Guid? folderId = null)
         {
             string url = ApiUrl + "/itemlist?listtype=recentlyaddedunplayeditems&userId=" + userId.ToString();
 
@@ -167,7 +167,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DTOBaseItem[]>(stream);
+                return DeserializeFromStream<DtoBaseItem[]>(stream);
             }
         }
 
@@ -188,7 +188,7 @@ namespace MediaBrowser.ApiInteraction
         /// Gets all items that contain a given Year
         /// </summary>
         /// <param name="folderId">(Optional) Specify a folder Id to localize the search to a specific folder.</param>
-        public async Task<DTOBaseItem[]> GetItemsWithYearAsync(string name, Guid userId, Guid? folderId = null)
+        public async Task<DtoBaseItem[]> GetItemsWithYearAsync(string name, Guid userId, Guid? folderId = null)
         {
             string url = ApiUrl + "/itemlist?listtype=itemswithyear&userId=" + userId.ToString() + "&name=" + name;
 
@@ -199,7 +199,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DTOBaseItem[]>(stream);
+                return DeserializeFromStream<DtoBaseItem[]>(stream);
             }
         }
 
@@ -207,7 +207,7 @@ namespace MediaBrowser.ApiInteraction
         /// Gets all items that contain a given Genre
         /// </summary>
         /// <param name="folderId">(Optional) Specify a folder Id to localize the search to a specific folder.</param>
-        public async Task<DTOBaseItem[]> GetItemsWithGenreAsync(string name, Guid userId, Guid? folderId = null)
+        public async Task<DtoBaseItem[]> GetItemsWithGenreAsync(string name, Guid userId, Guid? folderId = null)
         {
             string url = ApiUrl + "/itemlist?listtype=itemswithgenre&userId=" + userId.ToString() + "&name=" + name;
 
@@ -218,7 +218,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DTOBaseItem[]>(stream);
+                return DeserializeFromStream<DtoBaseItem[]>(stream);
             }
         }
 
@@ -226,7 +226,7 @@ namespace MediaBrowser.ApiInteraction
         /// Gets all items that contain a given Person
         /// </summary>
         /// <param name="folderId">(Optional) Specify a folder Id to localize the search to a specific folder.</param>
-        public async Task<DTOBaseItem[]> GetItemsWithPersonAsync(string name, Guid userId, Guid? folderId = null)
+        public async Task<DtoBaseItem[]> GetItemsWithPersonAsync(string name, Guid userId, Guid? folderId = null)
         {
             string url = ApiUrl + "/itemlist?listtype=itemswithperson&userId=" + userId.ToString() + "&name=" + name;
 
@@ -237,7 +237,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DTOBaseItem[]>(stream);
+                return DeserializeFromStream<DtoBaseItem[]>(stream);
             }
         }
 
@@ -245,7 +245,7 @@ namespace MediaBrowser.ApiInteraction
         /// Gets all items that contain a given Person
         /// </summary>
         /// <param name="folderId">(Optional) Specify a folder Id to localize the search to a specific folder.</param>
-        public async Task<DTOBaseItem[]> GetItemsWithPersonAsync(string name, string personType, Guid userId, Guid? folderId = null)
+        public async Task<DtoBaseItem[]> GetItemsWithPersonAsync(string name, string personType, Guid userId, Guid? folderId = null)
         {
             string url = ApiUrl + "/itemlist?listtype=itemswithperson&userId=" + userId.ToString() + "&name=" + name;
 
@@ -258,7 +258,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DTOBaseItem[]>(stream);
+                return DeserializeFromStream<DtoBaseItem[]>(stream);
             }
         }
 
@@ -279,7 +279,7 @@ namespace MediaBrowser.ApiInteraction
         /// Gets all items that contain a given Studio
         /// </summary>
         /// <param name="folderId">(Optional) Specify a folder Id to localize the search to a specific folder.</param>
-        public async Task<DTOBaseItem[]> GetItemsWithStudioAsync(string name, Guid userId, Guid? folderId = null)
+        public async Task<DtoBaseItem[]> GetItemsWithStudioAsync(string name, Guid userId, Guid? folderId = null)
         {
             string url = ApiUrl + "/itemlist?listtype=itemswithstudio&userId=" + userId.ToString() + "&name=" + name;
 
@@ -290,7 +290,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DTOBaseItem[]>(stream);
+                return DeserializeFromStream<DtoBaseItem[]>(stream);
             }
         }
 
@@ -401,26 +401,26 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets the default user
         /// </summary>
-        public async Task<DTOUser> GetDefaultUserAsync()
+        public async Task<DtoUser> GetDefaultUserAsync()
         {
             string url = ApiUrl + "/user";
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DTOUser>(stream);
+                return DeserializeFromStream<DtoUser>(stream);
             }
         }
 
         /// <summary>
         /// Gets a user by id
         /// </summary>
-        public async Task<DTOUser> GetUserAsync(Guid id)
+        public async Task<DtoUser> GetUserAsync(Guid id)
         {
             string url = ApiUrl + "/user?id=" + id.ToString();
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DTOUser>(stream);
+                return DeserializeFromStream<DtoUser>(stream);
             }
         }
 
@@ -453,21 +453,21 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets special features for a Movie
         /// </summary>
-        public async Task<DTOBaseItem[]> GetMovieSpecialFeaturesAsync(Guid itemId, Guid userId)
+        public async Task<DtoBaseItem[]> GetMovieSpecialFeaturesAsync(Guid itemId, Guid userId)
         {
             string url = ApiUrl + "/MovieSpecialFeatures?id=" + itemId;
             url += "&userid=" + userId;
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DTOBaseItem[]>(stream);
+                return DeserializeFromStream<DtoBaseItem[]>(stream);
             }
         }
 
         /// <summary>
         /// Updates played status for an item
         /// </summary>
-        public async Task<DTOUserItemData> UpdatePlayedStatusAsync(Guid itemId, Guid userId, bool wasPlayed)
+        public async Task<DtoUserItemData> UpdatePlayedStatusAsync(Guid itemId, Guid userId, bool wasPlayed)
         {
             string url = ApiUrl + "/PlayedStatus?id=" + itemId;
 
@@ -476,14 +476,14 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DTOUserItemData>(stream);
+                return DeserializeFromStream<DtoUserItemData>(stream);
             }
         }
 
         /// <summary>
         /// Updates a user's favorite status for an item and returns the updated UserItemData object.
         /// </summary>
-        public async Task<DTOUserItemData> UpdateFavoriteStatusAsync(Guid itemId, Guid userId, bool isFavorite)
+        public async Task<DtoUserItemData> UpdateFavoriteStatusAsync(Guid itemId, Guid userId, bool isFavorite)
         {
             string url = ApiUrl + "/favoritestatus?id=" + itemId;
 
@@ -492,14 +492,14 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DTOUserItemData>(stream);
+                return DeserializeFromStream<DtoUserItemData>(stream);
             }
         }
 
         /// <summary>
         /// Clears a user's rating for an item
         /// </summary>
-        public async Task<DTOUserItemData> ClearUserItemRatingAsync(Guid itemId, Guid userId)
+        public async Task<DtoUserItemData> ClearUserItemRatingAsync(Guid itemId, Guid userId)
         {
             string url = ApiUrl + "/UserItemRating?id=" + itemId;
 
@@ -508,14 +508,14 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DTOUserItemData>(stream);
+                return DeserializeFromStream<DtoUserItemData>(stream);
             }
         }
 
         /// <summary>
         /// Updates a user's rating for an item, based on likes or dislikes
         /// </summary>
-        public async Task<DTOUserItemData> UpdateUserItemRatingAsync(Guid itemId, Guid userId, bool likes)
+        public async Task<DtoUserItemData> UpdateUserItemRatingAsync(Guid itemId, Guid userId, bool likes)
         {
             string url = ApiUrl + "/UserItemRating?id=" + itemId;
 
@@ -524,7 +524,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (Stream stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DTOUserItemData>(stream);
+                return DeserializeFromStream<DtoUserItemData>(stream);
             }
         }
 

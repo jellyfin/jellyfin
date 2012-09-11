@@ -10,7 +10,7 @@ namespace MediaBrowser.Model.Entities
         Dictionary<string, string> ProviderIds { get; set; }
     }
 
-    public static class IProviderIdsExtensions
+    public static class ProviderIdsExtensions
     {
         /// <summary>
         /// Gets a provider id

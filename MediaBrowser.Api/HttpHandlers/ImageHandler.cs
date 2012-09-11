@@ -21,15 +21,15 @@ namespace MediaBrowser.Api.HttpHandlers
             return ApiService.IsApiUrlMatch("image", request);
         }
         
-        private string _ImagePath = null;
+        private string _imagePath;
         private async Task<string> GetImagePath()
         {
-            if (_ImagePath == null)
+            if (_imagePath == null)
             {
-                _ImagePath = await DiscoverImagePath();
+                _imagePath = await DiscoverImagePath();
             }
 
-            return _ImagePath;
+            return _imagePath;
         }
 
         private async Task<string> DiscoverImagePath()
@@ -77,21 +77,21 @@ namespace MediaBrowser.Api.HttpHandlers
             return GetImagePathFromTypes(item, ImageType, index);
         }
 
-        private Stream _SourceStream = null;
+        private Stream _sourceStream;
         private async Task<Stream> GetSourceStream()
         {
             await EnsureSourceStream().ConfigureAwait(false);
-            return _SourceStream;
+            return _sourceStream;
         }
 
-        private bool _SourceStreamEnsured = false;
+        private bool _sourceStreamEnsured;
         private async Task EnsureSourceStream()
         {
-            if (!_SourceStreamEnsured)
+            if (!_sourceStreamEnsured)
             {
                 try
                 {
-                    _SourceStream = File.OpenRead(await GetImagePath().ConfigureAwait(false));
+                    _sourceStream = File.OpenRead(await GetImagePath().ConfigureAwait(false));
                 }
                 catch (FileNotFoundException ex)
                 {
@@ -110,7 +110,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 }
                 finally
                 {
-                    _SourceStreamEnsured = true;
+                    _sourceStreamEnsured = true;
                 }
             }
         }
@@ -248,26 +248,24 @@ namespace MediaBrowser.Api.HttpHandlers
             {
                 return item.LogoImagePath;
             }
-            else if (imageType == ImageType.Backdrop)
+            if (imageType == ImageType.Backdrop)
             {
                 return item.BackdropImagePaths.ElementAt(imageIndex);
             }
-            else if (imageType == ImageType.Banner)
+            if (imageType == ImageType.Banner)
             {
                 return item.BannerImagePath;
             }
-            else if (imageType == ImageType.Art)
+            if (imageType == ImageType.Art)
             {
                 return item.ArtImagePath;
             }
-            else if (imageType == ImageType.Thumbnail)
+            if (imageType == ImageType.Thumbnail)
             {
                 return item.ThumbnailImagePath;
             }
-            else
-            {
-                return item.PrimaryImagePath;
-            }
+
+            return item.PrimaryImagePath;
         }
     }
 }

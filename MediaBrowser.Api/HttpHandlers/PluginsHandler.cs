@@ -24,7 +24,7 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             var plugins = Kernel.Instance.Plugins.Select(p =>
             {
-                return new PluginInfo()
+                return new PluginInfo
                 {
                     Name = p.Name,
                     Enabled = p.Enabled,
@@ -35,7 +35,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 };
             });
 
-            return Task.FromResult<IEnumerable<PluginInfo>>(plugins);
+            return Task.FromResult(plugins);
         }
     }
 }

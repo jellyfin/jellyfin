@@ -12,7 +12,7 @@ namespace MediaBrowser.Common.Serialization
         {
             Configure();
 
-            ServiceStack.Text.JsonSerializer.SerializeToStream<T>(obj, stream);
+            ServiceStack.Text.JsonSerializer.SerializeToStream(obj, stream);
         }
 
         public static void SerializeToFile<T>(T obj, string file)
@@ -21,7 +21,7 @@ namespace MediaBrowser.Common.Serialization
 
             using (Stream stream = File.Open(file, FileMode.Create))
             {
-                ServiceStack.Text.JsonSerializer.SerializeToStream<T>(obj, stream);
+                ServiceStack.Text.JsonSerializer.SerializeToStream(obj, stream);
             }
         }
 
@@ -59,7 +59,7 @@ namespace MediaBrowser.Common.Serialization
             return ServiceStack.Text.JsonSerializer.DeserializeFromStream(type, stream);
         }
 
-        private static bool IsConfigured = false;
+        private static bool IsConfigured;
         private static void Configure()
         {
             if (!IsConfigured)

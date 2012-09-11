@@ -12,7 +12,7 @@ namespace MediaBrowser.ApiInteraction
         /// This means that this class can currently only handle types within the Model project.
         /// If we need to, we can always add a param indicating whether or not the model serializer should be used.
         /// </summary>
-        private static ProtobufModelSerializer ProtobufModelSerializer = new ProtobufModelSerializer();
+        private static readonly ProtobufModelSerializer ProtobufModelSerializer = new ProtobufModelSerializer();
         
         /// <summary>
         /// Deserializes an object using generics
@@ -20,16 +20,16 @@ namespace MediaBrowser.ApiInteraction
         public static T DeserializeFromStream<T>(Stream stream, SerializationFormats format)
             where T : class
         {
-            if (format == ApiInteraction.SerializationFormats.Protobuf)
+            if (format == SerializationFormats.Protobuf)
             {
                 //return Serializer.Deserialize<T>(stream);
                 return ProtobufModelSerializer.Deserialize(stream, null, typeof(T)) as T;
             }
-            else if (format == ApiInteraction.SerializationFormats.Jsv)
+            else if (format == SerializationFormats.Jsv)
             {
                 return TypeSerializer.DeserializeFromStream<T>(stream);
             }
-            else if (format == ApiInteraction.SerializationFormats.Json)
+            else if (format == SerializationFormats.Json)
             {
                 return JsonSerializer.DeserializeFromStream<T>(stream);
             }

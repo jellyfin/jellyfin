@@ -19,7 +19,7 @@ namespace MediaBrowser.Common.UI
         protected override void OnStartup(StartupEventArgs e)
         {
             // Without this the app will shutdown after the splash screen closes
-            this.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
             LoadKernel();
         }
@@ -42,7 +42,7 @@ namespace MediaBrowser.Common.UI
                 Logger.LogInfo("Kernel.Init completed in {0} seconds.", (DateTime.UtcNow - now).TotalSeconds);
                 splash.Close();
 
-                this.ShutdownMode = System.Windows.ShutdownMode.OnLastWindowClose;
+                ShutdownMode = System.Windows.ShutdownMode.OnLastWindowClose;
                 InstantiateMainWindow().ShowDialog();
             }
             catch (Exception ex)

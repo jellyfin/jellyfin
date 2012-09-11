@@ -93,13 +93,13 @@ namespace MediaBrowser.Controller
 
             await base.Init(progress).ConfigureAwait(false);
 
-            progress.Report(new TaskProgress() { Description = "Loading Users", PercentComplete = 15 });
+            progress.Report(new TaskProgress { Description = "Loading Users", PercentComplete = 15 });
             ReloadUsers();
 
-            progress.Report(new TaskProgress() { Description = "Loading Media Library", PercentComplete = 25 });
+            progress.Report(new TaskProgress { Description = "Loading Media Library", PercentComplete = 25 });
             await ReloadRoot(allowInternetProviders: false).ConfigureAwait(false);
 
-            progress.Report(new TaskProgress() { Description = "Loading Complete", PercentComplete = 100 });
+            progress.Report(new TaskProgress { Description = "Loading Complete", PercentComplete = 100 });
         }
 
         protected override void OnComposablePartsLoaded()

@@ -67,7 +67,7 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         public abstract KernelContext KernelContext { get; }
 
-        public BaseKernel()
+        protected BaseKernel()
         {
             ApplicationPaths = new TApplicationPathsType();
         }
@@ -76,13 +76,13 @@ namespace MediaBrowser.Common.Kernel
         {
             ReloadLogger();
 
-            progress.Report(new TaskProgress() { Description = "Loading configuration", PercentComplete = 0 });
+            progress.Report(new TaskProgress { Description = "Loading configuration", PercentComplete = 0 });
             ReloadConfiguration();
 
-            progress.Report(new TaskProgress() { Description = "Starting Http server", PercentComplete = 5 });
+            progress.Report(new TaskProgress { Description = "Starting Http server", PercentComplete = 5 });
             ReloadHttpServer();
 
-            progress.Report(new TaskProgress() { Description = "Loading Plugins", PercentComplete = 10 });
+            progress.Report(new TaskProgress { Description = "Loading Plugins", PercentComplete = 10 });
             await ReloadComposableParts().ConfigureAwait(false);
         }
 
@@ -192,7 +192,7 @@ namespace MediaBrowser.Common.Kernel
 
             HttpServer = new HttpServer(HttpServerUrlPrefix);
 
-            HttpListener = HttpServer.Subscribe((ctx) =>
+            HttpListener = HttpServer.Subscribe(ctx =>
             {
                 BaseHandler handler = HttpHandlers.FirstOrDefault(h => h.HandlesRequest(ctx.Request));
 

@@ -48,8 +48,8 @@ namespace MediaBrowser.Controller.Resolvers.TV
 
         private void SetProviderIdFromPath(Series item)
         {
-            string srch = "[tvdbid=";
-            int index = item.Path.IndexOf(srch, System.StringComparison.OrdinalIgnoreCase);
+            const string srch = "[tvdbid=";
+            int index = item.Path.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
 
             if (index != -1)
             {

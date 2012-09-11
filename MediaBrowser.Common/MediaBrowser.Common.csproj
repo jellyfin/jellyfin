@@ -83,7 +83,6 @@
   <ItemGroup>
     <Compile Include="Kernel\BaseApplicationPaths.cs" />
     <Compile Include="Drawing\DrawingUtils.cs" />
-    <Compile Include="Logging\ThreadedLogger.cs" />
     <Compile Include="Logging\TraceLogger.cs" />
     <Compile Include="Net\Handlers\StaticFileHandler.cs" />
     <Compile Include="Net\MimeTypes.cs" />

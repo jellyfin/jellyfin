@@ -5,7 +5,7 @@ namespace MediaBrowser.Controller.Xml
 {
     public static class XmlExtensions
     {
-        private static CultureInfo _usCulture = new CultureInfo("en-US");
+        private static readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         /// <summary>
         /// Reads a float from the current element of an XmlReader

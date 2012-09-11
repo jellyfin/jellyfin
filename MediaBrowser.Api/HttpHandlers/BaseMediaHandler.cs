@@ -38,7 +38,7 @@ namespace MediaBrowser.Api.HttpHandlers
             }
         }
 
-        private TBaseItemType _LibraryItem;
+        private TBaseItemType _libraryItem;
         /// <summary>
         /// Gets the library item that will be played, if any
         /// </summary>
@@ -46,17 +46,17 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             get
             {
-                if (_LibraryItem == null)
+                if (_libraryItem == null)
                 {
                     string id = QueryString["id"];
 
                     if (!string.IsNullOrEmpty(id))
                     {
-                        _LibraryItem = Kernel.Instance.GetItemById(Guid.Parse(id)) as TBaseItemType;
+                        _libraryItem = Kernel.Instance.GetItemById(Guid.Parse(id)) as TBaseItemType;
                     }
                 }
 
-                return _LibraryItem;
+                return _libraryItem;
             }
         }
 
@@ -92,7 +92,7 @@ namespace MediaBrowser.Api.HttpHandlers
 
         public override Task<string> GetContentType()
         {
-            return Task.FromResult<string>(MimeTypes.GetMimeType("." + GetConversionOutputFormat()));
+            return Task.FromResult(MimeTypes.GetMimeType("." + GetConversionOutputFormat()));
         }
 
         public override bool ShouldCompressResponse(string contentType)
@@ -106,12 +106,10 @@ namespace MediaBrowser.Api.HttpHandlers
 
             if (!RequiresConversion())
             {
-                return new StaticFileHandler() { Path = LibraryItem.Path }.ProcessRequest(ctx);
+                return new StaticFileHandler { Path = LibraryItem.Path }.ProcessRequest(ctx);
             }
-            else
-            {
-                return base.ProcessRequest(ctx);
-            }
+
+            return base.ProcessRequest(ctx);
         }
 
         protected abstract string GetCommandLineArguments();
@@ -173,7 +171,7 @@ namespace MediaBrowser.Api.HttpHandlers
 
             process.EnableRaisingEvents = true;
 
-            process.Exited += process_Exited;
+            process.Exited += ProcessExited;
 
             try
             {
@@ -203,7 +201,7 @@ namespace MediaBrowser.Api.HttpHandlers
             }
         }
 
-        void process_Exited(object sender, EventArgs e)
+        void ProcessExited(object sender, EventArgs e)
         {
             if (LogFileStream != null)
             {

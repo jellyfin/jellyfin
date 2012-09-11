@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Text;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace MediaBrowser.Common.Logging
 {
@@ -17,7 +15,7 @@ namespace MediaBrowser.Common.Logging
 
         public override string ToString()
         {
-            List<string> data = new List<string>();
+            var data = new List<string>();
 
             data.Add(Time.ToString(TimePattern));
 

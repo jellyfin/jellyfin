@@ -68,7 +68,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         public async Task<BaseItem> GetItem(string path, Folder parent = null, WIN32_FIND_DATA? fileInfo = null, bool allowInternetProviders = true)
         {
-            ItemResolveEventArgs args = new ItemResolveEventArgs()
+            var args = new ItemResolveEventArgs
             {
                 FileInfo = fileInfo ?? FileData.GetFileData(path),
                 Parent = parent,
@@ -113,7 +113,7 @@ namespace MediaBrowser.Controller.Library
                 if (item.IsFolder)
                 {
                     // If it's a folder look for child entities
-                    (item as Folder).Children = (await Task.WhenAll<BaseItem>(GetChildren(item as Folder, fileSystemChildren, allowInternetProviders)).ConfigureAwait(false))
+                    (item as Folder).Children = (await Task.WhenAll(GetChildren(item as Folder, fileSystemChildren, allowInternetProviders)).ConfigureAwait(false))
                         .Where(i => i != null).OrderBy(f =>
                         {
                             return string.IsNullOrEmpty(f.SortName) ? f.Name : f.SortName;
@@ -193,10 +193,8 @@ namespace MediaBrowser.Controller.Library
                 resolvedShortcuts.InsertRange(0, returnArray);
                 return resolvedShortcuts.ToArray();
             }
-            else
-            {
-                return returnArray;
-            }
+
+            return returnArray;
         }
 
         /// <summary>
@@ -231,7 +229,7 @@ namespace MediaBrowser.Controller.Library
             return GetImagesByNameItem<Year>(Kernel.Instance.ApplicationPaths.YearPath, value.ToString());
         }
 
-        private ConcurrentDictionary<string, object> ImagesByNameItemCache = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, object> ImagesByNameItemCache = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Generically retrieves an IBN item

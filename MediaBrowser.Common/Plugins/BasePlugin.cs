@@ -74,7 +74,7 @@ namespace MediaBrowser.Common.Plugins
             }
         }
 
-        private DateTime? _ConfigurationDateLastModified = null;
+        private DateTime? _ConfigurationDateLastModified;
         public DateTime ConfigurationDateLastModified
         {
             get
@@ -123,7 +123,7 @@ namespace MediaBrowser.Common.Plugins
             }
         }
 
-        private string _DataFolderPath = null;
+        private string _DataFolderPath;
         /// <summary>
         /// Gets the full path to the data folder, where the plugin can store any miscellaneous files needed
         /// </summary>

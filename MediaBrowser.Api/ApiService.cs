@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.DTO;
-using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,9 +32,9 @@ namespace MediaBrowser.Api
         /// <param name="logActivity">Whether or not to update the user's LastActivityDate</param>
         public static User GetUserById(string id, bool logActivity)
         {
-            Guid guid = new Guid(id);
+            var guid = new Guid(id);
 
-            User user = Kernel.Instance.Users.FirstOrDefault(u => u.Id == guid);
+            var user = Kernel.Instance.Users.FirstOrDefault(u => u.Id == guid);
 
             if (logActivity)
             {
@@ -73,11 +72,11 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Converts a BaseItem to a DTOBaseItem
         /// </summary>
-        public async static Task<DTOBaseItem> GetDTOBaseItem(BaseItem item, User user,
+        public async static Task<DtoBaseItem> GetDtoBaseItem(BaseItem item, User user,
             bool includeChildren = true,
             bool includePeople = true)
         {
-            DTOBaseItem dto = new DTOBaseItem();
+            DtoBaseItem dto = new DtoBaseItem();
 
             List<Task> tasks = new List<Task>();
 
@@ -108,7 +107,7 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Sets simple property values on a DTOBaseItem
         /// </summary>
-        private static void AttachBasicFields(DTOBaseItem dto, BaseItem item, User user)
+        private static void AttachBasicFields(DtoBaseItem dto, BaseItem item, User user)
         {
             dto.AspectRatio = item.AspectRatio;
             dto.BackdropCount = item.BackdropImagePaths == null ? 0 : item.BackdropImagePaths.Count();
@@ -173,7 +172,7 @@ namespace MediaBrowser.Api
             dto.Type = item.GetType().Name;
             dto.UserRating = item.UserRating;
 
-            dto.UserData = GetDTOUserItemData(item.GetUserData(user, false));
+            dto.UserData = GetDtoUserItemData(item.GetUserData(user, false));
 
             Folder folder = item as Folder;
 
@@ -190,7 +189,7 @@ namespace MediaBrowser.Api
 
             if (audio != null)
             {
-                dto.AudioInfo = new AudioInfo()
+                dto.AudioInfo = new AudioInfo
                 {
                     Album = audio.Album,
                     AlbumArtist = audio.AlbumArtist,
@@ -205,7 +204,7 @@ namespace MediaBrowser.Api
 
             if (video != null)
             {
-                dto.VideoInfo = new VideoInfo()
+                dto.VideoInfo = new VideoInfo
                 {
                     Height = video.Height,
                     Width = video.Width,
@@ -232,7 +231,7 @@ namespace MediaBrowser.Api
             {
                 DayOfWeek[] airDays = series.AirDays == null ? new DayOfWeek[] { } : series.AirDays.ToArray(); ;
 
-                dto.SeriesInfo = new SeriesInfo()
+                dto.SeriesInfo = new SeriesInfo
                 {
                     AirDays = airDays,
                     AirTime = series.AirTime,
@@ -247,7 +246,7 @@ namespace MediaBrowser.Api
             {
                 int specialFeatureCount = movie.SpecialFeatures == null ? 0 : movie.SpecialFeatures.Count();
 
-                dto.MovieInfo = new MovieInfo()
+                dto.MovieInfo = new MovieInfo
                 {
                     SpecialFeatureCount = specialFeatureCount
                 };
@@ -257,12 +256,12 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Attaches Studio DTO's to a DTOBaseItem
         /// </summary>
-        private static async Task AttachStudios(DTOBaseItem dto, BaseItem item)
+        private static async Task AttachStudios(DtoBaseItem dto, BaseItem item)
         {
             // Attach Studios by transforming them into BaseItemStudio (DTO)
             if (item.Studios != null)
             {
-                Studio[] entities = await Task.WhenAll<Studio>(item.Studios.Select(c => Kernel.Instance.ItemController.GetStudio(c))).ConfigureAwait(false);
+                Studio[] entities = await Task.WhenAll(item.Studios.Select(c => Kernel.Instance.ItemController.GetStudio(c))).ConfigureAwait(false);
 
                 dto.Studios = new BaseItemStudio[entities.Length];
 
@@ -283,7 +282,7 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Attaches child DTO's to a DTOBaseItem
         /// </summary>
-        private static async Task AttachChildren(DTOBaseItem dto, BaseItem item, User user)
+        private static async Task AttachChildren(DtoBaseItem dto, BaseItem item, User user)
         {
             var folder = item as Folder;
 
@@ -291,30 +290,30 @@ namespace MediaBrowser.Api
             {
                 IEnumerable<BaseItem> children = folder.GetParentalAllowedChildren(user);
 
-                dto.Children = await Task.WhenAll<DTOBaseItem>(children.Select(c => GetDTOBaseItem(c, user, false, false))).ConfigureAwait(false);
+                dto.Children = await Task.WhenAll(children.Select(c => GetDtoBaseItem(c, user, false, false))).ConfigureAwait(false);
             }
         }
 
         /// <summary>
         /// Attaches trailer DTO's to a DTOBaseItem
         /// </summary>
-        private static async Task AttachLocalTrailers(DTOBaseItem dto, BaseItem item, User user)
+        private static async Task AttachLocalTrailers(DtoBaseItem dto, BaseItem item, User user)
         {
             if (item.LocalTrailers != null && item.LocalTrailers.Any())
             {
-                dto.LocalTrailers = await Task.WhenAll<DTOBaseItem>(item.LocalTrailers.Select(c => GetDTOBaseItem(c, user, false, false))).ConfigureAwait(false);
+                dto.LocalTrailers = await Task.WhenAll(item.LocalTrailers.Select(c => GetDtoBaseItem(c, user, false, false))).ConfigureAwait(false);
             }
         }
 
         /// <summary>
         /// Attaches People DTO's to a DTOBaseItem
         /// </summary>
-        private static async Task AttachPeople(DTOBaseItem dto, BaseItem item)
+        private static async Task AttachPeople(DtoBaseItem dto, BaseItem item)
         {
             // Attach People by transforming them into BaseItemPerson (DTO)
             if (item.People != null)
             {
-                IEnumerable<Person> entities = await Task.WhenAll<Person>(item.People.Select(c => Kernel.Instance.ItemController.GetPerson(c.Key))).ConfigureAwait(false);
+                IEnumerable<Person> entities = await Task.WhenAll(item.People.Select(c => Kernel.Instance.ItemController.GetPerson(c.Key))).ConfigureAwait(false);
 
                 dto.People = item.People.Select(p =>
                 {
@@ -384,7 +383,7 @@ namespace MediaBrowser.Api
         /// </summary>
         public static IBNItem GetIBNItem(BaseEntity entity, int itemCount)
         {
-            return new IBNItem()
+            return new IBNItem
             {
                 Id = entity.Id,
                 BaseItemCount = itemCount,
@@ -396,9 +395,9 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Converts a User to a DTOUser
         /// </summary>
-        public static DTOUser GetDTOUser(User user)
+        public static DtoUser GetDtoUser(User user)
         {
-            return new DTOUser()
+            return new DtoUser
             {
                 Id = user.Id,
                 Name = user.Name,
@@ -412,14 +411,14 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Converts a UserItemData to a DTOUserItemData
         /// </summary>
-        public static DTOUserItemData GetDTOUserItemData(UserItemData data)
+        public static DtoUserItemData GetDtoUserItemData(UserItemData data)
         {
             if (data == null)
             {
                 return null;
             }
 
-            return new DTOUserItemData()
+            return new DtoUserItemData
             {
                 IsFavorite = data.IsFavorite,
                 Likes = data.Likes,

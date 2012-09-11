@@ -10,7 +10,7 @@ namespace MediaBrowser.Model.DTO
     /// This holds information about a BaseItem in a format that is convenient for the client.
     /// </summary>
     [ProtoContract]
-    public class DTOBaseItem : IHasProviderIds
+    public class DtoBaseItem : IHasProviderIds
     {
         [ProtoMember(1)]
         public string Name { get; set; }
@@ -91,7 +91,7 @@ namespace MediaBrowser.Model.DTO
         public int BackdropCount { get; set; }
 
         [ProtoMember(27)]
-        public DTOBaseItem[] Children { get; set; }
+        public DtoBaseItem[] Children { get; set; }
 
         [ProtoMember(28)]
         public bool IsFolder { get; set; }
@@ -136,7 +136,7 @@ namespace MediaBrowser.Model.DTO
         public int? ParentBackdropCount { get; set; }
 
         [ProtoMember(38)]
-        public DTOBaseItem[] LocalTrailers { get; set; }
+        public DtoBaseItem[] LocalTrailers { get; set; }
 
         [ProtoMember(39)]
         public int LocalTrailerCount { get; set; }
@@ -145,7 +145,7 @@ namespace MediaBrowser.Model.DTO
         /// User data for this item based on the user it's being requested for
         /// </summary>
         [ProtoMember(40)]
-        public DTOUserItemData UserData { get; set; }
+        public DtoUserItemData UserData { get; set; }
 
         [ProtoMember(41)]
         public ItemSpecialCounts SpecialCounts { get; set; }

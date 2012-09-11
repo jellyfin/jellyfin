@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.DTO;
-using MediaBrowser.Model.Entities;
 using System.ComponentModel.Composition;
 using System.Net;
 using System.Threading.Tasks;
@@ -12,14 +11,14 @@ namespace MediaBrowser.Api.HttpHandlers
     /// Provides a handler to set a user's rating for an item
     /// </summary>
     [Export(typeof(BaseHandler))]
-    public class UserItemRatingHandler : BaseSerializationHandler<DTOUserItemData>
+    public class UserItemRatingHandler : BaseSerializationHandler<DtoUserItemData>
     {
         public override bool HandlesRequest(HttpListenerRequest request)
         {
             return ApiService.IsApiUrlMatch("UserItemRating", request);
         }
 
-        protected override Task<DTOUserItemData> GetObjectToSerialize()
+        protected override Task<DtoUserItemData> GetObjectToSerialize()
         {
             // Get the item
             BaseItem item = ApiService.GetItemById(QueryString["id"]);
@@ -41,7 +40,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 data.Likes = QueryString["likes"] == "1";
             }
 
-            return Task.FromResult<DTOUserItemData>(ApiService.GetDTOUserItemData(data));
+            return Task.FromResult(ApiService.GetDtoUserItemData(data));
         }
     }
 }

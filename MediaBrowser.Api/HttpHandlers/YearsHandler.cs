@@ -57,7 +57,7 @@ namespace MediaBrowser.Api.HttpHandlers
             }
 
             // Get the Year objects
-            Year[] entities = await Task.WhenAll<Year>(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetYear(key); })).ConfigureAwait(false);
+            Year[] entities = await Task.WhenAll(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetYear(key); })).ConfigureAwait(false);
 
             // Convert to an array of IBNItem
             IBNItem[] items = new IBNItem[entities.Length];

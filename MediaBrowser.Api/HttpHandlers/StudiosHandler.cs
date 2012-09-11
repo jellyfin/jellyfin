@@ -60,7 +60,7 @@ namespace MediaBrowser.Api.HttpHandlers
             }
 
             // Get the Studio objects
-            Studio[] entities = await Task.WhenAll<Studio>(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetStudio(key); })).ConfigureAwait(false);
+            Studio[] entities = await Task.WhenAll(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetStudio(key); })).ConfigureAwait(false);
 
             // Convert to an array of IBNItem
             IBNItem[] items = new IBNItem[entities.Length];

@@ -62,7 +62,7 @@ namespace MediaBrowser.Controller.Providers
                                 item.DisplayMediaType = VideoType.BluRay.ToString();
                                 break;
                             case "dvd":
-                                item.DisplayMediaType = VideoType.DVD.ToString();
+                                item.DisplayMediaType = VideoType.Dvd.ToString();
                                 break;
                             case "":
                                 item.DisplayMediaType = null;
@@ -163,7 +163,7 @@ namespace MediaBrowser.Controller.Providers
 
                 case "Director":
                     {
-                        foreach (PersonInfo p in GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo() { Name = v, Type = "Director" }))
+                        foreach (PersonInfo p in GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo { Name = v, Type = "Director" }))
                         {
                             item.AddPerson(p);
                         }
@@ -171,7 +171,7 @@ namespace MediaBrowser.Controller.Providers
                     }
                 case "Writer":
                     {
-                        foreach (PersonInfo p in GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo() { Name = v, Type = "Writer" }))
+                        foreach (PersonInfo p in GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo { Name = v, Type = "Writer" }))
                         {
                             item.AddPerson(p);
                         }
@@ -181,7 +181,7 @@ namespace MediaBrowser.Controller.Providers
                 case "Actors":
                 case "GuestStars":
                     {
-                        foreach (PersonInfo p in GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo() { Name = v, Type = "Actor" }))
+                        foreach (PersonInfo p in GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo { Name = v, Type = "Actor" }))
                         {
                             item.AddPerson(p);
                         }

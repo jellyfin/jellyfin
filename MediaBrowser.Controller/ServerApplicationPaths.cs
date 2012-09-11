@@ -153,7 +153,7 @@ namespace MediaBrowser.Controller
             }
         }
 
-        private string _CacheDirectory = null;
+        private string _CacheDirectory;
         /// <summary>
         /// Gets the folder path to the cache directory
         /// </summary>
@@ -175,7 +175,7 @@ namespace MediaBrowser.Controller
             }
         }
 
-        private string _FFProbeAudioCacheDirectory = null;
+        private string _FFProbeAudioCacheDirectory;
         /// <summary>
         /// Gets the folder path to the ffprobe audio cache directory
         /// </summary>
@@ -197,7 +197,7 @@ namespace MediaBrowser.Controller
             }
         }
 
-        private string _FFProbeVideoCacheDirectory = null;
+        private string _FFProbeVideoCacheDirectory;
         /// <summary>
         /// Gets the folder path to the ffprobe video cache directory
         /// </summary>
@@ -219,7 +219,7 @@ namespace MediaBrowser.Controller
             }
         }
         
-        private string _FFMpegDirectory = null;
+        private string _FFMpegDirectory;
         /// <summary>
         /// Gets the folder path to ffmpeg
         /// </summary>
@@ -241,7 +241,7 @@ namespace MediaBrowser.Controller
             }
         }
 
-        private string _FFMpegPath = null;
+        private string _FFMpegPath;
         /// <summary>
         /// Gets the path to ffmpeg.exe
         /// </summary>
@@ -258,7 +258,7 @@ namespace MediaBrowser.Controller
             }
         }
 
-        private string _FFProbePath = null;
+        private string _FFProbePath;
         /// <summary>
         /// Gets the path to ffprobe.exe
         /// </summary>
