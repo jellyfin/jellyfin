@@ -5,7 +5,7 @@ namespace MediaBrowser.Model.Entities
     {
         VideoFile,
         Iso,
-        DVD,
+        Dvd,
         BluRay
     }
 }

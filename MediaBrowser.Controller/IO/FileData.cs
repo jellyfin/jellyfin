@@ -149,7 +149,7 @@ namespace MediaBrowser.Controller.IO
         private static extern bool FindClose(IntPtr hFindFile);
 
         private const char SpaceChar = ' ';
-        private static char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
+        private static readonly char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
         
         /// <summary>
         /// Takes a filename and removes invalid characters

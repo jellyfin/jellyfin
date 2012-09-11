@@ -15,7 +15,7 @@ namespace MediaBrowser.Common.Net.Handlers
 
                 if (string.IsNullOrEmpty(format))
                 {
-                    return Handlers.SerializationFormat.Json;
+                    return SerializationFormat.Json;
                 }
 
                 return (SerializationFormat)Enum.Parse(typeof(SerializationFormat), format, true);
@@ -26,16 +26,16 @@ namespace MediaBrowser.Common.Net.Handlers
         {
             switch (SerializationFormat)
             {
-                case Handlers.SerializationFormat.Jsv:
-                    return Task.FromResult<string>("text/plain");
-                case Handlers.SerializationFormat.Protobuf:
-                    return Task.FromResult<string>("application/x-protobuf");
+                case SerializationFormat.Jsv:
+                    return Task.FromResult("text/plain");
+                case SerializationFormat.Protobuf:
+                    return Task.FromResult("application/x-protobuf");
                 default:
-                    return Task.FromResult<string>(MimeTypes.JsonMimeType);
+                    return Task.FromResult(MimeTypes.JsonMimeType);
             }
         }
 
-        private bool _ObjectToSerializeEnsured = false;
+        private bool _ObjectToSerializeEnsured;
         private T _ObjectToSerialize;
      
         private async Task EnsureObjectToSerialize()
@@ -66,14 +66,14 @@ namespace MediaBrowser.Common.Net.Handlers
 
             switch (SerializationFormat)
             {
-                case Handlers.SerializationFormat.Jsv:
-                    JsvSerializer.SerializeToStream<T>(_ObjectToSerialize, stream);
+                case SerializationFormat.Jsv:
+                    JsvSerializer.SerializeToStream(_ObjectToSerialize, stream);
                     break;
-                case Handlers.SerializationFormat.Protobuf:
-                    ProtobufSerializer.SerializeToStream<T>(_ObjectToSerialize, stream);
+                case SerializationFormat.Protobuf:
+                    ProtobufSerializer.SerializeToStream(_ObjectToSerialize, stream);
                     break;
                 default:
-                    JsonSerializer.SerializeToStream<T>(_ObjectToSerialize, stream);
+                    JsonSerializer.SerializeToStream(_ObjectToSerialize, stream);
                     break;
             }
         }

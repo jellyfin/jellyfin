@@ -27,8 +27,8 @@ namespace MediaBrowser.Common.UI
                 Logger.LogInfo(e.Description);
             }
 
-            this.lblProgress.Content = e.Description;
-            this.pbProgress.Value = (double)e.PercentComplete;
+            lblProgress.Content = e.Description;
+            pbProgress.Value = (double)e.PercentComplete;
         }
 
         private void Splash_Loaded(object sender, RoutedEventArgs e)

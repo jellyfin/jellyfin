@@ -61,7 +61,7 @@ namespace MediaBrowser.Controller.FFMpeg
             {
                 try
                 {
-                    ProtobufSerializer.SerializeToFile<FFProbeResult>(result, outputCachePath);
+                    ProtobufSerializer.SerializeToFile(result, outputCachePath);
                 }
                 catch (Exception ex)
                 {

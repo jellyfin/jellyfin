@@ -13,14 +13,14 @@ namespace MediaBrowser.Api.HttpHandlers
     /// This handler retrieves special features for movies
     /// </summary>
     [Export(typeof(BaseHandler))]
-    public class MovieSpecialFeaturesHandler : BaseSerializationHandler<DTOBaseItem[]>
+    public class MovieSpecialFeaturesHandler : BaseSerializationHandler<DtoBaseItem[]>
     {
         public override bool HandlesRequest(HttpListenerRequest request)
         {
             return ApiService.IsApiUrlMatch("MovieSpecialFeatures", request);
         }
 
-        protected override Task<DTOBaseItem[]> GetObjectToSerialize()
+        protected override Task<DtoBaseItem[]> GetObjectToSerialize()
         {
             User user = ApiService.GetUserById(QueryString["userid"], true);
 
@@ -29,12 +29,12 @@ namespace MediaBrowser.Api.HttpHandlers
             // If none
             if (movie.SpecialFeatures == null)
             {
-                return Task.FromResult<DTOBaseItem[]>(new DTOBaseItem[] { });
+                return Task.FromResult(new DtoBaseItem[] { });
             }
 
-            return Task.WhenAll<DTOBaseItem>(movie.SpecialFeatures.Select(i =>
+            return Task.WhenAll(movie.SpecialFeatures.Select(i =>
             {
-                return ApiService.GetDTOBaseItem(i, user, includeChildren: false, includePeople: true);
+                return ApiService.GetDtoBaseItem(i, user, includeChildren: false);
             }));
         }
 

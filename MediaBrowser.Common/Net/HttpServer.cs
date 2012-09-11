@@ -20,7 +20,7 @@ namespace MediaBrowser.Common.Net
         private IObservable<HttpListenerContext> ObservableHttpContext()
         {
             return Observable.Create<HttpListenerContext>(obs =>
-                                Observable.FromAsync<HttpListenerContext>(() => listener.GetContextAsync())
+                                Observable.FromAsync(() => listener.GetContextAsync())
                                           .Subscribe(obs))
                              .Repeat()
                              .Retry()

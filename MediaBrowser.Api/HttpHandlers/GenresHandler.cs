@@ -60,7 +60,7 @@ namespace MediaBrowser.Api.HttpHandlers
             }
 
             // Get the Genre objects
-            Genre[] entities = await Task.WhenAll<Genre>(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetGenre(key); })).ConfigureAwait(false);
+            Genre[] entities = await Task.WhenAll(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetGenre(key); })).ConfigureAwait(false);
 
             // Convert to an array of IBNItem
             IBNItem[] items = new IBNItem[entities.Length];

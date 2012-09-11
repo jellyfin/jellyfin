@@ -46,7 +46,7 @@ namespace MediaBrowser.Controller.Resolvers.Movies
 
         private void SetProviderIdFromPath(Movie item)
         {
-            string srch = "[tmdbid=";
+            const string srch = "[tmdbid=";
             int index = item.Path.IndexOf(srch, System.StringComparison.OrdinalIgnoreCase);
 
             if (index != -1)

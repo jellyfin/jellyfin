@@ -5,7 +5,7 @@ namespace MediaBrowser.Common.Net.Handlers
 {
     public abstract class BaseEmbeddedResourceHandler : BaseHandler
     {
-        public BaseEmbeddedResourceHandler(string resourcePath)
+        protected BaseEmbeddedResourceHandler(string resourcePath)
             : base()
         {
             ResourcePath = resourcePath;
@@ -15,7 +15,7 @@ namespace MediaBrowser.Common.Net.Handlers
 
         public override Task<string> GetContentType()
         {
-            return Task.FromResult<string>(MimeTypes.GetMimeType(ResourcePath));
+            return Task.FromResult(MimeTypes.GetMimeType(ResourcePath));
         }
 
         protected override Task WriteResponseToOutputStream(Stream stream)

@@ -8,22 +8,22 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Api.HttpHandlers
 {
     [Export(typeof(BaseHandler))]
-    class UserHandler : BaseSerializationHandler<DTOUser>
+    class UserHandler : BaseSerializationHandler<DtoUser>
     {
         public override bool HandlesRequest(HttpListenerRequest request)
         {
             return ApiService.IsApiUrlMatch("user", request);
         }
-        
-        protected override Task<DTOUser> GetObjectToSerialize()
+
+        protected override Task<DtoUser> GetObjectToSerialize()
         {
             string id = QueryString["id"];
 
             User user = string.IsNullOrEmpty(id) ? ApiService.GetDefaultUser(false) : ApiService.GetUserById(id, false); ;
 
-            DTOUser dto = ApiService.GetDTOUser(user);
+            DtoUser dto = ApiService.GetDtoUser(user);
 
-            return Task.FromResult<DTOUser>(dto);
+            return Task.FromResult(dto);
         }
     }
 }

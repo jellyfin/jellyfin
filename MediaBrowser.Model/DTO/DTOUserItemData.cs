@@ -3,7 +3,7 @@
 namespace MediaBrowser.Model.DTO
 {
     [ProtoContract]
-    public class DTOUserItemData
+    public class DtoUserItemData
     {
         [ProtoMember(1)]
         public float? Rating { get; set; }

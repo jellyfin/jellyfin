@@ -33,8 +33,8 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        private bool _SourceStreamEnsured = false;
-        private Stream _SourceStream = null;
+        private bool _SourceStreamEnsured;
+        private Stream _SourceStream;
         private Stream SourceStream
         {
             get
@@ -116,12 +116,12 @@ namespace MediaBrowser.Common.Net.Handlers
                 value = File.GetLastWriteTimeUtc(Path);
             }
 
-            return Task.FromResult<DateTime?>(value);
+            return Task.FromResult(value);
         }
 
         public override Task<string> GetContentType()
         {
-            return Task.FromResult<string>(MimeTypes.GetMimeType(Path));
+            return Task.FromResult(MimeTypes.GetMimeType(Path));
         }
 
         protected override Task PrepareResponse()
@@ -141,21 +141,17 @@ namespace MediaBrowser.Common.Net.Handlers
                 {
                     return ServeCompleteRangeRequest(requestedRange, stream);
                 }
-                else if (TotalContentLength.HasValue)
+                if (TotalContentLength.HasValue)
                 {
                     // This will have to buffer a portion of the content into memory
                     return ServePartialRangeRequestWithKnownTotalContentLength(requestedRange, stream);
                 }
-                else
-                {
-                    // This will have to buffer the entire content into memory
-                    return ServePartialRangeRequestWithUnknownTotalContentLength(requestedRange, stream);
-                }
+
+                // This will have to buffer the entire content into memory
+                return ServePartialRangeRequestWithUnknownTotalContentLength(requestedRange, stream);
             }
-            else
-            {
-                return SourceStream.CopyToAsync(stream);
-            }
+
+            return SourceStream.CopyToAsync(stream);
         }
 
         protected override void DisposeResponseStream()

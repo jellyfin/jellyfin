@@ -9,12 +9,12 @@ namespace MediaBrowser.Model.DTO
     {
         Avi,
         Asf,
-        M4v,
+        M4V,
         Mkv,
         Mov,
         Mp4,
         Ogv,
-        ThreeGP,
+        ThreeGp,
         Ts,
         Webm,
         Wmv

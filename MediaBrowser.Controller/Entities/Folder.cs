@@ -61,7 +61,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public ItemSpecialCounts GetSpecialCounts(User user)
         {
-            ItemSpecialCounts counts = new ItemSpecialCounts();
+            var counts = new ItemSpecialCounts();
 
             IEnumerable<BaseItem> recursiveChildren = GetParentalAllowedRecursiveChildren(user);
 

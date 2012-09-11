@@ -11,14 +11,14 @@ namespace MediaBrowser.Api.HttpHandlers
     /// Provides a handler to retrieve a single item
     /// </summary>
     [Export(typeof(BaseHandler))]
-    public class ItemHandler : BaseSerializationHandler<DTOBaseItem>
+    public class ItemHandler : BaseSerializationHandler<DtoBaseItem>
     {
         public override bool HandlesRequest(HttpListenerRequest request)
         {
             return ApiService.IsApiUrlMatch("item", request);
         }
         
-        protected override Task<DTOBaseItem> GetObjectToSerialize()
+        protected override Task<DtoBaseItem> GetObjectToSerialize()
         {
             User user = ApiService.GetUserById(QueryString["userid"], true);
 
@@ -29,7 +29,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 return null;
             }
 
-            return ApiService.GetDTOBaseItem(item, user);
+            return ApiService.GetDtoBaseItem(item, user);
         }
     }
 }

@@ -36,12 +36,12 @@
     <Compile Include="Configuration\ServerConfiguration.cs" />
     <Compile Include="DTO\AudioInfo.cs" />
     <Compile Include="DTO\AudioOutputFormats.cs" />
-    <Compile Include="DTO\DTOUserItemData.cs" />
+    <Compile Include="DTO\DtoUserItemData.cs" />
     <Compile Include="DTO\MovieInfo.cs" />
     <Compile Include="DTO\SeriesInfo.cs" />
     <Compile Include="Authentication\AuthenticationResult.cs" />
-    <Compile Include="DTO\DTOBaseItem.cs" />
-    <Compile Include="DTO\DTOUser.cs" />
+    <Compile Include="DTO\DtoBaseItem.cs" />
+    <Compile Include="DTO\DtoUser.cs" />
     <Compile Include="DTO\VideoInfo.cs" />
     <Compile Include="DTO\VideoOutputFormats.cs" />
     <Compile Include="DTO\IBNItem.cs" />

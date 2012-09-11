@@ -11,20 +11,20 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Api.HttpHandlers
 {
     [Export(typeof(BaseHandler))]
-    public class ItemListHandler : BaseSerializationHandler<DTOBaseItem[]>
+    public class ItemListHandler : BaseSerializationHandler<DtoBaseItem[]>
     {
         public override bool HandlesRequest(HttpListenerRequest request)
         {
             return ApiService.IsApiUrlMatch("itemlist", request);
         }
 
-        protected override Task<DTOBaseItem[]> GetObjectToSerialize()
+        protected override Task<DtoBaseItem[]> GetObjectToSerialize()
         {
             User user = ApiService.GetUserById(QueryString["userid"], true);
 
-            return Task.WhenAll<DTOBaseItem>(GetItemsToSerialize(user).Select(i =>
+            return Task.WhenAll(GetItemsToSerialize(user).Select(i =>
             {
-                return ApiService.GetDTOBaseItem(i, user, includeChildren: false, includePeople: false);
+                return ApiService.GetDtoBaseItem(i, user, includeChildren: false, includePeople: false);
             }));
         }
 
@@ -36,31 +36,31 @@ namespace MediaBrowser.Api.HttpHandlers
             {
                 return parent.GetInProgressItems(user);
             }
-            else if (ListType.Equals("recentlyaddeditems", StringComparison.OrdinalIgnoreCase))
+            if (ListType.Equals("recentlyaddeditems", StringComparison.OrdinalIgnoreCase))
             {
                 return parent.GetRecentlyAddedItems(user);
             }
-            else if (ListType.Equals("recentlyaddedunplayeditems", StringComparison.OrdinalIgnoreCase))
+            if (ListType.Equals("recentlyaddedunplayeditems", StringComparison.OrdinalIgnoreCase))
             {
                 return parent.GetRecentlyAddedUnplayedItems(user);
             }
-            else if (ListType.Equals("itemswithgenre", StringComparison.OrdinalIgnoreCase))
+            if (ListType.Equals("itemswithgenre", StringComparison.OrdinalIgnoreCase))
             {
                 return parent.GetItemsWithGenre(QueryString["name"], user);
             }
-            else if (ListType.Equals("itemswithyear", StringComparison.OrdinalIgnoreCase))
+            if (ListType.Equals("itemswithyear", StringComparison.OrdinalIgnoreCase))
             {
                 return parent.GetItemsWithYear(int.Parse(QueryString["year"]), user);
             }
-            else if (ListType.Equals("itemswithstudio", StringComparison.OrdinalIgnoreCase))
+            if (ListType.Equals("itemswithstudio", StringComparison.OrdinalIgnoreCase))
             {
                 return parent.GetItemsWithStudio(QueryString["name"], user);
             }
-            else if (ListType.Equals("itemswithperson", StringComparison.OrdinalIgnoreCase))
+            if (ListType.Equals("itemswithperson", StringComparison.OrdinalIgnoreCase))
             {
                 return parent.GetItemsWithPerson(QueryString["name"], null, user);
             }
-            else if (ListType.Equals("favorites", StringComparison.OrdinalIgnoreCase))
+            if (ListType.Equals("favorites", StringComparison.OrdinalIgnoreCase))
             {
                 return parent.GetFavoriteItems(user);
             }

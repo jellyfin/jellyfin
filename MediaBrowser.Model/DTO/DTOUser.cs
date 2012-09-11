@@ -1,11 +1,10 @@
-﻿using MediaBrowser.Model.Entities;
-using ProtoBuf;
+﻿using ProtoBuf;
 using System;
 
 namespace MediaBrowser.Model.DTO
 {
     [ProtoContract]
-    public class DTOUser
+    public class DtoUser
     {
         [ProtoMember(1)]
         public string Name { get; set; }

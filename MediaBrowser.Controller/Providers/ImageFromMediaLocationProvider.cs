@@ -34,10 +34,8 @@ namespace MediaBrowser.Controller.Providers
                 {
                     return Task.Run(() => { PopulateBaseItemImages(baseItem, args); });
                 }
-                else
-                {
-                    return Task.Run(() => { PopulateImages(item, args); });
-                }
+
+                return Task.Run(() => { PopulateImages(item, args); });
             }
 
             return Task.FromResult<object>(null);

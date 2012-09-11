@@ -32,7 +32,7 @@ namespace MediaBrowser.Api.HttpHandlers
 
             string path = Path.Combine(Kernel.Instance.ApplicationPaths.PluginsPath, filename);
 
-            return new StaticFileHandler() { Path = path }.ProcessRequest(ctx);
+            return new StaticFileHandler { Path = path }.ProcessRequest(ctx);
         }
     }
 }

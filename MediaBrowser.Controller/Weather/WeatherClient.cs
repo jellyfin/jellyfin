@@ -1,13 +1,13 @@
-﻿using System;
+﻿using MediaBrowser.Common.Logging;
+using MediaBrowser.Common.Serialization;
+using MediaBrowser.Model.Weather;
+using System;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Cache;
 using System.Net.Http;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Logging;
-using MediaBrowser.Common.Serialization;
-using MediaBrowser.Model.Weather;
 
 namespace MediaBrowser.Controller.Weather
 {
@@ -36,8 +36,8 @@ namespace MediaBrowser.Controller.Weather
                 return null;
             }
 
-            int numDays = 5;
-            string apiKey = "24902f60f1231941120109";
+            const int numDays = 5;
+            const string apiKey = "24902f60f1231941120109";
 
             string url = "http://free.worldweatheronline.com/feed/weather.ashx?q=" + zipCode + "&format=json&num_of_days=" + numDays + "&key=" + apiKey;
 
@@ -95,7 +95,7 @@ namespace MediaBrowser.Controller.Weather
 
         public WeatherStatus ToWeatherStatus()
         {
-            return new WeatherStatus()
+            return new WeatherStatus
             {
                 TemperatureCelsius = int.Parse(temp_C),
                 TemperatureFahrenheit = int.Parse(temp_F),
@@ -122,7 +122,7 @@ namespace MediaBrowser.Controller.Weather
 
         public WeatherForecast ToWeatherForecast()
         {
-            return new WeatherForecast()
+            return new WeatherForecast
             {
                 Date = DateTime.Parse(date),
                 HighTemperatureCelsius = int.Parse(tempMaxC),

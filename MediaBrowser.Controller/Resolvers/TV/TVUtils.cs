@@ -9,7 +9,7 @@ namespace MediaBrowser.Controller.Resolvers.TV
         /// <summary>
         /// A season folder must contain one of these somewhere in the name
         /// </summary>
-        private static string[] SeasonFolderNames = new string[] { 
+        private static readonly string[] SeasonFolderNames = new string[] { 
             "season",
             "sæson",
             "temporada",
@@ -118,14 +118,12 @@ namespace MediaBrowser.Controller.Resolvers.TV
                     {
                         return true;
                     }
-                    else
-                    {
-                        nonSeriesFolders++;
 
-                        if (nonSeriesFolders >= 3)
-                        {
-                            return false;
-                        }
+                    nonSeriesFolders++;
+
+                    if (nonSeriesFolders >= 3)
+                    {
+                        return false;
                     }
                 }
                 else

@@ -86,7 +86,7 @@ namespace MediaBrowser.Api.HttpHandlers
         /// </summary>
         protected override string GetCommandLineArguments()
         {
-            List<string> audioTranscodeParams = new List<string>();
+            var audioTranscodeParams = new List<string>();
 
             AudioOutputFormats outputFormat = GetConversionOutputFormat();
 

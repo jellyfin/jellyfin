@@ -25,8 +25,8 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        private bool _TotalContentLengthDiscovered = false;
-        private long? _TotalContentLength = null;
+        private bool _TotalContentLengthDiscovered;
+        private long? _TotalContentLength;
         public long? TotalContentLength
         {
             get
@@ -34,6 +34,7 @@ namespace MediaBrowser.Common.Net.Handlers
                 if (!_TotalContentLengthDiscovered)
                 {
                     _TotalContentLength = GetTotalContentLength();
+                    _TotalContentLengthDiscovered = true;
                 }
 
                 return _TotalContentLength;
@@ -64,7 +65,7 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        protected List<KeyValuePair<long, long?>> _RequestedRanges = null;
+        private List<KeyValuePair<long, long?>> _RequestedRanges;
         protected IEnumerable<KeyValuePair<long, long?>> RequestedRanges
         {
             get
@@ -367,7 +368,7 @@ namespace MediaBrowser.Common.Net.Handlers
         {
             DateTime? value = null;
 
-            return Task.FromResult<DateTime?>(value);
+            return Task.FromResult(value);
         }
 
         private bool IsResponseValid
@@ -378,7 +379,7 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        private Hashtable _FormValues = null;
+        private Hashtable _FormValues;
 
         /// <summary>
         /// Gets a value from form POST data

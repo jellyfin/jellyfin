@@ -10,8 +10,8 @@ namespace MediaBrowser.Controller.IO
 {
     public class DirectoryWatchers
     {
-        private List<FileSystemWatcher> FileSystemWatchers = new List<FileSystemWatcher>();
-        private Timer updateTimer = null;
+        private readonly List<FileSystemWatcher> FileSystemWatchers = new List<FileSystemWatcher>();
+        private Timer updateTimer;
         private List<string> affectedPaths = new List<string>();
 
         private const int TimerDelayInSeconds = 5;
@@ -107,10 +107,8 @@ namespace MediaBrowser.Controller.IO
             {
                 return Kernel.Instance.ReloadRoot();
             }
-            else
-            {
-                return Task.WhenAll(itemsToRefresh.Select(i => Kernel.Instance.ReloadItem(i)));
-            }
+
+            return Task.WhenAll(itemsToRefresh.Select(i => Kernel.Instance.ReloadItem(i)));
         }
 
         private BaseItem GetAffectedBaseItem(string path)
