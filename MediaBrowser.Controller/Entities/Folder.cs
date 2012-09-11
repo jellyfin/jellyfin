@@ -218,15 +218,14 @@ namespace MediaBrowser.Controller.Entities
         {
             itemSet = itemSet.Where(i => !(i.IsFolder));
 
-            if (!itemSet.Any())
-            {
-                return 0;
-            }
-
             decimal totalPercent = 0;
+
+            int count = 0;
 
             foreach (BaseItem item in itemSet)
             {
+                count++;
+                
                 UserItemData data = item.GetUserData(user, false);
 
                 if (data == null)
@@ -246,7 +245,12 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            return totalPercent / itemSet.Count();
+            if (count == 0)
+            {
+                return 0;
+            }
+
+            return totalPercent / count;
         }
 
         /// <summary>
