@@ -45,10 +45,13 @@
     <Compile Include="DTO\VideoInfo.cs" />
     <Compile Include="DTO\VideoOutputFormats.cs" />
     <Compile Include="DTO\IBNItem.cs" />
+    <Compile Include="Entities\AudioStream.cs" />
     <Compile Include="Entities\ImageType.cs" />
     <Compile Include="Entities\IHasProviderIds.cs" />
     <Compile Include="Entities\ItemSpecialCounts.cs" />
     <Compile Include="Entities\MetadataProviders.cs" />
+    <Compile Include="Entities\SubtitleStream.cs" />
+    <Compile Include="Entities\VideoType.cs" />
     <Compile Include="Plugins\BasePluginConfiguration.cs" />
     <Compile Include="DTO\PluginInfo.cs" />
     <Compile Include="Progress\TaskProgress.cs" />
