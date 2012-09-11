@@ -24,7 +24,7 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             User user = ApiService.GetUserById(QueryString["userid"], true);
 
-            Movie movie = ApiService.GetItemById(ItemId) as Movie;
+            var movie = ApiService.GetItemById(ItemId) as Movie;
 
             // If none
             if (movie.SpecialFeatures == null)
@@ -32,10 +32,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 return Task.FromResult(new DtoBaseItem[] { });
             }
 
-            return Task.WhenAll(movie.SpecialFeatures.Select(i =>
-            {
-                return ApiService.GetDtoBaseItem(i, user, includeChildren: false);
-            }));
+            return Task.WhenAll(movie.SpecialFeatures.Select(i => ApiService.GetDtoBaseItem(i, user, includeChildren: false)));
         }
 
         protected string ItemId

@@ -81,7 +81,7 @@ namespace MediaBrowser.Api.HttpHandlers
         /// <summary>
         /// Translates the output file extension to the format param that follows "-f" on the ffmpeg command line
         /// </summary>
-        private string GetFFMpegOutputFormat(VideoOutputFormats outputFormat)
+        private string GetFfMpegOutputFormat(VideoOutputFormats outputFormat)
         {
             if (outputFormat == VideoOutputFormats.Mkv)
             {
@@ -110,7 +110,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 LibraryItem.Path,
                 GetVideoArguments(outputFormat),
                 GetAudioArguments(outputFormat),
-                GetFFMpegOutputFormat(outputFormat)
+                GetFfMpegOutputFormat(outputFormat)
                 );
         }
 

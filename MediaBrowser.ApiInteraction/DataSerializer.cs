@@ -25,11 +25,11 @@ namespace MediaBrowser.ApiInteraction
                 //return Serializer.Deserialize<T>(stream);
                 return ProtobufModelSerializer.Deserialize(stream, null, typeof(T)) as T;
             }
-            else if (format == SerializationFormats.Jsv)
+            if (format == SerializationFormats.Jsv)
             {
                 return TypeSerializer.DeserializeFromStream<T>(stream);
             }
-            else if (format == SerializationFormats.Json)
+            if (format == SerializationFormats.Json)
             {
                 return JsonSerializer.DeserializeFromStream<T>(stream);
             }
@@ -42,16 +42,16 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         public static object DeserializeFromStream(Stream stream, SerializationFormats format, Type type)
         {
-            if (format == ApiInteraction.SerializationFormats.Protobuf)
+            if (format == SerializationFormats.Protobuf)
             {
                 //throw new NotImplementedException();
                 return ProtobufModelSerializer.Deserialize(stream, null, type);
             }
-            else if (format == ApiInteraction.SerializationFormats.Jsv)
+            if (format == SerializationFormats.Jsv)
             {
                 return TypeSerializer.DeserializeFromStream(type, stream);
             }
-            else if (format == ApiInteraction.SerializationFormats.Json)
+            if (format == SerializationFormats.Json)
             {
                 return JsonSerializer.DeserializeFromStream(type, stream);
             }
@@ -61,7 +61,7 @@ namespace MediaBrowser.ApiInteraction
 
         public static void Configure()
         {
-            JsConfig.DateHandler = ServiceStack.Text.JsonDateHandler.ISO8601;
+            JsConfig.DateHandler = JsonDateHandler.ISO8601;
             JsConfig.ExcludeTypeInfo = true;
             JsConfig.IncludeNullValues = false;
         }

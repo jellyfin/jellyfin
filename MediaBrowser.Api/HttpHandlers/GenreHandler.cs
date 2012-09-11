@@ -15,17 +15,17 @@ namespace MediaBrowser.Api.HttpHandlers
     /// Gets a single genre
     /// </summary>
     [Export(typeof(BaseHandler))]
-    public class GenreHandler : BaseSerializationHandler<IBNItem>
+    public class GenreHandler : BaseSerializationHandler<IbnItem>
     {
         public override bool HandlesRequest(HttpListenerRequest request)
         {
             return ApiService.IsApiUrlMatch("genre", request);
         }
-        
-        protected override Task<IBNItem> GetObjectToSerialize()
+
+        protected override Task<IbnItem> GetObjectToSerialize()
         {
-            Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
-            User user = ApiService.GetUserById(QueryString["userid"], true);
+            var parent = ApiService.GetItemById(QueryString["id"]) as Folder;
+            var user = ApiService.GetUserById(QueryString["userid"], true);
 
             string name = QueryString["name"];
 
@@ -35,7 +35,7 @@ namespace MediaBrowser.Api.HttpHandlers
         /// <summary>
         /// Gets a Genre
         /// </summary>
-        private async Task<IBNItem> GetGenre(Folder parent, User user, string name)
+        private async Task<IbnItem> GetGenre(Folder parent, User user, string name)
         {
             int count = 0;
 
@@ -51,7 +51,7 @@ namespace MediaBrowser.Api.HttpHandlers
             }
 
             // Get the original entity so that we can also supply the PrimaryImagePath
-            return ApiService.GetIBNItem(await Kernel.Instance.ItemController.GetGenre(name).ConfigureAwait(false), count);
+            return ApiService.GetIbnItem(await Kernel.Instance.ItemController.GetGenre(name).ConfigureAwait(false), count);
         }
     }
 }

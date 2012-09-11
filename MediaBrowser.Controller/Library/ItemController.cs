@@ -114,11 +114,7 @@ namespace MediaBrowser.Controller.Library
                 {
                     // If it's a folder look for child entities
                     (item as Folder).Children = (await Task.WhenAll(GetChildren(item as Folder, fileSystemChildren, allowInternetProviders)).ConfigureAwait(false))
-                        .Where(i => i != null).OrderBy(f =>
-                        {
-                            return string.IsNullOrEmpty(f.SortName) ? f.Name : f.SortName;
-
-                        });
+                        .Where(i => i != null).OrderBy(f => (string.IsNullOrEmpty(f.SortName) ? f.Name : f.SortName));
                 }
             }
 
@@ -130,7 +126,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         private Task<BaseItem>[] GetChildren(Folder folder, WIN32_FIND_DATA[] fileSystemChildren, bool allowInternetProviders)
         {
-            Task<BaseItem>[] tasks = new Task<BaseItem>[fileSystemChildren.Length];
+            var tasks = new Task<BaseItem>[fileSystemChildren.Length];
 
             for (int i = 0; i < fileSystemChildren.Length; i++)
             {
@@ -147,8 +143,8 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         private WIN32_FIND_DATA[] FilterChildFileSystemEntries(WIN32_FIND_DATA[] fileSystemChildren, bool flattenShortcuts)
         {
-            WIN32_FIND_DATA[] returnArray = new WIN32_FIND_DATA[fileSystemChildren.Length];
-            List<WIN32_FIND_DATA> resolvedShortcuts = new List<WIN32_FIND_DATA>();
+            var returnArray = new WIN32_FIND_DATA[fileSystemChildren.Length];
+            var resolvedShortcuts = new List<WIN32_FIND_DATA>();
 
             for (int i = 0; i < fileSystemChildren.Length; i++)
             {
@@ -256,7 +252,7 @@ namespace MediaBrowser.Controller.Library
         private async Task<T> CreateImagesByNameItem<T>(string path, string name)
             where T : BaseEntity, new()
         {
-            T item = new T();
+            var item = new T { };
 
             item.Name = name;
             item.Id = Kernel.GetMD5(path);
@@ -269,7 +265,7 @@ namespace MediaBrowser.Controller.Library
             item.DateCreated = Directory.GetCreationTimeUtc(path);
             item.DateModified = Directory.GetLastWriteTimeUtc(path);
 
-            ItemResolveEventArgs args = new ItemResolveEventArgs();
+            var args = new ItemResolveEventArgs { };
             args.FileInfo = FileData.GetFileData(path);
             args.FileSystemChildren = FileData.GetFileSystemEntries(path, "*").ToArray();
 

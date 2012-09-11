@@ -76,9 +76,9 @@ namespace MediaBrowser.Api
             bool includeChildren = true,
             bool includePeople = true)
         {
-            DtoBaseItem dto = new DtoBaseItem();
+            var dto = new DtoBaseItem();
 
-            List<Task> tasks = new List<Task>();
+            var tasks = new List<Task>();
 
             tasks.Add(AttachStudios(dto, item));
 
@@ -134,7 +134,7 @@ namespace MediaBrowser.Api
             dto.OfficialRating = item.OfficialRating;
             dto.Overview = item.Overview;
 
-            // If there are no backdrops, indicate what parent has them in case the UI wants to allow inheritance
+            // If there are no backdrops, indicate what parent has them in case the Ui wants to allow inheritance
             if (dto.BackdropCount == 0)
             {
                 int backdropCount;
@@ -149,7 +149,7 @@ namespace MediaBrowser.Api
 
             dto.ParentIndexNumber = item.ParentIndexNumber;
 
-            // If there is no logo, indicate what parent has one in case the UI wants to allow inheritance
+            // If there is no logo, indicate what parent has one in case the Ui wants to allow inheritance
             if (!dto.HasLogo)
             {
                 dto.ParentLogoItemId = GetParentLogoItemId(item);
@@ -174,7 +174,7 @@ namespace MediaBrowser.Api
 
             dto.UserData = GetDtoUserItemData(item.GetUserData(user, false));
 
-            Folder folder = item as Folder;
+            var folder = item as Folder;
 
             if (folder != null)
             {
@@ -185,7 +185,7 @@ namespace MediaBrowser.Api
             }
 
             // Add AudioInfo
-            Audio audio = item as Audio;
+            var audio = item as Audio;
 
             if (audio != null)
             {
@@ -200,7 +200,7 @@ namespace MediaBrowser.Api
             }
 
             // Add VideoInfo
-            Video video = item as Video;
+            var video = item as Video;
 
             if (video != null)
             {
@@ -225,11 +225,11 @@ namespace MediaBrowser.Api
             }
 
             // Add SeriesInfo
-            Series series = item as Series;
+            var series = item as Series;
 
             if (series != null)
             {
-                DayOfWeek[] airDays = series.AirDays == null ? new DayOfWeek[] { } : series.AirDays.ToArray(); ;
+                DayOfWeek[] airDays = series.AirDays == null ? new DayOfWeek[] { } : series.AirDays.ToArray(); 
 
                 dto.SeriesInfo = new SeriesInfo
                 {
@@ -240,7 +240,7 @@ namespace MediaBrowser.Api
             }
 
             // Add MovieInfo
-            Movie movie = item as Movie;
+            var movie = item as Movie;
 
             if (movie != null)
             {
@@ -268,7 +268,7 @@ namespace MediaBrowser.Api
                 for (int i = 0; i < entities.Length; i++)
                 {
                     Studio entity = entities[i];
-                    BaseItemStudio baseItemStudio = new BaseItemStudio();
+                    var baseItemStudio = new BaseItemStudio{};
 
                     baseItemStudio.Name = entity.Name;
 
@@ -317,7 +317,7 @@ namespace MediaBrowser.Api
 
                 dto.People = item.People.Select(p =>
                 {
-                    BaseItemPerson baseItemPerson = new BaseItemPerson();
+                    var baseItemPerson = new BaseItemPerson{};
 
                     baseItemPerson.Name = p.Key;
                     baseItemPerson.Overview = p.Value.Overview;
@@ -381,9 +381,9 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Gets an ImagesByName entity along with the number of items containing it
         /// </summary>
-        public static IBNItem GetIBNItem(BaseEntity entity, int itemCount)
+        public static IbnItem GetIbnItem(BaseEntity entity, int itemCount)
         {
-            return new IBNItem
+            return new IbnItem
             {
                 Id = entity.Id,
                 BaseItemCount = itemCount,

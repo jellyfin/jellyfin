@@ -209,7 +209,7 @@ namespace MediaBrowser.Controller
         /// </summary>
         public AuthenticationResult AuthenticateUser(User user, string password)
         {
-            AuthenticationResult result = new AuthenticationResult();
+            var result = new AuthenticationResult();
 
             // When EnableUserProfiles is false, only the default User can login
             if (!Configuration.EnableUserProfiles)
@@ -237,7 +237,7 @@ namespace MediaBrowser.Controller
 
         public async Task ReloadItem(BaseItem item)
         {
-            Folder folder = item as Folder;
+            var folder = item as Folder;
 
             if (folder != null && folder.IsRoot)
             {
@@ -283,16 +283,16 @@ namespace MediaBrowser.Controller
         /// </summary>
         private IEnumerable<User> GetAllUsers()
         {
-            List<User> list = new List<User>();
+            var list = new List<User>();
 
             // Return a dummy user for now since all calls to get items requre a userId
-            User user = new User();
+            var user = new User { };
 
             user.Name = "Default User";
             user.Id = Guid.Parse("5d1cf7fce25943b790d140095457a42b");
             list.Add(user);
 
-            user = new User();
+            user = new User { };
             user.Name = "Abobader";
             user.Id = Guid.NewGuid();
             user.LastLoginDate = DateTime.UtcNow.AddDays(-1);
@@ -300,12 +300,12 @@ namespace MediaBrowser.Controller
             user.Password = GetMD5("1234").ToString();
             list.Add(user);
 
-            user = new User();
+            user = new User { };
             user.Name = "Scottisafool";
             user.Id = Guid.NewGuid();
             list.Add(user);
 
-            user = new User();
+            user = new User { };
             user.Name = "Redshirt";
             user.Id = Guid.NewGuid();
             list.Add(user);
@@ -381,7 +381,7 @@ namespace MediaBrowser.Controller
             // Extract exe
             using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Controller.FFMpeg." + Path.GetFileName(exe)))
             {
-                using (FileStream fileStream = new FileStream(exe, FileMode.Create))
+                using (var fileStream = new FileStream(exe, FileMode.Create))
                 {
                     stream.CopyTo(fileStream);
                 }

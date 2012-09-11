@@ -44,7 +44,7 @@
     <Compile Include="DTO\DtoUser.cs" />
     <Compile Include="DTO\VideoInfo.cs" />
     <Compile Include="DTO\VideoOutputFormats.cs" />
-    <Compile Include="DTO\IBNItem.cs" />
+    <Compile Include="DTO\IbnItem.cs" />
     <Compile Include="Entities\AudioStream.cs" />
     <Compile Include="Entities\ImageType.cs" />
     <Compile Include="Entities\IHasProviderIds.cs" />

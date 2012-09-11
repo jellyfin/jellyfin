@@ -28,8 +28,8 @@ namespace MediaBrowser.Common.UI
         {
             Kernel = InstantiateKernel();
 
-            Progress<TaskProgress> progress = new Progress<TaskProgress>();
-            Splash splash = new Splash(progress);
+            var progress = new Progress<TaskProgress>();
+            var splash = new Splash(progress);
 
             splash.Show();
 

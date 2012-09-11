@@ -21,7 +21,7 @@ namespace MediaBrowser.Controller.Weather
 
         public WeatherClient()
         {
-            WebRequestHandler handler = new WebRequestHandler();
+            var handler = new WebRequestHandler { };
 
             handler.AutomaticDecompression = DecompressionMethods.Deflate;
             handler.CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate);
@@ -56,7 +56,7 @@ namespace MediaBrowser.Controller.Weather
         /// </summary>
         private WeatherInfo GetWeatherInfo(WeatherData data)
         {
-            WeatherInfo info = new WeatherInfo();
+            var info = new WeatherInfo();
 
             if (data.current_condition != null)
             {

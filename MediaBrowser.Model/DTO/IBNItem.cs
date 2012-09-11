@@ -7,7 +7,7 @@ namespace MediaBrowser.Model.DTO
     /// This is a stub class used by the api to get IBN types along with their item counts
     /// </summary>
     [ProtoContract]
-    public class IBNItem
+    public class IbnItem
     {
         /// <summary>
         /// The name of the person, genre, etc

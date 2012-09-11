@@ -5,7 +5,7 @@ using System.Reflection;
 namespace MediaBrowser.Common.Kernel
 {
     /// <summary>
-    /// Provides a base class to hold common application paths used by both the UI and Server.
+    /// Provides a base class to hold common application paths used by both the Ui and Server.
     /// This can be subclassed to add application-specific paths.
     /// </summary>
     public abstract class BaseApplicationPaths
@@ -22,6 +22,7 @@ namespace MediaBrowser.Common.Kernel
                 {
                     _programDataPath = GetProgramDataPath();
                 }
+                
                 return _programDataPath;
             }
         }

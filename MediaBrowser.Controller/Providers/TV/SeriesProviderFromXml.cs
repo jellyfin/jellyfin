@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
         public override async Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
         {
-            await Task.Run(() => { Fetch(item, args); }).ConfigureAwait(false);
+            await Task.Run(() => Fetch(item, args)).ConfigureAwait(false);
         }
 
         private void Fetch(BaseEntity item, ItemResolveEventArgs args)

@@ -11,7 +11,7 @@ namespace MediaBrowser.ApiInteraction
         }
 
         public ApiClient()
-            : this(new WebRequestHandler() { CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate) })
+            : this(new WebRequestHandler { CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate) })
         {
         }
     }

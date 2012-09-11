@@ -26,11 +26,11 @@ namespace MediaBrowser.Controller.Providers.Movies
         {
             if (args.ContainsFolder("specials"))
             {
-                List<Video> items = new List<Video>();
+                var items = new List<Video>();
 
                 foreach (WIN32_FIND_DATA file in FileData.GetFileSystemEntries(Path.Combine(args.Path, "specials"), "*"))
                 {
-                    Video video = await Kernel.Instance.ItemController.GetItem(file.Path, fileInfo: file).ConfigureAwait(false) as Video;
+                    var video = await Kernel.Instance.ItemController.GetItem(file.Path, fileInfo: file).ConfigureAwait(false) as Video;
 
                     if (video != null)
                     {

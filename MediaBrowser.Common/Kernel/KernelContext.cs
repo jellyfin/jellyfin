@@ -4,6 +4,6 @@ namespace MediaBrowser.Common.Kernel
     public enum KernelContext
     {
         Server,
-        UI
+        Ui
     }
 }

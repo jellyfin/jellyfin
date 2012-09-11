@@ -6,21 +6,21 @@ namespace MediaBrowser.Common.Net
 {
     public class HttpServer : IObservable<HttpListenerContext>, IDisposable
     {
-        private readonly HttpListener listener;
-        private readonly IObservable<HttpListenerContext> stream;
+        private readonly HttpListener _listener;
+        private readonly IObservable<HttpListenerContext> _stream;
 
         public HttpServer(string url)
         {
-            listener = new HttpListener();
-            listener.Prefixes.Add(url);
-            listener.Start();
-            stream = ObservableHttpContext();
+            _listener = new HttpListener();
+            _listener.Prefixes.Add(url);
+            _listener.Start();
+            _stream = ObservableHttpContext();
         }
 
         private IObservable<HttpListenerContext> ObservableHttpContext()
         {
             return Observable.Create<HttpListenerContext>(obs =>
-                                Observable.FromAsync(() => listener.GetContextAsync())
+                                Observable.FromAsync(() => _listener.GetContextAsync())
                                           .Subscribe(obs))
                              .Repeat()
                              .Retry()
@@ -29,12 +29,12 @@ namespace MediaBrowser.Common.Net
         }
         public void Dispose()
         {
-            listener.Stop();
+            _listener.Stop();
         }
 
         public IDisposable Subscribe(IObserver<HttpListenerContext> observer)
         {
-            return stream.Subscribe(observer);
+            return _stream.Subscribe(observer);
         }
     }
 }

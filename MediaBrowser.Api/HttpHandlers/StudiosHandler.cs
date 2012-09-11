@@ -11,17 +11,17 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Api.HttpHandlers
 {
     [Export(typeof(BaseHandler))]
-    public class StudiosHandler : BaseSerializationHandler<IBNItem[]>
+    public class StudiosHandler : BaseSerializationHandler<IbnItem[]>
     {
         public override bool HandlesRequest(HttpListenerRequest request)
         {
             return ApiService.IsApiUrlMatch("studios", request);
         }
-        
-        protected override Task<IBNItem[]> GetObjectToSerialize()
+
+        protected override Task<IbnItem[]> GetObjectToSerialize()
         {
-            Folder parent = ApiService.GetItemById(QueryString["id"]) as Folder;
-            User user = ApiService.GetUserById(QueryString["userid"], true);
+            var parent = ApiService.GetItemById(QueryString["id"]) as Folder;
+            var user = ApiService.GetUserById(QueryString["userid"], true);
 
             return GetAllStudios(parent, user);
         }
@@ -30,9 +30,9 @@ namespace MediaBrowser.Api.HttpHandlers
         /// Gets all studios from all recursive children of a folder
         /// The CategoryInfo class is used to keep track of the number of times each studio appears
         /// </summary>
-        private async Task<IBNItem[]> GetAllStudios(Folder parent, User user)
+        private async Task<IbnItem[]> GetAllStudios(Folder parent, User user)
         {
-            Dictionary<string, int> data = new Dictionary<string, int>();
+            var data = new Dictionary<string, int>();
 
             // Get all the allowed recursive children
             IEnumerable<BaseItem> allItems = parent.GetParentalAllowedRecursiveChildren(user);
@@ -60,16 +60,16 @@ namespace MediaBrowser.Api.HttpHandlers
             }
 
             // Get the Studio objects
-            Studio[] entities = await Task.WhenAll(data.Keys.Select(key => { return Kernel.Instance.ItemController.GetStudio(key); })).ConfigureAwait(false);
+            Studio[] entities = await Task.WhenAll(data.Keys.Select(key => Kernel.Instance.ItemController.GetStudio(key))).ConfigureAwait(false);
 
             // Convert to an array of IBNItem
-            IBNItem[] items = new IBNItem[entities.Length];
+            var items = new IbnItem[entities.Length];
 
             for (int i = 0; i < entities.Length; i++)
             {
                 Studio e = entities[i];
 
-                items[i] = ApiService.GetIBNItem(e, data[e.Name]);
+                items[i] = ApiService.GetIbnItem(e, data[e.Name]);
             }
 
             return items;

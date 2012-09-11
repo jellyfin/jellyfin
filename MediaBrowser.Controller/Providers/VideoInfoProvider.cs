@@ -87,7 +87,7 @@ namespace MediaBrowser.Controller.Providers
 
         private void FetchFromAudioStream(Video video, MediaStream stream)
         {
-            AudioStream audio = new AudioStream();
+            var audio = new AudioStream{};
 
             audio.Codec = stream.codec_name;
 
@@ -112,7 +112,7 @@ namespace MediaBrowser.Controller.Providers
 
         private void FetchFromSubtitleStream(Video video, MediaStream stream)
         {
-            SubtitleStream subtitle = new SubtitleStream();
+            var subtitle = new SubtitleStream{};
 
             subtitle.Language = GetDictionaryValue(stream.tags, "language");
 
@@ -157,7 +157,7 @@ namespace MediaBrowser.Controller.Providers
                 return false;
             }
 
-            if (video.FrameRate == 0 || video.Height == 0 || video.Width == 0 || video.BitRate == 0)
+            if (Convert.ToInt32(video.FrameRate) == 0 || video.Height == 0 || video.Width == 0 || video.BitRate == 0)
             {
                 return false;
             }

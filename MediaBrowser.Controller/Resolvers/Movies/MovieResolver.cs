@@ -66,7 +66,7 @@ namespace MediaBrowser.Controller.Resolvers.Movies
             {
                 var child = args.FileSystemChildren[i];
 
-                ItemResolveEventArgs childArgs = new ItemResolveEventArgs()
+                var childArgs = new ItemResolveEventArgs
                 {
                     FileInfo = child,
                     FileSystemChildren = new WIN32_FIND_DATA[] { },
@@ -77,7 +77,7 @@ namespace MediaBrowser.Controller.Resolvers.Movies
 
                 if (item != null)
                 {
-                    return new Movie()
+                    return new Movie
                     {
                         Path = item.Path,
                         VideoType = item.VideoType

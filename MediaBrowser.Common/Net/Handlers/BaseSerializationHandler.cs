@@ -6,6 +6,7 @@ using MediaBrowser.Common.Serialization;
 namespace MediaBrowser.Common.Net.Handlers
 {
     public abstract class BaseSerializationHandler<T> : BaseHandler
+        where T : class 
     {
         public SerializationFormat SerializationFormat
         {
@@ -35,21 +36,21 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        private bool _ObjectToSerializeEnsured;
-        private T _ObjectToSerialize;
+        private bool _objectToSerializeEnsured;
+        private T _objectToSerialize;
      
         private async Task EnsureObjectToSerialize()
         {
-            if (!_ObjectToSerializeEnsured)
+            if (!_objectToSerializeEnsured)
             {
-                _ObjectToSerialize = await GetObjectToSerialize().ConfigureAwait(false);
+                _objectToSerialize = await GetObjectToSerialize().ConfigureAwait(false);
 
-                if (_ObjectToSerialize == null)
+                if (_objectToSerialize == null)
                 {
                     StatusCode = 404;
                 }
 
-                _ObjectToSerializeEnsured = true;
+                _objectToSerializeEnsured = true;
             }
         }
 
@@ -67,13 +68,13 @@ namespace MediaBrowser.Common.Net.Handlers
             switch (SerializationFormat)
             {
                 case SerializationFormat.Jsv:
-                    JsvSerializer.SerializeToStream(_ObjectToSerialize, stream);
+                    JsvSerializer.SerializeToStream(_objectToSerialize, stream);
                     break;
                 case SerializationFormat.Protobuf:
-                    ProtobufSerializer.SerializeToStream(_ObjectToSerialize, stream);
+                    ProtobufSerializer.SerializeToStream(_objectToSerialize, stream);
                     break;
                 default:
-                    JsonSerializer.SerializeToStream(_ObjectToSerialize, stream);
+                    JsonSerializer.SerializeToStream(_objectToSerialize, stream);
                     break;
             }
         }

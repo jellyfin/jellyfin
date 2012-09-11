@@ -32,10 +32,10 @@ namespace MediaBrowser.Controller.Providers
 
                 if (baseItem != null)
                 {
-                    return Task.Run(() => { PopulateBaseItemImages(baseItem, args); });
+                    return Task.Run(() => PopulateBaseItemImages(baseItem, args));
                 }
 
-                return Task.Run(() => { PopulateImages(item, args); });
+                return Task.Run(() => PopulateImages(item, args));
             }
 
             return Task.FromResult<object>(null);
@@ -74,7 +74,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         private void PopulateBaseItemImages(BaseItem item, ItemResolveEventArgs args)
         {
-            List<string> backdropFiles = new List<string>();
+            var backdropFiles = new List<string>();
 
             for (int i = 0; i < args.FileSystemChildren.Length; i++)
             {

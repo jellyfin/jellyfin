@@ -30,7 +30,7 @@ namespace MediaBrowser.ServerApplication
                 SingleInstance<App>.Cleanup();
             }
         }
-        
+
         #region ISingleInstanceApp Members
         public bool SignalExternalCommandLineArgs(IList<string> args)
         {
@@ -42,9 +42,30 @@ namespace MediaBrowser.ServerApplication
 
         public static void OpenDashboard()
         {
-            using (Process process = Process.Start("http://localhost:" + Kernel.Instance.Configuration.HttpServerPortNumber + "/mediabrowser/dashboard/index.html"))
+            OpenUrl("http://localhost:" + Kernel.Instance.Configuration.HttpServerPortNumber +
+                        "/mediabrowser/dashboard/index.html");
+        }
+        
+        public static void OpenUrl(string url)
+        {
+            var process = new Process
             {
-            }
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = url
+                },
+
+                EnableRaisingEvents = true
+            };
+
+            process.Exited += ProcessExited;
+
+            process.Start();
+        }
+
+        static void ProcessExited(object sender, EventArgs e)
+        {
+            (sender as Process).Dispose();
         }
 
         protected override IKernel InstantiateKernel()

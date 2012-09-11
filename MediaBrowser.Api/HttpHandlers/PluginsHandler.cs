@@ -19,20 +19,17 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             return ApiService.IsApiUrlMatch("plugins", request);
         }
-        
+
         protected override Task<IEnumerable<PluginInfo>> GetObjectToSerialize()
         {
-            var plugins = Kernel.Instance.Plugins.Select(p =>
+            var plugins = Kernel.Instance.Plugins.Select(p => new PluginInfo
             {
-                return new PluginInfo
-                {
-                    Name = p.Name,
-                    Enabled = p.Enabled,
-                    DownloadToUI = p.DownloadToUI,
-                    Version = p.Version.ToString(),
-                    AssemblyFileName = p.AssemblyFileName,
-                    ConfigurationDateLastModified = p.ConfigurationDateLastModified
-                };
+                Name = p.Name,
+                Enabled = p.Enabled,
+                DownloadToUI = p.DownloadToUi,
+                Version = p.Version.ToString(),
+                AssemblyFileName = p.AssemblyFileName,
+                ConfigurationDateLastModified = p.ConfigurationDateLastModified
             });
 
             return Task.FromResult(plugins);

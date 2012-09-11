@@ -12,7 +12,7 @@ namespace MediaBrowser.ApiInteraction
     /// </summary>
     public abstract class BaseApiClient : IDisposable
     {
-        public BaseApiClient()
+        protected BaseApiClient()
         {
             DataSerializer.Configure();
         }
@@ -45,7 +45,7 @@ namespace MediaBrowser.ApiInteraction
         {
             get
             {
-                return ApiInteraction.SerializationFormats.Protobuf;
+                return SerializationFormats.Protobuf;
             }
         }
 
@@ -301,8 +301,8 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
         public string[] GetBackdropImageUrls(DtoBaseItem item, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
         {
-            Guid? backdropItemId = null;
-            int backdropCount = 0;
+            Guid? backdropItemId;
+            int backdropCount;
 
             if (item.BackdropCount == 0)
             {
@@ -320,7 +320,7 @@ namespace MediaBrowser.ApiInteraction
                 return new string[] { };
             }
 
-            string[] files = new string[backdropCount];
+            var files = new string[backdropCount];
 
             for (int i = 0; i < backdropCount; i++)
             {

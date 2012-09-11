@@ -24,10 +24,7 @@ namespace MediaBrowser.Api.HttpHandlers
         private string _imagePath;
         private async Task<string> GetImagePath()
         {
-            if (_imagePath == null)
-            {
-                _imagePath = await DiscoverImagePath();
-            }
+            _imagePath = _imagePath ?? await DiscoverImagePath();
 
             return _imagePath;
         }
