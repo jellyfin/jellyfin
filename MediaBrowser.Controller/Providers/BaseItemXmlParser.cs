@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Xml;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Xml;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;

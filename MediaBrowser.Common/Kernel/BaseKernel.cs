@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -85,22 +86,18 @@ namespace MediaBrowser.Common.Kernel
             await ReloadComposableParts().ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// Gets or sets the path to the current log file
-        /// </summary>
-        public static string LogFilePath { get; set; }
-
         private void ReloadLogger()
         {
             DisposeLogger();
 
             DateTime now = DateTime.Now;
 
-            LogFilePath = Path.Combine(ApplicationPaths.LogDirectoryPath, "log-" + now.ToString("dMyyyy") + "-" + now.Ticks + ".log");
+            string logFilePath = Path.Combine(ApplicationPaths.LogDirectoryPath, "log-" + now.ToString("dMyyyy") + "-" + now.Ticks + ".log");
 
-            FileStream fs = new FileStream(LogFilePath, FileMode.Append, FileAccess.Write, FileShare.Read);
+            Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
+            Trace.AutoFlush = true;
 
-            Logger.LoggerInstance = new StreamLogger(fs);
+            Logger.LoggerInstance = new TraceLogger();
         }
 
         /// <summary>
@@ -264,6 +261,8 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         private void DisposeLogger()
         {
+            Trace.Listeners.Clear();
+
             if (Logger.LoggerInstance != null)
             {
                 Logger.LoggerInstance.Dispose();

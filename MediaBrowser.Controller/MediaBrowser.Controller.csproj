@@ -50,6 +50,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Rx-Linq.2.0.20823\lib\Net45\System.Reactive.Linq.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -57,6 +58,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities\Audio.cs" />
+    <Compile Include="Entities\BaseEntity.cs" />
+    <Compile Include="Entities\BaseItem.cs" />
+    <Compile Include="Entities\Folder.cs" />
+    <Compile Include="Entities\Genre.cs" />
+    <Compile Include="Entities\Movies\BoxSet.cs" />
+    <Compile Include="Entities\Movies\Movie.cs" />
+    <Compile Include="Entities\Person.cs" />
+    <Compile Include="Entities\Studio.cs" />
+    <Compile Include="Entities\TV\Episode.cs" />
+    <Compile Include="Entities\TV\Season.cs" />
+    <Compile Include="Entities\TV\Series.cs" />
+    <Compile Include="Entities\User.cs" />
+    <Compile Include="Entities\UserItemData.cs" />
+    <Compile Include="Entities\Video.cs" />
+    <Compile Include="Entities\Year.cs" />
     <Compile Include="Providers\Movies\MovieProviderFromXml.cs" />
     <Compile Include="Providers\Movies\MovieSpecialFeaturesProvider.cs" />
     <Compile Include="Providers\TV\EpisodeImageFromMediaLocationProvider.cs" />

@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Entities.TV;
+﻿using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Model.Entities;
 using System;
 using System.Xml;
 

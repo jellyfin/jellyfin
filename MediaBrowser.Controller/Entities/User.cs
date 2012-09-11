@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MediaBrowser.Model.Entities
+namespace MediaBrowser.Controller.Entities
 {
     public class User : BaseEntity
     {

@@ -1,8 +1,9 @@
-﻿using System;
+﻿using MediaBrowser.Model.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MediaBrowser.Model.Entities
+namespace MediaBrowser.Controller.Entities
 {
     public class Folder : BaseItem
     {

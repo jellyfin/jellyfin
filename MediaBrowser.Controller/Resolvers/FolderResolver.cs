@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.Composition;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
+using System.ComponentModel.Composition;
 
 namespace MediaBrowser.Controller.Resolvers
 {

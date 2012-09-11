@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Common.Net.Handlers;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Model.DTO;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Entities.Movies;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Net;

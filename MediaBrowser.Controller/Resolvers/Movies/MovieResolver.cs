@@ -1,7 +1,8 @@
-﻿using MediaBrowser.Controller.IO;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Entities.Movies;
 using System.ComponentModel.Composition;
 
 namespace MediaBrowser.Controller.Resolvers.Movies

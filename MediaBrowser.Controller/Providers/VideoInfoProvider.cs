@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.FFMpeg;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.FFMpeg;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;

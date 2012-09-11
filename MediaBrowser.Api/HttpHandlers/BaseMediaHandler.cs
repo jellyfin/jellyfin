@@ -2,7 +2,7 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
-using MediaBrowser.Model.Entities;
+using MediaBrowser.Controller.Entities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
