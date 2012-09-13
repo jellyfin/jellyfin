@@ -1,44 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Windows;
-using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.UI;
 using MediaBrowser.Controller;
 using Microsoft.Shell;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Windows;
 
 namespace MediaBrowser.ServerApplication
 {
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : BaseApplication, ISingleInstanceApp
+    public partial class App : BaseApplication, IApplication
     {
-        private const string Unique = "MediaBrowser3";
-
         [STAThread]
         public static void Main()
         {
-            if (SingleInstance<App>.InitializeAsFirstInstance(Unique))
-            {
-                var application = new App();
-                application.InitializeComponent();
-
-                application.Run();
-
-                // Allow single instance code to perform cleanup operations
-                SingleInstance<App>.Cleanup();
-            }
+            RunApplication<App>("MediaBrowserServer");
         }
 
-        #region ISingleInstanceApp Members
-        public bool SignalExternalCommandLineArgs(IList<string> args)
+        protected override void OnSecondInstanceLaunched(IList<string> args)
         {
-            OpenDashboard();
+            base.OnSecondInstanceLaunched(args);
 
-            return true;
+            OpenDashboard();
+            InitializeComponent();
         }
-        #endregion
 
         public static void OpenDashboard()
         {
