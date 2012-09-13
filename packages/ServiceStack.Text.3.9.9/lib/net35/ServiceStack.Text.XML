@@ -197,6 +197,11 @@
             Sets which format to use when serializing TimeSpans
             </summary>
         </member>
+        <member name="P:ServiceStack.Text.JsConfig.PreferInterfaces">
+            <summary>
+            If set to true, Interface types will be prefered over concrete types when serializing.
+            </summary>
+        </member>
         <member name="F:ServiceStack.Text.JsConfig`1.ExcludeTypeInfo">
             <summary>
             Never emit type info for this type
@@ -215,9 +220,19 @@
             Define custom serialization fn for BCL Structs
             </summary>
         </member>
+        <member name="F:ServiceStack.Text.JsConfig`1.rawSerializeFn">
+            <summary>
+            Define custom raw serialization fn
+            </summary>
+        </member>
         <member name="F:ServiceStack.Text.JsConfig`1.DeSerializeFn">
             <summary>
             Define custom deserialization fn for BCL Structs
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Text.JsConfig`1.RawDeserializeFn">
+            <summary>
+            Define custom raw deserialization fn for objects
             </summary>
         </member>
         <member name="F:ServiceStack.Text.JsConfig`1.ExcludePropertyNames">
@@ -228,6 +243,11 @@
         <member name="P:ServiceStack.Text.JsConfig`1.TreatValueAsRefTypes">
             <summary>
             Opt-in flag to set some Value Types to be treated as a Ref Type
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Text.JsConfig`1.HasSerializeFn">
+            <summary>
+            Whether there is a fn (raw or otherwise)
             </summary>
         </member>
         <member name="F:ServiceStack.Text.JsonTimeSpanHandler.DurationFormat">
@@ -335,6 +355,11 @@
             Get JSON string value
             </summary>
         </member>
+        <member name="T:ServiceStack.Text.DtoAttribute">
+            <summary>
+            Flag that your POCO is a top-level Response DTO
+            </summary>
+        </member>
         <member name="T:ServiceStack.Text.Controller.PathInfo">
             <summary>
             Class to hold  
@@ -425,6 +450,11 @@
             </summary>
             <param name="typeName">[typeName] or [typeName, assemblyName]</param>
             <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Text.AssemblyUtils.MainInterface``1">
+            <summary>
+            The top-most interface of the given type, if any.
+            </summary>
         </member>
         <member name="M:ServiceStack.Text.AssemblyUtils.FindType(System.String,System.String)">
             <summary>
