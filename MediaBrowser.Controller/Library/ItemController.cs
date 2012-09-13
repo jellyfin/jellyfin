@@ -235,15 +235,15 @@ namespace MediaBrowser.Controller.Library
         {
             name = FileData.GetValidFilename(name);
 
-            string key = Path.Combine(path, name);
+            path = Path.Combine(path, name);
 
             // Look for it in the cache, if it's not there, create it
-            if (!ImagesByNameItemCache.ContainsKey(key))
+            if (!ImagesByNameItemCache.ContainsKey(path))
             {
-                ImagesByNameItemCache[key] = CreateImagesByNameItem<T>(path, name);
+                ImagesByNameItemCache[path] = CreateImagesByNameItem<T>(path, name);
             }
 
-            return ImagesByNameItemCache[key] as Task<T>;
+            return ImagesByNameItemCache[path] as Task<T>;
         }
 
         /// <summary>
