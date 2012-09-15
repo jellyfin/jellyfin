@@ -360,9 +360,9 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="maxAudioSampleRate">The maximum sample rate that the device can play. This should generally be omitted. The server will default this to 44100, so only override if a different max is needed.</param>
         public string GetAudioStreamUrl(Guid itemId, IEnumerable<AudioOutputFormats> supportedOutputFormats, int? maxAudioChannels = null, int? maxAudioSampleRate = null)
         {
-            string url = ApiUrl + "/audio";
+            string url = ApiUrl + "/audio?id=" + itemId;
 
-            url += "?outputformats=" + string.Join(",", supportedOutputFormats.Select(s => s.ToString()).ToArray());
+            url += "&outputformats=" + string.Join(",", supportedOutputFormats.Select(s => s.ToString()).ToArray());
 
             if (maxAudioChannels.HasValue)
             {
@@ -397,9 +397,9 @@ namespace MediaBrowser.ApiInteraction
             int? maxWidth = null, 
             int? maxHeight = null)
         {
-            string url = ApiUrl + "/video";
+            string url = ApiUrl + "/video?id=" + itemId;
 
-            url += "?outputformats=" + string.Join(",", supportedOutputFormats.Select(s => s.ToString()).ToArray());
+            url += "&outputformats=" + string.Join(",", supportedOutputFormats.Select(s => s.ToString()).ToArray());
 
             if (maxAudioChannels.HasValue)
             {
