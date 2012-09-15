@@ -65,9 +65,11 @@ namespace MediaBrowser.Controller.Entities
 
             IEnumerable<BaseItem> recursiveChildren = GetParentalAllowedRecursiveChildren(user);
 
-            counts.RecentlyAddedItemCount = GetRecentlyAddedItems(recursiveChildren, user).Count();
-            counts.RecentlyAddedUnPlayedItemCount = GetRecentlyAddedUnplayedItems(recursiveChildren, user).Count();
-            counts.InProgressItemCount = GetInProgressItems(recursiveChildren, user).Count();
+            var recentlyAddedItems = GetRecentlyAddedItems(recursiveChildren, user);
+
+            counts.RecentlyAddedItemCount = recentlyAddedItems.Count;
+            counts.RecentlyAddedUnPlayedItemCount = GetRecentlyAddedUnplayedItems(recentlyAddedItems, user).Count;
+            counts.InProgressItemCount = GetInProgressItems(recursiveChildren, user).Count;
             counts.PlayedPercentage = GetPlayedPercentage(recursiveChildren, user);
 
             return counts;
@@ -151,7 +153,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Gets all recently added items (recursive) within a folder, based on configuration and parental settings
         /// </summary>
-        public IEnumerable<BaseItem> GetRecentlyAddedItems(User user)
+        public List<BaseItem> GetRecentlyAddedItems(User user)
         {
             return GetRecentlyAddedItems(GetParentalAllowedRecursiveChildren(user), user);
         }
@@ -159,7 +161,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Gets all recently added unplayed items (recursive) within a folder, based on configuration and parental settings
         /// </summary>
-        public IEnumerable<BaseItem> GetRecentlyAddedUnplayedItems(User user)
+        public List<BaseItem> GetRecentlyAddedUnplayedItems(User user)
         {
             return GetRecentlyAddedUnplayedItems(GetParentalAllowedRecursiveChildren(user), user);
         }
@@ -167,7 +169,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Gets all in-progress items (recursive) within a folder
         /// </summary>
-        public IEnumerable<BaseItem> GetInProgressItems(User user)
+        public List<BaseItem> GetInProgressItems(User user)
         {
             return GetInProgressItems(GetParentalAllowedRecursiveChildren(user), user);
         }
@@ -175,40 +177,65 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Takes a list of items and returns the ones that are recently added
         /// </summary>
-        private static IEnumerable<BaseItem> GetRecentlyAddedItems(IEnumerable<BaseItem> itemSet, User user)
+        private static List<BaseItem> GetRecentlyAddedItems(IEnumerable<BaseItem> itemSet, User user)
         {
-            return itemSet.Where(i => !(i.IsFolder) && i.IsRecentlyAdded(user));
+            var list = new List<BaseItem>();
+
+            foreach (var item in itemSet)
+            {
+                if (!item.IsFolder && item.IsRecentlyAdded(user))
+                {
+                    list.Add(item);
+                }
+            }
+
+            return list;
         }
 
         /// <summary>
         /// Takes a list of items and returns the ones that are recently added and unplayed
         /// </summary>
-        private static IEnumerable<BaseItem> GetRecentlyAddedUnplayedItems(IEnumerable<BaseItem> itemSet, User user)
+        private static List<BaseItem> GetRecentlyAddedUnplayedItems(IEnumerable<BaseItem> itemSet, User user)
         {
-            return GetRecentlyAddedItems(itemSet, user).Where(i =>
-            {
-                var userdata = i.GetUserData(user, false);
+            var list = new List<BaseItem>();
 
-                return userdata == null || userdata.PlayCount == 0;
-            });
+            foreach (var item in itemSet)
+            {
+                if (!item.IsFolder && item.IsRecentlyAdded(user))
+                {
+                    var userdata = item.GetUserData(user, false);
+
+                    if (userdata == null || userdata.PlayCount == 0)
+                    {
+                        list.Add(item);
+                    }
+                }
+            }
+
+            return list;
         }
 
         /// <summary>
         /// Takes a list of items and returns the ones that are in progress
         /// </summary>
-        private static IEnumerable<BaseItem> GetInProgressItems(IEnumerable<BaseItem> itemSet, User user)
+        private static List<BaseItem> GetInProgressItems(IEnumerable<BaseItem> itemSet, User user)
         {
-            return itemSet.Where(i =>
+            var list = new List<BaseItem>();
+
+            foreach (var item in itemSet)
             {
-                if (i.IsFolder)
+                if (!item.IsFolder)
                 {
-                    return false;
+                    var userdata = item.GetUserData(user, false);
+
+                    if (userdata != null && userdata.PlaybackPositionTicks > 0)
+                    {
+                        list.Add(item);
+                    }
                 }
+            }
 
-                var userdata = i.GetUserData(user, false);
-
-                return userdata != null && userdata.PlaybackPositionTicks > 0;
-            });
+            return list;
         }
 
         /// <summary>
