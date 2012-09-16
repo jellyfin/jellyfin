@@ -16,6 +16,10 @@ namespace MediaBrowser.Controller.Providers.TV
 
                         if (!string.IsNullOrWhiteSpace(filename))
                         {
+                            // Strip off everything but the filename. Some metadata tools like MetaBrowser v1.0 will have an 'episodes' prefix
+                            // even though it's actually using the metadata folder.
+                            filename = Path.GetFileName(filename);
+
                             string seasonFolder = Path.GetDirectoryName(item.Path);
                             item.PrimaryImagePath = Path.Combine(seasonFolder, "metadata", filename);
                         }
