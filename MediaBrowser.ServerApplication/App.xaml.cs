@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.UI;
 using MediaBrowser.Controller;
-using Microsoft.Shell;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
