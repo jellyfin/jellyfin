@@ -43,15 +43,6 @@ namespace MediaBrowser.Api.HttpHandlers
         /// </summary>
         protected override bool RequiresConversion()
         {
-            string currentFormat = Path.GetExtension(LibraryItem.Path).Replace(".", string.Empty);
-
-            // For now we won't allow these to pass through.
-            // Later we'll add some intelligence to allow it when possible
-            if (currentFormat.Equals("mp4", StringComparison.OrdinalIgnoreCase) || currentFormat.Equals("mkv", StringComparison.OrdinalIgnoreCase) || currentFormat.Equals("m4v", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
             if (base.RequiresConversion())
             {
                 return true;
