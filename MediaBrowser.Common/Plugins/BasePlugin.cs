@@ -1,8 +1,8 @@
-﻿using System;
-using System.IO;
-using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Plugins;
+using System;
+using System.IO;
 
 namespace MediaBrowser.Common.Plugins
 {
@@ -110,7 +110,13 @@ namespace MediaBrowser.Common.Plugins
         /// <summary>
         /// Gets the name of the configuration file. Subclasses should override
         /// </summary>
-        public virtual string ConfigurationFileName { get { return Name + ".xml"; } }
+        public virtual string ConfigurationFileName
+        {
+            get
+            {
+                return Name.Replace(" ", string.Empty) + ".xml";
+            }
+        }
 
         /// <summary>
         /// Gets the full path to the configuration file
