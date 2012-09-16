@@ -15,7 +15,7 @@ namespace MediaBrowser.Controller.Weather
     /// Based on http://www.worldweatheronline.com/free-weather-feed.aspx
     /// The classes in this file are a reproduction of the json output, which will then be converted to our weather model classes
     /// </summary>
-    public class WeatherClient
+    public class WeatherClient : IDisposable
     {
         private HttpClient HttpClient { get; set; }
 
@@ -72,6 +72,11 @@ namespace MediaBrowser.Controller.Weather
             }
 
             return info;
+        }
+
+        public void Dispose()
+        {
+            HttpClient.Dispose();
         }
     }
 
