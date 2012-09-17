@@ -1,4 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Common.Logging;
+using MediaBrowser.Common.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,23 +28,18 @@ namespace MediaBrowser.Controller.IO
 
             foreach (Folder folder in rootFolder.Children.OfType<Folder>())
             {
-                foreach (Folder subFolder in folder.Children.OfType<Folder>())
+                foreach (string path in folder.PhysicalLocations)
                 {
-                    if (Path.IsPathRooted(subFolder.Path))
+                    if (Path.IsPathRooted(path) && !pathsToWatch.ContainsStartsWith(path))
                     {
-                        string parent = Path.GetDirectoryName(subFolder.Path);
-
-                        if (!pathsToWatch.Contains(parent))
-                        {
-                            pathsToWatch.Add(parent);
-                        }
+                        pathsToWatch.Add(path);
                     }
                 }
             }
 
             foreach (string path in pathsToWatch)
             {
-                var watcher = new FileSystemWatcher(path, "*") { };
+                Logger.LogInfo("Watching directory " + path + " for changes.");
 
                 watcher.IncludeSubdirectories = true;
 

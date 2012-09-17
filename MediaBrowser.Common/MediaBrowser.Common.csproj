@@ -81,6 +81,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\BaseExtensions.cs" />
     <Compile Include="Kernel\BaseApplicationPaths.cs" />
     <Compile Include="Drawing\DrawingUtils.cs" />
     <Compile Include="Logging\TraceLogger.cs" />

@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Weather;
 using MediaBrowser.Model.Authentication;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Progress;
+using MediaBrowser.Common.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -24,6 +25,21 @@ namespace MediaBrowser.Controller
 {
     public class Kernel : BaseKernel<ServerConfiguration, ServerApplicationPaths>
     {
+        #region Events
+        /// <summary>
+        /// Fires whenever any validation routine adds or removes items.  The added and removed items are properties of the args.
+        /// *** Will fire asynchronously. ***
+        /// </summary>
+        public event EventHandler<ChildrenChangedEventArgs> LibraryChanged;
+        public void OnLibraryChanged(ChildrenChangedEventArgs args)
+        {
+            if (LibraryChanged != null)
+            {
+                Task.Run(() => LibraryChanged(this, args));
+            }
+        }
+
+        #endregion
         public static Kernel Instance { get; private set; }
 
         public ItemController ItemController { get; private set; }
@@ -88,8 +104,6 @@ namespace MediaBrowser.Controller
             ItemController = new ItemController();
             DirectoryWatchers = new DirectoryWatchers();
 
-            ItemController.PreBeginResolvePath += ItemController_PreBeginResolvePath;
-            ItemController.BeginResolvePath += ItemController_BeginResolvePath;
 
             base.InitializeInternal(progress);
         }
@@ -139,46 +153,21 @@ namespace MediaBrowser.Controller
             MetadataProviders = MetadataProvidersEnumerable.OrderBy(e => e.Priority).ToArray();
         }
 
-        /// <summary>
-        /// Fires when a path is about to be resolved, but before child folders and files 
-        /// have been collected from the file system.
-        /// This gives us a chance to cancel it if needed, resulting in the path being ignored
-        /// </summary>
-        void ItemController_PreBeginResolvePath(object sender, PreBeginResolveEventArgs e)
+        public BaseItem ResolveItem(ItemResolveEventArgs args)
         {
-            // Ignore hidden files and folders
-            if (e.IsHidden || e.IsSystemFile)
+            // Try first priority resolvers
+            for (int i = 0; i < EntityResolvers.Length; i++)
             {
-                e.Cancel = true;
-            }
+                var item = EntityResolvers[i].ResolvePath(args);
 
-            // Ignore any folders named "trailers"
-            else if (Path.GetFileName(e.Path).Equals("trailers", StringComparison.OrdinalIgnoreCase))
-            {
-                e.Cancel = true;
-            }
-
-            // Don't try and resolve files within the season metadata folder
-            else if (Path.GetFileName(e.Path).Equals("metadata", StringComparison.OrdinalIgnoreCase) && e.IsDirectory)
-            {
-                if (e.Parent is Season || e.Parent is Series)
+                if (item != null)
                 {
-                    e.Cancel = true;
+                    item.ResolveArgs = args;
+                    return item;
                 }
             }
-        }
 
-        /// <summary>
-        /// Fires when a path is about to be resolved, but after child folders and files 
-        /// This gives us a chance to cancel it if needed, resulting in the path being ignored
-        /// </summary>
-        void ItemController_BeginResolvePath(object sender, ItemResolveEventArgs e)
-        {
-            if (e.ContainsFile(".ignore"))
-            {
-                // Ignore any folders containing a file called .ignore
-                e.Cancel = true;
-            }
+            return null;
         }
 
         private void ReloadUsers()
@@ -203,12 +192,14 @@ namespace MediaBrowser.Controller
             DirectoryWatchers.Start();
         }
 
-        public static Guid GetMD5(string str)
+        void RootFolder_ChildrenChanged(object sender, ChildrenChangedEventArgs e)
         {
-            using (var provider = new MD5CryptoServiceProvider())
-            {
-                return new Guid(provider.ComputeHash(Encoding.Unicode.GetBytes(str)));
-            }
+            Logger.LogDebugInfo("Root Folder Children Changed.  Added: " + e.ItemsAdded.Count + " Removed: " + e.ItemsRemoved.Count());
+            //re-start the directory watchers
+            DirectoryWatchers.Stop();
+            DirectoryWatchers.Start();
+            var allChildren = RootFolder.RecursiveChildren;
+            Logger.LogInfo(string.Format("Loading complete.  Movies: {0} Episodes: {1}", allChildren.OfType<Entities.Movies.Movie>().Count(), allChildren.OfType<Entities.TV.Episode>().Count()));
         }
 
         /// <summary>
@@ -247,7 +238,8 @@ namespace MediaBrowser.Controller
             }
             else
             {
-                result.Success = GetMD5((password ?? string.Empty)).ToString().Equals(user.Password);
+                password = password ?? string.Empty;
+                result.Success = password.GetMD5().ToString().Equals(user.Password);
             }
 
             // Update LastActivityDate and LastLoginDate, then save
@@ -286,7 +278,7 @@ namespace MediaBrowser.Controller
 
                 children.Insert(index, newItem);
 
-                item.Parent.Children = children.ToArray();
+                //item.Parent.ActualChildren = children.ToArray();
             }
         }
 
@@ -323,7 +315,7 @@ namespace MediaBrowser.Controller
             user.Id = Guid.NewGuid();
             user.LastLoginDate = DateTime.UtcNow.AddDays(-1);
             user.LastActivityDate = DateTime.UtcNow.AddHours(-3);
-            user.Password = GetMD5("1234").ToString();
+            user.Password = ("1234").GetMD5().ToString();
             list.Add(user);
 
             user = new User { };
@@ -357,7 +349,7 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Runs all metadata providers for an entity
         /// </summary>
-        internal async Task ExecuteMetadataProviders(BaseEntity item, ItemResolveEventArgs args, bool allowInternetProviders = true)
+        internal async Task ExecuteMetadataProviders(BaseEntity item, bool allowInternetProviders = true)
         {
             // Run them sequentially in order of priority
             for (int i = 0; i < MetadataProviders.Length; i++)
@@ -378,7 +370,7 @@ namespace MediaBrowser.Controller
 
                 try
                 {
-                    await provider.FetchAsync(item, args).ConfigureAwait(false);
+                    await provider.FetchAsync(item, item.ResolveArgs).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

@@ -1,4 +1,6 @@
 ﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.IO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,10 +15,6 @@ namespace MediaBrowser.Controller.Entities
         /// When the item first debuted. For movies this could be premiere date, episodes would be first aired
         /// </summary>
         public DateTime? PremiereDate { get; set; }
-
-        public string Path { get; set; }
-
-        public Folder Parent { get; set; }
 
         public string LogoImagePath { get; set; }
 
@@ -132,6 +130,18 @@ namespace MediaBrowser.Controller.Entities
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Determine if we have changed vs the passed in copy
+        /// </summary>
+        /// <param name="original"></param>
+        /// <returns></returns>
+        public virtual bool IsChanged(BaseItem original)
+        {
+            bool changed = original.DateModified != this.DateModified;
+            changed |= original.DateCreated != this.DateCreated;
+            return changed;
         }
 
         /// <summary>

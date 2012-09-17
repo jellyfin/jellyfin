@@ -1,5 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
+using System.Collections.Generic;
+using System.Linq;
 using System;
 using System.IO;
 
@@ -12,32 +14,39 @@ namespace MediaBrowser.Controller.Library
     {
         public WIN32_FIND_DATA[] FileSystemChildren { get; set; }
 
+        protected List<string> _additionalLocations = new List<string>();
+        public List<string> AdditionalLocations
+        {
+            get
+            {
+                return _additionalLocations;
+            }
+            set
+            {
+                _additionalLocations = value;
+            }
+        }
+
+        public IEnumerable<string> PhysicalLocations
+        {
+            get
+            {
+                return (new List<string>() {this.Path}).Concat(AdditionalLocations);
+            }
+        }
+
+        public bool IsBDFolder { get; set; }
+        public bool IsDVDFolder { get; set; }
+
         public WIN32_FIND_DATA? GetFileSystemEntry(string path)
         {
-            for (int i = 0; i < FileSystemChildren.Length; i++)
-            {
-                WIN32_FIND_DATA entry = FileSystemChildren[i];
-
-                if (entry.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
-                {
-                    return entry;
-                }
-            }
-           
-            return null;
+            WIN32_FIND_DATA entry = FileSystemChildren.FirstOrDefault(f => f.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
+            return entry.cFileName != null ? (WIN32_FIND_DATA?)entry : null;
         }
 
         public bool ContainsFile(string name)
         {
-            for (int i = 0; i < FileSystemChildren.Length; i++)
-            {
-                if (FileSystemChildren[i].cFileName.Equals(name, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return FileSystemChildren.FirstOrDefault(f => f.cFileName.Equals(name, StringComparison.OrdinalIgnoreCase)).cFileName != null;
         }
 
         public bool ContainsFolder(string name)
