@@ -124,6 +124,7 @@ namespace MediaBrowser.Controller
 
             progress.Report(new TaskProgress { Description = "Loading Media Library" });
             await ReloadRoot(allowInternetProviders: false).ConfigureAwait(false);
+
         }
 
         /// <summary>
@@ -137,8 +138,6 @@ namespace MediaBrowser.Controller
 
             DisposeWeatherClient();
 
-            ItemController.PreBeginResolvePath -= ItemController_PreBeginResolvePath;
-            ItemController.BeginResolvePath -= ItemController_BeginResolvePath;
         }
 
         protected override void OnComposablePartsLoaded()
@@ -188,6 +187,7 @@ namespace MediaBrowser.Controller
             DirectoryWatchers.Stop();
 
             RootFolder = await ItemController.GetItem(MediaRootFolderPath, allowInternetProviders: allowInternetProviders).ConfigureAwait(false) as Folder;
+            RootFolder.ChildrenChanged += RootFolder_ChildrenChanged;
 
             DirectoryWatchers.Start();
         }

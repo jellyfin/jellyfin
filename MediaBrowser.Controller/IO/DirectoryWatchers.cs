@@ -41,6 +41,7 @@ namespace MediaBrowser.Controller.IO
             {
                 Logger.LogInfo("Watching directory " + path + " for changes.");
 
+                var watcher = new FileSystemWatcher(path, "*") { }; 
                 watcher.IncludeSubdirectories = true;
 
                 watcher.Changed += watcher_Changed;
