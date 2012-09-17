@@ -1,4 +1,7 @@
 ﻿using Hardcodet.Wpf.TaskbarNotification;
+using MediaBrowser.Common.Events;
+using MediaBrowser.Controller;
+using MediaBrowser.Model.Progress;
 using System;
 using System.ComponentModel;
 using System.Threading;
@@ -11,15 +14,36 @@ namespace MediaBrowser.ServerApplication
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
+        private Timer LoadingIconTimer { get; set; }
+
         public MainWindow()
         {
             InitializeComponent();
-            Loaded += MainWindow_Loaded;
+            Loaded += MainWindowLoaded;
         }
 
-        void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        void MainWindowLoaded(object sender, RoutedEventArgs e)
         {
             DataContext = this;
+
+            Kernel.Instance.ReloadBeginning += KernelReloadBeginning;
+            Kernel.Instance.ReloadCompleted += KernelReloadCompleted;
+        }
+
+        void KernelReloadBeginning(object sender, GenericEventArgs<IProgress<TaskProgress>> e)
+        {
+            MbTaskbarIcon.ShowBalloonTip("Media Browser is reloading", "Please wait...", BalloonIcon.Info);
+
+            LoadingImageIndex = 0;
+
+            LoadingIconTimer = new Timer(LoadingIconTimerCallback, null, 0, 250);
+        }
+
+        void KernelReloadCompleted(object sender, GenericEventArgs<IProgress<TaskProgress>> e)
+        {
+            LoadingIconTimer.Dispose();
+
+            LoadingImageIndex = 0;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -62,17 +86,7 @@ namespace MediaBrowser.ServerApplication
 
         private async void cmdReloadServer_click(object sender, RoutedEventArgs e)
         {
-            MbTaskbarIcon.ShowBalloonTip("Media Browser is reloading", "Please wait...", BalloonIcon.Info);
-
-            LoadingImageIndex = 0;
-
-            Timer timer = new Timer(LoadingIconTimerCallback, null, 0, 250);
-
-            await (Application.Current as App).ReloadKernel().ConfigureAwait(false);
-
-            timer.Dispose();
-
-            LoadingImageIndex = 0;
+            await Kernel.Instance.Reload(new Progress<TaskProgress>()).ConfigureAwait(false);
         }
 
         private void LoadingIconTimerCallback(object stateInfo)
