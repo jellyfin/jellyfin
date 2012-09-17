@@ -68,7 +68,7 @@ namespace MediaBrowser.Controller.Resolvers.Movies
                 return new Movie()
                 {
                     Path = args.Path,
-                    VideoType = VideoType.DVD
+                    VideoType = VideoType.Dvd
                 };
             }
             else if (args.IsBDFolder)
@@ -83,6 +83,7 @@ namespace MediaBrowser.Controller.Resolvers.Movies
             // Loop through each child file/folder and see if we find a video
             foreach (var child in args.FileSystemChildren)
             {
+                var childArgs = new ItemResolveEventArgs
                 {
                     FileInfo = child,
                     FileSystemChildren = new WIN32_FIND_DATA[] { },
