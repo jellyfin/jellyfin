@@ -22,7 +22,11 @@ namespace MediaBrowser.Controller.Entities
         {
             if (ChildrenChanged != null)
             {
-                Task.Run( () => ChildrenChanged(this, args));
+                Task.Run( () => 
+                    {
+                        ChildrenChanged(this, args);
+                        Kernel.Instance.OnLibraryChanged(args);
+                    });
             }
         }
 
