@@ -5,6 +5,7 @@ using Microsoft.Shell;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace MediaBrowser.Common.UI
@@ -42,6 +43,9 @@ namespace MediaBrowser.Common.UI
             Kernel = InstantiateKernel();
 
             var progress = new Progress<TaskProgress>();
+
+            progress.ProgressChanged += progress_ProgressChanged;
+            
             var splash = new Splash(progress);
 
             splash.Show();
@@ -52,6 +56,8 @@ namespace MediaBrowser.Common.UI
 
                 await Kernel.Init(progress);
 
+                progress.ProgressChanged -= progress_ProgressChanged;
+                
                 Logger.LogInfo("Kernel.Init completed in {0} seconds.", (DateTime.UtcNow - now).TotalSeconds);
                 splash.Close();
 
@@ -63,6 +69,8 @@ namespace MediaBrowser.Common.UI
             }
             catch (Exception ex)
             {
+                progress.ProgressChanged -= progress_ProgressChanged;
+                
                 if (Logger.LoggerInstance != null)
                 {
                     Logger.LogException(ex);
@@ -73,6 +81,41 @@ namespace MediaBrowser.Common.UI
 
                 // Shutdown the app with an error code
                 Shutdown(1);
+            }
+        }
+
+        public async Task ReloadKernel()
+        {
+            var progress = new Progress<TaskProgress>();
+
+            progress.ProgressChanged += progress_ProgressChanged;
+
+            try
+            {
+                DateTime now = DateTime.UtcNow;
+
+                await Kernel.Reload(progress);
+
+                progress.ProgressChanged -= progress_ProgressChanged;
+
+                Logger.LogInfo("Kernel.Reload completed in {0} seconds.", (DateTime.UtcNow - now).TotalSeconds);
+            }
+            catch (Exception ex)
+            {
+                progress.ProgressChanged -= progress_ProgressChanged;
+
+                Logger.LogException(ex);
+
+                // Shutdown the app with an error code
+                Shutdown(1);
+            }
+        }
+
+        void progress_ProgressChanged(object sender, TaskProgress e)
+        {
+            if (Logger.LoggerInstance != null)
+            {
+                Logger.LogInfo(e.Description);
             }
         }
 

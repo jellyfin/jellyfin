@@ -5,7 +5,7 @@ using System.ComponentModel.Composition;
 namespace MediaBrowser.WebDashboard
 {
     [Export(typeof(BasePlugin))]
-    public class Plugin : BaseGenericPlugin<BasePluginConfiguration>
+    public class Plugin : BasePlugin
     {
         public override string Name
         {

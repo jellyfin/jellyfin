@@ -67,13 +67,27 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         public abstract KernelContext KernelContext { get; }
 
-        protected BaseKernel()
+        /// <summary>
+        /// Initializes the Kernel
+        /// </summary>
+        public async Task Init(IProgress<TaskProgress> progress)
         {
-            ApplicationPaths = new TApplicationPathsType();
+            // Performs initializations that only occur once
+            InitializeInternal(progress);
+
+            // Performs initializations that can be reloaded at anytime
+            await Reload(progress).ConfigureAwait(false);
+
+            progress.Report(new TaskProgress { Description = "Loading Complete", PercentComplete = 100 });
         }
 
-        public virtual async Task Init(IProgress<TaskProgress> progress)
+        /// <summary>
+        /// Performs initializations that only occur once
+        /// </summary>
+        protected virtual void InitializeInternal(IProgress<TaskProgress> progress)
         {
+            ApplicationPaths = new TApplicationPathsType();
+            
             ReloadLogger();
 
             progress.Report(new TaskProgress { Description = "Loading configuration", PercentComplete = 0 });
@@ -81,11 +95,24 @@ namespace MediaBrowser.Common.Kernel
 
             progress.Report(new TaskProgress { Description = "Starting Http server", PercentComplete = 5 });
             ReloadHttpServer();
-
-            progress.Report(new TaskProgress { Description = "Loading Plugins", PercentComplete = 10 });
-            await ReloadComposableParts().ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Performs initializations that can be reloaded at anytime
+        /// </summary>
+        public virtual async Task Reload(IProgress<TaskProgress> progress)
+        {
+            await Task.Run(() =>
+            {
+                progress.Report(new TaskProgress { Description = "Loading Plugins", PercentComplete = 10 });
+                ReloadComposableParts();
+
+            }).ConfigureAwait(false);
+        }
+        
+        /// <summary>
+        /// Disposes the current logger and creates a new one
+        /// </summary>
         private void ReloadLogger()
         {
             DisposeLogger();
@@ -104,23 +131,23 @@ namespace MediaBrowser.Common.Kernel
         /// Uses MEF to locate plugins
         /// Subclasses can use this to locate types within plugins
         /// </summary>
-        protected virtual Task ReloadComposableParts()
+        private void ReloadComposableParts()
         {
-            return Task.Run(() =>
-            {
-                DisposeComposableParts();
+            DisposeComposableParts();
 
-                var container = GetCompositionContainer(includeCurrentAssembly: true);
+            var container = GetCompositionContainer(includeCurrentAssembly: true);
 
-                container.ComposeParts(this);
+            container.ComposeParts(this);
 
-                OnComposablePartsLoaded();
+            OnComposablePartsLoaded();
 
-                container.Catalog.Dispose();
-                container.Dispose();
-            });
+            container.Catalog.Dispose();
+            container.Dispose();
         }
 
+        /// <summary>
+        /// Constructs an MEF CompositionContainer based on the current running assembly and all plugin assemblies
+        /// </summary>
         public CompositionContainer GetCompositionContainer(bool includeCurrentAssembly = false)
         {
             // Gets all plugin assemblies by first reading all bytes of the .dll and calling Assembly.Load against that
@@ -147,25 +174,17 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         protected virtual void OnComposablePartsLoaded()
         {
-            StartPlugins();
-        }
-
-        /// <summary>
-        /// Initializes all plugins
-        /// </summary>
-        private void StartPlugins()
-        {
+            // Start-up each plugin
             foreach (BasePlugin plugin in Plugins)
             {
                 plugin.Initialize(this);
             }
         }
 
-
         /// <summary>
         /// Reloads application configuration from the config file
         /// </summary>
-        protected virtual void ReloadConfiguration()
+        private void ReloadConfiguration()
         {
             //Configuration information for anything other than server-specific configuration will have to come via the API... -ebr
 
@@ -213,8 +232,12 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         public virtual void Dispose()
         {
+            Logger.LogInfo("Beginning Kernel.Dispose");
+            
             DisposeComposableParts();
+
             DisposeHttpServer();
+
             DisposeLogger();
         }
 
@@ -233,6 +256,8 @@ namespace MediaBrowser.Common.Kernel
         {
             if (Plugins != null)
             {
+                Logger.LogInfo("Disposing Plugins");
+                
                 foreach (BasePlugin plugin in Plugins)
                 {
                     plugin.Dispose();
@@ -247,6 +272,8 @@ namespace MediaBrowser.Common.Kernel
         {
             if (HttpServer != null)
             {
+                Logger.LogInfo("Disposing Http Server");
+                
                 HttpServer.Dispose();
             }
 
@@ -265,6 +292,8 @@ namespace MediaBrowser.Common.Kernel
 
             if (Logger.LoggerInstance != null)
             {
+                Logger.LogInfo("Disposing Logger");
+                
                 Logger.LoggerInstance.Dispose();
             }
         }
@@ -292,6 +321,7 @@ namespace MediaBrowser.Common.Kernel
         KernelContext KernelContext { get; }
 
         Task Init(IProgress<TaskProgress> progress);
+        Task Reload(IProgress<TaskProgress> progress);
         void Dispose();
     }
 }

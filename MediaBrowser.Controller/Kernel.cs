@@ -78,28 +78,53 @@ namespace MediaBrowser.Controller
             : base()
         {
             Instance = this;
+        }
 
+        /// <summary>
+        /// Performs initializations that only occur once
+        /// </summary>
+        protected override void InitializeInternal(IProgress<TaskProgress> progress)
+        {
             ItemController = new ItemController();
             DirectoryWatchers = new DirectoryWatchers();
-            WeatherClient = new WeatherClient();
 
             ItemController.PreBeginResolvePath += ItemController_PreBeginResolvePath;
             ItemController.BeginResolvePath += ItemController_BeginResolvePath;
+
+            base.InitializeInternal(progress);
         }
 
-        public async override Task Init(IProgress<TaskProgress> progress)
+        /// <summary>
+        /// Performs initializations that can be reloaded at anytime
+        /// </summary>
+        public override async Task Reload(IProgress<TaskProgress> progress)
         {
-            ExtractFFMpeg();
+            await base.Reload(progress).ConfigureAwait(false);
 
-            await base.Init(progress).ConfigureAwait(false);
+            ReloadWeatherClient();
+
+            ExtractFFMpeg();
 
             progress.Report(new TaskProgress { Description = "Loading Users", PercentComplete = 15 });
             ReloadUsers();
 
             progress.Report(new TaskProgress { Description = "Loading Media Library", PercentComplete = 25 });
             await ReloadRoot(allowInternetProviders: false).ConfigureAwait(false);
+        }
 
-            progress.Report(new TaskProgress { Description = "Loading Complete", PercentComplete = 100 });
+        /// <summary>
+        /// Completely disposes the Kernel
+        /// </summary>
+        public override void Dispose()
+        {
+            base.Dispose();
+
+            DirectoryWatchers.Stop();
+
+            DisposeWeatherClient();
+
+            ItemController.PreBeginResolvePath -= ItemController_PreBeginResolvePath;
+            ItemController.BeginResolvePath -= ItemController_BeginResolvePath;
         }
 
         protected override void OnComposablePartsLoaded()
@@ -290,6 +315,7 @@ namespace MediaBrowser.Controller
 
             user.Name = "Default User";
             user.Id = Guid.Parse("5d1cf7fce25943b790d140095457a42b");
+            user.PrimaryImagePath = "D:\\Video\\TV\\Archer (2009)\\backdrop.jpg";
             list.Add(user);
 
             user = new User { };
@@ -386,6 +412,27 @@ namespace MediaBrowser.Controller
                     stream.CopyTo(fileStream);
                 }
             }
+        }
+
+        /// <summary>
+        /// Disposes the current WeatherClient
+        /// </summary>
+        private void DisposeWeatherClient()
+        {
+            if (WeatherClient != null)
+            {
+                WeatherClient.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Disposes the current WeatherClient and creates a new one
+        /// </summary>
+        private void ReloadWeatherClient()
+        {
+            DisposeWeatherClient();
+
+            WeatherClient = new WeatherClient();
         }
     }
 }

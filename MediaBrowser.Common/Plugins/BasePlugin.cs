@@ -7,30 +7,6 @@ using System.IO;
 namespace MediaBrowser.Common.Plugins
 {
     /// <summary>
-    /// Provides a BasePlugin with generics, allowing for strongly typed configuration access.
-    /// </summary>
-    public abstract class BaseGenericPlugin<TConfigurationType> : BasePlugin
-        where TConfigurationType : BasePluginConfiguration, new()
-    {
-        public new TConfigurationType Configuration
-        {
-            get
-            {
-                return base.Configuration as TConfigurationType;
-            }
-            set
-            {
-                base.Configuration = value;
-            }
-        }
-
-        public override Type ConfigurationType
-        {
-            get { return typeof(TConfigurationType); }
-        }
-    }
-
-    /// <summary>
     /// Provides a common base class for all plugins
     /// </summary>
     public abstract class BasePlugin : IDisposable
@@ -50,7 +26,10 @@ namespace MediaBrowser.Common.Plugins
         /// <summary>
         /// Gets the type of configuration this plugin uses
         /// </summary>
-        public abstract Type ConfigurationType { get; }
+        public virtual Type ConfigurationType
+        {
+            get { return typeof (BasePluginConfiguration); }
+        }
 
         /// <summary>
         /// Gets the plugin version
