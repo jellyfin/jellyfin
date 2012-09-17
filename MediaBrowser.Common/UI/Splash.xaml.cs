@@ -1,8 +1,7 @@
-﻿using System;
-using System.Windows;
-using MahApps.Metro.Controls;
-using MediaBrowser.Common.Logging;
+﻿using MahApps.Metro.Controls;
 using MediaBrowser.Model.Progress;
+using System;
+using System.Windows;
 
 namespace MediaBrowser.Common.UI
 {
@@ -21,13 +20,7 @@ namespace MediaBrowser.Common.UI
 
         void ProgressChanged(object sender, TaskProgress e)
         {
-            // If logging has loaded, put a message in the log.
-            if (Logger.LoggerInstance != null)
-            {
-                Logger.LogInfo(e.Description);
-            }
-
-            lblProgress.Content = e.Description;
+            lblProgress.Text = e.Description;
             pbProgress.Value = (double)e.PercentComplete;
         }
 

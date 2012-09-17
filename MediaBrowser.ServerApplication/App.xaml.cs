@@ -29,8 +29,7 @@ namespace MediaBrowser.ServerApplication
 
         public static void OpenDashboard()
         {
-            OpenUrl("http://localhost:" + Kernel.Instance.Configuration.HttpServerPortNumber +
-                        "/mediabrowser/dashboard/index.html");
+            OpenUrl("http://localhost:" + Kernel.Instance.Configuration.HttpServerPortNumber + "/mediabrowser/dashboard/index.html");
         }
         
         public static void OpenUrl(string url)
