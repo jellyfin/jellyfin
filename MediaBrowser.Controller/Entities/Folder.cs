@@ -171,6 +171,10 @@ namespace MediaBrowser.Controller.Entities
                     if (currentChild.IsChanged(child))
                     {
                         changed = true;
+                        //update resolve args and refresh meta
+                        //  Note - we are refreshing the existing child instead of the newly found one so the "Except" operation below
+                        //  will identify this item as the same one
+                        currentChild.ResolveArgs = child.ResolveArgs;
                         currentChild.RefreshMetadata();
                         //save it in repo...
                         validChildren.Add(currentChild);

@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Controller.Library;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +8,13 @@ namespace MediaBrowser.Controller.Entities
 {
     public abstract class BaseItem : BaseEntity, IHasProviderIds
     {
+        /// <summary>
+        /// We attach these to the item so that we only ever have to hit the file system once
+        /// (this includes the children of the containing folder)
+        /// Use ResolveArgs.FileSystemChildren to check for the existence of files instead of File.Exists
+        /// </summary>
+        public ItemResolveEventArgs ResolveArgs { get; set; }
+
         public string SortName { get; set; }
 
         /// <summary>

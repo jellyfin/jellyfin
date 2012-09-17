@@ -129,6 +129,7 @@ namespace MediaBrowser.Controller
 
                 if (item != null)
                 {
+                    item.ResolveArgs = args;
                     return item;
                 }
             }
@@ -160,6 +161,7 @@ namespace MediaBrowser.Controller
 
         void RootFolder_ChildrenChanged(object sender, ChildrenChangedEventArgs e)
         {
+            Logger.LogDebugInfo("Root Folder Children Changed.  Added: " + e.ItemsAdded.Count + " Removed: " + e.ItemsRemoved.Count());
             //re-start the directory watchers
             DirectoryWatchers.Stop();
             DirectoryWatchers.Start();
