@@ -74,6 +74,8 @@
     <Compile Include="Entities\UserItemData.cs" />
     <Compile Include="Entities\Video.cs" />
     <Compile Include="Entities\Year.cs" />
+    <Compile Include="IO\FileSystemHelper.cs" />
+    <Compile Include="Library\ChildrenChangedEventArgs.cs" />
     <Compile Include="Providers\Movies\MovieProviderFromXml.cs" />
     <Compile Include="Providers\Movies\MovieSpecialFeaturesProvider.cs" />
     <Compile Include="Providers\TV\EpisodeImageFromMediaLocationProvider.cs" />
@@ -81,6 +83,7 @@
     <Compile Include="Providers\TV\EpisodeXmlParser.cs" />
     <Compile Include="Providers\TV\SeriesProviderFromXml.cs" />
     <Compile Include="Providers\TV\SeriesXmlParser.cs" />
+    <Compile Include="Resolvers\EntityResolutionHelper.cs" />
     <Compile Include="Resolvers\Movies\BoxSetResolver.cs" />
     <Compile Include="Resolvers\Movies\MovieResolver.cs" />
     <Compile Include="Resolvers\TV\EpisodeResolver.cs" />

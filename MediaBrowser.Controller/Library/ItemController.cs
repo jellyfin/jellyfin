@@ -1,5 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Common.Extensions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -11,57 +13,21 @@ namespace MediaBrowser.Controller.Library
 {
     public class ItemController
     {
-        #region PreBeginResolvePath Event
-        /// <summary>
-        /// Fires when a path is about to be resolved, but before child folders and files 
-        /// have been collected from the file system.
-        /// This gives listeners a chance to cancel the operation and cause the path to be ignored.
-        /// </summary>
-        public event EventHandler<PreBeginResolveEventArgs> PreBeginResolvePath;
-        private bool OnPreBeginResolvePath(PreBeginResolveEventArgs args)
-        {
-            if (PreBeginResolvePath != null)
-            {
-                PreBeginResolvePath(this, args);
-            }
+        //private BaseItem ResolveItem(ItemResolveEventArgs args)
+        //{
+        //    // Try first priority resolvers
+        //    for (int i = 0; i < Kernel.Instance.EntityResolvers.Length; i++)
+        //    {
+        //        var item = Kernel.Instance.EntityResolvers[i].ResolvePath(args);
 
-            return !args.Cancel;
-        }
-        #endregion
+        //        if (item != null)
+        //        {
+        //            return item;
+        //        }
+        //    }
 
-        #region BeginResolvePath Event
-        /// <summary>
-        /// Fires when a path is about to be resolved, but after child folders and files 
-        /// have been collected from the file system.
-        /// This gives listeners a chance to cancel the operation and cause the path to be ignored.
-        /// </summary>
-        public event EventHandler<ItemResolveEventArgs> BeginResolvePath;
-        private bool OnBeginResolvePath(ItemResolveEventArgs args)
-        {
-            if (BeginResolvePath != null)
-            {
-                BeginResolvePath(this, args);
-            }
-
-            return !args.Cancel;
-        }
-        #endregion
-
-        private BaseItem ResolveItem(ItemResolveEventArgs args)
-        {
-            // Try first priority resolvers
-            for (int i = 0; i < Kernel.Instance.EntityResolvers.Length; i++)
-            {
-                var item = Kernel.Instance.EntityResolvers[i].ResolvePath(args);
-
-                if (item != null)
-                {
-                    return item;
-                }
-            }
-
-            return null;
-        }
+        //    return null;
+        //}
 
         /// <summary>
         /// Resolves a path into a BaseItem
@@ -76,122 +42,104 @@ namespace MediaBrowser.Controller.Library
                 Path = path
             };
 
-            if (!OnPreBeginResolvePath(args))
-            {
-                return null;
-            }
-
-            WIN32_FIND_DATA[] fileSystemChildren;
-
             // Gather child folder and files
             if (args.IsDirectory)
             {
-                fileSystemChildren = FileData.GetFileSystemEntries(path, "*").ToArray();
+                args.FileSystemChildren = FileData.GetFileSystemEntries(path, "*").ToArray();
 
                 bool isVirtualFolder = parent != null && parent.IsRoot;
-                fileSystemChildren = FilterChildFileSystemEntries(fileSystemChildren, isVirtualFolder);
+                args = FileSystemHelper.FilterChildFileSystemEntries(args, isVirtualFolder);
             }
             else
             {
-                fileSystemChildren = new WIN32_FIND_DATA[] { };
+                args.FileSystemChildren = new WIN32_FIND_DATA[] { };
             }
 
-            args.FileSystemChildren = fileSystemChildren;
 
             // Fire BeginResolvePath to see if anyone wants to cancel this operation
-            if (!OnBeginResolvePath(args))
+            if (!EntityResolutionHelper.ShouldResolvePathContents(args))
             {
                 return null;
             }
 
-            BaseItem item = ResolveItem(args);
-
-            if (item != null)
-            {
-                await Kernel.Instance.ExecuteMetadataProviders(item, args, allowInternetProviders: allowInternetProviders).ConfigureAwait(false);
-
-                if (item.IsFolder)
-                {
-                    // If it's a folder look for child entities
-                    (item as Folder).Children = (await Task.WhenAll(GetChildren(item as Folder, fileSystemChildren, allowInternetProviders)).ConfigureAwait(false))
-                        .Where(i => i != null).OrderBy(f => (string.IsNullOrEmpty(f.SortName) ? f.Name : f.SortName));
-                }
-            }
+            BaseItem item = Kernel.Instance.ResolveItem(args);
 
             return item;
         }
 
-        /// <summary>
-        /// Finds child BaseItems for a given Folder
-        /// </summary>
-        private Task<BaseItem>[] GetChildren(Folder folder, WIN32_FIND_DATA[] fileSystemChildren, bool allowInternetProviders)
-        {
-            var tasks = new Task<BaseItem>[fileSystemChildren.Length];
+        ///// <summary>
+        ///// Finds child BaseItems for a given Folder
+        ///// </summary>
+        //private Task<BaseItem>[] GetChildren(Folder folder, WIN32_FIND_DATA[] fileSystemChildren, bool allowInternetProviders)
+        //{
+        //    Task<BaseItem>[] tasks = new Task<BaseItem>[fileSystemChildren.Length];
 
-            for (int i = 0; i < fileSystemChildren.Length; i++)
-            {
-                var child = fileSystemChildren[i];
+        //    for (int i = 0; i < fileSystemChildren.Length; i++)
+        //    {
+        //        var child = fileSystemChildren[i];
 
-                tasks[i] = GetItem(child.Path, folder, child, allowInternetProviders: allowInternetProviders);
-            }
+        //        tasks[i] = GetItem(child.Path, folder, child, allowInternetProviders: allowInternetProviders);
+        //    }
 
-            return tasks;
-        }
+        //    return tasks;
+        //}
 
-        /// <summary>
-        /// Transforms shortcuts into their actual paths
-        /// </summary>
-        private WIN32_FIND_DATA[] FilterChildFileSystemEntries(WIN32_FIND_DATA[] fileSystemChildren, bool flattenShortcuts)
-        {
-            var returnArray = new WIN32_FIND_DATA[fileSystemChildren.Length];
-            var resolvedShortcuts = new List<WIN32_FIND_DATA>();
+        ///// <summary>
+        ///// Transforms shortcuts into their actual paths
+        ///// </summary>
+        //private WIN32_FIND_DATA[] FilterChildFileSystemEntries(WIN32_FIND_DATA[] fileSystemChildren, bool flattenShortcuts)
+        //{
+        //    WIN32_FIND_DATA[] returnArray = new WIN32_FIND_DATA[fileSystemChildren.Length];
+        //    List<WIN32_FIND_DATA> resolvedShortcuts = new List<WIN32_FIND_DATA>();
 
-            for (int i = 0; i < fileSystemChildren.Length; i++)
-            {
-                WIN32_FIND_DATA file = fileSystemChildren[i];
+        //    for (int i = 0; i < fileSystemChildren.Length; i++)
+        //    {
+        //        WIN32_FIND_DATA file = fileSystemChildren[i];
 
-                // If it's a shortcut, resolve it
-                if (Shortcut.IsShortcut(file.Path))
-                {
-                    string newPath = Shortcut.ResolveShortcut(file.Path);
-                    WIN32_FIND_DATA newPathData = FileData.GetFileData(newPath);
+        //        // If it's a shortcut, resolve it
+        //        if (Shortcut.IsShortcut(file.Path))
+        //        {
+        //            string newPath = Shortcut.ResolveShortcut(file.Path);
+        //            WIN32_FIND_DATA newPathData = FileData.GetFileData(newPath);
 
-                    // Find out if the shortcut is pointing to a directory or file
-                    if (newPathData.IsDirectory)
-                    {
-                        // If we're flattening then get the shortcut's children
+        //            // Find out if the shortcut is pointing to a directory or file
+        //            if (newPathData.IsDirectory)
+        //            {
+        //                // If we're flattening then get the shortcut's children
 
-                        if (flattenShortcuts)
-                        {
-                            returnArray[i] = file;
-                            WIN32_FIND_DATA[] newChildren = FileData.GetFileSystemEntries(newPath, "*").ToArray();
+        //                if (flattenShortcuts)
+        //                {
+        //                    returnArray[i] = file;
+        //                    WIN32_FIND_DATA[] newChildren = FileData.GetFileSystemEntries(newPath, "*").ToArray();
 
-                            resolvedShortcuts.AddRange(FilterChildFileSystemEntries(newChildren, false));
-                        }
-                        else
-                        {
-                            returnArray[i] = newPathData;
-                        }
-                    }
-                    else
-                    {
-                        returnArray[i] = newPathData;
-                    }
-                }
-                else
-                {
-                    returnArray[i] = file;
-                }
-            }
+        //                    resolvedShortcuts.AddRange(FilterChildFileSystemEntries(newChildren, false));
+        //                }
+        //                else
+        //                {
+        //                    returnArray[i] = newPathData;
+        //                }
+        //            }
+        //            else
+        //            {
+        //                returnArray[i] = newPathData;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            returnArray[i] = file;
+        //        }
+        //    }
 
-            if (resolvedShortcuts.Count > 0)
-            {
-                resolvedShortcuts.InsertRange(0, returnArray);
-                return resolvedShortcuts.ToArray();
-            }
-
-            return returnArray;
-        }
+        //    if (resolvedShortcuts.Count > 0)
+        //    {
+        //        resolvedShortcuts.InsertRange(0, returnArray);
+        //        return resolvedShortcuts.ToArray();
+        //    }
+        //    else
+        //    {
+        //        return returnArray;
+        //    }
+        //}
 
         /// <summary>
         /// Gets a Person
@@ -255,7 +203,7 @@ namespace MediaBrowser.Controller.Library
             var item = new T { };
 
             item.Name = name;
-            item.Id = Kernel.GetMD5(path);
+            item.Id = path.GetMD5();
 
             if (!Directory.Exists(path))
             {
@@ -269,7 +217,7 @@ namespace MediaBrowser.Controller.Library
             args.FileInfo = FileData.GetFileData(path);
             args.FileSystemChildren = FileData.GetFileSystemEntries(path, "*").ToArray();
 
-            await Kernel.Instance.ExecuteMetadataProviders(item, args).ConfigureAwait(false);
+            await Kernel.Instance.ExecuteMetadataProviders(item).ConfigureAwait(false);
 
             return item;
         }
