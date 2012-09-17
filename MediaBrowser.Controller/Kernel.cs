@@ -25,6 +25,21 @@ namespace MediaBrowser.Controller
 {
     public class Kernel : BaseKernel<ServerConfiguration, ServerApplicationPaths>
     {
+        #region Events
+        /// <summary>
+        /// Fires whenever any validation routine adds or removes items.  The added and removed items are properties of the args.
+        /// *** Will fire asynchronously. ***
+        /// </summary>
+        public event EventHandler<ChildrenChangedEventArgs> LibraryChanged;
+        public void OnLibraryChanged(ChildrenChangedEventArgs args)
+        {
+            if (LibraryChanged != null)
+            {
+                Task.Run(() => LibraryChanged(this, args));
+            }
+        }
+
+        #endregion
         public static Kernel Instance { get; private set; }
 
         public ItemController ItemController { get; private set; }
