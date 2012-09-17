@@ -217,7 +217,7 @@ namespace MediaBrowser.Controller.Library
             args.FileInfo = FileData.GetFileData(path);
             args.FileSystemChildren = FileData.GetFileSystemEntries(path, "*").ToArray();
 
-            await Kernel.Instance.ExecuteMetadataProviders(item, args).ConfigureAwait(false);
+            await Kernel.Instance.ExecuteMetadataProviders(item).ConfigureAwait(false);
 
             return item;
         }

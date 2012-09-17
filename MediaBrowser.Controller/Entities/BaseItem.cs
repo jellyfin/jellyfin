@@ -9,45 +9,12 @@ namespace MediaBrowser.Controller.Entities
 {
     public abstract class BaseItem : BaseEntity, IHasProviderIds
     {
-        protected ItemResolveEventArgs _resolveArgs;
-        /// <summary>
-        /// We attach these to the item so that we only ever have to hit the file system once
-        /// (this includes the children of the containing folder)
-        /// Use ResolveArgs.FileSystemChildren to check for the existence of files instead of File.Exists
-        /// </summary>
-        public ItemResolveEventArgs ResolveArgs
-        {
-            get
-            {
-                if (_resolveArgs == null)
-                {
-                    _resolveArgs = new ItemResolveEventArgs()
-                    {
-                        FileInfo = FileData.GetFileData(this.Path),
-                        Parent = this.Parent,
-                        Cancel = false,
-                        Path = this.Path
-                    };
-                    _resolveArgs = FileSystemHelper.FilterChildFileSystemEntries(_resolveArgs, (this.Parent != null && this.Parent.IsRoot));
-                }
-                return _resolveArgs;
-            }
-            set
-            {
-                _resolveArgs = value;
-            }
-        }
-
         public string SortName { get; set; }
 
         /// <summary>
         /// When the item first debuted. For movies this could be premiere date, episodes would be first aired
         /// </summary>
         public DateTime? PremiereDate { get; set; }
-
-        public string Path { get; set; }
-
-        public Folder Parent { get; set; }
 
         public string LogoImagePath { get; set; }
 
@@ -175,15 +142,6 @@ namespace MediaBrowser.Controller.Entities
             bool changed = original.DateModified != this.DateModified;
             changed |= original.DateCreated != this.DateCreated;
             return changed;
-        }
-
-        /// <summary>
-        /// Refresh metadata on us by execution our provider chain
-        /// </summary>
-        /// <returns>true if a provider reports we changed</returns>
-        public bool RefreshMetadata()
-        {
-            return false;
         }
 
         /// <summary>

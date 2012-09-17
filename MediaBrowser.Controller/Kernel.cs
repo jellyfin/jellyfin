@@ -118,9 +118,6 @@ namespace MediaBrowser.Controller
             //watch the root folder children for changes
             RootFolder.ChildrenChanged += RootFolder_ChildrenChanged;
 
-            System.Threading.Thread.Sleep(25000);
-            var allChildren = RootFolder.RecursiveChildren;
-            Logger.LogInfo(string.Format("Loading complete.  Movies: {0} Episodes: {1}", allChildren.OfType<Entities.Movies.Movie>().Count(), allChildren.OfType<Entities.TV.Episode>().Count()));
         }
 
         protected override void OnComposablePartsLoaded()
@@ -180,6 +177,8 @@ namespace MediaBrowser.Controller
             //re-start the directory watchers
             DirectoryWatchers.Stop();
             DirectoryWatchers.Start();
+            var allChildren = RootFolder.RecursiveChildren;
+            Logger.LogInfo(string.Format("Loading complete.  Movies: {0} Episodes: {1}", allChildren.OfType<Entities.Movies.Movie>().Count(), allChildren.OfType<Entities.TV.Episode>().Count()));
         }
 
         /// <summary>
@@ -328,7 +327,7 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Runs all metadata providers for an entity
         /// </summary>
-        internal async Task ExecuteMetadataProviders(BaseEntity item, ItemResolveEventArgs args, bool allowInternetProviders = true)
+        internal async Task ExecuteMetadataProviders(BaseEntity item, bool allowInternetProviders = true)
         {
             // Run them sequentially in order of priority
             for (int i = 0; i < MetadataProviders.Length; i++)
@@ -349,7 +348,7 @@ namespace MediaBrowser.Controller
 
                 try
                 {
-                    await provider.FetchAsync(item, args).ConfigureAwait(false);
+                    await provider.FetchAsync(item, item.ResolveArgs).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
