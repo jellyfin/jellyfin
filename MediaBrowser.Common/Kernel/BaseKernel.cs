@@ -78,7 +78,7 @@ namespace MediaBrowser.Common.Kernel
             // Performs initializations that can be reloaded at anytime
             await Reload(progress).ConfigureAwait(false);
 
-            progress.Report(new TaskProgress { Description = "Loading Complete", PercentComplete = 100 });
+            progress.Report(new TaskProgress { Description = "Loading Complete" });
         }
 
         /// <summary>
@@ -90,10 +90,10 @@ namespace MediaBrowser.Common.Kernel
             
             ReloadLogger();
 
-            progress.Report(new TaskProgress { Description = "Loading configuration", PercentComplete = 0 });
+            progress.Report(new TaskProgress { Description = "Loading configuration" });
             ReloadConfiguration();
 
-            progress.Report(new TaskProgress { Description = "Starting Http server", PercentComplete = 5 });
+            progress.Report(new TaskProgress { Description = "Starting Http server" });
             ReloadHttpServer();
         }
 
@@ -104,7 +104,7 @@ namespace MediaBrowser.Common.Kernel
         {
             await Task.Run(() =>
             {
-                progress.Report(new TaskProgress { Description = "Loading Plugins", PercentComplete = 10 });
+                progress.Report(new TaskProgress { Description = "Loading Plugins" });
                 ReloadComposableParts();
 
             }).ConfigureAwait(false);

@@ -105,10 +105,10 @@ namespace MediaBrowser.Controller
 
             ExtractFFMpeg();
 
-            progress.Report(new TaskProgress { Description = "Loading Users", PercentComplete = 15 });
+            progress.Report(new TaskProgress { Description = "Loading Users" });
             ReloadUsers();
 
-            progress.Report(new TaskProgress { Description = "Loading Media Library", PercentComplete = 25 });
+            progress.Report(new TaskProgress { Description = "Loading Media Library" });
             await ReloadRoot(allowInternetProviders: false).ConfigureAwait(false);
         }
 
