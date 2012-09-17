@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Logging;
+﻿using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Common.Plugins;
@@ -24,6 +25,34 @@ namespace MediaBrowser.Common.Kernel
         where TConfigurationType : BaseApplicationConfiguration, new()
         where TApplicationPathsType : BaseApplicationPaths, new()
     {
+        #region ReloadBeginning Event
+        /// <summary>
+        /// Fires whenever the kernel begins reloading
+        /// </summary>
+        public event EventHandler<GenericEventArgs<IProgress<TaskProgress>>> ReloadBeginning;
+        private void OnReloadBeginning(IProgress<TaskProgress> progress)
+        {
+            if (ReloadBeginning != null)
+            {
+                ReloadBeginning(this, new GenericEventArgs<IProgress<TaskProgress>> { Argument = progress });
+            }
+        }
+        #endregion
+
+        #region ReloadCompleted Event
+        /// <summary>
+        /// Fires whenever the kernel completes reloading
+        /// </summary>
+        public event EventHandler<GenericEventArgs<IProgress<TaskProgress>>> ReloadCompleted;
+        private void OnReloadCompleted(IProgress<TaskProgress> progress)
+        {
+            if (ReloadCompleted != null)
+            {
+                ReloadCompleted(this, new GenericEventArgs<IProgress<TaskProgress>> { Argument = progress });
+            }
+        }
+        #endregion
+
         /// <summary>
         /// Gets the current configuration
         /// </summary>
@@ -78,7 +107,7 @@ namespace MediaBrowser.Common.Kernel
             // Performs initializations that can be reloaded at anytime
             await Reload(progress).ConfigureAwait(false);
 
-            progress.Report(new TaskProgress { Description = "Loading Complete" });
+            ReportProgress(progress, "Loading Complete");
         }
 
         /// <summary>
@@ -87,29 +116,41 @@ namespace MediaBrowser.Common.Kernel
         protected virtual void InitializeInternal(IProgress<TaskProgress> progress)
         {
             ApplicationPaths = new TApplicationPathsType();
-            
+
             ReloadLogger();
 
-            progress.Report(new TaskProgress { Description = "Loading configuration" });
+            ReportProgress(progress, "Loading Configuration");
             ReloadConfiguration();
 
-            progress.Report(new TaskProgress { Description = "Starting Http server" });
+            ReportProgress(progress, "Loading Http Server");
             ReloadHttpServer();
         }
 
         /// <summary>
         /// Performs initializations that can be reloaded at anytime
         /// </summary>
-        public virtual async Task Reload(IProgress<TaskProgress> progress)
+        public async Task Reload(IProgress<TaskProgress> progress)
+        {
+            OnReloadBeginning(progress);
+
+            await ReloadInternal(progress).ConfigureAwait(false);
+
+            OnReloadCompleted(progress);
+        }
+
+        /// <summary>
+        /// Performs initializations that can be reloaded at anytime
+        /// </summary>
+        protected virtual async Task ReloadInternal(IProgress<TaskProgress> progress)
         {
             await Task.Run(() =>
             {
-                progress.Report(new TaskProgress { Description = "Loading Plugins" });
+                ReportProgress(progress, "Loading Plugins");
                 ReloadComposableParts();
 
             }).ConfigureAwait(false);
         }
-        
+
         /// <summary>
         /// Disposes the current logger and creates a new one
         /// </summary>
@@ -233,7 +274,7 @@ namespace MediaBrowser.Common.Kernel
         public virtual void Dispose()
         {
             Logger.LogInfo("Beginning Kernel.Dispose");
-            
+
             DisposeComposableParts();
 
             DisposeHttpServer();
@@ -257,7 +298,7 @@ namespace MediaBrowser.Common.Kernel
             if (Plugins != null)
             {
                 Logger.LogInfo("Disposing Plugins");
-                
+
                 foreach (BasePlugin plugin in Plugins)
                 {
                     plugin.Dispose();
@@ -273,7 +314,7 @@ namespace MediaBrowser.Common.Kernel
             if (HttpServer != null)
             {
                 Logger.LogInfo("Disposing Http Server");
-                
+
                 HttpServer.Dispose();
             }
 
@@ -293,7 +334,7 @@ namespace MediaBrowser.Common.Kernel
             if (Logger.LoggerInstance != null)
             {
                 Logger.LogInfo("Disposing Logger");
-                
+
                 Logger.LoggerInstance.Dispose();
             }
         }
@@ -306,6 +347,16 @@ namespace MediaBrowser.Common.Kernel
             get
             {
                 return GetType().Assembly.GetName().Version;
+            }
+        }
+
+        protected void ReportProgress(IProgress<TaskProgress> progress, string message)
+        {
+            progress.Report(new TaskProgress { Description = message });
+
+            if (Logger.LoggerInstance != null)
+            {
+                Logger.LogInfo(message);
             }
         }
 

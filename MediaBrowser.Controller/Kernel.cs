@@ -97,18 +97,18 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Performs initializations that can be reloaded at anytime
         /// </summary>
-        public override async Task Reload(IProgress<TaskProgress> progress)
+        protected override async Task ReloadInternal(IProgress<TaskProgress> progress)
         {
-            await base.Reload(progress).ConfigureAwait(false);
+            await base.ReloadInternal(progress).ConfigureAwait(false);
 
             ReloadWeatherClient();
 
             ExtractFFMpeg();
 
-            progress.Report(new TaskProgress { Description = "Loading Users" });
+            ReportProgress(progress, "Loading Users");
             ReloadUsers();
 
-            progress.Report(new TaskProgress { Description = "Loading Media Library" });
+            ReportProgress(progress, "Loading Media Library");
             await ReloadRoot(allowInternetProviders: false).ConfigureAwait(false);
         }
 

@@ -81,6 +81,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Events\GenericEventArgs.cs" />
     <Compile Include="Kernel\BaseApplicationPaths.cs" />
     <Compile Include="Drawing\DrawingUtils.cs" />
     <Compile Include="Logging\TraceLogger.cs" />
@@ -151,6 +152,7 @@
   <ItemGroup>
     <Resource Include="Resources\Images\spinner.gif" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
