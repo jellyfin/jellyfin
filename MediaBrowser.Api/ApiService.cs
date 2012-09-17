@@ -289,7 +289,7 @@ namespace MediaBrowser.Api
 
             if (folder != null)
             {
-                IEnumerable<BaseItem> children = folder.GetParentalAllowedChildren(user);
+                IEnumerable<BaseItem> children = folder.GetChildren(user);
 
                 dto.Children = await Task.WhenAll<DTOBaseItem>(children.Select(c => GetDTOBaseItem(c, user, false, false))).ConfigureAwait(false);
             }

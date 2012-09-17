@@ -179,7 +179,7 @@ namespace MediaBrowser.Controller.IO
 
         public static bool IsShortcut(string filename)
         {
-            return Path.GetExtension(filename).EndsWith("lnk", StringComparison.OrdinalIgnoreCase);
+            return filename != null ? Path.GetExtension(filename).EndsWith("lnk", StringComparison.OrdinalIgnoreCase) : false;
         }
     }
 }

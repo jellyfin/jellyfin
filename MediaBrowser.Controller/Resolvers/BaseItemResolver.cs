@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Common.Extensions;
 using System;
 using System.IO;
 
@@ -39,7 +40,7 @@ namespace MediaBrowser.Controller.Resolvers
                 item.Parent = args.Parent;
             }
 
-            item.Id = Kernel.GetMD5(item.Path);
+            item.Id = (item.GetType().FullName + item.Path).GetMD5();
         }
 
         public BaseItem ResolvePath(ItemResolveEventArgs args)

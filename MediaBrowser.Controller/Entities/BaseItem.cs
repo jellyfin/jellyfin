@@ -135,6 +135,27 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
+        /// Determine if we have changed vs the passed in copy
+        /// </summary>
+        /// <param name="original"></param>
+        /// <returns></returns>
+        public virtual bool IsChanged(BaseItem original)
+        {
+            bool changed = original.DateModified != this.DateModified;
+            changed |= original.DateCreated != this.DateCreated;
+            return changed;
+        }
+
+        /// <summary>
+        /// Refresh metadata on us by execution our provider chain
+        /// </summary>
+        /// <returns>true if a provider reports we changed</returns>
+        public bool RefreshMetadata()
+        {
+            return false;
+        }
+
+        /// <summary>
         /// Determines if the item is considered new based on user settings
         /// </summary>
         public bool IsRecentlyAdded(User user)

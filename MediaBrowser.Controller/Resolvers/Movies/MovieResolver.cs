@@ -4,6 +4,7 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using System.ComponentModel.Composition;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Resolvers.Movies
 {
@@ -61,11 +62,27 @@ namespace MediaBrowser.Controller.Resolvers.Movies
 
         private Movie GetMovie(ItemResolveEventArgs args)
         {
-            // Loop through each child file/folder and see if we find a video
-            for (var i = 0; i < args.FileSystemChildren.Length; i++)
+            //first see if the discovery process has already determined we are a DVD or BD
+            if (args.IsDVDFolder)
             {
-                var child = args.FileSystemChildren[i];
+                return new Movie()
+                {
+                    Path = args.Path,
+                    VideoType = VideoType.DVD
+                };
+            }
+            else if (args.IsBDFolder)
+            {
+                return new Movie()
+                {
+                    Path = args.Path,
+                    VideoType = VideoType.BluRay
+                };
+            }
 
+            // Loop through each child file/folder and see if we find a video
+            foreach (var child in args.FileSystemChildren)
+            {
                 ItemResolveEventArgs childArgs = new ItemResolveEventArgs()
                 {
                     FileInfo = child,

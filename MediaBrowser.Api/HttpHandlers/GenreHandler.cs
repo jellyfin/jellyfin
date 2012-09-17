@@ -40,7 +40,7 @@ namespace MediaBrowser.Api.HttpHandlers
             int count = 0;
 
             // Get all the allowed recursive children
-            IEnumerable<BaseItem> allItems = parent.GetParentalAllowedRecursiveChildren(user);
+            IEnumerable<BaseItem> allItems = parent.GetRecursiveChildren(user);
 
             foreach (var item in allItems)
             {
