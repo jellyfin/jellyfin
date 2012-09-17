@@ -35,7 +35,7 @@ namespace MediaBrowser.Api.HttpHandlers
             Dictionary<string, int> data = new Dictionary<string, int>();
 
             // Get all the allowed recursive children
-            IEnumerable<BaseItem> allItems = parent.GetParentalAllowedRecursiveChildren(user);
+            IEnumerable<BaseItem> allItems = parent.GetRecursiveChildren(user);
 
             foreach (var item in allItems)
             {
