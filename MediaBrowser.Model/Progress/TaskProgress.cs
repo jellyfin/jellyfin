@@ -7,13 +7,13 @@ namespace MediaBrowser.Model.Progress
     public class TaskProgress
     {
         /// <summary>
-        /// Gets or sets the current completion percentage
-        /// </summary>
-        public decimal PercentComplete { get; set; }
-
-        /// <summary>
         /// Gets or sets a description of the actions currently executing
         /// </summary>
         public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the current completion percentage
+        /// </summary>
+        public decimal? PercentComplete { get; set; }
     }
 }

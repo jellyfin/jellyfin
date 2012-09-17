@@ -20,8 +20,7 @@ namespace MediaBrowser.Common.UI
 
         void ProgressChanged(object sender, TaskProgress e)
         {
-            lblProgress.Text = e.Description;
-            pbProgress.Value = (double)e.PercentComplete;
+            lblProgress.Text = e.Description + "...";
         }
 
         private void SplashLoaded(object sender, RoutedEventArgs e)
