@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using System;
@@ -20,7 +21,7 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             return ApiService.IsApiUrlMatch("image", request);
         }
-        
+
         private string _imagePath;
         private async Task<string> GetImagePath()
         {
@@ -29,49 +30,57 @@ namespace MediaBrowser.Api.HttpHandlers
             return _imagePath;
         }
 
+        private BaseEntity _sourceEntity;
+        private async Task<BaseEntity> GetSourceEntity()
+        {
+            if (_sourceEntity == null)
+            {
+                if (!string.IsNullOrEmpty(QueryString["personname"]))
+                {
+                    _sourceEntity = await Kernel.Instance.ItemController.GetPerson(QueryString["personname"]).ConfigureAwait(false);
+                }
+
+                else if (!string.IsNullOrEmpty(QueryString["genre"]))
+                {
+                    _sourceEntity = await Kernel.Instance.ItemController.GetGenre(QueryString["genre"]).ConfigureAwait(false);
+                }
+
+                else if (!string.IsNullOrEmpty(QueryString["year"]))
+                {
+                    _sourceEntity = await Kernel.Instance.ItemController.GetYear(int.Parse(QueryString["year"])).ConfigureAwait(false);
+                }
+
+                else if (!string.IsNullOrEmpty(QueryString["studio"]))
+                {
+                    _sourceEntity = await Kernel.Instance.ItemController.GetStudio(QueryString["studio"]).ConfigureAwait(false);
+                }
+
+                else if (!string.IsNullOrEmpty(QueryString["userid"]))
+                {
+                    _sourceEntity = ApiService.GetUserById(QueryString["userid"], false);
+                }
+
+                else
+                {
+                    _sourceEntity = ApiService.GetItemById(QueryString["id"]);
+                }
+            }
+
+            return _sourceEntity;
+        }
+
         private async Task<string> DiscoverImagePath()
         {
-            string personName = QueryString["personname"];
+            var entity = await GetSourceEntity().ConfigureAwait(false);
 
-            if (!string.IsNullOrEmpty(personName))
+            var item = entity as BaseItem;
+
+            if (item != null)
             {
-                return (await Kernel.Instance.ItemController.GetPerson(personName).ConfigureAwait(false)).PrimaryImagePath;
+                return GetImagePathFromTypes(item, ImageType, ImageIndex);
             }
 
-            string genreName = QueryString["genre"];
-
-            if (!string.IsNullOrEmpty(genreName))
-            {
-                return (await Kernel.Instance.ItemController.GetGenre(genreName).ConfigureAwait(false)).PrimaryImagePath;
-            }
-
-            string year = QueryString["year"];
-
-            if (!string.IsNullOrEmpty(year))
-            {
-                return (await Kernel.Instance.ItemController.GetYear(int.Parse(year)).ConfigureAwait(false)).PrimaryImagePath;
-            }
-
-            string studio = QueryString["studio"];
-
-            if (!string.IsNullOrEmpty(studio))
-            {
-                return (await Kernel.Instance.ItemController.GetStudio(studio).ConfigureAwait(false)).PrimaryImagePath;
-            }
-
-            string userId = QueryString["userid"];
-
-            if (!string.IsNullOrEmpty(userId))
-            {
-                return ApiService.GetUserById(userId, false).PrimaryImagePath;
-            }
-
-            BaseItem item = ApiService.GetItemById(QueryString["id"]);
-
-            string imageIndex = QueryString["index"];
-            int index = string.IsNullOrEmpty(imageIndex) ? 0 : int.Parse(imageIndex);
-
-            return GetImagePathFromTypes(item, ImageType, index);
+            return entity.PrimaryImagePath;
         }
 
         private Stream _sourceStream;
@@ -114,8 +123,6 @@ namespace MediaBrowser.Api.HttpHandlers
 
         public async override Task<string> GetContentType()
         {
-            await EnsureSourceStream().ConfigureAwait(false);
-
             if (await GetSourceStream().ConfigureAwait(false) == null)
             {
                 return null;
@@ -134,14 +141,27 @@ namespace MediaBrowser.Api.HttpHandlers
 
         protected async override Task<DateTime?> GetLastDateModified()
         {
-            await EnsureSourceStream().ConfigureAwait(false);
-
             if (await GetSourceStream().ConfigureAwait(false) == null)
             {
                 return null;
             }
 
             return File.GetLastWriteTimeUtc(await GetImagePath().ConfigureAwait(false));
+        }
+
+        private int ImageIndex
+        {
+            get
+            {
+                string val = QueryString["index"];
+
+                if (string.IsNullOrEmpty(val))
+                {
+                    return 0;
+                }
+
+                return int.Parse(val);
+            }
         }
 
         private int? Height
@@ -236,7 +256,11 @@ namespace MediaBrowser.Api.HttpHandlers
 
         protected override async Task WriteResponseToOutputStream(Stream stream)
         {
-            ImageProcessor.ProcessImage(await GetSourceStream().ConfigureAwait(false), stream, Width, Height, MaxWidth, MaxHeight, Quality);
+            Stream sourceStream = await GetSourceStream().ConfigureAwait(false);
+
+            var entity = await GetSourceEntity().ConfigureAwait(false);
+
+            ImageProcessor.ProcessImage(sourceStream, stream, Width, Height, MaxWidth, MaxHeight, Quality, entity, ImageType, ImageIndex);
         }
 
         private string GetImagePathFromTypes(BaseItem item, ImageType imageType, int imageIndex)

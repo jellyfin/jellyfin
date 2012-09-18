@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Kernel;
+using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Plugins;
 using System;
@@ -200,6 +201,8 @@ namespace MediaBrowser.Common.Plugins
         /// </summary>
         public void Dispose()
         {
+            Logger.LogInfo("Disposing {0} Plugin", Name);
+
             if (Context == KernelContext.Server)
             {
                 DisposeOnServer();

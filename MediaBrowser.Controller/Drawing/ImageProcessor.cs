@@ -1,26 +1,34 @@
-﻿using MediaBrowser.Common.Drawing;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Entities;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 
-namespace MediaBrowser.Api
+namespace MediaBrowser.Controller.Drawing
 {
     public static class ImageProcessor
     {
         /// <summary>
-        /// Resizes an image from a source stream and saves the result to an output stream
+        /// Processes an image by resizing to target dimensions
         /// </summary>
+        /// <param name="sourceImageStream">The stream containing the source image</param>
+        /// <param name="toStream">The stream to save the new image to</param>
         /// <param name="width">Use if a fixed width is required. Aspect ratio will be preserved.</param>
         /// <param name="height">Use if a fixed height is required. Aspect ratio will be preserved.</param>
         /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
         /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
         /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
-        public static void ProcessImage(Stream sourceImageStream, Stream toStream, int? width, int? height, int? maxWidth, int? maxHeight, int? quality)
+        /// <param name="entity">The entity that owns the image</param>
+        /// <param name="imageType">The image type</param>
+        /// <param name="imageIndex">The image index (currently only used with backdrops)</param>
+        public static void ProcessImage(Stream sourceImageStream, Stream toStream, int? width, int? height, int? maxWidth, int? maxHeight, int? quality, BaseEntity entity, ImageType imageType, int imageIndex)
         {
             Image originalImage = Image.FromStream(sourceImageStream);
 
+            // Determine the output size based on incoming parameters
             Size newSize = DrawingUtils.Resize(originalImage.Size, width, height, maxWidth, maxHeight);
 
             Bitmap thumbnail;
@@ -35,6 +43,7 @@ namespace MediaBrowser.Api
                 thumbnail = new Bitmap(newSize.Width, newSize.Height, originalImage.PixelFormat);
             }
 
+            // Preserve the original resolution
             thumbnail.SetResolution(originalImage.HorizontalResolution, originalImage.VerticalResolution);
 
             Graphics thumbnailGraph = Graphics.FromImage(thumbnail);
@@ -47,32 +56,67 @@ namespace MediaBrowser.Api
 
             thumbnailGraph.DrawImage(originalImage, 0, 0, newSize.Width, newSize.Height);
 
-            Write(originalImage, thumbnail, toStream, quality);
+            // Run Kernel image processors
+            if (Kernel.Instance.ImageProcessors.Any())
+            {
+                ExecuteAdditionalImageProcessors(thumbnail, thumbnailGraph, entity, imageType, imageIndex);
+            }
+
+            // Write to the output stream
+            SaveImage(originalImage.RawFormat, thumbnail, toStream, quality);
 
             thumbnailGraph.Dispose();
             thumbnail.Dispose();
             originalImage.Dispose();
         }
 
-        private static void Write(Image originalImage, Image newImage, Stream toStream, int? quality)
+        /// <summary>
+        /// Executes additional image processors that are registered with the Kernel
+        /// </summary>
+        /// <param name="bitmap">The bitmap holding the original image, after re-sizing</param>
+        /// <param name="graphics">The graphics surface on which the output is drawn</param>
+        /// <param name="entity">The entity that owns the image</param>
+        /// <param name="imageType">The image type</param>
+        /// <param name="imageIndex">The image index (currently only used with backdrops)</param>
+        private static void ExecuteAdditionalImageProcessors(Bitmap bitmap, Graphics graphics, BaseEntity entity, ImageType imageType, int imageIndex)
+        {
+            var baseItem = entity as BaseItem;
+
+            if (baseItem != null)
+            {
+                foreach (var processor in Kernel.Instance.ImageProcessors)
+                {
+                    processor.ProcessImage(bitmap, graphics, baseItem, imageType, imageIndex);
+                }
+            }
+            else
+            {
+                foreach (var processor in Kernel.Instance.ImageProcessors)
+                {
+                    processor.ProcessImage(bitmap, graphics, entity);
+                }
+            }
+        }
+
+        public static void SaveImage(ImageFormat originalImageRawFormat, Image newImage, Stream toStream, int? quality)
         {
             // Use special save methods for jpeg and png that will result in a much higher quality image
             // All other formats use the generic Image.Save
-            if (ImageFormat.Jpeg.Equals(originalImage.RawFormat))
+            if (ImageFormat.Jpeg.Equals(originalImageRawFormat))
             {
                 SaveJpeg(newImage, toStream, quality);
             }
-            else if (ImageFormat.Png.Equals(originalImage.RawFormat))
+            else if (ImageFormat.Png.Equals(originalImageRawFormat))
             {
                 newImage.Save(toStream, ImageFormat.Png);
             }
             else
             {
-                newImage.Save(toStream, originalImage.RawFormat);
+                newImage.Save(toStream, originalImageRawFormat);
             }
         }
 
-        private static void SaveJpeg(Image newImage, Stream target, int? quality)
+        public static void SaveJpeg(Image image, Stream target, int? quality)
         {
             if (!quality.HasValue)
             {
@@ -82,11 +126,11 @@ namespace MediaBrowser.Api
             using (var encoderParameters = new EncoderParameters(1))
             {
                 encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, quality.Value);
-                newImage.Save(target, GetImageCodeInfo("image/jpeg"), encoderParameters);
+                image.Save(target, GetImageCodecInfo("image/jpeg"), encoderParameters);
             }
         }
 
-        private static ImageCodecInfo GetImageCodeInfo(string mimeType)
+        public static ImageCodecInfo GetImageCodecInfo(string mimeType)
         {
             ImageCodecInfo[] info = ImageCodecInfo.GetImageEncoders();
 

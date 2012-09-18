@@ -36,6 +36,7 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="System.Reactive.Core, Version=2.0.20823.0, Culture=neutral, PublicKeyToken=f300afd708cefcd3, processorArchitecture=MSIL">
@@ -58,6 +59,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Drawing\BaseImageProcessor.cs" />
+    <Compile Include="Drawing\DrawingUtils.cs" />
+    <Compile Include="Drawing\ImageProcessor.cs" />
     <Compile Include="Entities\Audio.cs" />
     <Compile Include="Entities\BaseEntity.cs" />
     <Compile Include="Entities\BaseItem.cs" />
@@ -107,7 +111,8 @@
     <Compile Include="Resolvers\BaseItemResolver.cs" />
     <Compile Include="Resolvers\FolderResolver.cs" />
     <Compile Include="Resolvers\VideoResolver.cs" />
-    <Compile Include="Weather\WeatherClient.cs" />
+    <Compile Include="Weather\BaseWeatherProvider.cs" />
+    <Compile Include="Weather\WeatherProvider.cs" />
     <Compile Include="Providers\BaseItemXmlParser.cs" />
     <Compile Include="Xml\XmlExtensions.cs" />
   </ItemGroup>
