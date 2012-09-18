@@ -303,7 +303,8 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public IEnumerable<BaseItem> GetChildren(User user)
         {
-            return ActualChildren.Where(c => c.IsParentalAllowed(user));
+            lock(childLock)
+                return ActualChildren.Where(c => c.IsParentalAllowed(user));
         }
 
         /// <summary>
