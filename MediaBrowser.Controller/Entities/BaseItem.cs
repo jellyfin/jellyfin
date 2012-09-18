@@ -48,7 +48,7 @@ namespace MediaBrowser.Controller.Entities
 
         public string DisplayMediaType { get; set; }
 
-        public float? UserRating { get; set; }
+        public float? CommunityRating { get; set; }
         public long? RunTimeTicks { get; set; }
 
         public string AspectRatio { get; set; }

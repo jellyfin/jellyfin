@@ -170,7 +170,7 @@ namespace MediaBrowser.Api
 
             dto.TrailerUrl = item.TrailerUrl;
             dto.Type = item.GetType().Name;
-            dto.UserRating = item.UserRating;
+            dto.CommunityRating = item.CommunityRating;
 
             dto.UserData = GetDtoUserItemData(item.GetUserData(user, false));
 

@@ -46,7 +46,7 @@ namespace MediaBrowser.Model.DTO
         public string DisplayMediaType { get; set; }
 
         [ProtoMember(12)]
-        public float? UserRating { get; set; }
+        public float? CommunityRating { get; set; }
 
         [ProtoMember(13)]
         public long? RunTimeTicks { get; set; }
