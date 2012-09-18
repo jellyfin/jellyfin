@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Logging;
+﻿using System.Drawing.Imaging;
+using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
@@ -126,6 +127,11 @@ namespace MediaBrowser.Api.HttpHandlers
             if (await GetSourceStream().ConfigureAwait(false) == null)
             {
                 return null;
+            }
+
+            if (Kernel.Instance.ImageProcessors.Any(i => i.RequiresTransparency))
+            {
+                return MimeTypes.GetMimeType(".png");
             }
 
             return MimeTypes.GetMimeType(await GetImagePath().ConfigureAwait(false));
