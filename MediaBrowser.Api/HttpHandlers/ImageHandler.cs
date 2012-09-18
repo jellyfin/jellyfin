@@ -1,6 +1,4 @@
-﻿using System.Drawing.Imaging;
-using MediaBrowser.Common.Logging;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
@@ -24,6 +22,7 @@ namespace MediaBrowser.Api.HttpHandlers
         }
 
         private string _imagePath;
+
         private async Task<string> GetImagePath()
         {
             _imagePath = _imagePath ?? await DiscoverImagePath();
@@ -32,28 +31,34 @@ namespace MediaBrowser.Api.HttpHandlers
         }
 
         private BaseEntity _sourceEntity;
+
         private async Task<BaseEntity> GetSourceEntity()
         {
             if (_sourceEntity == null)
             {
                 if (!string.IsNullOrEmpty(QueryString["personname"]))
                 {
-                    _sourceEntity = await Kernel.Instance.ItemController.GetPerson(QueryString["personname"]).ConfigureAwait(false);
+                    _sourceEntity =
+                        await Kernel.Instance.ItemController.GetPerson(QueryString["personname"]).ConfigureAwait(false);
                 }
 
                 else if (!string.IsNullOrEmpty(QueryString["genre"]))
                 {
-                    _sourceEntity = await Kernel.Instance.ItemController.GetGenre(QueryString["genre"]).ConfigureAwait(false);
+                    _sourceEntity =
+                        await Kernel.Instance.ItemController.GetGenre(QueryString["genre"]).ConfigureAwait(false);
                 }
 
                 else if (!string.IsNullOrEmpty(QueryString["year"]))
                 {
-                    _sourceEntity = await Kernel.Instance.ItemController.GetYear(int.Parse(QueryString["year"])).ConfigureAwait(false);
+                    _sourceEntity =
+                        await
+                        Kernel.Instance.ItemController.GetYear(int.Parse(QueryString["year"])).ConfigureAwait(false);
                 }
 
                 else if (!string.IsNullOrEmpty(QueryString["studio"]))
                 {
-                    _sourceEntity = await Kernel.Instance.ItemController.GetStudio(QueryString["studio"]).ConfigureAwait(false);
+                    _sourceEntity =
+                        await Kernel.Instance.ItemController.GetStudio(QueryString["studio"]).ConfigureAwait(false);
                 }
 
                 else if (!string.IsNullOrEmpty(QueryString["userid"]))
@@ -74,61 +79,11 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             var entity = await GetSourceEntity().ConfigureAwait(false);
 
-            var item = entity as BaseItem;
-
-            if (item != null)
-            {
-                return GetImagePathFromTypes(item, ImageType, ImageIndex);
-            }
-
-            return entity.PrimaryImagePath;
+            return ImageProcessor.GetImagePath(entity, ImageType, ImageIndex);
         }
 
-        private Stream _sourceStream;
-        private async Task<Stream> GetSourceStream()
+        public override async Task<string> GetContentType()
         {
-            await EnsureSourceStream().ConfigureAwait(false);
-            return _sourceStream;
-        }
-
-        private bool _sourceStreamEnsured;
-        private async Task EnsureSourceStream()
-        {
-            if (!_sourceStreamEnsured)
-            {
-                try
-                {
-                    _sourceStream = File.OpenRead(await GetImagePath().ConfigureAwait(false));
-                }
-                catch (FileNotFoundException ex)
-                {
-                    StatusCode = 404;
-                    Logger.LogException(ex);
-                }
-                catch (DirectoryNotFoundException ex)
-                {
-                    StatusCode = 404;
-                    Logger.LogException(ex);
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    StatusCode = 403;
-                    Logger.LogException(ex);
-                }
-                finally
-                {
-                    _sourceStreamEnsured = true;
-                }
-            }
-        }
-
-        public async override Task<string> GetContentType()
-        {
-            if (await GetSourceStream().ConfigureAwait(false) == null)
-            {
-                return null;
-            }
-
             if (Kernel.Instance.ImageProcessors.Any(i => i.RequiresTransparency))
             {
                 return MimeTypes.GetMimeType(".png");
@@ -139,20 +94,47 @@ namespace MediaBrowser.Api.HttpHandlers
 
         public override TimeSpan CacheDuration
         {
-            get
-            {
-                return TimeSpan.FromDays(365);
-            }
+            get { return TimeSpan.FromDays(365); }
         }
 
-        protected async override Task<DateTime?> GetLastDateModified()
+        protected override async Task<DateTime?> GetLastDateModified()
         {
-            if (await GetSourceStream().ConfigureAwait(false) == null)
+            string path = await GetImagePath().ConfigureAwait(false);
+
+            DateTime date = File.GetLastWriteTimeUtc(path);
+
+            // If the file does not exist it will return jan 1, 1601
+            // http://msdn.microsoft.com/en-us/library/system.io.file.getlastwritetimeutc.aspx
+            if (date.Year == 1601)
             {
-                return null;
+                if (!File.Exists(path))
+                {
+                    StatusCode = 404;
+                    return null;
+                }
             }
 
-            return File.GetLastWriteTimeUtc(await GetImagePath().ConfigureAwait(false));
+            return await GetMostRecentDateModified(date);
+        }
+
+        private async Task<DateTime> GetMostRecentDateModified(DateTime imageFileLastDateModified)
+        {
+            var date = imageFileLastDateModified;
+
+            var entity = await GetSourceEntity().ConfigureAwait(false);
+            
+            foreach (var processor in Kernel.Instance.ImageProcessors)
+            {
+                if (processor.IsConfiguredToProcess(entity, ImageType, ImageIndex))
+                {
+                    if (processor.ProcessingConfigurationDateLastModifiedUtc > date)
+                    {
+                        date = processor.ProcessingConfigurationDateLastModifiedUtc;
+                    }
+                }
+            }
+
+            return date;
         }
 
         private int ImageIndex
@@ -262,37 +244,9 @@ namespace MediaBrowser.Api.HttpHandlers
 
         protected override async Task WriteResponseToOutputStream(Stream stream)
         {
-            Stream sourceStream = await GetSourceStream().ConfigureAwait(false);
-
             var entity = await GetSourceEntity().ConfigureAwait(false);
 
-            ImageProcessor.ProcessImage(sourceStream, stream, Width, Height, MaxWidth, MaxHeight, Quality, entity, ImageType, ImageIndex);
-        }
-
-        private string GetImagePathFromTypes(BaseItem item, ImageType imageType, int imageIndex)
-        {
-            if (imageType == ImageType.Logo)
-            {
-                return item.LogoImagePath;
-            }
-            if (imageType == ImageType.Backdrop)
-            {
-                return item.BackdropImagePaths.ElementAt(imageIndex);
-            }
-            if (imageType == ImageType.Banner)
-            {
-                return item.BannerImagePath;
-            }
-            if (imageType == ImageType.Art)
-            {
-                return item.ArtImagePath;
-            }
-            if (imageType == ImageType.Thumbnail)
-            {
-                return item.ThumbnailImagePath;
-            }
-
-            return item.PrimaryImagePath;
+            ImageProcessor.ProcessImage(entity, ImageType, ImageIndex, stream, Width, Height, MaxWidth, MaxHeight, Quality);
         }
     }
 }

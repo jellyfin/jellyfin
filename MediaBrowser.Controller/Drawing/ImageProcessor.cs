@@ -14,19 +14,18 @@ namespace MediaBrowser.Controller.Drawing
         /// <summary>
         /// Processes an image by resizing to target dimensions
         /// </summary>
-        /// <param name="sourceImageStream">The stream containing the source image</param>
+        /// <param name="entity">The entity that owns the image</param>
+        /// <param name="imageType">The image type</param>
+        /// <param name="imageIndex">The image index (currently only used with backdrops)</param>
         /// <param name="toStream">The stream to save the new image to</param>
         /// <param name="width">Use if a fixed width is required. Aspect ratio will be preserved.</param>
         /// <param name="height">Use if a fixed height is required. Aspect ratio will be preserved.</param>
         /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
         /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
         /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
-        /// <param name="entity">The entity that owns the image</param>
-        /// <param name="imageType">The image type</param>
-        /// <param name="imageIndex">The image index (currently only used with backdrops)</param>
-        public static void ProcessImage(Stream sourceImageStream, Stream toStream, int? width, int? height, int? maxWidth, int? maxHeight, int? quality, BaseEntity entity, ImageType imageType, int imageIndex)
+        public static void ProcessImage(BaseEntity entity, ImageType imageType, int imageIndex, Stream toStream, int? width, int? height, int? maxWidth, int? maxHeight, int? quality)
         {
-            Image originalImage = Image.FromStream(sourceImageStream);
+            Image originalImage = Image.FromFile(GetImagePath(entity, imageType, imageIndex));
 
             // Determine the output size based on incoming parameters
             Size newSize = DrawingUtils.Resize(originalImage.Size, width, height, maxWidth, maxHeight);
@@ -79,9 +78,42 @@ namespace MediaBrowser.Controller.Drawing
             originalImage.Dispose();
         }
 
+        public static string GetImagePath(BaseEntity entity, ImageType imageType, int imageIndex)
+        {
+            var item = entity as BaseItem;
+
+            if (item != null)
+            {
+                if (imageType == ImageType.Logo)
+                {
+                    return item.LogoImagePath;
+                }
+                if (imageType == ImageType.Backdrop)
+                {
+                    return item.BackdropImagePaths.ElementAt(imageIndex);
+                }
+                if (imageType == ImageType.Banner)
+                {
+                    return item.BannerImagePath;
+                }
+                if (imageType == ImageType.Art)
+                {
+                    return item.ArtImagePath;
+                }
+                if (imageType == ImageType.Thumbnail)
+                {
+                    return item.ThumbnailImagePath;
+                }
+            }
+
+            return entity.PrimaryImagePath;
+        }
+
+
         /// <summary>
         /// Executes additional image processors that are registered with the Kernel
         /// </summary>
+        /// <param name="originalImage">The original Image, before re-sizing</param>
         /// <param name="bitmap">The bitmap holding the original image, after re-sizing</param>
         /// <param name="graphics">The graphics surface on which the output is drawn</param>
         /// <param name="entity">The entity that owns the image</param>
@@ -89,20 +121,11 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="imageIndex">The image index (currently only used with backdrops)</param>
         private static void ExecuteAdditionalImageProcessors(Image originalImage, Bitmap bitmap, Graphics graphics, BaseEntity entity, ImageType imageType, int imageIndex)
         {
-            var baseItem = entity as BaseItem;
-
-            if (baseItem != null)
+            foreach (var processor in Kernel.Instance.ImageProcessors)
             {
-                foreach (var processor in Kernel.Instance.ImageProcessors)
+                if (processor.IsConfiguredToProcess(entity, imageType, imageIndex))
                 {
-                    processor.ProcessImage(originalImage, bitmap, graphics, baseItem, imageType, imageIndex);
-                }
-            }
-            else
-            {
-                foreach (var processor in Kernel.Instance.ImageProcessors)
-                {
-                    processor.ProcessImage(originalImage, bitmap, graphics, entity);
+                    processor.ProcessImage(originalImage, bitmap, graphics, entity, imageType, imageIndex);
                 }
             }
         }
