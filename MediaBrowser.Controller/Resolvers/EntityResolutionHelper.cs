@@ -60,11 +60,6 @@ namespace MediaBrowser.Controller.Resolvers
                 // Ignore any folders containing a file called .ignore
                 resolve = false;
             }
-            else if (args.FileInfo.cFileName.Equals("metadata", StringComparison.OrdinalIgnoreCase))
-            {
-                // Ignore metadata folders
-                resolve = false;
-            }
 
             return resolve;
         }
