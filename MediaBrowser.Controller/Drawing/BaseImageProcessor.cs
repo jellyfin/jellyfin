@@ -83,12 +83,14 @@ namespace MediaBrowser.Controller.Drawing
             }
         }
 
+        private static DateTime testDate = DateTime.UtcNow;
+
         public override DateTime ProcessingConfigurationDateLastModifiedUtc
         {
             get
             {
-                // This will result in a situation where images are never cached, but again, this is a prototype
-                return DateTime.UtcNow;
+                // This will result in a situation where images are only cached throughout a server session, but again, this is a prototype
+                return testDate;
             }
         }
 
