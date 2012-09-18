@@ -10,7 +10,7 @@ namespace MediaBrowser.Controller.Resolvers.TV
     {
         protected override Season Resolve(ItemResolveEventArgs args)
         {
-            if (args.Parent is Series && args.IsDirectory)
+            if (args.Parent is Series && args.IsDirectory && !args.IsMetadataFolder)
             {
                 var season = new Season { };
 

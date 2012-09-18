@@ -200,10 +200,10 @@ namespace MediaBrowser.Controller
             DirectoryWatchers.Start();
             //Task.Delay(30000); //let's wait and see if more data gets filled in...
             var allChildren = RootFolder.RecursiveChildren;
-            Logger.LogInfo(string.Format("Loading complete.  Movies: {0} Episodes: {1}", allChildren.OfType<Entities.Movies.Movie>().Count(), allChildren.OfType<Entities.TV.Episode>().Count()));
+            Logger.LogDebugInfo(string.Format("Loading complete.  Movies: {0} Episodes: {1} Folders: {2}", allChildren.OfType<Entities.Movies.Movie>().Count(), allChildren.OfType<Entities.TV.Episode>().Count(), allChildren.Where(i => i is Folder && !(i is Series || i is Season)).Count()));
             foreach (var child in allChildren)
             {
-                Logger.LogDebugInfo("(" + child.GetType().Name + ") " + child.Name + " Overview " + (child.Overview != null ? child.Overview.Substring(0,Math.Min(25,child.Overview.Length)): "") + " (" + child.Path + ")");
+                Logger.LogDebugInfo("(" + child.GetType().Name + ") " + child.Name + " (" + child.Path + ")");
             }
         }
 

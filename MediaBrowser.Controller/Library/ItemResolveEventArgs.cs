@@ -39,6 +39,14 @@ namespace MediaBrowser.Controller.Library
         public bool IsDVDFolder { get; set; }
         public bool IsHDDVDFolder { get; set; }
 
+        public bool IsMetadataFolder
+        {
+            get
+            {
+                return this.FileInfo.cFileName.Equals("metadata", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
         public WIN32_FIND_DATA? GetFileSystemEntry(string path)
         {
             WIN32_FIND_DATA entry = FileSystemChildren.FirstOrDefault(f => f.Path.Equals(path, StringComparison.OrdinalIgnoreCase));

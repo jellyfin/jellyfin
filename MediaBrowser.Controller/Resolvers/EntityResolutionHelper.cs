@@ -62,6 +62,11 @@ namespace MediaBrowser.Controller.Resolvers
                 // Ignore any folders containing a file called .ignore
                 resolve = false;
             }
+            else if (args.IsMetadataFolder)
+            {
+                // Don't retrieve these children here - we'll get them in the season resolver
+                resolve = false;
+            }
 
             return resolve;
         }

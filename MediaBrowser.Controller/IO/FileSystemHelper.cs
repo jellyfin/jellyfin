@@ -83,5 +83,38 @@ namespace MediaBrowser.Controller.IO
             return args;
         }
 
+        public static bool IsVideoFile(string path)
+        {
+            string extension = System.IO.Path.GetExtension(path).ToLower();
+
+            switch (extension)
+            {
+                case ".mkv":
+                case ".m2ts":
+                case ".iso":
+                case ".ts":
+                case ".rmvb":
+                case ".mov":
+                case ".avi":
+                case ".mpg":
+                case ".mpeg":
+                case ".wmv":
+                case ".mp4":
+                case ".divx":
+                case ".dvr-ms":
+                case ".wtv":
+                case ".ogm":
+                case ".ogv":
+                case ".asf":
+                case ".m4v":
+                case ".flv":
+                case ".f4v":
+                case ".3gp":
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
     }
 }

@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Resolvers
         
         protected override Folder Resolve(ItemResolveEventArgs args)
         {
-            if (args.IsDirectory && !args.FileInfo.cFileName.Equals("metadata",System.StringComparison.OrdinalIgnoreCase))
+            if (args.IsDirectory && !args.IsMetadataFolder)
             {
                 return new Folder() { PhysicalLocations = args.PhysicalLocations };
             }
