@@ -43,6 +43,8 @@ namespace MediaBrowser.Controller.Drawing
                 thumbnail = new Bitmap(newSize.Width, newSize.Height, originalImage.PixelFormat);
             }
 
+            thumbnail.MakeTransparent();
+
             // Preserve the original resolution
             thumbnail.SetResolution(originalImage.HorizontalResolution, originalImage.VerticalResolution);
 
@@ -56,14 +58,21 @@ namespace MediaBrowser.Controller.Drawing
 
             thumbnailGraph.DrawImage(originalImage, 0, 0, newSize.Width, newSize.Height);
 
+            ImageFormat outputFormat = originalImage.RawFormat;
+
             // Run Kernel image processors
             if (Kernel.Instance.ImageProcessors.Any())
             {
-                ExecuteAdditionalImageProcessors(thumbnail, thumbnailGraph, entity, imageType, imageIndex);
+                ExecuteAdditionalImageProcessors(originalImage, thumbnail, thumbnailGraph, entity, imageType, imageIndex);
+
+                if (Kernel.Instance.ImageProcessors.Any(i => i.RequiresTransparency))
+                {
+                    outputFormat = ImageFormat.Png;
+                }
             }
 
             // Write to the output stream
-            SaveImage(originalImage.RawFormat, thumbnail, toStream, quality);
+            SaveImage(outputFormat, thumbnail, toStream, quality);
 
             thumbnailGraph.Dispose();
             thumbnail.Dispose();
@@ -78,7 +87,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="entity">The entity that owns the image</param>
         /// <param name="imageType">The image type</param>
         /// <param name="imageIndex">The image index (currently only used with backdrops)</param>
-        private static void ExecuteAdditionalImageProcessors(Bitmap bitmap, Graphics graphics, BaseEntity entity, ImageType imageType, int imageIndex)
+        private static void ExecuteAdditionalImageProcessors(Image originalImage, Bitmap bitmap, Graphics graphics, BaseEntity entity, ImageType imageType, int imageIndex)
         {
             var baseItem = entity as BaseItem;
 
@@ -86,33 +95,33 @@ namespace MediaBrowser.Controller.Drawing
             {
                 foreach (var processor in Kernel.Instance.ImageProcessors)
                 {
-                    processor.ProcessImage(bitmap, graphics, baseItem, imageType, imageIndex);
+                    processor.ProcessImage(originalImage, bitmap, graphics, baseItem, imageType, imageIndex);
                 }
             }
             else
             {
                 foreach (var processor in Kernel.Instance.ImageProcessors)
                 {
-                    processor.ProcessImage(bitmap, graphics, entity);
+                    processor.ProcessImage(originalImage, bitmap, graphics, entity);
                 }
             }
         }
 
-        public static void SaveImage(ImageFormat originalImageRawFormat, Image newImage, Stream toStream, int? quality)
+        public static void SaveImage(ImageFormat outputFormat, Image newImage, Stream toStream, int? quality)
         {
             // Use special save methods for jpeg and png that will result in a much higher quality image
             // All other formats use the generic Image.Save
-            if (ImageFormat.Jpeg.Equals(originalImageRawFormat))
+            if (ImageFormat.Jpeg.Equals(outputFormat))
             {
                 SaveJpeg(newImage, toStream, quality);
             }
-            else if (ImageFormat.Png.Equals(originalImageRawFormat))
+            else if (ImageFormat.Png.Equals(outputFormat))
             {
                 newImage.Save(toStream, ImageFormat.Png);
             }
             else
             {
-                newImage.Save(toStream, originalImageRawFormat);
+                newImage.Save(toStream, outputFormat);
             }
         }
 
