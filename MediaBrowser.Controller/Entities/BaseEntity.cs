@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Providers;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -28,6 +29,26 @@ namespace MediaBrowser.Controller.Entities
         public override string ToString()
         {
             return Name;
+        }
+        protected Dictionary<Guid, BaseProviderInfo> _providerData;
+        /// <summary>
+        /// Holds persistent data for providers like last refresh date.
+        /// Providers can use this to determine if they need to refresh.
+        /// The BaseProviderInfo class can be extended to hold anything a provider may need.
+        /// 
+        /// Keyed by a unique provider ID.
+        /// </summary>
+        public Dictionary<Guid, BaseProviderInfo> ProviderData
+        {
+            get
+            {
+                if (_providerData == null) _providerData = new Dictionary<Guid, BaseProviderInfo>();
+                return _providerData;
+            }
+            set
+            {
+                _providerData = value;
+            }
         }
 
         protected ItemResolveEventArgs _resolveArgs;

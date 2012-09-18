@@ -76,6 +76,7 @@
     <Compile Include="Entities\Year.cs" />
     <Compile Include="IO\FileSystemHelper.cs" />
     <Compile Include="Library\ChildrenChangedEventArgs.cs" />
+    <Compile Include="Providers\BaseProviderInfo.cs" />
     <Compile Include="Providers\Movies\MovieProviderFromXml.cs" />
     <Compile Include="Providers\Movies\MovieSpecialFeaturesProvider.cs" />
     <Compile Include="Providers\TV\EpisodeImageFromMediaLocationProvider.cs" />

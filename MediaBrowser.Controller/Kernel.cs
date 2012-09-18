@@ -368,6 +368,12 @@ namespace MediaBrowser.Controller
                     continue;
                 }
 
+                // Skip if provider says we don't need to run
+                if (!provider.NeedsRefresh(item))
+                {
+                    continue;
+                }
+
                 try
                 {
                     await provider.FetchAsync(item, item.ResolveArgs).ConfigureAwait(false);
