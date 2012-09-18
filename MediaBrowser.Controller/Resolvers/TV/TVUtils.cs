@@ -128,7 +128,7 @@ namespace MediaBrowser.Controller.Resolvers.TV
                 }
                 else
                 {
-                    if (!string.IsNullOrEmpty(EpisodeNumberFromFile(child.Path, false)))
+                    if (FileSystemHelper.IsVideoFile(child.Path) && !string.IsNullOrEmpty(EpisodeNumberFromFile(child.Path, false)))
                     {
                         return true;
                     }
