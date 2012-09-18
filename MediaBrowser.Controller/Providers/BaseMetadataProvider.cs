@@ -36,7 +36,7 @@ namespace MediaBrowser.Controller.Providers
         /// <returns></returns>
         protected virtual DateTime LastRefreshed(BaseEntity item)
         {
-            return (item.ProviderData[this.Id] ?? new BaseProviderInfo()).LastRefreshed;
+            return (item.ProviderData.GetValueOrDefault(this.Id, new BaseProviderInfo())).LastRefreshed;
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="value"></param>
         protected virtual void SetLastRefreshed(BaseEntity item, DateTime value)
         {
-            var data = item.ProviderData[this.Id] ?? new BaseProviderInfo();
+            var data = item.ProviderData.GetValueOrDefault(this.Id, new BaseProviderInfo());
             data.LastRefreshed = value;
             item.ProviderData[this.Id] = data;
         }
@@ -68,7 +68,15 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         protected virtual DateTime CompareDate(BaseEntity item)
         {
-            return DateTime.MinValue;
+            return DateTime.MinValue.AddMinutes(1); // want this to be greater than mindate so new items will refresh
+        }
+
+        public virtual Task FetchIfNeededAsync(BaseEntity item)
+        {
+            if (this.NeedsRefresh(item))
+                return FetchAsync(item, item.ResolveArgs);
+            else
+                return new Task(() => { });
         }
             
         public abstract Task FetchAsync(BaseEntity item, ItemResolveEventArgs args);

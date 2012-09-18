@@ -153,9 +153,9 @@ namespace MediaBrowser.Controller.Entities
                     //brand new item - needs to be added
                     changed = true;
                     changedArgs.ItemsAdded.Add(child);
-                    //Logger.LogInfo("New Item Added to Library: ("+child.GetType().Name+")"+ child.Name + "(" + child.Path + ")");
                     //refresh it
                     child.RefreshMetadata();
+                    //Logger.LogInfo("New Item Added to Library: ("+child.GetType().Name+") "+ child.Name + " (" + child.Path + ")");
                     //save it in repo...
 
                     //and add it to our valid children
@@ -180,6 +180,7 @@ namespace MediaBrowser.Controller.Entities
                         //  will identify this item as the same one
                         currentChild.ResolveArgs = child.ResolveArgs;
                         currentChild.RefreshMetadata();
+                        Logger.LogInfo("Item Changed: ("+currentChild.GetType().Name+") "+ currentChild.Name + " (" + currentChild.Path + ")");
                         //save it in repo...
                         validChildren.Add(currentChild);
                     }

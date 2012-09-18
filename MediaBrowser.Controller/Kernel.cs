@@ -198,8 +198,13 @@ namespace MediaBrowser.Controller
             //re-start the directory watchers
             DirectoryWatchers.Stop();
             DirectoryWatchers.Start();
+            //Task.Delay(30000); //let's wait and see if more data gets filled in...
             var allChildren = RootFolder.RecursiveChildren;
             Logger.LogInfo(string.Format("Loading complete.  Movies: {0} Episodes: {1}", allChildren.OfType<Entities.Movies.Movie>().Count(), allChildren.OfType<Entities.TV.Episode>().Count()));
+            foreach (var child in allChildren)
+            {
+                Logger.LogDebugInfo("(" + child.GetType().Name + ") " + child.Name + " Overview " + (child.Overview != null ? child.Overview.Substring(0,Math.Min(25,child.Overview.Length)): "") + " (" + child.Path + ")");
+            }
         }
 
         /// <summary>
@@ -368,15 +373,9 @@ namespace MediaBrowser.Controller
                     continue;
                 }
 
-                // Skip if provider says we don't need to run
-                if (!provider.NeedsRefresh(item))
-                {
-                    continue;
-                }
-
                 try
                 {
-                    await provider.FetchAsync(item, item.ResolveArgs).ConfigureAwait(false);
+                    await provider.FetchIfNeededAsync(item).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
