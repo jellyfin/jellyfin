@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Library;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading.Tasks;
+using System;
 
 namespace MediaBrowser.Controller.Providers.Movies
 {
@@ -18,6 +19,12 @@ namespace MediaBrowser.Controller.Providers.Movies
         public override MetadataProviderPriority Priority
         {
             get { return MetadataProviderPriority.First; }
+        }
+
+        protected override DateTime CompareDate(BaseEntity item)
+        {
+            var entry = item.ResolveArgs.GetFileSystemEntry(Path.Combine(item.Path, "movie.xml"));
+            return entry != null ? entry.Value.LastWriteTimeUtc : DateTime.MinValue;
         }
 
         public override async Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
