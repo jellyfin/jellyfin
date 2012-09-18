@@ -19,11 +19,20 @@ namespace MediaBrowser.Common.Extensions
             }
         }
 
-        public static bool ContainsStartsWith(this List<string> lst, string value)
+        /// <summary>
+        /// Examine a list of strings assumed to be file paths to see if it contains a parent of 
+        /// the provided path.
+        /// </summary>
+        /// <param name="lst"></param>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static bool ContainsParentFolder(this List<string> lst, string path)
         {
             foreach (var str in lst)
             {
-                if (str.StartsWith(value, StringComparison.OrdinalIgnoreCase)) return true;
+                //this should be a little quicker than examining each actual parent folder...
+                if (path.Equals(str,StringComparison.OrdinalIgnoreCase) 
+                    || (path.StartsWith(str, StringComparison.OrdinalIgnoreCase) && path[str.Length-1] == '\\')) return true;
             }
             return false;
         }

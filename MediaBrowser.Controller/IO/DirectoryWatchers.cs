@@ -30,7 +30,7 @@ namespace MediaBrowser.Controller.IO
             {
                 foreach (string path in folder.PhysicalLocations)
                 {
-                    if (Path.IsPathRooted(path) && !pathsToWatch.ContainsStartsWith(path))
+                    if (Path.IsPathRooted(path) && !pathsToWatch.ContainsParentFolder(path))
                     {
                         pathsToWatch.Add(path);
                     }
