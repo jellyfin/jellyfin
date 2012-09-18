@@ -36,5 +36,26 @@ namespace MediaBrowser.Common.Extensions
             }
             return false;
         }
+
+        /// <summary>
+        /// Helper method for Dictionaries since they throw on not-found keys
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="dictionary"></param>
+        /// <param name="key"></param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
+        public static U GetValueOrDefault<T, U>(this Dictionary<T, U> dictionary, T key, U defaultValue)
+        {
+            U val;
+            if (!dictionary.TryGetValue(key, out val))
+            {
+                val = defaultValue;
+            }
+            return val;
+
+        }
+
     }
 }
