@@ -137,6 +137,23 @@ namespace MediaBrowser.Api.HttpHandlers
             return date;
         }
 
+        protected override async Task<string> GetETag()
+        {
+            string tag = string.Empty;
+
+            var entity = await GetSourceEntity().ConfigureAwait(false);
+
+            foreach (var processor in Kernel.Instance.ImageProcessors)
+            {
+                if (processor.IsConfiguredToProcess(entity, ImageType, ImageIndex))
+                {
+                    tag += processor.ProcessingConfigurationDateLastModifiedUtc.Ticks.ToString();
+                }
+            }
+
+            return tag;
+        }
+
         private int ImageIndex
         {
             get

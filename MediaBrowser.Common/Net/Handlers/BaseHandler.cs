@@ -192,6 +192,13 @@ namespace MediaBrowser.Common.Net.Handlers
 
                 ctx.Response.ContentType = await GetContentType().ConfigureAwait(false);
 
+                string etag = await GetETag().ConfigureAwait(false);
+
+                if (!string.IsNullOrEmpty(etag))
+                {
+                    ctx.Response.Headers["ETag"] = etag;
+                }
+
                 TimeSpan cacheDuration = CacheDuration;
 
                 DateTime? lastDateModified = await GetLastDateModified().ConfigureAwait(false);
@@ -205,7 +212,11 @@ namespace MediaBrowser.Common.Net.Handlers
                         // If the cache hasn't expired yet just return a 304
                         if (IsCacheValid(ifModifiedSince.ToUniversalTime(), cacheDuration, lastDateModified))
                         {
-                            StatusCode = 304;
+                            // ETag must also match (if supplied)
+                            if ((etag ?? string.Empty).Equals(ctx.Request.Headers["If-None-Match"] ?? string.Empty))
+                            {
+                                StatusCode = 304;
+                            }
                         }
                     }
                 }
@@ -309,6 +320,11 @@ namespace MediaBrowser.Common.Net.Handlers
             response.Headers[HttpResponseHeader.CacheControl] = "public, max-age=" + Convert.ToInt32(duration.TotalSeconds);
             response.Headers[HttpResponseHeader.Expires] = now.Add(duration).ToString("r");
             response.Headers[HttpResponseHeader.LastModified] = lastModified.ToString("r");
+        }
+
+        protected virtual Task<string> GetETag()
+        {
+            return Task.FromResult<string>(string.Empty);
         }
 
         /// <summary>
