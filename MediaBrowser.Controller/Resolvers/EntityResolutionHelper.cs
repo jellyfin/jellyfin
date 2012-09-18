@@ -24,7 +24,9 @@ namespace MediaBrowser.Controller.Resolvers
             "video_ts",
             "audio_ts",
             "ps3_update",
-            "ps3_vprm"
+            "ps3_vprm",
+            "adv_obj",
+            "hvdvd_ts"
         };
         /// <summary>
         /// Determines whether a path should be resolved or ignored entirely - called before we even look at the contents
