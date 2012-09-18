@@ -3,6 +3,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Model.Weather;
 using System;
 using System.ComponentModel.Composition;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -27,7 +28,7 @@ namespace MediaBrowser.Api.HttpHandlers
                 zipCode = Kernel.Instance.Configuration.WeatherZipCode;
             }
 
-            return Kernel.Instance.WeatherClient.GetWeatherInfoAsync(zipCode);
+            return Kernel.Instance.WeatherProviders.First().GetWeatherInfoAsync(zipCode);
         }
 
         /// <summary>

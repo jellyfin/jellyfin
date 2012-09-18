@@ -2,11 +2,9 @@
 using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Weather;
 using System;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Cache;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Weather
@@ -15,21 +13,10 @@ namespace MediaBrowser.Controller.Weather
     /// Based on http://www.worldweatheronline.com/free-weather-feed.aspx
     /// The classes in this file are a reproduction of the json output, which will then be converted to our weather model classes
     /// </summary>
-    public class WeatherClient : IDisposable
+    [Export(typeof(BaseWeatherProvider))]
+    public class WeatherProvider : BaseWeatherProvider
     {
-        private HttpClient HttpClient { get; set; }
-
-        public WeatherClient()
-        {
-            var handler = new WebRequestHandler { };
-
-            handler.AutomaticDecompression = DecompressionMethods.Deflate;
-            handler.CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate);
-
-            HttpClient = new HttpClient(handler);
-        }
-
-        public async Task<WeatherInfo> GetWeatherInfoAsync(string zipCode)
+        public override async Task<WeatherInfo> GetWeatherInfoAsync(string zipCode)
         {
             if (string.IsNullOrWhiteSpace(zipCode))
             {
@@ -72,11 +59,6 @@ namespace MediaBrowser.Controller.Weather
             }
 
             return info;
-        }
-
-        public void Dispose()
-        {
-            HttpClient.Dispose();
         }
     }
 

@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -73,6 +72,12 @@ namespace MediaBrowser.Common.Kernel
         private IEnumerable<BaseHandler> HttpHandlers { get; set; }
 
         /// <summary>
+        /// Gets the list of currently registered Loggers
+        /// </summary>
+        [ImportMany(typeof(BaseLogger))]
+        public IEnumerable<BaseLogger> Loggers { get; set; }
+
+        /// <summary>
         /// Both the Ui and server will have a built-in HttpServer.
         /// People will inevitably want remote control apps so it's needed in the Ui too.
         /// </summary>
@@ -82,6 +87,8 @@ namespace MediaBrowser.Common.Kernel
         /// This subscribes to HttpListener requests and finds the appropate BaseHandler to process it
         /// </summary>
         private IDisposable HttpListener { get; set; }
+
+        private CompositionContainer CompositionContainer { get; set; }
 
         protected virtual string HttpServerUrlPrefix
         {
@@ -101,13 +108,13 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         public async Task Init(IProgress<TaskProgress> progress)
         {
+            Logger.Kernel = this;
+
             // Performs initializations that only occur once
             InitializeInternal(progress);
 
             // Performs initializations that can be reloaded at anytime
             await Reload(progress).ConfigureAwait(false);
-
-            ReportProgress(progress, "Loading Complete");
         }
 
         /// <summary>
@@ -116,8 +123,6 @@ namespace MediaBrowser.Common.Kernel
         protected virtual void InitializeInternal(IProgress<TaskProgress> progress)
         {
             ApplicationPaths = new TApplicationPathsType();
-
-            ReloadLogger();
 
             ReportProgress(progress, "Loading Configuration");
             ReloadConfiguration();
@@ -136,6 +141,8 @@ namespace MediaBrowser.Common.Kernel
             await ReloadInternal(progress).ConfigureAwait(false);
 
             OnReloadCompleted(progress);
+
+            ReportProgress(progress, "Kernel.Reload Complete");
         }
 
         /// <summary>
@@ -152,23 +159,6 @@ namespace MediaBrowser.Common.Kernel
         }
 
         /// <summary>
-        /// Disposes the current logger and creates a new one
-        /// </summary>
-        private void ReloadLogger()
-        {
-            DisposeLogger();
-
-            DateTime now = DateTime.Now;
-
-            string logFilePath = Path.Combine(ApplicationPaths.LogDirectoryPath, "log-" + now.ToString("dMyyyy") + "-" + now.Ticks + ".log");
-
-            Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
-            Trace.AutoFlush = true;
-
-            Logger.LoggerInstance = new TraceLogger();
-        }
-
-        /// <summary>
         /// Uses MEF to locate plugins
         /// Subclasses can use this to locate types within plugins
         /// </summary>
@@ -176,14 +166,13 @@ namespace MediaBrowser.Common.Kernel
         {
             DisposeComposableParts();
 
-            var container = GetCompositionContainer(includeCurrentAssembly: true);
+            CompositionContainer = GetCompositionContainer(includeCurrentAssembly: true);
 
-            container.ComposeParts(this);
+            CompositionContainer.ComposeParts(this);
 
             OnComposablePartsLoaded();
 
-            container.Catalog.Dispose();
-            container.Dispose();
+            CompositionContainer.Catalog.Dispose();
         }
 
         /// <summary>
@@ -198,8 +187,7 @@ namespace MediaBrowser.Common.Kernel
             var catalog = new AggregateCatalog(pluginAssemblies.Select(a => new AssemblyCatalog(a)));
 
             // Include composable parts in the Common assembly 
-            // Uncomment this if it's ever needed
-            //catalog.Catalogs.Add(new AssemblyCatalog(Assembly.GetExecutingAssembly()));
+            catalog.Catalogs.Add(new AssemblyCatalog(Assembly.GetExecutingAssembly()));
 
             if (includeCurrentAssembly)
             {
@@ -215,8 +203,13 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         protected virtual void OnComposablePartsLoaded()
         {
+            foreach (var logger in Loggers)
+            {
+                logger.Initialize(this);
+            }
+
             // Start-up each plugin
-            foreach (BasePlugin plugin in Plugins)
+            foreach (var plugin in Plugins)
             {
                 plugin.Initialize(this);
             }
@@ -230,17 +223,16 @@ namespace MediaBrowser.Common.Kernel
             //Configuration information for anything other than server-specific configuration will have to come via the API... -ebr
 
             // Deserialize config
-            if (!File.Exists(ApplicationPaths.SystemConfigurationFilePath))
+            // Use try/catch to avoid the extra file system lookup using File.Exists
+            try
+            {
+                Configuration = XmlSerializer.DeserializeFromFile<TConfigurationType>(ApplicationPaths.SystemConfigurationFilePath);
+            }
+            catch (FileNotFoundException)
             {
                 Configuration = new TConfigurationType();
                 XmlSerializer.SerializeToFile(Configuration, ApplicationPaths.SystemConfigurationFilePath);
             }
-            else
-            {
-                Configuration = XmlSerializer.DeserializeFromFile<TConfigurationType>(ApplicationPaths.SystemConfigurationFilePath);
-            }
-
-            Logger.LoggerInstance.LogSeverity = Configuration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info;
         }
 
         /// <summary>
@@ -275,11 +267,9 @@ namespace MediaBrowser.Common.Kernel
         {
             Logger.LogInfo("Beginning Kernel.Dispose");
 
-            DisposeComposableParts();
-
             DisposeHttpServer();
 
-            DisposeLogger();
+            DisposeComposableParts();
         }
 
         /// <summary>
@@ -287,22 +277,9 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         protected virtual void DisposeComposableParts()
         {
-            DisposePlugins();
-        }
-
-        /// <summary>
-        /// Disposes all plugins
-        /// </summary>
-        private void DisposePlugins()
-        {
-            if (Plugins != null)
+            if (CompositionContainer != null)
             {
-                Logger.LogInfo("Disposing Plugins");
-
-                foreach (BasePlugin plugin in Plugins)
-                {
-                    plugin.Dispose();
-                }
+                CompositionContainer.Dispose();
             }
         }
 
@@ -325,21 +302,6 @@ namespace MediaBrowser.Common.Kernel
         }
 
         /// <summary>
-        /// Disposes the current Logger instance
-        /// </summary>
-        private void DisposeLogger()
-        {
-            Trace.Listeners.Clear();
-
-            if (Logger.LoggerInstance != null)
-            {
-                Logger.LogInfo("Disposing Logger");
-
-                Logger.LoggerInstance.Dispose();
-            }
-        }
-
-        /// <summary>
         /// Gets the current application version
         /// </summary>
         public Version ApplicationVersion
@@ -354,10 +316,7 @@ namespace MediaBrowser.Common.Kernel
         {
             progress.Report(new TaskProgress { Description = message });
 
-            if (Logger.LoggerInstance != null)
-            {
-                Logger.LogInfo(message);
-            }
+            Logger.LogInfo(message);
         }
 
         BaseApplicationPaths IKernel.ApplicationPaths
@@ -373,6 +332,7 @@ namespace MediaBrowser.Common.Kernel
 
         Task Init(IProgress<TaskProgress> progress);
         Task Reload(IProgress<TaskProgress> progress);
+        IEnumerable<BaseLogger> Loggers { get; }
         void Dispose();
     }
 }
