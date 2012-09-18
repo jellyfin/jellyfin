@@ -79,6 +79,14 @@ namespace MediaBrowser.Controller.Resolvers.Movies
                     VideoType = VideoType.BluRay
                 };
             }
+            else if (args.IsHDDVDFolder)
+            {
+                return new Movie()
+                {
+                    Path = args.Path,
+                    VideoType = VideoType.HdDvd
+                };
+            }
 
             // Loop through each child file/folder and see if we find a video
             foreach (var child in args.FileSystemChildren)

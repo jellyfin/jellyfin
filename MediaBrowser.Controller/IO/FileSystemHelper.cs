@@ -66,6 +66,7 @@ namespace MediaBrowser.Controller.IO
                         //filtered - see if it is one of our "indicator" folders and mark it now - no reason to search for it again
                         args.IsBDFolder |= file.cFileName.Equals("bdmv", StringComparison.OrdinalIgnoreCase);
                         args.IsDVDFolder |= file.cFileName.Equals("video_ts", StringComparison.OrdinalIgnoreCase);
+                        args.IsHDDVDFolder |= file.cFileName.Equals("hvdvd_ts", StringComparison.OrdinalIgnoreCase);
                     }
                 }
             }

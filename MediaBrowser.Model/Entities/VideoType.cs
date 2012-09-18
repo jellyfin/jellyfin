@@ -6,6 +6,7 @@ namespace MediaBrowser.Model.Entities
         VideoFile,
         Iso,
         Dvd,
-        BluRay
+        BluRay,
+        HdDvd
     }
 }

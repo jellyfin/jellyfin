@@ -37,6 +37,7 @@ namespace MediaBrowser.Controller.Library
 
         public bool IsBDFolder { get; set; }
         public bool IsDVDFolder { get; set; }
+        public bool IsHDDVDFolder { get; set; }
 
         public WIN32_FIND_DATA? GetFileSystemEntry(string path)
         {
