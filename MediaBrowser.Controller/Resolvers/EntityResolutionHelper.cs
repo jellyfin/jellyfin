@@ -64,7 +64,7 @@ namespace MediaBrowser.Controller.Resolvers
             }
             else if (args.IsMetadataFolder)
             {
-                // Don't retrieve these children here - we'll get them in the season resolver
+                // I think this is redundant, but...
                 resolve = false;
             }
 
