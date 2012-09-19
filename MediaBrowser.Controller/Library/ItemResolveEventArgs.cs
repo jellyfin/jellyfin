@@ -39,13 +39,10 @@ namespace MediaBrowser.Controller.Library
         public bool IsDVDFolder { get; set; }
         public bool IsHDDVDFolder { get; set; }
 
-        public bool IsMetadataFolder
-        {
-            get
-            {
-                return this.FileInfo.cFileName.Equals("metadata", StringComparison.OrdinalIgnoreCase);
-            }
-        }
+        /// <summary>
+        /// Store these to reduce disk access in Resolvers
+        /// </summary>
+        public string[] MetadataFiles { get; set; }
 
         public WIN32_FIND_DATA? GetFileSystemEntry(string path)
         {

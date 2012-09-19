@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Library;
@@ -67,6 +68,12 @@ namespace MediaBrowser.Controller.IO
                         args.IsBDFolder |= file.cFileName.Equals("bdmv", StringComparison.OrdinalIgnoreCase);
                         args.IsDVDFolder |= file.cFileName.Equals("video_ts", StringComparison.OrdinalIgnoreCase);
                         args.IsHDDVDFolder |= file.cFileName.Equals("hvdvd_ts", StringComparison.OrdinalIgnoreCase);
+
+                        //and check to see if it is a metadata folder and collect contents now if so
+                        if (IsMetadataFolder(file.cFileName))
+                        {
+                            args.MetadataFiles = Directory.GetFiles(Path.Combine(args.Path, "metadata"), "*", SearchOption.TopDirectoryOnly);
+                        }
                     }
                 }
             }
@@ -81,6 +88,11 @@ namespace MediaBrowser.Controller.IO
                 args.FileSystemChildren = returnChildren.ToArray();
             }
             return args;
+        }
+
+        public static bool IsMetadataFolder(string path)
+        {
+            return path.TrimEnd('\\').EndsWith("metadata", StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool IsVideoFile(string path)
