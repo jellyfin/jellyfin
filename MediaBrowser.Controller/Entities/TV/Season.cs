@@ -7,7 +7,13 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <summary>
         /// Store these to reduce disk access in Episode Resolver
         /// </summary>
-        public string[] MetadataFiles { get; set; }
+        public string[] MetadataFiles
+        {
+            get
+            {
+                return ResolveArgs.MetadataFiles ?? new string[] { };
+            }
+        }
 
         /// <summary>
         /// Determines if the metafolder contains a given file

@@ -18,6 +18,7 @@ namespace MediaBrowser.Controller.Resolvers
         public static List<string> IgnoreFolders = new List<string>()
         {
             "trailers",
+            "metadata",
             "bdmv",
             "certificate",
             "backup",
@@ -60,11 +61,6 @@ namespace MediaBrowser.Controller.Resolvers
             if (args.ContainsFile(".ignore"))
             {
                 // Ignore any folders containing a file called .ignore
-                resolve = false;
-            }
-            else if (args.IsMetadataFolder)
-            {
-                // I think this is redundant, but...
                 resolve = false;
             }
 
