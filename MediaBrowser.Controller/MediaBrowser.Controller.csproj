@@ -59,7 +59,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Drawing\BaseImageProcessor.cs" />
     <Compile Include="Drawing\DrawingUtils.cs" />
     <Compile Include="Drawing\ImageProcessor.cs" />
     <Compile Include="Entities\Audio.cs" />

@@ -1,12 +1,12 @@
-﻿using System;
+﻿using MediaBrowser.Common.Serialization;
+using System;
 using System.IO;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Serialization;
 
 namespace MediaBrowser.Common.Net.Handlers
 {
     public abstract class BaseSerializationHandler<T> : BaseHandler
-        where T : class 
+        where T : class
     {
         public SerializationFormat SerializationFormat
         {
@@ -22,61 +22,61 @@ namespace MediaBrowser.Common.Net.Handlers
                 return (SerializationFormat)Enum.Parse(typeof(SerializationFormat), format, true);
             }
         }
-        
-        public override Task<string> GetContentType()
-        {
-            switch (SerializationFormat)
-            {
-                case SerializationFormat.Jsv:
-                    return Task.FromResult("text/plain");
-                case SerializationFormat.Protobuf:
-                    return Task.FromResult("application/x-protobuf");
-                default:
-                    return Task.FromResult(MimeTypes.JsonMimeType);
-            }
-        }
 
-        private bool _objectToSerializeEnsured;
-        private T _objectToSerialize;
-     
-        private async Task EnsureObjectToSerialize()
+        protected string ContentType
         {
-            if (!_objectToSerializeEnsured)
+            get
             {
-                _objectToSerialize = await GetObjectToSerialize().ConfigureAwait(false);
-
-                if (_objectToSerialize == null)
+                switch (SerializationFormat)
                 {
-                    StatusCode = 404;
+                    case SerializationFormat.Jsv:
+                        return "text/plain";
+                    case SerializationFormat.Protobuf:
+                        return "application/x-protobuf";
+                    default:
+                        return MimeTypes.JsonMimeType;
                 }
-
-                _objectToSerializeEnsured = true;
             }
         }
+
+        protected override async Task<ResponseInfo> GetResponseInfo()
+        {
+            ResponseInfo info = new ResponseInfo
+            {
+                ContentType = ContentType
+            };
+
+            _objectToSerialize = await GetObjectToSerialize().ConfigureAwait(false);
+
+            if (_objectToSerialize == null)
+            {
+                info.StatusCode = 404;
+            }
+
+            return info;
+        }
+
+        private T _objectToSerialize;
 
         protected abstract Task<T> GetObjectToSerialize();
 
-        protected override Task PrepareResponse()
+        protected override Task WriteResponseToOutputStream(Stream stream)
         {
-            return EnsureObjectToSerialize();
-        }
-
-        protected async override Task WriteResponseToOutputStream(Stream stream)
-        {
-            await EnsureObjectToSerialize().ConfigureAwait(false);
-
-            switch (SerializationFormat)
+            return Task.Run(() =>
             {
-                case SerializationFormat.Jsv:
-                    JsvSerializer.SerializeToStream(_objectToSerialize, stream);
-                    break;
-                case SerializationFormat.Protobuf:
-                    ProtobufSerializer.SerializeToStream(_objectToSerialize, stream);
-                    break;
-                default:
-                    JsonSerializer.SerializeToStream(_objectToSerialize, stream);
-                    break;
-            }
+                switch (SerializationFormat)
+                {
+                    case SerializationFormat.Jsv:
+                        JsvSerializer.SerializeToStream(_objectToSerialize, stream);
+                        break;
+                    case SerializationFormat.Protobuf:
+                        ProtobufSerializer.SerializeToStream(_objectToSerialize, stream);
+                        break;
+                    default:
+                        JsonSerializer.SerializeToStream(_objectToSerialize, stream);
+                        break;
+                }
+            });
         }
     }
 

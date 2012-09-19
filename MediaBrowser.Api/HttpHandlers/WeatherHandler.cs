@@ -16,7 +16,7 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             return ApiService.IsApiUrlMatch("weather", request);
         }
-        
+
         protected override Task<WeatherInfo> GetObjectToSerialize()
         {
             // If a specific zip code was requested on the query string, use that. Otherwise use the value from configuration
@@ -31,15 +31,13 @@ namespace MediaBrowser.Api.HttpHandlers
             return Kernel.Instance.WeatherProviders.First().GetWeatherInfoAsync(zipCode);
         }
 
-        /// <summary>
-        /// Tell the client to cache the weather info for 15 minutes
-        /// </summary>
-        public override TimeSpan CacheDuration
+        protected override async Task<ResponseInfo> GetResponseInfo()
         {
-            get
-            {
-                return TimeSpan.FromMinutes(15);
-            }
+            var info = await base.GetResponseInfo().ConfigureAwait(false);
+
+            info.CacheDuration = TimeSpan.FromMinutes(15);
+
+            return info;
         }
     }
 }

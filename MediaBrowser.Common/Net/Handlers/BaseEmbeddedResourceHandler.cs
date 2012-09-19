@@ -13,11 +13,6 @@ namespace MediaBrowser.Common.Net.Handlers
 
         protected string ResourcePath { get; set; }
 
-        public override Task<string> GetContentType()
-        {
-            return Task.FromResult(MimeTypes.GetMimeType(ResourcePath));
-        }
-
         protected override Task WriteResponseToOutputStream(Stream stream)
         {
             return GetEmbeddedResourceStream().CopyToAsync(stream);
