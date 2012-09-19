@@ -90,14 +90,15 @@ namespace MediaBrowser.Api.HttpHandlers
             }
         }
 
-        public override Task<string> GetContentType()
+        protected override Task<ResponseInfo> GetResponseInfo()
         {
-            return Task.FromResult(MimeTypes.GetMimeType("." + GetConversionOutputFormat()));
-        }
+            ResponseInfo info = new ResponseInfo
+            {
+                ContentType = MimeTypes.GetMimeType("." + GetConversionOutputFormat()),
+                CompressResponse = false
+            };
 
-        public override bool ShouldCompressResponse(string contentType)
-        {
-            return false;
+            return Task.FromResult<ResponseInfo>(info);
         }
 
         public override Task ProcessRequest(HttpListenerContext ctx)

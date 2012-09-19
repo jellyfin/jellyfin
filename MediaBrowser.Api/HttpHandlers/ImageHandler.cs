@@ -7,7 +7,6 @@ using MediaBrowser.Model.Entities;
 using System;
 using System.ComponentModel.Composition;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -82,76 +81,32 @@ namespace MediaBrowser.Api.HttpHandlers
             return ImageProcessor.GetImagePath(entity, ImageType, ImageIndex);
         }
 
-        public override async Task<string> GetContentType()
-        {
-            if (Kernel.Instance.ImageProcessors.Any(i => i.RequiresTransparency))
-            {
-                return MimeTypes.GetMimeType(".png");
-            }
-
-            return MimeTypes.GetMimeType(await GetImagePath().ConfigureAwait(false));
-        }
-
-        public override TimeSpan CacheDuration
-        {
-            get { return TimeSpan.FromDays(365); }
-        }
-
-        protected override async Task<DateTime?> GetLastDateModified()
+        protected async override Task<ResponseInfo> GetResponseInfo()
         {
             string path = await GetImagePath().ConfigureAwait(false);
 
-            DateTime date = File.GetLastWriteTimeUtc(path);
+            ResponseInfo info = new ResponseInfo
+            {
+                CacheDuration = TimeSpan.FromDays(365),
+                ContentType = MimeTypes.GetMimeType(path)
+            };
+
+            DateTime? date = File.GetLastWriteTimeUtc(path);
 
             // If the file does not exist it will return jan 1, 1601
             // http://msdn.microsoft.com/en-us/library/system.io.file.getlastwritetimeutc.aspx
-            if (date.Year == 1601)
+            if (date.Value.Year == 1601)
             {
                 if (!File.Exists(path))
                 {
-                    StatusCode = 404;
-                    return null;
+                    info.StatusCode = 404;
+                    date = null;
                 }
             }
 
-            return await GetMostRecentDateModified(date);
-        }
+            info.DateLastModified = date;
 
-        private async Task<DateTime> GetMostRecentDateModified(DateTime imageFileLastDateModified)
-        {
-            var date = imageFileLastDateModified;
-
-            var entity = await GetSourceEntity().ConfigureAwait(false);
-            
-            foreach (var processor in Kernel.Instance.ImageProcessors)
-            {
-                if (processor.IsConfiguredToProcess(entity, ImageType, ImageIndex))
-                {
-                    if (processor.ProcessingConfigurationDateLastModifiedUtc > date)
-                    {
-                        date = processor.ProcessingConfigurationDateLastModifiedUtc;
-                    }
-                }
-            }
-
-            return date;
-        }
-
-        protected override async Task<string> GetETag()
-        {
-            string tag = string.Empty;
-
-            var entity = await GetSourceEntity().ConfigureAwait(false);
-
-            foreach (var processor in Kernel.Instance.ImageProcessors)
-            {
-                if (processor.IsConfiguredToProcess(entity, ImageType, ImageIndex))
-                {
-                    tag += processor.ProcessingConfigurationDateLastModifiedUtc.Ticks.ToString();
-                }
-            }
-
-            return tag;
+            return info;
         }
 
         private int ImageIndex

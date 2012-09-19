@@ -16,23 +16,22 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             return ApiService.IsApiUrlMatch("serverconfiguration", request);
         }
-        
+
         protected override Task<ServerConfiguration> GetObjectToSerialize()
         {
             return Task.FromResult(Kernel.Instance.Configuration);
         }
 
-        public override TimeSpan CacheDuration
+        protected override async Task<ResponseInfo> GetResponseInfo()
         {
-            get
-            {
-                return TimeSpan.FromDays(7);
-            }
-        }
+            var info = await base.GetResponseInfo().ConfigureAwait(false);
 
-        protected override Task<DateTime?> GetLastDateModified()
-        {
-            return Task.FromResult<DateTime?>(File.GetLastWriteTimeUtc(Kernel.Instance.ApplicationPaths.SystemConfigurationFilePath));
+            info.DateLastModified =
+                File.GetLastWriteTimeUtc(Kernel.Instance.ApplicationPaths.SystemConfigurationFilePath);
+
+            info.CacheDuration = TimeSpan.FromDays(7);
+
+            return info;
         }
     }
 }

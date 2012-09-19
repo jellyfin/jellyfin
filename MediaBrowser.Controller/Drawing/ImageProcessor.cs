@@ -59,17 +59,6 @@ namespace MediaBrowser.Controller.Drawing
 
             ImageFormat outputFormat = originalImage.RawFormat;
 
-            // Run Kernel image processors
-            if (Kernel.Instance.ImageProcessors.Any())
-            {
-                ExecuteAdditionalImageProcessors(originalImage, thumbnail, thumbnailGraph, entity, imageType, imageIndex);
-
-                if (Kernel.Instance.ImageProcessors.Any(i => i.RequiresTransparency))
-                {
-                    outputFormat = ImageFormat.Png;
-                }
-            }
-
             // Write to the output stream
             SaveImage(outputFormat, thumbnail, toStream, quality);
 
@@ -107,27 +96,6 @@ namespace MediaBrowser.Controller.Drawing
             }
 
             return entity.PrimaryImagePath;
-        }
-
-
-        /// <summary>
-        /// Executes additional image processors that are registered with the Kernel
-        /// </summary>
-        /// <param name="originalImage">The original Image, before re-sizing</param>
-        /// <param name="bitmap">The bitmap holding the original image, after re-sizing</param>
-        /// <param name="graphics">The graphics surface on which the output is drawn</param>
-        /// <param name="entity">The entity that owns the image</param>
-        /// <param name="imageType">The image type</param>
-        /// <param name="imageIndex">The image index (currently only used with backdrops)</param>
-        private static void ExecuteAdditionalImageProcessors(Image originalImage, Bitmap bitmap, Graphics graphics, BaseEntity entity, ImageType imageType, int imageIndex)
-        {
-            foreach (var processor in Kernel.Instance.ImageProcessors)
-            {
-                if (processor.IsConfiguredToProcess(entity, imageType, imageIndex))
-                {
-                    processor.ProcessImage(originalImage, bitmap, graphics, entity, imageType, imageIndex);
-                }
-            }
         }
 
         public static void SaveImage(ImageFormat outputFormat, Image newImage, Stream toStream, int? quality)

@@ -17,7 +17,7 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             return ApiService.IsApiUrlMatch("pluginconfiguration", request);
         }
-        
+
         private BasePlugin _plugin;
         private BasePlugin Plugin
         {
@@ -39,18 +39,15 @@ namespace MediaBrowser.Api.HttpHandlers
             return Task.FromResult(Plugin.Configuration);
         }
 
-        public override TimeSpan CacheDuration
+        protected override async Task<ResponseInfo> GetResponseInfo()
         {
-            get
-            {
-                return TimeSpan.FromDays(7);
-            }
-        }
+            var info = await base.GetResponseInfo().ConfigureAwait(false);
 
-        protected override Task<DateTime?> GetLastDateModified()
-        {
-            return Task.FromResult<DateTime?>(Plugin.ConfigurationDateLastModified);
-        }
+            info.DateLastModified = Plugin.ConfigurationDateLastModified;
 
+            info.CacheDuration = TimeSpan.FromDays(7);
+
+            return info;
+        }
     }
 }

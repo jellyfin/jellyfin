@@ -15,8 +15,8 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             return ApiService.IsApiUrlMatch("pluginassembly", request);
         }
-        
-        public override Task<string> GetContentType()
+
+        protected override Task<ResponseInfo> GetResponseInfo()
         {
             throw new NotImplementedException();
         }

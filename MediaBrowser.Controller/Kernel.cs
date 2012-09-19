@@ -78,12 +78,6 @@ namespace MediaBrowser.Controller
         internal IBaseItemResolver[] EntityResolvers { get; private set; }
 
         /// <summary>
-        /// Gets the list of currently registered entity resolvers
-        /// </summary>
-        [ImportMany(typeof(BaseImageProcessor))]
-        public IEnumerable<BaseImageProcessor> ImageProcessors { get; private set; }
-
-        /// <summary>
         /// Creates a kernel based on a Data path, which is akin to our current programdata path
         /// </summary>
         public Kernel()

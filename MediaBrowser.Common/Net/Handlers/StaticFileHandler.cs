@@ -33,46 +33,7 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        private bool _sourceStreamEnsured;
-        private Stream _sourceStream;
-        private Stream SourceStream
-        {
-            get
-            {
-                EnsureSourceStream();
-                return _sourceStream;
-            }
-        }
-
-        private void EnsureSourceStream()
-        {
-            if (!_sourceStreamEnsured)
-            {
-                try
-                {
-                    _sourceStream = File.OpenRead(Path);
-                }
-                catch (FileNotFoundException ex)
-                {
-                    StatusCode = 404;
-                    Logger.LogException(ex);
-                }
-                catch (DirectoryNotFoundException ex)
-                {
-                    StatusCode = 404;
-                    Logger.LogException(ex);
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    StatusCode = 403;
-                    Logger.LogException(ex);
-                }
-                finally
-                {
-                    _sourceStreamEnsured = true;
-                }
-            }
-        }
+        private Stream SourceStream { get; set; }
 
         protected override bool SupportsByteRangeRequests
         {
@@ -82,7 +43,7 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        public override bool ShouldCompressResponse(string contentType)
+        private bool ShouldCompressResponse(string contentType)
         {
             // Can't compress these
             if (IsRangeRequest)
@@ -105,29 +66,41 @@ namespace MediaBrowser.Common.Net.Handlers
             return SourceStream.Length;
         }
 
-        protected override Task<DateTime?> GetLastDateModified()
+        protected override Task<ResponseInfo> GetResponseInfo()
         {
-            DateTime? value = null;
+            ResponseInfo info = new ResponseInfo
+            {
+                ContentType = MimeTypes.GetMimeType(Path),
+            };
 
-            EnsureSourceStream();
+            try
+            {
+                SourceStream = File.OpenRead(Path);
+            }
+            catch (FileNotFoundException ex)
+            {
+                info.StatusCode = 404;
+                Logger.LogException(ex);
+            }
+            catch (DirectoryNotFoundException ex)
+            {
+                info.StatusCode = 404;
+                Logger.LogException(ex);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                info.StatusCode = 403;
+                Logger.LogException(ex);
+            }
+
+            info.CompressResponse = ShouldCompressResponse(info.ContentType);
 
             if (SourceStream != null)
             {
-                value = File.GetLastWriteTimeUtc(Path);
+                info.DateLastModified = File.GetLastWriteTimeUtc(Path);
             }
 
-            return Task.FromResult(value);
-        }
-
-        public override Task<string> GetContentType()
-        {
-            return Task.FromResult(MimeTypes.GetMimeType(Path));
-        }
-
-        protected override Task PrepareResponse()
-        {
-            EnsureSourceStream();
-            return Task.FromResult<object>(null);
+            return Task.FromResult<ResponseInfo>(info);
         }
 
         protected override Task WriteResponseToOutputStream(Stream stream)
