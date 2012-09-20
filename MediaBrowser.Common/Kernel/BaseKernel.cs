@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Logging;
+using MediaBrowser.Common.Mef;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Common.Plugins;
@@ -10,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using System.ComponentModel.Composition.Primitives;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -88,6 +90,9 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         private IDisposable HttpListener { get; set; }
 
+        /// <summary>
+        /// Gets the MEF CompositionContainer
+        /// </summary>
         private CompositionContainer CompositionContainer { get; set; }
 
         protected virtual string HttpServerUrlPrefix
@@ -184,18 +189,20 @@ namespace MediaBrowser.Common.Kernel
             // This will prevent the .dll file from getting locked, and allow us to replace it when needed
             IEnumerable<Assembly> pluginAssemblies = Directory.GetFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.TopDirectoryOnly).Select(f => Assembly.Load(File.ReadAllBytes((f))));
 
-            var catalog = new AggregateCatalog(pluginAssemblies.Select(a => new AssemblyCatalog(a)));
+            var catalogs = new List<ComposablePartCatalog>();
+
+            catalogs.AddRange(pluginAssemblies.Select(a => new AssemblyCatalog(a)));
 
             // Include composable parts in the Common assembly 
-            catalog.Catalogs.Add(new AssemblyCatalog(Assembly.GetExecutingAssembly()));
+            catalogs.Add(new AssemblyCatalog(Assembly.GetExecutingAssembly()));
 
             if (includeCurrentAssembly)
             {
                 // Include composable parts in the subclass assembly
-                catalog.Catalogs.Add(new AssemblyCatalog(GetType().Assembly));
+                catalogs.Add(new AssemblyCatalog(GetType().Assembly));
             }
 
-            return new CompositionContainer(catalog);
+            return MefUtils.GetSafeCompositionContainer(catalogs);
         }
 
         /// <summary>

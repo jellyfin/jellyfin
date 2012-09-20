@@ -31,6 +31,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -48,6 +51,12 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Pages\LoginPage.xaml.cs">
+      <DependentUpon>LoginPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Resources\AppResources.cs" />
+    <Compile Include="Converters\TileBackgroundConverter.cs" />
+    <Compile Include="Converters\WeatherImageConverter.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -90,9 +99,28 @@
       <Name>MediaBrowser.UI</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Page Include="Pages\LoginPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\AppResources.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\CurrentUserDefault.png" />
+    <Resource Include="Resources\Images\UserLoginDefault.png" />
+    <Resource Include="Resources\Images\Weather\Overcast.png" />
+    <Resource Include="Resources\Images\Weather\Rain.png" />
+    <Resource Include="Resources\Images\Weather\Snow.png" />
+    <Resource Include="Resources\Images\Weather\Sunny.png" />
+    <Resource Include="Resources\Images\Weather\Thunder.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\ProgramData\Plugins\" /y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\ProgramData-Server\Plugins\" /y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
