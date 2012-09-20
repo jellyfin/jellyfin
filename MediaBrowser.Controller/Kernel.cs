@@ -201,10 +201,10 @@ namespace MediaBrowser.Controller
             //Task.Delay(30000); //let's wait and see if more data gets filled in...
             var allChildren = RootFolder.RecursiveChildren;
             Logger.LogDebugInfo(string.Format("Loading complete.  Movies: {0} Episodes: {1} Folders: {2}", allChildren.OfType<Entities.Movies.Movie>().Count(), allChildren.OfType<Entities.TV.Episode>().Count(), allChildren.Where(i => i is Folder && !(i is Series || i is Season)).Count()));
-            foreach (var child in allChildren)
-            {
-                Logger.LogDebugInfo("(" + child.GetType().Name + ") " + child.Name + " (" + child.Path + ")");
-            }
+            //foreach (var child in allChildren)
+            //{
+            //    Logger.LogDebugInfo("(" + child.GetType().Name + ") " + child.Name + " (" + child.Path + ")");
+            //}
         }
 
         /// <summary>
@@ -255,36 +255,6 @@ namespace MediaBrowser.Controller
             }
 
             return result;
-        }
-
-        public async Task ReloadItem(BaseItem item)
-        {
-            var folder = item as Folder;
-
-            if (folder != null && folder.IsRoot)
-            {
-                await ReloadRoot().ConfigureAwait(false);
-            }
-            else
-            {
-                if (!Directory.Exists(item.Path) && !File.Exists(item.Path))
-                {
-                    await ReloadItem(item.Parent).ConfigureAwait(false);
-                    return;
-                }
-
-                BaseItem newItem = await ItemController.GetItem(item.Path, item.Parent).ConfigureAwait(false);
-
-                List<BaseItem> children = item.Parent.Children.ToList();
-
-                int index = children.IndexOf(item);
-
-                children.RemoveAt(index);
-
-                children.Insert(index, newItem);
-
-                //item.Parent.ActualChildren = children.ToArray();
-            }
         }
 
         /// <summary>

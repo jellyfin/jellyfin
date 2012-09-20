@@ -16,7 +16,7 @@ namespace MediaBrowser.Controller.IO
         private Timer updateTimer;
         private List<string> affectedPaths = new List<string>();
 
-        private const int TimerDelayInSeconds = 5;
+        private const int TimerDelayInSeconds = 30;
 
         public void Start()
         {
@@ -44,12 +44,13 @@ namespace MediaBrowser.Controller.IO
                 var watcher = new FileSystemWatcher(path, "*") { }; 
                 watcher.IncludeSubdirectories = true;
 
-                watcher.Changed += watcher_Changed;
+                //watcher.Changed += watcher_Changed;
 
                 // All the others seem to trigger change events on the parent, so let's keep it simple for now.
-                //watcher.Created += watcher_Changed;
-                //watcher.Deleted += watcher_Changed;
-                //watcher.Renamed += watcher_Changed;
+                //   Actually, we really need to only watch created, deleted and renamed as changed fires too much -ebr
+                watcher.Created += watcher_Changed;
+                watcher.Deleted += watcher_Changed;
+                watcher.Renamed += watcher_Changed;
 
                 watcher.EnableRaisingEvents = true;
                 FileSystemWatchers.Add(watcher);
@@ -58,9 +59,23 @@ namespace MediaBrowser.Controller.IO
 
         void watcher_Changed(object sender, FileSystemEventArgs e)
         {
-            if (!affectedPaths.Contains(e.FullPath))
+            Logger.LogDebugInfo("****** Watcher sees change of type " + e.ChangeType.ToString() + " to " + e.FullPath);
+            lock (affectedPaths)
             {
-                affectedPaths.Add(e.FullPath);
+                if (!affectedPaths.Contains(e.FullPath))
+                {
+                    Logger.LogDebugInfo("****** Adding " + e.FullPath + " to affected paths.");
+                    affectedPaths.Add(e.FullPath);
+                }
+                if (e.ChangeType == WatcherChangeTypes.Renamed)
+                {
+                    var renamedArgs = e as RenamedEventArgs;
+                    if (affectedPaths.Contains(renamedArgs.OldFullPath))
+                    {
+                    Logger.LogDebugInfo("****** Removing " + renamedArgs.OldFullPath + " from affected paths.");
+                    affectedPaths.Remove(renamedArgs.OldFullPath);
+                    }
+                }
             }
 
             if (updateTimer == null)
@@ -77,9 +92,12 @@ namespace MediaBrowser.Controller.IO
         {
             updateTimer.Dispose();
             updateTimer = null;
-
-            List<string> paths = affectedPaths;
-            affectedPaths = new List<string>();
+            List<string> paths;
+            lock (affectedPaths)
+            {
+                paths = affectedPaths;
+                affectedPaths = new List<string>();
+            }
 
             await ProcessPathChanges(paths).ConfigureAwait(false);
         }
@@ -106,14 +124,16 @@ namespace MediaBrowser.Controller.IO
                 return Kernel.Instance.ReloadRoot();
             }
 
-            return Task.WhenAll(itemsToRefresh.Select(i => Kernel.Instance.ReloadItem(i)));
+            foreach (var p in paths) Logger.LogDebugInfo("*********  "+ p + " reports change.");
+            foreach (var i in itemsToRefresh) Logger.LogDebugInfo("*********  "+i.Name + " will be refreshed.");
+            return Task.WhenAll(itemsToRefresh.Select(i => i.ChangedExternally()));
         }
 
         private BaseItem GetAffectedBaseItem(string path)
         {
             BaseItem item = null;
 
-            while (item == null)
+            while (item == null && !string.IsNullOrEmpty(path))
             {
                 item = Kernel.Instance.RootFolder.FindByPath(path);
 
