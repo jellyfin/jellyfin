@@ -1,13 +1,12 @@
-﻿using MediaBrowser.Common.Logging;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using System;
 using System.ComponentModel.Composition;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -20,8 +19,9 @@ namespace MediaBrowser.Api.HttpHandlers
         {
             return ApiService.IsApiUrlMatch("image", request);
         }
-        
+
         private string _imagePath;
+
         private async Task<string> GetImagePath()
         {
             _imagePath = _imagePath ?? await DiscoverImagePath();
@@ -29,119 +29,99 @@ namespace MediaBrowser.Api.HttpHandlers
             return _imagePath;
         }
 
+        private BaseEntity _sourceEntity;
+
+        private async Task<BaseEntity> GetSourceEntity()
+        {
+            if (_sourceEntity == null)
+            {
+                if (!string.IsNullOrEmpty(QueryString["personname"]))
+                {
+                    _sourceEntity =
+                        await Kernel.Instance.ItemController.GetPerson(QueryString["personname"]).ConfigureAwait(false);
+                }
+
+                else if (!string.IsNullOrEmpty(QueryString["genre"]))
+                {
+                    _sourceEntity =
+                        await Kernel.Instance.ItemController.GetGenre(QueryString["genre"]).ConfigureAwait(false);
+                }
+
+                else if (!string.IsNullOrEmpty(QueryString["year"]))
+                {
+                    _sourceEntity =
+                        await
+                        Kernel.Instance.ItemController.GetYear(int.Parse(QueryString["year"])).ConfigureAwait(false);
+                }
+
+                else if (!string.IsNullOrEmpty(QueryString["studio"]))
+                {
+                    _sourceEntity =
+                        await Kernel.Instance.ItemController.GetStudio(QueryString["studio"]).ConfigureAwait(false);
+                }
+
+                else if (!string.IsNullOrEmpty(QueryString["userid"]))
+                {
+                    _sourceEntity = ApiService.GetUserById(QueryString["userid"], false);
+                }
+
+                else
+                {
+                    _sourceEntity = ApiService.GetItemById(QueryString["id"]);
+                }
+            }
+
+            return _sourceEntity;
+        }
+
         private async Task<string> DiscoverImagePath()
         {
-            string personName = QueryString["personname"];
+            var entity = await GetSourceEntity().ConfigureAwait(false);
 
-            if (!string.IsNullOrEmpty(personName))
-            {
-                return (await Kernel.Instance.ItemController.GetPerson(personName).ConfigureAwait(false)).PrimaryImagePath;
-            }
-
-            string genreName = QueryString["genre"];
-
-            if (!string.IsNullOrEmpty(genreName))
-            {
-                return (await Kernel.Instance.ItemController.GetGenre(genreName).ConfigureAwait(false)).PrimaryImagePath;
-            }
-
-            string year = QueryString["year"];
-
-            if (!string.IsNullOrEmpty(year))
-            {
-                return (await Kernel.Instance.ItemController.GetYear(int.Parse(year)).ConfigureAwait(false)).PrimaryImagePath;
-            }
-
-            string studio = QueryString["studio"];
-
-            if (!string.IsNullOrEmpty(studio))
-            {
-                return (await Kernel.Instance.ItemController.GetStudio(studio).ConfigureAwait(false)).PrimaryImagePath;
-            }
-
-            string userId = QueryString["userid"];
-
-            if (!string.IsNullOrEmpty(userId))
-            {
-                return ApiService.GetUserById(userId, false).PrimaryImagePath;
-            }
-
-            BaseItem item = ApiService.GetItemById(QueryString["id"]);
-
-            string imageIndex = QueryString["index"];
-            int index = string.IsNullOrEmpty(imageIndex) ? 0 : int.Parse(imageIndex);
-
-            return GetImagePathFromTypes(item, ImageType, index);
+            return ImageProcessor.GetImagePath(entity, ImageType, ImageIndex);
         }
 
-        private Stream _sourceStream;
-        private async Task<Stream> GetSourceStream()
+        protected async override Task<ResponseInfo> GetResponseInfo()
         {
-            await EnsureSourceStream().ConfigureAwait(false);
-            return _sourceStream;
-        }
+            string path = await GetImagePath().ConfigureAwait(false);
 
-        private bool _sourceStreamEnsured;
-        private async Task EnsureSourceStream()
-        {
-            if (!_sourceStreamEnsured)
+            ResponseInfo info = new ResponseInfo
             {
-                try
+                CacheDuration = TimeSpan.FromDays(365),
+                ContentType = MimeTypes.GetMimeType(path)
+            };
+
+            DateTime? date = File.GetLastWriteTimeUtc(path);
+
+            // If the file does not exist it will return jan 1, 1601
+            // http://msdn.microsoft.com/en-us/library/system.io.file.getlastwritetimeutc.aspx
+            if (date.Value.Year == 1601)
+            {
+                if (!File.Exists(path))
                 {
-                    _sourceStream = File.OpenRead(await GetImagePath().ConfigureAwait(false));
-                }
-                catch (FileNotFoundException ex)
-                {
-                    StatusCode = 404;
-                    Logger.LogException(ex);
-                }
-                catch (DirectoryNotFoundException ex)
-                {
-                    StatusCode = 404;
-                    Logger.LogException(ex);
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    StatusCode = 403;
-                    Logger.LogException(ex);
-                }
-                finally
-                {
-                    _sourceStreamEnsured = true;
+                    info.StatusCode = 404;
+                    date = null;
                 }
             }
+
+            info.DateLastModified = date;
+
+            return info;
         }
 
-        public async override Task<string> GetContentType()
-        {
-            await EnsureSourceStream().ConfigureAwait(false);
-
-            if (await GetSourceStream().ConfigureAwait(false) == null)
-            {
-                return null;
-            }
-
-            return MimeTypes.GetMimeType(await GetImagePath().ConfigureAwait(false));
-        }
-
-        public override TimeSpan CacheDuration
+        private int ImageIndex
         {
             get
             {
-                return TimeSpan.FromDays(365);
+                string val = QueryString["index"];
+
+                if (string.IsNullOrEmpty(val))
+                {
+                    return 0;
+                }
+
+                return int.Parse(val);
             }
-        }
-
-        protected async override Task<DateTime?> GetLastDateModified()
-        {
-            await EnsureSourceStream().ConfigureAwait(false);
-
-            if (await GetSourceStream().ConfigureAwait(false) == null)
-            {
-                return null;
-            }
-
-            return File.GetLastWriteTimeUtc(await GetImagePath().ConfigureAwait(false));
         }
 
         private int? Height
@@ -236,33 +216,9 @@ namespace MediaBrowser.Api.HttpHandlers
 
         protected override async Task WriteResponseToOutputStream(Stream stream)
         {
-            ImageProcessor.ProcessImage(await GetSourceStream().ConfigureAwait(false), stream, Width, Height, MaxWidth, MaxHeight, Quality);
-        }
+            var entity = await GetSourceEntity().ConfigureAwait(false);
 
-        private string GetImagePathFromTypes(BaseItem item, ImageType imageType, int imageIndex)
-        {
-            if (imageType == ImageType.Logo)
-            {
-                return item.LogoImagePath;
-            }
-            if (imageType == ImageType.Backdrop)
-            {
-                return item.BackdropImagePaths.ElementAt(imageIndex);
-            }
-            if (imageType == ImageType.Banner)
-            {
-                return item.BannerImagePath;
-            }
-            if (imageType == ImageType.Art)
-            {
-                return item.ArtImagePath;
-            }
-            if (imageType == ImageType.Thumbnail)
-            {
-                return item.ThumbnailImagePath;
-            }
-
-            return item.PrimaryImagePath;
+            ImageProcessor.ProcessImage(entity, ImageType, ImageIndex, stream, Width, Height, MaxWidth, MaxHeight, Quality);
         }
     }
 }

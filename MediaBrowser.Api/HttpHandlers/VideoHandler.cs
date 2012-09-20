@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Common.Drawing;
-using MediaBrowser.Common.Net.Handlers;
+﻿using MediaBrowser.Common.Net.Handlers;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Net;
 

@@ -112,32 +112,6 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        /// <summary>
-        /// Gets the MIME type to include in the response headers
-        /// </summary>
-        public abstract Task<string> GetContentType();
-
-        /// <summary>
-        /// Gets the status code to include in the response headers
-        /// </summary>
-        protected int StatusCode { get; set; }
-
-        /// <summary>
-        /// Gets the cache duration to include in the response headers
-        /// </summary>
-        public virtual TimeSpan CacheDuration
-        {
-            get
-            {
-                return TimeSpan.FromTicks(0);
-            }
-        }
-
-        public virtual bool ShouldCompressResponse(string contentType)
-        {
-            return true;
-        }
-
         private bool ClientSupportsCompression
         {
             get
@@ -186,15 +160,21 @@ namespace MediaBrowser.Common.Net.Handlers
                     ctx.Response.Headers["Accept-Ranges"] = "bytes";
                 }
 
-                // Set the initial status code
-                // When serving a range request, we need to return status code 206 to indicate a partial response body
-                StatusCode = SupportsByteRangeRequests && IsRangeRequest ? 206 : 200;
+                ResponseInfo responseInfo = await GetResponseInfo().ConfigureAwait(false);
 
-                ctx.Response.ContentType = await GetContentType().ConfigureAwait(false);
+                if (responseInfo.IsResponseValid)
+                {
+                    // Set the initial status code
+                    // When serving a range request, we need to return status code 206 to indicate a partial response body
+                    responseInfo.StatusCode = SupportsByteRangeRequests && IsRangeRequest ? 206 : 200;
+                }
 
-                TimeSpan cacheDuration = CacheDuration;
+                ctx.Response.ContentType = responseInfo.ContentType;
 
-                DateTime? lastDateModified = await GetLastDateModified().ConfigureAwait(false);
+                if (!string.IsNullOrEmpty(responseInfo.Etag))
+                {
+                    ctx.Response.Headers["ETag"] = responseInfo.Etag;
+                }
 
                 if (ctx.Request.Headers.AllKeys.Contains("If-Modified-Since"))
                 {
@@ -203,26 +183,26 @@ namespace MediaBrowser.Common.Net.Handlers
                     if (DateTime.TryParse(ctx.Request.Headers["If-Modified-Since"], out ifModifiedSince))
                     {
                         // If the cache hasn't expired yet just return a 304
-                        if (IsCacheValid(ifModifiedSince.ToUniversalTime(), cacheDuration, lastDateModified))
+                        if (IsCacheValid(ifModifiedSince.ToUniversalTime(), responseInfo.CacheDuration, responseInfo.DateLastModified))
                         {
-                            StatusCode = 304;
+                            // ETag must also match (if supplied)
+                            if ((responseInfo.Etag ?? string.Empty).Equals(ctx.Request.Headers["If-None-Match"] ?? string.Empty))
+                            {
+                                responseInfo.StatusCode = 304;
+                            }
                         }
                     }
                 }
 
-                await PrepareResponse().ConfigureAwait(false);
+                Logger.LogInfo("Responding with status code {0} for url {1}", responseInfo.StatusCode, url);
 
-                Logger.LogInfo("Responding with status code {0} for url {1}", StatusCode, url);
-
-                if (IsResponseValid)
+                if (responseInfo.IsResponseValid)
                 {
-                    bool compressResponse = ShouldCompressResponse(ctx.Response.ContentType) && ClientSupportsCompression;
-
-                    await ProcessUncachedRequest(ctx, compressResponse, cacheDuration, lastDateModified).ConfigureAwait(false);
+                    await ProcessUncachedRequest(ctx, responseInfo).ConfigureAwait(false);
                 }
                 else
                 {
-                    ctx.Response.StatusCode = StatusCode;
+                    ctx.Response.StatusCode = responseInfo.StatusCode;
                     ctx.Response.SendChunked = false;
                 }
             }
@@ -239,7 +219,7 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        private async Task ProcessUncachedRequest(HttpListenerContext ctx, bool compressResponse, TimeSpan cacheDuration, DateTime? lastDateModified)
+        private async Task ProcessUncachedRequest(HttpListenerContext ctx, ResponseInfo responseInfo)
         {
             long? totalContentLength = TotalContentLength;
 
@@ -258,22 +238,29 @@ namespace MediaBrowser.Common.Net.Handlers
                 ctx.Response.ContentLength64 = totalContentLength.Value;
             }
 
+            var compressResponse = responseInfo.CompressResponse && ClientSupportsCompression;
+
             // Add the compression header
             if (compressResponse)
             {
                 ctx.Response.AddHeader("Content-Encoding", CompressionMethod);
             }
 
-            // Add caching headers
-            if (cacheDuration.Ticks > 0)
+            if (responseInfo.DateLastModified.HasValue)
             {
-                CacheResponse(ctx.Response, cacheDuration, lastDateModified);
+                ctx.Response.Headers[HttpResponseHeader.LastModified] = responseInfo.DateLastModified.Value.ToString("r");
+            }
+
+            // Add caching headers
+            if (responseInfo.CacheDuration.Ticks > 0)
+            {
+                CacheResponse(ctx.Response, responseInfo.CacheDuration);
             }
 
             // Set the status code
-            ctx.Response.StatusCode = StatusCode;
+            ctx.Response.StatusCode = responseInfo.StatusCode;
 
-            if (IsResponseValid)
+            if (responseInfo.IsResponseValid)
             {
                 // Finally, write the response data
                 Stream outputStream = ctx.Response.OutputStream;
@@ -300,23 +287,10 @@ namespace MediaBrowser.Common.Net.Handlers
             }
         }
 
-        private void CacheResponse(HttpListenerResponse response, TimeSpan duration, DateTime? dateModified)
+        private void CacheResponse(HttpListenerResponse response, TimeSpan duration)
         {
-            DateTime now = DateTime.UtcNow;
-
-            DateTime lastModified = dateModified ?? now;
-
             response.Headers[HttpResponseHeader.CacheControl] = "public, max-age=" + Convert.ToInt32(duration.TotalSeconds);
-            response.Headers[HttpResponseHeader.Expires] = now.Add(duration).ToString("r");
-            response.Headers[HttpResponseHeader.LastModified] = lastModified.ToString("r");
-        }
-
-        /// <summary>
-        /// Gives subclasses a chance to do any prep work, and also to validate data and set an error status code, if needed
-        /// </summary>
-        protected virtual Task PrepareResponse()
-        {
-            return Task.FromResult<object>(null);
+            response.Headers[HttpResponseHeader.Expires] = DateTime.UtcNow.Add(duration).ToString("r");
         }
 
         protected abstract Task WriteResponseToOutputStream(Stream stream);
@@ -364,20 +338,7 @@ namespace MediaBrowser.Common.Net.Handlers
             return null;
         }
 
-        protected virtual Task<DateTime?> GetLastDateModified()
-        {
-            DateTime? value = null;
-
-            return Task.FromResult(value);
-        }
-
-        private bool IsResponseValid
-        {
-            get
-            {
-                return StatusCode == 200 || StatusCode == 206;
-            }
-        }
+        protected abstract Task<ResponseInfo> GetResponseInfo();
 
         private Hashtable _formValues;
 
@@ -437,6 +398,33 @@ namespace MediaBrowser.Common.Net.Handlers
             }
 
             return formVars;
+        }
+    }
+
+    public class ResponseInfo
+    {
+        public string ContentType { get; set; }
+        public string Etag { get; set; }
+        public DateTime? DateLastModified { get; set; }
+        public TimeSpan CacheDuration { get; set; }
+        public bool CompressResponse { get; set; }
+        public int StatusCode { get; set; }
+
+        public ResponseInfo()
+        {
+            CacheDuration = TimeSpan.FromTicks(0);
+
+            CompressResponse = true;
+
+            StatusCode = 200;
+        }
+
+        public bool IsResponseValid
+        {
+            get
+            {
+                return StatusCode == 200 || StatusCode == 206;
+            }
         }
     }
 }
