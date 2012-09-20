@@ -28,11 +28,13 @@ namespace MediaBrowser.Common.Extensions
         /// <returns></returns>
         public static bool ContainsParentFolder(this List<string> lst, string path)
         {
+            path = path.TrimEnd('\\');
             foreach (var str in lst)
             {
                 //this should be a little quicker than examining each actual parent folder...
-                if (path.Equals(str,StringComparison.OrdinalIgnoreCase) 
-                    || (path.StartsWith(str, StringComparison.OrdinalIgnoreCase) && path[str.Length-1] == '\\')) return true;
+                var compare = str.TrimEnd('\\');
+                if (path.Equals(compare,StringComparison.OrdinalIgnoreCase) 
+                    || (path.StartsWith(compare, StringComparison.OrdinalIgnoreCase) && path[compare.Length] == '\\')) return true;
             }
             return false;
         }

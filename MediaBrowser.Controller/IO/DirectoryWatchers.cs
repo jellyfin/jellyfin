@@ -62,11 +62,9 @@ namespace MediaBrowser.Controller.IO
             Logger.LogDebugInfo("****** Watcher sees change of type " + e.ChangeType.ToString() + " to " + e.FullPath);
             lock (affectedPaths)
             {
-                if (!affectedPaths.Contains(e.FullPath))
-                {
-                    Logger.LogDebugInfo("****** Adding " + e.FullPath + " to affected paths.");
-                    affectedPaths.Add(e.FullPath);
-                }
+                //Since we're watching created, deleted and renamed we always want the parent of the item to be the affected path
+                var affectedPath = Path.GetDirectoryName(e.FullPath);
+                
                 if (e.ChangeType == WatcherChangeTypes.Renamed)
                 {
                     var renamedArgs = e as RenamedEventArgs;
@@ -75,6 +73,15 @@ namespace MediaBrowser.Controller.IO
                     Logger.LogDebugInfo("****** Removing " + renamedArgs.OldFullPath + " from affected paths.");
                     affectedPaths.Remove(renamedArgs.OldFullPath);
                     }
+                }
+
+                //If anything underneath this path was already marked as affected - remove it as it will now get captured by this one
+                affectedPaths.RemoveAll(p => p.StartsWith(e.FullPath, StringComparison.OrdinalIgnoreCase));
+                
+                if (!affectedPaths.ContainsParentFolder(affectedPath))
+                {
+                    Logger.LogDebugInfo("****** Adding " + affectedPath + " to affected paths.");
+                    affectedPaths.Add(affectedPath);
                 }
             }
 
@@ -125,7 +132,7 @@ namespace MediaBrowser.Controller.IO
             }
 
             foreach (var p in paths) Logger.LogDebugInfo("*********  "+ p + " reports change.");
-            foreach (var i in itemsToRefresh) Logger.LogDebugInfo("*********  "+i.Name + " will be refreshed.");
+            foreach (var i in itemsToRefresh) Logger.LogDebugInfo("*********  "+i.Name + " ("+ i.Path + ") will be refreshed.");
             return Task.WhenAll(itemsToRefresh.Select(i => i.ChangedExternally()));
         }
 
