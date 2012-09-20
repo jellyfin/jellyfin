@@ -13,21 +13,6 @@ namespace MediaBrowser.Controller.Library
 {
     public class ItemController
     {
-        //private BaseItem ResolveItem(ItemResolveEventArgs args)
-        //{
-        //    // Try first priority resolvers
-        //    for (int i = 0; i < Kernel.Instance.EntityResolvers.Length; i++)
-        //    {
-        //        var item = Kernel.Instance.EntityResolvers[i].ResolvePath(args);
-
-        //        if (item != null)
-        //        {
-        //            return item;
-        //        }
-        //    }
-
-        //    return null;
-        //}
 
         /// <summary>
         /// Resolves a path into a BaseItem
@@ -56,7 +41,7 @@ namespace MediaBrowser.Controller.Library
             }
 
 
-            // Fire BeginResolvePath to see if anyone wants to cancel this operation
+            // Check to see if we should resolve based on our contents
             if (!EntityResolutionHelper.ShouldResolvePathContents(args))
             {
                 return null;
@@ -66,80 +51,6 @@ namespace MediaBrowser.Controller.Library
 
             return item;
         }
-
-        ///// <summary>
-        ///// Finds child BaseItems for a given Folder
-        ///// </summary>
-        //private Task<BaseItem>[] GetChildren(Folder folder, WIN32_FIND_DATA[] fileSystemChildren, bool allowInternetProviders)
-        //{
-        //    Task<BaseItem>[] tasks = new Task<BaseItem>[fileSystemChildren.Length];
-
-        //    for (int i = 0; i < fileSystemChildren.Length; i++)
-        //    {
-        //        var child = fileSystemChildren[i];
-
-        //        tasks[i] = GetItem(child.Path, folder, child, allowInternetProviders: allowInternetProviders);
-        //    }
-
-        //    return tasks;
-        //}
-
-        ///// <summary>
-        ///// Transforms shortcuts into their actual paths
-        ///// </summary>
-        //private WIN32_FIND_DATA[] FilterChildFileSystemEntries(WIN32_FIND_DATA[] fileSystemChildren, bool flattenShortcuts)
-        //{
-        //    WIN32_FIND_DATA[] returnArray = new WIN32_FIND_DATA[fileSystemChildren.Length];
-        //    List<WIN32_FIND_DATA> resolvedShortcuts = new List<WIN32_FIND_DATA>();
-
-        //    for (int i = 0; i < fileSystemChildren.Length; i++)
-        //    {
-        //        WIN32_FIND_DATA file = fileSystemChildren[i];
-
-        //        // If it's a shortcut, resolve it
-        //        if (Shortcut.IsShortcut(file.Path))
-        //        {
-        //            string newPath = Shortcut.ResolveShortcut(file.Path);
-        //            WIN32_FIND_DATA newPathData = FileData.GetFileData(newPath);
-
-        //            // Find out if the shortcut is pointing to a directory or file
-        //            if (newPathData.IsDirectory)
-        //            {
-        //                // If we're flattening then get the shortcut's children
-
-        //                if (flattenShortcuts)
-        //                {
-        //                    returnArray[i] = file;
-        //                    WIN32_FIND_DATA[] newChildren = FileData.GetFileSystemEntries(newPath, "*").ToArray();
-
-        //                    resolvedShortcuts.AddRange(FilterChildFileSystemEntries(newChildren, false));
-        //                }
-        //                else
-        //                {
-        //                    returnArray[i] = newPathData;
-        //                }
-        //            }
-        //            else
-        //            {
-        //                returnArray[i] = newPathData;
-        //            }
-        //        }
-        //        else
-        //        {
-        //            returnArray[i] = file;
-        //        }
-        //    }
-
-        //    if (resolvedShortcuts.Count > 0)
-        //    {
-        //        resolvedShortcuts.InsertRange(0, returnArray);
-        //        return resolvedShortcuts.ToArray();
-        //    }
-        //    else
-        //    {
-        //        return returnArray;
-        //    }
-        //}
 
         /// <summary>
         /// Gets a Person

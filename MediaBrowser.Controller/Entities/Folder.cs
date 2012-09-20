@@ -272,7 +272,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Finds child BaseItems for a given Folder
+        /// Finds child BaseItems for us
         /// </summary>
         protected Task<BaseItem>[] GetChildren(WIN32_FIND_DATA[] fileSystemChildren)
         {
@@ -326,6 +326,26 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Folders need to validate and refresh
+        /// </summary>
+        /// <returns></returns>
+        public override Task ChangedExternally()
+        {
+            return Task.Run(() =>
+                {
+                    if (this.IsRoot)
+                    {
+                        Kernel.Instance.ReloadRoot().ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        RefreshMetadata();
+                        ValidateChildren();
+                    }
+                });
         }
 
         /// <summary>
@@ -578,17 +598,8 @@ namespace MediaBrowser.Controller.Entities
                 return result;
             }
 
-            foreach (BaseItem item in ActualChildren)
-            {
-                result = item.FindItemById(id);
-
-                if (result != null)
-                {
-                    return result;
-                }
-            }
-
-            return null;
+            //this should be functionally equivilent to what was here since it is IEnum and works on a thread-safe copy
+            return RecursiveChildren.FirstOrDefault(i => i.Id == id);
         }
 
         /// <summary>
@@ -596,31 +607,13 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public BaseItem FindByPath(string path)
         {
-            if (Path.Equals(path, StringComparison.OrdinalIgnoreCase))
+            if (PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase))
             {
                 return this;
             }
 
-            foreach (BaseItem item in ActualChildren)
-            {
-                var folder = item as Folder;
-
-                if (folder != null)
-                {
-                    var foundItem = folder.FindByPath(path);
-
-                    if (foundItem != null)
-                    {
-                        return foundItem;
-                    }
-                }
-                else if (item.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
-                {
-                    return item;
-                }
-            }
-
-            return null;
+            //this should be functionally equivilent to what was here since it is IEnum and works on a thread-safe copy
+            return RecursiveChildren.FirstOrDefault(i => i.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

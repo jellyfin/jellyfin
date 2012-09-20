@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.IO;
 using System;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -178,6 +179,15 @@ namespace MediaBrowser.Controller.Entities
                 data.PlayCount = 0;
                 data.PlaybackPositionTicks = 0;
             }
+        }
+
+        /// <summary>
+        /// Do whatever refreshing is necessary when the filesystem pertaining to this item has changed.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Task ChangedExternally()
+        {
+            return Task.Run(() => RefreshMetadata());
         }
     }
 }
