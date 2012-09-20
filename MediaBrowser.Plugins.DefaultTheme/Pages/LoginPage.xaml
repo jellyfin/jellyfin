@@ -1,0 +1,64 @@
+﻿<base:BaseLoginPage x:Class="MediaBrowser.Plugins.DefaultTheme.Pages.LoginPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:base="clr-namespace:MediaBrowser.UI.Pages;assembly=MediaBrowser.UI"
+                    xmlns:DTO="clr-namespace:MediaBrowser.Model.DTO;assembly=MediaBrowser.Model"
+                    xmlns:controls="clr-namespace:MediaBrowser.UI.Controls;assembly=MediaBrowser.UI" mc:Ignorable="d" 
+      d:DesignHeight="300" 
+      d:DesignWidth="300"
+	  Title="LoginPage">
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <DataTemplate DataType="{x:Type DTO:DtoUser}">
+                <Grid HorizontalAlignment="Left" Margin="3">
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto"></ColumnDefinition>
+                        <ColumnDefinition Width="475"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+
+                    <controls:ExtendedImage HasImage="{Binding HasImage}"
+                                        PlaceHolderSource="../Resources/Images/UserLoginDefault.png"
+                                        Source="{Binding Converter={StaticResource UserImageConverter}, ConverterParameter='225,225,0,0'}"
+                                        Stretch="Uniform"
+                                        Width="225"
+                                        Height="225"
+                                        Background="{Binding Converter={StaticResource TileBackgroundConverter}}"/>
+                    <TextBlock Text="{Binding Name}" VerticalAlignment="Top" HorizontalAlignment="Left" Grid.Column="1" Grid.Row="0" Margin="25 30 0 0" FontSize="{StaticResource Heading2FontSize}"></TextBlock>
+                    <TextBlock Text="{Binding Converter={StaticResource LastSeenTextConverter}}" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Column="1" Grid.Row="0" Margin="25 80 0 0"></TextBlock>
+                </Grid>
+            </DataTemplate>
+
+        </ResourceDictionary>
+    </Page.Resources>
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <Image Style="{StaticResource MBLogoImageBlack}" Margin="0 0 0 10" Height="125" Stretch="Uniform" HorizontalAlignment="Left"></Image>
+
+        <Grid VerticalAlignment="Stretch" HorizontalAlignment="Center" Grid.Row="1">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+
+            <TextBlock FontSize="{StaticResource Heading2FontSize}" Grid.Row="0" Margin="0 0 0 30">Select Profile</TextBlock>
+
+            <ListView HorizontalAlignment="Center" Grid.Row="1" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Hidden" ItemsSource="{Binding Path=Users}" Style="{StaticResource ListViewStyle}" ItemContainerStyle="{StaticResource ListViewItemStyle}">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Vertical" />
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+            </ListView>
+        </Grid>
+    </Grid>
+</base:BaseLoginPage>
