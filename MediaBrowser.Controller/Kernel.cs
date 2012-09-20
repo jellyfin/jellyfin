@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Logging;
-using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;

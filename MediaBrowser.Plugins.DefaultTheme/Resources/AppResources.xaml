@@ -1,0 +1,81 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:themeconverters="clr-namespace:MediaBrowser.Plugins.DefaultTheme.Converters"
+                    x:Class="MediaBrowser.Plugins.DefaultTheme.Resources.AppResources">
+
+    <themeconverters:WeatherImageConverter x:Key="WeatherImageConverter"></themeconverters:WeatherImageConverter>
+    <themeconverters:TileBackgroundConverter x:Key="TileBackgroundConverter"></themeconverters:TileBackgroundConverter>
+
+    <Style x:Key="ListViewItemStyle" TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource BaseListViewItemStyle}">
+
+        <Style.Resources>
+            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="LightBlue"/>
+        </Style.Resources>
+
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Opacity" Value=".85" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--Override MainWindow style-->
+    <Style TargetType="Window" x:Key="MainWindow" BasedOn="{StaticResource BaseWindow}">
+        <Setter Property="Background">
+            <Setter.Value>
+                <RadialGradientBrush RadiusX=".75" RadiusY=".75">
+                    <GradientStop Color="White" Offset="0.0"/>
+                    <GradientStop Color="WhiteSmoke" Offset="0.5"/>
+                    <GradientStop Color="#cfcfcf" Offset="1.0"/>
+                </RadialGradientBrush>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--Override PageContentTemplate-->
+    <ControlTemplate x:Key="PageContentTemplate">
+
+        <Grid Margin="20 15 20 20">
+
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right">
+
+                <!--Display CurrentUser-->
+                <StackPanel Orientation="Horizontal" Margin="0 0 30 0" Visibility="{Binding Path=CurrentUser,Converter={StaticResource CurrentUserVisibilityConverter}}">
+                    <TextBlock FontSize="{StaticResource Heading2FontSize}" Text="{Binding Path=CurrentUser.Name}" Margin="0 0 5 0">
+                    </TextBlock>
+                    <Image>
+                        <Image.Style>
+                            <Style TargetType="{x:Type Image}">
+                                <Setter Property="Image.Source" Value="Images\CurrentUserDefault.png" />
+                                <Setter Property="Stretch" Value="None" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=CurrentUser.HasImage}" Value="true">
+                                        <Setter Property="Image.Source" Value="{Binding Path=CurrentUser,Converter={StaticResource UserImageConverter}, ConverterParameter='0,64,0,0'}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
+                </StackPanel>
+
+                <!--Display Weather-->
+                <StackPanel Orientation="Horizontal" Margin="0 0 30 0" Visibility="{Binding Path=CurrentWeather,Converter={StaticResource WeatherVisibilityConverter}}">
+
+                    <TextBlock FontSize="{StaticResource Heading2FontSize}" Text="{Binding Path=CurrentWeather,Converter={StaticResource WeatherTemperatureConverter}}" Margin="0 0 5 0">
+                    </TextBlock>
+                    <Image Stretch="None" Source="{Binding Path=CurrentWeather,Converter={StaticResource WeatherImageConverter}}"></Image>
+                </StackPanel>
+
+                <!--Display Clock-->
+                <TextBlock FontSize="{StaticResource Heading2FontSize}">
+                    <TextBlock.Text>
+                        <Binding Path="CurrentTime" Converter="{StaticResource DateTimeToStringConverter}" ConverterParameter="h:mm" />
+                    </TextBlock.Text>
+                </TextBlock>
+            </StackPanel>
+
+            <Frame x:Name="PageFrame"></Frame>
+        </Grid>
+    </ControlTemplate>
+
+</ResourceDictionary>

@@ -29,6 +29,8 @@ syntax: glob
 obj/
 [Rr]elease*/
 ProgramData*/
+ProgramData-Server*/
+ProgramData-UI*/
 _ReSharper*/
 [Tt]humbs.db
 [Tt]est[Rr]esult*

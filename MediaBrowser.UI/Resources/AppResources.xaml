@@ -1,0 +1,122 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:System="clr-namespace:System;assembly=mscorlib"
+                    xmlns:converters="clr-namespace:MediaBrowser.UI.Converters">
+
+    <!--Themes should override these as needed-->
+    <FontFamily x:Key="DefaultFontFamily">Segoe UI, Lucida Sans Unicode, Verdana</FontFamily>
+    <FontWeight x:Key="DefaultFontWeight">Thin</FontWeight>
+    <Brush x:Key="DefaultForeground">Black</Brush>
+    <System:Double x:Key="DefaultFontSize">36</System:Double>
+    <System:Double x:Key="Heading1FontSize">84</System:Double>
+    <System:Double x:Key="Heading2FontSize">60</System:Double>
+
+    <!--Define all the standard converters here in one place-->
+    <converters:DateTimeToStringConverter x:Key="DateTimeToStringConverter"></converters:DateTimeToStringConverter>
+    <converters:UserImageConverter x:Key="UserImageConverter"></converters:UserImageConverter>
+    <converters:WeatherTemperatureConverter x:Key="WeatherTemperatureConverter"></converters:WeatherTemperatureConverter>
+    <converters:LastSeenTextConverter x:Key="LastSeenTextConverter"></converters:LastSeenTextConverter>
+    <converters:WeatherVisibilityConverter x:Key="WeatherVisibilityConverter"></converters:WeatherVisibilityConverter>
+    <converters:CurrentUserVisibilityConverter x:Key="CurrentUserVisibilityConverter"></converters:CurrentUserVisibilityConverter>
+
+    <!--Default Frame style. -->
+    <Style TargetType="Frame">
+        <Setter Property="NavigationUIVisibility" Value="Hidden"/>
+        <Setter Property="KeyboardNavigation.IsTabStop" Value="false"/>
+    </Style>
+
+    <!--Default Frame style. -->
+    <Style TargetType="ContentControl">
+        <Setter Property="KeyboardNavigation.IsTabStop" Value="false"/>
+    </Style>
+
+    <!--Default Window style. -->
+    <Style TargetType="Window" x:Key="BaseWindow">
+        <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"/>
+        <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}"/>
+        <Setter Property="FontWeight" Value="{StaticResource DefaultFontWeight}"/>
+        <Setter Property="Foreground" Value="{StaticResource DefaultForeground}"/>
+        <Setter Property="BorderBrush" Value="#cccccc"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+
+    <!--Default TextBlock style. -->
+    <Style TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"/>
+        <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}"/>
+        <Setter Property="FontWeight" Value="{StaticResource DefaultFontWeight}"/>
+        <Setter Property="Foreground" Value="{StaticResource DefaultForeground}"/>
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <!--Default Label style. -->
+    <Style TargetType="Label">
+        <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"/>
+        <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}"/>
+        <Setter Property="FontWeight" Value="{StaticResource DefaultFontWeight}"/>
+        <Setter Property="Foreground" Value="{StaticResource DefaultForeground}"/>
+    </Style>
+
+    <!--Default Button style. -->
+    <Style TargetType="Button">
+        <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"/>
+        <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}"/>
+        <Setter Property="FontWeight" Value="{StaticResource DefaultFontWeight}"/>
+        <Setter Property="Foreground" Value="{StaticResource DefaultForeground}"/>
+    </Style>
+
+    <!--Default style for buttons that have images. -->
+    <Style TargetType="Button" x:Key="ImageButton" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Opacity" Value=".5" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--Default ListViewItem style. -->
+    <Style x:Key="BaseListViewItemStyle" TargetType="{x:Type ListViewItem}">
+
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Cursor" Value="Hand"/>
+
+        <Style.Triggers>
+            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                <Setter Property="IsSelected" Value="True" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--Themes should override this -->
+    <Style x:Key="ListViewItemStyle" TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource BaseListViewItemStyle}">
+    </Style>
+
+    <!--Default ListView style. -->
+    <Style TargetType="ListView" x:Key="BaseListViewStyle">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="KeyboardNavigation.IsTabStop" Value="False"/>
+        <Setter Property="KeyboardNavigation.DirectionalNavigation" Value="Continue"/>
+        <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True"/>
+        <Setter Property="IsSynchronizedWithCurrentItem" Value="True"/>
+    </Style>
+
+    <!--Themes should override this -->
+    <Style x:Key="ListViewStyle" TargetType="{x:Type ListView}" BasedOn="{StaticResource BaseListViewStyle}">
+    </Style>
+
+    <!--MB Logo, black text. -->
+    <Style TargetType="Image" x:Key="MBLogoImageBlack">
+        <Setter Property="Source" Value="Images/mblogoblack.png"/>
+    </Style>
+
+    <!--MB Logo, white text. -->
+    <Style TargetType="Image" x:Key="MBLogoImageWhite">
+        <Setter Property="Source" Value="Images/mblogowhite.png"/>
+    </Style>
+</ResourceDictionary>

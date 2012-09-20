@@ -87,6 +87,7 @@
     <Compile Include="Logging\BaseLogger.cs" />
     <Compile Include="Logging\LogSeverity.cs" />
     <Compile Include="Logging\TraceFileLogger.cs" />
+    <Compile Include="Mef\MefUtils.cs" />
     <Compile Include="Net\Handlers\StaticFileHandler.cs" />
     <Compile Include="Net\MimeTypes.cs" />
     <Compile Include="Plugins\BaseTheme.cs" />

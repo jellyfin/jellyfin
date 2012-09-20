@@ -4,6 +4,7 @@ using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Plugins;
 using System;
 using System.IO;
+using System.Reflection;
 
 namespace MediaBrowser.Common.Plugins
 {
@@ -12,7 +13,7 @@ namespace MediaBrowser.Common.Plugins
     /// </summary>
     public abstract class BasePlugin : IDisposable
     {
-        private IKernel Kernel { get; set; }
+        protected IKernel Kernel { get; private set; }
 
         /// <summary>
         /// Gets or sets the plugin's current context

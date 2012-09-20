@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Plugins;
+using System;
 using System.ComponentModel.Composition;
 
 namespace MediaBrowser.Plugins.DefaultTheme
@@ -11,9 +12,9 @@ namespace MediaBrowser.Plugins.DefaultTheme
             get { return "Default Theme"; }
         }
 
-        protected override void InitializeInUi()
+        public override Uri LoginPageUri
         {
-            base.InitializeInUi();
+            get { return GeneratePackUri("Pages/LoginPage.xaml"); }
         }
     }
 }
