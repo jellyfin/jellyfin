@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Plugins;
-using MediaBrowser.Model.Plugins;
 using System.ComponentModel.Composition;
 
 namespace MediaBrowser.Api

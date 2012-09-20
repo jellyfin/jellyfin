@@ -220,7 +220,7 @@ namespace MediaBrowser.Controller.Providers
 
                         if (float.TryParse(rating, out val))
                         {
-                            item.UserRating = val;
+                            item.CommunityRating = val;
                         }
                     }
                     break;

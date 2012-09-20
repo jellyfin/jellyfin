@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Logging;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
@@ -43,7 +44,6 @@ namespace MediaBrowser.Controller
         public static Kernel Instance { get; private set; }
 
         public ItemController ItemController { get; private set; }
-        public WeatherClient WeatherClient { get; private set; }
 
         public IEnumerable<User> Users { get; private set; }
         public Folder RootFolder { get; private set; }
@@ -62,6 +62,12 @@ namespace MediaBrowser.Controller
         {
             get { return KernelContext.Server; }
         }
+
+        /// <summary>
+        /// Gets the list of currently registered weather prvoiders
+        /// </summary>
+        [ImportMany(typeof(BaseWeatherProvider))]
+        public IEnumerable<BaseWeatherProvider> WeatherProviders { get; private set; }
 
         /// <summary>
         /// Gets the list of currently registered metadata prvoiders
@@ -101,28 +107,27 @@ namespace MediaBrowser.Controller
         /// </summary>
         protected override void InitializeInternal(IProgress<TaskProgress> progress)
         {
+            base.InitializeInternal(progress);
+
             ItemController = new ItemController();
             DirectoryWatchers = new DirectoryWatchers();
 
 
-            base.InitializeInternal(progress);
+            ExtractFFMpeg();
         }
 
         /// <summary>
         /// Performs initializations that can be reloaded at anytime
         /// </summary>
-        public override async Task Reload(IProgress<TaskProgress> progress)
+        protected override async Task ReloadInternal(IProgress<TaskProgress> progress)
         {
-            await base.Reload(progress).ConfigureAwait(false);
+            await base.ReloadInternal(progress).ConfigureAwait(false);
 
-            ReloadWeatherClient();
-
-            ExtractFFMpeg();
-
-            progress.Report(new TaskProgress { Description = "Loading Users" });
+            ReportProgress(progress, "Loading Users");
             ReloadUsers();
 
-            progress.Report(new TaskProgress { Description = "Loading Media Library" });
+            ReportProgress(progress, "Loading Media Library");
+
             await ReloadRoot(allowInternetProviders: false).ConfigureAwait(false);
 
         }
@@ -135,8 +140,6 @@ namespace MediaBrowser.Controller
             base.Dispose();
 
             DirectoryWatchers.Stop();
-
-            DisposeWeatherClient();
 
         }
 
@@ -379,27 +382,6 @@ namespace MediaBrowser.Controller
                     stream.CopyTo(fileStream);
                 }
             }
-        }
-
-        /// <summary>
-        /// Disposes the current WeatherClient
-        /// </summary>
-        private void DisposeWeatherClient()
-        {
-            if (WeatherClient != null)
-            {
-                WeatherClient.Dispose();
-            }
-        }
-
-        /// <summary>
-        /// Disposes the current WeatherClient and creates a new one
-        /// </summary>
-        private void ReloadWeatherClient()
-        {
-            DisposeWeatherClient();
-
-            WeatherClient = new WeatherClient();
         }
     }
 }

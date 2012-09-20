@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 
-namespace MediaBrowser.Common.Drawing
+namespace MediaBrowser.Controller.Drawing
 {
     public static class DrawingUtils
     {

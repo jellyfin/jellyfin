@@ -83,7 +83,6 @@
     <Compile Include="HttpHandlers\WeatherHandler.cs" />
     <Compile Include="HttpHandlers\YearHandler.cs" />
     <Compile Include="HttpHandlers\YearsHandler.cs" />
-    <Compile Include="ImageProcessor.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
