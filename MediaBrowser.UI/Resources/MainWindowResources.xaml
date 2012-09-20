@@ -1,0 +1,43 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--Themes should override this to style the window-->
+    <Style TargetType="Window" x:Key="MainWindow" BasedOn="{StaticResource BaseWindow}">
+    </Style>
+
+    <!--Themes may want to override this to adjust the backdrop container style-->
+    <Style TargetType="Grid" x:Key="BackdropGrid">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Opacity" Value=".15"/>
+    </Style>
+
+    <!--Themes may want to override this to adjust the backdrop image style-->
+    <Style TargetType="Image" x:Key="BackdropImage">
+        <Setter Property="Stretch" Value="UniformToFill"/>
+    </Style>
+
+    <Style TargetType="Grid" x:Key="DragBar">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Height" Value="50"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
+        <Setter Property="Panel.ZIndex" Value="1"/>
+    </Style>
+    <Style TargetType="UserControl" x:Key="WindowCommands">
+        <Setter Property="Margin" Value="0 10 0 0"/>
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
+        <Setter Property="Panel.ZIndex" Value="2"/>
+        <Setter Property="Visibility" Value="Collapsed" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Path=MainWindow.IsMouseIdle}" Value="false">
+                <Setter Property="Visibility" Value="Visible" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--Themes should override this to layout window content-->
+    <ControlTemplate x:Key="PageContentTemplate">
+        <Frame x:Name="PageFrame"></Frame>
+    </ControlTemplate>
+
+</ResourceDictionary>
