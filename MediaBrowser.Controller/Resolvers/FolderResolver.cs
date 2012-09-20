@@ -16,7 +16,7 @@ namespace MediaBrowser.Controller.Resolvers
         {
             if (args.IsDirectory)
             {
-                return new Folder() { PhysicalLocations = args.PhysicalLocations };
+                return new Folder();
             }
 
             return null;

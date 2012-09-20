@@ -32,8 +32,6 @@ namespace MediaBrowser.Controller.Entities
 
         #endregion
 
-        public IEnumerable<string> PhysicalLocations { get; set; }
-
         public override bool IsFolder
         {
             get
@@ -155,7 +153,7 @@ namespace MediaBrowser.Controller.Entities
                     changedArgs.ItemsAdded.Add(child);
                     //refresh it
                     child.RefreshMetadata();
-                    //Logger.LogInfo("New Item Added to Library: ("+child.GetType().Name+") "+ child.Name + " (" + child.Path + ")");
+                    Logger.LogInfo("New Item Added to Library: ("+child.GetType().Name+") "+ child.Name + " (" + child.Path + ")");
                     //save it in repo...
 
                     //and add it to our valid children
@@ -199,6 +197,8 @@ namespace MediaBrowser.Controller.Entities
             //now, if anything changed - replace our children
             if (changed)
             {
+                if (changedArgs.ItemsRemoved != null) foreach (var item in changedArgs.ItemsRemoved) Logger.LogDebugInfo("** " + item.Name + " Removed from library.");
+
                 lock (childLock)
                     ActualChildren = validChildren;
                 //and save children in repo...
@@ -613,7 +613,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             //this should be functionally equivilent to what was here since it is IEnum and works on a thread-safe copy
-            return RecursiveChildren.FirstOrDefault(i => i.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
+            return RecursiveChildren.FirstOrDefault(i => i.PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase));
         }
     }
 }

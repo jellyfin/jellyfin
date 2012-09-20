@@ -10,6 +10,15 @@ namespace MediaBrowser.Controller.Entities
 {
     public abstract class BaseItem : BaseEntity, IHasProviderIds
     {
+
+        public IEnumerable<string> PhysicalLocations
+        {
+            get
+            {
+                return _resolveArgs.PhysicalLocations;
+            }
+        }
+
         public string SortName { get; set; }
 
         /// <summary>
@@ -136,12 +145,12 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Determine if we have changed vs the passed in copy
         /// </summary>
-        /// <param name="original"></param>
+        /// <param name="copy"></param>
         /// <returns></returns>
-        public virtual bool IsChanged(BaseItem original)
+        public virtual bool IsChanged(BaseItem copy)
         {
-            bool changed = original.DateModified != this.DateModified;
-            changed |= original.DateCreated != this.DateCreated;
+            bool changed = copy.DateModified != this.DateModified;
+            if (changed) MediaBrowser.Common.Logging.Logger.LogDebugInfo(this.Name + " changed - original creation: " + this.DateCreated + " new creation: " + copy.DateCreated + " original modified: " + this.DateModified + " new modified: " + copy.DateModified);
             return changed;
         }
 
