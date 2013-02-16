@@ -1,2 +1,2 @@
-MediaBrowser
+Media Browser
 ============
