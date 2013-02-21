@@ -328,6 +328,9 @@
     <Content Include="CorePlugins\MediaBrowser.Server.Sqlite.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="CorePlugins\MediaBrowser.Server.WorldWeatherOnline.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="CorePlugins\MediaBrowser.WebDashboard.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

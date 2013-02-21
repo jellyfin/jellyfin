@@ -192,8 +192,8 @@ namespace MediaBrowser.Controller
         /// Gets the list of currently registered weather prvoiders
         /// </summary>
         /// <value>The weather providers.</value>
-        [ImportMany(typeof(BaseWeatherProvider))]
-        public IEnumerable<BaseWeatherProvider> WeatherProviders { get; private set; }
+        [ImportMany(typeof(IWeatherProvider))]
+        public IEnumerable<IWeatherProvider> WeatherProviders { get; private set; }
 
         /// <summary>
         /// Gets the list of currently registered metadata prvoiders

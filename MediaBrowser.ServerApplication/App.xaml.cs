@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Kernel;
+using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.UI;
 using MediaBrowser.Controller;
 using MediaBrowser.IsoMounter;
@@ -169,7 +170,7 @@ namespace MediaBrowser.ServerApplication
         /// <returns>IKernel.</returns>
         protected override IKernel InstantiateKernel()
         {
-            return new Kernel(new PismoIsoManager(), new DotNetZipClient());
+            return new Kernel(new PismoIsoManager(LogManager.GetLogger("PismoIsoManager")), new DotNetZipClient());
         }
 
         /// <summary>

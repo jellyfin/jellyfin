@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Logging;
 using MediaBrowser.Model.Logging;
 using System;
 
@@ -10,11 +9,6 @@ namespace MediaBrowser.IsoMounter
     /// </summary>
     internal class PismoMount : IIsoMount
     {
-        /// <summary>
-        /// The logger
-        /// </summary>
-        private static readonly ILogger Logger = LogManager.GetLogger("IsoMount");
-
         /// <summary>
         /// Gets or sets the iso path.
         /// </summary>
@@ -38,16 +32,24 @@ namespace MediaBrowser.IsoMounter
         private readonly PismoIsoManager _isoManager;
 
         /// <summary>
+        /// Gets or sets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
+        private ILogger Logger { get; set; }
+
+        /// <summary>
         /// Prevents a default instance of the <see cref="PismoMount" /> class from being created.
         /// </summary>
         /// <param name="mount">The mount.</param>
         /// <param name="isoPath">The iso path.</param>
         /// <param name="isoManager">The iso manager.</param>
-        internal PismoMount(PfmFileMount mount, string isoPath, PismoIsoManager isoManager)
+        /// <param name="logger">The logger.</param>
+        internal PismoMount(PfmFileMount mount, string isoPath, PismoIsoManager isoManager, ILogger logger)
         {
             _pfmFileMount = mount;
             IsoPath = isoPath;
             _isoManager = isoManager;
+            Logger = logger;
 
             MountedPath = mount.GetMount().GetUncName();
         }

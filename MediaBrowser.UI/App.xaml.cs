@@ -244,7 +244,7 @@ namespace MediaBrowser.UI
         /// <returns>IKernel.</returns>
         protected override IKernel InstantiateKernel()
         {
-            return new UIKernel(new PismoIsoManager());
+            return new UIKernel(new PismoIsoManager(LogManager.GetLogger("PismoIsoManager")));
         }
 
         /// <summary>
