@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Kernel;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
@@ -17,13 +18,19 @@ namespace MediaBrowser.Common.ScheduledTasks
         private readonly List<Type> _taskQueue = new List<Type>();
 
         /// <summary>
+        /// The _logger
+        /// </summary>
+        private readonly ILogger _logger;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="TaskManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        public TaskManager(IKernel kernel)
+        /// <param name="logger">The logger.</param>
+        public TaskManager(IKernel kernel, ILogger logger)
             : base(kernel)
         {
-
+            _logger = logger;
         }
 
         /// <summary>
@@ -70,12 +77,12 @@ namespace MediaBrowser.Common.ScheduledTasks
 
                 if (!_taskQueue.Contains(type))
                 {
-                    Logger.Info("Queueing task {0}", type.Name);
+                    _logger.Info("Queueing task {0}", type.Name);
                     _taskQueue.Add(type);
                 }
                 else
                 {
-                    Logger.Info("Task already queued: {0}", type.Name);
+                    _logger.Info("Task already queued: {0}", type.Name);
                 }
             }
         }

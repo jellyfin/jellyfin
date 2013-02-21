@@ -1,6 +1,4 @@
-﻿using MediaBrowser.Common.Logging;
-using MediaBrowser.Model.Logging;
-using System;
+﻿using System;
 
 namespace MediaBrowser.Common.Kernel
 {
@@ -9,14 +7,8 @@ namespace MediaBrowser.Common.Kernel
     /// </summary>
     /// <typeparam name="TKernelType">The type of the T kernel type.</typeparam>
     public abstract class BaseManager<TKernelType> : IDisposable
-        where TKernelType : IKernel
+        where TKernelType : class, IKernel
     {
-        /// <summary>
-        /// Gets the logger.
-        /// </summary>
-        /// <value>The logger.</value>
-        protected ILogger Logger { get; private set; }
-
         /// <summary>
         /// The _kernel
         /// </summary>
@@ -33,12 +25,8 @@ namespace MediaBrowser.Common.Kernel
             {
                 throw new ArgumentNullException("kernel");
             }
-            
+   
             Kernel = kernel;
-
-            Logger = LogManager.GetLogger(GetType().Name);
-
-            Logger.Info("Initializing");
         }
 
         /// <summary>
@@ -46,8 +34,6 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         public void Dispose()
         {
-            Logger.Info("Disposing");
-            
             Dispose(true);
             GC.SuppressFinalize(this);
         }

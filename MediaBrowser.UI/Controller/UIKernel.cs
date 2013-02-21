@@ -144,7 +144,7 @@ namespace MediaBrowser.UI.Controller
         /// <returns>Task.</returns>
         protected override Task ReloadInternal()
         {
-            PlaybackManager = new PlaybackManager(this);
+            PlaybackManager = new PlaybackManager(this, Logger);
 
             return base.ReloadInternal();
         }

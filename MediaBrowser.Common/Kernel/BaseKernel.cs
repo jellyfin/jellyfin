@@ -412,18 +412,18 @@ namespace MediaBrowser.Common.Kernel
             Logger.Info("Version {0} initializing", ApplicationVersion);
 
             DisposeHttpManager();
-            HttpManager = new HttpManager(this);
+            HttpManager = new HttpManager(this, Logger);
 
             await OnConfigurationLoaded().ConfigureAwait(false);
 
             DisposeTaskManager();
-            TaskManager = new TaskManager(this);
+            TaskManager = new TaskManager(this, Logger);
 
             Logger.Info("Loading Plugins");
             await ReloadComposableParts().ConfigureAwait(false);
 
             DisposeTcpManager();
-            TcpManager = new TcpManager(this);
+            TcpManager = new TcpManager(this, Logger);
         }
 
         /// <summary>

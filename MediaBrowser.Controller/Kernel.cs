@@ -364,13 +364,13 @@ namespace MediaBrowser.Controller
             RootFolder = null;
 
             ReloadResourcePools();
-            InstallationManager = new InstallationManager(this, ZipClient);
-            LibraryManager = new LibraryManager(this);
-            UserManager = new UserManager(this);
-            FFMpegManager = new FFMpegManager(this, ZipClient);
-            ImageManager = new ImageManager(this);
-            ProviderManager = new ProviderManager(this);
-            UserDataManager = new UserDataManager(this);
+            InstallationManager = new InstallationManager(this, ZipClient, Logger);
+            LibraryManager = new LibraryManager(this, Logger);
+            UserManager = new UserManager(this, Logger);
+            FFMpegManager = new FFMpegManager(this, ZipClient, Logger);
+            ImageManager = new ImageManager(this, Logger);
+            ProviderManager = new ProviderManager(this, Logger);
+            UserDataManager = new UserDataManager(this, Logger);
             PluginSecurityManager = new PluginSecurityManager(this);
 
             await base.ReloadInternal().ConfigureAwait(false);
@@ -489,7 +489,7 @@ namespace MediaBrowser.Controller
         {
             DisposeFileSystemManager();
 
-            FileSystemManager = new FileSystemManager(this);
+            FileSystemManager = new FileSystemManager(this, Logger);
             FileSystemManager.StartWatchers();
         }
 

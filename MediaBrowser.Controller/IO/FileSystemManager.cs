@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Threading;
@@ -22,13 +23,20 @@ namespace MediaBrowser.Controller.IO
         private DirectoryWatchers DirectoryWatchers { get; set; }
 
         /// <summary>
+        /// The _logger
+        /// </summary>
+        private readonly ILogger _logger;
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="FileSystemManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        public FileSystemManager(Kernel kernel)
+        /// <param name="logger">The logger.</param>
+        public FileSystemManager(Kernel kernel, ILogger logger)
             : base(kernel)
         {
-            DirectoryWatchers = new DirectoryWatchers(Logger);
+            _logger = logger;
+            DirectoryWatchers = new DirectoryWatchers(logger);
         }
 
         /// <summary>

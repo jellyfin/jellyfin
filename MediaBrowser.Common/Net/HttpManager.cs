@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Concurrent;
@@ -21,12 +22,19 @@ namespace MediaBrowser.Common.Net
     public class HttpManager : BaseManager<IKernel>
     {
         /// <summary>
+        /// The _logger
+        /// </summary>
+        private readonly ILogger _logger;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="HttpManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        public HttpManager(IKernel kernel)
+        /// <param name="logger">The logger.</param>
+        public HttpManager(IKernel kernel, ILogger logger)
             : base(kernel)
         {
+            _logger = logger;
         }
 
         /// <summary>
@@ -83,7 +91,7 @@ namespace MediaBrowser.Common.Net
 
             await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            Logger.Info("HttpManager.Get url: {0}", url);
+            _logger.Info("HttpManager.Get url: {0}", url);
 
             try
             {
@@ -101,7 +109,7 @@ namespace MediaBrowser.Common.Net
             }
             catch (HttpRequestException ex)
             {
-                Logger.ErrorException("Error getting response from " + url, ex);
+                _logger.ErrorException("Error getting response from " + url, ex);
 
                 throw new HttpException(ex.Message, ex);
             }
@@ -138,7 +146,7 @@ namespace MediaBrowser.Common.Net
 
             await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            Logger.Info("HttpManager.Post url: {0}", url);
+            _logger.Info("HttpManager.Post url: {0}", url);
 
             try
             {
@@ -156,7 +164,7 @@ namespace MediaBrowser.Common.Net
             }
             catch (HttpRequestException ex)
             {
-                Logger.ErrorException("Error getting response from " + url, ex);
+                _logger.ErrorException("Error getting response from " + url, ex);
 
                 throw new HttpException(ex.Message, ex);
             }
@@ -199,7 +207,7 @@ namespace MediaBrowser.Common.Net
 
             await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            Logger.Info("HttpManager.FetchToTempFile url: {0}, temp file: {1}", url, tempFile);
+            _logger.Info("HttpManager.FetchToTempFile url: {0}, temp file: {1}", url, tempFile);
 
             try
             {
@@ -257,7 +265,7 @@ namespace MediaBrowser.Common.Net
             }
             catch (HttpRequestException ex)
             {
-                Logger.ErrorException("Error getting response from " + url, ex);
+                _logger.ErrorException("Error getting response from " + url, ex);
 
                 // Cleanup
                 if (File.Exists(tempFile))
@@ -269,7 +277,7 @@ namespace MediaBrowser.Common.Net
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error getting response from " + url, ex);
+                _logger.ErrorException("Error getting response from " + url, ex);
 
                 // Cleanup
                 if (File.Exists(tempFile))
@@ -305,7 +313,7 @@ namespace MediaBrowser.Common.Net
 
             var ms = new MemoryStream();
 
-            Logger.Info("HttpManager.FetchToMemoryStream url: {0}", url);
+            _logger.Info("HttpManager.FetchToMemoryStream url: {0}", url);
 
             try
             {
@@ -337,7 +345,7 @@ namespace MediaBrowser.Common.Net
             }
             catch (HttpRequestException ex)
             {
-                Logger.ErrorException("Error getting response from " + url, ex);
+                _logger.ErrorException("Error getting response from " + url, ex);
 
                 ms.Dispose();
 
@@ -345,7 +353,7 @@ namespace MediaBrowser.Common.Net
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error getting response from " + url, ex);
+                _logger.ErrorException("Error getting response from " + url, ex);
 
                 ms.Dispose();
 
@@ -427,7 +435,7 @@ namespace MediaBrowser.Common.Net
             {
                 var msg = string.Format("Connection to {0} timed out", url);
 
-                Logger.Error(msg);
+                _logger.Error(msg);
 
                 // Throw an HttpException so that the caller doesn't think it was cancelled by user code
                 return new HttpException(msg, exception) { IsTimedOut = true };

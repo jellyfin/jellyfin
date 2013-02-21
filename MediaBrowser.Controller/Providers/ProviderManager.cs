@@ -2,7 +2,7 @@
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -30,12 +30,19 @@ namespace MediaBrowser.Controller.Providers
             new ConcurrentDictionary<string, Tuple<BaseMetadataProvider, BaseItem, CancellationTokenSource>>();
 
         /// <summary>
+        /// The _logger
+        /// </summary>
+        private readonly ILogger _logger;
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        public ProviderManager(Kernel kernel)
+        /// <param name="logger">The logger.</param>
+        public ProviderManager(Kernel kernel, ILogger logger)
             : base(kernel)
         {
+            _logger = logger;
             _remoteImageCache = new FileSystemRepository(ImagesDataPath);
         }
 
@@ -118,7 +125,7 @@ namespace MediaBrowser.Controller.Providers
             // If providers have changed, clear provider info and update the supported providers hash
             if (providersChanged)
             {
-                Logger.Debug("Providers changed for {0}. Clearing and forcing refresh.", item.Name);
+                _logger.Debug("Providers changed for {0}. Clearing and forcing refresh.", item.Name);
                 item.ProviderData.Clear();
                 supportedProvidersInfo.FileSystemStamp = supportedProvidersHash;
             }
@@ -233,7 +240,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         internal void ValidateCurrentlyRunningProviders()
         {
-            Logger.Info("Validing currently running providers");
+            _logger.Info("Validing currently running providers");
 
             var enableInternetProviders = Kernel.Configuration.EnableInternetProviders;
             var internetProviderExcludeTypes = Kernel.Configuration.InternetProviderExcludeTypes;
@@ -303,7 +310,7 @@ namespace MediaBrowser.Controller.Providers
                 }
                 catch (Exception e)
                 {
-                    Logger.ErrorException("Error downloading and saving image " + localPath, e);
+                    _logger.ErrorException("Error downloading and saving image " + localPath, e);
                     throw;
                 }
                 finally
