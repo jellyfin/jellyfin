@@ -314,13 +314,13 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="MediaBrowser.Api.dll">
+    <Content Include="CorePlugins\MediaBrowser.Api.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="MediaBrowser.ApiInteraction.Javascript.dll">
+    <Content Include="CorePlugins\MediaBrowser.ApiInteraction.Javascript.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="MediaBrowser.WebDashboard.dll">
+    <Content Include="CorePlugins\MediaBrowser.WebDashboard.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="x64\SQLite.Interop.dll">

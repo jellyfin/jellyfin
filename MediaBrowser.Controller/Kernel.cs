@@ -412,18 +412,6 @@ namespace MediaBrowser.Controller
             await Task.WhenAll(itemRepoTask, userRepoTask, userDataRepoTask, displayPreferencesRepoTask).ConfigureAwait(false);
         }
 
-        protected override IEnumerable<Assembly> GetComposablePartAssemblies()
-        {
-            var runningDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
-
-            return base.GetComposablePartAssemblies().Concat(new[] { 
-            
-                Assembly.Load(File.ReadAllBytes(Path.Combine(runningDirectory, "MediaBrowser.Api.dll"))),
-                Assembly.Load(File.ReadAllBytes(Path.Combine(runningDirectory, "MediaBrowser.ApiInteraction.Javascript.dll"))),
-                Assembly.Load(File.ReadAllBytes(Path.Combine(runningDirectory, "MediaBrowser.WebDashboard.dll")))
-            });
-        }
-
         /// <summary>
         /// Gets a repository by name from a list, and returns the default if not found
         /// </summary>
