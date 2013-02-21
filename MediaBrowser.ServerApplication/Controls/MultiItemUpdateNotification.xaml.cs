@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,7 +20,7 @@ namespace MediaBrowser.ServerApplication.Controls
         /// <summary>
         /// The logger
         /// </summary>
-        private static readonly ILogger Logger = LogManager.GetLogger("MultiItemUpdateNotification");
+        private readonly ILogger Logger;
 
         /// <summary>
         /// Gets the children changed event args.
@@ -33,8 +34,15 @@ namespace MediaBrowser.ServerApplication.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="MultiItemUpdateNotification" /> class.
         /// </summary>
-        public MultiItemUpdateNotification()
+        public MultiItemUpdateNotification(ILogger logger)
         {
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+
+            Logger = logger;
+
             InitializeComponent();
 
             Loaded += MultiItemUpdateNotification_Loaded;

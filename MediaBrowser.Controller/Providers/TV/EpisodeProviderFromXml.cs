@@ -115,7 +115,7 @@ namespace MediaBrowser.Controller.Providers.TV
                 return false;
             }
 
-            new EpisodeXmlParser().Fetch(item, metadataFile, cancellationToken);
+            new EpisodeXmlParser(Logger).Fetch(item, metadataFile, cancellationToken);
             return true;
         }
     }

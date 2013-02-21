@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -32,6 +33,16 @@ namespace MediaBrowser.Server.Sqlite
             {
                 return RepositoryName;
             }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SQLiteUserDataRepository" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        [ImportingConstructor]
+        protected SQLiteUserDataRepository([Import("logger")] ILogger logger)
+            : base(logger)
+        {
         }
 
         /// <summary>
@@ -108,7 +119,7 @@ namespace MediaBrowser.Server.Sqlite
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>IEnumerable{UserItemData}.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="System.ArgumentNullException">item</exception>
         public IEnumerable<UserItemData> RetrieveUserData(BaseItem item)
         {
             if (item == null)

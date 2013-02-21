@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller;
+using MediaBrowser.Model.Logging;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 
@@ -18,6 +19,17 @@ namespace MediaBrowser.WebDashboard.Api
         protected override string Name
         {
             get { return "DashboardInfo"; }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DashboardInfoWebSocketListener" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        [ImportingConstructor]
+        public DashboardInfoWebSocketListener([Import("logger")] ILogger logger)
+            : base(logger)
+        {
+
         }
 
         /// <summary>

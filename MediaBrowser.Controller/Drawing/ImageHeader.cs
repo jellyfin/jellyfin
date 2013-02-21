@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Drawing
 {
@@ -36,9 +37,10 @@ namespace MediaBrowser.Controller.Drawing
         /// Gets the dimensions of an image.
         /// </summary>
         /// <param name="path">The path of the image to get the dimensions of.</param>
+        /// <param name="logger">The logger.</param>
         /// <returns>The dimensions of the specified image.</returns>
         /// <exception cref="ArgumentException">The image was of an unrecognised format.</exception>
-        public static Size GetDimensions(string path)
+        public static Size GetDimensions(string path, ILogger logger)
         {
             try
             {
@@ -52,7 +54,7 @@ namespace MediaBrowser.Controller.Drawing
             }
             catch
             {
-                Logger.LogInfo("Failed to read image header for {0}. Doing it the slow way.", path);
+                logger.Info("Failed to read image header for {0}. Doing it the slow way.", path);
 
                 using (var fs = File.OpenRead(path))
                 {

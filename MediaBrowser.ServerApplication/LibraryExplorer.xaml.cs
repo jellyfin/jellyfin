@@ -18,6 +18,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.ServerApplication
 {
@@ -26,6 +27,8 @@ namespace MediaBrowser.ServerApplication
     /// </summary>
     public partial class LibraryExplorer : Window
     {
+        private ILogger _logger;
+
         /// <summary>
         /// The current user
         /// </summary>
@@ -33,8 +36,10 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryExplorer" /> class.
         /// </summary>
-        public LibraryExplorer()
+        public LibraryExplorer(ILogger logger)
         {
+            _logger = logger;
+
             InitializeComponent();
             lblVersion.Content = "Version: " + Kernel.Instance.DisplayVersion;
             foreach (var user in Kernel.Instance.Users)
@@ -311,7 +316,7 @@ namespace MediaBrowser.ServerApplication
                                                     {
                                                         using (
                                                             new Profiler("Explorer full index expansion for " +
-                                                                         folder.Name))
+                                                                         folder.Name, _logger))
                                                         {
                                                             //re-build the current item's children as an index
                                                             prefs.IndexBy = ddlIndexBy.SelectedItem as string;
@@ -352,7 +357,7 @@ namespace MediaBrowser.ServerApplication
                                                     {
                                                         using (
                                                             new Profiler("Explorer sorting by " + ddlSortBy.SelectedItem + " for " +
-                                                                         folder.Name))
+                                                                         folder.Name, _logger))
                                                         {
                                                             //re-sort
                                                             prefs.SortBy = ddlSortBy.SelectedItem as string;

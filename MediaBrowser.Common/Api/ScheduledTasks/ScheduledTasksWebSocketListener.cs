@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -22,7 +23,18 @@ namespace MediaBrowser.Common.Api.ScheduledTasks
         {
             get { return "ScheduledTasksInfo"; }
         }
-        
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ScheduledTasksWebSocketListener" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        [ImportingConstructor]
+        public ScheduledTasksWebSocketListener([Import("logger")] ILogger logger)
+            : base(logger)
+        {
+
+        }
+
         /// <summary>
         /// Gets the data to send.
         /// </summary>

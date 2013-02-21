@@ -70,9 +70,14 @@ namespace MediaBrowser.Controller.IO
         /// <summary>
         /// Initializes a new instance of the <see cref="DirectoryWatchers" /> class.
         /// </summary>
-        public DirectoryWatchers()
+        public DirectoryWatchers(ILogger logger)
         {
-            Logger = LogManager.GetLogger(GetType().Name);
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+
+            Logger = logger;
         }
         
         /// <summary>

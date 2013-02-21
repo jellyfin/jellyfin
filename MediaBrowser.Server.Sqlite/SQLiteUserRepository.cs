@@ -9,6 +9,7 @@ using System.Data;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Server.Sqlite
 {
@@ -33,6 +34,16 @@ namespace MediaBrowser.Server.Sqlite
             {
                 return RepositoryName;
             }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SQLiteUserDataRepository" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        [ImportingConstructor]
+        protected SQLiteUserRepository([Import("logger")] ILogger logger)
+            : base(logger)
+        {
         }
 
         /// <summary>

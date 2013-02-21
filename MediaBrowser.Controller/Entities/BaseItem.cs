@@ -16,6 +16,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -92,6 +93,11 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The date modified.</value>
         public DateTime DateModified { get; set; }
+
+        /// <summary>
+        /// The logger
+        /// </summary>
+        protected static ILogger Logger = LogManager.GetLogger("BaseItem");
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -268,7 +274,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 catch (IOException ex)
                 {
-                    Logger.LogException("Error creating resolve args for ", ex, Path);
+                    Logger.ErrorException("Error creating resolve args for ", ex, Path);
 
                     throw;
                 }
@@ -581,7 +587,7 @@ namespace MediaBrowser.Controller.Entities
             }
             catch (IOException ex)
             {
-                Logger.LogException("Error getting ResolveArgs for {0}", ex, Path);
+                Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
                 return new List<Video> { };
             }
 
@@ -606,7 +612,7 @@ namespace MediaBrowser.Controller.Entities
             }
             catch (IOException ex)
             {
-                Logger.LogException("Error loading trailers for {0}", ex, Name);
+                Logger.ErrorException("Error loading trailers for {0}", ex, Name);
                 return new List<Video> { };
             }
 
@@ -975,7 +981,7 @@ namespace MediaBrowser.Controller.Entities
             var changed = copy.DateModified != DateModified;
             if (changed)
             {
-                Logger.LogDebugInfo(Name + " changed - original creation: " + DateCreated + " new creation: " + copy.DateCreated + " original modified: " + DateModified + " new modified: " + copy.DateModified);
+                Logger.Debug(Name + " changed - original creation: " + DateCreated + " new creation: " + copy.DateCreated + " original modified: " + DateModified + " new modified: " + copy.DateModified);
             }
             return changed;
         }

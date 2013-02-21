@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Common.Kernel
 {
@@ -37,6 +38,25 @@ namespace MediaBrowser.Common.Kernel
         /// <param name="state">The state.</param>
         /// <returns>Task{`1}.</returns>
         protected abstract Task<TReturnDataType> GetDataToSend(TStateType state);
+
+        /// <summary>
+        /// The logger
+        /// </summary>
+        protected ILogger Logger;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BasePeriodicWebSocketListener{TStateType}" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        protected BasePeriodicWebSocketListener(ILogger logger)
+        {
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+
+            Logger = logger;
+        }
 
         /// <summary>
         /// Processes the message internal.
@@ -71,7 +91,7 @@ namespace MediaBrowser.Common.Kernel
 
             var cancellationTokenSource = new CancellationTokenSource();
 
-            Logger.LogInfo("{1} Begin transmitting over websocket to {0}", message.Connection.RemoteEndPoint, GetType().Name);
+            Logger.Info("{1} Begin transmitting over websocket to {0}", message.Connection.RemoteEndPoint, GetType().Name);
 
             var timer = new Timer(TimerCallback, message.Connection, Timeout.Infinite, Timeout.Infinite);
 
@@ -135,7 +155,7 @@ namespace MediaBrowser.Common.Kernel
             }
             catch (Exception ex)
             {
-                Logger.LogException("Error sending web socket message {0}", ex, Name);
+                Logger.ErrorException("Error sending web socket message {0}", ex, Name);
                 DisposeConnection(tuple);
             }
             finally
@@ -167,7 +187,7 @@ namespace MediaBrowser.Common.Kernel
         /// <param name="connection">The connection.</param>
         private void DisposeConnection(Tuple<WebSocketConnection, CancellationTokenSource, Timer, TStateType, SemaphoreSlim> connection)
         {
-            Logger.LogInfo("{1} stop transmitting over websocket to {0}", connection.Item1.RemoteEndPoint, GetType().Name);
+            Logger.Info("{1} stop transmitting over websocket to {0}", connection.Item1.RemoteEndPoint, GetType().Name);
 
             try
             {

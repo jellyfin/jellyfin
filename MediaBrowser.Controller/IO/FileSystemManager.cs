@@ -28,7 +28,7 @@ namespace MediaBrowser.Controller.IO
         public FileSystemManager(Kernel kernel)
             : base(kernel)
         {
-            DirectoryWatchers = new DirectoryWatchers();
+            DirectoryWatchers = new DirectoryWatchers(Logger);
         }
 
         /// <summary>

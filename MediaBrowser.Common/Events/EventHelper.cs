@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Logging;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Threading.Tasks;
 
@@ -9,6 +10,11 @@ namespace MediaBrowser.Common.Events
     /// </summary>
     public static class EventHelper
     {
+        /// <summary>
+        /// The logger
+        /// </summary>
+        private static readonly ILogger Logger = LogManager.GetLogger("EventHelper");
+
         /// <summary>
         /// Fires the event.
         /// </summary>
@@ -27,7 +33,7 @@ namespace MediaBrowser.Common.Events
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogException("Error in event handler", ex);
+                        Logger.ErrorException("Error in event handler", ex);
                     }
                 });
             }
@@ -52,7 +58,7 @@ namespace MediaBrowser.Common.Events
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogException("Error in event handler", ex);
+                        Logger.ErrorException("Error in event handler", ex);
                     }
                 });
             }
@@ -74,7 +80,7 @@ namespace MediaBrowser.Common.Events
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogException("Error in event handler", ex);
+                    Logger.ErrorException("Error in event handler", ex);
                 }
             }
         }
@@ -96,7 +102,7 @@ namespace MediaBrowser.Common.Events
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogException("Error in event handler", ex);
+                    Logger.ErrorException("Error in event handler", ex);
                 }
             }
         }

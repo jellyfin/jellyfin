@@ -2,6 +2,7 @@ using MediaBrowser.Common.Serialization;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -38,6 +39,16 @@ namespace MediaBrowser.Server.Sqlite
             {
                 return RepositoryName;
             }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SQLiteUserDataRepository" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        [ImportingConstructor]
+        protected SQLiteItemRepository([Import("logger")] ILogger logger)
+            : base(logger)
+        {
         }
 
         /// <summary>
@@ -106,7 +117,7 @@ namespace MediaBrowser.Server.Sqlite
                 var serialized = JsonSerializer.SerializeToBytes(item);
 
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 var cmd = connection.CreateCommand();
                 cmd.CommandText = "replace into items (guid, obj_type, data) values (@1, @2, @3)";
                 cmd.AddParam("@1", item.Id);
@@ -128,7 +139,7 @@ namespace MediaBrowser.Server.Sqlite
             {
                 throw new ArgumentException();
             }
-            
+
             return RetrieveItemInternal(id);
         }
 
@@ -144,7 +155,7 @@ namespace MediaBrowser.Server.Sqlite
             {
                 throw new ArgumentException();
             }
-            
+
             var cmd = connection.CreateCommand();
             cmd.CommandText = "select obj_type,data from items where guid = @guid";
             var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
@@ -185,7 +196,7 @@ namespace MediaBrowser.Server.Sqlite
             {
                 throw new ArgumentNullException();
             }
-            
+
             var cmd = connection.CreateCommand();
             cmd.CommandText = "select obj_type,data from items where guid in (select child from children where guid = @guid)";
             var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
@@ -202,7 +213,7 @@ namespace MediaBrowser.Server.Sqlite
                         var itemType = _typeMapper.GetType(type);
                         if (itemType == null)
                         {
-                            Logger.Error("Cannot find type {0}.  Probably belongs to plug-in that is no longer loaded.",type);
+                            Logger.Error("Cannot find type {0}.  Probably belongs to plug-in that is no longer loaded.", type);
                             continue;
                         }
                         var item = JsonSerializer.DeserializeFromStream(stream, itemType) as BaseItem;

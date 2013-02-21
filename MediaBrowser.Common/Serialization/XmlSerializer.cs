@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Common.Serialization
 {
@@ -157,10 +158,11 @@ namespace MediaBrowser.Common.Serialization
         /// </summary>
         /// <param name="type">The type.</param>
         /// <param name="path">The path.</param>
+        /// <param name="logger">The logger.</param>
         /// <returns>System.Object.</returns>
-        public static object GetXmlConfiguration(Type type, string path)
+        public static object GetXmlConfiguration(Type type, string path, ILogger logger)
         {
-            Logger.LogInfo("Loading {0} at {1}", type.Name, path);
+            logger.Info("Loading {0} at {1}", type.Name, path);
 
             object configuration;
 
@@ -184,7 +186,7 @@ namespace MediaBrowser.Common.Serialization
             // If the file didn't exist before, or if something has changed, re-save
             if (buffer == null || !buffer.SequenceEqual(newBytes))
             {
-                Logger.LogInfo("Saving {0} to {1}", type.Name, path);
+                logger.Info("Saving {0} to {1}", type.Name, path);
 
                 // Save it after load in case we got new items
                 File.WriteAllBytes(path, newBytes);
@@ -200,11 +202,12 @@ namespace MediaBrowser.Common.Serialization
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="path">The path.</param>
+        /// <param name="logger">The logger.</param>
         /// <returns>``0.</returns>
-        public static T GetXmlConfiguration<T>(string path)
+        public static T GetXmlConfiguration<T>(string path, ILogger logger)
             where T : class
         {
-            return GetXmlConfiguration(typeof(T), path) as T;
+            return GetXmlConfiguration(typeof(T), path, logger) as T;
         }
     }
 }

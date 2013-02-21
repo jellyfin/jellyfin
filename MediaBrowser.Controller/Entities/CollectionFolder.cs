@@ -83,7 +83,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 catch (IOException ex)
                 {
-                    Logger.LogException("Error creating FolderIds for {0}", ex, Path);
+                    Logger.ErrorException("Error creating FolderIds for {0}", ex, Path);
 
                     folderIds = new Guid[] {};
                 }

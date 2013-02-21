@@ -71,16 +71,22 @@ namespace MediaBrowser.IsoMounter
         /// </summary>
         /// <value>The logger.</value>
         private ILogger Logger { get; set; }
-        
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PismoIsoManager" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
         public PismoIsoManager(ILogger logger)
         {
             Logger = logger;
+
+            _myPfmFileMountUi = new MyPfmFileMountUi(Logger);
         }
 
         /// <summary>
         /// The _my PFM file mount UI
         /// </summary>
-        private readonly MyPfmFileMountUi _myPfmFileMountUi = new MyPfmFileMountUi();
+        private readonly MyPfmFileMountUi _myPfmFileMountUi;
 
         /// <summary>
         /// Mounts the specified iso path.
@@ -151,6 +157,9 @@ namespace MediaBrowser.IsoMounter
             return new PismoMount(mount, isoPath, this, Logger);
         }
 
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);

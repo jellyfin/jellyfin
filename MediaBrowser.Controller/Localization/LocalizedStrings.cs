@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Localization;
 using MediaBrowser.Common.Logging;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Globalization;
@@ -15,6 +16,10 @@ namespace MediaBrowser.Controller.Localization
     /// </summary>
     public class LocalizedStrings
     {
+        /// <summary>
+        /// The logger
+        /// </summary>
+        private static readonly ILogger Logger = LogManager.GetLogger("LocalizedStrings");
         /// <summary>
         /// The base prefix
         /// </summary>
@@ -80,7 +85,7 @@ namespace MediaBrowser.Controller.Localization
             var xs = new XmlSerializer(t);
             var strings = (LocalizedStringData)Activator.CreateInstance(t);
             strings.FileName = file;
-            Logger.LogInfo("Using String Data from {0}", file);
+            Logger.Info("Using String Data from {0}", file);
             if (File.Exists(file))
             {
                 using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read))
@@ -121,17 +126,17 @@ namespace MediaBrowser.Controller.Localization
                 }
                 catch (TargetException ex)
                 {
-                    Logger.LogException("Error getting value for field: {0}", ex, field.Name);
+                    Logger.ErrorException("Error getting value for field: {0}", ex, field.Name);
                     continue;
                 }
                 catch (FieldAccessException ex)
                 {
-                    Logger.LogException("Error getting value for field: {0}", ex, field.Name);
+                    Logger.ErrorException("Error getting value for field: {0}", ex, field.Name);
                     continue;
                 }
                 catch (NotSupportedException ex)
                 {
-                    Logger.LogException("Error getting value for field: {0}", ex, field.Name);
+                    Logger.ErrorException("Error getting value for field: {0}", ex, field.Name);
                     continue;
                 }
 

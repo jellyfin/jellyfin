@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Win32;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,6 +15,11 @@ namespace MediaBrowser.Controller.IO
     /// </summary>
     public static class FileData
     {
+        /// <summary>
+        /// The logger
+        /// </summary>
+        private static readonly ILogger Logger = LogManager.GetLogger("FileData");
+        
         /// <summary>
         /// Gets all file system entries within a foler
         /// </summary>
@@ -87,7 +93,7 @@ namespace MediaBrowser.Controller.IO
                     if (string.IsNullOrWhiteSpace(newPath))
                     {
                         //invalid shortcut - could be old or target could just be unavailable
-                        Logger.LogWarning("Encountered invalid shortuct: "+lpFindFileData.Path);
+                        Logger.Warn("Encountered invalid shortuct: "+lpFindFileData.Path);
                         continue;
                     }
                     var data = FileSystem.GetFileData(newPath);

@@ -189,7 +189,7 @@ namespace MediaBrowser.Common.Plugins
             get
             {
                 // Lazy load
-                LazyInitializer.EnsureInitialized(ref _configuration, ref _configurationInitialized, ref _configurationSyncLock, () => XmlSerializer.GetXmlConfiguration(ConfigurationType, ConfigurationFilePath) as TConfigurationType);
+                LazyInitializer.EnsureInitialized(ref _configuration, ref _configurationInitialized, ref _configurationSyncLock, () => XmlSerializer.GetXmlConfiguration(ConfigurationType, ConfigurationFilePath, Logger) as TConfigurationType);
                 return _configuration;
             }
             protected set
@@ -274,15 +274,21 @@ namespace MediaBrowser.Common.Plugins
         /// Starts the plugin.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
+        /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">kernel</exception>
-        public void Initialize(IKernel kernel)
+        public void Initialize(IKernel kernel, ILogger logger)
         {
             if (kernel == null)
             {
                 throw new ArgumentNullException("kernel");
             }
 
-            Logger = LogManager.GetLogger(Name);
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+            
+            Logger = logger;
             
             Kernel = kernel;
 

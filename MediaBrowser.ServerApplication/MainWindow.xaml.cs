@@ -2,6 +2,7 @@
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.ServerApplication.Controls;
 using System;
 using System.Collections.Generic;
@@ -38,10 +39,24 @@ namespace MediaBrowser.ServerApplication
         private Timer NewItemTimer { get; set; }
 
         /// <summary>
+        /// The _logger
+        /// </summary>
+        private readonly ILogger _logger;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow" /> class.
         /// </summary>
-        public MainWindow()
+        /// <param name="logger">The logger.</param>
+        /// <exception cref="System.ArgumentNullException">logger</exception>
+        public MainWindow(ILogger logger)
         {
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+
+            _logger = logger;
+
             InitializeComponent();
 
             Loaded += MainWindowLoaded;
@@ -145,11 +160,19 @@ namespace MediaBrowser.ServerApplication
             // Show the notification
             if (newItems.Count == 1)
             {
-                Dispatcher.InvokeAsync(() => MbTaskbarIcon.ShowCustomBalloon(new ItemUpdateNotification { DataContext = newItems[0] }, PopupAnimation.Slide, 6000));
+                Dispatcher.InvokeAsync(() => MbTaskbarIcon.ShowCustomBalloon(new ItemUpdateNotification(LogManager.GetLogger("ItemUpdateNotification"))
+                {
+                    DataContext = newItems[0]
+
+                }, PopupAnimation.Slide, 6000));
             }
             else if (newItems.Count > 1)
             {
-                Dispatcher.InvokeAsync(() => MbTaskbarIcon.ShowCustomBalloon(new MultiItemUpdateNotification { DataContext = newItems }, PopupAnimation.Slide, 6000));
+                Dispatcher.InvokeAsync(() => MbTaskbarIcon.ShowCustomBalloon(new MultiItemUpdateNotification(LogManager.GetLogger("ItemUpdateNotification"))
+                {
+                    DataContext = newItems
+
+                }, PopupAnimation.Slide, 6000));
             }
         }
 
@@ -246,7 +269,7 @@ namespace MediaBrowser.ServerApplication
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogException("Error in event handler", ex);
+                    _logger.ErrorException("Error in event handler", ex);
                 }
             }
         }
@@ -259,7 +282,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void cmOpenExplorer_click(object sender, RoutedEventArgs e)
         {
-            (new LibraryExplorer()).Show();
+            (new LibraryExplorer(_logger)).Show();
         }
 
         /// <summary>
@@ -325,11 +348,5 @@ namespace MediaBrowser.ServerApplication
         }
 
         #endregion
-
-        private void cmdApiDocs_Click_1(object sender, RoutedEventArgs e)
-        {
-
-        }
-
     }
 }

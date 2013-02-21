@@ -107,8 +107,9 @@ namespace MediaBrowser.Common.Plugins
         /// Starts the plugin.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
+        /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">kernel</exception>
-        void Initialize(IKernel kernel);
+        void Initialize(IKernel kernel, ILogger logger);
 
         /// <summary>
         /// Disposes the plugins. Undos all actions performed during Init.

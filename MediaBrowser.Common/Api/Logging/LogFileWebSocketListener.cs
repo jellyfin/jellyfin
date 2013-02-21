@@ -6,6 +6,7 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Common.Api.Logging
 {
@@ -22,6 +23,17 @@ namespace MediaBrowser.Common.Api.Logging
         protected override string Name
         {
             get { return "LogFile"; }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LogFileWebSocketListener" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        [ImportingConstructor]
+        public LogFileWebSocketListener([Import("logger")] ILogger logger)
+            : base(logger)
+        {
+
         }
 
         /// <summary>

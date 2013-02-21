@@ -170,7 +170,7 @@ namespace MediaBrowser.Controller.Entities
             get
             {
                 // Lazy load
-                LazyInitializer.EnsureInitialized(ref _configuration, ref _configurationInitialized, ref _configurationSyncLock, () => XmlSerializer.GetXmlConfiguration<UserConfiguration>(ConfigurationFilePath));
+                LazyInitializer.EnsureInitialized(ref _configuration, ref _configurationInitialized, ref _configurationSyncLock, () => XmlSerializer.GetXmlConfiguration<UserConfiguration>(ConfigurationFilePath, Logger));
                 return _configuration;
             }
             private set
@@ -208,7 +208,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         public async Task ValidateMediaLibrary(IProgress<TaskProgress> progress, CancellationToken cancellationToken)
         {
-            Logger.LogInfo("Validating media library for {0}", Name);
+            Logger.Info("Validating media library for {0}", Name);
             await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -224,7 +224,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         public async Task ValidateCollectionFolders(IProgress<TaskProgress> progress, CancellationToken cancellationToken)
         {
-            Logger.LogInfo("Validating collection folders for {0}", Name);
+            Logger.Info("Validating collection folders for {0}", Name);
             await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
