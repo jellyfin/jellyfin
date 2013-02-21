@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" Height="257.143" Width="502.041">
+             mc:Ignorable="d" Height="129.167" Width="421.27">
     <UserControl.Resources>
         <Style TargetType="Ellipse">
             <Setter Property="Fill" Value="LightGray" />
@@ -12,27 +12,27 @@
         </Style>
     </UserControl.Resources>
     <Canvas Height="58" Width="275">
-        <Ellipse Canvas.Left="56" Canvas.Top="23" />
-        <Ellipse Canvas.Left="70" Canvas.Top="23" />
-        <Ellipse Canvas.Left="84" Canvas.Top="23" />
-        <Ellipse Canvas.Left="98" Canvas.Top="23" />
-        <Ellipse Canvas.Left="112" Canvas.Top="23" />
-        <Ellipse Canvas.Left="126" Canvas.Top="23" />
-        <Ellipse Canvas.Left="140" Canvas.Top="23" />
-        <Ellipse Canvas.Left="154" Canvas.Top="23" />
-        <Ellipse Canvas.Left="168" Canvas.Top="23" />
-        <Ellipse Canvas.Left="182" Canvas.Top="23" />
-        <Ellipse Canvas.Left="196" Canvas.Top="23" />
-        <Ellipse Canvas.Left="210" Canvas.Top="23" />
-        <Canvas Canvas.Left="10" Canvas.Top="19" 
+        <Ellipse Canvas.Left="63" Canvas.Top="23" />
+        <Ellipse Canvas.Left="77" Canvas.Top="23" />
+        <Ellipse Canvas.Left="91" Canvas.Top="23" />
+        <Ellipse Canvas.Left="105" Canvas.Top="23" />
+        <Ellipse Canvas.Left="119" Canvas.Top="23" />
+        <Ellipse Canvas.Left="133" Canvas.Top="23" />
+        <Ellipse Canvas.Left="147" Canvas.Top="23" />
+        <Ellipse Canvas.Left="161" Canvas.Top="23" />
+        <Ellipse Canvas.Left="175" Canvas.Top="23" />
+        <Ellipse Canvas.Left="189" Canvas.Top="23" />
+        <Ellipse Canvas.Left="203" Canvas.Top="23" />
+        <Ellipse Canvas.Left="217" Canvas.Top="23" />
+        <Canvas Canvas.Left="17" Canvas.Top="19" 
 		Name="SlidingCanvas" Height="17" Width="46">
             <Ellipse Canvas.Left="4" Canvas.Top="4" Fill="Orange" />
             <Ellipse Canvas.Left="18" Canvas.Top="4" Fill="Orange" />
             <Ellipse Canvas.Left="32" Canvas.Top="4" Fill="Orange" />
         </Canvas>
-        <Image Canvas.Left="-49" Canvas.Top="-19" 
-		Source="/MediaBrowser.Server.Installer;component/Code/Images/internet-globe.jpg" Stretch="None" Height="94" Width="100" RenderTransformOrigin="0.341,0.403" />
-        <Image Canvas.Left="224" Canvas.Top="-25" 
+        <Image Canvas.Left="-42" Canvas.Top="-19" 
+		Source="Images\internet-globe.jpg" Stretch="None" Height="94" Width="100" RenderTransformOrigin="0.341,0.403" />
+        <Image Canvas.Left="231" Canvas.Top="-25" 
 		Source="Images\computer_256.png" Height="100" Width="100" Stretch="None" />
     </Canvas>
             
