@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Net;
 using MediaBrowser.UI.Controller;
 using MediaBrowser.UI.Playback;
@@ -33,12 +33,12 @@ namespace MediaBrowser.UI.Pages
         /// <summary>
         /// The _item
         /// </summary>
-        private DtoBaseItem _item;
+        private BaseItemDto _item;
         /// <summary>
         /// Gets or sets the item.
         /// </summary>
         /// <value>The item.</value>
-        public DtoBaseItem Item
+        public BaseItemDto Item
         {
             get { return _item; }
 
@@ -133,7 +133,7 @@ namespace MediaBrowser.UI.Pages
         {
             await UIKernel.Instance.PlaybackManager.Play(new PlayOptions
             {
-                Items = new List<DtoBaseItem> { Item }
+                Items = new List<BaseItemDto> { Item }
             });
         }
 
@@ -144,7 +144,7 @@ namespace MediaBrowser.UI.Pages
         {
             await UIKernel.Instance.PlaybackManager.Play(new PlayOptions
             {
-                Items = new List<DtoBaseItem> { Item },
+                Items = new List<BaseItemDto> { Item },
                 Resume = true
             });
         }

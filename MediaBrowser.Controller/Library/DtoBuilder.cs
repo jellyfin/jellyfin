@@ -4,7 +4,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -34,7 +34,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fields">The fields.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public async static Task<DtoBaseItem> GetDtoBaseItem(BaseItem item, List<ItemFields> fields)
+        public async static Task<BaseItemDto> GetDtoBaseItem(BaseItem item, List<ItemFields> fields)
         {
             if (item == null)
             {
@@ -45,7 +45,7 @@ namespace MediaBrowser.Controller.Library
                 throw new ArgumentNullException("fields");
             }
 
-            var dto = new DtoBaseItem();
+            var dto = new BaseItemDto();
 
             var tasks = new List<Task>();
 
@@ -91,7 +91,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fields">The fields.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public async static Task<DtoBaseItem> GetDtoBaseItem(BaseItem item, User user, List<ItemFields> fields)
+        public async static Task<BaseItemDto> GetDtoBaseItem(BaseItem item, User user, List<ItemFields> fields)
         {
             if (item == null)
             {
@@ -106,7 +106,7 @@ namespace MediaBrowser.Controller.Library
                 throw new ArgumentNullException("fields");
             }
 
-            var dto = new DtoBaseItem();
+            var dto = new BaseItemDto();
 
             var tasks = new List<Task>();
 
@@ -153,7 +153,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <param name="fields">The fields.</param>
-        private static void AttachUserSpecificInfo(DtoBaseItem dto, BaseItem item, User user, List<ItemFields> fields)
+        private static void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, List<ItemFields> fields)
         {
             dto.IsNew = item.IsRecentlyAdded(user);
 
@@ -192,7 +192,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
         /// <returns>Task.</returns>
-        private static async Task AttachPrimaryImageAspectRatio(DtoBaseItem dto, BaseItem item)
+        private static async Task AttachPrimaryImageAspectRatio(BaseItemDto dto, BaseItem item)
         {
             var path = item.PrimaryImagePath;
 
@@ -234,7 +234,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
         /// <param name="fields">The fields.</param>
-        private static void AttachBasicFields(DtoBaseItem dto, BaseItem item, List<ItemFields> fields)
+        private static void AttachBasicFields(BaseItemDto dto, BaseItem item, List<ItemFields> fields)
         {
             if (fields.Contains(ItemFields.DateCreated))
             {
@@ -467,7 +467,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="folder">The folder.</param>
         /// <param name="user">The user.</param>
         /// <param name="dto">The dto.</param>
-        private static void SetSpecialCounts(Folder folder, User user, DtoBaseItem dto)
+        private static void SetSpecialCounts(Folder folder, User user, BaseItemDto dto)
         {
             var utcNow = DateTime.UtcNow;
 
@@ -555,7 +555,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
         /// <returns>Task.</returns>
-        private static async Task AttachPeople(DtoBaseItem dto, BaseItem item)
+        private static async Task AttachPeople(BaseItemDto dto, BaseItem item)
         {
             if (item.People == null)
             {
@@ -675,14 +675,14 @@ namespace MediaBrowser.Controller.Library
         /// <param name="data">The data.</param>
         /// <returns>DtoUserItemData.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public static DtoUserItemData GetDtoUserItemData(UserItemData data)
+        public static UserItemDataDto GetDtoUserItemData(UserItemData data)
         {
             if (data == null)
             {
                 throw new ArgumentNullException();
             }
 
-            return new DtoUserItemData
+            return new UserItemDataDto
             {
                 IsFavorite = data.IsFavorite,
                 Likes = data.Likes,
@@ -786,14 +786,14 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <returns>DtoUser.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        public static DtoUser GetDtoUser(User user)
+        public static UserDto GetDtoUser(User user)
         {
             if (user == null)
             {
                 throw new ArgumentNullException("user");
             }
 
-            var dto = new DtoUser
+            var dto = new UserDto
             {
                 Id = user.Id,
                 Name = user.Name,

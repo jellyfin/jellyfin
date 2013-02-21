@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Net;
 using MediaBrowser.UI;
 using MediaBrowser.UI.Controller;
@@ -162,7 +162,7 @@ namespace MediaBrowser.Plugins.DefaultTheme.Resources
         /// Sets the page title.
         /// </summary>
         /// <param name="item">The item.</param>
-        public async Task SetPageTitle(DtoBaseItem item)
+        public async Task SetPageTitle(BaseItemDto item)
         {
             if (item.HasLogo || !string.IsNullOrEmpty(item.ParentLogoItemId))
             {
@@ -193,7 +193,7 @@ namespace MediaBrowser.Plugins.DefaultTheme.Resources
         /// Sets the page title text.
         /// </summary>
         /// <param name="item">The item.</param>
-        private void SetPageTitleText(DtoBaseItem item)
+        private void SetPageTitleText(BaseItemDto item)
         {
             SetPageTitle(item.SeriesName ?? item.Album ?? item.Name);
         }

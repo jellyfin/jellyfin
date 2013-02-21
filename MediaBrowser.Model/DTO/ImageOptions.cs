@@ -2,7 +2,7 @@
 using System;
 using MediaBrowser.Model.Entities;
 
-namespace MediaBrowser.Model.DTO
+namespace MediaBrowser.Model.Dto
 {
     /// <summary>
     /// Class ImageOptions

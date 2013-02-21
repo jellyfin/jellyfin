@@ -2,7 +2,7 @@
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using ServiceStack.ServiceHost;
 using System;
@@ -100,7 +100,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="user">The user.</param>
         /// <param name="fields">The fields.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
-        private async Task<DtoBaseItem> GetDto(Tuple<string, Func<int>> stub, User user, List<ItemFields> fields)
+        private async Task<BaseItemDto> GetDto(Tuple<string, Func<int>> stub, User user, List<ItemFields> fields)
         {
             BaseItem item;
 

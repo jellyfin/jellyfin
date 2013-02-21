@@ -5,14 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace MediaBrowser.Model.DTO
+namespace MediaBrowser.Model.Dto
 {
     /// <summary>
     /// This is strictly used as a data transfer object from the api layer.
     /// This holds information about a BaseItem in a format that is convenient for the client.
     /// </summary>
     [ProtoContract]
-    public class DtoBaseItem : IHasProviderIds, INotifyPropertyChanged
+    public class BaseItemDto : IHasProviderIds, INotifyPropertyChanged
     {
         /// <summary>
         /// Gets or sets the name.
@@ -229,7 +229,7 @@ namespace MediaBrowser.Model.DTO
         /// </summary>
         /// <value>The user data.</value>
         [ProtoMember(36)]
-        public DtoUserItemData UserData { get; set; }
+        public UserItemDataDto UserData { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is new.

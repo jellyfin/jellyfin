@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using System;
 using System.Collections.Generic;
 
@@ -13,7 +13,7 @@ namespace MediaBrowser.UI.Playback
         /// Gets or sets the items.
         /// </summary>
         /// <value>The items.</value>
-        public List<DtoBaseItem> Items { get; set; }
+        public List<BaseItemDto> Items { get; set; }
 
         /// <summary>
         /// If true, the PlayableItems will be shuffled before playback

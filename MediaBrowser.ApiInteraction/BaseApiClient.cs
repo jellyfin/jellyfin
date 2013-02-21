@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Model.Connectivity;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Web;
@@ -275,7 +275,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public string GetImageUrl(DtoBaseItem item, ImageOptions options)
+        public string GetImageUrl(BaseItemDto item, ImageOptions options)
         {
             if (item == null)
             {
@@ -331,7 +331,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        public string GetUserImageUrl(DtoUser user, ImageOptions options)
+        public string GetUserImageUrl(UserDto user, ImageOptions options)
         {
             if (user == null)
             {
@@ -398,7 +398,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public string GetPersonImageUrl(DtoBaseItem item, ImageOptions options)
+        public string GetPersonImageUrl(BaseItemDto item, ImageOptions options)
         {
             if (item == null)
             {
@@ -441,7 +441,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public string GetYearImageUrl(DtoBaseItem item, ImageOptions options)
+        public string GetYearImageUrl(BaseItemDto item, ImageOptions options)
         {
             if (item == null)
             {
@@ -478,7 +478,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public string GetGenreImageUrl(DtoBaseItem item, ImageOptions options)
+        public string GetGenreImageUrl(BaseItemDto item, ImageOptions options)
         {
             if (item == null)
             {
@@ -521,7 +521,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public string GetStudioImageUrl(DtoBaseItem item, ImageOptions options)
+        public string GetStudioImageUrl(BaseItemDto item, ImageOptions options)
         {
             if (item == null)
             {
@@ -564,7 +564,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="options">The options.</param>
         /// <returns>System.String[][].</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public string[] GetBackdropImageUrls(DtoBaseItem item, ImageOptions options)
+        public string[] GetBackdropImageUrls(BaseItemDto item, ImageOptions options)
         {
             if (item == null)
             {
@@ -617,7 +617,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public string GetLogoImageUrl(DtoBaseItem item, ImageOptions options)
+        public string GetLogoImageUrl(BaseItemDto item, ImageOptions options)
         {
             if (item == null)
             {

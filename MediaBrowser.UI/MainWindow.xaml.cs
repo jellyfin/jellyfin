@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Logging;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Net;
 using MediaBrowser.UI.Controller;
 using MediaBrowser.UI.Controls;
@@ -197,10 +197,10 @@ namespace MediaBrowser.UI
         }
 
         /// <summary>
-        /// Sets the backdrop based on a DtoBaseItem
+        /// Sets the backdrop based on a BaseItemDto
         /// </summary>
         /// <param name="item">The item.</param>
-        public void SetBackdrops(DtoBaseItem item)
+        public void SetBackdrops(BaseItemDto item)
         {
             var urls = App.Instance.ApiClient.GetBackdropImageUrls(item, new ImageOptions
             {

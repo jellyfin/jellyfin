@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.UI;
 using MediaBrowser.UI.Controller;
 using MediaBrowser.UI.ViewModels;

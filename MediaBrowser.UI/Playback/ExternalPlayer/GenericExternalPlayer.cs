@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using System.ComponentModel.Composition;
 
 namespace MediaBrowser.UI.Playback.ExternalPlayer
@@ -23,7 +23,7 @@ namespace MediaBrowser.UI.Playback.ExternalPlayer
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns><c>true</c> if this instance can play the specified item; otherwise, <c>false</c>.</returns>
-        public override bool CanPlay(DtoBaseItem item)
+        public override bool CanPlay(BaseItemDto item)
         {
             return false;
         }

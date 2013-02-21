@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.UI.Configuration;
 using System.Collections.Generic;
 using System.Windows;
@@ -21,7 +21,7 @@ namespace MediaBrowser.UI.Playback.InternalPlayer
         /// <param name="items">The items.</param>
         /// <param name="options">The options.</param>
         /// <param name="playerConfiguration">The player configuration.</param>
-        protected override void PlayInternal(List<DtoBaseItem> items, PlayOptions options, PlayerConfiguration playerConfiguration)
+        protected override void PlayInternal(List<BaseItemDto> items, PlayOptions options, PlayerConfiguration playerConfiguration)
         {
             App.Instance.ApplicationWindow.Dispatcher.Invoke(() =>
             {

@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Net;
 using System;
 using System.Globalization;
@@ -21,7 +21,7 @@ namespace MediaBrowser.UI.Converters
         /// <returns>A converted value. If the method returns null, the valid null value is used.</returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var user = value as DtoUser;
+            var user = value as UserDto;
 
             if (user != null && user.HasPrimaryImage)
             {

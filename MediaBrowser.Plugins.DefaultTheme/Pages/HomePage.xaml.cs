@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Plugins.DefaultTheme.Resources;
@@ -192,7 +192,7 @@ namespace MediaBrowser.Plugins.DefaultTheme.Pages
             }
             else
             {
-                SetResumableItems(new DtoBaseItem[] { });
+                SetResumableItems(new BaseItemDto[] { });
             }
 
             // Recently Added Items
@@ -202,7 +202,7 @@ namespace MediaBrowser.Plugins.DefaultTheme.Pages
             }
             else
             {
-                SetRecentlyAddedItems(new DtoBaseItem[] { });
+                SetRecentlyAddedItems(new BaseItemDto[] { });
             }
 
             // Recently Played Items
@@ -212,7 +212,7 @@ namespace MediaBrowser.Plugins.DefaultTheme.Pages
             }
             else
             {
-                SetRecentlyPlayedItems(new DtoBaseItem[] { });
+                SetRecentlyPlayedItems(new BaseItemDto[] { });
             }
 
             tasks.Add(RefreshTopPicksAsync());
@@ -407,7 +407,7 @@ namespace MediaBrowser.Plugins.DefaultTheme.Pages
         /// Sets the favorite items.
         /// </summary>
         /// <param name="items">The items.</param>
-        private void SetFavoriteItems(DtoBaseItem[] items)
+        private void SetFavoriteItems(BaseItemDto[] items)
         {
             FavoriteItems = new ItemCollectionViewModel { Items = items, Name = "Favorites" };
         }
@@ -416,7 +416,7 @@ namespace MediaBrowser.Plugins.DefaultTheme.Pages
         /// Sets the resumable items.
         /// </summary>
         /// <param name="items">The items.</param>
-        private void SetResumableItems(DtoBaseItem[] items)
+        private void SetResumableItems(BaseItemDto[] items)
         {
             ResumableItems = new ItemCollectionViewModel { Items = items, Name = "Resume" };
         }
@@ -425,7 +425,7 @@ namespace MediaBrowser.Plugins.DefaultTheme.Pages
         /// Sets the recently played items.
         /// </summary>
         /// <param name="items">The items.</param>
-        private void SetRecentlyPlayedItems(DtoBaseItem[] items)
+        private void SetRecentlyPlayedItems(BaseItemDto[] items)
         {
             RecentlyPlayedItems = new ItemCollectionViewModel { Items = items, Name = "Recently Played" };
         }
@@ -434,7 +434,7 @@ namespace MediaBrowser.Plugins.DefaultTheme.Pages
         /// Sets the recently added items.
         /// </summary>
         /// <param name="items">The items.</param>
-        private void SetRecentlyAddedItems(DtoBaseItem[] items)
+        private void SetRecentlyAddedItems(BaseItemDto[] items)
         {
             RecentlyAddedItems = new ItemCollectionViewModel { Items = items, Name = "Recently Added" };
         }

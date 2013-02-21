@@ -3,7 +3,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using ServiceStack.ServiceHost;
 using System;
@@ -38,7 +38,7 @@ namespace MediaBrowser.Api
     /// Class GetPerson
     /// </summary>
     [Route("/Library/Persons/{Name}", "GET")]
-    public class GetPerson : IReturn<DtoBaseItem>
+    public class GetPerson : IReturn<BaseItemDto>
     {
         /// <summary>
         /// Gets or sets the name.
@@ -51,7 +51,7 @@ namespace MediaBrowser.Api
     /// Class GetStudio
     /// </summary>
     [Route("/Library/Studios/{Name}", "GET")]
-    public class GetStudio : IReturn<DtoBaseItem>
+    public class GetStudio : IReturn<BaseItemDto>
     {
         /// <summary>
         /// Gets or sets the name.
@@ -64,7 +64,7 @@ namespace MediaBrowser.Api
     /// Class GetGenre
     /// </summary>
     [Route("/Library/Genres/{Name}", "GET")]
-    public class GetGenre : IReturn<DtoBaseItem>
+    public class GetGenre : IReturn<BaseItemDto>
     {
         /// <summary>
         /// Gets or sets the name.
@@ -77,7 +77,7 @@ namespace MediaBrowser.Api
     /// Class GetYear
     /// </summary>
     [Route("/Library/Years/{Year}", "GET")]
-    public class GetYear : IReturn<DtoBaseItem>
+    public class GetYear : IReturn<BaseItemDto>
     {
         /// <summary>
         /// Gets or sets the year.

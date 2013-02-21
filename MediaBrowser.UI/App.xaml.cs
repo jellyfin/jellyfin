@@ -6,7 +6,7 @@ using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.UI;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Weather;
 using MediaBrowser.UI.Controller;
@@ -114,12 +114,12 @@ namespace MediaBrowser.UI
         /// <summary>
         /// The _current user
         /// </summary>
-        private DtoUser _currentUser;
+        private UserDto _currentUser;
         /// <summary>
         /// Gets or sets the current user.
         /// </summary>
         /// <value>The current user.</value>
-        public DtoUser CurrentUser
+        public UserDto CurrentUser
         {
             get
             {
@@ -545,7 +545,7 @@ namespace MediaBrowser.UI
         /// Navigates to item.
         /// </summary>
         /// <param name="item">The item.</param>
-        public void NavigateToItem(DtoBaseItem item)
+        public void NavigateToItem(BaseItemDto item)
         {
             if (item.IsRoot.HasValue && item.IsRoot.Value)
             {

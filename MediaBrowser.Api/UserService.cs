@@ -3,7 +3,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Serialization;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace MediaBrowser.Api
     /// Class GetUsers
     /// </summary>
     [Route("/Users", "GET")]
-    public class GetUsers : IReturn<List<DtoUser>>
+    public class GetUsers : IReturn<List<UserDto>>
     {
     }
 
@@ -27,7 +27,7 @@ namespace MediaBrowser.Api
     /// Class GetUser
     /// </summary>
     [Route("/Users/{Id}", "GET")]
-    public class GetUser : IReturn<DtoUser>
+    public class GetUser : IReturn<UserDto>
     {
         /// <summary>
         /// Gets or sets the id.
@@ -122,7 +122,7 @@ namespace MediaBrowser.Api
     /// Class CreateUser
     /// </summary>
     [Route("/Users", "POST")]
-    public class CreateUser : IRequiresRequestStream, IReturn<DtoUser>
+    public class CreateUser : IRequiresRequestStream, IReturn<UserDto>
     {
         /// <summary>
         /// The raw Http Request Input Stream
@@ -265,7 +265,7 @@ namespace MediaBrowser.Api
             
             var kernel = (Kernel)Kernel;
 
-            var dtoUser = JsonSerializer.DeserializeFromStream<DtoUser>(request.RequestStream);
+            var dtoUser = JsonSerializer.DeserializeFromStream<UserDto>(request.RequestStream);
 
             var user = kernel.GetUserById(id);
 
@@ -285,7 +285,7 @@ namespace MediaBrowser.Api
         {
             var kernel = (Kernel)Kernel;
 
-            var dtoUser = JsonSerializer.DeserializeFromStream<DtoUser>(request.RequestStream);
+            var dtoUser = JsonSerializer.DeserializeFromStream<UserDto>(request.RequestStream);
 
             var newUser = kernel.UserManager.CreateUser(dtoUser.Name).Result;
 

@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Logging;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.UI.Configuration;
@@ -60,7 +60,7 @@ namespace MediaBrowser.UI.Playback
         /// <summary>
         /// The currently playing items
         /// </summary>
-        public List<DtoBaseItem> Playlist = new List<DtoBaseItem>();
+        public List<BaseItemDto> Playlist = new List<BaseItemDto>();
 
         /// <summary>
         /// The _play state
@@ -135,7 +135,7 @@ namespace MediaBrowser.UI.Playback
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns><c>true</c> if this instance can play the specified item; otherwise, <c>false</c>.</returns>
-        public abstract bool CanPlay(DtoBaseItem item);
+        public abstract bool CanPlay(BaseItemDto item);
 
         /// <summary>
         /// Gets a value indicating whether this instance can change volume.
@@ -180,7 +180,7 @@ namespace MediaBrowser.UI.Playback
         /// Gets the current media.
         /// </summary>
         /// <value>The current media.</value>
-        public DtoBaseItem CurrentMedia
+        public BaseItemDto CurrentMedia
         {
             get
             {
@@ -248,13 +248,13 @@ namespace MediaBrowser.UI.Playback
         /// <param name="items">The items.</param>
         /// <param name="options">The options.</param>
         /// <param name="playerConfiguration">The player configuration.</param>
-        protected abstract void PlayInternal(List<DtoBaseItem> items, PlayOptions options, PlayerConfiguration playerConfiguration);
+        protected abstract void PlayInternal(List<BaseItemDto> items, PlayOptions options, PlayerConfiguration playerConfiguration);
 
         /// <summary>
         /// Queues the internal.
         /// </summary>
         /// <param name="items">The items.</param>
-        protected virtual void QueueInternal(List<DtoBaseItem> items)
+        protected virtual void QueueInternal(List<BaseItemDto> items)
         {
         }
 
@@ -393,7 +393,7 @@ namespace MediaBrowser.UI.Playback
         /// <param name="items">The items.</param>
         /// <exception cref="System.ArgumentNullException">items</exception>
         /// <exception cref="System.InvalidOperationException"></exception>
-        internal void Queue(List<DtoBaseItem> items)
+        internal void Queue(List<BaseItemDto> items)
         {
             if (items == null)
             {
@@ -632,7 +632,7 @@ namespace MediaBrowser.UI.Playback
         /// Sends the playback start check in.
         /// </summary>
         /// <param name="item">The item.</param>
-        protected async void SendPlaybackStartCheckIn(DtoBaseItem item)
+        protected async void SendPlaybackStartCheckIn(BaseItemDto item)
         {
             if (string.IsNullOrEmpty(item.Id))
             {
@@ -656,7 +656,7 @@ namespace MediaBrowser.UI.Playback
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="positionTicks">The position ticks.</param>
-        protected async void SendPlaybackProgressCheckIn(DtoBaseItem item, long? positionTicks)
+        protected async void SendPlaybackProgressCheckIn(BaseItemDto item, long? positionTicks)
         {
             if (string.IsNullOrEmpty(item.Id))
             {
@@ -681,7 +681,7 @@ namespace MediaBrowser.UI.Playback
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="positionTicks">The position ticks.</param>
-        protected async void SendPlaybackStopCheckIn(DtoBaseItem item, long? positionTicks)
+        protected async void SendPlaybackStopCheckIn(BaseItemDto item, long? positionTicks)
         {
             if (string.IsNullOrEmpty(item.Id))
             {
@@ -705,7 +705,7 @@ namespace MediaBrowser.UI.Playback
         /// Marks the watched.
         /// </summary>
         /// <param name="items">The items.</param>
-        protected async void MarkWatched(IEnumerable<DtoBaseItem> items)
+        protected async void MarkWatched(IEnumerable<BaseItemDto> items)
         {
             var idList = items.Where(i => !string.IsNullOrEmpty(i.Id)).Select(i => i.Id);
 

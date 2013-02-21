@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Model.Entities;
 using System;
 
-namespace MediaBrowser.Model.DTO
+namespace MediaBrowser.Model.Dto
 {
     /// <summary>
     /// Contains all the possible parameters that can be used to query for items

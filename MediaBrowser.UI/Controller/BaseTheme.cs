@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using System;
 using System.Collections.Generic;
 using System.Windows;
@@ -22,13 +22,13 @@ namespace MediaBrowser.UI.Controller
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>Page.</returns>
-        public abstract Page GetListPage(DtoBaseItem item);
+        public abstract Page GetListPage(BaseItemDto item);
         /// <summary>
         /// Gets the detail page.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>Page.</returns>
-        public abstract Page GetDetailPage(DtoBaseItem item);
+        public abstract Page GetDetailPage(BaseItemDto item);
         /// <summary>
         /// Gets the home page.
         /// </summary>

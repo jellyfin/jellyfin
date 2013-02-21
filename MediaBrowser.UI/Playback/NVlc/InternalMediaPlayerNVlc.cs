@@ -3,7 +3,7 @@ using Declarations.Events;
 using Declarations.Media;
 using Declarations.Players;
 using Implementation;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.UI.Configuration;
 using MediaBrowser.UI.Playback.InternalPlayer;
@@ -183,7 +183,7 @@ namespace MediaBrowser.UI.Playback.NVlc
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns><c>true</c> if this instance can play the specified item; otherwise, <c>false</c>.</returns>
-        public override bool CanPlay(DtoBaseItem item)
+        public override bool CanPlay(BaseItemDto item)
         {
             return item.IsVideo || item.IsAudio;
         }
@@ -203,7 +203,7 @@ namespace MediaBrowser.UI.Playback.NVlc
         /// <param name="items">The items.</param>
         /// <param name="options">The options.</param>
         /// <param name="playerConfiguration">The player configuration.</param>
-        protected override void PlayInternal(List<DtoBaseItem> items, PlayOptions options, PlayerConfiguration playerConfiguration)
+        protected override void PlayInternal(List<BaseItemDto> items, PlayOptions options, PlayerConfiguration playerConfiguration)
         {
             EnsureMediaPlayerCreated();
 
@@ -234,7 +234,7 @@ namespace MediaBrowser.UI.Playback.NVlc
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
-        private string GetPlayablePath(DtoBaseItem item)
+        private string GetPlayablePath(BaseItemDto item)
         {
             if (item.VideoType.HasValue && item.VideoType.Value == VideoType.BluRay)
             {
@@ -289,7 +289,7 @@ namespace MediaBrowser.UI.Playback.NVlc
         /// Queues the internal.
         /// </summary>
         /// <param name="items">The items.</param>
-        protected override void QueueInternal(List<DtoBaseItem> items)
+        protected override void QueueInternal(List<BaseItemDto> items)
         {
         }
 

@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Net;
 using MediaBrowser.UI;
 using MediaBrowser.UI.Controller;
@@ -36,7 +36,7 @@ namespace MediaBrowser.Plugins.DefaultTheme.Controls.Details
 
             UIKernel.Instance.PlaybackManager.Play(new PlayOptions
             {
-                Items = new List<DtoBaseItem> { viewModel.Item }
+                Items = new List<BaseItemDto> { viewModel.Item }
             });
         }
 
@@ -45,7 +45,7 @@ namespace MediaBrowser.Plugins.DefaultTheme.Controls.Details
         /// </summary>
         protected override async void OnItemChanged()
         {
-            DtoBaseItem[] result;
+            BaseItemDto[] result;
 
             try
             {
@@ -58,7 +58,7 @@ namespace MediaBrowser.Plugins.DefaultTheme.Controls.Details
                 return;
             }
 
-            var resultItems = result ?? new DtoBaseItem[] { };
+            var resultItems = result ?? new BaseItemDto[] { };
 
             const int height = 297;
             var aspectRatio = DtoBaseItemViewModel.GetAveragePrimaryImageAspectRatio(resultItems);

@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
 using MediaBrowser.UI.ViewModels;
@@ -83,12 +83,12 @@ namespace MediaBrowser.UI.Pages
         /// <summary>
         /// The _folder
         /// </summary>
-        private DtoBaseItem _folder;
+        private BaseItemDto _folder;
         /// <summary>
         /// Gets or sets the Folder being displayed
         /// </summary>
         /// <value>The folder.</value>
-        public DtoBaseItem Folder
+        public BaseItemDto Folder
         {
             get { return _folder; }
 

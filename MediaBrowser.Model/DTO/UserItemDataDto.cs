@@ -1,13 +1,13 @@
 ﻿using System.ComponentModel;
 using ProtoBuf;
 
-namespace MediaBrowser.Model.DTO
+namespace MediaBrowser.Model.Dto
 {
     /// <summary>
     /// Class DtoUserItemData
     /// </summary>
     [ProtoContract]
-    public class DtoUserItemData : INotifyPropertyChanged
+    public class UserItemDataDto : INotifyPropertyChanged
     {
         /// <summary>
         /// Gets or sets the rating.
@@ -38,14 +38,14 @@ namespace MediaBrowser.Model.DTO
         public bool IsFavorite { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="DtoUserItemData" /> is likes.
+        /// Gets or sets a value indicating whether this <see cref="UserItemDataDto" /> is likes.
         /// </summary>
         /// <value><c>null</c> if [likes] contains no value, <c>true</c> if [likes]; otherwise, <c>false</c>.</value>
         [ProtoMember(5)]
         public bool? Likes { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="DtoUserItemData" /> is played.
+        /// Gets or sets a value indicating whether this <see cref="UserItemDataDto" /> is played.
         /// </summary>
         /// <value><c>true</c> if played; otherwise, <c>false</c>.</value>
         [ProtoMember(6)]

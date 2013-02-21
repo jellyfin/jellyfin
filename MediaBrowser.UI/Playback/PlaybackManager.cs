@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Kernel;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
 using MediaBrowser.UI.Configuration;
@@ -64,7 +64,7 @@ namespace MediaBrowser.UI.Playback
         /// </summary>
         /// <param name="player">The player.</param>
         /// <param name="items">The items.</param>
-        internal void OnPlaybackCompleted(BaseMediaPlayer player, List<DtoBaseItem> items)
+        internal void OnPlaybackCompleted(BaseMediaPlayer player, List<BaseItemDto> items)
         {
             EventHelper.QueueEventIfNotNull(PlaybackCompleted, this, new PlaybackStopEventArgs
             {
@@ -167,10 +167,10 @@ namespace MediaBrowser.UI.Playback
         /// Gets the playable item.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <returns>DtoBaseItem.</returns>
-        public DtoBaseItem GetPlayableItem(string path)
+        /// <returns>BaseItemDto.</returns>
+        public BaseItemDto GetPlayableItem(string path)
         {
-            return new DtoBaseItem
+            return new BaseItemDto
             {
                 Path = path,
                 Name = Path.GetFileName(path),
@@ -185,10 +185,10 @@ namespace MediaBrowser.UI.Playback
         /// </summary>
         /// <param name="uri">The URI.</param>
         /// <param name="name">The name.</param>
-        /// <returns>DtoBaseItem.</returns>
-        public DtoBaseItem GetPlayableItem(Uri uri, string name)
+        /// <returns>BaseItemDto.</returns>
+        public BaseItemDto GetPlayableItem(Uri uri, string name)
         {
-            return new DtoBaseItem
+            return new BaseItemDto
             {
                 Path = uri.ToString(),
                 Name = name,
@@ -215,7 +215,7 @@ namespace MediaBrowser.UI.Playback
         /// </summary>
         /// <param name="items">The items.</param>
         /// <returns>BaseMediaPlayer.</returns>
-        private Tuple<BaseMediaPlayer, PlayerConfiguration> GetPlayer(List<DtoBaseItem> items)
+        private Tuple<BaseMediaPlayer, PlayerConfiguration> GetPlayer(List<BaseItemDto> items)
         {
             var player = GetConfiguredPlayer(items);
 
@@ -240,7 +240,7 @@ namespace MediaBrowser.UI.Playback
         /// </summary>
         /// <param name="items">The items.</param>
         /// <returns>BaseMediaPlayer.</returns>
-        private Tuple<BaseMediaPlayer, PlayerConfiguration> GetConfiguredPlayer(List<DtoBaseItem> items)
+        private Tuple<BaseMediaPlayer, PlayerConfiguration> GetConfiguredPlayer(List<BaseItemDto> items)
         {
             if (UIKernel.Instance.Configuration.MediaPlayers == null)
             {
@@ -258,7 +258,7 @@ namespace MediaBrowser.UI.Playback
         /// <param name="configuration">The configuration.</param>
         /// <param name="items">The items.</param>
         /// <returns><c>true</c> if [is configured to play] [the specified configuration]; otherwise, <c>false</c>.</returns>
-        private bool IsConfiguredToPlay(PlayerConfiguration configuration, List<DtoBaseItem> items)
+        private bool IsConfiguredToPlay(PlayerConfiguration configuration, List<BaseItemDto> items)
         {
             if (configuration.ItemTypes != null && configuration.ItemTypes.Length > 0)
             {

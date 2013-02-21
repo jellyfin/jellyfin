@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
 using MediaBrowser.UI;
@@ -101,7 +101,7 @@ namespace MediaBrowser.Plugins.DefaultTheme.Controls.Details
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>List{System.String}.</returns>
-        internal static List<string> GetImages(DtoBaseItem item)
+        internal static List<string> GetImages(BaseItemDto item)
         {
             var images = new List<string> { };
 

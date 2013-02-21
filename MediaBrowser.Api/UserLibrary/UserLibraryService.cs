@@ -4,7 +4,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using ServiceStack.ServiceHost;
 using System;
@@ -22,7 +22,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}", "GET")]
     [Route("/Users/{UserId}/Items/Root", "GET")]
-    public class GetItem : IReturn<DtoBaseItem>
+    public class GetItem : IReturn<BaseItemDto>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -217,7 +217,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     [Route("/Users/{UserId}/Items/{Id}/LocalTrailers", "GET")]
-    public class GetLocalTrailers : IReturn<List<DtoBaseItem>>
+    public class GetLocalTrailers : IReturn<List<BaseItemDto>>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -233,7 +233,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     [Route("/Users/{UserId}/Items/{Id}/SpecialFeatures", "GET")]
-    public class GetSpecialFeatures : IReturn<List<DtoBaseItem>>
+    public class GetSpecialFeatures : IReturn<List<BaseItemDto>>
     {
         /// <summary>
         /// Gets or sets the user id.

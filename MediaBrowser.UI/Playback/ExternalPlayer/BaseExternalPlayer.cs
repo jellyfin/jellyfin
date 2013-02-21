@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Common.Logging;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.UI.Configuration;
 using MediaBrowser.UI.UserInput;
 using System;
@@ -71,7 +71,7 @@ namespace MediaBrowser.UI.Playback.ExternalPlayer
         /// <param name="options">The options.</param>
         /// <param name="playerConfiguration">The player configuration.</param>
         /// <returns>ProcessStartInfo.</returns>
-        protected virtual ProcessStartInfo GetProcessStartInfo(List<DtoBaseItem> items, PlayOptions options, PlayerConfiguration playerConfiguration)
+        protected virtual ProcessStartInfo GetProcessStartInfo(List<BaseItemDto> items, PlayOptions options, PlayerConfiguration playerConfiguration)
         {
             return new ProcessStartInfo
             {
@@ -87,7 +87,7 @@ namespace MediaBrowser.UI.Playback.ExternalPlayer
         /// <param name="options">The options.</param>
         /// <param name="playerConfiguration">The player configuration.</param>
         /// <returns>System.String.</returns>
-        protected virtual string GetCommandArguments(List<DtoBaseItem> items, PlayOptions options, PlayerConfiguration playerConfiguration)
+        protected virtual string GetCommandArguments(List<BaseItemDto> items, PlayOptions options, PlayerConfiguration playerConfiguration)
         {
             var args = playerConfiguration.Args;
 
@@ -105,7 +105,7 @@ namespace MediaBrowser.UI.Playback.ExternalPlayer
         /// <param name="items">The items.</param>
         /// <param name="formatString">The format string.</param>
         /// <returns>System.String.</returns>
-        protected string GetCommandArguments(List<DtoBaseItem> items, string formatString)
+        protected string GetCommandArguments(List<BaseItemDto> items, string formatString)
         {
             var paths = items.Select(i => "\"" + GetPathForCommandLine(i) + "\"");
 
@@ -117,7 +117,7 @@ namespace MediaBrowser.UI.Playback.ExternalPlayer
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
-        protected virtual string GetPathForCommandLine(DtoBaseItem item)
+        protected virtual string GetPathForCommandLine(BaseItemDto item)
         {
             return item.Path;
         }
@@ -155,7 +155,7 @@ namespace MediaBrowser.UI.Playback.ExternalPlayer
         /// <param name="items">The items.</param>
         /// <param name="options">The options.</param>
         /// <param name="playerConfiguration">The player configuration.</param>
-        protected override void PlayInternal(List<DtoBaseItem> items, PlayOptions options, PlayerConfiguration playerConfiguration)
+        protected override void PlayInternal(List<BaseItemDto> items, PlayOptions options, PlayerConfiguration playerConfiguration)
         {
             CurrentProcess = new Process
             {
