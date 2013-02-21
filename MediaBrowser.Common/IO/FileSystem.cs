@@ -38,8 +38,6 @@ namespace MediaBrowser.Common.IO
             {
                 if (!path.EndsWith("*", StringComparison.OrdinalIgnoreCase))
                 {
-                    Logger.LogInfo("Handle came back invalid for {0}. This might be a network share. Since this is a directory we'll try appending " + Path.DirectorySeparatorChar + "*.", path);
-
                     NativeMethods.FindClose(handle);
 
                     handle = NativeMethods.FindFirstFileEx(Path.Combine(path, "*"), FINDEX_INFO_LEVELS.FindExInfoBasic, out data,

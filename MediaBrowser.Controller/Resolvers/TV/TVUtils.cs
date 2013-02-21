@@ -7,9 +7,18 @@ using System.Linq;
 
 namespace MediaBrowser.Controller.Resolvers.TV
 {
+    /// <summary>
+    /// Class TVUtils
+    /// </summary>
     public static class TVUtils
     {
+        /// <summary>
+        /// The TVDB API key
+        /// </summary>
         public static readonly string TVDBApiKey = "B89CE93890E9419B";
+        /// <summary>
+        /// The banner URL
+        /// </summary>
         public static readonly string BannerUrl = "http://www.thetvdb.com/banners/";
 
         /// <summary>
@@ -29,11 +38,6 @@ namespace MediaBrowser.Controller.Resolvers.TV
         /// match movie titles like "2001 A Space..."
         /// Currently we limit the numbers here to 2 digits to try and avoid this
         /// </summary>
-        /// <remarks>
-        /// The order here is important, if the order is changed some of the later
-        /// ones might incorrectly match things that higher ones would have caught.
-        /// The most restrictive expressions should appear first
-        /// </remarks>
         private static readonly Regex[] EpisodeExpressions = new[]
                                                                  {
                                                                      new Regex(
@@ -78,6 +82,11 @@ namespace MediaBrowser.Controller.Resolvers.TV
 
                                                                                 };
 
+        /// <summary>
+        /// Gets the season number from path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>System.Nullable{System.Int32}.</returns>
         public static int? GetSeasonNumberFromPath(string path)
         {
             // Look for one of the season folder names
@@ -97,6 +106,8 @@ namespace MediaBrowser.Controller.Resolvers.TV
         /// <summary>
         /// Extracts the season number from the second half of the Season folder name (everything after "Season", or "Staffel")
         /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>System.Nullable{System.Int32}.</returns>
         private static int? GetSeasonNumberFromPathSubstring(string path)
         {
             int numericStart = -1;
@@ -127,11 +138,22 @@ namespace MediaBrowser.Controller.Resolvers.TV
             return int.Parse(path.Substring(numericStart, length));
         }
 
+        /// <summary>
+        /// Determines whether [is season folder] [the specified path].
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns><c>true</c> if [is season folder] [the specified path]; otherwise, <c>false</c>.</returns>
         public static bool IsSeasonFolder(string path)
         {
             return GetSeasonNumberFromPath(path) != null;
         }
 
+        /// <summary>
+        /// Determines whether [is series folder] [the specified path].
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="fileSystemChildren">The file system children.</param>
+        /// <returns><c>true</c> if [is series folder] [the specified path]; otherwise, <c>false</c>.</returns>
         public static bool IsSeriesFolder(string path, IEnumerable<WIN32_FIND_DATA> fileSystemChildren)
         {
             // A folder with more than 3 non-season folders in will not becounted as a series
@@ -171,6 +193,12 @@ namespace MediaBrowser.Controller.Resolvers.TV
             return false;
         }
 
+        /// <summary>
+        /// Episodes the number from file.
+        /// </summary>
+        /// <param name="fullPath">The full path.</param>
+        /// <param name="isInSeason">if set to <c>true</c> [is in season].</param>
+        /// <returns>System.String.</returns>
         public static string EpisodeNumberFromFile(string fullPath, bool isInSeason)
         {
             string fl = fullPath.ToLower();
@@ -194,6 +222,11 @@ namespace MediaBrowser.Controller.Resolvers.TV
             return null;
         }
 
+        /// <summary>
+        /// Seasons the number from episode file.
+        /// </summary>
+        /// <param name="fullPath">The full path.</param>
+        /// <returns>System.String.</returns>
         public static string SeasonNumberFromEpisodeFile(string fullPath)
         {
             string fl = fullPath.ToLower();
@@ -211,6 +244,11 @@ namespace MediaBrowser.Controller.Resolvers.TV
             return null;
         }
 
+        /// <summary>
+        /// Gets the air days.
+        /// </summary>
+        /// <param name="day">The day.</param>
+        /// <returns>List{DayOfWeek}.</returns>
         public static List<DayOfWeek> GetAirDays(string day)
         {
             if (!string.IsNullOrWhiteSpace(day))
@@ -238,8 +276,6 @@ namespace MediaBrowser.Controller.Resolvers.TV
                                    value
                                };
                 }
-
-                Logger.LogWarning("Invalid value passed into GetAirDays: {0}", day);
 
                 return new List<DayOfWeek>
                                {

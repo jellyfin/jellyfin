@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Logging;
-using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Model.Logging;
 using System.Security;
 
 namespace MediaBrowser.IsoMounter
@@ -12,7 +11,16 @@ namespace MediaBrowser.IsoMounter
         /// <summary>
         /// The logger
         /// </summary>
-        private static readonly ILogger Logger = LogManager.GetLogger("MyPfmFileMountUi");
+        private readonly ILogger Logger;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MyPfmFileMountUi" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        public MyPfmFileMountUi(ILogger logger)
+        {
+            Logger = logger;
+        }
 
         /// <summary>
         /// Clears the password.

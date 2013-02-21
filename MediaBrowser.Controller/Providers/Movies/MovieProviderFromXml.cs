@@ -75,11 +75,11 @@ namespace MediaBrowser.Controller.Providers.Movies
                 var boxset = item as BoxSet;
                 if (boxset != null)
                 {
-                    new BaseItemXmlParser<BoxSet>().Fetch(boxset, path, cancellationToken);
+                    new BaseItemXmlParser<BoxSet>(Logger).Fetch(boxset, path, cancellationToken);
                 }
                 else
                 {
-                    new BaseItemXmlParser<Movie>().Fetch((Movie)item, path, cancellationToken);
+                    new BaseItemXmlParser<Movie>(Logger).Fetch((Movie)item, path, cancellationToken);
                 }
                 SetLastRefreshed(item, DateTime.UtcNow);
                 return true;

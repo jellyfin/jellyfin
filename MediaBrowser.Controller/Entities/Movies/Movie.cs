@@ -161,7 +161,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             }
             catch (IOException ex)
             {
-                Logger.LogException("Error getting ResolveArgs for {0}", ex, Path);
+                Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
                 return new List<Video> { };
             }
 
@@ -179,7 +179,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             }
             catch (IOException ex)
             {
-                Logger.LogException("Error loading trailers for {0}", ex, Name);
+                Logger.ErrorException("Error loading trailers for {0}", ex, Name);
                 return new List<Video> { };
             }
 

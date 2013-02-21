@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Kernel;
+using MediaBrowser.Model.Logging;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 
@@ -17,6 +18,17 @@ namespace MediaBrowser.Common.Api
         protected override string Name
         {
             get { return "SystemInfo"; }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SystemInfoWebSocketListener" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        [ImportingConstructor]
+        public SystemInfoWebSocketListener([Import("logger")] ILogger logger)
+            : base(logger)
+        {
+            
         }
 
         /// <summary>

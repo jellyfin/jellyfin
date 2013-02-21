@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Model.Logging;
 using System.IO;
 using System.Xml;
 
@@ -9,6 +10,15 @@ namespace MediaBrowser.Controller.Providers.TV
     /// </summary>
     public class EpisodeXmlParser : BaseItemXmlParser<Episode>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EpisodeXmlParser" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        public EpisodeXmlParser(ILogger logger)
+            : base(logger)
+        {
+        }
+
         /// <summary>
         /// Fetches the data from XML node.
         /// </summary>

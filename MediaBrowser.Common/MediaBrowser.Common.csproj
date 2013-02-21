@@ -187,7 +187,6 @@
     <Compile Include="Serialization\JsonSerializer.cs" />
     <Compile Include="Kernel\BaseKernel.cs" />
     <Compile Include="Kernel\KernelContext.cs" />
-    <Compile Include="Logging\Logger.cs" />
     <Compile Include="Net\Handlers\BaseHandler.cs" />
     <Compile Include="Net\Handlers\BaseSerializationHandler.cs" />
     <Compile Include="Net\HttpServer.cs" />

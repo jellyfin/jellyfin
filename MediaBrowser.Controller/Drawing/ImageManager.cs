@@ -276,7 +276,7 @@ namespace MediaBrowser.Controller.Drawing
                 // Cache file doesn't exist no biggie
             }
 
-            var size = ImageHeader.GetDimensions(imagePath);
+            var size = ImageHeader.GetDimensions(imagePath, Logger);
 
             var imageSize = new ImageSize { Width = size.Width, Height = size.Height };
 

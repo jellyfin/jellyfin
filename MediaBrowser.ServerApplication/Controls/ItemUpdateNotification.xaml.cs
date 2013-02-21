@@ -20,7 +20,7 @@ namespace MediaBrowser.ServerApplication.Controls
         /// <summary>
         /// The logger
         /// </summary>
-        private static readonly ILogger Logger = LogManager.GetLogger("MultiItemUpdateNotification");
+        private readonly ILogger Logger;
 
         /// <summary>
         /// Gets the children changed event args.
@@ -34,8 +34,15 @@ namespace MediaBrowser.ServerApplication.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemUpdateNotification" /> class.
         /// </summary>
-        public ItemUpdateNotification()
+        public ItemUpdateNotification(ILogger logger)
         {
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+
+            Logger = logger;
+            
             InitializeComponent();
 
             Loaded += ItemUpdateNotification_Loaded;

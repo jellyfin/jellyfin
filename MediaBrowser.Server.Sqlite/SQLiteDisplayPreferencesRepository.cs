@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -33,6 +34,16 @@ namespace MediaBrowser.Server.Sqlite
             {
                 return RepositoryName;
             }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SQLiteUserDataRepository" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        [ImportingConstructor]
+        protected SQLiteDisplayPreferencesRepository([Import("logger")] ILogger logger)
+            : base(logger)
+        {
         }
 
         /// <summary>
@@ -75,7 +86,7 @@ namespace MediaBrowser.Server.Sqlite
             {
                 throw new ArgumentNullException("cancellationToken");
             }
-            
+
             cancellationToken.ThrowIfCancellationRequested();
 
             return Task.Run(() =>

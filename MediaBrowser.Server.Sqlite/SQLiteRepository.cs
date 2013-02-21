@@ -38,22 +38,39 @@ namespace MediaBrowser.Server.Sqlite
         /// </summary>
         private Timer FlushTimer;
 
+        /// <summary>
+        /// Gets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
         protected ILogger Logger { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SqliteRepository" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <exception cref="System.ArgumentNullException">logger</exception>
+        protected SqliteRepository(ILogger logger)
+        {
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+
+            Logger = logger;
+        }
 
         /// <summary>
         /// Connects to DB.
         /// </summary>
         /// <param name="dbPath">The db path.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="System.ArgumentNullException">dbPath</exception>
         protected async Task ConnectToDB(string dbPath)
         {
             if (string.IsNullOrEmpty(dbPath))
             {
                 throw new ArgumentNullException("dbPath");
             }
-
-            Logger = LogManager.GetLogger(GetType().Name);
 
             dbFileName = dbPath;
             var connectionstr = new SQLiteConnectionStringBuilder
@@ -78,7 +95,7 @@ namespace MediaBrowser.Server.Sqlite
         /// </summary>
         /// <param name="queries">The queries.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="System.ArgumentNullException">queries</exception>
         protected void RunQueries(string[] queries)
         {
             if (queries == null)
@@ -167,7 +184,7 @@ namespace MediaBrowser.Server.Sqlite
         /// Queues the command.
         /// </summary>
         /// <param name="cmd">The CMD.</param>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="System.ArgumentNullException">cmd</exception>
         protected void QueueCommand(SQLiteCommand cmd)
         {
             if (cmd == null)
@@ -242,7 +259,7 @@ namespace MediaBrowser.Server.Sqlite
         /// </summary>
         /// <param name="cmd">The CMD.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="System.ArgumentNullException">cmd</exception>
         public async Task ExecuteCommand(DbCommand cmd)
         {
             if (cmd == null)
@@ -275,7 +292,7 @@ namespace MediaBrowser.Server.Sqlite
         /// <param name="reader">The reader.</param>
         /// <param name="ordinal">The ordinal.</param>
         /// <returns>Stream.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="System.ArgumentNullException">reader</exception>
         protected static Stream GetStream(IDataReader reader, int ordinal)
         {
             if (reader == null)

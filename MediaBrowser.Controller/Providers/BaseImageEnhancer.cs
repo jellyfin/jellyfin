@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Drawing;
 using System.Threading.Tasks;
@@ -13,6 +14,10 @@ namespace MediaBrowser.Controller.Providers
     /// </summary>
     public abstract class BaseImageEnhancer : IDisposable
     {
+        /// <summary>
+        /// The logger
+        /// </summary>
+        private static readonly ILogger Logger = LogManager.GetLogger("ImageEnhancer");
         /// <summary>
         /// Return true only if the given image for the given item will be enhanced by this enhancer.
         /// </summary>
@@ -96,7 +101,7 @@ namespace MediaBrowser.Controller.Providers
 
             var typeName = GetType().Name;
 
-            Logger.LogDebugInfo("Running {0} for {1}", typeName, item.Path ?? item.Name ?? "--Unknown--");
+            Logger.Debug("Running {0} for {1}", typeName, item.Path ?? item.Name ?? "--Unknown--");
 
             try
             {
@@ -104,7 +109,7 @@ namespace MediaBrowser.Controller.Providers
             }
             catch (Exception ex)
             {
-                Logger.LogException("{0} failed enhancing {1}", ex, typeName, item.Name);
+                Logger.ErrorException("{0} failed enhancing {1}", ex, typeName, item.Name);
 
                 throw;
             }

@@ -74,7 +74,7 @@ namespace MediaBrowser.Controller.Providers.TV
             {
                 var path = metadataFile.Value.Path;
 
-                new SeriesXmlParser().Fetch((Series)item, path, cancellationToken);
+                new SeriesXmlParser(Logger).Fetch((Series)item, path, cancellationToken);
                 SetLastRefreshed(item, DateTime.UtcNow);
 
                 return true;

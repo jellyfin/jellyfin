@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Common.Logging;
-using MediaBrowser.Controller.Entities.TV;
+﻿using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Resolvers.TV;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Xml;
 
@@ -12,6 +12,15 @@ namespace MediaBrowser.Controller.Providers.TV
     /// </summary>
     public class SeriesXmlParser : BaseItemXmlParser<Series>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseItemXmlParser{T}" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        public SeriesXmlParser(ILogger logger)
+            : base(logger)
+        {
+        }
+
         /// <summary>
         /// Fetches the data from XML node.
         /// </summary>
@@ -74,7 +83,7 @@ namespace MediaBrowser.Controller.Providers.TV
                             }
                             else
                             {
-                                Logger.LogInfo("Unrecognized series status: " + status);
+                                Logger.Info("Unrecognized series status: " + status);
                             }
                         }
 

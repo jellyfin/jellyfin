@@ -66,13 +66,13 @@ namespace MediaBrowser.Controller.Providers
         private bool Fetch(BaseItem item, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             var metadataFile = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, "folder.xml"));
 
             if (metadataFile.HasValue)
             {
                 var path = metadataFile.Value.Path;
-                new BaseItemXmlParser<Folder>().Fetch((Folder)item, path, cancellationToken);
+                new BaseItemXmlParser<Folder>(Logger).Fetch((Folder)item, path, cancellationToken);
                 SetLastRefreshed(item, DateTime.UtcNow);
                 return true;
             }

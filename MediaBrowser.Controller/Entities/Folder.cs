@@ -306,7 +306,7 @@ namespace MediaBrowser.Controller.Entities
 
             // Even though this implementation means multiple iterations over the target list - it allows us to defer
             // the retrieval of the individual children for each index value until they are requested.
-            using (new Profiler(indexName + " Index Build for " + Name))
+            using (new Profiler(indexName + " Index Build for " + Name, Logger))
             {
                 // Put this in a local variable to avoid an implicitly captured closure
                 var currentIndexName = indexName;
@@ -325,12 +325,12 @@ namespace MediaBrowser.Controller.Entities
                         }
                         catch (IOException ex)
                         {
-                            Logger.LogException("Error getting person {0}", ex, i);
+                            Logger.ErrorException("Error getting person {0}", ex, i);
                             return null;
                         }
                         catch (AggregateException ex)
                         {
-                            Logger.LogException("Error getting person {0}", ex, i);
+                            Logger.ErrorException("Error getting person {0}", ex, i);
                             return null;
                         }
                     })
@@ -351,7 +351,7 @@ namespace MediaBrowser.Controller.Entities
         {
             // Even though this implementation means multiple iterations over the target list - it allows us to defer
             // the retrieval of the individual children for each index value until they are requested.
-            using (new Profiler("Studio Index Build for " + Name))
+            using (new Profiler("Studio Index Build for " + Name, Logger))
             {
                 var indexName = LocalizedStrings.Instance.GetString("StudioDispPref");
 
@@ -367,12 +367,12 @@ namespace MediaBrowser.Controller.Entities
                         }
                         catch (IOException ex)
                         {
-                            Logger.LogException("Error getting studio {0}", ex, i);
+                            Logger.ErrorException("Error getting studio {0}", ex, i);
                             return null;
                         }
                         catch (AggregateException ex)
                         {
-                            Logger.LogException("Error getting studio {0}", ex, i);
+                            Logger.ErrorException("Error getting studio {0}", ex, i);
                             return null;
                         }
                     })
@@ -390,7 +390,7 @@ namespace MediaBrowser.Controller.Entities
         {
             // Even though this implementation means multiple iterations over the target list - it allows us to defer
             // the retrieval of the individual children for each index value until they are requested.
-            using (new Profiler("Genre Index Build for " + Name))
+            using (new Profiler("Genre Index Build for " + Name, Logger))
             {
                 var indexName = LocalizedStrings.Instance.GetString("GenreDispPref");
 
@@ -407,12 +407,12 @@ namespace MediaBrowser.Controller.Entities
                             }
                             catch (IOException ex)
                             {
-                                Logger.LogException("Error getting genre {0}", ex, i);
+                                Logger.ErrorException("Error getting genre {0}", ex, i);
                                 return null;
                             }
                             catch (AggregateException ex)
                             {
-                                Logger.LogException("Error getting genre {0}", ex, i);
+                                Logger.ErrorException("Error getting genre {0}", ex, i);
                                 return null;
                             }
                         })
@@ -431,7 +431,7 @@ namespace MediaBrowser.Controller.Entities
         {
             // Even though this implementation means multiple iterations over the target list - it allows us to defer
             // the retrieval of the individual children for each index value until they are requested.
-            using (new Profiler("Production Year Index Build for " + Name))
+            using (new Profiler("Production Year Index Build for " + Name, Logger))
             {
                 var indexName = LocalizedStrings.Instance.GetString("YearDispPref");
 
@@ -448,12 +448,12 @@ namespace MediaBrowser.Controller.Entities
                         }
                         catch (IOException ex)
                         {
-                            Logger.LogException("Error getting year {0}", ex, i);
+                            Logger.ErrorException("Error getting year {0}", ex, i);
                             return null;
                         }
                         catch (AggregateException ex)
                         {
-                            Logger.LogException("Error getting year {0}", ex, i);
+                            Logger.ErrorException("Error getting year {0}", ex, i);
                             return null;
                         }
                     })
@@ -639,7 +639,7 @@ namespace MediaBrowser.Controller.Entities
             }
             catch (OperationCanceledException ex)
             {
-                Logger.LogInfo("ValidateChildren cancelled for " + Name);
+                Logger.Info("ValidateChildren cancelled for " + Name);
 
                 // If the outer cancelletion token in the cause for the cancellation, throw it
                 if (cancellationToken.IsCancellationRequested && ex.CancellationToken == cancellationToken)
@@ -734,7 +734,7 @@ namespace MediaBrowser.Controller.Entities
 
                 foreach (var item in changedArgs.ItemsRemoved)
                 {
-                    Logger.LogInfo("** " + item.Name + " Removed from library.");
+                    Logger.Info("** " + item.Name + " Removed from library.");
                 }
 
                 var childrenReplaced = false;
@@ -749,7 +749,7 @@ namespace MediaBrowser.Controller.Entities
 
                 foreach (var item in changedArgs.ItemsAdded)
                 {
-                    Logger.LogInfo("** " + item.Name + " Added to library.");
+                    Logger.Info("** " + item.Name + " Added to library.");
 
                     if (!childrenReplaced)
                     {
@@ -762,7 +762,7 @@ namespace MediaBrowser.Controller.Entities
                 await Task.WhenAll(saveTasks).ConfigureAwait(false);
 
                 //and save children in repo...
-                Logger.LogInfo("*** Saving " + newChildren.Count + " children for " + Name);
+                Logger.Info("*** Saving " + newChildren.Count + " children for " + Name);
                 await Kernel.Instance.ItemRepository.SaveChildren(Id, newChildren, CancellationToken.None).ConfigureAwait(false);
             }
 
@@ -860,7 +860,7 @@ namespace MediaBrowser.Controller.Entities
             }
             catch (IOException ex)
             {
-                Logger.LogException("Error getting ResolveArgs for {0}", ex, Path);
+                Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
                 return new List<BaseItem> { };
             }
 
@@ -1028,7 +1028,7 @@ namespace MediaBrowser.Controller.Entities
             }
             catch (IOException ex)
             {
-                Logger.LogException("Error getting ResolveArgs for {0}", ex, Path);
+                Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
             }
 
             //this should be functionally equivilent to what was here since it is IEnum and works on a thread-safe copy
@@ -1040,7 +1040,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 catch (IOException ex)
                 {
-                    Logger.LogException("Error getting ResolveArgs for {0}", ex, Path);
+                    Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
                     return false;
                 }
             });

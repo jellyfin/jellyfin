@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,20 @@ namespace MediaBrowser.Controller.Providers
     public class BaseItemXmlParser<T>
         where T : BaseItem, new()
     {
+        /// <summary>
+        /// The logger
+        /// </summary>
+        protected ILogger Logger { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseItemXmlParser{T}" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        public BaseItemXmlParser(ILogger logger)
+        {
+            Logger = logger;
+        }
+
         /// <summary>
         /// Fetches metadata for an item from one xml file
         /// </summary>

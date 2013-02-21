@@ -143,7 +143,7 @@ namespace MediaBrowser.Common.Kernel
             get
             {
                 // Lazy load
-                LazyInitializer.EnsureInitialized(ref _configuration, ref _configurationLoaded, ref _configurationSyncLock, () => XmlSerializer.GetXmlConfiguration<TConfigurationType>(ApplicationPaths.SystemConfigurationFilePath));
+                LazyInitializer.EnsureInitialized(ref _configuration, ref _configurationLoaded, ref _configurationSyncLock, () => XmlSerializer.GetXmlConfiguration<TConfigurationType>(ApplicationPaths.SystemConfigurationFilePath, Logger));
                 return _configuration;
             }
             protected set
@@ -441,8 +441,6 @@ namespace MediaBrowser.Common.Kernel
 
             AddLogTarget(logFile, "ApplicationLogFile");
 
-            Logging.Logger.LoggerInstance = Logging.LogManager.GetLogger("App");
-
             OnLoggerLoaded();
         }
 
@@ -590,7 +588,7 @@ namespace MediaBrowser.Common.Kernel
 
                     try
                     {
-                        plugin.Initialize(this);
+                        plugin.Initialize(this, Logging.LogManager.GetLogger(plugin.GetType().Name));
 
                         Logger.Info("{0} {1} initialized.", plugin.Name, plugin.Version);
                     }

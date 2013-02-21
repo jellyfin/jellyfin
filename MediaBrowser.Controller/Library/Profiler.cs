@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using MediaBrowser.Common.Logging;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -19,12 +20,20 @@ namespace MediaBrowser.Controller.Library
         readonly Stopwatch stopwatch;
 
         /// <summary>
+        /// The _logger
+        /// </summary>
+        private ILogger _logger;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="Profiler" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
-        public Profiler(string name)
+        /// <param name="logger">The logger.</param>
+        public Profiler(string name, ILogger logger)
         {
             this.name = name;
+
+            _logger = logger;
 
             stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -60,7 +69,7 @@ namespace MediaBrowser.Controller.Library
                     message = string.Format("{0} took {1} seconds.",
                         name, ((float)stopwatch.ElapsedMilliseconds / 1000).ToString("#0.000"));
                 }
-                Logger.LogInfo(message);
+                _logger.Info(message);
             }
         }
 

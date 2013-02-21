@@ -179,7 +179,7 @@ namespace MediaBrowser.ServerApplication
         /// <returns>Window.</returns>
         protected override Window InstantiateMainWindow()
         {
-            return new MainWindow();
+            return new MainWindow(LogManager.GetLogger("MainWindow"));
         }
     }
 }
