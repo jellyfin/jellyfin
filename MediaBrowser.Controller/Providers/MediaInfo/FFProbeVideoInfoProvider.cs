@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -26,11 +27,27 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         private FileSystemRepository BdInfoCache { get; set; }
 
         /// <summary>
+        /// Gets or sets the bluray examiner.
+        /// </summary>
+        /// <value>The bluray examiner.</value>
+        private IBlurayExaminer BlurayExaminer { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="FFProbeVideoInfoProvider" /> class.
         /// </summary>
-        public FFProbeVideoInfoProvider()
+        /// <param name="blurayExaminer">The bluray examiner.</param>
+        /// <exception cref="System.ArgumentNullException">blurayExaminer</exception>
+        [ImportingConstructor]
+        public FFProbeVideoInfoProvider([Import("blurayExaminer")] IBlurayExaminer blurayExaminer)
             : base()
         {
+            if (blurayExaminer == null)
+            {
+                throw new ArgumentNullException("blurayExaminer");
+            }
+
+            BlurayExaminer = blurayExaminer;
+
             BdInfoCache = new FileSystemRepository(Path.Combine(Kernel.Instance.ApplicationPaths.CachePath, "bdinfo"));
         }
 
@@ -183,7 +200,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
                 if (video.VideoType == VideoType.BluRay || (video.IsoType.HasValue && video.IsoType.Value == IsoType.BluRay))
                 {
                     var inputPath = isoMount != null ? isoMount.MountedPath : video.Path;
-                    BDInfoProvider.FetchBdInfo(video, inputPath, BdInfoCache, cancellationToken);
+                    FetchBdInfo(video, inputPath, BdInfoCache, cancellationToken);
                 }
 
                 AddExternalSubtitles(video);
@@ -239,7 +256,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// <summary>
         /// The dummy chapter duration
         /// </summary>
-        private static readonly long DummyChapterDuration = TimeSpan.FromMinutes(10).Ticks;
+        private readonly long DummyChapterDuration = TimeSpan.FromMinutes(10).Ticks;
 
         /// <summary>
         /// Adds the dummy chapters.
@@ -272,6 +289,114 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             }
 
             video.Chapters = chapters;
+        }
+
+        /// <summary>
+        /// Fetches the bd info.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="inputPath">The input path.</param>
+        /// <param name="bdInfoCache">The bd info cache.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        private void FetchBdInfo(BaseItem item, string inputPath, FileSystemRepository bdInfoCache, CancellationToken cancellationToken)
+        {
+            var video = (Video)item;
+
+            // Get the path to the cache file
+            var cacheName = item.Id + "_" + item.DateModified.Ticks;
+
+            var cacheFile = bdInfoCache.GetResourcePath(cacheName, ".pb");
+
+            BlurayDiscInfo result;
+
+            try
+            {
+                result = Kernel.Instance.ProtobufSerializer.DeserializeFromFile<BlurayDiscInfo>(cacheFile);
+            }
+            catch (FileNotFoundException)
+            {
+                result = GetBDInfo(inputPath);
+
+                Kernel.Instance.ProtobufSerializer.SerializeToFile(result, cacheFile);
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            int? currentHeight = null;
+            int? currentWidth = null;
+            int? currentBitRate = null;
+
+            var videoStream = video.MediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
+
+            // Grab the values that ffprobe recorded
+            if (videoStream != null)
+            {
+                currentBitRate = videoStream.BitRate;
+                currentWidth = videoStream.Width;
+                currentHeight = videoStream.Height;
+            }
+
+            // Fill video properties from the BDInfo result
+            Fetch(video, inputPath, result);
+
+            videoStream = video.MediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
+
+            // Use the ffprobe values if these are empty
+            if (videoStream != null)
+            {
+                videoStream.BitRate = IsEmpty(videoStream.BitRate) ? currentBitRate : videoStream.BitRate;
+                videoStream.Width = IsEmpty(videoStream.Width) ? currentWidth : videoStream.Width;
+                videoStream.Height = IsEmpty(videoStream.Height) ? currentHeight : videoStream.Height;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified num is empty.
+        /// </summary>
+        /// <param name="num">The num.</param>
+        /// <returns><c>true</c> if the specified num is empty; otherwise, <c>false</c>.</returns>
+        private bool IsEmpty(int? num)
+        {
+            return !num.HasValue || num.Value == 0;
+        }
+
+        /// <summary>
+        /// Fills video properties from the VideoStream of the largest playlist
+        /// </summary>
+        /// <param name="video">The video.</param>
+        /// <param name="inputPath">The input path.</param>
+        /// <param name="stream">The stream.</param>
+        private void Fetch(Video video, string inputPath, BlurayDiscInfo stream)
+        {
+            // Check all input for null/empty/zero
+
+            video.MediaStreams = stream.MediaStreams;
+
+            if (stream.RunTimeTicks.HasValue && stream.RunTimeTicks.Value > 0)
+            {
+                video.RunTimeTicks = stream.RunTimeTicks;
+            }
+
+            video.PlayableStreamFileNames = stream.Files.ToList();
+
+            if (stream.Chapters != null)
+            {
+                video.Chapters = stream.Chapters.Select(c => new ChapterInfo
+                {
+                    StartPositionTicks = TimeSpan.FromSeconds(c).Ticks
+
+                }).ToList();
+            }
+        }
+
+        /// <summary>
+        /// Gets information about the longest playlist on a bdrom
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>VideoStream.</returns>
+        private BlurayDiscInfo GetBDInfo(string path)
+        {
+            return BlurayExaminer.GetDiscInfo(path);
         }
 
         /// <summary>

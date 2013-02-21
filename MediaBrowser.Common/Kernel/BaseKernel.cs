@@ -483,14 +483,22 @@ namespace MediaBrowser.Common.Kernel
 
             CompositionContainer = MefUtils.GetSafeCompositionContainer(Assemblies.Select(i => new AssemblyCatalog(i)));
 
-            CompositionContainer.ComposeExportedValue("kernel", this);
-            CompositionContainer.ComposeExportedValue("logger", Logging.LogManager.GetLogger("App"));
+            ComposeExportedValues(CompositionContainer);
 
             CompositionContainer.ComposeParts(this);
 
             await OnComposablePartsLoaded().ConfigureAwait(false);
 
             CompositionContainer.Catalog.Dispose();
+        }
+
+        /// <summary>
+        /// Composes the exported values.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        protected virtual void ComposeExportedValues(CompositionContainer container)
+        {
+            container.ComposeExportedValue("logger", Logging.LogManager.GetLogger("App"));
         }
 
         /// <summary>

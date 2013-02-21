@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,6 +24,8 @@ namespace MediaBrowser.Controller.Library
         /// The index folder delimeter
         /// </summary>
         const string IndexFolderDelimeter = "-index-";
+
+        private static ILogger Logger = LogManager.GetLogger("DtoBuilder");
 
         /// <summary>
         /// Gets the dto base item.
@@ -55,7 +58,7 @@ namespace MediaBrowser.Controller.Library
                 catch (Exception ex)
                 {
                     // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
-                    Logger.LogException("Error generating PrimaryImageAspectRatio for {0}", ex, item.Name);
+                    Logger.ErrorException("Error generating PrimaryImageAspectRatio for {0}", ex, item.Name);
                 }
             }
 
@@ -116,7 +119,7 @@ namespace MediaBrowser.Controller.Library
                 catch (Exception ex)
                 {
                     // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
-                    Logger.LogException("Error generating PrimaryImageAspectRatio for {0}", ex, item.Name);
+                    Logger.ErrorException("Error generating PrimaryImageAspectRatio for {0}", ex, item.Name);
                 }
             }
 
@@ -211,7 +214,7 @@ namespace MediaBrowser.Controller.Library
             }
             catch (FileNotFoundException)
             {
-                Logger.LogError("Image file does not exist: {0}", path);
+                Logger.Error("Image file does not exist: {0}", path);
                 return;
             }
 
@@ -572,7 +575,7 @@ namespace MediaBrowser.Controller.Library
                         }
                         catch (IOException ex)
                         {
-                            Logger.LogException("Error getting person {0}", ex, c.Name);
+                            Logger.ErrorException("Error getting person {0}", ex, c.Name);
                             return null;
                         }
                     })

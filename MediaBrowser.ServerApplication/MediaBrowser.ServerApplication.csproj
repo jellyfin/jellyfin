@@ -179,6 +179,7 @@
     <Compile Include="Controls\MultiItemUpdateNotification.xaml.cs">
       <DependentUpon>MultiItemUpdateNotification.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Implementations\BdInfoExaminer.cs" />
     <Compile Include="Implementations\DotNetZipClient.cs" />
     <Compile Include="LibraryExplorer.xaml.cs">
       <DependentUpon>LibraryExplorer.xaml</DependentUpon>
@@ -221,6 +222,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\BDInfo\BDInfo.csproj">
+      <Project>{07b509c0-0c28-4f3f-8963-5263281f7e3d}</Project>
+      <Name>BDInfo</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
       <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>
       <Name>MediaBrowser.Common</Name>

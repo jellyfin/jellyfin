@@ -170,7 +170,7 @@ namespace MediaBrowser.ServerApplication
         /// <returns>IKernel.</returns>
         protected override IKernel InstantiateKernel()
         {
-            return new Kernel(new PismoIsoManager(LogManager.GetLogger("PismoIsoManager")), new DotNetZipClient());
+            return new Kernel(new PismoIsoManager(LogManager.GetLogger("PismoIsoManager")), new DotNetZipClient(), new BdInfoExaminer());
         }
 
         /// <summary>

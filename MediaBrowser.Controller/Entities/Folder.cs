@@ -202,12 +202,14 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Dictionary{System.StringIComparer{BaseItem}}.</returns>
         protected virtual Dictionary<string, IComparer<BaseItem>> GetSortByOptions()
         {
+            var logger = LogManager.GetLogger("BaseItemComparer");
+
             return new Dictionary<string, IComparer<BaseItem>> {            
-                {LocalizedStrings.Instance.GetString("NameDispPref"), new BaseItemComparer(SortOrder.Name)},
-                {LocalizedStrings.Instance.GetString("DateDispPref"), new BaseItemComparer(SortOrder.Date)},
-                {LocalizedStrings.Instance.GetString("RatingDispPref"), new BaseItemComparer(SortOrder.Rating)},
-                {LocalizedStrings.Instance.GetString("RuntimeDispPref"), new BaseItemComparer(SortOrder.Runtime)},
-                {LocalizedStrings.Instance.GetString("YearDispPref"), new BaseItemComparer(SortOrder.Year)}
+                {LocalizedStrings.Instance.GetString("NameDispPref"), new BaseItemComparer(SortOrder.Name, logger)},
+                {LocalizedStrings.Instance.GetString("DateDispPref"), new BaseItemComparer(SortOrder.Date, logger)},
+                {LocalizedStrings.Instance.GetString("RatingDispPref"), new BaseItemComparer(SortOrder.Rating, logger)},
+                {LocalizedStrings.Instance.GetString("RuntimeDispPref"), new BaseItemComparer(SortOrder.Runtime, logger)},
+                {LocalizedStrings.Instance.GetString("YearDispPref"), new BaseItemComparer(SortOrder.Year, logger)}
             };
 
         }
@@ -221,7 +223,7 @@ namespace MediaBrowser.Controller.Entities
         {
             IComparer<BaseItem> sorting;
             SortByOptions.TryGetValue(name ?? "", out sorting);
-            return sorting ?? new BaseItemComparer(SortOrder.Name);
+            return sorting ?? new BaseItemComparer(SortOrder.Name, LogManager.GetLogger("BaseItemComparer"));
         }
 
         /// <summary>

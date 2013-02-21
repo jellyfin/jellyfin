@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Common.Logging;
 
 namespace MediaBrowser.Controller.Localization
 {
@@ -39,7 +40,7 @@ namespace MediaBrowser.Controller.Localization
         public static Dictionary<string, int> Initialize(bool blockUnrated)
         {
             //build our ratings dictionary from the combined local one and us one
-            ratingsDef = new RatingsDefinition(Path.Combine(Kernel.Instance.ApplicationPaths.LocalizationPath, "Ratings-" + Kernel.Instance.Configuration.MetadataCountryCode+".txt"));
+            ratingsDef = new RatingsDefinition(Path.Combine(Kernel.Instance.ApplicationPaths.LocalizationPath, "Ratings-" + Kernel.Instance.Configuration.MetadataCountryCode + ".txt"), LogManager.GetLogger("RatingsDefinition"));
             //global value of None
             var dict = new Dictionary<string, int> {{"None", -1}};
             foreach (var pair in ratingsDef.RatingsDict)

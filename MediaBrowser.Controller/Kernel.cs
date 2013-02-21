@@ -16,10 +16,12 @@ using MediaBrowser.Controller.Updates;
 using MediaBrowser.Controller.Weather;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Hosting;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -305,13 +307,47 @@ namespace MediaBrowser.Controller
         private IZipClient ZipClient { get; set; }
 
         /// <summary>
+        /// Gets or sets the bluray examiner.
+        /// </summary>
+        /// <value>The bluray examiner.</value>
+        private IBlurayExaminer BlurayExaminer { get; set; }
+        
+        /// <summary>
         /// Creates a kernel based on a Data path, which is akin to our current programdata path
         /// </summary>
-        public Kernel(IIsoManager isoManager, IZipClient zipClient)
+        public Kernel(IIsoManager isoManager, IZipClient zipClient, IBlurayExaminer blurayExaminer)
             : base(isoManager)
         {
+            if (isoManager == null)
+            {
+                throw new ArgumentNullException("isoManager");
+            }
+
+            if (zipClient == null)
+            {
+                throw new ArgumentNullException("zipClient");
+            }
+
+            if (blurayExaminer == null)
+            {
+                throw new ArgumentNullException("blurayExaminer");
+            }
+            
             Instance = this;
             ZipClient = zipClient;
+            BlurayExaminer = blurayExaminer;
+        }
+
+        /// <summary>
+        /// Composes the exported values.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        protected override void ComposeExportedValues(CompositionContainer container)
+        {
+            base.ComposeExportedValues(container);
+
+            container.ComposeExportedValue("kernel", this);
+            container.ComposeExportedValue("blurayExaminer", BlurayExaminer);
         }
 
         /// <summary>

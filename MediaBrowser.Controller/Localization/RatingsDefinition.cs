@@ -1,7 +1,7 @@
-﻿using System;
+﻿using MediaBrowser.Model.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using MediaBrowser.Common.Logging;
 
 namespace MediaBrowser.Controller.Localization
 {
@@ -11,12 +11,21 @@ namespace MediaBrowser.Controller.Localization
     public class RatingsDefinition
     {
         /// <summary>
+        /// Gets or sets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
+        private ILogger Logger { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RatingsDefinition" /> class.
         /// </summary>
         /// <param name="file">The file.</param>
-        public RatingsDefinition(string file)
+        /// <param name="logger">The logger.</param>
+        public RatingsDefinition(string file, ILogger logger)
         {
-            Logger.LogInfo("Loading Certification Ratings from file " + file);
+            Logger = logger;
+
+            Logger.Info("Loading Certification Ratings from file " + file);
             this.file = file;
             if (!Load())
             {
@@ -99,7 +108,7 @@ namespace MediaBrowser.Controller.Localization
                             }
                             else
                             {
-                                Logger.LogError("Invalid line in ratings file " + file + "(" + line + ")");
+                                Logger.Error("Invalid line in ratings file " + file + "(" + line + ")");
                             }
                         }
                     }
