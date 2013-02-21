@@ -3,6 +3,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.UI.Configuration;
 using MediaBrowser.UI.Controller;
@@ -20,14 +21,16 @@ namespace MediaBrowser.UI.Playback
     /// </summary>
     public class PlaybackManager : BaseManager<UIKernel>
     {
+        private readonly ILogger _logger;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PlaybackManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        public PlaybackManager(UIKernel kernel)
+        public PlaybackManager(UIKernel kernel, ILogger logger)
             : base(kernel)
         {
-
+            _logger = logger;
         }
 
         #region PlaybackStarted Event
@@ -49,7 +52,7 @@ namespace MediaBrowser.UI.Playback
                 Options = options,
                 Player = player,
                 PlayerConfiguration = playerConfiguration
-            }, Logger);
+            }, _logger);
         }
         #endregion
 
@@ -70,7 +73,7 @@ namespace MediaBrowser.UI.Playback
             {
                 Items = items,
                 Player = player
-            }, Logger);
+            }, _logger);
         }
         #endregion
 
@@ -154,7 +157,7 @@ namespace MediaBrowser.UI.Playback
                 }
                 catch (HttpException ex)
                 {
-                    Logger.ErrorException("Error retrieving intros", ex);
+                    _logger.ErrorException("Error retrieving intros", ex);
                 }
             }
 

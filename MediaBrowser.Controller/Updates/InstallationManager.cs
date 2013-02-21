@@ -6,6 +6,7 @@ using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Updates;
 using System;
 using System.Collections.Concurrent;
@@ -45,7 +46,7 @@ namespace MediaBrowser.Controller.Updates
         /// <param name="plugin">The plugin.</param>
         private void OnPluginUninstalled(IPlugin plugin)
         {
-            EventHelper.QueueEventIfNotNull(PluginUninstalled, this, new GenericEventArgs<IPlugin> { Argument = plugin }, Logger);
+            EventHelper.QueueEventIfNotNull(PluginUninstalled, this, new GenericEventArgs<IPlugin> { Argument = plugin }, _logger);
 
             // Notify connected ui's
             Kernel.TcpManager.SendWebSocketMessage("PluginUninstalled", plugin.GetPluginInfo());
@@ -64,9 +65,9 @@ namespace MediaBrowser.Controller.Updates
         /// <param name="newVersion">The new version.</param>
         public void OnPluginUpdated(IPlugin plugin, PackageVersionInfo newVersion)
         {
-            Logger.Info("Plugin updated: {0} {1} {2}", newVersion.name, newVersion.version, newVersion.classification);
+            _logger.Info("Plugin updated: {0} {1} {2}", newVersion.name, newVersion.version, newVersion.classification);
 
-            EventHelper.QueueEventIfNotNull(PluginUpdated, this, new GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> { Argument = new Tuple<IPlugin, PackageVersionInfo>(plugin, newVersion) }, Logger);
+            EventHelper.QueueEventIfNotNull(PluginUpdated, this, new GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> { Argument = new Tuple<IPlugin, PackageVersionInfo>(plugin, newVersion) }, _logger);
             
             Kernel.NotifyPendingRestart();
         }
@@ -83,9 +84,9 @@ namespace MediaBrowser.Controller.Updates
         /// <param name="package">The package.</param>
         public void OnPluginInstalled(PackageVersionInfo package)
         {
-            Logger.Info("New plugin installed: {0} {1} {2}", package.name, package.version, package.classification);
+            _logger.Info("New plugin installed: {0} {1} {2}", package.name, package.version, package.classification);
 
-            EventHelper.QueueEventIfNotNull(PluginInstalled, this, new GenericEventArgs<PackageVersionInfo> { Argument = package }, Logger);
+            EventHelper.QueueEventIfNotNull(PluginInstalled, this, new GenericEventArgs<PackageVersionInfo> { Argument = package }, _logger);
 
             Kernel.NotifyPendingRestart();
         }
@@ -98,12 +99,18 @@ namespace MediaBrowser.Controller.Updates
         private IZipClient ZipClient { get; set; }
 
         /// <summary>
+        /// The _logger
+        /// </summary>
+        private readonly ILogger _logger;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="InstallationManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="zipClient">The zip client.</param>
+        /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">zipClient</exception>
-        public InstallationManager(Kernel kernel, IZipClient zipClient)
+        public InstallationManager(Kernel kernel, IZipClient zipClient, ILogger logger)
             : base(kernel)
         {
             if (zipClient == null)
@@ -111,6 +118,7 @@ namespace MediaBrowser.Controller.Updates
                 throw new ArgumentNullException("zipClient");
             }
 
+            _logger = logger;
             ZipClient = zipClient;
         }
 
@@ -338,7 +346,7 @@ namespace MediaBrowser.Controller.Updates
                     CurrentInstallations.Remove(tuple);
                 }
 
-                Logger.Info("Package installation cancelled: {0} {1}", package.name, package.versionStr);
+                _logger.Info("Package installation cancelled: {0} {1}", package.name, package.versionStr);
 
                 Kernel.TcpManager.SendWebSocketMessage("PackageInstallationCancelled", installationInfo);
                 
@@ -408,7 +416,7 @@ namespace MediaBrowser.Controller.Updates
                 }
                 catch (IOException e)
                 {
-                    Logger.ErrorException("Error attempting to extract archive from {0} to {1}", e, tempFile, target);
+                    _logger.ErrorException("Error attempting to extract archive from {0} to {1}", e, tempFile, target);
                     throw;
                 }
 
@@ -422,7 +430,7 @@ namespace MediaBrowser.Controller.Updates
                 }
                 catch (IOException e)
                 {
-                    Logger.ErrorException("Error attempting to move file from {0} to {1}", e, tempFile, target);
+                    _logger.ErrorException("Error attempting to move file from {0} to {1}", e, tempFile, target);
                     throw;
                 }
             }            

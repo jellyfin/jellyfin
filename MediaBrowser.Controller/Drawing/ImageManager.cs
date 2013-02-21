@@ -15,6 +15,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Drawing
 {
@@ -52,12 +53,20 @@ namespace MediaBrowser.Controller.Drawing
         private readonly ConcurrentDictionary<string, Task<ImageSize>> _cachedImagedSizes = new ConcurrentDictionary<string, Task<ImageSize>>();
 
         /// <summary>
+        /// The _logger
+        /// </summary>
+        private readonly ILogger _logger;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ImageManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        public ImageManager(Kernel kernel)
+        /// <param name="logger">The logger.</param>
+        public ImageManager(Kernel kernel, ILogger logger)
             : base(kernel)
         {
+            _logger = logger;
+
             ImageSizeCache = new FileSystemRepository(Path.Combine(Kernel.ApplicationPaths.ImageCachePath, "image-sizes"));
             ResizedImageCache = new FileSystemRepository(Path.Combine(Kernel.ApplicationPaths.ImageCachePath, "resized-images"));
             CroppedImageCache = new FileSystemRepository(Path.Combine(Kernel.ApplicationPaths.ImageCachePath, "cropped-images"));
@@ -103,7 +112,7 @@ namespace MediaBrowser.Controller.Drawing
                 catch (Exception ex)
                 {
                     // We have to have a catch-all here because some of the .net image methods throw a plain old Exception
-                    Logger.ErrorException("Error cropping image", ex);
+                    _logger.ErrorException("Error cropping image", ex);
                 }
             }
 
@@ -121,7 +130,7 @@ namespace MediaBrowser.Controller.Drawing
             }
             catch
             {
-                Logger.Error("Error enhancing image");
+                _logger.Error("Error enhancing image");
             }
 
             var originalImageSize = await GetImageSize(originalImagePath, dateModified).ConfigureAwait(false);
@@ -276,7 +285,7 @@ namespace MediaBrowser.Controller.Drawing
                 // Cache file doesn't exist no biggie
             }
 
-            var size = ImageHeader.GetDimensions(imagePath, Logger);
+            var size = ImageHeader.GetDimensions(imagePath, _logger);
 
             var imageSize = new ImageSize { Width = size.Width, Height = size.Height };
 

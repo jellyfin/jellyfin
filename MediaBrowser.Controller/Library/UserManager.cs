@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -42,12 +43,19 @@ namespace MediaBrowser.Controller.Library
         }
 
         /// <summary>
+        /// The _logger
+        /// </summary>
+        private readonly ILogger _logger;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="UserManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        public UserManager(Kernel kernel)
+        /// <param name="logger">The logger.</param>
+        public UserManager(Kernel kernel, ILogger logger)
             : base(kernel)
         {
+            _logger = logger;
         }
 
         #region UserUpdated Event
@@ -62,7 +70,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         internal void OnUserUpdated(User user)
         {
-            EventHelper.QueueEventIfNotNull(UserUpdated, this, new GenericEventArgs<User> { Argument = user }, Logger);
+            EventHelper.QueueEventIfNotNull(UserUpdated, this, new GenericEventArgs<User> { Argument = user }, _logger);
 
             // Notify connected ui's
             Kernel.TcpManager.SendWebSocketMessage("UserUpdated", DtoBuilder.GetDtoUser(user));
@@ -80,7 +88,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         internal void OnUserDeleted(User user)
         {
-            EventHelper.QueueEventIfNotNull(UserDeleted, this, new GenericEventArgs<User> { Argument = user }, Logger);
+            EventHelper.QueueEventIfNotNull(UserDeleted, this, new GenericEventArgs<User> { Argument = user }, _logger);
 
             // Notify connected ui's
             Kernel.TcpManager.SendWebSocketMessage("UserDeleted", user.Id.ToString());
@@ -113,7 +121,7 @@ namespace MediaBrowser.Controller.Library
                 await UpdateUser(user).ConfigureAwait(false);
             }
 
-            Logger.Info("Authentication request for {0} {1}.", user.Name, (success ? "has succeeded" : "has been denied"));
+            _logger.Info("Authentication request for {0} {1}.", user.Name, (success ? "has succeeded" : "has been denied"));
 
             return success;
         }

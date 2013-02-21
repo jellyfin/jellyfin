@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using MoreLinq;
 using System;
@@ -38,7 +39,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="args">The <see cref="ChildrenChangedEventArgs" /> instance containing the event data.</param>
         internal void OnLibraryChanged(ChildrenChangedEventArgs args)
         {
-            EventHelper.QueueEventIfNotNull(LibraryChanged, this, args, Logger);
+            EventHelper.QueueEventIfNotNull(LibraryChanged, this, args, _logger);
 
             // Had to put this in a separate method to avoid an implicitly captured closure
             SendLibraryChangedWebSocketMessage(args);
@@ -56,12 +57,19 @@ namespace MediaBrowser.Controller.Library
         #endregion
 
         /// <summary>
+        /// The _logger
+        /// </summary>
+        private readonly ILogger _logger;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="LibraryManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        public LibraryManager(Kernel kernel)
+        /// <param name="logger">The logger.</param>
+        public LibraryManager(Kernel kernel, ILogger logger)
             : base(kernel)
         {
+            _logger = logger;
         }
 
         /// <summary>
@@ -115,7 +123,7 @@ namespace MediaBrowser.Controller.Library
                 // When resolving the root, we need it's grandchildren (children of user views)
                 var flattenFolderDepth = args.IsPhysicalRoot ? 2 : 0;
 
-                args.FileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, Logger, flattenFolderDepth: flattenFolderDepth, args: args);
+                args.FileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, _logger, flattenFolderDepth: flattenFolderDepth, args: args);
             }
 
             // Check to see if we should resolve based on our contents
@@ -155,7 +163,7 @@ namespace MediaBrowser.Controller.Library
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error resolving path {0}", ex, f.Path);
+                    _logger.ErrorException("Error resolving path {0}", ex, f.Path);
                 }
             });
 
@@ -303,7 +311,7 @@ namespace MediaBrowser.Controller.Library
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            Logger.Debug("Creating {0}: {1}", typeof(T).Name, name);
+            _logger.Debug("Creating {0}: {1}", typeof(T).Name, name);
 
             path = Path.Combine(path, FileSystem.GetValidFilename(name));
 
@@ -404,7 +412,7 @@ namespace MediaBrowser.Controller.Library
                     }
                     catch (IOException ex)
                     {
-                        Logger.ErrorException("Error validating IBN entry {0}", ex, currentPerson.Name);
+                        _logger.ErrorException("Error validating IBN entry {0}", ex, currentPerson.Name);
                     }
 
                     // Update progress
@@ -423,7 +431,7 @@ namespace MediaBrowser.Controller.Library
 
             progress.Report(new TaskProgress { PercentComplete = 100 });
 
-            Logger.Info("People validation complete");
+            _logger.Info("People validation complete");
         }
 
         /// <summary>
@@ -434,7 +442,7 @@ namespace MediaBrowser.Controller.Library
         /// <returns>Task.</returns>
         internal async Task ValidateMediaLibrary(IProgress<TaskProgress> progress, CancellationToken cancellationToken)
         {
-            Logger.Info("Validating media library");
+            _logger.Info("Validating media library");
 
             await Kernel.RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 

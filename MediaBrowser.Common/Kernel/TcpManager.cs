@@ -3,6 +3,7 @@ using Alchemy.Classes;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -60,6 +61,11 @@ namespace MediaBrowser.Common.Kernel
         private WebSocketServer ExternalWebSocketServer { get; set; }
 
         /// <summary>
+        /// The _logger
+        /// </summary>
+        private readonly ILogger _logger;
+        
+        /// <summary>
         /// The _supports native web socket
         /// </summary>
         private bool? _supportsNativeWebSocket;
@@ -103,9 +109,12 @@ namespace MediaBrowser.Common.Kernel
         /// Initializes a new instance of the <see cref="TcpManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        public TcpManager(IKernel kernel)
+        /// <param name="logger">The logger.</param>
+        public TcpManager(IKernel kernel, ILogger logger)
             : base(kernel)
         {
+            _logger = logger;
+
             if (kernel.IsFirstRun)
             {
                 RegisterServerWithAdministratorAccess();
@@ -141,7 +150,7 @@ namespace MediaBrowser.Common.Kernel
 
             ExternalWebSocketServer.Start();
 
-            Logger.Info("Alchemy Web Socket Server started");
+            _logger.Info("Alchemy Web Socket Server started");
         }
 
         /// <summary>
@@ -150,7 +159,7 @@ namespace MediaBrowser.Common.Kernel
         /// <param name="context">The context.</param>
         private void OnAlchemyWebSocketClientConnected(UserContext context)
         {
-            var connection = new WebSocketConnection(new AlchemyWebSocket(context, Logger), context.ClientAddress, ProcessWebSocketMessageReceived, Logger);
+            var connection = new WebSocketConnection(new AlchemyWebSocket(context, _logger), context.ClientAddress, ProcessWebSocketMessageReceived, _logger);
 
             _webSocketConnections.Add(connection);
         }
@@ -169,15 +178,15 @@ namespace MediaBrowser.Common.Kernel
 
             DisposeHttpServer();
 
-            Logger.Info("Loading Http Server");
+            _logger.Info("Loading Http Server");
 
             try
             {
-                HttpServer = new HttpServer(Kernel.HttpServerUrlPrefix, "Media Browser", Kernel, Logger);
+                HttpServer = new HttpServer(Kernel.HttpServerUrlPrefix, "Media Browser", Kernel, _logger);
             }
             catch (HttpListenerException ex)
             {
-                Logger.ErrorException("Error starting Http Server", ex);
+                _logger.ErrorException("Error starting Http Server", ex);
 
                 if (registerServerOnFailure)
                 {
@@ -202,7 +211,7 @@ namespace MediaBrowser.Common.Kernel
         /// <param name="e">The <see cref="WebSocketConnectEventArgs" /> instance containing the event data.</param>
         void HttpServer_WebSocketConnected(object sender, WebSocketConnectEventArgs e)
         {
-            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, ProcessWebSocketMessageReceived, Logger);
+            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, ProcessWebSocketMessageReceived, _logger);
 
             _webSocketConnections.Add(connection);
         }
@@ -221,7 +230,7 @@ namespace MediaBrowser.Common.Kernel
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("{0} failed processing WebSocket message {1}", ex, i.GetType().Name, result.MessageType);
+                    _logger.ErrorException("{0} failed processing WebSocket message {1}", ex, i.GetType().Name, result.MessageType);
                 }
             }));
 
@@ -254,7 +263,7 @@ namespace MediaBrowser.Common.Kernel
             }
             catch (SocketException ex)
             {
-                Logger.ErrorException("Failed to start UDP Server", ex);
+                _logger.ErrorException("Failed to start UDP Server", ex);
                 return;
             }
 
@@ -265,7 +274,7 @@ namespace MediaBrowser.Common.Kernel
 
                 if (expectedMessageBytes.SequenceEqual(res.Buffer))
                 {
-                    Logger.Info("Received UDP server request from " + res.RemoteEndPoint.ToString());
+                    _logger.Info("Received UDP server request from " + res.RemoteEndPoint.ToString());
 
                     // Send a response back with our ip address and port
                     var response = String.Format("MediaBrowser{0}|{1}:{2}", Kernel.KernelContext, NetUtils.GetLocalIpAddress(), Kernel.UdpServerPortNumber);
@@ -330,7 +339,7 @@ namespace MediaBrowser.Common.Kernel
 
             if (connections.Count > 0)
             {
-                Logger.Info("Sending web socket message {0}", messageType);
+                _logger.Info("Sending web socket message {0}", messageType);
 
                 var message = new WebSocketMessage<T> { MessageType = messageType, Data = dataFunction() };
                 var bytes = JsonSerializer.SerializeToBytes(message);
@@ -347,7 +356,7 @@ namespace MediaBrowser.Common.Kernel
                     }
                     catch (Exception ex)
                     {
-                        Logger.ErrorException("Error sending web socket message {0} to {1}", ex, messageType, s.RemoteEndPoint);
+                        _logger.ErrorException("Error sending web socket message {0} to {1}", ex, messageType, s.RemoteEndPoint);
                     }
                 }));
 
@@ -386,7 +395,7 @@ namespace MediaBrowser.Common.Kernel
 
             if (HttpServer != null)
             {
-                Logger.Info("Disposing Http Server");
+                _logger.Info("Disposing Http Server");
 
                 HttpServer.WebSocketConnected -= HttpServer_WebSocketConnected;
                 HttpServer.Dispose();

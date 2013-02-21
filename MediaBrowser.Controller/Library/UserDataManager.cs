@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Connectivity;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,13 +30,19 @@ namespace MediaBrowser.Controller.Library
         #endregion
 
         /// <summary>
+        /// The _logger
+        /// </summary>
+        private readonly ILogger _logger;
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="UserDataManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        public UserDataManager(Kernel kernel)
+        /// <param name="logger">The logger.</param>
+        public UserDataManager(Kernel kernel, ILogger logger)
             : base(kernel)
         {
-
+            _logger = logger;
         }
 
         /// <summary>
@@ -65,7 +72,7 @@ namespace MediaBrowser.Controller.Library
             {
                 Argument = item,
                 User = user
-            }, Logger);
+            }, _logger);
         }
 
         /// <summary>
@@ -104,7 +111,7 @@ namespace MediaBrowser.Controller.Library
                 Argument = item,
                 User = user,
                 PlaybackPositionTicks = positionTicks
-            }, Logger);
+            }, _logger);
         }
 
         /// <summary>
@@ -150,7 +157,7 @@ namespace MediaBrowser.Controller.Library
                 Argument = item,
                 User = user,
                 PlaybackPositionTicks = positionTicks
-            }, Logger);
+            }, _logger);
         }
 
         /// <summary>

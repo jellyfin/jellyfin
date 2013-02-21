@@ -17,6 +17,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.MediaInfo
 {
@@ -66,12 +67,18 @@ namespace MediaBrowser.Controller.MediaInfo
         private IZipClient ZipClient { get; set; }
 
         /// <summary>
+        /// The _logger
+        /// </summary>
+        private readonly ILogger _logger;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="FFMpegManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="zipClient">The zip client.</param>
+        /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">zipClient</exception>
-        public FFMpegManager(Kernel kernel, IZipClient zipClient)
+        public FFMpegManager(Kernel kernel, IZipClient zipClient, ILogger logger)
             : base(kernel)
         {
             if (zipClient == null)
@@ -79,6 +86,7 @@ namespace MediaBrowser.Controller.MediaInfo
                 throw new ArgumentNullException("zipClient");
             }
 
+            _logger = logger;
             ZipClient = zipClient;
 
             // Not crazy about this but it's the only way to suppress ffmpeg crash dialog boxes
@@ -150,7 +158,7 @@ namespace MediaBrowser.Controller.MediaInfo
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error creating chapter images for {0}", ex, video.Name);
+                    _logger.ErrorException("Error creating chapter images for {0}", ex, video.Name);
                 }
             }
         }
@@ -483,7 +491,7 @@ namespace MediaBrowser.Controller.MediaInfo
                 EnableRaisingEvents = true
             };
 
-            Logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
             process.Exited += ProcessExited;
 
@@ -524,11 +532,11 @@ namespace MediaBrowser.Controller.MediaInfo
                 }
                 catch (InvalidOperationException ex1)
                 {
-                    Logger.ErrorException("Error killing ffprobe", ex1);
+                    _logger.ErrorException("Error killing ffprobe", ex1);
                 }
                 catch (Win32Exception ex1)
                 {
-                    Logger.ErrorException("Error killing ffprobe", ex1);
+                    _logger.ErrorException("Error killing ffprobe", ex1);
                 }
 
                 throw;
@@ -727,7 +735,7 @@ namespace MediaBrowser.Controller.MediaInfo
                 return true;
             }
 
-            Logger.Error("ffmpeg audio image extraction failed for {0}", input.Path);
+            _logger.Error("ffmpeg audio image extraction failed for {0}", input.Path);
             return false;
         }
 
@@ -789,7 +797,7 @@ namespace MediaBrowser.Controller.MediaInfo
                 }
             };
 
-            Logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
             await AudioImageResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -806,7 +814,7 @@ namespace MediaBrowser.Controller.MediaInfo
                 return true;
             }
 
-            Logger.Error("ffmpeg subtitle extraction failed for {0}", input.Path);
+            _logger.Error("ffmpeg subtitle extraction failed for {0}", input.Path);
             return false;
         }
 
@@ -844,7 +852,7 @@ namespace MediaBrowser.Controller.MediaInfo
                 }
             };
 
-            Logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
             await AudioImageResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -861,7 +869,7 @@ namespace MediaBrowser.Controller.MediaInfo
                 return true;
             }
 
-            Logger.Error("ffmpeg subtitle conversion failed for {0}", mediaStream.Path);
+            _logger.Error("ffmpeg subtitle conversion failed for {0}", mediaStream.Path);
             return false;
         }
 
@@ -909,22 +917,22 @@ namespace MediaBrowser.Controller.MediaInfo
             {
                 try
                 {
-                    Logger.Info("Killing ffmpeg process");
+                    _logger.Info("Killing ffmpeg process");
 
                     process.Kill();
                     process.WaitForExit(1000);
                 }
                 catch (Win32Exception ex)
                 {
-                    Logger.ErrorException("Error killing process", ex);
+                    _logger.ErrorException("Error killing process", ex);
                 }
                 catch (InvalidOperationException ex)
                 {
-                    Logger.ErrorException("Error killing process", ex);
+                    _logger.ErrorException("Error killing process", ex);
                 }
                 catch (NotSupportedException ex)
                 {
-                    Logger.ErrorException("Error killing process", ex);
+                    _logger.ErrorException("Error killing process", ex);
                 }
             }
 
@@ -940,12 +948,12 @@ namespace MediaBrowser.Controller.MediaInfo
                 {
                     try
                     {
-                        Logger.Info("Deleting extracted image due to failure: ", outputPath);
+                        _logger.Info("Deleting extracted image due to failure: ", outputPath);
                         File.Delete(outputPath);
                     }
                     catch (IOException ex)
                     {
-                        Logger.ErrorException("Error deleting extracted image {0}", ex, outputPath);
+                        _logger.ErrorException("Error deleting extracted image {0}", ex, outputPath);
                     }
                 }
             }
@@ -957,7 +965,7 @@ namespace MediaBrowser.Controller.MediaInfo
                 }
             }
 
-            Logger.Error("ffmpeg video image extraction failed for {0}", inputPath);
+            _logger.Error("ffmpeg video image extraction failed for {0}", inputPath);
             return false;
         }
 
