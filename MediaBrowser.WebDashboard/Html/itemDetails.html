@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    <div id="itemDetailPage" data-role="page" class="page libraryPage" data-theme="a">
+        <div data-role="content" style="padding-top: 0;">
+
+            <h1 id="itemName" style="padding-left: 10px; margin: 0;"></h1>
+
+            <div style="padding: 10px;">
+                <div class="itemImageBlock">
+                    <div id="itemMedia" style="position: relative;">
+                        <div id="itemImage"></div>
+                        <div id="playButtonShadow" style="display: none; height: 48px; position: absolute; bottom: 0; left: 0; right: 0; background: black; opacity: .75;">
+                        </div>
+                        <button id="btnPlay" type="button" class="imageButton" style="display: none; position: absolute; bottom: 5px; left: 10px;" data-role="none" title="Play" onclick="ItemDetailPage.play();">
+                            <img src="css/images/media/playCircle.png" style="height: 28px;" />
+                        </button>
+                    </div>
+                </div>
+
+                <div class="itemDetailBlock">
+
+                    <p id="itemTagline" style="font-style: italic;"></p>
+                    <p id="itemOverview"></p>
+                    <p id="itemCommunityRating"></p>
+                    <p id="itemMiscInfo" style="color: #ddd; font-size: 14px;"></p>
+
+                    <p id="itemGenres">
+                    </p>
+
+                    <p id="itemStudios">
+                    </p>
+                </div>
+            </div>
+
+            <div data-role="collapsible" data-content-theme="a" id="mediaInfoCollapsible">
+                <h3>Media Info</h3>
+                <div id="mediaInfoContent"></div>
+            </div>
+            <div data-role="collapsible" data-content-theme="a" id="scenesCollapsible">
+                <h3>Scenes</h3>
+                <div id="scenesContent"></div>
+            </div>
+            <div data-role="collapsible" data-content-theme="a">
+                <h3>Special Features</h3>
+                <p>I'm the collapsible content. By default I'm closed, but you can click the header to open me.</p>
+            </div>
+            <div data-role="collapsible" data-content-theme="a">
+                <h3>Trailers</h3>
+                <p>I'm the collapsible content. By default I'm closed, but you can click the header to open me.</p>
+            </div>
+            <div data-role="collapsible" data-content-theme="a">
+                <h3>Cast & Crew</h3>
+                <p>I'm the collapsible content. By default I'm closed, but you can click the header to open me.</p>
+            </div>
+            <div data-role="collapsible" data-content-theme="a">
+                <h3>Gallery</h3>
+                <div id="galleryContent"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

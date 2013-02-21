@@ -1,10 +1,18 @@
 ﻿
 namespace MediaBrowser.ApiInteraction
 {
+    /// <summary>
+    /// Enum SerializationFormats
+    /// </summary>
     public enum SerializationFormats
     {
+        /// <summary>
+        /// The json
+        /// </summary>
         Json,
-        Jsv,
+        /// <summary>
+        /// The protobuf
+        /// </summary>
         Protobuf
     }
 }

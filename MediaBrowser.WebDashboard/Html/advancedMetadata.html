@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Metadata</title>
+</head>
+<body>
+    <div id="advancedMetadataConfigurationPage" data-role="page" class="page type-interior">
+
+        <div data-role="content">
+
+            <div class="content-primary">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="metadata.html" data-role="button">Basics</a>
+                    <a href="metadataImages.html" data-role="button">Images</a>
+                    <a href="advancedMetadata.html" data-role="button" class="ui-btn-active">Advanced</a>
+                </div>
+
+                <form id="advancedMetadataConfigurationForm">
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <label>Disable internet providers for:</label>
+                            <div id="divItemTypes"></div>
+                        </li>
+                        <li>
+                            <button type="submit" data-theme="b">
+                                Save
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');">
+                                Cancel
+                            </button>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+
+        </div>
+
+        <script type="text/javascript">
+            $('#advancedMetadataConfigurationForm').on('submit', AdvancedMetadataConfigurationPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

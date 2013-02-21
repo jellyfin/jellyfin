@@ -1,34 +1,37 @@
-﻿using MediaBrowser.Common.Logging;
-using MediaBrowser.Model.Weather;
+﻿using MediaBrowser.Model.Weather;
 using System;
-using System.Net;
-using System.Net.Cache;
-using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Weather
 {
+    /// <summary>
+    /// Class BaseWeatherProvider
+    /// </summary>
     public abstract class BaseWeatherProvider : IDisposable
     {
-        protected HttpClient HttpClient { get; private set; }
-
-        protected BaseWeatherProvider()
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
         {
-            var handler = new WebRequestHandler { };
-
-            handler.AutomaticDecompression = DecompressionMethods.Deflate;
-            handler.CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate);
-
-            HttpClient = new HttpClient(handler);
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        public virtual void Dispose()
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
         {
-            Logger.LogInfo("Disposing " + GetType().Name);
-
-            HttpClient.Dispose();
         }
 
-        public abstract Task<WeatherInfo> GetWeatherInfoAsync(string zipCode);
+        /// <summary>
+        /// Gets the weather info async.
+        /// </summary>
+        /// <param name="location">The location.</param>
+        /// <returns>Task{WeatherInfo}.</returns>
+        public abstract Task<WeatherInfo> GetWeatherInfoAsync(string location, CancellationToken cancellationToken);
     }
 }

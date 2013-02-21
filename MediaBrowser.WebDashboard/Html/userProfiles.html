@@ -1,0 +1,24 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>User Profiles</title>
+</head>
+<body>
+    <div id="userProfilesPage" data-role="page" class="page type-interior userProfilesConfigurationPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <div class="readOnlyContent">
+                    <p id="pAddUser">
+                        <button type="button" data-icon="plus" onclick="Dashboard.navigate('editUser.html');">
+                            Add User
+                        </button>
+                    </p>
+
+                    <ul id="ulUserProfiles" data-role="listview" data-inset="true" data-auto-enhanced="false" data-split-icon="minus"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

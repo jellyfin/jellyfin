@@ -58,7 +58,7 @@ namespace MediaBrowser.UI.Converters
             }
             if (delta < 24 * hour)
             {
-                return ts.Hours + " hours ago";
+                return ts.Hours == 1 ? "an hour ago" : ts.Hours + " hours ago";
             }
             if (delta < 48 * hour)
             {

@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+    <div id="dashboardPage" data-role="page" class="page type-interior">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <div class="readOnlyContent">
+                    <div data-role="collapsible" data-content-theme="c" data-collapsed="false" style="margin-top: 2em;">
+                        <h3>Server Information</h3>
+                        <div>
+                            <p>
+                                Version <span id="appVersionNumber"></span>
+                            </p>
+                            <p id="pUpToDate" style="display: none;">
+                                <img src="css/images/checkMarkGreen.png" style="height: 20px; margin-right: 3px; position: relative; top: 4px;" />
+                                Media Browser Server is up to date
+                            </p>
+                            <div id="pUpdateNow" style="display: none;">
+                                <p><strong>A new version of Media Browser Server is available!</strong></p>
+                                <p id="newVersionNumber"></p>
+                                <button id="btnUpdateApplication" type="button" data-icon="download" data-theme="b" onclick="DashboardPage.updateApplication();">Update Now</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div data-role="collapsible" data-content-theme="c" data-collapsed="false" style="margin-top: 2em; display: none;" id="collapsiblePluginUpdates">
+                        <h3>Plugin Information</h3>
+                        <div id="pPluginUpdates"></div>
+                    </div>
+
+                    <div data-role="collapsible" data-content-theme="c" data-collapsed="false" style="margin-top: 2em;">
+                        <h3>Active Connections</h3>
+                        <div id="divConnections">
+                        </div>
+                    </div>
+
+                    <div data-role="collapsible" data-content-theme="c" data-collapsed="false" style="margin-top: 2em;">
+                        <h3>Running Tasks</h3>
+                        <div id="divRunningTasks">
+                        </div>
+                        <p><a href="scheduledTasks.html">Manage Scheduled Tasks</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

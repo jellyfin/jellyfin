@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>dlna</title>
+</head>
+<body>
+    <div id="dlnaConfigurationPage" data-role="page" class="page type-interior pluginConfigurationPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <form id="dlnaConfigurationForm">
+
+                    <ul class="ulForm" data-role="listview">
+                        <li>
+                            <label for="txtUserName">
+                                User name:
+                            </label>
+                            <input id="txtUserName" name="txtUserName" />
+                        </li>
+                        <li>
+                            <label for="txtFriendlyDlnaName">
+                                Friendly Dlna Server Name:
+                            </label>
+                            <input id="txtFriendlyDlnaName" name="txtFriendlyDlnaName" />
+                        </li>                        
+                        <li>
+                            <label for="txtDlnaPortNumber">
+                                Dlna Server Port:
+                            </label>
+                            <input type="number" id="txtDlnaPortNumber" name="txtDlnaPortNumber" pattern="[0-9]*" min="1" />
+                            <div class="fieldDescription">
+                                If specified, the Dlna server will use this port
+                            </div>
+                        </li>
+                        <li>
+                            <button type="submit" data-theme="b">Save</button>
+                            <div class="fieldDescription">
+                                Saving will restart the dlna server.
+                            </div>
+                            <button type="button" onclick="history.back();">Cancel</button>
+                        </li>
+                    </ul>
+
+                </form>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+
+            var dlnaConfigurationPage = {
+                pluginUniqueId: "f1855371-7cf5-40d2-bcd8-b780d7f006af"
+            };
+
+            $('#dlnaConfigurationPage').on('pageshow', function (event) {
+
+                Dashboard.showLoadingMsg();
+
+                var page = this;
+
+                ApiClient.getPluginConfiguration(dlnaConfigurationPage.pluginUniqueId).done(function (config) {
+
+                    $('#txtUserName', page).val(config.UserName);
+                    $('#txtFriendlyDlnaName', page).val(config.FriendlyDlnaName);
+                    $('#txtDlnaPortNumber', page).val(config.DlnaPortNumber || "");
+
+                    Dashboard.hideLoadingMsg();
+                });
+            });
+
+            $('#dlnaConfigurationForm').on('submit', function (e) {
+
+                Dashboard.showLoadingMsg();
+
+                var form = this;
+
+                ApiClient.getPluginConfiguration(dlnaConfigurationPage.pluginUniqueId).done(function (config) {
+
+                    config.UserName = $('#txtUserName', form).val();
+                    config.FriendlyDlnaName = $('#txtFriendlyDlnaName', form).val();
+                    var dlnaPortNumber = $('#txtDlnaPortNumber', form).val();
+                    config.DlnaPortNumber = dlnaPortNumber ? dlnaPortNumber : null;
+
+                    ApiClient.updatePluginConfiguration(dlnaConfigurationPage.pluginUniqueId, config).done(Dashboard.processPluginConfigurationUpdateResult);
+                });
+
+                // Disable default form submission
+                return false;
+            });
+        </script>
+    </div>
+</body>
+</html>

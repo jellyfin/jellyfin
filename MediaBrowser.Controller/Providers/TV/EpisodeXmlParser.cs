@@ -4,12 +4,38 @@ using System.Xml;
 
 namespace MediaBrowser.Controller.Providers.TV
 {
+    /// <summary>
+    /// Class EpisodeXmlParser
+    /// </summary>
     public class EpisodeXmlParser : BaseItemXmlParser<Episode>
     {
+        /// <summary>
+        /// Fetches the data from XML node.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <param name="item">The item.</param>
         protected override void FetchDataFromXmlNode(XmlReader reader, Episode item)
         {
             switch (reader.Name)
             {
+                case "Episode":
+                    //MB generated metadata is within an "Episode" node
+                    using (var subTree = reader.ReadSubtree())
+                    {
+                        subTree.MoveToContent();
+
+                        // Loop through each element
+                        while (subTree.Read())
+                        {
+                            if (subTree.NodeType == XmlNodeType.Element)
+                            {
+                                FetchDataFromXmlNode(subTree, item);
+                            }
+                        }
+
+                    }
+                    break;
+
                 case "filename":
                     {
                         string filename = reader.ReadElementContentAsString();
@@ -27,29 +53,47 @@ namespace MediaBrowser.Controller.Providers.TV
                     }
                 case "SeasonNumber":
                     {
-                        string number = reader.ReadElementContentAsString();
+                        var number = reader.ReadElementContentAsString();
 
                         if (!string.IsNullOrWhiteSpace(number))
                         {
-                            item.ParentIndexNumber = int.Parse(number);
+                            int num;
+
+                            if (int.TryParse(number, out num))
+                            {
+                                item.ParentIndexNumber = num;
+                            }
                         }
                         break;
                     }
 
                 case "EpisodeNumber":
                     {
-                        string number = reader.ReadElementContentAsString();
+                        var number = reader.ReadElementContentAsString();
 
                         if (!string.IsNullOrWhiteSpace(number))
                         {
-                            item.IndexNumber = int.Parse(number);
+                            int num;
+
+                            if (int.TryParse(number, out num))
+                            {
+                                item.IndexNumber = num;
+                            }
                         }
                         break;
                     }
 
                 case "EpisodeName":
-                    item.Name = reader.ReadElementContentAsString();
-                    break;
+                    {
+                        var name = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(name))
+                        {
+                            item.Name = name;
+                        }
+                        break;
+                    }
+
 
                 default:
                     base.FetchDataFromXmlNode(reader, item);

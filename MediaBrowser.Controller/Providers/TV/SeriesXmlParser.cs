@@ -1,16 +1,44 @@
-﻿using MediaBrowser.Controller.Entities.TV;
+﻿using MediaBrowser.Common.Logging;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Resolvers.TV;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Xml;
 
 namespace MediaBrowser.Controller.Providers.TV
 {
+    /// <summary>
+    /// Class SeriesXmlParser
+    /// </summary>
     public class SeriesXmlParser : BaseItemXmlParser<Series>
     {
+        /// <summary>
+        /// Fetches the data from XML node.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <param name="item">The item.</param>
         protected override void FetchDataFromXmlNode(XmlReader reader, Series item)
         {
             switch (reader.Name)
             {
+                case "Series":
+                    //MB generated metadata is within a "Series" node
+                    using (var subTree = reader.ReadSubtree())
+                    {
+                        subTree.MoveToContent();
+
+                        // Loop through each element
+                        while (subTree.Read())
+                        {
+                            if (subTree.NodeType == XmlNodeType.Element)
+                            {
+                                FetchDataFromXmlNode(subTree, item);
+                            }
+                        }
+
+                    }
+                    break;
+
                 case "id":
                     string id = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(id))
@@ -21,30 +49,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                 case "Airs_DayOfWeek":
                     {
-                        string day = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(day))
-                        {
-                            if (day.Equals("Daily", StringComparison.OrdinalIgnoreCase))
-                            {
-                                item.AirDays = new DayOfWeek[] { 
-                                    DayOfWeek.Sunday,
-                                    DayOfWeek.Monday,
-                                    DayOfWeek.Tuesday,
-                                    DayOfWeek.Wednesday,
-                                    DayOfWeek.Thursday,
-                                    DayOfWeek.Friday,
-                                    DayOfWeek.Saturday
-                                };
-                            }
-                            else
-                            {
-                                item.AirDays = new DayOfWeek[] { 
-                                    (DayOfWeek)Enum.Parse(typeof(DayOfWeek), day, true)
-                                };
-                            }
-                        }
-
+                        item.AirDays = TVUtils.GetAirDays(reader.ReadElementContentAsString());
                         break;
                     }
 
@@ -57,8 +62,24 @@ namespace MediaBrowser.Controller.Providers.TV
                     break;
 
                 case "Status":
-                    item.Status = reader.ReadElementContentAsString();
-                    break;
+                    {
+                        var status = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(status))
+                        {
+                            SeriesStatus seriesStatus;
+                            if (Enum.TryParse(status, true, out seriesStatus))
+                            {
+                                item.Status = seriesStatus;
+                            }
+                            else
+                            {
+                                Logger.LogInfo("Unrecognized series status: " + status);
+                            }
+                        }
+
+                        break;
+                    }
 
                 default:
                     base.FetchDataFromXmlNode(reader, item);

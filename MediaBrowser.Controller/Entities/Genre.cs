@@ -1,7 +1,10 @@
 ﻿
 namespace MediaBrowser.Controller.Entities
 {
-    public class Genre : BaseEntity
+    /// <summary>
+    /// Class Genre
+    /// </summary>
+    public class Genre : BaseItem
     {
     }
 }

@@ -1,80 +1,165 @@
 ﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Serialization;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Plugins;
 using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace MediaBrowser.Common.Plugins
 {
     /// <summary>
     /// Provides a common base class for all plugins
     /// </summary>
-    public abstract class BasePlugin : IDisposable
+    /// <typeparam name="TConfigurationType">The type of the T configuration type.</typeparam>
+    public abstract class BasePlugin<TConfigurationType> : IDisposable, IPlugin
+        where TConfigurationType : BasePluginConfiguration
     {
+        /// <summary>
+        /// Gets the kernel.
+        /// </summary>
+        /// <value>The kernel.</value>
         protected IKernel Kernel { get; private set; }
 
         /// <summary>
         /// Gets or sets the plugin's current context
         /// </summary>
+        /// <value>The context.</value>
         protected KernelContext Context { get { return Kernel.KernelContext; } }
 
         /// <summary>
         /// Gets the name of the plugin
         /// </summary>
+        /// <value>The name.</value>
         public abstract string Name { get; }
+
+        /// <summary>
+        /// Gets the description.
+        /// </summary>
+        /// <value>The description.</value>
+        public virtual string Description
+        {
+            get { return string.Empty; }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is a core plugin.
+        /// </summary>
+        /// <value><c>true</c> if this instance is a core plugin; otherwise, <c>false</c>.</value>
+        public virtual bool IsCorePlugin
+        {
+            get
+            {
+                return false;
+            }
+        }
 
         /// <summary>
         /// Gets the type of configuration this plugin uses
         /// </summary>
-        public virtual Type ConfigurationType
+        /// <value>The type of the configuration.</value>
+        public Type ConfigurationType
         {
-            get { return typeof (BasePluginConfiguration); }
+            get { return typeof(TConfigurationType); }
+        }
+        
+        /// <summary>
+        /// The _assembly name
+        /// </summary>
+        private AssemblyName _assemblyName;
+        /// <summary>
+        /// Gets the name of the assembly.
+        /// </summary>
+        /// <value>The name of the assembly.</value>
+        protected AssemblyName AssemblyName
+        {
+            get
+            {
+                return _assemblyName ?? (_assemblyName = GetType().Assembly.GetName());
+            }
+        }
+
+        /// <summary>
+        /// The _unique id
+        /// </summary>
+        private Guid? _uniqueId;
+
+        /// <summary>
+        /// Gets the unique id.
+        /// </summary>
+        /// <value>The unique id.</value>
+        public Guid UniqueId
+        {
+            get
+            {
+
+                if (!_uniqueId.HasValue)
+                {
+                    _uniqueId = Marshal.GetTypeLibGuidForAssembly(GetType().Assembly);
+                }
+
+                return _uniqueId.Value;
+            }
         }
 
         /// <summary>
         /// Gets the plugin version
         /// </summary>
+        /// <value>The version.</value>
         public Version Version
         {
             get
             {
-                return GetType().Assembly.GetName().Version;
+                return AssemblyName.Version;
             }
         }
 
         /// <summary>
         /// Gets the name the assembly file
         /// </summary>
+        /// <value>The name of the assembly file.</value>
         public string AssemblyFileName
         {
             get
             {
-                return GetType().Assembly.GetName().Name + ".dll";
+                return AssemblyName.Name + ".dll";
             }
         }
 
-        private DateTime? _configurationDateLastModified;
+        /// <summary>
+        /// Gets the last date modified of the configuration
+        /// </summary>
+        /// <value>The configuration date last modified.</value>
         public DateTime ConfigurationDateLastModified
         {
             get
             {
-                if (_configurationDateLastModified == null)
-                {
-                    if (File.Exists(ConfigurationFilePath))
-                    {
-                        _configurationDateLastModified = File.GetLastWriteTimeUtc(ConfigurationFilePath);
-                    }
-                }
+                // Ensure it's been lazy loaded
+                var config = Configuration;
 
-                return _configurationDateLastModified ?? DateTime.MinValue;
+                return File.GetLastWriteTimeUtc(ConfigurationFilePath);
+            }
+        }
+
+        /// <summary>
+        /// Gets the last date modified of the plugin
+        /// </summary>
+        /// <value>The assembly date last modified.</value>
+        public DateTime AssemblyDateLastModified
+        {
+            get
+            {
+                return File.GetLastWriteTimeUtc(AssemblyFilePath);
             }
         }
 
         /// <summary>
         /// Gets the path to the assembly file
         /// </summary>
+        /// <value>The assembly file path.</value>
         public string AssemblyFilePath
         {
             get
@@ -84,24 +169,53 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <summary>
-        /// Gets or sets the current plugin configuration
+        /// The _configuration sync lock
         /// </summary>
-        public BasePluginConfiguration Configuration { get; protected set; }
+        private object _configurationSyncLock = new object();
+        /// <summary>
+        /// The _configuration initialized
+        /// </summary>
+        private bool _configurationInitialized;
+        /// <summary>
+        /// The _configuration
+        /// </summary>
+        private TConfigurationType _configuration;
+        /// <summary>
+        /// Gets the plugin's configuration
+        /// </summary>
+        /// <value>The configuration.</value>
+        public TConfigurationType Configuration
+        {
+            get
+            {
+                // Lazy load
+                LazyInitializer.EnsureInitialized(ref _configuration, ref _configurationInitialized, ref _configurationSyncLock, () => XmlSerializer.GetXmlConfiguration(ConfigurationType, ConfigurationFilePath) as TConfigurationType);
+                return _configuration;
+            }
+            protected set
+            {
+                _configuration = value;
+
+                if (value == null)
+                {
+                    _configurationInitialized = false;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the name of the configuration file. Subclasses should override
         /// </summary>
+        /// <value>The name of the configuration file.</value>
         public virtual string ConfigurationFileName
         {
-            get
-            {
-                return Name.Replace(" ", string.Empty) + ".xml";
-            }
+            get { return Path.ChangeExtension(AssemblyFileName, ".xml"); }
         }
 
         /// <summary>
         /// Gets the full path to the configuration file
         /// </summary>
+        /// <value>The configuration file path.</value>
         public string ConfigurationFilePath
         {
             get
@@ -110,10 +224,14 @@ namespace MediaBrowser.Common.Plugins
             }
         }
 
+        /// <summary>
+        /// The _data folder path
+        /// </summary>
         private string _dataFolderPath;
         /// <summary>
         /// Gets the full path to the data folder, where the plugin can store any miscellaneous files needed
         /// </summary>
+        /// <value>The data folder path.</value>
         public string DataFolderPath
         {
             get
@@ -134,17 +252,10 @@ namespace MediaBrowser.Common.Plugins
             }
         }
 
-        public bool Enabled
-        {
-            get
-            {
-                return Configuration.Enabled;
-            }
-        }
-
         /// <summary>
         /// Returns true or false indicating if the plugin should be downloaded and run within the Ui.
         /// </summary>
+        /// <value><c>true</c> if [download to UI]; otherwise, <c>false</c>.</value>
         public virtual bool DownloadToUi
         {
             get
@@ -153,40 +264,43 @@ namespace MediaBrowser.Common.Plugins
             }
         }
 
-        public void Initialize(IKernel kernel)
-        {
-            Initialize(kernel, true);
-        }
+        /// <summary>
+        /// Gets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
+        public ILogger Logger { get; private set; }
 
         /// <summary>
         /// Starts the plugin.
         /// </summary>
-        public void Initialize(IKernel kernel, bool loadFeatures)
+        /// <param name="kernel">The kernel.</param>
+        /// <exception cref="System.ArgumentNullException">kernel</exception>
+        public void Initialize(IKernel kernel)
         {
+            if (kernel == null)
+            {
+                throw new ArgumentNullException("kernel");
+            }
+
+            Logger = LogManager.GetLogger(Name);
+            
             Kernel = kernel;
 
-            if (loadFeatures)
+            if (kernel.KernelContext == KernelContext.Server)
             {
-                ReloadConfiguration();
-
-                if (Enabled)
-                {
-                    if (kernel.KernelContext == KernelContext.Server)
-                    {
-                        InitializeOnServer();
-                    }
-                    else if (kernel.KernelContext == KernelContext.Ui)
-                    {
-                        InitializeInUi();
-                    }
-                }
+                InitializeOnServer(!File.Exists(ConfigurationFilePath));
+            }
+            else if (kernel.KernelContext == KernelContext.Ui)
+            {
+                InitializeInUi();
             }
         }
 
         /// <summary>
         /// Starts the plugin on the server
         /// </summary>
-        protected virtual void InitializeOnServer()
+        /// <param name="isFirstRun">if set to <c>true</c> [is first run].</param>
+        protected virtual void InitializeOnServer(bool isFirstRun)
         {
         }
 
@@ -202,46 +316,135 @@ namespace MediaBrowser.Common.Plugins
         /// </summary>
         public void Dispose()
         {
-            Logger.LogInfo("Disposing {0} Plugin", Name);
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            if (Context == KernelContext.Server)
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected void Dispose(bool dispose)
+        {
+            if (Kernel.KernelContext == KernelContext.Server)
             {
-                DisposeOnServer();
+                DisposeOnServer(dispose);
             }
-            else if (Context == KernelContext.Ui)
+            else if (Kernel.KernelContext == KernelContext.Ui)
             {
-                InitializeInUi();
+                DisposeInUI(dispose);
             }
         }
 
         /// <summary>
-        /// Disposes the plugin on the server
+        /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
-        protected virtual void DisposeOnServer()
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void DisposeOnServer(bool dispose)
         {
+            
         }
 
         /// <summary>
-        /// Disposes the plugin in the Ui
+        /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
-        protected virtual void DisposeInUi()
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void DisposeInUI(bool dispose)
         {
+
         }
 
-        public void ReloadConfiguration()
+        /// <summary>
+        /// The _save lock
+        /// </summary>
+        private readonly object _configurationSaveLock = new object();
+
+        /// <summary>
+        /// Saves the current configuration to the file system
+        /// </summary>
+        /// <exception cref="System.InvalidOperationException">Cannot call Plugin.SaveConfiguration from the UI.</exception>
+        public virtual void SaveConfiguration()
         {
-            if (!File.Exists(ConfigurationFilePath))
+            if (Kernel.KernelContext != KernelContext.Server)
             {
-                Configuration = Activator.CreateInstance(ConfigurationType) as BasePluginConfiguration;
+                throw new InvalidOperationException("Cannot call Plugin.SaveConfiguration from the UI.");
+            }
+
+            Logger.Info("Saving configuration");
+
+            lock (_configurationSaveLock)
+            {
                 XmlSerializer.SerializeToFile(Configuration, ConfigurationFilePath);
             }
-            else
+
+            // Notify connected UI's
+            Kernel.TcpManager.SendWebSocketMessage("PluginConfigurationUpdated-" + Name, Configuration);
+        }
+
+        /// <summary>
+        /// Completely overwrites the current configuration with a new copy
+        /// Returns true or false indicating success or failure
+        /// </summary>
+        /// <param name="configuration">The configuration.</param>
+        /// <exception cref="System.ArgumentNullException">configuration</exception>
+        public virtual void UpdateConfiguration(BasePluginConfiguration configuration)
+        {
+            if (configuration == null)
             {
-                Configuration = XmlSerializer.DeserializeFromFile(ConfigurationType, ConfigurationFilePath) as BasePluginConfiguration;
+                throw new ArgumentNullException("configuration");
+            }
+            
+            Configuration = (TConfigurationType)configuration;
+
+            SaveConfiguration();
+        }
+
+        /// <summary>
+        /// Gets the plugin info.
+        /// </summary>
+        /// <returns>PluginInfo.</returns>
+        public PluginInfo GetPluginInfo()
+        {
+            var info = new PluginInfo
+            {
+                Name = Name,
+                DownloadToUI = DownloadToUi,
+                Version = Version.ToString(),
+                AssemblyFileName = AssemblyFileName,
+                ConfigurationDateLastModified = ConfigurationDateLastModified,
+                Description = Description,
+                IsCorePlugin = IsCorePlugin,
+                UniqueId = UniqueId,
+                EnableAutoUpdate = Configuration.EnableAutoUpdate,
+                UpdateClass = Configuration.UpdateClass,
+                ConfigurationFileName = ConfigurationFileName
+            };
+
+            var uiPlugin = this as IUIPlugin;
+
+            if (uiPlugin != null)
+            {
+                info.MinimumRequiredUIVersion = uiPlugin.MinimumRequiredUIVersion.ToString();
             }
 
-            // Reset this so it will be loaded again next time it's accessed
-            _configurationDateLastModified = null;
+            return info;
+        }
+
+        /// <summary>
+        /// Called when just before the plugin is uninstalled from the server.
+        /// </summary>
+        public virtual void OnUninstalling()
+        {
+            
+        }
+
+        /// <summary>
+        /// Gets the plugin's configuration
+        /// </summary>
+        /// <value>The configuration.</value>
+        BasePluginConfiguration IPlugin.Configuration
+        {
+            get { return Configuration; }
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities.TV;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using System;
@@ -7,15 +8,35 @@ using System.IO;
 
 namespace MediaBrowser.Controller.Resolvers.TV
 {
+    /// <summary>
+    /// Class SeriesResolver
+    /// </summary>
     [Export(typeof(IBaseItemResolver))]
     public class SeriesResolver : BaseFolderResolver<Series>
     {
-        protected override Series Resolve(ItemResolveEventArgs args)
+        /// <summary>
+        /// Gets the priority.
+        /// </summary>
+        /// <value>The priority.</value>
+        public override ResolverPriority Priority
+        {
+            get
+            {
+                return ResolverPriority.Second;
+            }
+        }
+
+        /// <summary>
+        /// Resolves the specified args.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns>Series.</returns>
+        protected override Series Resolve(ItemResolveArgs args)
         {
             if (args.IsDirectory)
             {
-                // Optimization to avoid running all these tests against VF's
-                if (args.Parent != null && args.Parent.IsRoot)
+                // Avoid expensive tests against VF's and all their children by not allowing this
+                if (args.Parent == null || args.Parent.IsRoot)
                 {
                     return null;
                 }
@@ -30,7 +51,14 @@ namespace MediaBrowser.Controller.Resolvers.TV
                 // series.xml exists
                 // [tvdbid= is present in the path
                 // TVUtils.IsSeriesFolder returns true
-                if (args.ContainsFile("series.xml") || Path.GetFileName(args.Path).IndexOf("[tvdbid=", StringComparison.OrdinalIgnoreCase) != -1 || TVUtils.IsSeriesFolder(args.Path, args.FileSystemChildren))
+                var filename = Path.GetFileName(args.Path);
+
+                if (string.IsNullOrEmpty(filename))
+                {
+                    return null;
+                }
+
+                if (args.ContainsMetaFileByName("series.xml") || filename.IndexOf("[tvdbid=", StringComparison.OrdinalIgnoreCase) != -1 || TVUtils.IsSeriesFolder(args.Path, args.FileSystemChildren))
                 {
                     return new Series();
                 }
@@ -39,24 +67,32 @@ namespace MediaBrowser.Controller.Resolvers.TV
             return null;
         }
 
-        protected override void SetInitialItemValues(Series item, ItemResolveEventArgs args)
+        /// <summary>
+        /// Sets the initial item values.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="args">The args.</param>
+        protected override void SetInitialItemValues(Series item, ItemResolveArgs args)
         {
             base.SetInitialItemValues(item, args);
+
+            Season.AddMetadataFiles(args);
 
             SetProviderIdFromPath(item);
         }
 
+        /// <summary>
+        /// Sets the provider id from path.
+        /// </summary>
+        /// <param name="item">The item.</param>
         private void SetProviderIdFromPath(Series item)
         {
-            const string srch = "[tvdbid=";
-            int index = item.Path.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
+            var justName = item.Path.Substring(item.Path.LastIndexOf(Path.DirectorySeparatorChar));
 
-            if (index != -1)
+            var id = justName.GetAttributeValue("tvdbid");
+
+            if (!string.IsNullOrEmpty(id))
             {
-                string id = item.Path.Substring(index + srch.Length);
-
-                id = id.Substring(0, id.IndexOf(']'));
-
                 item.SetProviderId(MetadataProviders.Tvdb, id);
             }
         }

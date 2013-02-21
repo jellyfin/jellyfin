@@ -13,6 +13,9 @@
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
+    <ExpressionBlendVersion>5.2.30810.0</ExpressionBlendVersion>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -35,9 +38,19 @@
     <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Expression.Effects, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ThirdParty\Expression\Microsoft.Expression.Effects.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Expression.Interactions, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ThirdParty\Expression\Microsoft.Expression.Interactions.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -51,13 +64,76 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\BaseItemTile.xaml.cs">
+      <DependentUpon>BaseItemTile.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Details\BaseDetailsControl.cs" />
+    <Compile Include="Controls\Details\ItemChapters.xaml.cs">
+      <DependentUpon>ItemChapters.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Details\ItemGallery.xaml.cs">
+      <DependentUpon>ItemGallery.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Details\ItemMediaInfo.xaml.cs">
+      <DependentUpon>ItemMediaInfo.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Details\ItemOverview.xaml.cs">
+      <DependentUpon>ItemOverview.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Details\ItemPerformers.xaml.cs">
+      <DependentUpon>ItemPerformers.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Details\ItemSpecialFeatures.xaml.cs">
+      <DependentUpon>ItemSpecialFeatures.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Details\ItemTrailers.xaml.cs">
+      <DependentUpon>ItemTrailers.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Details\MediaStreamControl.xaml.cs">
+      <DependentUpon>MediaStreamControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\HomePageTile.xaml.cs">
+      <DependentUpon>HomePageTile.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\MultiItemTile.xaml.cs">
+      <DependentUpon>MultiItemTile.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DisplayPreferences\BaseDisplayPreferencesPage.cs" />
+    <Compile Include="DisplayPreferences\DisplayPreferencesMenu.xaml.cs">
+      <DependentUpon>DisplayPreferencesMenu.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DisplayPreferences\IndexMenuPage.xaml.cs">
+      <DependentUpon>IndexMenuPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DisplayPreferences\MainPage.xaml.cs">
+      <DependentUpon>MainPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DisplayPreferences\SortMenuPage.xaml.cs">
+      <DependentUpon>SortMenuPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DisplayPreferences\ViewMenuPage.xaml.cs">
+      <DependentUpon>ViewMenuPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\DetailPage.xaml.cs">
+      <DependentUpon>DetailPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\HomePage.xaml.cs">
+      <DependentUpon>HomePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\InternalPlayerPage.xaml.cs">
+      <DependentUpon>InternalPlayerPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\ListPage.xaml.cs">
+      <DependentUpon>ListPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\WeatherPage.xaml.cs">
+      <DependentUpon>WeatherPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Resources\AppResources.cs" />
-    <Compile Include="Converters\TileBackgroundConverter.cs" />
     <Compile Include="Converters\WeatherImageConverter.cs" />
-    <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -71,10 +147,12 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="Theme.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="app.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -82,27 +160,120 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\MediaBrowserServer\MediaBrowser.Common\MediaBrowser.Common.csproj">
+    <ProjectReference Include="..\MediaBrowser.ApiInteraction\MediaBrowser.ApiInteraction.csproj">
+      <Project>{921c0f64-fda7-4e9f-9e73-0cb0eedb2422}</Project>
+      <Name>MediaBrowser.ApiInteraction</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
       <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>
       <Name>MediaBrowser.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\MediaBrowserServer\MediaBrowser.Controller\MediaBrowser.Controller.csproj">
-      <Project>{17e1f4e6-8abd-4fe5-9ecf-43d4b6087ba2}</Project>
-      <Name>MediaBrowser.Controller</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\MediaBrowserServer\MediaBrowser.Model\MediaBrowser.Model.csproj">
+    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
       <Name>MediaBrowser.Model</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\MediaBrowserUI\MediaBrowser.UI\MediaBrowser.UI.csproj">
+    <ProjectReference Include="..\MediaBrowser.UI.Controls\MediaBrowser.UI.Controls.csproj">
+      <Project>{1adfe460-fd95-46fa-8871-cccb4b62e2e8}</Project>
+      <Name>MediaBrowser.UI.Controls</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.UI\MediaBrowser.UI.csproj">
       <Project>{b5ece1fb-618e-420b-9a99-8e972d76920a}</Project>
       <Name>MediaBrowser.UI</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Controls\BaseItemTile.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\Details\ItemChapters.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\Details\ItemGallery.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\Details\ItemMediaInfo.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\Details\ItemOverview.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\Details\ItemPerformers.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\Details\ItemSpecialFeatures.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\Details\ItemTrailers.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\Details\MediaStreamControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\HomePageTile.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\MultiItemTile.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DisplayPreferences\DisplayPreferencesMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DisplayPreferences\IndexMenuPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DisplayPreferences\MainPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DisplayPreferences\SortMenuPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DisplayPreferences\ViewMenuPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\DetailPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\HomePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\InternalPlayerPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\ListPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Pages\LoginPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\WeatherPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Properties\DesignTimeResources.xaml" Condition="'$(DesignTime)'=='true' OR ('$(SolutionPath)'!='' AND Exists('$(SolutionPath)') AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true')">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <ContainsDesignTimeResources>true</ContainsDesignTimeResources>
     </Page>
     <Page Include="Resources\AppResources.xaml">
       <SubType>Designer</SubType>
@@ -118,10 +289,62 @@
     <Resource Include="Resources\Images\Weather\Sunny.png" />
     <Resource Include="Resources\Images\Weather\Thunder.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\SettingsButton.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\SearchButton.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\VideoDefault.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\starEmpty.png" />
+    <Resource Include="Resources\Images\starFull.png" />
+    <Resource Include="Resources\Images\starHalf.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\Watched.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\DislikeOverlay.png" />
+    <Resource Include="Resources\Images\FavoriteOverlay.png" />
+    <Resource Include="Resources\Images\LikeOverlay.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\Weather\Cloudy.png" />
+    <Resource Include="Resources\Images\Weather\PartlyCloudy.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\ViewButton.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\ViewMenu\View.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\ViewMenu\Decrease.png" />
+    <Resource Include="Resources\Images\ViewMenu\Increase.png" />
+    <Resource Include="Resources\Images\ViewMenu\Index.png" />
+    <Resource Include="Resources\Images\ViewMenu\Scroll.png" />
+    <Resource Include="Resources\Images\ViewMenu\Sort.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\ViewMenu\Close.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\ChapterDefault.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\NowPlayingButton.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\AudioDefault.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\ProgramData-Server\Plugins\" /y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\MediaBrowser.UI\" /y</PostBuildEvent>
   </PropertyGroup>
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

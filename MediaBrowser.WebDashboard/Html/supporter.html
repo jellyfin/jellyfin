@@ -1,0 +1,69 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Support</title>
+</head>
+<body>
+    <div id="supporterPage" data-role="page" class="page type-interior">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <div class="readOnlyContent">
+                    <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                        <a href="support.html" data-role="button">General</a>
+                        <a href="log.html" data-role="button">View Log</a>
+                        <a href="supporter.html" data-role="button" class="ui-btn-active">Become a Supporter</a>
+                        <a href="supporterKey.html" data-role="button">Supporter Key</a>
+                    </div>
+                    <h2>Support the Media Browser Team</h2>
+                    <p>
+                        By becoming a Media Browser Supporter, you ensure the continued development and support of this product <strong>and open up a whole new world of premium plug-ins.</strong>
+                    </p>
+                    <p style="margin-bottom: 30px">
+                        A portion of all MB3 Supporter donations is also contributed to some of our metadata providers (<a href="http://themoviedb.org" target="_blank">The Movie Db</a>, 
+                        <a href="http://thetvdb.com" target="_blank">The TVdb</a>, and <a href="http://fanart.tv" target="_blank">FanArt.tv</a>)
+                    </p>
+                    <p style="margin-bottom: 30px">
+                        Premium plug-ins can be installed and used for their trial periods (14 days on any particular machine) but, to register them for use
+                        beyond that period, you also have to be a Media Browser Supporter.
+                    
+                    </p>
+                    <div style="display: none; padding: 10px 10px 10px 10px; margin-bottom: 10px" class="ui-bar-e supporterOnly">
+                        <p>
+                            <strong><em>Thank You</em></strong> for your past support of the Media Browser Team.  Users like you make it possible for 
+                            Media Browser to exist and keep getting better and better.  You can always support us again if you feel you are getting maximum
+                            value from the product.  
+                        
+                        </p>
+                    </div>
+                    <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr" 
+                          method="post">
+                                <label for="donateAmt" >Amount (USD)</label>
+                                <select id="donateAmt" name="amount" >
+                                    <option>10</option>
+                                    <option>15</option>
+                                    <option>20</option>
+                                    <option>30</option>
+                                    <option>50</option>
+                                </select>
+                            
+                                <input type="hidden" name="cmd" value="_xclick">
+                                <input type="hidden" name="business" value="donate@mediabrowser3.com">
+                                <input type="hidden" name="currency_code" value="USD">
+                                <input type="hidden" name="item_name" value="Media Browser Supporter">
+                                <input type="hidden" name="item_number" value="MBSupporter">
+                                <input type="hidden" name="notify_url" value="http://mb3admin.com/admin/service/services/ppipn.php">
+                                <input type="hidden" name="return" id ="paypalReturnUrl" value="#">
+                                <a data-role="button" onclick="_xclick.submit();"><img src="css/images/donatepp.png"/></a>  
+                                
+                                <p><small><em>This button is now <strong>live</strong>. Transactions will result in real money being transferred.</em></small></p>
+                            
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

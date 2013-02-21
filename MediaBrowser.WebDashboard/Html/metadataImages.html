@@ -1,0 +1,120 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Metadata</title>
+</head>
+<body>
+    <div id="metadataImagesConfigurationPage" data-role="page" class="page type-interior">
+
+        <div data-role="content">
+
+            <div class="content-primary">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="metadata.html" data-role="button">Basics</a>
+                    <a href="metadataImages.html" data-role="button" class="ui-btn-active">Images</a>
+                    <a href="advancedMetadata.html" data-role="button">Advanced</a>
+                </div>
+
+                <form id="metadataImagesConfigurationForm">
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <input type="checkbox" id="chkRefreshItemImages" name="chkRefreshItemImages" />
+                            <label for="chkRefreshItemImages">Refresh existing images </label>
+                            <div class="fieldDescription">
+                                When enabled, images will be refreshed periodically
+                            </div>
+                        </li>
+                        <li>
+                            <label for="txtNumbackdrops">Max number of backdrops per item: </label>
+                            <input type="number" id="txtNumbackdrops" name="txtNumbackdrops" pattern="[0-9]*" required="required" min="1" />
+                        </li>
+                        <li>
+                            <label>Enable additional image downloading:</label>
+                            <div data-role="controlgroup">
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadMovieArt" name="chkDownloadMovieArt" />
+                                <label for="chkDownloadMovieArt">Movie Art</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadMovieBanner" name="chkDownloadMovieBanner" />
+                                <label for="chkDownloadMovieBanner">Movie Banner</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadMovieDisc" name="chkDownloadMovieDisc" />
+                                <label for="chkDownloadMovieDisc">Movie Disc</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadMovieLogo" name="chkDownloadMovieLogo" />
+                                <label for="chkDownloadMovieLogo">Movie Logo</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadMovieThumb" name="chkDownloadMovieThumb" />
+                                <label for="chkDownloadMovieThumb">Movie Thumb</label>
+
+                                <input type="checkbox" data-mini="true" id="chKDownloadTVArt" name="chKDownloadTVArt" />
+                                <label for="chKDownloadTVArt">TV Series Art</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadTVBanner" name="chkDownloadTVBanner" />
+                                <label for="chkDownloadTVBanner">TV Series Banner</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadTVLogo" name="chkDownloadTVLogo" />
+                                <label for="chkDownloadTVLogo">TV Series Logo</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadTVThumb" name="chkDownloadTVThumb" />
+                                <label for="chkDownloadTVThumb">TV Series Thumb</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadSeasonBackdrops" name="chkDownloadSeasonBackdrops" />
+                                <label for="chkDownloadSeasonBackdrops">TV Season Backdrops</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadSeasonBanner" name="chkDownloadSeasonBanner" />
+                                <label for="chkDownloadSeasonBanner">TV Season Banner</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadSeasonThumb" name="chkDownloadSeasonThumb" />
+                                <label for="chkDownloadSeasonThumb">TV Season Thumb</label>
+                            </div>
+                        </li>
+                        <li>
+                            <label for="selectTmdbPosterDownloadSize">Tmdb poster download size: </label>
+                            <select id="selectTmdbPosterDownloadSize" name="selectTmdbPosterDownloadSize">
+                                <option value="original">original</option>
+                                <option value="w92">w92</option>
+                                <option value="w154">w154</option>
+                                <option value="w185">w185</option>
+                                <option value="w342">w342</option>
+                                <option value="w500">w500</option>
+                            </select>
+                        </li>
+                        <li>
+                            <label for="selectTmdbBackdropDownloadSize">Tmdb backdrop download size: </label>
+                            <select id="selectTmdbBackdropDownloadSize" name="selectTmdbBackdropDownloadSize">
+                                <option value="original">original</option>
+                                <option value="w380">w380</option>
+                                <option value="w780">w780</option>
+                                <option value="w1280">w1280</option>
+                            </select>
+                        </li>
+                        <li>
+                            <label for="selectTmdbPersonImageDownloadSize">Tmdb person image download size: </label>
+                            <select id="selectTmdbPersonImageDownloadSize" name="selectTmdbPersonImageDownloadSize">
+                                <option value="original">original</option>
+                                <option value="w45">w45</option>
+                                <option value="w185">w185</option>
+                                <option value="h632">h632</option>
+                            </select>
+                        </li>
+                        <li>
+                            <button type="submit" data-theme="b">
+                                Save
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');">
+                                Cancel
+                            </button>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+
+        </div>
+
+        <script type="text/javascript">
+            $('#metadataImagesConfigurationForm').on('submit', MetadataImagesPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

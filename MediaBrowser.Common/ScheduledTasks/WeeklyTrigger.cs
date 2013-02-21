@@ -1,0 +1,101 @@
+﻿using System;
+using System.Threading;
+
+namespace MediaBrowser.Common.ScheduledTasks
+{
+    /// <summary>
+    /// Represents a task trigger that fires on a weekly basis
+    /// </summary>
+    public class WeeklyTrigger : BaseTaskTrigger
+    {
+        /// <summary>
+        /// Get the time of day to trigger the task to run
+        /// </summary>
+        /// <value>The time of day.</value>
+        public TimeSpan TimeOfDay { get; set; }
+
+        /// <summary>
+        /// Gets or sets the day of week.
+        /// </summary>
+        /// <value>The day of week.</value>
+        public DayOfWeek DayOfWeek { get; set; }
+
+        /// <summary>
+        /// Gets or sets the timer.
+        /// </summary>
+        /// <value>The timer.</value>
+        private Timer Timer { get; set; }
+
+        /// <summary>
+        /// Stars waiting for the trigger action
+        /// </summary>
+        protected internal override void Start()
+        {
+            DisposeTimer();
+
+            var triggerDate = GetNextTriggerDateTime();
+
+            Timer = new Timer(state => OnTriggered(), null, triggerDate - DateTime.Now, TimeSpan.FromMilliseconds(-1));
+        }
+
+        /// <summary>
+        /// Gets the next trigger date time.
+        /// </summary>
+        /// <returns>DateTime.</returns>
+        private DateTime GetNextTriggerDateTime()
+        {
+            var now = DateTime.Now;
+
+            // If it's on the same day
+            if (now.DayOfWeek == DayOfWeek)
+            {
+                // It's either later today, or a week from now
+                return now.TimeOfDay < TimeOfDay ? now.Date.Add(TimeOfDay) : now.Date.AddDays(7).Add(TimeOfDay);
+            }
+
+            var triggerDate = now.Date;
+
+            // Walk the date forward until we get to the trigger day
+            while (triggerDate.DayOfWeek != DayOfWeek)
+            {
+                triggerDate = triggerDate.AddDays(1);
+            }
+
+            // Return the trigger date plus the time offset
+            return triggerDate.Add(TimeOfDay);
+        }
+
+        /// <summary>
+        /// Stops waiting for the trigger action
+        /// </summary>
+        protected internal override void Stop()
+        {
+            DisposeTimer();
+        }
+
+        /// <summary>
+        /// Disposes this instance.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected override void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                DisposeTimer();
+            }
+
+            base.Dispose(dispose);
+        }
+
+        /// <summary>
+        /// Disposes the timer.
+        /// </summary>
+        private void DisposeTimer()
+        {
+            if (Timer != null)
+            {
+                Timer.Dispose();
+            }
+        }
+    }
+}

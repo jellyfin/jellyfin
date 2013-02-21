@@ -13,6 +13,29 @@
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
+    <IsWebBootstrapper>true</IsWebBootstrapper>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <PublishUrl>http://www.mb3admin.com/downloads/server/</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Web</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Background</UpdateMode>
+    <UpdateInterval>1</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <SupportUrl>http://forum.mediabrowser3.com</SupportUrl>
+    <ProductName>Media Browser Server</ProductName>
+    <PublisherName>Media Browser Team</PublisherName>
+    <SuiteName>Media Browser 3</SuiteName>
+    <ApplicationRevision>3033</ApplicationRevision>
+    <ApplicationVersion>2.9.4795.3033</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <CreateDesktopShortcut>true</CreateDesktopShortcut>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -22,7 +45,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>1</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -39,14 +62,76 @@
   <PropertyGroup>
     <ApplicationIcon>Resources\Images\icon.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>9633DCDB4A07D3328EFB99299C6DFB1823EBC4BE</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>
+    </ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>true</SignManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestTimestampUrl>http://timestamp.verisign.com/scripts/timstamp.dll</ManifestTimestampUrl>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>MediaBrowser.ServerApplication_TemporaryKey.pfx</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <WarningLevel>1</WarningLevel>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Hardcodet.Wpf.TaskbarNotification">
       <HintPath>..\packages\Hardcodet.Wpf.TaskbarNotification.1.0.4.0\lib\net40\Hardcodet.Wpf.TaskbarNotification.dll</HintPath>
     </Reference>
+    <Reference Include="Platinum.Managed, Version=1.0.4794.22684, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ThirdParty\UPnP\Libs\Platinum.Managed.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.SQLite, Version=1.0.84.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\System.Data.SQLite.1.0.84.0\lib\net45\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.Linq">
+      <HintPath>..\packages\System.Data.SQLite.1.0.84.0\lib\net45\System.Data.SQLite.Linq.dll</HintPath>
+    </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Remoting" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -64,6 +149,18 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Controls\ItemUpdateNotification.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\MultiItemUpdateNotification.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="LibraryExplorer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -71,6 +168,15 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Controls\ItemUpdateNotification.xaml.cs">
+      <DependentUpon>ItemUpdateNotification.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\MultiItemUpdateNotification.xaml.cs">
+      <DependentUpon>MultiItemUpdateNotification.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="LibraryExplorer.xaml.cs">
+      <DependentUpon>LibraryExplorer.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -95,6 +201,8 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="app.manifest" />
+    <None Include="MediaBrowser.ServerApplication_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -116,23 +224,118 @@
       <Project>{17e1f4e6-8abd-4fe5-9ecf-43d4b6087ba2}</Project>
       <Name>MediaBrowser.Controller</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.IsoMounter\MediaBrowser.IsoMounter.csproj">
+      <Project>{5356ae30-6a6e-4a64-81e3-f76c50595e64}</Project>
+      <Name>MediaBrowser.IsoMounter</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
       <Name>MediaBrowser.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Server.Uninstall\MediaBrowser.Server.Uninstall.csproj">
+      <Project>{5443422f-9548-417a-90dd-2fc91f2b5999}</Project>
+      <Name>MediaBrowser.Server.Uninstall</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Images\icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Images\loadingIcon1.ico" />
-    <Resource Include="Resources\Images\loadingIcon2.ico" />
+    <Resource Include="Resources\Images\folder.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Images\loadingIcon3.ico" />
-    <Resource Include="Resources\Images\loadingIcon4.ico" />
+    <Resource Include="Resources\Images\movie.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\series.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\season.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\episode.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\audio.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\starEmpty.png" />
+    <Resource Include="Resources\Images\starFull.png" />
+    <Resource Include="Resources\Images\starHalf.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\artist.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\persons.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\album.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\boxset.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\trailer.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\folder.jpg" />
+    <Resource Include="Resources\Images\mblogoblackfull.png" />
+    <Resource Include="Resources\Images\mblogowhitefull.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\Loading\1.ico" />
+    <Resource Include="Resources\Images\Loading\2.ico" />
+    <Resource Include="Resources\Images\Loading\3.ico" />
+    <Resource Include="Resources\Images\Loading\4.ico" />
+    <Resource Include="Resources\Images\Loading\5.ico" />
+    <Resource Include="Resources\Images\Loading\6.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.5">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.5 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Visual.C++.10.0.x86">
+      <Visible>False</Visible>
+      <ProductName>Visual C++ 2010 Runtime Libraries %28x86%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="MediaBrowser.Api.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MediaBrowser.ApiInteraction.Javascript.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MediaBrowser.WebDashboard.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x64\SQLite.Interop.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x86\SQLite.Interop.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy "$(SolutionDir)\packages\System.Data.SQLite.1.0.84.0\content\net40\x86\SQLite.Interop.dll" "$(TargetDir)" /y</PostBuildEvent>
+  </PropertyGroup>
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

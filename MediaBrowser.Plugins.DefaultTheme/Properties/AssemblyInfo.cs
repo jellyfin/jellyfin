@@ -1,6 +1,4 @@
 ﻿using System.Reflection;
-using System.Resources;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows;
 
@@ -40,6 +38,7 @@ using System.Windows;
                                       // app, or any theme specific resource dictionaries)
 )]
 
+[assembly: Guid("411f938b-89d5-48f6-b6ab-a5d75036efcc")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -52,4 +51,3 @@ using System.Windows;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyFileVersion("1.0.0.0")]

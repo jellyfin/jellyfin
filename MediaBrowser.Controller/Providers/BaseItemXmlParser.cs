@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Xml;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Common.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Xml;
 
 namespace MediaBrowser.Controller.Providers
@@ -12,22 +12,39 @@ namespace MediaBrowser.Controller.Providers
     /// <summary>
     /// Provides a base class for parsing metadata xml
     /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class BaseItemXmlParser<T>
         where T : BaseItem, new()
     {
         /// <summary>
         /// Fetches metadata for an item from one xml file
         /// </summary>
-        public void Fetch(T item, string metadataFile)
+        /// <param name="item">The item.</param>
+        /// <param name="metadataFile">The metadata file.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        public void Fetch(T item, string metadataFile, CancellationToken cancellationToken)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            if (string.IsNullOrEmpty(metadataFile))
+            {
+                throw new ArgumentNullException();
+            }
+
             // Use XmlReader for best performance
-            using (XmlReader reader = XmlReader.Create(metadataFile))
+            using (var reader = XmlReader.Create(metadataFile))
             {
                 reader.MoveToContent();
 
                 // Loop through each element
                 while (reader.Read())
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     if (reader.NodeType == XmlNodeType.Element)
                     {
                         FetchDataFromXmlNode(reader, item);
@@ -39,6 +56,8 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Fetches metadata from one Xml Element
         /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <param name="item">The item.</param>
         protected virtual void FetchDataFromXmlNode(XmlReader reader, T item)
         {
             switch (reader.Name)
@@ -52,36 +71,21 @@ namespace MediaBrowser.Controller.Providers
                     }
                     break;
 
-                // DisplayMediaType
-                case "Type":
-                    {
-                        item.DisplayMediaType = reader.ReadElementContentAsString();
-
-                        switch (item.DisplayMediaType.ToLower())
-                        {
-                            case "blu-ray":
-                                item.DisplayMediaType = VideoType.BluRay.ToString();
-                                break;
-                            case "dvd":
-                                item.DisplayMediaType = VideoType.Dvd.ToString();
-                                break;
-                            case "":
-                                item.DisplayMediaType = null;
-                                break;
-                        }
-
-                        break;
-                    }
-
-                // TODO: Do we still need this?
-                case "banner":
-                    item.BannerImagePath = reader.ReadElementContentAsString();
-                    break;
-
                 case "LocalTitle":
                     item.Name = reader.ReadElementContentAsString();
                     break;
 
+                case "Type":
+                    {
+                        var type = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(type) && !type.Equals("none",StringComparison.OrdinalIgnoreCase))
+                        {
+                            item.DisplayMediaType = type;
+                        }
+
+                        break;
+                    }
                 case "SortTitle":
                     item.SortName = reader.ReadElementContentAsString();
                     break;
@@ -93,15 +97,13 @@ namespace MediaBrowser.Controller.Providers
 
                 case "TagLine":
                     {
-                        var list = item.Taglines ?? new List<string>();
                         var tagline = reader.ReadElementContentAsString();
 
-                        if (!list.Contains(tagline))
+                        if (!string.IsNullOrWhiteSpace(tagline))
                         {
-                            list.Add(tagline);
+                            item.AddTagline(tagline);
                         }
 
-                        item.Taglines = list;
                         break;
                     }
 
@@ -112,22 +114,33 @@ namespace MediaBrowser.Controller.Providers
                     }
 
                 case "ContentRating":
+                case "certification":
                 case "MPAARating":
-                    item.OfficialRating = reader.ReadElementContentAsString();
-                    break;
+                    {
+                        var rating = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(rating))
+                        {
+                            item.OfficialRating = rating;
+                        }
+                        break;
+                    }
 
                 case "CustomRating":
-                    item.CustomRating = reader.ReadElementContentAsString();
-                    break;
+                    {
+                        var val = reader.ReadElementContentAsString();
 
-                case "CustomPin":
-                    item.CustomPin = reader.ReadElementContentAsString();
-                    break;
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            item.CustomRating = val;
+                        }
+                        break;
+                    }
 
                 case "Runtime":
                 case "RunningTime":
                     {
-                        string text = reader.ReadElementContentAsString();
+                        var text = reader.ReadElementContentAsString();
 
                         if (!string.IsNullOrWhiteSpace(text))
                         {
@@ -142,38 +155,61 @@ namespace MediaBrowser.Controller.Providers
 
                 case "Genre":
                     {
-                        var list = item.Genres ?? new List<string>();
-                        list.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|'));
-
-                        item.Genres = list;
+                        foreach (var name in SplitNames(reader.ReadElementContentAsString()))
+                        {
+                            if (string.IsNullOrWhiteSpace(name))
+                            {
+                                continue;
+                            }
+                            item.AddGenre(name);
+                        }
                         break;
                     }
 
                 case "AspectRatio":
-                    item.AspectRatio = reader.ReadElementContentAsString();
-                    break;
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            item.AspectRatio = val;
+                        }
+                        break;
+                    }
 
                 case "Network":
                     {
-                        var list = item.Studios ?? new List<string>();
-                        list.AddRange(GetSplitValues(reader.ReadElementContentAsString(), '|'));
-
-                        item.Studios = list;
+                        foreach (var name in SplitNames(reader.ReadElementContentAsString()))
+                        {
+                            if (string.IsNullOrWhiteSpace(name))
+                            {
+                                continue;
+                            }
+                            item.AddStudio(name);
+                        }
                         break;
                     }
 
                 case "Director":
                     {
-                        foreach (PersonInfo p in GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo { Name = v, Type = "Director" }))
+                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v, Type = PersonType.Director }))
                         {
+                            if (string.IsNullOrWhiteSpace(p.Name))
+                            {
+                                continue;
+                            }
                             item.AddPerson(p);
                         }
                         break;
                     }
                 case "Writer":
                     {
-                        foreach (PersonInfo p in GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo { Name = v, Type = "Writer" }))
+                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v, Type = PersonType.Writer }))
                         {
+                            if (string.IsNullOrWhiteSpace(p.Name))
+                            {
+                                continue;
+                            }
                             item.AddPerson(p);
                         }
                         break;
@@ -182,20 +218,31 @@ namespace MediaBrowser.Controller.Providers
                 case "Actors":
                 case "GuestStars":
                     {
-                        foreach (PersonInfo p in GetSplitValues(reader.ReadElementContentAsString(), '|').Select(v => new PersonInfo { Name = v, Type = "Actor" }))
+                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Actor }))
                         {
+                            if (string.IsNullOrWhiteSpace(p.Name))
+                            {
+                                continue;
+                            }
                             item.AddPerson(p);
                         }
                         break;
                     }
 
                 case "Trailer":
-                    item.TrailerUrl = reader.ReadElementContentAsString();
-                    break;
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            item.AddTrailerUrl(val);
+                        }
+                        break;
+                    }
 
                 case "ProductionYear":
                     {
-                        string val = reader.ReadElementContentAsString();
+                        var val = reader.ReadElementContentAsString();
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
@@ -211,23 +258,25 @@ namespace MediaBrowser.Controller.Providers
 
                 case "Rating":
                 case "IMDBrating":
-
-                    string rating = reader.ReadElementContentAsString();
-
-                    if (!string.IsNullOrWhiteSpace(rating))
                     {
-                        float val;
 
-                        if (float.TryParse(rating, out val))
+                        var rating = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(rating))
                         {
-                            item.CommunityRating = val;
+                            float val;
+
+                            if (float.TryParse(rating, out val))
+                            {
+                                item.CommunityRating = val;
+                            }
                         }
+                        break;
                     }
-                    break;
 
                 case "FirstAired":
                     {
-                        string firstAired = reader.ReadElementContentAsString();
+                        var firstAired = reader.ReadElementContentAsString();
 
                         if (!string.IsNullOrWhiteSpace(firstAired))
                         {
@@ -244,7 +293,7 @@ namespace MediaBrowser.Controller.Providers
                     }
 
                 case "TMDbId":
-                    string tmdb = reader.ReadElementContentAsString();
+                    var tmdb = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(tmdb))
                     {
                         item.SetProviderId(MetadataProviders.Tmdb, tmdb);
@@ -252,7 +301,7 @@ namespace MediaBrowser.Controller.Providers
                     break;
 
                 case "TVcomId":
-                    string TVcomId = reader.ReadElementContentAsString();
+                    var TVcomId = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(TVcomId))
                     {
                         item.SetProviderId(MetadataProviders.Tvcom, TVcomId);
@@ -262,7 +311,7 @@ namespace MediaBrowser.Controller.Providers
                 case "IMDB_ID":
                 case "IMDB":
                 case "IMDbId":
-                    string IMDbId = reader.ReadElementContentAsString();
+                    var IMDbId = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(IMDbId))
                     {
                         item.SetProviderId(MetadataProviders.Imdb, IMDbId);
@@ -285,224 +334,19 @@ namespace MediaBrowser.Controller.Providers
                     FetchFromStudiosNode(reader.ReadSubtree(), item);
                     break;
 
-                case "MediaInfo":
-                    {
-                        var video = item as Video;
-
-                        if (video != null)
-                        {
-                            FetchMediaInfo(reader.ReadSubtree(), video);
-                        }
-                        break;
-                    }
-
                 default:
                     reader.Skip();
                     break;
             }
         }
 
-        private void FetchMediaInfo(XmlReader reader, Video item)
-        {
-            reader.MoveToContent();
-
-            while (reader.Read())
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "Audio":
-                            {
-                                AudioStream stream = FetchMediaInfoAudio(reader.ReadSubtree());
-
-                                List<AudioStream> streams = item.AudioStreams ?? new List<AudioStream>();
-                                streams.Add(stream);
-                                item.AudioStreams = streams;
-
-                                break;
-                            }
-
-                        case "Video":
-                            FetchMediaInfoVideo(reader.ReadSubtree(), item);
-                            break;
-
-                        case "Subtitle":
-                            {
-                                SubtitleStream stream = FetchMediaInfoSubtitles(reader.ReadSubtree());
-
-                                List<SubtitleStream> streams = item.Subtitles ?? new List<SubtitleStream>();
-                                streams.Add(stream);
-                                item.Subtitles = streams;
-
-                                break;
-                            }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-            }
-        }
-
-        private AudioStream FetchMediaInfoAudio(XmlReader reader)
-        {
-            var stream = new AudioStream();
-
-            reader.MoveToContent();
-
-            while (reader.Read())
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "Default":
-                            stream.IsDefault = reader.ReadElementContentAsString() == "True";
-                            break;
-
-                        case "SamplingRate":
-                            stream.SampleRate = reader.ReadIntSafe();
-                            break;
-
-                        case "BitRate":
-                            stream.BitRate = reader.ReadIntSafe();
-                            break;
-
-                        case "Channels":
-                            stream.Channels = reader.ReadIntSafe();
-                            break;
-
-                        case "Language":
-                            stream.Language = reader.ReadElementContentAsString();
-                            break;
-
-                        case "Codec":
-                            stream.Codec = reader.ReadElementContentAsString();
-                            break;
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-            }
-
-            return stream;
-        }
-
-        private void FetchMediaInfoVideo(XmlReader reader, Video item)
-        {
-            reader.MoveToContent();
-
-            while (reader.Read())
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "Width":
-                            item.Width = reader.ReadIntSafe();
-                            break;
-
-                        case "Height":
-                            item.Height = reader.ReadIntSafe();
-                            break;
-
-                        case "BitRate":
-                            item.BitRate = reader.ReadIntSafe();
-                            break;
-
-                        case "FrameRate":
-                            item.FrameRate = reader.ReadFloatSafe();
-                            break;
-
-                        case "ScanType":
-                            item.ScanType = reader.ReadElementContentAsString();
-                            break;
-
-                        case "Duration":
-                            item.RunTimeTicks = TimeSpan.FromMinutes(reader.ReadIntSafe()).Ticks;
-                            break;
-
-                        case "DurationSeconds":
-                            int seconds = reader.ReadIntSafe();
-                            if (seconds > 0)
-                            {
-                                item.RunTimeTicks = TimeSpan.FromSeconds(seconds).Ticks;
-                            }
-                            break;
-
-                        case "Codec":
-                            {
-                                string videoCodec = reader.ReadElementContentAsString();
-
-                                switch (videoCodec.ToLower())
-                                {
-                                    case "sorenson h.263":
-                                        item.Codec = "Sorenson H263";
-                                        break;
-                                    case "h.262":
-                                        item.Codec = "MPEG-2 Video";
-                                        break;
-                                    case "h.264":
-                                        item.Codec = "AVC";
-                                        break;
-                                    default:
-                                        item.Codec = videoCodec;
-                                        break;
-                                }
-
-                                break;
-                            }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-            }
-        }
-
-        private SubtitleStream FetchMediaInfoSubtitles(XmlReader reader)
-        {
-            var stream = new SubtitleStream();
-
-            reader.MoveToContent();
-
-            while (reader.Read())
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "Language":
-                            stream.Language = reader.ReadElementContentAsString();
-                            break;
-
-                        case "Default":
-                            stream.IsDefault = reader.ReadElementContentAsString() == "True";
-                            break;
-
-                        case "Forced":
-                            stream.IsForced = reader.ReadElementContentAsString() == "True";
-                            break;
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-            }
-
-            return stream;
-        }
-
+        /// <summary>
+        /// Fetches from taglines node.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <param name="item">The item.</param>
         private void FetchFromTaglinesNode(XmlReader reader, T item)
         {
-            var list = item.Taglines ?? new List<string>();
-
             reader.MoveToContent();
 
             while (reader.Read())
@@ -513,11 +357,11 @@ namespace MediaBrowser.Controller.Providers
                     {
                         case "Tagline":
                             {
-                                string val = reader.ReadElementContentAsString();
+                                var val = reader.ReadElementContentAsString();
 
-                                if (!string.IsNullOrWhiteSpace(val) && !list.Contains(val))
+                                if (!string.IsNullOrWhiteSpace(val))
                                 {
-                                    list.Add(val);
+                                    item.AddTagline(val);
                                 }
                                 break;
                             }
@@ -528,14 +372,15 @@ namespace MediaBrowser.Controller.Providers
                     }
                 }
             }
-
-            item.Taglines = list;
         }
 
+        /// <summary>
+        /// Fetches from genres node.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <param name="item">The item.</param>
         private void FetchFromGenresNode(XmlReader reader, T item)
         {
-            var list = item.Genres ?? new List<string>();
-
             reader.MoveToContent();
 
             while (reader.Read())
@@ -546,11 +391,11 @@ namespace MediaBrowser.Controller.Providers
                     {
                         case "Genre":
                             {
-                                string genre = reader.ReadElementContentAsString();
+                                var genre = reader.ReadElementContentAsString();
 
                                 if (!string.IsNullOrWhiteSpace(genre))
                                 {
-                                    list.Add(genre);
+                                    item.AddGenre(genre);
                                 }
                                 break;
                             }
@@ -561,10 +406,13 @@ namespace MediaBrowser.Controller.Providers
                     }
                 }
             }
-
-            item.Genres = list;
         }
 
+        /// <summary>
+        /// Fetches the data from persons node.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <param name="item">The item.</param>
         private void FetchDataFromPersonsNode(XmlReader reader, T item)
         {
             reader.MoveToContent();
@@ -577,7 +425,7 @@ namespace MediaBrowser.Controller.Providers
                     {
                         case "Person":
                             {
-                                item.AddPerson(GetPersonFromXmlNode(reader.ReadSubtree()));
+                                item.AddPeople(GetPersonsFromXmlNode(reader.ReadSubtree()));
                                 break;
                             }
 
@@ -589,10 +437,13 @@ namespace MediaBrowser.Controller.Providers
             }
         }
 
+        /// <summary>
+        /// Fetches from studios node.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <param name="item">The item.</param>
         private void FetchFromStudiosNode(XmlReader reader, T item)
         {
-            var list = item.Studios ?? new List<string>();
-
             reader.MoveToContent();
 
             while (reader.Read())
@@ -603,11 +454,11 @@ namespace MediaBrowser.Controller.Providers
                     {
                         case "Studio":
                             {
-                                string studio = reader.ReadElementContentAsString();
+                                var studio = reader.ReadElementContentAsString();
 
                                 if (!string.IsNullOrWhiteSpace(studio))
                                 {
-                                    list.Add(studio);
+                                    item.AddStudio(studio);
                                 }
                                 break;
                             }
@@ -618,10 +469,13 @@ namespace MediaBrowser.Controller.Providers
                     }
                 }
             }
-
-            item.Studios = list;
         }
 
+        /// <summary>
+        /// Fetches from parental rating node.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <param name="item">The item.</param>
         private void FetchFromParentalRatingNode(XmlReader reader, T item)
         {
             reader.MoveToContent();
@@ -634,7 +488,7 @@ namespace MediaBrowser.Controller.Providers
                     {
                         case "Value":
                             {
-                                string ratingString = reader.ReadElementContentAsString();
+                                var ratingString = reader.ReadElementContentAsString();
 
                                 int rating = 7;
 
@@ -666,8 +520,6 @@ namespace MediaBrowser.Controller.Providers
                                     case 6:
                                         item.OfficialRating = "R";
                                         break;
-                                    default:
-                                        break;
                                 }
                                 break;
                             }
@@ -680,9 +532,16 @@ namespace MediaBrowser.Controller.Providers
             }
         }
 
-        private PersonInfo GetPersonFromXmlNode(XmlReader reader)
+        /// <summary>
+        /// Gets the persons from XML node.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <returns>IEnumerable{PersonInfo}.</returns>
+        private IEnumerable<PersonInfo> GetPersonsFromXmlNode(XmlReader reader)
         {
-            var person = new PersonInfo();
+            var names = new List<string>();
+            var type = string.Empty;
+            var role = string.Empty;
 
             reader.MoveToContent();
 
@@ -693,16 +552,30 @@ namespace MediaBrowser.Controller.Providers
                     switch (reader.Name)
                     {
                         case "Name":
-                            person.Name = reader.ReadElementContentAsString();
+                            names.AddRange(SplitNames(reader.ReadElementContentAsString()));
                             break;
 
                         case "Type":
-                            person.Type = reader.ReadElementContentAsString();
-                            break;
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    type = val;
+                                }
+                                break;
+                            }
 
                         case "Role":
-                            person.Overview = reader.ReadElementContentAsString();
-                            break;
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    role = val;
+                                }
+                                break;
+                            }
 
                         default:
                             reader.Skip();
@@ -711,14 +584,25 @@ namespace MediaBrowser.Controller.Providers
                 }
             }
 
-            return person;
+            return names.Select(n => new PersonInfo { Name = n, Role = role, Type = type });
         }
 
-        protected IEnumerable<string> GetSplitValues(string value, char deliminator)
+        /// <summary>
+        /// Used to split names of comma or pipe delimeted genres and people
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>IEnumerable{System.String}.</returns>
+        private IEnumerable<string> SplitNames(string value)
         {
-            value = (value ?? string.Empty).Trim(deliminator);
+            value = value ?? string.Empty;
 
-            return string.IsNullOrWhiteSpace(value) ? new string[] { } : value.Split(deliminator);
+            // Only split by comma if there is no pipe in the string
+            // We have to be careful to not split names like Matthew, Jr.
+            var separator = value.IndexOf('|') == -1 ? ',' : '|';
+
+            value = value.Trim().Trim(separator);
+
+            return string.IsNullOrWhiteSpace(value) ? new string[] { } : value.Split(separator, StringSplitOptions.RemoveEmptyEntries);
         }
     }
 }

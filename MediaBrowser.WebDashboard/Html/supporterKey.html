@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Support</title>
+</head>
+<body>
+    <div id="supporterKeyPage" data-role="page" class="page type-interior">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <div class="readOnlyContent">
+                    <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                        <a href="support.html" data-role="button">General</a>
+                        <a href="log.html" data-role="button">View Log</a>
+                        <a href="supporter.html" data-role="button">Become a Supporter</a>
+                        <a href="supporterKey.html" data-role="button" class="ui-btn-active">Supporter Key</a>
+                    </div>
+                    <h2>Supporter Key</h2>
+                </div>
+                <form id="supporterKeyForm">
+                    <div style="margin-top: 40px; margin-bottom: 40px">
+                        <label for="txtSupporterKey">MB3 Supporter Key (paste from email)</label>
+                        <input type="password" id="txtSupporterKey" name="txtSupporterKey" data-inline="true" />
+                        <div class="fieldDescription">
+                            <strong>After becoming a supporter, you will be emailed a Supporter Key.  Simply copy and paste that key into this field and start
+                                enjoying everything the community has developed for Media Browser. <em>Only MB 3 Supporter Keys are valid here</em></strong>
+                        </div>
+
+                    </div>
+                    <div style="margin-top: 40px; margin-bottom: 40px">
+                        <label for="txtLegacyKey">Legacy Supporter Key (from MB 2.x)</label>
+                        <input type="password" id="txtLegacyKey" name="txtLegacyKey" data-inline="true" />
+                        <div class="fieldDescription">
+                            <strong>Some premium plug-ins may give credit for registrations with previous versions in MB 2.x. Enter your MB 2.x 
+                                Supporter Key here to allow that credit.
+                            </strong>
+                        </div>
+
+                    </div>
+                    <p>
+                        <button type="submit" id="mbLegacyKeyBtn" data-theme="b">Save</button>
+
+                    </p>
+
+                </form>
+                <hr/>
+                <h2>Lost Key</h2>
+                <form id="lostKeyForm">
+                    <div style="margin-top: 40px; margin-bottom: 40px">
+                        <label for="txtEmail">Email Address</label>
+                        <input type="email" required id="txtEmail" name="txtEmail" data-inline="true" />
+                        <div class="fieldDescription">
+                            <strong>If you have lost your key, enter the email address associated with your PayPal account here and hit "Retrieve Key".  The key
+                        will be emailed to you and you can come back here and paste it above.</strong>
+                        </div>
+
+                    </div>
+                    <p>
+                        <button type="submit" id="mbRetrieveKeyBtn" data-theme="b" >Retrieve Key</button>
+
+                    </p>
+
+                </form>
+
+            </div>
+        </div>
+        <script type="text/javascript">
+            $('#supporterKeyForm').on('submit', SupporterKeyPage.updateSupporterKey);
+            $('#lostKeyForm').on('submit', SupporterKeyPage.retrieveSupporterKey);
+        </script>
+    </div>
+</body>
+</html>

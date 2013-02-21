@@ -9,7 +9,7 @@ namespace MediaBrowser.UI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (App.Instance.ServerConfiguration == null || !App.Instance.ServerConfiguration.EnableUserProfiles)
+            if (App.Instance.ServerConfiguration == null)
             {
                 return Visibility.Collapsed;
             }

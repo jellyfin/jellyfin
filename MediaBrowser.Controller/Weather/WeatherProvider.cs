@@ -3,8 +3,8 @@ using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Weather;
 using System;
 using System.ComponentModel.Composition;
-using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Weather
@@ -16,23 +16,40 @@ namespace MediaBrowser.Controller.Weather
     [Export(typeof(BaseWeatherProvider))]
     public class WeatherProvider : BaseWeatherProvider
     {
-        public override async Task<WeatherInfo> GetWeatherInfoAsync(string zipCode)
+        /// <summary>
+        /// The _weather semaphore
+        /// </summary>
+        private readonly SemaphoreSlim _weatherSemaphore = new SemaphoreSlim(10, 10);
+
+        /// <summary>
+        /// Gets the weather info async.
+        /// </summary>
+        /// <param name="location">The location.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{WeatherInfo}.</returns>
+        /// <exception cref="System.ArgumentNullException">location</exception>
+        public override async Task<WeatherInfo> GetWeatherInfoAsync(string location, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(zipCode))
+            if (string.IsNullOrWhiteSpace(location))
             {
-                return null;
+                throw new ArgumentNullException("location");
             }
 
+            if (cancellationToken == null)
+            {
+                throw new ArgumentNullException("cancellationToken");
+            }
+            
             const int numDays = 5;
             const string apiKey = "24902f60f1231941120109";
 
-            string url = "http://free.worldweatheronline.com/feed/weather.ashx?q=" + zipCode + "&format=json&num_of_days=" + numDays + "&key=" + apiKey;
+            var url = "http://free.worldweatheronline.com/feed/weather.ashx?q=" + location + "&format=json&num_of_days=" + numDays + "&key=" + apiKey;
 
             Logger.LogInfo("Accessing weather from " + url);
 
-            using (Stream stream = await HttpClient.GetStreamAsync(url).ConfigureAwait(false))
+            using (var stream = await Kernel.Instance.HttpManager.Get(url, _weatherSemaphore, cancellationToken).ConfigureAwait(false))
             {
-                WeatherData data = JsonSerializer.DeserializeFromStream<WeatherResult>(stream).data;
+                var data = JsonSerializer.DeserializeFromStream<WeatherResult>(stream).data;
 
                 return GetWeatherInfo(data);
             }
@@ -41,15 +58,19 @@ namespace MediaBrowser.Controller.Weather
         /// <summary>
         /// Converst the json output to our WeatherInfo model class
         /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns>WeatherInfo.</returns>
         private WeatherInfo GetWeatherInfo(WeatherData data)
         {
             var info = new WeatherInfo();
 
             if (data.current_condition != null)
             {
-                if (data.current_condition.Any())
+                var condition = data.current_condition.FirstOrDefault();
+
+                if (condition != null)
                 {
-                    info.CurrentWeather = data.current_condition.First().ToWeatherStatus();
+                    info.CurrentWeather = condition.ToWeatherStatus();
                 }
             }
 
@@ -62,24 +83,65 @@ namespace MediaBrowser.Controller.Weather
         }
     }
 
+    /// <summary>
+    /// Class WeatherResult
+    /// </summary>
     class WeatherResult
     {
+        /// <summary>
+        /// Gets or sets the data.
+        /// </summary>
+        /// <value>The data.</value>
         public WeatherData data { get; set; }
     }
 
+    /// <summary>
+    /// Class WeatherData
+    /// </summary>
     public class WeatherData
     {
+        /// <summary>
+        /// Gets or sets the current_condition.
+        /// </summary>
+        /// <value>The current_condition.</value>
         public WeatherCondition[] current_condition { get; set; }
+        /// <summary>
+        /// Gets or sets the weather.
+        /// </summary>
+        /// <value>The weather.</value>
         public DailyWeatherInfo[] weather { get; set; }
     }
 
+    /// <summary>
+    /// Class WeatherCondition
+    /// </summary>
     public class WeatherCondition
     {
+        /// <summary>
+        /// Gets or sets the temp_ C.
+        /// </summary>
+        /// <value>The temp_ C.</value>
         public string temp_C { get; set; }
+        /// <summary>
+        /// Gets or sets the temp_ F.
+        /// </summary>
+        /// <value>The temp_ F.</value>
         public string temp_F { get; set; }
+        /// <summary>
+        /// Gets or sets the humidity.
+        /// </summary>
+        /// <value>The humidity.</value>
         public string humidity { get; set; }
+        /// <summary>
+        /// Gets or sets the weather code.
+        /// </summary>
+        /// <value>The weather code.</value>
         public string weatherCode { get; set; }
 
+        /// <summary>
+        /// To the weather status.
+        /// </summary>
+        /// <returns>WeatherStatus.</returns>
         public WeatherStatus ToWeatherStatus()
         {
             return new WeatherStatus
@@ -92,21 +154,76 @@ namespace MediaBrowser.Controller.Weather
         }
     }
 
+    /// <summary>
+    /// Class DailyWeatherInfo
+    /// </summary>
     public class DailyWeatherInfo
     {
+        /// <summary>
+        /// Gets or sets the date.
+        /// </summary>
+        /// <value>The date.</value>
         public string date { get; set; }
+        /// <summary>
+        /// Gets or sets the precip MM.
+        /// </summary>
+        /// <value>The precip MM.</value>
         public string precipMM { get; set; }
+        /// <summary>
+        /// Gets or sets the temp max C.
+        /// </summary>
+        /// <value>The temp max C.</value>
         public string tempMaxC { get; set; }
+        /// <summary>
+        /// Gets or sets the temp max F.
+        /// </summary>
+        /// <value>The temp max F.</value>
         public string tempMaxF { get; set; }
+        /// <summary>
+        /// Gets or sets the temp min C.
+        /// </summary>
+        /// <value>The temp min C.</value>
         public string tempMinC { get; set; }
+        /// <summary>
+        /// Gets or sets the temp min F.
+        /// </summary>
+        /// <value>The temp min F.</value>
         public string tempMinF { get; set; }
+        /// <summary>
+        /// Gets or sets the weather code.
+        /// </summary>
+        /// <value>The weather code.</value>
         public string weatherCode { get; set; }
+        /// <summary>
+        /// Gets or sets the winddir16 point.
+        /// </summary>
+        /// <value>The winddir16 point.</value>
         public string winddir16Point { get; set; }
+        /// <summary>
+        /// Gets or sets the winddir degree.
+        /// </summary>
+        /// <value>The winddir degree.</value>
         public string winddirDegree { get; set; }
+        /// <summary>
+        /// Gets or sets the winddirection.
+        /// </summary>
+        /// <value>The winddirection.</value>
         public string winddirection { get; set; }
+        /// <summary>
+        /// Gets or sets the windspeed KMPH.
+        /// </summary>
+        /// <value>The windspeed KMPH.</value>
         public string windspeedKmph { get; set; }
+        /// <summary>
+        /// Gets or sets the windspeed miles.
+        /// </summary>
+        /// <value>The windspeed miles.</value>
         public string windspeedMiles { get; set; }
 
+        /// <summary>
+        /// To the weather forecast.
+        /// </summary>
+        /// <returns>WeatherForecast.</returns>
         public WeatherForecast ToWeatherForecast()
         {
             return new WeatherForecast
@@ -120,6 +237,11 @@ namespace MediaBrowser.Controller.Weather
             };
         }
 
+        /// <summary>
+        /// Gets the condition.
+        /// </summary>
+        /// <param name="weatherCode">The weather code.</param>
+        /// <returns>WeatherConditions.</returns>
         public static WeatherConditions GetCondition(string weatherCode)
         {
             switch (weatherCode)

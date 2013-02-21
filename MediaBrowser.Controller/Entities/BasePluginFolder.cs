@@ -1,0 +1,49 @@
+﻿using MediaBrowser.Common.Extensions;
+using System;
+
+namespace MediaBrowser.Controller.Entities
+{
+    /// <summary>
+    /// Plugins derive from and export this class to create a folder that will appear in the root along
+    /// with all the other actual physical folders in the system.
+    /// </summary>
+    public abstract class BasePluginFolder : Folder, ICollectionFolder
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        public override Guid Id
+        {
+            get
+            {
+                // This doesn't get populated through the normal resolving process
+                if (base.Id == Guid.Empty)
+                {
+                    base.Id = (Path ?? Name).GetMBId(GetType());
+                }
+                return base.Id;
+            }
+            set
+            {
+                base.Id = value;
+            }
+        }
+
+        /// <summary>
+        /// We don't resolve normally so need to fill this in
+        /// </summary>
+        public override string DisplayMediaType
+        {
+            get
+            {
+                return "CollectionFolder"; // Plug-in folders are collection folders
+            }
+            set
+            {
+                base.DisplayMediaType = value;
+            }
+        }
+
+    }
+}

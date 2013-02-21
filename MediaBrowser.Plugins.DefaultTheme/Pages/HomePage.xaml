@@ -1,0 +1,69 @@
+﻿<Pages:BaseHomePage x:Class="MediaBrowser.Plugins.DefaultTheme.Pages.HomePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:Pages="clr-namespace:MediaBrowser.UI.Pages;assembly=MediaBrowser.UI"
+      xmlns:themecontrols="clr-namespace:MediaBrowser.Plugins.DefaultTheme.Controls"
+                    xmlns:controls="clr-namespace:MediaBrowser.UI.Controls;assembly=MediaBrowser.UI.Controls"
+                    Title="HomePage">
+
+    <controls:ExtendedScrollViewer x:Name="scrollviewer" ScrollViewer.HorizontalScrollBarVisibility="Hidden" ScrollViewer.VerticalScrollBarVisibility="Disabled" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" CanContentScroll="True">
+        <controls:ScrollingPanel CanHorizontallyScroll="True" CanVerticallyScroll="False" HorizontalAlignment="Stretch">
+            <Grid HorizontalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                </Grid.RowDefinitions>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="4*"></ColumnDefinition>
+                    <ColumnDefinition Width="1*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock HorizontalAlignment="Left" Text="my media >" Grid.Row="0" Grid.Column="0" Style="{StaticResource Heading2TextBlockStyle}" Margin="90 40 0 0"></TextBlock>
+
+                <Grid Grid.Row="1" Grid.Column="0" Margin="70 60 20 50">
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"></RowDefinition>
+                        <RowDefinition Height="auto"></RowDefinition>
+                        <RowDefinition Height="auto"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto"></ColumnDefinition>
+                        <ColumnDefinition Width="auto"></ColumnDefinition>
+                        <ColumnDefinition Width="auto"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+
+                    <controls:ExtendedButton x:Name="btnSpotlight" Style="{StaticResource SpotlightButtonStyle}" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2">
+                        <themecontrols:MultiItemTile x:Name="spotlightControl" DataContext="{Binding SpotlightItems}" ImageWidth="806" ImageHeight="456"></themecontrols:MultiItemTile>
+                    </controls:ExtendedButton>
+                    <controls:ExtendedButton Style="{StaticResource BaseItemButtonStyle}" Grid.Row="2" Grid.Column="0">
+                        <themecontrols:MultiItemTile x:Name="recentlyAddedControl" DataContext="{Binding RecentlyAddedItems}" ImageWidth="400" ImageHeight="225"></themecontrols:MultiItemTile>
+                    </controls:ExtendedButton>
+                    <controls:ExtendedButton Style="{StaticResource BaseItemButtonStyle}" Grid.Row="2" Grid.Column="1">
+                        <themecontrols:MultiItemTile x:Name="topPicksControl" DataContext="{Binding TopPicks}" ImageWidth="400" ImageHeight="225"></themecontrols:MultiItemTile>
+                    </controls:ExtendedButton>
+                    <controls:ExtendedButton Style="{StaticResource BaseItemButtonStyle}" Grid.Row="0" Grid.Column="2">
+                        <themecontrols:MultiItemTile x:Name="recentlyPlayedControl" DataContext="{Binding RecentlyPlayedItems}" ImageWidth="400" ImageHeight="225"></themecontrols:MultiItemTile>
+                    </controls:ExtendedButton>
+                    <controls:ExtendedButton Style="{StaticResource BaseItemButtonStyle}" Grid.Row="1" Grid.Column="2">
+                        <themecontrols:MultiItemTile x:Name="resumableControl" DataContext="{Binding ResumableItems}" ImageWidth="400" ImageHeight="225"></themecontrols:MultiItemTile>
+                    </controls:ExtendedButton>
+                    <controls:ExtendedButton Style="{StaticResource BaseItemButtonStyle}" Grid.Row="2" Grid.Column="2">
+                        <themecontrols:MultiItemTile x:Name="favoriteItemsControl" DataContext="{Binding FavoriteItems}" ImageWidth="400" ImageHeight="225"></themecontrols:MultiItemTile>
+                    </controls:ExtendedButton>
+
+                </Grid>
+                <TextBlock HorizontalAlignment="Left" Text="all media >" Grid.Row="0" Grid.Column="1" Style="{StaticResource Heading2TextBlockStyle}" Margin="90 40 0 0"></TextBlock>
+
+                <controls:ExtendedListBox x:Name="lstCollectionFolders" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ItemsSource="{Binding Path=DisplayChildren,IsAsync=True,Mode=OneWay}" Style="{StaticResource ListBoxStyle}" ItemContainerStyle="{StaticResource ListBoxItemStyle}" Grid.Row="1" Grid.Column="1" AutoFocus="False" ScrollViewer.CanContentScroll="False" ItemTemplate="{StaticResource HomePageListBoxItemTemplate}">
+                    <controls:ExtendedListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Vertical" VerticalAlignment="Top" IsItemsHost="True" Margin="50 60 50 50" />
+                        </ItemsPanelTemplate>
+                    </controls:ExtendedListBox.ItemsPanel>
+                </controls:ExtendedListBox>
+            </Grid>
+        </controls:ScrollingPanel>
+    </controls:ExtendedScrollViewer>
+</Pages:BaseHomePage>

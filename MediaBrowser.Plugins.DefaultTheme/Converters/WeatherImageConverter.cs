@@ -1,35 +1,40 @@
 ﻿using MediaBrowser.Model.Weather;
 using System;
-using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Windows.Data;
 
 namespace MediaBrowser.Plugins.DefaultTheme.Converters
 {
-    [PartNotDiscoverable]
+    /// <summary>
+    /// Generates a weather image based on the current forecast
+    /// </summary>
     public class WeatherImageConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var weather = value as WeatherInfo;
 
-            if (weather != null)
+            if (weather != null && weather.CurrentWeather != null)
             {
                 switch (weather.CurrentWeather.Condition)
                 {
                     case WeatherConditions.Thunderstorm:
-                        return "../Images/Weather/Thunder.png";
+                        return "../Resources/Images/Weather/Thunder.png";
                     case WeatherConditions.Overcast:
-                        return "../Images/Weather/Overcast.png";
+                        return "../Resources/Images/Weather/Overcast.png";
                     case WeatherConditions.Mist:
                     case WeatherConditions.Sleet:
                     case WeatherConditions.Rain:
-                        return "../Images/Weather/Rain.png";
+                        return "../Resources/Images/Weather/Rain.png";
                     case WeatherConditions.Blizzard:
                     case WeatherConditions.Snow:
-                        return "../Images/Weather/Snow.png";
+                        return "../Resources/Images/Weather/Snow.png";
+                    case WeatherConditions.Cloudy:
+                        return "../Resources/Images/Weather/Cloudy.png";
+                    case WeatherConditions.PartlyCloudy:
+                        return "../Resources/Images/Weather/PartlyCloudy.png";
                     default:
-                        return "../Images/Weather/Sunny.png";
+                        return "../Resources/Images/Weather/Sunny.png";
                 }
             }
             return null;

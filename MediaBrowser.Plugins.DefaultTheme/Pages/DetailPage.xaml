@@ -1,0 +1,102 @@
+﻿<Pages:BaseDetailPage x:Class="MediaBrowser.Plugins.DefaultTheme.Pages.DetailPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:Pages="clr-namespace:MediaBrowser.UI.Pages;assembly=MediaBrowser.UI"
+      xmlns:controls="clr-namespace:MediaBrowser.UI.Controls;assembly=MediaBrowser.UI.Controls"
+                      mc:Ignorable="d" 
+      d:DesignHeight="300" d:DesignWidth="300"
+	 Title="DetailPage">
+
+    <Grid>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="auto"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0" Width="50"></Grid>
+        <Grid Grid.Column="1">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
+            </Grid.RowDefinitions>
+
+            <TextBlock x:Name="TxtName" Grid.Row="0" Style="{StaticResource TextBlockStyle}" HorizontalAlignment="Center" Margin="200 20 200 0" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"></TextBlock>
+            
+            <TextBlock x:Name="Tagline" Grid.Row="1" Style="{StaticResource TextBlockStyle}" HorizontalAlignment="Center" Margin="200 20 200 0" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"></TextBlock>
+
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 25 0 0">
+                <controls:ExtendedButton x:Name="BtnOverview" Style="{StaticResource TextButton}" Margin="50 0 50 0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource TextBlockStyle}">overview</TextBlock>
+                    </StackPanel>
+                </controls:ExtendedButton>
+                <controls:ExtendedButton x:Name="BtnMediaInfo" Style="{StaticResource TextButton}" Margin="50 0 50 0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource TextBlockStyle}">media info</TextBlock>
+                    </StackPanel>
+                </controls:ExtendedButton>
+                <controls:ExtendedButton x:Name="BtnChapters" Style="{StaticResource TextButton}" Margin="50 0 50 0" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource TextBlockStyle}">scenes</TextBlock>
+                    </StackPanel>
+                </controls:ExtendedButton>
+                <controls:ExtendedButton x:Name="BtnTrailers" Style="{StaticResource TextButton}" Margin="50 0 50 0" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource TextBlockStyle}">trailers</TextBlock>
+                    </StackPanel>
+                </controls:ExtendedButton>
+                <controls:ExtendedButton x:Name="BtnSpecialFeatures" Style="{StaticResource TextButton}" Margin="50 0 50 0" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource TextBlockStyle}">special features</TextBlock>
+                    </StackPanel>
+                </controls:ExtendedButton>
+                <controls:ExtendedButton x:Name="BtnPerformers" Style="{StaticResource TextButton}" Margin="50 0 50 0" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource TextBlockStyle}">performers</TextBlock>
+                    </StackPanel>
+                </controls:ExtendedButton>
+                <controls:ExtendedButton x:Name="BtnGallery" Style="{StaticResource TextButton}" Margin="50 0 50 0" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource TextBlockStyle}">gallery</TextBlock>
+                    </StackPanel>
+                </controls:ExtendedButton>
+            </StackPanel>
+
+            <Grid Grid.Row="3">
+                <Separator Background="#eeeeee" Margin="50 5 50 0" Height="10"></Separator>
+            </Grid>
+
+            <Grid Grid.Row="4" Margin="0 25 0 0">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"></ColumnDefinition>
+                    <ColumnDefinition Width="auto"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0" x:Name="PrimaryImageGrid">
+                    <Image x:Name="PrimaryImage" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Top" MaxWidth="550" MaxHeight="700"></Image>
+                </Grid>
+
+                <Grid Grid.Column="1" Width="50"></Grid>
+                
+                <Grid Grid.Column="2">
+                    <ContentControl x:Name="DetailContent"></ContentControl>
+                </Grid>
+
+            </Grid>
+            <Grid Grid.Row="5" Height="50">
+            </Grid>
+        </Grid>
+        <Grid Grid.Column="2" Width="50"></Grid>
+    </Grid>
+</Pages:BaseDetailPage>

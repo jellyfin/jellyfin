@@ -1,0 +1,9 @@
+﻿<Window x:Class="MediaBrowser.UI.HiddenWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Media Browser Theater" 
+        WindowStartupLocation="Manual" ResizeMode="NoResize" WindowStyle="None" BorderThickness="1" Background="Black">
+    <Grid x:Name="MainGrid">
+        <my:WindowsFormsHost Name="WindowsFormsHost" xmlns:my="clr-namespace:System.Windows.Forms.Integration;assembly=WindowsFormsIntegration" />
+    </Grid>
+</Window>

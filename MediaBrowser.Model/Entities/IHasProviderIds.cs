@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -7,14 +8,24 @@ namespace MediaBrowser.Model.Entities
     /// </summary>
     public interface IHasProviderIds
     {
+        /// <summary>
+        /// Gets or sets the provider ids.
+        /// </summary>
+        /// <value>The provider ids.</value>
         Dictionary<string, string> ProviderIds { get; set; }
     }
 
+    /// <summary>
+    /// Class ProviderIdsExtensions
+    /// </summary>
     public static class ProviderIdsExtensions
     {
         /// <summary>
         /// Gets a provider id
         /// </summary>
+        /// <param name="instance">The instance.</param>
+        /// <param name="provider">The provider.</param>
+        /// <returns>System.String.</returns>
         public static string GetProviderId(this IHasProviderIds instance, MetadataProviders provider)
         {
             return instance.GetProviderId(provider.ToString());
@@ -23,6 +34,9 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// Gets a provider id
         /// </summary>
+        /// <param name="instance">The instance.</param>
+        /// <param name="name">The name.</param>
+        /// <returns>System.String.</returns>
         public static string GetProviderId(this IHasProviderIds instance, string name)
         {
             if (instance.ProviderIds == null)
@@ -30,25 +44,48 @@ namespace MediaBrowser.Model.Entities
                 return null;
             }
 
-            return instance.ProviderIds[name];
+            string id;
+            instance.ProviderIds.TryGetValue(name, out id);
+            return id;
         }
 
         /// <summary>
         /// Sets a provider id
         /// </summary>
+        /// <param name="instance">The instance.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
         public static void SetProviderId(this IHasProviderIds instance, string name, string value)
         {
-            if (instance.ProviderIds == null)
+            // If it's null remove the key from the dictionary
+            if (string.IsNullOrEmpty(value))
             {
-                instance.ProviderIds = new Dictionary<string, string>();
+                if (instance.ProviderIds != null)
+                {
+                    if (instance.ProviderIds.ContainsKey(name))
+                    {
+                        instance.ProviderIds.Remove(name);
+                    }
+                }
             }
+            else
+            {
+                // Ensure it exists
+                if (instance.ProviderIds == null)
+                {
+                    instance.ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                }
 
-            instance.ProviderIds[name] = value;
+                instance.ProviderIds[name] = value;
+            }
         }
 
         /// <summary>
         /// Sets a provider id
         /// </summary>
+        /// <param name="instance">The instance.</param>
+        /// <param name="provider">The provider.</param>
+        /// <param name="value">The value.</param>
         public static void SetProviderId(this IHasProviderIds instance, MetadataProviders provider, string value)
         {
             instance.SetProviderId(provider.ToString(), value);

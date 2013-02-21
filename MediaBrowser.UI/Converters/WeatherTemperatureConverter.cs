@@ -11,7 +11,7 @@ namespace MediaBrowser.UI.Converters
         {
             var weather = value as WeatherInfo;
 
-            if (weather != null)
+            if (weather != null && weather.CurrentWeather != null)
             {
                 if (App.Instance.ServerConfiguration.WeatherUnit == WeatherUnits.Celsius)
                 {

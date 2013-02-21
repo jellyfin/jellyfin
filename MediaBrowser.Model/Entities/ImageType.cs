@@ -1,13 +1,54 @@
 ﻿
 namespace MediaBrowser.Model.Entities
 {
+    /// <summary>
+    /// Enum ImageType
+    /// </summary>
     public enum ImageType
     {
+        /// <summary>
+        /// The primary
+        /// </summary>
         Primary,
+        /// <summary>
+        /// The art
+        /// </summary>
         Art,
+        /// <summary>
+        /// The backdrop
+        /// </summary>
         Backdrop,
+        /// <summary>
+        /// The banner
+        /// </summary>
         Banner,
+        /// <summary>
+        /// The logo
+        /// </summary>
         Logo,
-        Thumbnail
+        /// <summary>
+        /// The thumb
+        /// </summary>
+        Thumb,
+        /// <summary>
+        /// The disc
+        /// </summary>
+        Disc,
+        /// <summary>
+        /// The box
+        /// </summary>
+        Box,
+        /// <summary>
+        /// The screenshot
+        /// </summary>
+        Screenshot,
+        /// <summary>
+        /// The menu
+        /// </summary>
+        Menu,
+        /// <summary>
+        /// The chapter image
+        /// </summary>
+        ChapterImage
     }
 }

@@ -23,7 +23,12 @@ syntax: glob
 *.scc
 *.psess
 *.vsp
+*.vspx
 *.orig
+*.rej
+*.sdf
+*.opensdf
+*.ipch
 [Bb]in
 [Dd]ebug*/
 obj/
@@ -41,3 +46,4 @@ _ReSharper*/
 # ncrunch files
 *.ncrunchsolution
 *.ncrunchproject
+Setup/*

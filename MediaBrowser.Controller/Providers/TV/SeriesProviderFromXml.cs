@@ -1,36 +1,86 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
+using System;
 using System.ComponentModel.Composition;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Providers.TV
 {
+    /// <summary>
+    /// Class SeriesProviderFromXml
+    /// </summary>
     [Export(typeof(BaseMetadataProvider))]
     public class SeriesProviderFromXml : BaseMetadataProvider
     {
-        public override bool Supports(BaseEntity item)
+        /// <summary>
+        /// Supportses the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        public override bool Supports(BaseItem item)
         {
-            return item is Series;
+            return item is Series && item.LocationType == LocationType.FileSystem;
         }
 
+        /// <summary>
+        /// Gets the priority.
+        /// </summary>
+        /// <value>The priority.</value>
         public override MetadataProviderPriority Priority
         {
             get { return MetadataProviderPriority.First; }
         }
 
-        public override async Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
+        /// <summary>
+        /// Override this to return the date that should be compared to the last refresh date
+        /// to determine if this provider should be re-fetched.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>DateTime.</returns>
+        protected override DateTime CompareDate(BaseItem item)
         {
-            await Task.Run(() => Fetch(item, args)).ConfigureAwait(false);
+            var entry = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, "series.xml"));
+            return entry != null ? entry.Value.LastWriteTimeUtc : DateTime.MinValue;
         }
 
-        private void Fetch(BaseEntity item, ItemResolveEventArgs args)
+        /// <summary>
+        /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="force">if set to <c>true</c> [force].</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{System.Boolean}.</returns>
+        protected override Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            if (args.ContainsFile("series.xml"))
+            return Task.Run(() => Fetch(item, cancellationToken));
+        }
+
+        /// <summary>
+        /// Fetches the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        private bool Fetch(BaseItem item, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            
+            var metadataFile = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, "series.xml"));
+
+            if (metadataFile.HasValue)
             {
-                new SeriesXmlParser().Fetch(item as Series, Path.Combine(args.Path, "series.xml"));
+                var path = metadataFile.Value.Path;
+
+                new SeriesXmlParser().Fetch((Series)item, path, cancellationToken);
+                SetLastRefreshed(item, DateTime.UtcNow);
+
+                return true;
             }
+
+            return false;
         }
     }
 }
