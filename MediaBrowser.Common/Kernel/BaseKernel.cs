@@ -3,7 +3,6 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Localization;
 using MediaBrowser.Common.Mef;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Serialization;
@@ -17,7 +16,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
-using System.ComponentModel.Composition.Primitives;
 using System.Deployment.Application;
 using System.Diagnostics;
 using System.IO;
@@ -517,6 +515,31 @@ namespace MediaBrowser.Common.Kernel
                 yield return pluginAssembly;
             }
 
+            var runningDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+            var corePluginDirectory = Path.Combine(runningDirectory, "CorePlugins");
+
+            // This will prevent the .dll file from getting locked, and allow us to replace it when needed
+            pluginAssemblies = Directory.EnumerateFiles(corePluginDirectory, "*.dll", SearchOption.TopDirectoryOnly)
+                .Select(file =>
+                {
+                    try
+                    {
+                        return Assembly.Load(File.ReadAllBytes((file)));
+                    }
+                    catch (Exception ex)
+                    {
+                        _failedPluginAssemblies.Add(file);
+                        Logger.ErrorException("Error loading {0}", ex, file);
+                        return null;
+                    }
+
+                }).Where(a => a != null);
+
+            foreach (var pluginAssembly in pluginAssemblies)
+            {
+                yield return pluginAssembly;
+            }
+            
             // Include composable parts in the Model assembly 
             yield return typeof (SystemInfo).Assembly;
             
