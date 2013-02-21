@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -6,7 +7,6 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Persistence.SQLite;
 using MediaBrowser.Controller.Playback;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
@@ -19,10 +19,7 @@ using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -303,8 +300,8 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Creates a kernel based on a Data path, which is akin to our current programdata path
         /// </summary>
-        public Kernel()
-            : base()
+        public Kernel(IIsoManager isoManager)
+            : base(isoManager)
         {
             Instance = this;
         }
@@ -385,19 +382,19 @@ namespace MediaBrowser.Controller
             await base.OnComposablePartsLoaded().ConfigureAwait(false);
 
             // Get the current item repository
-            ItemRepository = GetRepository(ItemRepositories, Configuration.ItemRepository, SQLiteItemRepository.RepositoryName);
+            ItemRepository = GetRepository(ItemRepositories, Configuration.ItemRepository);
             var itemRepoTask = ItemRepository.Initialize();
 
             // Get the current user repository
-            UserRepository = GetRepository(UserRepositories, Configuration.UserRepository, SQLiteUserRepository.RepositoryName);
+            UserRepository = GetRepository(UserRepositories, Configuration.UserRepository);
             var userRepoTask = UserRepository.Initialize();
 
             // Get the current item repository
-            UserDataRepository = GetRepository(UserDataRepositories, Configuration.UserDataRepository, SQLiteUserDataRepository.RepositoryName);
+            UserDataRepository = GetRepository(UserDataRepositories, Configuration.UserDataRepository);
             var userDataRepoTask = UserDataRepository.Initialize();
 
             // Get the current display preferences repository
-            DisplayPreferencesRepository = GetRepository(DisplayPreferencesRepositories, Configuration.DisplayPreferencesRepository, SQLiteDisplayPreferencesRepository.RepositoryName);
+            DisplayPreferencesRepository = GetRepository(DisplayPreferencesRepositories, Configuration.DisplayPreferencesRepository);
             var displayPreferencesRepoTask = DisplayPreferencesRepository.Initialize();
 
             // Sort the resolvers by priority
@@ -418,15 +415,14 @@ namespace MediaBrowser.Controller
         /// <typeparam name="T"></typeparam>
         /// <param name="repositories">The repositories.</param>
         /// <param name="name">The name.</param>
-        /// <param name="defaultName">The default name.</param>
         /// <returns>``0.</returns>
-        private T GetRepository<T>(IEnumerable<T> repositories, string name, string defaultName)
+        private T GetRepository<T>(IEnumerable<T> repositories, string name)
             where T : class, IRepository
         {
             var enumerable = repositories as T[] ?? repositories.ToArray();
 
-            return enumerable.FirstOrDefault(r => r.Name.Equals(name ?? defaultName, StringComparison.OrdinalIgnoreCase)) ??
-                   enumerable.First(r => r.Name.Equals(defaultName, StringComparison.OrdinalIgnoreCase));
+            return enumerable.FirstOrDefault(r => string.Equals(r.Name, name, StringComparison.OrdinalIgnoreCase)) ??
+                   enumerable.FirstOrDefault();
         }
 
         /// <summary>

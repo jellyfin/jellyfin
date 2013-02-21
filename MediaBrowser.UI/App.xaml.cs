@@ -244,7 +244,7 @@ namespace MediaBrowser.UI
         /// <returns>IKernel.</returns>
         protected override IKernel InstantiateKernel()
         {
-            return new UIKernel();
+            return new UIKernel(new PismoIsoManager());
         }
 
         /// <summary>
@@ -256,16 +256,6 @@ namespace MediaBrowser.UI
             HiddenWindow = new HiddenWindow { };
 
             return HiddenWindow;
-        }
-
-        /// <summary>
-        /// Instantiates the iso manager.
-        /// </summary>
-        /// <param name="kernel">The kernel.</param>
-        /// <returns>IIsoManager.</returns>
-        protected override IIsoManager InstantiateIsoManager(IKernel kernel)
-        {
-            return new IsoManager(kernel);
         }
 
         /// <summary>
@@ -368,7 +358,7 @@ namespace MediaBrowser.UI
             {
                 var now = DateTime.UtcNow;
 
-                await Kernel.Init(InstantiateIsoManager(Kernel));
+                await Kernel.Init();
 
                 Logger.Info("Kernel.Init completed in {0} seconds.", (DateTime.UtcNow - now).TotalSeconds);
 

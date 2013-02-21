@@ -9,7 +9,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.Persistence.SQLite
+namespace MediaBrowser.Server.Sqlite
 {
     /// <summary>
     /// Class SqliteRepository

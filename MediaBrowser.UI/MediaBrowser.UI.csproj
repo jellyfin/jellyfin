@@ -397,7 +397,7 @@
     <Content Include="libvlccore.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="MediaBrowser.Plugins.DefaultTheme.dll">
+    <Content Include="CorePlugins\MediaBrowser.Plugins.DefaultTheme.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="plugins\3dnow\libmemcpy3dn_plugin.dll">
