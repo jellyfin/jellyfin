@@ -127,7 +127,7 @@
     <Compile Include="Persistence\IUserDataRepository.cs" />
     <Compile Include="Persistence\IUserRepository.cs" />
     <Compile Include="Persistence\TypeMapper.cs" />
-    <Compile Include="Playback\BaseIntroProvider.cs" />
+    <Compile Include="Playback\IIntroProvider.cs" />
     <Compile Include="Plugins\BaseConfigurationPage.cs" />
     <Compile Include="Plugins\PluginSecurityManager.cs" />
     <Compile Include="Providers\BaseImageEnhancer.cs" />

@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.ApiInteraction
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Plugins.DefaultTheme", "MediaBrowser.Plugins.DefaultTheme\MediaBrowser.Plugins.DefaultTheme.csproj", "{6E892999-711D-4E24-8BAC-DACF5BFA783A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Controller", "MediaBrowser.Controller\MediaBrowser.Controller.csproj", "{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Plugins.MpcHc", "MediaBrowser.Plugins.MpcHc\MediaBrowser.Plugins.MpcHc.csproj", "{2E94BC08-A7A2-42DD-9893-EAA3DACD1CF9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Plugins.Tmt5", "MediaBrowser.Plugins.Tmt5\MediaBrowser.Plugins.Tmt5.csproj", "{BE9BAA85-9EF2-4308-92E4-0D2B6E33C487}"
@@ -93,18 +91,6 @@ Global
 		{6E892999-711D-4E24-8BAC-DACF5BFA783A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{6E892999-711D-4E24-8BAC-DACF5BFA783A}.Release|x86.ActiveCfg = Release|Any CPU
 		{6E892999-711D-4E24-8BAC-DACF5BFA783A}.Release|x86.Build.0 = Release|Any CPU
-		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Debug|x86.Build.0 = Debug|Any CPU
-		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Release|x86.ActiveCfg = Release|Any CPU
-		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Release|x86.Build.0 = Release|Any CPU
 		{2E94BC08-A7A2-42DD-9893-EAA3DACD1CF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2E94BC08-A7A2-42DD-9893-EAA3DACD1CF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E94BC08-A7A2-42DD-9893-EAA3DACD1CF9}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

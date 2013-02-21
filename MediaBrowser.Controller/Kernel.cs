@@ -187,8 +187,8 @@ namespace MediaBrowser.Controller
         /// Gets the intro providers.
         /// </summary>
         /// <value>The intro providers.</value>
-        [ImportMany(typeof(BaseIntroProvider))]
-        public IEnumerable<BaseIntroProvider> IntroProviders { get; private set; }
+        [ImportMany(typeof(IIntroProvider))]
+        public IEnumerable<IIntroProvider> IntroProviders { get; private set; }
 
         /// <summary>
         /// Gets the list of currently registered weather prvoiders
