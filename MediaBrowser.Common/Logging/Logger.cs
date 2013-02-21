@@ -35,16 +35,6 @@ namespace MediaBrowser.Common.Logging
         }
         
         /// <summary>
-        /// Logs the error.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="paramList">The param list.</param>
-        public static void LogError(string message, params object[] paramList)
-        {
-            LogEntry(message, LogSeverity.Error, null, paramList);
-        }
-        
-        /// <summary>
         /// Logs the exception.
         /// </summary>
         /// <param name="message">The message.</param>
@@ -53,17 +43,6 @@ namespace MediaBrowser.Common.Logging
         public static void LogException(string message, Exception ex, params object[] paramList)
         {
             LogEntry(message, LogSeverity.Error, ex, paramList);
-        }
-
-        /// <summary>
-        /// Fatals the exception.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="ex">The ex.</param>
-        /// <param name="paramList">The param list.</param>
-        public static void FatalException(string message, Exception ex, params object[] paramList)
-        {
-            LogEntry(message, LogSeverity.Fatal, ex, paramList);
         }
         
         /// <summary>

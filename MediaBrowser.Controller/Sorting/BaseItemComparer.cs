@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Common.Logging;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 
@@ -22,11 +22,19 @@ namespace MediaBrowser.Controller.Sorting {
         private readonly StringComparison _compareCulture = StringComparison.CurrentCultureIgnoreCase;
 
         /// <summary>
+        /// Gets or sets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
+        private ILogger Logger { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="BaseItemComparer" /> class.
         /// </summary>
         /// <param name="order">The order.</param>
-        public BaseItemComparer(SortOrder order) {
+        /// <param name="logger">The logger.</param>
+        public BaseItemComparer(SortOrder order, ILogger logger) {
             _order = order;
+            Logger = logger;
         }
 
         /// <summary>
@@ -34,18 +42,24 @@ namespace MediaBrowser.Controller.Sorting {
         /// </summary>
         /// <param name="order">The order.</param>
         /// <param name="compare">The compare.</param>
-        public BaseItemComparer(SortOrder order, StringComparison compare) {
+        /// <param name="logger">The logger.</param>
+        public BaseItemComparer(SortOrder order, StringComparison compare, ILogger logger)
+        {
             _order = order;
             _compareCulture = compare;
+            Logger = logger;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseItemComparer" /> class.
         /// </summary>
         /// <param name="property">The property.</param>
-        public BaseItemComparer(string property) {
+        /// <param name="logger">The logger.</param>
+        public BaseItemComparer(string property, ILogger logger)
+        {
             _order = SortOrder.Custom;
             _propertyName = property;
+            Logger = logger;
         }
 
         /// <summary>
@@ -53,10 +67,13 @@ namespace MediaBrowser.Controller.Sorting {
         /// </summary>
         /// <param name="property">The property.</param>
         /// <param name="compare">The compare.</param>
-        public BaseItemComparer(string property, StringComparison compare) {
+        /// <param name="logger">The logger.</param>
+        public BaseItemComparer(string property, StringComparison compare, ILogger logger)
+        {
             _order = SortOrder.Custom;
             _propertyName = property;
             _compareCulture = compare;
+            Logger = logger;
         }
 
         #region IComparer<BaseItem> Members
@@ -102,7 +119,7 @@ namespace MediaBrowser.Controller.Sorting {
 
                 case SortOrder.Custom:
 
-                    Logger.LogDebugInfo("Sorting on custom field " + _propertyName);
+                    Logger.Debug("Sorting on custom field " + _propertyName);
                     var yProp = y.GetType().GetProperty(_propertyName);
                     var xProp = x.GetType().GetProperty(_propertyName);
                     if (yProp == null || xProp == null) break;
@@ -143,7 +160,7 @@ namespace MediaBrowser.Controller.Sorting {
         /// <param name="s2">The s2.</param>
         /// <param name="compareCulture">The compare culture.</param>
         /// <returns>System.Int32.</returns>
-        public static int AlphaNumericCompare(string s1, string s2, StringComparison compareCulture) {
+        private int AlphaNumericCompare(string s1, string s2, StringComparison compareCulture) {
             // http://dotnetperls.com/Content/Alphanumeric-Sorting.aspx
 
             int len1 = s1.Length;
@@ -213,7 +230,7 @@ namespace MediaBrowser.Controller.Sorting {
                     
                     if (!isValid)
                     {
-                        Logger.LogError("Error comparing numeric strings: " + str1 + "/" + str2);
+                        Logger.Error("Error comparing numeric strings: " + str1 + "/" + str2);
                         result = String.Compare(str1, str2, compareCulture);
                     }
                     

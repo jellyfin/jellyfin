@@ -2,13 +2,13 @@
 using ProtoBuf;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Controller.MediaInfo
+namespace MediaBrowser.Model.MediaInfo
 {
     /// <summary>
     /// Represents the result of BDInfo output
     /// </summary>
     [ProtoContract]
-    public class BDInfoResult
+    public class BlurayDiscInfo
     {
         /// <summary>
         /// Gets or sets the media streams.

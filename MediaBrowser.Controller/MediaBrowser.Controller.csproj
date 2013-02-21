@@ -119,7 +119,6 @@
     <Compile Include="Localization\Ratings.cs" />
     <Compile Include="Localization\RatingsDefinition.cs" />
     <Compile Include="Localization\USRatingsDictionary.cs" />
-    <Compile Include="MediaInfo\BDInfoResult.cs" />
     <Compile Include="MediaInfo\FFMpegManager.cs" />
     <Compile Include="MediaInfo\FFProbeResult.cs" />
     <Compile Include="Persistence\IDisplayPreferencesRepository.cs" />
@@ -136,7 +135,6 @@
     <Compile Include="Providers\ImagesByNameProvider.cs" />
     <Compile Include="Providers\MediaInfo\BaseFFMpegImageProvider.cs" />
     <Compile Include="Providers\MediaInfo\BaseFFMpegProvider.cs" />
-    <Compile Include="Providers\MediaInfo\BDInfoProvider.cs" />
     <Compile Include="Providers\MediaInfo\FFMpegAudioImageProvider.cs" />
     <Compile Include="Providers\MediaInfo\BaseFFProbeProvider.cs" />
     <Compile Include="Providers\BaseProviderInfo.cs" />
@@ -203,10 +201,6 @@
     <Compile Include="Providers\BaseItemXmlParser.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BDInfo\BDInfo.csproj">
-      <Project>{07b509c0-0c28-4f3f-8963-5263281f7e3d}</Project>
-      <Name>BDInfo</Name>
-    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
       <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>
       <Name>MediaBrowser.Common</Name>

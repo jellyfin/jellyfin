@@ -45,6 +45,7 @@
     <Compile Include="Entities\BaseItemInfo.cs" />
     <Compile Include="Connectivity\ClientConnectionInfo.cs" />
     <Compile Include="Connectivity\ClientType.cs" />
+    <Compile Include="MediaInfo\BlurayDiscInfo.cs" />
     <Compile Include="Entities\ChapterInfo.cs" />
     <Compile Include="Entities\LocationType.cs" />
     <Compile Include="Entities\MBRegistrationRecord.cs" />
@@ -67,6 +68,7 @@
     <Compile Include="IO\IZipClient.cs" />
     <Compile Include="Logging\ILogger.cs" />
     <Compile Include="Logging\LogSeverity.cs" />
+    <Compile Include="MediaInfo\IBlurayExaminer.cs" />
     <Compile Include="Net\HttpException.cs" />
     <Compile Include="Updates\InstallationInfo.cs" />
     <Compile Include="Updates\PackageType.cs" />
