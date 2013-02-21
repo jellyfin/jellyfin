@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Logging;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.UI.Controller;
 using MediaBrowser.UI.Controls;
@@ -76,12 +77,16 @@ namespace MediaBrowser.UI
             }
         }
 
+        private readonly ILogger _logger;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow" /> class.
         /// </summary>
-        public MainWindow()
+        public MainWindow(ILogger logger)
             : base()
         {
+            _logger = logger;
+
             InitializeComponent();
         }
 
@@ -191,7 +196,7 @@ namespace MediaBrowser.UI
         /// <param name="page">The page.</param>
         internal void Navigate(Page page)
         {
-            Logger.LogInfo("Navigating to " + page.GetType().Name);
+            _logger.Info("Navigating to " + page.GetType().Name);
             
             Dispatcher.InvokeAsync(() => PageFrame.NavigateWithTransition(page));
         }

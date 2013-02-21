@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Logging;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -62,7 +61,6 @@ namespace MediaBrowser.UI.UserInput
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogException("KeyDown event listener had an error: ", ex);
                 }
             }
         }
@@ -95,7 +93,6 @@ namespace MediaBrowser.UI.UserInput
         /// </summary>
         private static void StartListening()
         {
-            Logger.LogInfo("Attaching low-level keyboard hook");
             _hookID = SetHook(_proc);
         }
 
@@ -104,8 +101,6 @@ namespace MediaBrowser.UI.UserInput
         /// </summary>
         private static void StopListening()
         {
-            Logger.LogInfo("Detaching low-level keyboard hook");
-
             UnhookWindowsHookEx(_hookID);
             _hookID = IntPtr.Zero;
         }

@@ -106,7 +106,7 @@ namespace MediaBrowser.UI.Controller
 
             try
             {
-                await new PluginUpdater().UpdatePlugins().ConfigureAwait(false);
+                await new PluginUpdater(Logger).UpdatePlugins().ConfigureAwait(false);
             }
             catch (HttpException ex)
             {
