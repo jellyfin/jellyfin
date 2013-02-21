@@ -263,7 +263,7 @@ namespace MediaBrowser.UI
         /// </summary>
         private void ShowApplicationWindow()
         {
-            var win = new MainWindow { };
+            var win = new MainWindow(Logger);
 
             var config = UIKernel.Instance.Configuration;
 

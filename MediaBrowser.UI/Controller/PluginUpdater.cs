@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Logging;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Plugins;
 using System;
@@ -16,13 +16,20 @@ namespace MediaBrowser.UI.Controller
     /// </summary>
     public class PluginUpdater
     {
+        private readonly ILogger _logger;
+
+        public PluginUpdater(ILogger logger)
+        {
+            _logger = logger;
+        }
+
         /// <summary>
         /// Updates the plugins.
         /// </summary>
         /// <returns>Task{PluginUpdateResult}.</returns>
         public async Task<PluginUpdateResult> UpdatePlugins()
         {
-            Logger.LogInfo("Downloading list of installed plugins");
+            _logger.Info("Downloading list of installed plugins");
             var allInstalledPlugins = await UIKernel.Instance.ApiClient.GetInstalledPluginsAsync().ConfigureAwait(false);
 
             var uiPlugins = allInstalledPlugins.Where(p => p.DownloadToUI).ToList();
@@ -63,7 +70,7 @@ namespace MediaBrowser.UI.Controller
                 if (!isPluginInstalled)
                 {
                     downloadPlugin = true;
-                    Logger.LogInfo("{0} is not installed and needs to be downloaded.", pluginInfo.Name);
+                    _logger.Info("{0} is not installed and needs to be downloaded.", pluginInfo.Name);
                 }
                 else
                 {
@@ -75,7 +82,7 @@ namespace MediaBrowser.UI.Controller
 
                     if (downloadPlugin)
                     {
-                        Logger.LogInfo("{0} has an updated version on the server and needs to be downloaded. Server version: {1}, UI version: {2}", pluginInfo.Name, serverVersion, fileVersion);
+                        _logger.Info("{0} has an updated version on the server and needs to be downloaded. Server version: {1}, UI version: {2}", pluginInfo.Name, serverVersion, fileVersion);
                     }
                 }
 
@@ -83,7 +90,7 @@ namespace MediaBrowser.UI.Controller
                 {
                     if (UIKernel.Instance.ApplicationVersion < Version.Parse(pluginInfo.MinimumRequiredUIVersion))
                     {
-                        Logger.LogWarning("Can't download new version of {0} because the application needs to be updated first.", pluginInfo.Name);
+                        _logger.Warn("Can't download new version of {0} because the application needs to be updated first.", pluginInfo.Name);
                         continue;
                     }
 
@@ -102,11 +109,11 @@ namespace MediaBrowser.UI.Controller
                     }
                     catch (HttpException ex)
                     {
-                        Logger.LogException("Error downloading {0} configuration", ex, pluginInfo.Name);
+                        _logger.ErrorException("Error downloading {0} configuration", ex, pluginInfo.Name);
                     }
                     catch (IOException ex)
                     {
-                        Logger.LogException("Error saving plugin assembly for {0}", ex, pluginInfo.Name);
+                        _logger.ErrorException("Error saving plugin assembly for {0}", ex, pluginInfo.Name);
                     }
                 }
             }
@@ -136,19 +143,19 @@ namespace MediaBrowser.UI.Controller
                 if (!File.Exists(path))
                 {
                     download = true;
-                    Logger.LogInfo("{0} configuration was not found needs to be downloaded.", pluginInfo.Name);
+                    _logger.Info("{0} configuration was not found needs to be downloaded.", pluginInfo.Name);
                 }
                 else if (File.GetLastWriteTimeUtc(path) < pluginInfo.ConfigurationDateLastModified)
                 {
                     download = true;
-                    Logger.LogInfo("{0} has an updated configuration on the server and needs to be downloaded.", pluginInfo.Name);
+                    _logger.Info("{0} has an updated configuration on the server and needs to be downloaded.", pluginInfo.Name);
                 }
 
                 if (download)
                 {
                     if (UIKernel.Instance.ApplicationVersion < Version.Parse(pluginInfo.MinimumRequiredUIVersion))
                     {
-                        Logger.LogWarning("Can't download updated configuration of {0} because the application needs to be updated first.", pluginInfo.Name);
+                        _logger.Warn("Can't download updated configuration of {0} because the application needs to be updated first.", pluginInfo.Name);
                         continue;
                     }
                     
@@ -160,11 +167,11 @@ namespace MediaBrowser.UI.Controller
                     }
                     catch (HttpException ex)
                     {
-                        Logger.LogException("Error downloading {0} configuration", ex, pluginInfo.Name);
+                        _logger.ErrorException("Error downloading {0} configuration", ex, pluginInfo.Name);
                     }
                     catch (IOException ex)
                     {
-                        Logger.LogException("Error saving plugin configuration to {0}", ex, path);
+                        _logger.ErrorException("Error saving plugin configuration to {0}", ex, path);
                     }
                 }
             }
@@ -179,7 +186,7 @@ namespace MediaBrowser.UI.Controller
         /// <returns>Task.</returns>
         private async Task DownloadPlugin(PluginInfo plugin)
         {
-            Logger.LogInfo("Downloading {0} Plugin", plugin.Name);
+            _logger.Info("Downloading {0} Plugin", plugin.Name);
 
             var path = Path.Combine(UIKernel.Instance.ApplicationPaths.PluginsPath, plugin.AssemblyFileName);
 
@@ -207,7 +214,7 @@ namespace MediaBrowser.UI.Controller
         /// <returns>Task.</returns>
         private async Task DownloadPluginConfiguration(PluginInfo pluginInfo, string path)
         {
-            Logger.LogInfo("Downloading {0} Configuration", pluginInfo.Name);
+            _logger.Info("Downloading {0} Configuration", pluginInfo.Name);
 
             // First download to a MemoryStream. This way if the download is cut off, we won't be left with a partial file
             using (var stream = await UIKernel.Instance.ApiClient.GetPluginConfigurationFileAsync(pluginInfo.UniqueId).ConfigureAwait(false))
@@ -253,7 +260,7 @@ namespace MediaBrowser.UI.Controller
                     }
                     catch (IOException ex)
                     {
-                        Logger.LogException("Error deleting plugin assembly {0}", ex, plugin);
+                        _logger.ErrorException("Error deleting plugin assembly {0}", ex, plugin);
                     }
                 }
             }
@@ -268,7 +275,7 @@ namespace MediaBrowser.UI.Controller
         /// <param name="plugin">The plugin.</param>
         private void DeletePlugin(string plugin)
         {
-            Logger.LogInfo("Deleting {0} Plugin", plugin);
+            _logger.Info("Deleting {0} Plugin", plugin);
 
             if (File.Exists(plugin))
             {
