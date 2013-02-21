@@ -15,6 +15,7 @@ using MediaBrowser.Controller.ScheduledTasks;
 using MediaBrowser.Controller.Updates;
 using MediaBrowser.Controller.Weather;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
@@ -298,12 +299,19 @@ namespace MediaBrowser.Controller
         }
 
         /// <summary>
+        /// Gets or sets the zip client.
+        /// </summary>
+        /// <value>The zip client.</value>
+        private IZipClient ZipClient { get; set; }
+
+        /// <summary>
         /// Creates a kernel based on a Data path, which is akin to our current programdata path
         /// </summary>
-        public Kernel(IIsoManager isoManager)
+        public Kernel(IIsoManager isoManager, IZipClient zipClient)
             : base(isoManager)
         {
             Instance = this;
+            ZipClient = zipClient;
         }
 
         /// <summary>
@@ -319,10 +327,10 @@ namespace MediaBrowser.Controller
             RootFolder = null;
 
             ReloadResourcePools();
-            InstallationManager = new InstallationManager(this);
+            InstallationManager = new InstallationManager(this, ZipClient);
             LibraryManager = new LibraryManager(this);
             UserManager = new UserManager(this);
-            FFMpegManager = new FFMpegManager(this);
+            FFMpegManager = new FFMpegManager(this, ZipClient);
             ImageManager = new ImageManager(this);
             ProviderManager = new ProviderManager(this);
             UserDataManager = new UserDataManager(this);

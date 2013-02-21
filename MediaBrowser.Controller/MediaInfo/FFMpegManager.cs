@@ -1,5 +1,4 @@
-﻿using Ionic.Zip;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Serialization;
@@ -7,6 +6,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -58,14 +58,29 @@ namespace MediaBrowser.Controller.MediaInfo
         /// </summary>
         /// <value>The subtitle cache.</value>
         internal FileSystemRepository SubtitleCache { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the zip client.
+        /// </summary>
+        /// <value>The zip client.</value>
+        private IZipClient ZipClient { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FFMpegManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        public FFMpegManager(Kernel kernel)
+        /// <param name="zipClient">The zip client.</param>
+        /// <exception cref="System.ArgumentNullException">zipClient</exception>
+        public FFMpegManager(Kernel kernel, IZipClient zipClient)
             : base(kernel)
         {
+            if (zipClient == null)
+            {
+                throw new ArgumentNullException("zipClient");
+            }
+
+            ZipClient = zipClient;
+
             // Not crazy about this but it's the only way to suppress ffmpeg crash dialog boxes
             SetErrorMode(ErrorModes.SEM_FAILCRITICALERRORS | ErrorModes.SEM_NOALIGNMENTFAULTEXCEPT | ErrorModes.SEM_NOGPFAULTERRORBOX | ErrorModes.SEM_NOOPENFILEERRORBOX);
 
@@ -352,10 +367,7 @@ namespace MediaBrowser.Controller.MediaInfo
         {
             using (var resourceStream = assembly.GetManifestResourceStream(zipFileResourcePath))
             {
-                using (var zipFile = ZipFile.Read(resourceStream))
-                {
-                    zipFile.ExtractAll(targetPath, ExtractExistingFileAction.DoNotOverwrite);
-                }
+                ZipClient.ExtractAll(resourceStream, targetPath, false);
             }
         }
 
@@ -383,7 +395,7 @@ namespace MediaBrowser.Controller.MediaInfo
             {
                 return "-probesize 1G -analyzeduration 200M";
             }
-            
+
             return string.Empty;
         }
 
@@ -818,7 +830,7 @@ namespace MediaBrowser.Controller.MediaInfo
             {
                 throw new ArgumentException("The given MediaStream is not an external subtitle stream");
             }
-            
+
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo

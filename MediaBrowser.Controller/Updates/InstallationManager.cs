@@ -1,11 +1,11 @@
 ﻿using System.Security.Cryptography;
-using Ionic.Zip;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.Serialization;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Updates;
 using System;
 using System.Collections.Concurrent;
@@ -92,13 +92,26 @@ namespace MediaBrowser.Controller.Updates
         #endregion
 
         /// <summary>
+        /// Gets or sets the zip client.
+        /// </summary>
+        /// <value>The zip client.</value>
+        private IZipClient ZipClient { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="InstallationManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        public InstallationManager(Kernel kernel)
+        /// <param name="zipClient">The zip client.</param>
+        /// <exception cref="System.ArgumentNullException">zipClient</exception>
+        public InstallationManager(Kernel kernel, IZipClient zipClient)
             : base(kernel)
         {
+            if (zipClient == null)
+            {
+                throw new ArgumentNullException("zipClient");
+            }
 
+            ZipClient = zipClient;
         }
 
         /// <summary>
@@ -391,11 +404,7 @@ namespace MediaBrowser.Controller.Updates
             {
                 try
                 {
-                    // Extract to target in full - overwriting
-                    using (var zipFile = ZipFile.Read(tempFile))
-                    {
-                        zipFile.ExtractAll(target, ExtractExistingFileAction.OverwriteSilently);
-                    }
+                    ZipClient.ExtractAll(tempFile, target, true);
                 }
                 catch (IOException e)
                 {
