@@ -17,7 +17,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// The logger
         /// </summary>
-        private static ILogger Logger = LogManager.GetLogger("AlchemyWebSocket");
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Gets or sets the web socket.
@@ -29,20 +29,22 @@ namespace MediaBrowser.Common.Net
         /// Initializes a new instance of the <see cref="AlchemyWebSocket" /> class.
         /// </summary>
         /// <param name="context">The context.</param>
+        /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">context</exception>
-        public AlchemyWebSocket(UserContext context)
+        public AlchemyWebSocket(UserContext context, ILogger logger)
         {
             if (context == null)
             {
                 throw new ArgumentNullException("context");
             }
 
+            _logger = logger;
             UserContext = context;
 
             context.SetOnDisconnect(OnDisconnected);
             context.SetOnReceive(OnReceive);
 
-            Logger.Info("Client connected from {0}", context.ClientAddress);
+            _logger.Info("Client connected from {0}", context.ClientAddress);
         }
 
         /// <summary>
@@ -87,7 +89,7 @@ namespace MediaBrowser.Common.Net
                     }
                     catch (Exception ex)
                     {
-                        Logger.ErrorException("Error processing web socket message", ex);
+                        _logger.ErrorException("Error processing web socket message", ex);
                     }
                 }
             }

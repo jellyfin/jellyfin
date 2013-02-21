@@ -7,6 +7,7 @@ using MediaBrowser.Common.UI;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Weather;
 using MediaBrowser.UI.Controller;
@@ -235,16 +236,29 @@ namespace MediaBrowser.UI
         [STAThread]
         public static void Main()
         {
-            RunApplication<App>("MediaBrowserUI");
+            var application = new App(LogManager.GetLogger("App"));
+            application.InitializeComponent();
+
+            application.Run();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="App" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        public App(ILogger logger)
+            : base(logger)
+        {
+
+        }
+        
         /// <summary>
         /// Instantiates the kernel.
         /// </summary>
         /// <returns>IKernel.</returns>
         protected override IKernel InstantiateKernel()
         {
-            return new UIKernel(new PismoIsoManager(LogManager.GetLogger("PismoIsoManager")));
+            return new UIKernel(new PismoIsoManager(Logger), Logger);
         }
 
         /// <summary>

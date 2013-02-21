@@ -32,7 +32,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// The logger
         /// </summary>
-        private static ILogger Logger = Logging.LogManager.GetLogger("HttpServer");
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Gets the URL prefix.
@@ -69,17 +69,27 @@ namespace MediaBrowser.Common.Net
         /// <param name="urlPrefix">The URL.</param>
         /// <param name="serverName">Name of the product.</param>
         /// <param name="kernel">The kernel.</param>
+        /// <param name="logger">The logger.</param>
         /// <param name="defaultRedirectpath">The default redirectpath.</param>
         /// <exception cref="System.ArgumentNullException">urlPrefix</exception>
-        public HttpServer(string urlPrefix, string serverName, IKernel kernel, string defaultRedirectpath = null)
+        public HttpServer(string urlPrefix, string serverName, IKernel kernel, ILogger logger, string defaultRedirectpath = null)
             : base()
         {
             if (string.IsNullOrEmpty(urlPrefix))
             {
                 throw new ArgumentNullException("urlPrefix");
             }
+            if (kernel == null)
+            {
+                throw new ArgumentNullException("kernel");
+            }
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
 
             DefaultRedirectPath = defaultRedirectpath;
+            _logger = logger;
 
             EndpointHostConfig.Instance.ServiceStackHandlerFactoryPath = null;
             EndpointHostConfig.Instance.MetadataRedirectPath = "metadata";
@@ -274,12 +284,12 @@ namespace MediaBrowser.Common.Net
 
                 if (WebSocketConnected != null)
                 {
-                    WebSocketConnected(this, new WebSocketConnectEventArgs { WebSocket = new NativeWebSocket(webSocketContext.WebSocket), Endpoint = ctx.Request.RemoteEndPoint });
+                    WebSocketConnected(this, new WebSocketConnectEventArgs { WebSocket = new NativeWebSocket(webSocketContext.WebSocket, _logger), Endpoint = ctx.Request.RemoteEndPoint });
                 }
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("AcceptWebSocketAsync error", ex);
+                _logger.ErrorException("AcceptWebSocketAsync error", ex);
 
                 ctx.Response.StatusCode = 500;
                 ctx.Response.Close();
@@ -301,7 +311,7 @@ namespace MediaBrowser.Common.Net
 
             if (Kernel.Configuration.EnableHttpLevelLogging)
             {
-                Logger.LogMultiline(type + " request received from " + ctx.Request.RemoteEndPoint, LogSeverity.Debug, log);
+                _logger.LogMultiline(type + " request received from " + ctx.Request.RemoteEndPoint, LogSeverity.Debug, log);
             }
         }
 
@@ -313,7 +323,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="statusCode">The status code.</param>
         private void HandleException(HttpListenerResponse response, Exception ex, int statusCode)
         {
-            Logger.ErrorException("Error processing request", ex);
+            _logger.ErrorException("Error processing request", ex);
 
             response.StatusCode = statusCode;
 
@@ -352,7 +362,7 @@ namespace MediaBrowser.Common.Net
             }
             catch (Exception errorEx)
             {
-                Logger.ErrorException("Error processing failed request", errorEx);
+                _logger.ErrorException("Error processing failed request", errorEx);
             }
         }
 
@@ -408,7 +418,7 @@ namespace MediaBrowser.Common.Net
 
             if (Kernel.Configuration.EnableHttpLevelLogging)
             {
-                Logger.LogMultiline(msg, LogSeverity.Debug, log);
+                _logger.LogMultiline(msg, LogSeverity.Debug, log);
             }
         }
 

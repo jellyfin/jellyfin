@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Logging;
-using MediaBrowser.Common.Serialization;
+﻿using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
@@ -17,7 +16,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// The logger
         /// </summary>
-        private static ILogger Logger = LogManager.GetLogger("NativeWebSocket");
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Gets or sets the web socket.
@@ -29,14 +28,21 @@ namespace MediaBrowser.Common.Net
         /// Initializes a new instance of the <see cref="NativeWebSocket" /> class.
         /// </summary>
         /// <param name="socket">The socket.</param>
+        /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">socket</exception>
-        public NativeWebSocket(WebSocket socket)
+        public NativeWebSocket(WebSocket socket, ILogger logger)
         {
             if (socket == null)
             {
                 throw new ArgumentNullException("socket");
             }
 
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+
+            _logger = logger;
             WebSocket = socket;
 
             Receive();
@@ -66,7 +72,7 @@ namespace MediaBrowser.Common.Net
                 }
                 catch (WebSocketException ex)
                 {
-                    Logger.ErrorException("Error reveiving web socket message", ex);
+                    _logger.ErrorException("Error reveiving web socket message", ex);
 
                     break;
                 }
@@ -83,7 +89,7 @@ namespace MediaBrowser.Common.Net
                         }
                         catch (Exception ex)
                         {
-                            Logger.ErrorException("Error processing web socket message", ex);
+                            _logger.ErrorException("Error processing web socket message", ex);
                         }
                     }
                 }

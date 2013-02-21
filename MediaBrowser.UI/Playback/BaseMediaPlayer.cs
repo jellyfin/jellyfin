@@ -31,7 +31,7 @@ namespace MediaBrowser.UI.Playback
         public event EventHandler VolumeChanged;
         protected void OnVolumeChanged()
         {
-            EventHelper.FireEventIfNotNull(VolumeChanged, this, EventArgs.Empty);
+            EventHelper.FireEventIfNotNull(VolumeChanged, this, EventArgs.Empty, Logger);
         }
         #endregion
 
@@ -42,7 +42,7 @@ namespace MediaBrowser.UI.Playback
         public event EventHandler PlayStateChanged;
         protected void OnPlayStateChanged()
         {
-            EventHelper.FireEventIfNotNull(PlayStateChanged, this, EventArgs.Empty);
+            EventHelper.FireEventIfNotNull(PlayStateChanged, this, EventArgs.Empty, Logger);
         }
         #endregion
         

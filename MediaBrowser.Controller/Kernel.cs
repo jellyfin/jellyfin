@@ -16,6 +16,7 @@ using MediaBrowser.Controller.Updates;
 using MediaBrowser.Controller.Weather;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
 using System;
@@ -315,8 +316,8 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Creates a kernel based on a Data path, which is akin to our current programdata path
         /// </summary>
-        public Kernel(IIsoManager isoManager, IZipClient zipClient, IBlurayExaminer blurayExaminer)
-            : base(isoManager)
+        public Kernel(IIsoManager isoManager, IZipClient zipClient, IBlurayExaminer blurayExaminer, ILogger logger)
+            : base(isoManager, logger)
         {
             if (isoManager == null)
             {

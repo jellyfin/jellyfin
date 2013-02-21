@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Logging;
 using Microsoft.Win32;
@@ -84,9 +83,10 @@ namespace MediaBrowser.Common.UI
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplication" /> class.
         /// </summary>
-        protected BaseApplication()
+        /// <param name="logger">The logger.</param>
+        protected BaseApplication(ILogger logger)
         {
-            Logger = LogManager.GetLogger("App");
+            Logger = logger;
         }
 
         /// <summary>
@@ -396,20 +396,6 @@ namespace MediaBrowser.Common.UI
 
             RenderOptions.SetBitmapScalingMode(bitmap, BitmapScalingMode.Fant);
             return bitmap;
-        }
-
-        /// <summary>
-        /// Runs the application.
-        /// </summary>
-        /// <typeparam name="TApplicationType">The type of the T application type.</typeparam>
-        /// <param name="uniqueKey">The unique key.</param>
-        public static void RunApplication<TApplicationType>(string uniqueKey)
-            where TApplicationType : BaseApplication, IApplication, new()
-        {
-            var application = new TApplicationType();
-            application.InitializeComponent();
-
-            application.Run();
         }
     }
 

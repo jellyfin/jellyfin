@@ -49,7 +49,7 @@ namespace MediaBrowser.UI.Playback
                 Options = options,
                 Player = player,
                 PlayerConfiguration = playerConfiguration
-            });
+            }, Logger);
         }
         #endregion
 
@@ -70,7 +70,7 @@ namespace MediaBrowser.UI.Playback
             {
                 Items = items,
                 Player = player
-            });
+            }, Logger);
         }
         #endregion
 

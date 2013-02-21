@@ -150,7 +150,7 @@ namespace MediaBrowser.Common.Kernel
         /// <param name="context">The context.</param>
         private void OnAlchemyWebSocketClientConnected(UserContext context)
         {
-            var connection = new WebSocketConnection(new AlchemyWebSocket(context), context.ClientAddress, ProcessWebSocketMessageReceived);
+            var connection = new WebSocketConnection(new AlchemyWebSocket(context, Logger), context.ClientAddress, ProcessWebSocketMessageReceived, Logger);
 
             _webSocketConnections.Add(connection);
         }
@@ -173,7 +173,7 @@ namespace MediaBrowser.Common.Kernel
 
             try
             {
-                HttpServer = new HttpServer(Kernel.HttpServerUrlPrefix, "Media Browser", Kernel);
+                HttpServer = new HttpServer(Kernel.HttpServerUrlPrefix, "Media Browser", Kernel, Logger);
             }
             catch (HttpListenerException ex)
             {
@@ -202,7 +202,7 @@ namespace MediaBrowser.Common.Kernel
         /// <param name="e">The <see cref="WebSocketConnectEventArgs" /> instance containing the event data.</param>
         void HttpServer_WebSocketConnected(object sender, WebSocketConnectEventArgs e)
         {
-            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, ProcessWebSocketMessageReceived);
+            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, ProcessWebSocketMessageReceived, Logger);
 
             _webSocketConnections.Add(connection);
         }

@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Logging;
-using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Model.Logging;
 using System;
 using System.Threading.Tasks;
 
@@ -11,17 +10,13 @@ namespace MediaBrowser.Common.Events
     public static class EventHelper
     {
         /// <summary>
-        /// The logger
-        /// </summary>
-        private static readonly ILogger Logger = LogManager.GetLogger("EventHelper");
-
-        /// <summary>
         /// Fires the event.
         /// </summary>
         /// <param name="handler">The handler.</param>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The <see cref="EventArgs" /> instance containing the event data.</param>
-        public static void QueueEventIfNotNull(EventHandler handler, object sender, EventArgs args)
+        /// <param name="logger">The logger.</param>
+        public static void QueueEventIfNotNull(EventHandler handler, object sender, EventArgs args, ILogger logger)
         {
             if (handler != null)
             {
@@ -33,7 +28,7 @@ namespace MediaBrowser.Common.Events
                     }
                     catch (Exception ex)
                     {
-                        Logger.ErrorException("Error in event handler", ex);
+                        logger.ErrorException("Error in event handler", ex);
                     }
                 });
             }
@@ -46,7 +41,8 @@ namespace MediaBrowser.Common.Events
         /// <param name="handler">The handler.</param>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The args.</param>
-        public static void QueueEventIfNotNull<T>(EventHandler<T> handler, object sender, T args)
+        /// <param name="logger">The logger.</param>
+        public static void QueueEventIfNotNull<T>(EventHandler<T> handler, object sender, T args, ILogger logger)
         {
             if (handler != null)
             {
@@ -58,7 +54,7 @@ namespace MediaBrowser.Common.Events
                     }
                     catch (Exception ex)
                     {
-                        Logger.ErrorException("Error in event handler", ex);
+                        logger.ErrorException("Error in event handler", ex);
                     }
                 });
             }
@@ -70,7 +66,8 @@ namespace MediaBrowser.Common.Events
         /// <param name="handler">The handler.</param>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The <see cref="EventArgs" /> instance containing the event data.</param>
-        public static void FireEventIfNotNull(EventHandler handler, object sender, EventArgs args)
+        /// <param name="logger">The logger.</param>
+        public static void FireEventIfNotNull(EventHandler handler, object sender, EventArgs args, ILogger logger)
         {
             if (handler != null)
             {
@@ -80,7 +77,7 @@ namespace MediaBrowser.Common.Events
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error in event handler", ex);
+                    logger.ErrorException("Error in event handler", ex);
                 }
             }
         }
@@ -92,7 +89,8 @@ namespace MediaBrowser.Common.Events
         /// <param name="handler">The handler.</param>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The args.</param>
-        public static void FireEventIfNotNull<T>(EventHandler<T> handler, object sender, T args)
+        /// <param name="logger">The logger.</param>
+        public static void FireEventIfNotNull<T>(EventHandler<T> handler, object sender, T args, ILogger logger)
         {
             if (handler != null)
             {
@@ -102,7 +100,7 @@ namespace MediaBrowser.Common.Events
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error in event handler", ex);
+                    logger.ErrorException("Error in event handler", ex);
                 }
             }
         }
