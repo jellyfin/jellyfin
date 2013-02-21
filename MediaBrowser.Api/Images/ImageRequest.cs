@@ -10,19 +10,19 @@ namespace MediaBrowser.Api.Images
         /// <summary>
         /// The max width
         /// </summary>
-        public int? MaxWidth;
+        public int? MaxWidth { get; set; }
         /// <summary>
         /// The max height
         /// </summary>
-        public int? MaxHeight;
+        public int? MaxHeight { get; set; }
         /// <summary>
         /// The width
         /// </summary>
-        public int? Width;
+        public int? Width { get; set; }
         /// <summary>
         /// The height
         /// </summary>
-        public int? Height;
+        public int? Height { get; set; }
         /// <summary>
         /// Gets or sets the quality.
         /// </summary>
