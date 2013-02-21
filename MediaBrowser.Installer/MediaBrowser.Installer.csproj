@@ -55,10 +55,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>751255FBBD2EB9154F0781820116C2FA3FCD4993</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>45143DAA4FF6F1512702FCBADCB0D7C1AB7E39FB</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>MediaBrowser.Installer_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>MediaBrowser.Installer_1_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
@@ -136,7 +136,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="MediaBrowser.Installer_TemporaryKey.pfx" />
+    <None Include="MediaBrowser.Installer_1_TemporaryKey.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
