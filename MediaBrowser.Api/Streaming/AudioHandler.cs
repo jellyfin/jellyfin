@@ -2,7 +2,7 @@
 using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;

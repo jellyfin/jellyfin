@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Plugins.DefaultTheme.Controls.Details;

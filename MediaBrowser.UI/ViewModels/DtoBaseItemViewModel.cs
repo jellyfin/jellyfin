@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Common.Logging;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.UI.Pages;
 using System;
@@ -55,12 +55,12 @@ namespace MediaBrowser.UI.ViewModels
         /// <summary>
         /// The _item
         /// </summary>
-        private DtoBaseItem _item;
+        private BaseItemDto _item;
         /// <summary>
         /// Gets or sets the item.
         /// </summary>
         /// <value>The item.</value>
-        public DtoBaseItem Item
+        public BaseItemDto Item
         {
             get { return _item; }
 
@@ -122,7 +122,7 @@ namespace MediaBrowser.UI.ViewModels
         /// <param name="items">The items.</param>
         /// <returns>System.Double.</returns>
         /// <exception cref="System.ArgumentNullException">items</exception>
-        public static double GetAveragePrimaryImageAspectRatio(IEnumerable<DtoBaseItem> items)
+        public static double GetAveragePrimaryImageAspectRatio(IEnumerable<BaseItemDto> items)
         {
             if (items == null)
             {
@@ -153,7 +153,7 @@ namespace MediaBrowser.UI.ViewModels
         /// </summary>
         /// <param name="items">The items.</param>
         /// <returns>ObservableCollection{DtoBaseItemViewModel}.</returns>
-        public static ObservableCollection<DtoBaseItemViewModel> GetObservableItems(DtoBaseItem[] items)
+        public static ObservableCollection<DtoBaseItemViewModel> GetObservableItems(BaseItemDto[] items)
         {
             return GetObservableItems(items, GetAveragePrimaryImageAspectRatio(items));
         }
@@ -166,7 +166,7 @@ namespace MediaBrowser.UI.ViewModels
         /// <param name="parentDisplayPreferences">The parent display preferences.</param>
         /// <returns>ObservableCollection{DtoBaseItemViewModel}.</returns>
         /// <exception cref="System.ArgumentNullException">items</exception>
-        public static ObservableCollection<DtoBaseItemViewModel> GetObservableItems(IEnumerable<DtoBaseItem> items, double averagePrimaryImageAspectRatio, DisplayPreferences parentDisplayPreferences = null)
+        public static ObservableCollection<DtoBaseItemViewModel> GetObservableItems(IEnumerable<BaseItemDto> items, double averagePrimaryImageAspectRatio, DisplayPreferences parentDisplayPreferences = null)
         {
             if (items == null)
             {

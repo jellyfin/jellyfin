@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Net;
 using MediaBrowser.UI.Controls;
 using System;
@@ -14,12 +14,12 @@ namespace MediaBrowser.UI.Pages
         /// <summary>
         /// The _users
         /// </summary>
-        private DtoUser[] _users;
+        private UserDto[] _users;
         /// <summary>
         /// Gets or sets the users.
         /// </summary>
         /// <value>The users.</value>
-        public DtoUser[] Users
+        public UserDto[] Users
         {
             get { return _users; }
 
@@ -72,7 +72,7 @@ namespace MediaBrowser.UI.Pages
         /// <param name="e">The e.</param>
         async void ItemsList_ItemInvoked(object sender, ItemEventArgs<object> e)
         {
-            var user = (DtoUser)e.Argument;
+            var user = (UserDto)e.Argument;
 
             try
             {
@@ -97,7 +97,7 @@ namespace MediaBrowser.UI.Pages
         /// <param name="user">The user.</param>
         /// <param name="password">The password.</param>
         /// <returns>Task{AuthenticationResult}.</returns>
-        protected async Task LoginUser(DtoUser user, string password)
+        protected async Task LoginUser(UserDto user, string password)
         {
             await App.Instance.ApiClient.AuthenticateUserAsync(user.Id, password);
 
@@ -111,7 +111,7 @@ namespace MediaBrowser.UI.Pages
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>Task{AuthenticationResult}.</returns>
-        protected Task LoginUser(DtoUser user)
+        protected Task LoginUser(UserDto user)
         {
             return LoginUser(user, null);
         }

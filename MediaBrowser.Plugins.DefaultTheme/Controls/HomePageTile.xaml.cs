@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
 using MediaBrowser.UI;
@@ -27,7 +27,7 @@ namespace MediaBrowser.Plugins.DefaultTheme.Controls
         /// Gets the item.
         /// </summary>
         /// <value>The item.</value>
-        private DtoBaseItem Item
+        private BaseItemDto Item
         {
             get { return ViewModel.Item; }
         }

@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Windows;
@@ -21,7 +21,7 @@ namespace MediaBrowser.UI.Converters
         /// <returns>A converted value. If the method returns null, the valid null value is used.</returns>
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            var item = value as DtoBaseItem;
+            var item = value as BaseItemDto;
 
             if (item != null)
             {
@@ -45,7 +45,7 @@ namespace MediaBrowser.UI.Converters
         /// <param name="type">The type.</param>
         /// <param name="reverse">if set to <c>true</c> [reverse].</param>
         /// <returns>Visibility.</returns>
-        private Visibility GetVisibility(DtoBaseItem item, ImageType type, bool reverse)
+        private Visibility GetVisibility(BaseItemDto item, ImageType type, bool reverse)
         {
             var hasImageVisibility = reverse ? Visibility.Collapsed : Visibility.Visible;
             var hasNoImageVisibility = reverse ? Visibility.Visible : Visibility.Collapsed;

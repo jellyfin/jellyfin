@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using System;
 using System.Globalization;
 using System.Windows.Data;
@@ -9,7 +9,7 @@ namespace MediaBrowser.UI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var user = value as DtoUser;
+            var user = value as UserDto;
 
             if (user != null)
             {

@@ -76,11 +76,11 @@
     <Compile Include="Entities\RequestResult.cs" />
     <Compile Include="Configuration\UserConfiguration.cs" />
     <Compile Include="Drawing\DrawingUtils.cs" />
-    <Compile Include="DTO\DtoUserItemData.cs" />
+    <Compile Include="DTO\UserItemDataDto.cs" />
     <Compile Include="DTO\ItemFields.cs" />
     <Compile Include="DTO\ItemSortBy.cs" />
-    <Compile Include="DTO\DtoBaseItem.cs" />
-    <Compile Include="DTO\DtoUser.cs" />
+    <Compile Include="DTO\BaseItemDto.cs" />
+    <Compile Include="DTO\UserDto.cs" />
     <Compile Include="DTO\ItemsResult.cs" />
     <Compile Include="Entities\DisplayPreferences.cs" />
     <Compile Include="Entities\ImageType.cs" />

@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.Model.DTO
+namespace MediaBrowser.Model.Dto
 {
     /// <summary>
     /// Enum ItemFilter

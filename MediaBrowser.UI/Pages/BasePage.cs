@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using System;
 using System.ComponentModel;
 using System.Windows;
@@ -53,9 +53,9 @@ namespace MediaBrowser.UI.Pages
         }
 
         /// <summary>
-        /// Sets the backdrop based on a DtoBaseItem
+        /// Sets the backdrop based on a BaseItemDto
         /// </summary>
-        public void SetBackdrops(DtoBaseItem item)
+        public void SetBackdrops(BaseItemDto item)
         {
             App.Instance.ApplicationWindow.SetBackdrops(item);
         }

@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.UI.Configuration;
 using System;
 
@@ -44,6 +44,6 @@ namespace MediaBrowser.UI.Playback
         /// Gets or sets the items.
         /// </summary>
         /// <value>The items.</value>
-        public List<DtoBaseItem> Items { get; set; }
+        public List<BaseItemDto> Items { get; set; }
     }
 }

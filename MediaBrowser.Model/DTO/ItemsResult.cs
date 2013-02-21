@@ -1,6 +1,6 @@
 ﻿using ProtoBuf;
 
-namespace MediaBrowser.Model.DTO
+namespace MediaBrowser.Model.Dto
 {
     /// <summary>
     /// Represents the result of a query for items
@@ -13,7 +13,7 @@ namespace MediaBrowser.Model.DTO
         /// </summary>
         /// <value>The items.</value>
         [ProtoMember(1)]
-        public DtoBaseItem[] Items { get; set; }
+        public BaseItemDto[] Items { get; set; }
 
         /// <summary>
         /// The total number of records available

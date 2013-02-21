@@ -7,7 +7,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
 using System.ComponentModel;

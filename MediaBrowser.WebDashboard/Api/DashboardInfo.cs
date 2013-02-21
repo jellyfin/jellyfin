@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Model.Connectivity;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using System;
@@ -39,7 +39,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// Gets or sets the users.
         /// </summary>
         /// <value>The users.</value>
-        public DtoUser[] Users { get; set; }
+        public UserDto[] Users { get; set; }
     }
 
 }

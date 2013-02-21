@@ -3,7 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Runtime.Serialization;
 
-namespace MediaBrowser.Model.DTO
+namespace MediaBrowser.Model.Dto
 {
     /// <summary>
     /// This is used by the api to get information about a Person within a BaseItem

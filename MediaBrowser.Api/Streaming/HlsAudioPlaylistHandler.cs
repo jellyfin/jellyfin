@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using System;
 using System.ComponentModel.Composition;
 using System.Net;

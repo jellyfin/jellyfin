@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.UI.Controller;
 using MediaBrowser.UI.Controls;
 using MediaBrowser.UI.Playback;
@@ -35,7 +35,7 @@ namespace MediaBrowser.Plugins.DefaultTheme.Controls.Details
 
             UIKernel.Instance.PlaybackManager.Play(new PlayOptions
             {
-                Items = new List<DtoBaseItem> { Item },
+                Items = new List<BaseItemDto> { Item },
                 StartPositionTicks = chapterViewModel.Chapter.StartPositionTicks
             });
         }

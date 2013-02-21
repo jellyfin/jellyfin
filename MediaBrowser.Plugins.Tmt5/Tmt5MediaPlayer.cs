@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Logging;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.UI.Configuration;
 using MediaBrowser.UI.Playback;
 using MediaBrowser.UI.Playback.ExternalPlayer;
@@ -124,7 +124,7 @@ namespace MediaBrowser.Plugins.Tmt5
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns><c>true</c> if this instance can play the specified item; otherwise, <c>false</c>.</returns>
-        public override bool CanPlay(DtoBaseItem item)
+        public override bool CanPlay(BaseItemDto item)
         {
             return item.IsVideo || item.IsAudio;
         }
@@ -150,7 +150,7 @@ namespace MediaBrowser.Plugins.Tmt5
         /// <param name="options">The options.</param>
         /// <param name="playerConfiguration">The player configuration.</param>
         /// <returns>System.String.</returns>
-        protected override string GetCommandArguments(List<DtoBaseItem> items, PlayOptions options, PlayerConfiguration playerConfiguration)
+        protected override string GetCommandArguments(List<BaseItemDto> items, PlayOptions options, PlayerConfiguration playerConfiguration)
         {
             return "\"" + items[0].Path + "\"";
         }

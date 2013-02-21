@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
 using MediaBrowser.UI;
@@ -179,7 +179,7 @@ namespace MediaBrowser.Plugins.DefaultTheme.Controls
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>Uri.</returns>
-        private string GetImageSource(DtoBaseItem item)
+        private string GetImageSource(BaseItemDto item)
         {
             if (item != null)
             {

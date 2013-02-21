@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.UI.Controls;
 using MediaBrowser.UI.ViewModels;
@@ -49,12 +49,12 @@ namespace MediaBrowser.UI.Pages
         /// <summary>
         /// The _current item
         /// </summary>
-        private DtoBaseItem _currentItem;
+        private BaseItemDto _currentItem;
         /// <summary>
         /// Gets or sets the current selected item
         /// </summary>
         /// <value>The current item.</value>
-        public DtoBaseItem CurrentItem
+        public BaseItemDto CurrentItem
         {
             get { return _currentItem; }
 
@@ -102,7 +102,7 @@ namespace MediaBrowser.UI.Pages
         /// Updates the current item index based on the current selection
         /// </summary>
         /// <param name="value">The value.</param>
-        private void UpdateCurrentItemIndex(DtoBaseItem value)
+        private void UpdateCurrentItemIndex(BaseItemDto value)
         {
             if (value == null)
             {

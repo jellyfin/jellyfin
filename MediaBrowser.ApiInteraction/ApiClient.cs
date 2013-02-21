@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Logging;
@@ -75,9 +75,9 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="id">The id.</param>
         /// <param name="userId">The user id.</param>
-        /// <returns>Task{DtoBaseItem}.</returns>
+        /// <returns>Task{BaseItemDto}.</returns>
         /// <exception cref="System.ArgumentNullException">id</exception>
-        public async Task<DtoBaseItem> GetItemAsync(string id, Guid userId)
+        public async Task<BaseItemDto> GetItemAsync(string id, Guid userId)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -93,7 +93,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DtoBaseItem>(stream);
+                return DeserializeFromStream<BaseItemDto>(stream);
             }
         }
 
@@ -128,9 +128,9 @@ namespace MediaBrowser.ApiInteraction
         /// Gets a BaseItem
         /// </summary>
         /// <param name="userId">The user id.</param>
-        /// <returns>Task{DtoBaseItem}.</returns>
+        /// <returns>Task{BaseItemDto}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public async Task<DtoBaseItem> GetRootFolderAsync(Guid userId)
+        public async Task<BaseItemDto> GetRootFolderAsync(Guid userId)
         {
             if (userId == Guid.Empty)
             {
@@ -141,21 +141,21 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DtoBaseItem>(stream);
+                return DeserializeFromStream<BaseItemDto>(stream);
             }
         }
 
         /// <summary>
         /// Gets all Users
         /// </summary>
-        /// <returns>Task{DtoUser[]}.</returns>
-        public async Task<DtoUser[]> GetAllUsersAsync()
+        /// <returns>Task{UserDto[]}.</returns>
+        public async Task<UserDto[]> GetAllUsersAsync()
         {
             var url = GetApiUrl("Users");
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DtoUser[]>(stream);
+                return DeserializeFromStream<UserDto[]>(stream);
             }
         }
 
@@ -233,9 +233,9 @@ namespace MediaBrowser.ApiInteraction
         /// Gets a studio
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <returns>Task{DtoBaseItem}.</returns>
+        /// <returns>Task{BaseItemDto}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public async Task<DtoBaseItem> GetStudioAsync(string name)
+        public async Task<BaseItemDto> GetStudioAsync(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -246,7 +246,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DtoBaseItem>(stream);
+                return DeserializeFromStream<BaseItemDto>(stream);
             }
         }
 
@@ -254,9 +254,9 @@ namespace MediaBrowser.ApiInteraction
         /// Gets a genre
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <returns>Task{DtoBaseItem}.</returns>
+        /// <returns>Task{BaseItemDto}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public async Task<DtoBaseItem> GetGenreAsync(string name)
+        public async Task<BaseItemDto> GetGenreAsync(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -267,7 +267,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DtoBaseItem>(stream);
+                return DeserializeFromStream<BaseItemDto>(stream);
             }
         }
 
@@ -302,9 +302,9 @@ namespace MediaBrowser.ApiInteraction
         /// Gets a person
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <returns>Task{DtoBaseItem}.</returns>
+        /// <returns>Task{BaseItemDto}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public async Task<DtoBaseItem> GetPersonAsync(string name)
+        public async Task<BaseItemDto> GetPersonAsync(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -315,7 +315,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DtoBaseItem>(stream);
+                return DeserializeFromStream<BaseItemDto>(stream);
             }
         }
 
@@ -323,15 +323,15 @@ namespace MediaBrowser.ApiInteraction
         /// Gets a year
         /// </summary>
         /// <param name="year">The year.</param>
-        /// <returns>Task{DtoBaseItem}.</returns>
+        /// <returns>Task{BaseItemDto}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public async Task<DtoBaseItem> GetYearAsync(int year)
+        public async Task<BaseItemDto> GetYearAsync(int year)
         {
             var url = GetApiUrl("Library/Years/" + year);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DtoBaseItem>(stream);
+                return DeserializeFromStream<BaseItemDto>(stream);
             }
         }
 
@@ -438,9 +438,9 @@ namespace MediaBrowser.ApiInteraction
         /// Gets a user by id
         /// </summary>
         /// <param name="id">The id.</param>
-        /// <returns>Task{DtoUser}.</returns>
+        /// <returns>Task{UserDto}.</returns>
         /// <exception cref="System.ArgumentNullException">id</exception>
-        public async Task<DtoUser> GetUserAsync(Guid id)
+        public async Task<UserDto> GetUserAsync(Guid id)
         {
             if (id == Guid.Empty)
             {
@@ -451,7 +451,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DtoUser>(stream);
+                return DeserializeFromStream<UserDto>(stream);
             }
         }
 
@@ -517,7 +517,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="itemId">The item id.</param>
         /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<DtoBaseItem[]> GetLocalTrailersAsync(Guid userId, string itemId)
+        public async Task<BaseItemDto[]> GetLocalTrailersAsync(Guid userId, string itemId)
         {
             if (userId == Guid.Empty)
             {
@@ -532,7 +532,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DtoBaseItem[]>(stream);
+                return DeserializeFromStream<BaseItemDto[]>(stream);
             }
         }
 
@@ -541,9 +541,9 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <param name="itemId">The item id.</param>
-        /// <returns>Task{DtoBaseItem[]}.</returns>
+        /// <returns>Task{BaseItemDto[]}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public async Task<DtoBaseItem[]> GetSpecialFeaturesAsync(Guid userId, string itemId)
+        public async Task<BaseItemDto[]> GetSpecialFeaturesAsync(Guid userId, string itemId)
         {
             if (userId == Guid.Empty)
             {
@@ -558,7 +558,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<DtoBaseItem[]>(stream);
+                return DeserializeFromStream<BaseItemDto[]>(stream);
             }
         }
 
@@ -658,7 +658,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="userId">The user id.</param>
         /// <returns>Task{DtoUserItemData}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task<DtoUserItemData> ReportPlaybackStartAsync(string itemId, Guid userId)
+        public Task<UserItemDataDto> ReportPlaybackStartAsync(string itemId, Guid userId)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -677,7 +677,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("playbackcheckin", dict);
 
-            return PostAsync<DtoUserItemData>(url, new Dictionary<string, string>());
+            return PostAsync<UserItemDataDto>(url, new Dictionary<string, string>());
         }
 
         /// <summary>
@@ -688,7 +688,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="positionTicks">The position ticks.</param>
         /// <returns>Task{DtoUserItemData}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task<DtoUserItemData> ReportPlaybackProgressAsync(string itemId, Guid userId, long? positionTicks)
+        public Task<UserItemDataDto> ReportPlaybackProgressAsync(string itemId, Guid userId, long? positionTicks)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -709,7 +709,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("playbackcheckin", dict);
 
-            return PostAsync<DtoUserItemData>(url, new Dictionary<string, string>());
+            return PostAsync<UserItemDataDto>(url, new Dictionary<string, string>());
         }
 
         /// <summary>
@@ -720,7 +720,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="positionTicks">The position ticks.</param>
         /// <returns>Task{DtoUserItemData}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task<DtoUserItemData> ReportPlaybackStoppedAsync(string itemId, Guid userId, long? positionTicks)
+        public Task<UserItemDataDto> ReportPlaybackStoppedAsync(string itemId, Guid userId, long? positionTicks)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -741,7 +741,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("playbackcheckin", dict);
 
-            return PostAsync<DtoUserItemData>(url, new Dictionary<string, string>());
+            return PostAsync<UserItemDataDto>(url, new Dictionary<string, string>());
         }
 
         /// <summary>
@@ -776,7 +776,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="likes">if set to <c>true</c> [likes].</param>
         /// <returns>Task{DtoUserItemData}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task<DtoUserItemData> UpdateUserItemRatingAsync(string itemId, Guid userId, bool likes)
+        public Task<UserItemDataDto> UpdateUserItemRatingAsync(string itemId, Guid userId, bool likes)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -794,7 +794,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Users/" + userId + "/Items/" + itemId + "/Rating", dict);
 
-            return PostAsync<DtoUserItemData>(url, new Dictionary<string, string>());
+            return PostAsync<UserItemDataDto>(url, new Dictionary<string, string>());
         }
 
         /// <summary>

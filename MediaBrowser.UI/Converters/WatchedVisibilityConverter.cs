@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using System;
 using System.Globalization;
 using System.Windows;
@@ -10,7 +10,7 @@ namespace MediaBrowser.UI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var item = value as DtoBaseItem;
+            var item = value as BaseItemDto;
 
             if (item == null)
             {
@@ -40,7 +40,7 @@ namespace MediaBrowser.UI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var item = value as DtoBaseItem;
+            var item = value as BaseItemDto;
 
             if (item == null)
             {
@@ -65,7 +65,7 @@ namespace MediaBrowser.UI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var item = value as DtoBaseItem;
+            var item = value as BaseItemDto;
 
             if (item == null)
             {
@@ -92,7 +92,7 @@ namespace MediaBrowser.UI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var item = value as DtoBaseItem;
+            var item = value as BaseItemDto;
 
             if (item == null)
             {

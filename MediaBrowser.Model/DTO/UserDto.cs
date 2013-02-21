@@ -4,13 +4,13 @@ using ProtoBuf;
 using System;
 using System.Runtime.Serialization;
 
-namespace MediaBrowser.Model.DTO
+namespace MediaBrowser.Model.Dto
 {
     /// <summary>
-    /// Class DtoUser
+    /// Class UserDto
     /// </summary>
     [ProtoContract]
-    public class DtoUser : INotifyPropertyChanged
+    public class UserDto : INotifyPropertyChanged
     {
         /// <summary>
         /// Gets or sets the name.

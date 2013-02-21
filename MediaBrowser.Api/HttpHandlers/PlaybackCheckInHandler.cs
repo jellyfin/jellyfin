@@ -3,7 +3,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Connectivity;
-using MediaBrowser.Model.DTO;
+using MediaBrowser.Model.Dto;
 using System;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
@@ -14,13 +14,13 @@ namespace MediaBrowser.Api.HttpHandlers
     /// Provides a handler to set played status for an item
     /// </summary>
     [Export(typeof(IHttpServerHandler))]
-    public class PlaybackCheckInHandler : BaseSerializationHandler<Kernel, DtoUserItemData>
+    public class PlaybackCheckInHandler : BaseSerializationHandler<Kernel, UserItemDataDto>
     {
         /// <summary>
         /// Gets the object to serialize.
         /// </summary>
         /// <returns>Task{DtoUserItemData}.</returns>
-        protected override async Task<DtoUserItemData> GetObjectToSerialize()
+        protected override async Task<UserItemDataDto> GetObjectToSerialize()
         {
             // Get the user
             var user = await this.GetCurrentUser().ConfigureAwait(false);

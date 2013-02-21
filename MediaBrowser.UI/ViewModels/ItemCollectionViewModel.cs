@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using System;
 using System.Threading;
 using System.Windows;
@@ -44,16 +44,16 @@ namespace MediaBrowser.UI.ViewModels
             }
         }
 
-        private DtoBaseItem[] _items;
+        private BaseItemDto[] _items;
         /// <summary>
         /// Gets or sets the list of items
         /// </summary>
-        public DtoBaseItem[] Items
+        public BaseItemDto[] Items
         {
             get { return _items; }
             set
             {
-                _items = value ?? new DtoBaseItem[] { };
+                _items = value ?? new BaseItemDto[] { };
                 OnPropertyChanged("Items");
                 CurrentItemIndex = Items.Length == 0 ? -1 : 0;
 
@@ -80,7 +80,7 @@ namespace MediaBrowser.UI.ViewModels
         /// <summary>
         /// Gets the current item
         /// </summary>
-        public DtoBaseItem CurrentItem
+        public BaseItemDto CurrentItem
         {
             get { return CurrentItemIndex == -1 ? null : Items[CurrentItemIndex]; }
         }
@@ -88,7 +88,7 @@ namespace MediaBrowser.UI.ViewModels
         /// <summary>
         /// Gets the next item
         /// </summary>
-        public DtoBaseItem NextItem
+        public BaseItemDto NextItem
         {
             get
             {

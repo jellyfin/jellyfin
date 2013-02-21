@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
 using System;
@@ -80,12 +80,12 @@ namespace MediaBrowser.UI.ViewModels
         /// <summary>
         /// The _item
         /// </summary>
-        private DtoBaseItem _item;
+        private BaseItemDto _item;
         /// <summary>
         /// Gets or sets the item.
         /// </summary>
         /// <value>The item.</value>
-        public DtoBaseItem Item
+        public BaseItemDto Item
         {
             get { return _item; }
 
@@ -154,7 +154,7 @@ namespace MediaBrowser.UI.ViewModels
         /// <param name="height">The height.</param>
         /// <param name="defaultWidth">The default width.</param>
         /// <returns>System.Double.</returns>
-        public static double GetChapterImageWidth(DtoBaseItem item, double height, double defaultWidth)
+        public static double GetChapterImageWidth(BaseItemDto item, double height, double defaultWidth)
         {
             var width = defaultWidth;
 

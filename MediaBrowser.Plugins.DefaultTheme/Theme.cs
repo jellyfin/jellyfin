@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Plugins.DefaultTheme.Pages;
 using MediaBrowser.Plugins.DefaultTheme.Resources;
 using MediaBrowser.UI;
@@ -21,7 +21,7 @@ namespace MediaBrowser.Plugins.DefaultTheme
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>Page.</returns>
-        public override Page GetDetailPage(DtoBaseItem item)
+        public override Page GetDetailPage(BaseItemDto item)
         {
             return new DetailPage(item.Id);
         }
@@ -31,7 +31,7 @@ namespace MediaBrowser.Plugins.DefaultTheme
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>Page.</returns>
-        public override Page GetListPage(DtoBaseItem item)
+        public override Page GetListPage(BaseItemDto item)
         {
             return new ListPage(item.Id);
         }
