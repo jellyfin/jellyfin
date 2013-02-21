@@ -115,6 +115,10 @@
     <Reference Include="Hardcodet.Wpf.TaskbarNotification">
       <HintPath>..\packages\Hardcodet.Wpf.TaskbarNotification.1.0.4.0\lib\net40\Hardcodet.Wpf.TaskbarNotification.dll</HintPath>
     </Reference>
+    <Reference Include="Ionic.Zip, Version=1.9.1.8, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\DotNetZip.1.9.1.8\lib\net20\Ionic.Zip.dll</HintPath>
+    </Reference>
     <Reference Include="Platinum.Managed, Version=1.0.4794.22684, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\UPnP\Libs\Platinum.Managed.dll</HintPath>
@@ -175,6 +179,7 @@
     <Compile Include="Controls\MultiItemUpdateNotification.xaml.cs">
       <DependentUpon>MultiItemUpdateNotification.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Implementations\DotNetZipClient.cs" />
     <Compile Include="LibraryExplorer.xaml.cs">
       <DependentUpon>LibraryExplorer.xaml</DependentUpon>
     </Compile>

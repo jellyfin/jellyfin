@@ -1,13 +1,12 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.UI;
 using MediaBrowser.Controller;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Server.Uninstall;
+using MediaBrowser.ServerApplication.Implementations;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Windows;
 
@@ -170,7 +169,7 @@ namespace MediaBrowser.ServerApplication
         /// <returns>IKernel.</returns>
         protected override IKernel InstantiateKernel()
         {
-            return new Kernel(new PismoIsoManager());
+            return new Kernel(new PismoIsoManager(), new DotNetZipClient());
         }
 
         /// <summary>

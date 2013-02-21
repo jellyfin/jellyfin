@@ -26,8 +26,14 @@ namespace MediaBrowser.Common.Kernel
         /// Initializes a new instance of the <see cref="BaseManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
+        /// <exception cref="System.ArgumentNullException">kernel</exception>
         protected BaseManager(TKernelType kernel)
         {
+            if (kernel == null)
+            {
+                throw new ArgumentNullException("kernel");
+            }
+            
             Kernel = kernel;
 
             Logger = LogManager.GetLogger(GetType().Name);
