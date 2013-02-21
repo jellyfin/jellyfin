@@ -1,5 +1,8 @@
-﻿using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Model.Connectivity;
+using MediaBrowser.Model.DTO;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Web;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,319 +15,596 @@ namespace MediaBrowser.ApiInteraction
     /// </summary>
     public abstract class BaseApiClient : IDisposable
     {
-        protected BaseApiClient()
+        /// <summary>
+        /// Gets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
+        protected ILogger Logger { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseApiClient" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <exception cref="System.ArgumentNullException">logger</exception>
+        protected BaseApiClient(ILogger logger)
         {
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+
+            Logger = logger;
+
             DataSerializer.Configure();
         }
 
         /// <summary>
         /// Gets or sets the server host name (myserver or 192.168.x.x)
         /// </summary>
+        /// <value>The name of the server host.</value>
         public string ServerHostName { get; set; }
 
         /// <summary>
         /// Gets or sets the port number used by the API
         /// </summary>
+        /// <value>The server API port.</value>
         public int ServerApiPort { get; set; }
 
         /// <summary>
-        /// Gets the current api url based on hostname and port.
+        /// Gets or sets the type of the client.
         /// </summary>
-        protected string ApiUrl
+        /// <value>The type of the client.</value>
+        public ClientType ClientType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the device.
+        /// </summary>
+        /// <value>The name of the device.</value>
+        public string DeviceName { get; set; }
+
+        private Guid? _currentUserId;
+
+        /// <summary>
+        /// Gets or sets the current user id.
+        /// </summary>
+        /// <value>The current user id.</value>
+        public virtual Guid? CurrentUserId
         {
-            get
+            get { return _currentUserId; }
+            set
             {
-                return string.Format("http://{0}:{1}/mediabrowser/api", ServerHostName, ServerApiPort);
+                _currentUserId = value;
+                ResetAuthorizationHeader();
             }
         }
 
         /// <summary>
-        /// Gets the default data format to request from the server
+        /// Gets the current api url based on hostname and port.
         /// </summary>
-        protected SerializationFormats SerializationFormat
+        /// <value>The API URL.</value>
+        protected string ApiUrl
         {
             get
             {
-                return SerializationFormats.Protobuf;
+                return string.Format("http://{0}:{1}/mediabrowser", ServerHostName, ServerApiPort);
             }
+        }
+
+        private SerializationFormats _serializationFormat = SerializationFormats.Protobuf;
+        /// <summary>
+        /// Gets the default data format to request from the server
+        /// </summary>
+        /// <value>The serialization format.</value>
+        public SerializationFormats SerializationFormat
+        {
+            get
+            {
+                return _serializationFormat;
+            }
+            set
+            {
+                _serializationFormat = value;
+            }
+        }
+
+        /// <summary>
+        /// Resets the authorization header.
+        /// </summary>
+        private void ResetAuthorizationHeader()
+        {
+            if (!CurrentUserId.HasValue)
+            {
+                SetAuthorizationHeader(null);
+                return;
+            }
+
+            var header = string.Format("UserId=\"{0}\", Client=\"{1}\"", CurrentUserId.Value, ClientType);
+
+            if (!string.IsNullOrEmpty(DeviceName))
+            {
+                header += string.Format(", Device=\"{0}\"", DeviceName);
+            }
+
+            SetAuthorizationHeader(header);
+        }
+
+        /// <summary>
+        /// Sets the authorization header.
+        /// </summary>
+        /// <param name="header">The header.</param>
+        protected abstract void SetAuthorizationHeader(string header);
+
+        /// <summary>
+        /// Gets the API URL.
+        /// </summary>
+        /// <param name="handler">The handler.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">handler</exception>
+        protected string GetApiUrl(string handler)
+        {
+            return GetApiUrl(handler, new QueryStringDictionary());
+        }
+
+        /// <summary>
+        /// Gets the API URL.
+        /// </summary>
+        /// <param name="handler">The handler.</param>
+        /// <param name="queryString">The query string.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">handler</exception>
+        protected string GetApiUrl(string handler, QueryStringDictionary queryString)
+        {
+            if (string.IsNullOrEmpty(handler))
+            {
+                throw new ArgumentNullException("handler");
+            }
+
+            if (queryString == null)
+            {
+                throw new ArgumentNullException("queryString");
+            }
+
+            return queryString.GetUrl(ApiUrl + "/" + handler);
+        }
+
+        /// <summary>
+        /// Creates a url to return a list of items
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="listType">The type of list to retrieve.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">query</exception>
+        protected string GetItemListUrl(ItemQuery query, string listType = null)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            dict.AddIfNotNullOrEmpty("listtype", listType);
+            dict.AddIfNotNullOrEmpty("ParentId", query.ParentId);
+
+            dict.AddIfNotNull("startindex", query.StartIndex);
+
+            dict.AddIfNotNull("limit", query.Limit);
+
+            if (query.SortBy != null)
+            {
+                dict["sortBy"] = string.Join(",", query.SortBy.Select(s => s.ToString()));
+            }
+
+            if (query.SortOrder.HasValue)
+            {
+                dict["sortOrder"] = query.SortOrder.ToString();
+            }
+
+            if (query.Fields != null)
+            {
+                dict.Add("fields", query.Fields.Select(f => f.ToString()));
+            }
+            if (query.Filters != null)
+            {
+                dict.Add("Filters", query.Filters.Select(f => f.ToString()));
+            }
+            if (query.ImageTypes != null)
+            {
+                dict.Add("ImageTypes", query.ImageTypes.Select(f => f.ToString()));
+            }
+
+            dict.Add("recursive", query.Recursive);
+
+            dict.AddIfNotNull("genres", query.Genres);
+            dict.AddIfNotNull("studios", query.Studios);
+            dict.AddIfNotNull("ExcludeItemTypes", query.ExcludeItemTypes);
+            dict.AddIfNotNull("IncludeItemTypes", query.IncludeItemTypes);
+
+            dict.AddIfNotNullOrEmpty("person", query.Person);
+            dict.AddIfNotNullOrEmpty("personType", query.PersonType);
+
+            dict.AddIfNotNull("years", query.Years);
+
+            dict.AddIfNotNullOrEmpty("indexBy", query.IndexBy);
+            dict.AddIfNotNullOrEmpty("dynamicSortBy", query.DynamicSortBy);
+            dict.AddIfNotNullOrEmpty("SearchTerm", query.SearchTerm);
+
+            return GetApiUrl("Users/" + query.UserId + "/Items", dict);
+        }
+
+        /// <summary>
+        /// Gets the image URL.
+        /// </summary>
+        /// <param name="baseUrl">The base URL.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="queryParams">The query params.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">options</exception>
+        private string GetImageUrl(string baseUrl, ImageOptions options, QueryStringDictionary queryParams)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            if (queryParams == null)
+            {
+                throw new ArgumentNullException("queryParams");
+            }
+
+            if (options.ImageIndex.HasValue)
+            {
+                baseUrl += "/" + options.ImageIndex.Value;
+            }
+
+            queryParams.AddIfNotNull("width", options.Width);
+            queryParams.AddIfNotNull("height", options.Height);
+            queryParams.AddIfNotNull("maxWidth", options.MaxWidth);
+            queryParams.AddIfNotNull("maxHeight", options.MaxHeight);
+            queryParams.AddIfNotNull("Quality", options.Quality);
+
+            queryParams.AddIfNotNull("tag", options.Tag);
+
+            return GetApiUrl(baseUrl, queryParams);
+        }
+
+        /// <summary>
+        /// Gets the image URL.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        public string GetImageUrl(DtoBaseItem item, ImageOptions options)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            var index = options.ImageIndex ?? 0;
+
+            if (options.ImageType == ImageType.Backdrop)
+            {
+                options.Tag = item.BackdropImageTags[index];
+            }
+            else if (options.ImageType == ImageType.ChapterImage)
+            {
+                options.Tag = item.Chapters[index].ImageTag;
+            }
+            else
+            {
+                options.Tag = item.ImageTags[options.ImageType];
+            }
+
+            return GetImageUrl(item.Id, options);
         }
 
         /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>
         /// <param name="itemId">The Id of the item</param>
-        /// <param name="imageType">The type of image requested</param>
-        /// <param name="imageIndex">The image index, if there are multiple. Currently only applies to backdrops. Supply null or 0 for first backdrop.</param>
-        /// <param name="width">Use if a fixed width is required. Aspect ratio will be preserved.</param>
-        /// <param name="height">Use if a fixed height is required. Aspect ratio will be preserved.</param>
-        /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
-        /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
-        /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
-        public string GetImageUrl(Guid itemId, ImageType imageType, int? imageIndex = null, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">itemId</exception>
+        public string GetImageUrl(string itemId, ImageOptions options)
         {
-            string url = ApiUrl + "/image";
-
-            url += "?id=" + itemId.ToString();
-            url += "&type=" + imageType.ToString();
-
-            if (imageIndex.HasValue)
+            if (string.IsNullOrEmpty(itemId))
             {
-                url += "&index=" + imageIndex;
-            }
-            if (width.HasValue)
-            {
-                url += "&width=" + width;
-            }
-            if (height.HasValue)
-            {
-                url += "&height=" + height;
-            }
-            if (maxWidth.HasValue)
-            {
-                url += "&maxWidth=" + maxWidth;
-            }
-            if (maxHeight.HasValue)
-            {
-                url += "&maxHeight=" + maxHeight;
-            }
-            if (quality.HasValue)
-            {
-                url += "&quality=" + quality;
+                throw new ArgumentNullException("itemId");
             }
 
-            return url;
+            var url = "Items/" + itemId + "/Images/" + options.ImageType;
+
+            return GetImageUrl(url, options, new QueryStringDictionary());
+        }
+
+        /// <summary>
+        /// Gets the user image URL.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">user</exception>
+        public string GetUserImageUrl(DtoUser user, ImageOptions options)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            options.Tag = user.PrimaryImageTag;
+
+            return GetUserImageUrl(user.Id, options);
         }
 
         /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>
         /// <param name="userId">The Id of the user</param>
-        /// <param name="width">Use if a fixed width is required. Aspect ratio will be preserved.</param>
-        /// <param name="height">Use if a fixed height is required. Aspect ratio will be preserved.</param>
-        /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
-        /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
-        /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
-        public string GetUserImageUrl(Guid userId, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">userId</exception>
+        public string GetUserImageUrl(Guid userId, ImageOptions options)
         {
-            string url = ApiUrl + "/image";
-
-            url += "?userId=" + userId.ToString();
-
-            if (width.HasValue)
+            if (userId == Guid.Empty)
             {
-                url += "&width=" + width;
-            }
-            if (height.HasValue)
-            {
-                url += "&height=" + height;
-            }
-            if (maxWidth.HasValue)
-            {
-                url += "&maxWidth=" + maxWidth;
-            }
-            if (maxHeight.HasValue)
-            {
-                url += "&maxHeight=" + maxHeight;
-            }
-            if (quality.HasValue)
-            {
-                url += "&quality=" + quality;
+                throw new ArgumentNullException("userId");
             }
 
-            return url;
+            var url = "Users/" + userId + "/Images/" + options.ImageType;
+
+            return GetImageUrl(url, options, new QueryStringDictionary());
+        }
+
+        /// <summary>
+        /// Gets the person image URL.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        public string GetPersonImageUrl(BaseItemPerson item, ImageOptions options)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            options.Tag = item.PrimaryImageTag;
+
+            return GetPersonImageUrl(item.Name, options);
+        }
+
+        /// <summary>
+        /// Gets the person image URL.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        public string GetPersonImageUrl(DtoBaseItem item, ImageOptions options)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            options.Tag = item.ImageTags[ImageType.Primary];
+
+            return GetPersonImageUrl(item.Name, options);
         }
 
         /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>
         /// <param name="name">The name of the person</param>
-        /// <param name="width">Use if a fixed width is required. Aspect ratio will be preserved.</param>
-        /// <param name="height">Use if a fixed height is required. Aspect ratio will be preserved.</param>
-        /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
-        /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
-        /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
-        public string GetPersonImageUrl(string name, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">name</exception>
+        public string GetPersonImageUrl(string name, ImageOptions options)
         {
-            string url = ApiUrl + "/image";
-
-            url += "?personname=" + name;
-
-            if (width.HasValue)
+            if (string.IsNullOrEmpty(name))
             {
-                url += "&width=" + width;
-            }
-            if (height.HasValue)
-            {
-                url += "&height=" + height;
-            }
-            if (maxWidth.HasValue)
-            {
-                url += "&maxWidth=" + maxWidth;
-            }
-            if (maxHeight.HasValue)
-            {
-                url += "&maxHeight=" + maxHeight;
-            }
-            if (quality.HasValue)
-            {
-                url += "&quality=" + quality;
+                throw new ArgumentNullException("name");
             }
 
-            return url;
+            var url = "Persons/" + name + "/Images/" + options.ImageType;
+
+            return GetImageUrl(url, options, new QueryStringDictionary());
+        }
+
+        /// <summary>
+        /// Gets the year image URL.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        public string GetYearImageUrl(DtoBaseItem item, ImageOptions options)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            options.Tag = item.ImageTags[ImageType.Primary];
+
+            return GetYearImageUrl(int.Parse(item.Name), options);
         }
 
         /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>
-        /// <param name="year">The year</param>
-        /// <param name="width">Use if a fixed width is required. Aspect ratio will be preserved.</param>
-        /// <param name="height">Use if a fixed height is required. Aspect ratio will be preserved.</param>
-        /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
-        /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
-        /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
-        public string GetYearImageUrl(int year, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
+        /// <param name="year">The year.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        public string GetYearImageUrl(int year, ImageOptions options)
         {
-            string url = ApiUrl + "/image";
+            var url = "Years/" + year + "/Images/" + options.ImageType;
 
-            url += "?year=" + year;
+            return GetImageUrl(url, options, new QueryStringDictionary());
+        }
 
-            if (width.HasValue)
+        /// <summary>
+        /// Gets the genre image URL.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        public string GetGenreImageUrl(DtoBaseItem item, ImageOptions options)
+        {
+            if (item == null)
             {
-                url += "&width=" + width;
-            }
-            if (height.HasValue)
-            {
-                url += "&height=" + height;
-            }
-            if (maxWidth.HasValue)
-            {
-                url += "&maxWidth=" + maxWidth;
-            }
-            if (maxHeight.HasValue)
-            {
-                url += "&maxHeight=" + maxHeight;
-            }
-            if (quality.HasValue)
-            {
-                url += "&quality=" + quality;
+                throw new ArgumentNullException("item");
             }
 
-            return url;
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            options.Tag = item.ImageTags[ImageType.Primary];
+
+            return GetGenreImageUrl(item.Name, options);
         }
 
         /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>
-        /// <param name="name">The name of the genre</param>
-        /// <param name="width">Use if a fixed width is required. Aspect ratio will be preserved.</param>
-        /// <param name="height">Use if a fixed height is required. Aspect ratio will be preserved.</param>
-        /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
-        /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
-        /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
-        public string GetGenreImageUrl(string name, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
+        /// <param name="name">The name.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">name</exception>
+        public string GetGenreImageUrl(string name, ImageOptions options)
         {
-            string url = ApiUrl + "/image";
-
-            url += "?genre=" + name;
-
-            if (width.HasValue)
+            if (string.IsNullOrEmpty(name))
             {
-                url += "&width=" + width;
-            }
-            if (height.HasValue)
-            {
-                url += "&height=" + height;
-            }
-            if (maxWidth.HasValue)
-            {
-                url += "&maxWidth=" + maxWidth;
-            }
-            if (maxHeight.HasValue)
-            {
-                url += "&maxHeight=" + maxHeight;
-            }
-            if (quality.HasValue)
-            {
-                url += "&quality=" + quality;
+                throw new ArgumentNullException("name");
             }
 
-            return url;
+            var url = "Genres/" + name + "/Images/" + options.ImageType;
+
+            return GetImageUrl(url, options, new QueryStringDictionary());
+        }
+
+        /// <summary>
+        /// Gets the studio image URL.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        public string GetStudioImageUrl(DtoBaseItem item, ImageOptions options)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            options.Tag = item.ImageTags[ImageType.Primary];
+
+            return GetStudioImageUrl(item.Name, options);
         }
 
         /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>
-        /// <param name="name">The name of the studio</param>
-        /// <param name="width">Use if a fixed width is required. Aspect ratio will be preserved.</param>
-        /// <param name="height">Use if a fixed height is required. Aspect ratio will be preserved.</param>
-        /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
-        /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
-        /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
-        public string GetStudioImageUrl(string name, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
+        /// <param name="name">The name.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">name</exception>
+        public string GetStudioImageUrl(string name, ImageOptions options)
         {
-            string url = ApiUrl + "/image";
-
-            url += "?studio=" + name;
-
-            if (width.HasValue)
+            if (string.IsNullOrEmpty(name))
             {
-                url += "&width=" + width;
-            }
-            if (height.HasValue)
-            {
-                url += "&height=" + height;
-            }
-            if (maxWidth.HasValue)
-            {
-                url += "&maxWidth=" + maxWidth;
-            }
-            if (maxHeight.HasValue)
-            {
-                url += "&maxHeight=" + maxHeight;
-            }
-            if (quality.HasValue)
-            {
-                url += "&quality=" + quality;
+                throw new ArgumentNullException("name");
             }
 
-            return url;
+            var url = "Studios/" + name + "/Images/" + options.ImageType;
+
+            return GetImageUrl(url, options, new QueryStringDictionary());
         }
 
         /// <summary>
         /// This is a helper to get a list of backdrop url's from a given ApiBaseItemWrapper. If the actual item does not have any backdrops it will return backdrops from the first parent that does.
         /// </summary>
         /// <param name="item">A given item.</param>
-        /// <param name="width">Use if a fixed width is required. Aspect ratio will be preserved.</param>
-        /// <param name="height">Use if a fixed height is required. Aspect ratio will be preserved.</param>
-        /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
-        /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
-        /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
-        public string[] GetBackdropImageUrls(DtoBaseItem item, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
+        /// <param name="options">The options.</param>
+        /// <returns>System.String[][].</returns>
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        public string[] GetBackdropImageUrls(DtoBaseItem item, ImageOptions options)
         {
-            Guid? backdropItemId;
-            int backdropCount;
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            options.ImageType = ImageType.Backdrop;
+
+            string backdropItemId;
+            List<Guid> backdropImageTags;
 
             if (item.BackdropCount == 0)
             {
                 backdropItemId = item.ParentBackdropItemId;
-                backdropCount = item.ParentBackdropCount ?? 0;
+                backdropImageTags = item.ParentBackdropImageTags;
             }
             else
             {
                 backdropItemId = item.Id;
-                backdropCount = item.BackdropCount;
+                backdropImageTags = item.BackdropImageTags;
             }
 
-            if (backdropItemId == null)
+            if (string.IsNullOrEmpty(backdropItemId))
             {
                 return new string[] { };
             }
 
-            var files = new string[backdropCount];
+            var files = new string[backdropImageTags.Count];
 
-            for (int i = 0; i < backdropCount; i++)
+            for (var i = 0; i < backdropImageTags.Count; i++)
             {
-                files[i] = GetImageUrl(backdropItemId.Value, ImageType.Backdrop, i, width, height, maxWidth, maxHeight, quality);
+                options.ImageIndex = i;
+                options.Tag = backdropImageTags[i];
+
+                files[i] = GetImageUrl(backdropItemId, options);
             }
 
             return files;
@@ -334,18 +614,31 @@ namespace MediaBrowser.ApiInteraction
         /// This is a helper to get the logo image url from a given ApiBaseItemWrapper. If the actual item does not have a logo, it will return the logo from the first parent that does, or null.
         /// </summary>
         /// <param name="item">A given item.</param>
-        /// <param name="width">Use if a fixed width is required. Aspect ratio will be preserved.</param>
-        /// <param name="height">Use if a fixed height is required. Aspect ratio will be preserved.</param>
-        /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
-        /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
-        /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
-        public string GetLogoImageUrl(DtoBaseItem item, int? width = null, int? height = null, int? maxWidth = null, int? maxHeight = null, int? quality = null)
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        public string GetLogoImageUrl(DtoBaseItem item, ImageOptions options)
         {
-            Guid? logoItemId = item.HasLogo ? item.Id : item.ParentLogoItemId;
-
-            if (logoItemId.HasValue)
+            if (item == null)
             {
-                return GetImageUrl(logoItemId.Value, ImageType.Logo, null, width, height, maxWidth, maxHeight, quality);
+                throw new ArgumentNullException("item");
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            options.ImageType = ImageType.Logo;
+
+            var logoItemId = item.HasLogo ? item.Id : item.ParentLogoItemId;
+            var imageTag = item.HasLogo ? item.ImageTags[ImageType.Logo] : item.ParentLogoImageTag;
+
+            if (!string.IsNullOrEmpty(logoItemId))
+            {
+                options.Tag = imageTag;
+
+                return GetImageUrl(logoItemId, options);
             }
 
             return null;
@@ -354,93 +647,168 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets the url needed to stream an audio file
         /// </summary>
-        /// <param name="itemId">The id of the item</param>
-        /// <param name="supportedOutputFormats">List all the output formats the decice is capable of playing. The more, the better, as it will decrease the likelyhood of having to encode, which will put a load on the server.</param>
-        /// <param name="maxAudioChannels">The maximum number of channels that the device can play. Omit this if it doesn't matter. Phones and tablets should generally specify 2.</param>
-        /// <param name="maxAudioSampleRate">The maximum sample rate that the device can play. This should generally be omitted. The server will default this to 44100, so only override if a different max is needed.</param>
-        public string GetAudioStreamUrl(Guid itemId, IEnumerable<AudioOutputFormats> supportedOutputFormats, int? maxAudioChannels = null, int? maxAudioSampleRate = null)
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">options</exception>
+        public string GetAudioStreamUrl(StreamOptions options)
         {
-            string url = ApiUrl + "/audio?id=" + itemId;
-
-            url += "&outputformats=" + string.Join(",", supportedOutputFormats.Select(s => s.ToString()).ToArray());
-
-            if (maxAudioChannels.HasValue)
+            if (options == null)
             {
-                url += "&audiochannels=" + maxAudioChannels.Value;
+                throw new ArgumentNullException("options");
             }
 
-            if (maxAudioSampleRate.HasValue)
-            {
-                url += "&audiosamplerate=" + maxAudioSampleRate.Value;
-            }
+            var handler = "audio." + options.OutputFileExtension.TrimStart('.');
 
-            return url;
+            return GetMediaStreamUrl(handler, options, new QueryStringDictionary());
         }
 
         /// <summary>
         /// Gets the url needed to stream a video file
         /// </summary>
-        /// <param name="itemId">The id of the item</param>
-        /// <param name="supportedOutputFormats">List all the output formats the decice is capable of playing. The more, the better, as it will decrease the likelyhood of having to encode, which will put a load on the server.</param>
-        /// <param name="maxAudioChannels">The maximum number of channels that the device can play. Omit this if it doesn't matter. Phones and tablets should generally specify 2.</param>
-        /// <param name="maxAudioSampleRate">The maximum sample rate that the device can play. This should generally be omitted. The server will default this to 44100, so only override if a different max is needed.</param>
-        /// <param name="width">Specify this is a fixed video width is required</param>
-        /// <param name="height">Specify this is a fixed video height is required</param>
-        /// <param name="maxWidth">Specify this is a max video width is required</param>
-        /// <param name="maxHeight">Specify this is a max video height is required</param>
-        public string GetVideoStreamUrl(Guid itemId, 
-            IEnumerable<VideoOutputFormats> supportedOutputFormats, 
-            int? maxAudioChannels = null, 
-            int? maxAudioSampleRate = null, 
-            int? width = null, 
-            int? height = null, 
-            int? maxWidth = null, 
-            int? maxHeight = null)
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">options</exception>
+        public string GetVideoStreamUrl(VideoStreamOptions options)
         {
-            string url = ApiUrl + "/video?id=" + itemId;
-
-            url += "&outputformats=" + string.Join(",", supportedOutputFormats.Select(s => s.ToString()).ToArray());
-
-            if (maxAudioChannels.HasValue)
+            if (options == null)
             {
-                url += "&audiochannels=" + maxAudioChannels.Value;
+                throw new ArgumentNullException("options");
             }
 
-            if (maxAudioSampleRate.HasValue)
-            {
-                url += "&audiosamplerate=" + maxAudioSampleRate.Value;
-            }
+            var handler = "video." + options.OutputFileExtension.TrimStart('.');
 
-            if (width.HasValue)
-            {
-                url += "&width=" + width.Value;
-            }
-
-            if (height.HasValue)
-            {
-                url += "&height=" + height.Value;
-            }
-
-            if (maxWidth.HasValue)
-            {
-                url += "&maxWidth=" + maxWidth.Value;
-            }
-
-            if (maxHeight.HasValue)
-            {
-                url += "&maxHeight=" + maxHeight.Value;
-            }
-            return url;
+            return GetVideoStreamUrl(handler, options);
         }
 
+        /// <summary>
+        /// Formulates a url for streaming audio using the HLS protocol
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">options</exception>
+        public string GetHlsAudioStreamUrl(StreamOptions options)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            return GetMediaStreamUrl("audio.m3u8", options, new QueryStringDictionary());
+        }
+
+        /// <summary>
+        /// Formulates a url for streaming video using the HLS protocol
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">options</exception>
+        public string GetHlsVideoStreamUrl(VideoStreamOptions options)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            return GetVideoStreamUrl("video.m3u8", options);
+        }
+
+        /// <summary>
+        /// Gets the video stream URL.
+        /// </summary>
+        /// <param name="handler">The handler.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        private string GetVideoStreamUrl(string handler, VideoStreamOptions options)
+        {
+            var queryParams = new QueryStringDictionary();
+
+            if (options.VideoCodec.HasValue)
+            {
+                queryParams["VideoCodec"] = options.VideoCodec.Value.ToString();
+            }
+
+            queryParams.AddIfNotNull("VideoBitRate", options.VideoBitRate);
+            queryParams.AddIfNotNull("Width", options.Width);
+            queryParams.AddIfNotNull("Height", options.Height);
+            queryParams.AddIfNotNull("MaxWidth", options.MaxWidth);
+            queryParams.AddIfNotNull("MaxHeight", options.MaxHeight);
+            queryParams.AddIfNotNull("FrameRate", options.FrameRate);
+            queryParams.AddIfNotNull("AudioStreamIndex", options.AudioStreamIndex);
+            queryParams.AddIfNotNull("VideoStreamIndex", options.VideoStreamIndex);
+            queryParams.AddIfNotNull("SubtitleStreamIndex", options.SubtitleStreamIndex);
+
+            return GetMediaStreamUrl(handler, options, queryParams);
+        }
+
+        /// <summary>
+        /// Gets the media stream URL.
+        /// </summary>
+        /// <param name="handler">The handler.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="queryParams">The query params.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">handler</exception>
+        private string GetMediaStreamUrl(string handler, StreamOptions options, QueryStringDictionary queryParams)
+        {
+            if (string.IsNullOrEmpty(handler))
+            {
+                throw new ArgumentNullException("handler");
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            if (queryParams == null)
+            {
+                throw new ArgumentNullException("queryParams");
+            }
+
+            queryParams.Add("id", options.ItemId);
+
+            if (options.AudioCodec.HasValue)
+            {
+                queryParams["audioCodec"] = options.AudioCodec.Value.ToString();
+            }
+
+            queryParams.AddIfNotNull("audiochannels", options.MaxAudioChannels);
+            queryParams.AddIfNotNull("audiosamplerate", options.MaxAudioSampleRate);
+            queryParams.AddIfNotNull("AudioBitRate", options.AudioBitRate);
+            queryParams.AddIfNotNull("StartTimeTicks", options.StartTimeTicks);
+            queryParams.AddIfNotNull("Static", options.Static);
+
+            return GetApiUrl(handler, queryParams);
+        }
+
+        /// <summary>
+        /// Deserializes from stream.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="stream">The stream.</param>
+        /// <returns>``0.</returns>
         protected T DeserializeFromStream<T>(Stream stream)
             where T : class
         {
-            return DataSerializer.DeserializeFromStream<T>(stream, SerializationFormat);
+            return (T)DataSerializer.DeserializeFromStream(stream, SerializationFormat, typeof(T));
         }
 
-        public virtual void Dispose()
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+
         }
     }
 }

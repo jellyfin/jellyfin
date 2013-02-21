@@ -1,0 +1,131 @@
+﻿using Alchemy.Classes;
+using MediaBrowser.Common.Logging;
+using MediaBrowser.Common.Serialization;
+using MediaBrowser.Model.Logging;
+using System;
+using System.Net.WebSockets;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MediaBrowser.Common.Net
+{
+    /// <summary>
+    /// Class AlchemyWebSocket
+    /// </summary>
+    public class AlchemyWebSocket : IWebSocket
+    {
+        /// <summary>
+        /// The logger
+        /// </summary>
+        private static ILogger Logger = LogManager.GetLogger("AlchemyWebSocket");
+
+        /// <summary>
+        /// Gets or sets the web socket.
+        /// </summary>
+        /// <value>The web socket.</value>
+        private UserContext UserContext { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AlchemyWebSocket" /> class.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <exception cref="System.ArgumentNullException">context</exception>
+        public AlchemyWebSocket(UserContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException("context");
+            }
+
+            UserContext = context;
+
+            context.SetOnDisconnect(OnDisconnected);
+            context.SetOnReceive(OnReceive);
+
+            Logger.Info("Client connected from {0}", context.ClientAddress);
+        }
+
+        /// <summary>
+        /// The _disconnected
+        /// </summary>
+        private bool _disconnected = false;
+        /// <summary>
+        /// Gets or sets the state.
+        /// </summary>
+        /// <value>The state.</value>
+        public WebSocketState State
+        {
+            get { return _disconnected ? WebSocketState.Closed : WebSocketState.Open; }
+        }
+
+        /// <summary>
+        /// Called when [disconnected].
+        /// </summary>
+        /// <param name="context">The context.</param>
+        private void OnDisconnected(UserContext context)
+        {
+            _disconnected = true;
+        }
+
+        /// <summary>
+        /// Called when [receive].
+        /// </summary>
+        /// <param name="context">The context.</param>
+        private void OnReceive(UserContext context)
+        {
+            if (OnReceiveDelegate != null)
+            {
+                var json = context.DataFrame.ToString();
+
+                if (!string.IsNullOrWhiteSpace(json))
+                {
+                    try
+                    {
+                        var messageResult = JsonSerializer.DeserializeFromString<WebSocketMessageInfo>(json);
+
+                        OnReceiveDelegate(messageResult);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorException("Error processing web socket message", ex);
+                    }
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Sends the async.
+        /// </summary>
+        /// <param name="bytes">The bytes.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="endOfMessage">if set to <c>true</c> [end of message].</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task SendAsync(byte[] bytes, WebSocketMessageType type, bool endOfMessage, CancellationToken cancellationToken)
+        {
+            return Task.Run(() => UserContext.Send(bytes));
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
+        {
+        }
+
+        /// <summary>
+        /// Gets or sets the receive action.
+        /// </summary>
+        /// <value>The receive action.</value>
+        public Action<WebSocketMessageInfo> OnReceiveDelegate { get; set; }
+    }
+}

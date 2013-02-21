@@ -1,7 +1,10 @@
 ﻿
 namespace MediaBrowser.Controller.Entities
 {
-    public class Year : BaseEntity
+    /// <summary>
+    /// Class Year
+    /// </summary>
+    public class Year : BaseItem
     {
     }
 }

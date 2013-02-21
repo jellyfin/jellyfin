@@ -1,0 +1,54 @@
+﻿<DisplayPreferences:BaseDisplayPreferencesPage x:Class="MediaBrowser.Plugins.DefaultTheme.DisplayPreferences.MainPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:DisplayPreferences="clr-namespace:MediaBrowser.Plugins.DefaultTheme.DisplayPreferences"
+                                               xmlns:controls="clr-namespace:MediaBrowser.UI.Controls;assembly=MediaBrowser.UI.Controls"
+                                               mc:Ignorable="d" 
+      d:DesignHeight="300" d:DesignWidth="300"
+	Title="MainPage">
+
+    <Grid>
+        <StackPanel Orientation="Vertical">
+            <TextBlock Style="{StaticResource Heading2TextBlockStyle}">Display Options</TextBlock>
+
+            <controls:ExtendedButton x:Name="ViewMenuButton" Style="{StaticResource ViewMenuButton}">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="..\Resources\Images\ViewMenu\View.png" Stretch="None" />
+                    <TextBlock Style="{StaticResource TextBlockStyle}" VerticalAlignment="Center" Margin="10 0 0 0">View Menu</TextBlock>
+                </StackPanel>
+            </controls:ExtendedButton>
+            <controls:ExtendedButton x:Name="SortMenuButton" Style="{StaticResource ViewMenuButton}">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="..\Resources\Images\ViewMenu\Sort.png" Stretch="None" />
+                    <TextBlock Style="{StaticResource TextBlockStyle}" VerticalAlignment="Center" Margin="10 0 0 0">Sort Menu</TextBlock>
+                </StackPanel>
+            </controls:ExtendedButton>
+            <controls:ExtendedButton x:Name="IndexMenuButton" Style="{StaticResource ViewMenuButton}">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="..\Resources\Images\ViewMenu\Index.png" Stretch="None" />
+                    <TextBlock Style="{StaticResource TextBlockStyle}" VerticalAlignment="Center" Margin="10 0 0 0">Index Menu</TextBlock>
+                </StackPanel>
+            </controls:ExtendedButton>
+            <controls:ExtendedButton x:Name="btnIncrease" Style="{StaticResource ViewMenuButton}">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="..\Resources\Images\ViewMenu\Increase.png" Stretch="None" />
+                    <TextBlock Style="{StaticResource TextBlockStyle}" VerticalAlignment="Center" Margin="10 0 0 0">Increase Image Size</TextBlock>
+                </StackPanel>
+            </controls:ExtendedButton>
+            <controls:ExtendedButton x:Name="btnDecrease" Style="{StaticResource ViewMenuButton}">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="..\Resources\Images\ViewMenu\Decrease.png" Stretch="None" />
+                    <TextBlock Style="{StaticResource TextBlockStyle}" VerticalAlignment="Center" Margin="10 0 0 0">Decrease Image Size</TextBlock>
+                </StackPanel>
+            </controls:ExtendedButton>
+            <controls:ExtendedButton x:Name="btnScroll" Style="{StaticResource ViewMenuButton}">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="..\Resources\Images\ViewMenu\Scroll.png" Stretch="None" />
+                    <TextBlock x:Name="txtScrollDirection" Style="{StaticResource TextBlockStyle}" VerticalAlignment="Center" Margin="10 0 0 0">Scroll: Vertical</TextBlock>
+                </StackPanel>
+            </controls:ExtendedButton>
+        </StackPanel>
+    </Grid>
+</DisplayPreferences:BaseDisplayPreferencesPage>

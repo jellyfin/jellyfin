@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Rx-PlatformServices</id>
+    <version>2.0.21114</version>
+    <title>Reactive Extensions - Platform Services Library</title>
+    <authors>Microsoft Corporation</authors>
+    <owners>Microsoft Corporation</owners>
+    <licenseUrl>http://go.microsoft.com/fwlink/?LinkID=261272</licenseUrl>
+    <projectUrl>http://go.microsoft.com/fwlink/?LinkID=261273</projectUrl>
+    <iconUrl>http://go.microsoft.com/fwlink/?LinkId=261274</iconUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>Reactive Extensions Platform Services Library used to access platform-specific functionality and enlightenment services.</description>
+    <copyright>Microsoft Corporation © 2012</copyright>
+    <language>en-us</language>
+    <tags>Rx Reactive Extensions Observable LINQ Events</tags>
+    <dependencies>
+      <dependency id="Rx-Interfaces" version="2.0.21114" />
+      <dependency id="Rx-Core" version="2.0.21114" />
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System.Observable" targetFramework="Silverlight4.0-WindowsPhone71" />
+      <frameworkAssembly assemblyName="Microsoft.Phone" targetFramework="Silverlight4.0-WindowsPhone71" />
+    </frameworkAssemblies>
+  </metadata>
+</package>

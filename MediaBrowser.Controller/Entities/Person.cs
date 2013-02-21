@@ -4,7 +4,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// This is the full Person object that can be retrieved with all of it's data.
     /// </summary>
-    public class Person : BaseEntity
+    public class Person : BaseItem
     {
     }
 
@@ -13,10 +13,26 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class PersonInfo
     {
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
         public string Name { get; set; }
-        public string Overview { get; set; }
+        /// <summary>
+        /// Gets or sets the role.
+        /// </summary>
+        /// <value>The role.</value>
+        public string Role { get; set; }
+        /// <summary>
+        /// Gets or sets the type.
+        /// </summary>
+        /// <value>The type.</value>
         public string Type { get; set; }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>A <see cref="System.String" /> that represents this instance.</returns>
         public override string ToString()
         {
             return Name;

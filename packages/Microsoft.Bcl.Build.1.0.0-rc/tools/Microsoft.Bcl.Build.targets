@@ -1,0 +1,31 @@
+<!--
+***********************************************************************************************
+Microsoft.Bcl.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <PropertyGroup>
+    <!-- 
+      Workaround MSBuild issue that prevents System.Runtime 2.5 and System.Threading.Tasks 2.5 from
+      satisfying indirect dependencies on System.Runtime 1.5 and System.Threading.Tasks 1.5 respectively.  
+    -->
+    <AutoUnifyAssemblyReferences>false</AutoUnifyAssemblyReferences>
+
+    <!-- MSBuild by default doesn't pass the Web.Config ResolveAssemblyReference, in which case, set it so that it sees binding redirects -->
+    <AppConfig Condition="'$(AppConfig)' == '' And '$(WebProjectOutputDir)' != '' And Exists('$(ProjectConfigFileName)')">$(ProjectConfigFileName)</AppConfig>
+  </PropertyGroup>
+
+  <!-- Workaround issue that incorrectly unifies references not in the current profile to the version in the superset of all profiles. -->
+  <Target Name="_BclBuildSetFullFrameworkFolderToProfile" AfterTargets="GetReferenceAssemblyPaths" Condition="'$(TargetFrameworkIdentifier)' == '.NETPortable'">
+    <PropertyGroup>
+      <_FullFrameworkReferenceAssemblyPaths>$(TargetFrameworkDirectory)</_FullFrameworkReferenceAssemblyPaths>
+    </PropertyGroup>
+  </Target>
+</Project>

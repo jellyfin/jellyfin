@@ -1,0 +1,475 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ServiceStack.Common</name>
+    </assembly>
+    <members>
+        <member name="T:ServiceStack.Validation.ValidationError">
+            <summary>
+            The exception which is thrown when a validation error occured.
+            This validation is serialized in a extra clean and human-readable way by ServiceStack.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Validation.ValidationError.ToXml">
+            <summary>
+            Used if we need to serialize this exception to XML
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.Validation.ValidationError.ErrorCode">
+            <summary>
+            Returns the first error code
+            </summary>
+            <value>The error code.</value>
+        </member>
+        <member name="T:ServiceStack.ServiceClient.Web.ServiceClientBase">
+            Need to provide async request options
+            http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
+        </member>
+        <member name="M:ServiceStack.ServiceClient.Web.ServiceClientBase.SetCredentials(System.String,System.String)">
+            <summary>
+            Sets the username and the password for basic authentication.
+            </summary>
+        </member>
+        <member name="F:ServiceStack.ServiceClient.Web.ServiceClientBase.storeCookies">
+            <summary>
+            Specifies if cookies should be stored
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClient.Web.ServiceClientBase.HttpWebRequestFilter">
+            <summary>
+            The request filter is called before any request.
+            This request filter is executed globally.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClient.Web.ServiceClientBase.UserName">
+            <summary>
+            The user name for basic authentication
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClient.Web.ServiceClientBase.Password">
+            <summary>
+            The password for basic authentication
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClient.Web.ServiceClientBase.Credentials">
+            <summary>
+            Gets or sets authentication information for the request.
+            Warning: It's recommened to use <see cref="P:ServiceStack.ServiceClient.Web.ServiceClientBase.UserName"/> and <see cref="P:ServiceStack.ServiceClient.Web.ServiceClientBase.Password"/> for basic auth.
+            This property is only used for IIS level authentication.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClient.Web.ServiceClientBase.AlwaysSendBasicAuthHeader">
+            <summary>
+            Determines if the basic auth header should be sent with every request.
+            By default, the basic auth header is only sent when "401 Unauthorized" is returned.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClient.Web.ServiceClientBase.LocalHttpWebRequestFilter">
+            <summary>
+            The request filter is called before any request.
+            This request filter only works with the instance where it was set (not global).
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Messaging.IMessageHandlerFactory">
+            <summary>
+            Encapsulates creating a new message handler
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Common.Extensions.IPAddressExtensions">
+            <summary>
+            Useful IPAddressExtensions from: 
+            http://blogs.msdn.com/knom/archive/2008/12/31/ip-address-calculations-with-c-subnetmasks-networks.aspx
+            
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.Extensions.IPAddressExtensions.GetAllNetworkInterfaceIpv4Addresses">
+            <summary>
+            Gets the ipv4 addresses from all Network Interfaces that have Subnet masks.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Common.Extensions.IPAddressExtensions.GetAllNetworkInterfaceIpv6Addresses">
+            <summary>
+            Gets the ipv6 addresses from all Network Interfaces.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.Common.Extensions.EnumerableExtensions">
+            <summary>
+            These extensions have a potential to conflict with the LINQ extensions methods so
+            leaving the implmentation in the 'Extensions' sub-namespace to force explicit opt-in
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:ServiceStack.Common.Utils.AssertUtils.AreNotNull(System.Collections.Generic.IDictionary{System.String,System.Object})" -->
+        <member name="M:ServiceStack.Common.Utils.FuncUtils.TryExec(System.Action)">
+            <summary>
+            Invokes the action provided and returns true if no excpetion was thrown.
+            Otherwise logs the exception and returns false if an exception was thrown.
+            </summary>
+            <param name="action">The action.</param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.Messaging.Rcon.PacketCodec">
+            <summary>
+            Contains methods required for encoding and decoding rcon packets.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.Rcon.PacketCodec.DecodePacket(System.Byte[])">
+            <summary>
+            Decodes a packet.
+            </summary>
+            <param name="packet">The packet.</param>
+            <returns>A packet object.</returns>
+        </member>
+        <member name="M:ServiceStack.Messaging.Rcon.PacketCodec.DecodeHeader(System.Byte[])">
+            <summary>
+            Decodes the packet header.
+            </summary>
+            <param name="packet"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Messaging.Rcon.PacketCodec.DecodeWords(System.Byte[])">
+            <summary>
+            Decodes words in a packet.
+            </summary>
+            <param name="packet"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Messaging.Rcon.PacketCodec.EncodePacket(System.Boolean,System.Boolean,System.UInt32,System.Byte[][])">
+            <summary>
+            Encodes a packet for transmission to the server.
+            </summary>
+            <param name="fromServer"></param>
+            <param name="isResponse"></param>
+            <param name="id"></param>
+            <param name="words"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Messaging.Rcon.PacketCodec.EncodeHeader(System.Boolean,System.Boolean,System.UInt32)">
+            <summary>
+            Encodes a packet header.
+            </summary>
+            <param name="fromServer"></param>
+            <param name="isResponse"></param>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Messaging.Rcon.PacketCodec.EncodeWords(System.Byte[][])">
+            <summary>
+            Encodes words.
+            </summary>
+            <param name="words"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Common.Utils.PathUtils.MapProjectPath(System.String)">
+            <summary>
+            Maps the path of a file in the context of a VS project
+            </summary>
+            <param name="relativePath">the relative path</param>
+            <returns>the absolute path</returns>
+            <remarks>Assumes static content is two directories above the /bin/ directory,
+            eg. in a unit test scenario  the assembly would be in /bin/Debug/.</remarks>
+        </member>
+        <member name="M:ServiceStack.Common.Utils.PathUtils.MapAbsolutePath(System.String)">
+            <summary>
+            Maps the path of a file in a self-hosted scenario
+            </summary>
+            <param name="relativePath">the relative path</param>
+            <returns>the absolute path</returns>
+            <remarks>Assumes static content is copied to /bin/ folder with the assemblies</remarks>
+        </member>
+        <member name="M:ServiceStack.Common.Utils.PathUtils.MapHostAbsolutePath(System.String)">
+            <summary>
+            Maps the path of a file in an Asp.Net hosted scenario
+            </summary>
+            <param name="relativePath">the relative path</param>
+            <returns>the absolute path</returns>
+            <remarks>Assumes static content is in the parent folder of the /bin/ directory</remarks>
+        </member>
+        <member name="T:ServiceStack.Validation.ValidationErrorResult">
+            <summary>
+            Encapsulates a validation result.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Validation.ValidationErrorResult.#ctor">
+            <summary>
+            Constructs a new ValidationResult
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Validation.ValidationErrorResult.#ctor(System.Collections.Generic.IList{ServiceStack.Validation.ValidationErrorField})">
+            <summary>
+            Constructs a new ValidationResult
+            </summary>
+            <param name="errors">A list of validation results</param>
+        </member>
+        <member name="M:ServiceStack.Validation.ValidationErrorResult.#ctor(System.Collections.Generic.IList{ServiceStack.Validation.ValidationErrorField},System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.Validation.ValidationErrorResult"/> class.
+            </summary>
+            <param name="errors">The errors.</param>
+            <param name="successCode">The success code.</param>
+            <param name="errorCode">The error code.</param>
+        </member>
+        <member name="P:ServiceStack.Validation.ValidationErrorResult.SuccessCode">
+            <summary>
+            Gets or sets the success code.
+            </summary>
+            <value>The success code.</value>
+        </member>
+        <member name="P:ServiceStack.Validation.ValidationErrorResult.ErrorCode">
+            <summary>
+            Gets or sets the error code.
+            </summary>
+            <value>The error code.</value>
+        </member>
+        <member name="P:ServiceStack.Validation.ValidationErrorResult.SuccessMessage">
+            <summary>
+            Gets or sets the success message.
+            </summary>
+            <value>The success message.</value>
+        </member>
+        <member name="P:ServiceStack.Validation.ValidationErrorResult.ErrorMessage">
+            <summary>
+            Gets or sets the error message.
+            </summary>
+            <value>The error message.</value>
+        </member>
+        <member name="P:ServiceStack.Validation.ValidationErrorResult.Errors">
+            <summary>
+            The errors generated by the validation.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Validation.ValidationErrorResult.IsValid">
+            <summary>
+            Returns True if the validation was successful (errors list is empty).
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.Utils.ReflectionUtils.PopulateObject(System.Object)">
+            <summary>
+            Populate an object with Example data.
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Common.Utils.ReflectionUtils.PopulateObjectInternal(System.Object,System.Collections.Generic.Dictionary{System.Type,System.Int32})">
+            <summary>
+            Populates the object with example data.
+            </summary>
+            <param name="obj"></param>
+            <param name="recursionInfo">Tracks how deeply nested we are</param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.Messaging.MessageHandler`1">
+            <summary>
+            Processes all messages in a Normal and Priority Queue.
+            Expects to be called in 1 thread. i.e. Non Thread-Safe.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:ServiceStack.Messaging.IMessageHandler">
+            <summary>
+            Single threaded message handler that can process all messages
+            of a particular message type.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.IMessageHandler.Process(ServiceStack.Messaging.IMessageQueueClient)">
+            <summary>
+            Process all messages pending
+            </summary>
+            <param name="mqClient"></param>
+        </member>
+        <member name="M:ServiceStack.Messaging.IMessageHandler.GetStats">
+            <summary>
+            Get Current Stats for this Message Handler
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.Messaging.IMessageHandler.MessageType">
+            <summary>
+            The type of the message this handler processes
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.EnumExtensions.ToDescription(System.Enum)">
+            <summary>
+            Gets the textual description of the enum if it has one. e.g.
+            
+            <code>
+            enum UserColors
+            {
+                [Description("Bright Red")]
+                BrightRed
+            }
+            UserColors.BrightRed.ToDescription();
+            </code>
+            </summary>
+            <param name="enum"></param>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.Messaging.Rcon.Packet.FromServer">
+            <summary>
+            True if the packet originated on the server.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Messaging.Rcon.Packet.IsResponse">
+            <summary>
+            True if the packet is a response from a sent packet.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Messaging.Rcon.Packet.Sequence">
+            <summary>
+            Sequence identifier. Unique to the connection.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Messaging.Rcon.Packet.Words">
+            <summary>
+            Words.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Common.UrnId">
+            <summary>
+            Creates a Unified Resource Name (URN) with the following formats:
+            
+            	- urn:{TypeName}:{IdFieldValue}						e.g. urn:UserSession:1
+            	- urn:{TypeName}:{IdFieldName}:{IdFieldValue}		e.g. urn:UserSession:UserId:1			
+            
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Common.Support.AdapterBase">
+            <summary>
+            Common functionality when creating adapters
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.Support.AdapterBase.Execute``1(System.Func{``0})">
+            <summary>
+            Executes the specified expression. 
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="action">The action.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Common.Support.AdapterBase.Execute(System.Action)">
+            <summary>
+            Executes the specified action (for void methods).
+            </summary>
+            <param name="action">The action.</param>
+        </member>
+        <member name="T:ServiceStack.ServiceClient.Web.AsyncServiceClient">
+            Need to provide async request options
+            http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
+        </member>
+        <member name="F:ServiceStack.ServiceModel.Serialization.DataContractDeserializer.quotas">
+            <summary>
+            Default MaxStringContentLength is 8k, and throws an exception when reached
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.Reflection.PropertyAccessor`1.TypedGetPropertyFn``1">
+            <summary>
+            Func to get the Strongly-typed field
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.Reflection.PropertyAccessor`1.ValueTypedGetPropertyFn``1">
+            <summary>
+            Required to cast the return ValueType to an object for caching
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.Reflection.PropertyAccessor`1.TypedSetPropertyFn``1">
+            <summary>
+            Func to set the Strongly-typed field
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.Reflection.PropertyAccessor`1.ValueTypesSetPropertyFn``1">
+            <summary>
+            Required to cast the ValueType to an object for caching
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.Reflection.PropertyAccessor`1.UnTypedSetPropertyFn``1">
+            <summary>
+            Required to cast the ValueType to an object for caching
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.Support.LogicFacadeBase.Execute``1(ServiceStack.DesignPatterns.Command.ICommand{``0})">
+            <summary>
+            Executes the specified action.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="action">The action.</param>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.Common.Support.LogicFacadeBase.CurrentContext">
+            <summary>
+            Gets the current context (or null if none).
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Common.Support.LogicFacadeBase.IsCurrentlyInitializeOnly">
+            <summary>
+            Checks if the current context is set to "initialize only".
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Common.Support.LogicFacadeBase.InitialisationContext.initOptions">
+            <summary>
+            Determines whether this context is initialise only or not
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.Support.LogicFacadeBase.InitialisationContext.#ctor(ServiceStack.Common.Support.LogicFacadeBase,ServiceStack.LogicFacade.InitOptions)">
+            <summary>
+            Constructs a new InitialiseOnlyContext
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.Support.LogicFacadeBase.InitialisationContext.Dispose">
+            <summary>
+            Call to remove this current context and reveal the previous context (if any).
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Common.Support.LogicFacadeBase.InitialisationContext.InitialisedObject">
+            <summary>
+            Gets or sets the object that has been initialized only.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.ServiceModel.Serialization.StringMapTypeDeserializer">
+            <summary>
+            Serializer cache of delegates required to create a type from a string map (e.g. for REST urls)
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.Utils.CommandsUtils.ExecuteAsyncCommandExec(System.Collections.Generic.IEnumerable{ServiceStack.DesignPatterns.Command.ICommandExec})">
+            <summary>
+            Provide the an option for the callee to block until all commands are executed
+            </summary>
+            <param name="commands"></param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.Common.Support.InMemoryLogFactory">
+            <summary>
+            Note: InMemoryLog keeps all logs in memory, so don't use it long running exceptions
+            
+            Returns a thread-safe InMemoryLog which you can use while *TESTING*
+            to provide a detailed analysis of your logs.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.Reflection.StaticAccessors`1.TypedGetPropertyFn``1(System.Reflection.PropertyInfo)">
+            <summary>
+            Func to get the Strongly-typed field
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.Reflection.StaticAccessors`1.ValueUnTypedGetPropertyFn``1(System.Reflection.PropertyInfo)">
+            <summary>
+            Required to cast the return ValueType to an object for caching
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.Reflection.StaticAccessors`1.TypedSetPropertyFn``1(System.Reflection.PropertyInfo)">
+            <summary>
+            Func to set the Strongly-typed field
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.Reflection.StaticAccessors`1.ValueUnTypedSetPropertyFn``1(System.Reflection.PropertyInfo)">
+            <summary>
+            Required to cast the ValueType to an object for caching
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.Reflection.StaticAccessors`1.UnTypedSetPropertyFn``1(System.Reflection.PropertyInfo)">
+            <summary>
+            Required to cast the ValueType to an object for caching
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,43 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--Content style. -->
+    <Style TargetType="Grid" x:Key="NotificationContentStyle">
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Setter Property="VerticalAlignment" Value="Bottom"/>
+        <Setter Property="Background" Value="#FF870F"/>
+        <Setter Property="Margin" Value="0 0 0 20"/>
+    </Style>
+
+    <!--Content style. -->
+    <Style TargetType="Grid" x:Key="NotificationContentInnerStyle">
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="MaxWidth" Value="500"/>
+        <Setter Property="Margin" Value="0 0 20 0"/>
+    </Style>
+
+    <!--Message caption style. -->
+    <Style TargetType="TextBlock" x:Key="NotificationCaptionStyle">
+        <Setter Property="FontSize" Value="{DynamicResource Heading2FontSize}"/>
+        <Setter Property="FontFamily" Value="{DynamicResource Heading2FontFamily}"/>
+        <Setter Property="FontWeight" Value="{DynamicResource Heading2FontWeight}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Heading2Foreground}"/>
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="Margin" Value="20 20 20 0" />
+    </Style>
+
+    <!--Message caption style. -->
+    <Style TargetType="TextBlock" x:Key="NotificationTextStyle">
+        <Setter Property="FontSize" Value="{DynamicResource DefaultFontSize}"/>
+        <Setter Property="FontFamily" Value="{DynamicResource DefaultFontFamily}"/>
+        <Setter Property="FontWeight" Value="{DynamicResource DefaultFontWeight}"/>
+        <Setter Property="Foreground" Value="{DynamicResource DefaultForeground}"/>
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="Margin" Value="20 20 20 0" />
+    </Style>
+
+    <!--Modal button image -->
+    <Style TargetType="Image" x:Key="NotificationButtonImage" BasedOn="{StaticResource ModalButtonImage}">
+        <Setter Property="Margin" Value="20 20 0 20" />
+    </Style>
+</ResourceDictionary>

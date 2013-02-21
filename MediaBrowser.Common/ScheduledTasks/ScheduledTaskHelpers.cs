@@ -1,0 +1,153 @@
+﻿using MediaBrowser.Common.Kernel;
+using MediaBrowser.Model.Tasks;
+using System;
+using System.Linq;
+
+namespace MediaBrowser.Common.ScheduledTasks
+{
+    /// <summary>
+    /// Class ScheduledTaskHelpers
+    /// </summary>
+    public static class ScheduledTaskHelpers
+    {
+        /// <summary>
+        /// Gets the task info.
+        /// </summary>
+        /// <param name="task">The task.</param>
+        /// <returns>TaskInfo.</returns>
+        public static TaskInfo GetTaskInfo(IScheduledTask task)
+        {
+            return new TaskInfo
+            {
+                Name = task.Name,
+                CurrentProgress = task.CurrentProgress,
+                State = task.State,
+                Id = task.Id,
+                LastExecutionResult = task.LastExecutionResult,
+                Triggers = task.Triggers.Select(GetTriggerInfo).ToArray(),
+                Description = task.Description,
+                Category = task.Category
+            };
+        }
+
+        /// <summary>
+        /// Gets the trigger info.
+        /// </summary>
+        /// <param name="trigger">The trigger.</param>
+        /// <returns>TaskTriggerInfo.</returns>
+        public static TaskTriggerInfo GetTriggerInfo(BaseTaskTrigger trigger)
+        {
+            var info = new TaskTriggerInfo
+            {
+                Type = trigger.GetType().Name
+            };
+
+            var dailyTrigger = trigger as DailyTrigger;
+
+            if (dailyTrigger != null)
+            {
+                info.TimeOfDayTicks = dailyTrigger.TimeOfDay.Ticks;
+            }
+
+            var weeklyTaskTrigger = trigger as WeeklyTrigger;
+
+            if (weeklyTaskTrigger != null)
+            {
+                info.TimeOfDayTicks = weeklyTaskTrigger.TimeOfDay.Ticks;
+                info.DayOfWeek = weeklyTaskTrigger.DayOfWeek;
+            }
+
+            var intervalTaskTrigger = trigger as IntervalTrigger;
+
+            if (intervalTaskTrigger != null)
+            {
+                info.IntervalTicks = intervalTaskTrigger.Interval.Ticks;
+            }
+
+            var systemEventTrigger = trigger as SystemEventTrigger;
+
+            if (systemEventTrigger != null)
+            {
+                info.SystemEvent = systemEventTrigger.SystemEvent;
+            }
+
+            return info;
+        }
+
+        /// <summary>
+        /// Converts a TaskTriggerInfo into a concrete BaseTaskTrigger
+        /// </summary>
+        /// <param name="info">The info.</param>
+        /// <param name="kernel">The kernel.</param>
+        /// <returns>BaseTaskTrigger.</returns>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="System.ArgumentException">Invalid trigger type:  + info.Type</exception>
+        public static BaseTaskTrigger GetTrigger(TaskTriggerInfo info, IKernel kernel)
+        {
+            if (info.Type.Equals(typeof(DailyTrigger).Name, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!info.TimeOfDayTicks.HasValue)
+                {
+                    throw new ArgumentNullException();
+                }
+
+                return new DailyTrigger
+                {
+                    TimeOfDay = TimeSpan.FromTicks(info.TimeOfDayTicks.Value)
+                };
+            }
+
+            if (info.Type.Equals(typeof(WeeklyTrigger).Name, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!info.TimeOfDayTicks.HasValue)
+                {
+                    throw new ArgumentNullException();
+                }
+
+                if (!info.DayOfWeek.HasValue)
+                {
+                    throw new ArgumentNullException();
+                }
+
+                return new WeeklyTrigger
+                {
+                    TimeOfDay = TimeSpan.FromTicks(info.TimeOfDayTicks.Value),
+                    DayOfWeek = info.DayOfWeek.Value
+                };
+            }
+
+            if (info.Type.Equals(typeof(IntervalTrigger).Name, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!info.IntervalTicks.HasValue)
+                {
+                    throw new ArgumentNullException();
+                }
+
+                return new IntervalTrigger
+                {
+                    Interval = TimeSpan.FromTicks(info.IntervalTicks.Value)
+                };
+            }
+
+            if (info.Type.Equals(typeof(SystemEventTrigger).Name, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!info.SystemEvent.HasValue)
+                {
+                    throw new ArgumentNullException();
+                }
+
+                return new SystemEventTrigger
+                {
+                    SystemEvent = info.SystemEvent.Value
+                };
+            }
+
+            if (info.Type.Equals(typeof(StartupTrigger).Name, StringComparison.OrdinalIgnoreCase))
+            {
+                return new StartupTrigger(kernel);
+            }
+
+            throw new ArgumentException("Unrecognized trigger type: " + info.Type);
+        }
+    }
+}

@@ -11,6 +11,8 @@
     <AssemblyName>MediaBrowser.WebDashboard</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,9 +35,42 @@
     <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ServiceStack, Version=3.9.37.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\ServiceStack.3.9.37\lib\net35\ServiceStack.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Common, Version=3.9.37.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\ServiceStack.Common.3.9.37\lib\net35\ServiceStack.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Interfaces, Version=3.9.37.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\ServiceStack.Common.3.9.37\lib\net35\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.OrmLite, Version=3.9.37.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\ServiceStack.OrmLite.SqlServer.3.9.37\lib\ServiceStack.OrmLite.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.OrmLite.SqlServer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\ServiceStack.OrmLite.SqlServer.3.9.37\lib\ServiceStack.OrmLite.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Redis, Version=3.9.37.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\ServiceStack.Redis.3.9.37\lib\net35\ServiceStack.Redis.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.ServiceInterface, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\ServiceStack.3.9.37\lib\net35\ServiceStack.ServiceInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Text, Version=3.9.37.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\ServiceStack.Text.3.9.37\lib\net35\ServiceStack.Text.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -43,7 +78,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Plugin.cs" />
+    <Compile Include="Api\DashboardInfo.cs" />
+    <Compile Include="Api\DashboardService.cs" />
+    <Compile Include="Api\DashboardInfoWebSocketListener.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -51,15 +88,321 @@
       <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>
       <Name>MediaBrowser.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj">
+      <Project>{17e1f4e6-8abd-4fe5-9ecf-43d4b6087ba2}</Project>
+      <Name>MediaBrowser.Controller</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
       <Name>MediaBrowser.Model</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\index.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\advanced.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\dashboard.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\Site.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\site.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\library.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\metadata.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\userProfiles.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\plugins.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\login.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\logindefault.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\uiSettings.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\editUser.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\favicon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\touchicon.png" />
+    <EmbeddedResource Include="Html\css\images\touchicon114.png" />
+    <EmbeddedResource Include="Html\css\images\touchicon72.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\iossplash.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\updatePassword.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\userImage.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\IndexPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\mblogowhitefull.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\mblogoblackfull.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\defaultCollectionImage.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\toolsWhite.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\currentUserDefaultWhite.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\rightArrow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\userFlyoutDefault.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\MediaLibraryPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\DisplaySettingsPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\PluginsPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\MetadataConfigurationPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\LoginPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\UpdatePasswordPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\AdvancedConfigurationPage.js" />
+    <EmbeddedResource Include="Html\scripts\EditUserPage.js" />
+    <EmbeddedResource Include="Html\scripts\UserImagePage.js" />
+    <EmbeddedResource Include="Html\scripts\UserProfilesPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\advancedMetadata.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\AdvancedMetadataConfigurationPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\pluginUpdates.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\PluginUpdatesPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\addPlugin.html" />
+    <EmbeddedResource Include="Html\scripts\AddPluginPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\bg.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\pluginCatalog.html" />
+    <EmbeddedResource Include="Html\scripts\PluginCatalogPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\leftArrowBlack.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\leftArrowWhite.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\currentUserDefaultBlack.png" />
+    <EmbeddedResource Include="Html\css\images\toolsBlack.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scheduledTasks.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\ScheduledTasksPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scheduledTask.html" />
+    <EmbeddedResource Include="Html\scripts\ScheduledTaskPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\wizardStart.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\wizardFinish.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\wizardUser.html" />
+    <EmbeddedResource Include="Html\wizardLibrary.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\WizardStartPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\WizardUserPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\cloudNetwork.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\movieFolder.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\checkmarkblack.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\log.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\LogPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\metadataImages.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\MetadataImagesPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\DashboardPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\checkMarkGreen.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\clients\html5.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\clients\android.png" />
+    <EmbeddedResource Include="Html\css\images\clients\ios.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\clients\mb.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\clients\windowsrt.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\clients\windowsphone.png" />
+    <EmbeddedResource Include="Html\css\images\clients\win8.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\notifications\download.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\Extensions.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\support.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\SupporterPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\supporter.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\suppbadge.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\premiumflag.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\supporterKey.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\SupporterKeyPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\donatepp.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\faicons-v2.png" />
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\faicons.png" />
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\images\ajax-loader.png" />
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\images\icons-18-black-pack.png" />
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\images\icons-18-white-pack.png" />
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\images\icons-36-black-pack.png" />
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\images\icons-36-white-pack.png" />
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\index.html" />
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\jqm-icon-pack-3.0.0-fa.css" />
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\original\images\ajax-loader.gif" />
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\original\images\ajax-loader.png" />
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\original\images\icons-18-black-pack.png" />
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\original\images\icons-18-white-pack.png" />
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\original\images\icons-36-black-pack.png" />
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\original\images\icons-36-white-pack.png" />
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\original\index.html" />
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\original\jqm-icon-pack-2.0-original.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\font\fontawesome-webfont.eot" />
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\font\fontawesome-webfont.ttf" />
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\font\fontawesome-webfont.woff" />
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\font\FontAwesome.otf" />
+    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\jqm-icon-pack-3.0.0-fa.scss" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\registerpp.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\home.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\notifications\done.png" />
+    <EmbeddedResource Include="Html\css\images\notifications\error.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\notifications\cancelled.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\notifications\info.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\itemDetails.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\ItemDetailPage.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\media\playCircle.png" />
+    <EmbeddedResource Include="Html\css\images\media\nextTrack.png" />
+    <EmbeddedResource Include="Html\css\images\media\pause.png" />
+    <EmbeddedResource Include="Html\css\images\media\play.png" />
+    <EmbeddedResource Include="Html\css\images\media\previousTrack.png" />
+    <EmbeddedResource Include="Html\css\images\media\stop.png" />
+    <EmbeddedResource Include="Html\css\images\itemDetails\videoDefault.png" />
+    <EmbeddedResource Include="Html\css\images\itemDetails\audioDefault.png" />
+    <EmbeddedResource Include="Html\css\images\itemDetails\gameDefault.png" />
+    <Content Include="Html\css\images\stars.png" />
+    <EmbeddedResource Include="Html\scripts\MediaPlayer.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\ProgramData-Server\Plugins\" /y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\MediaBrowser.ServerApplication\" /y</PostBuildEvent>
   </PropertyGroup>
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

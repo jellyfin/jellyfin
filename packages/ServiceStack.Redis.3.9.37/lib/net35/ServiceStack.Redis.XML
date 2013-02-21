@@ -1,0 +1,1355 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ServiceStack.Redis</name>
+    </assembly>
+    <members>
+        <member name="M:ServiceStack.Redis.Support.Queue.ISimpleWorkQueue`1.Enqueue(`0)">
+            <summary>
+            Enqueue item
+            </summary>
+            <param name="workItem"></param>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.ISimpleWorkQueue`1.Dequeue(System.Int32)">
+            <summary>
+            Dequeue up to maxBatchSize items from queue
+            </summary>
+            <param name="maxBatchSize"></param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.Redis.Support.Locking.IDistributedLock">
+            <summary>
+            Distributed lock interface
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.RedisClientList">
+            <summary>
+            Wrap the common redis list operations under a IList[string] interface.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.RedisClient">
+            <summary>
+            The client wraps the native redis operations into a more readable c# API.
+            
+            Where possible these operations are also exposed in common c# interfaces, 
+            e.g. RedisClient.Lists => IList[string]
+            	 RedisClient.Sets => ICollection[string]
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.RedisNativeClient">
+            <summary>
+            This class contains all the common operations for the RedisClient.
+            The client contains a 1:1 mapping of c# methods to redis operations of the same name.
+            
+            Not threadsafe use a pooled manager
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisNativeClient.SendCommand(System.Byte[][])">
+            <summary>
+            Command to set multuple binary safe arguments
+            </summary>
+            <param name="cmdWithBinaryArgs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisNativeClient.ResetSendBuffer">
+            <summary>
+            reset buffer index in send buffer
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisNativeClient.Exec">
+            <summary>
+            Requires custom result parsing
+            </summary>
+            <returns>Number of results</returns>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisNativeClient.Active">
+            <summary>
+            Used to manage connection pooling
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisNativeClient.NamespacePrefix">
+            <summary>
+            Gets or sets object key prefix.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisClient.New">
+            <summary>
+            Creates a new instance of the Redis Client from NewFactoryFn. 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisClient.UrnKey``1(``0)">
+            <summary>
+            Returns key with automatic object id detection in provided value with <typeparam name="T">generic type</typeparam>.
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisClient.UrnKey``1(System.Object)">
+            <summary>
+            Returns key with explicit object id.
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisClient.UrnKey(System.Type,System.Object)">
+            <summary>
+            Returns key with explicit object type and id.
+            </summary>
+            <param name="type"></param>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.Redis.Generic.RedisTypedClient`1">
+            <summary>
+            Allows you to get Redis value operations to operate against POCO types.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:ServiceStack.Redis.Generic.RedisTypedClient`1.#ctor(ServiceStack.Redis.RedisClient)">
+            <summary>
+            Use this to share the same redis connection with another
+            </summary>
+            <param name="client">The client.</param>
+        </member>
+        <member name="T:ServiceStack.Redis.RedisCommandQueue">
+            <summary>
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.RedisQueueCompletableOperation">
+            <summary>
+            Redis operation (transaction/pipeline) that allows queued commands to be completed
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.RedisClientHash">
+            <summary>
+            Wrap the common redis set operations under a ICollection[string] interface.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Generic.RedisTypedTransaction`1">
+            <summary>
+            Adds support for Redis Transactions (i.e. MULTI/EXEC/DISCARD operations).
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.RedisTypedPipeline`1">
+            <summary>
+            Pipeline for redis typed client
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:ServiceStack.Redis.Generic.RedisTypedCommandQueue`1">
+            <summary>
+            Queue of commands for redis typed client
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:ServiceStack.Redis.Generic.RedisTypedTransaction`1.QueueExpectQueued">
+            <summary>
+            Put "QUEUED" messages at back of queue
+            </summary>
+            <param name="queued"></param>
+        </member>
+        <member name="M:ServiceStack.Redis.Generic.RedisTypedTransaction`1.Exec">
+            <summary>
+            Issue exec command (not queued)
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.Generic.RedisTypedTransaction`1.handleMultiDataResultCount(System.Int32)">
+            <summary>
+            callback for after result count is read in
+            </summary>
+            <param name="count"></param>
+        </member>
+        <member name="T:ServiceStack.Redis.Support.Queue.Implementation.RedisSequentialWorkQueue`1">
+            <summary>
+            distributed work item queue. Each message must have an associated
+            work item  id. For a given id, all work items are guaranteed to be processed
+            in the order in which they are received.
+            
+            
+            </summary>
+            <summary>
+            distributed work item queue. Each message must have an associated
+            work item  id. For a given id, all work items are guaranteed to be processed
+            in the order in which they are received.
+            
+            
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Support.Queue.Implementation.RedisWorkQueue`1">
+            <summary>
+            distributed work item queue
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.ISequentialWorkQueue`1.Enqueue(System.String,`0)">
+            <summary>
+            Enqueue item in priority queue corresponding to workItemId identifier
+            </summary>
+            <param name="workItemId"></param>
+            <param name="workItem"></param>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.ISequentialWorkQueue`1.PrepareNextWorkItem">
+            <summary>
+            Preprare next work item id for dequeueing
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.ISequentialWorkQueue`1.Dequeue(System.Int32)">
+            <summary>
+            Dequeue up to maxBatchSize items from queue corresponding to workItemId identifier.
+            Once this method is called, <see cref="M:ServiceStack.Redis.Support.Queue.ISequentialWorkQueue`1.Dequeue(System.Int32)"/> or <see cref="!:Peek"/> will not
+            return any items for workItemId until the dequeue lock returned is unlocked.
+            </summary>
+            <param name="maxBatchSize"></param>
+            <param name="defer"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.ISequentialWorkQueue`1.Update(System.String,System.Int32,`0)">
+            <summary>
+            Replace existing work item in workItemId queue
+            </summary>
+            <param name="workItemId"></param>
+            <param name="index"></param>
+            <param name="newWorkItem"></param>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.Implementation.RedisSequentialWorkQueue`1.Enqueue(System.String,`0)">
+            <summary>
+            Queue incoming messages
+            </summary>
+            <param name="workItem"></param>
+            <param name="workItemId"></param>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.Implementation.RedisSequentialWorkQueue`1.PrepareNextWorkItem">
+            <summary>
+            Must call this periodically to move work items from priority queue to pending queue
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.Implementation.RedisSequentialWorkQueue`1.Update(System.String,System.Int32,`0)">
+            <summary>
+            Replace existing work item in workItemId queue
+            </summary>
+            <param name="workItemId"></param>
+            <param name="index"></param>
+            <param name="newWorkItem"></param>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.Implementation.RedisSequentialWorkQueue`1.Pop(System.String,System.Int32)">
+            <summary>
+            Pop items from list
+            </summary>
+            <param name="workItemId"></param>
+            <param name="itemCount"></param>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.Implementation.RedisSequentialWorkQueue`1.HarvestZombies">
+            <summary>
+            Force release of locks held by crashed servers
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.Implementation.RedisSequentialWorkQueue`1.TryForceReleaseLock(ServiceStack.Redis.Support.Queue.Implementation.SerializingRedisClient,System.String)">
+            <summary>
+            release lock held by crashed server
+            </summary>
+            <param name="client"></param>
+            <param name="workItemId"></param>
+            <returns>true if lock is released, either by this method or by another client; false otherwise</returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.Implementation.RedisSequentialWorkQueue`1.Unlock(System.String)">
+            <summary>
+            Unlock work item id, so other servers can process items for this id
+            </summary>
+            <param name="workItemId"></param>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.Implementation.RedisSequentialWorkQueue`1.DequeueManager.UpdateNextUnprocessed(`0)">
+            <summary>
+            
+            </summary>
+            <param name="newWorkItem"></param>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.Implementation.RedisSequentialWorkQueue`1.DequeueManager.PopAndUnlock(System.Int32,ServiceStack.Redis.IRedisClient)">
+            <summary>
+            
+            </summary>
+            <param name="numProcessed"></param>
+            <param name="client"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.Implementation.RedisSequentialWorkQueue`1.DequeueManager.PopAndUnlock(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="numProcessed"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Locking.WriteLock.#ctor(System.Threading.ReaderWriterLockSlim)">
+            <summary>
+            This class manages a write lock for a local readers/writer lock, 
+            using the Resource Acquisition Is Initialization pattern
+            </summary>
+            <param name="lockObject"></param>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Locking.WriteLock.Dispose">
+            <summary>
+            RAII disposal
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Locking.DistributedLock.Lock(System.String,System.Int32,System.Int32,System.Int64@,ServiceStack.Redis.IRedisClient)">
+            <summary>
+            acquire distributed, non-reentrant lock on key
+            </summary>
+            <param name="key">global key for this lock</param>
+            <param name="acquisitionTimeout">timeout for acquiring lock</param>
+            <param name="lockTimeout">timeout for lock, in seconds (stored as value against lock key) </param>
+            <param name="client"></param>
+            <param name="lockExpire"></param>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Locking.DistributedLock.Unlock(System.String,System.Int64,ServiceStack.Redis.IRedisClient)">
+            <summary>
+            unlock key
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Locking.DistributedLock.CalculateLockExpire(System.TimeSpan,System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="ts"></param>
+            <param name="timeout"></param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.Redis.Support.Queue.Implementation.RedisChronologicalWorkQueue`1">
+            <summary>
+            distributed work item queue. Messages are processed in chronological order
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.Implementation.RedisChronologicalWorkQueue`1.Enqueue(System.String,`0,System.Double)">
+            <summary>
+            Enqueue incoming messages
+            </summary>
+            <param name="workItem"></param>
+            <param name="workItemId"></param>
+            <param name="time"></param>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.Implementation.RedisChronologicalWorkQueue`1.Dequeue(System.Double,System.Double,System.Int32)">
+            <summary>
+            Dequeue next batch of work items
+            </summary>
+            <param name="minTime"></param>
+            <param name="maxTime"></param>
+            <param name="maxBatchSize"></param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.Redis.RedisCommand">
+            <summary>
+            Redis command that does not get queued
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisClientManagerCacheClient.Dispose">
+            <summary>
+            Ignore dispose on RedisClientsManager, which should be registered as a singleton
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Generic.QueuedRedisTypedCommand`1">
+            <summary>
+            A complete redis command, with method to send command, receive response, and run callback on success or failure
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Support.Locking.ILockingStrategy">
+            <summary>
+            Locking strategy interface
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Support.OptimizedObjectSerializer">
+            <summary>
+            Optimized  <see cref="T:ServiceStack.Redis.Support.ISerializer"/> implementation. Primitive types are manually serialized, the rest are serialized using binary serializer /&gt;.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Support.ObjectSerializer">
+            <summary>
+            serialize/deserialize arbitrary objects
+            (objects must be serializable)
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.ObjectSerializer.Serialize(System.Object)">
+            <summary>
+             Serialize object to buffer
+            </summary>
+            <param name="value">serializable object</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.ObjectSerializer.Deserialize(System.Byte[])">
+            <summary>
+                Deserialize buffer to object
+            </summary>
+            <param name="someBytes">byte array to deserialize</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OptimizedObjectSerializer.Serialize(System.Object)">
+            <summary>
+            
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OptimizedObjectSerializer.Deserialize(System.Byte[])">
+            <summary>
+            
+            </summary>
+            <param name="someBytes"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OptimizedObjectSerializer.SerializeToWrapper(System.Object)">
+            <summary>
+            serialize value and wrap with <see cref="T:ServiceStack.Redis.Support.SerializedObjectWrapper"/>
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OptimizedObjectSerializer.Unwrap(ServiceStack.Redis.Support.SerializedObjectWrapper)">
+            <summary>
+            Unwrap object wrapped in <see cref="T:ServiceStack.Redis.Support.SerializedObjectWrapper"/>
+            </summary>
+            <param name="item"></param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.Redis.Support.RedisNamespace">
+            <summary>
+            manages a "region" in the redis key space
+            namespace can be cleared by incrementing the generation
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.RedisNamespace.GetGeneration">
+            <summary>
+            get current generation
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.RedisNamespace.SetGeneration(System.Int64)">
+            <summary>
+            set new generation
+            </summary>
+            <param name="generation"></param>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.RedisNamespace.GetGenerationKey">
+            <summary>
+            redis key for generation
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.RedisNamespace.GetGlobalKeysKey">
+            <summary>
+            get redis key that holds all namespace keys
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.RedisNamespace.GlobalCacheKey(System.Object)">
+            <summary>
+            get global cache key
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.RedisNamespace.GlobalKey(System.Object,System.Int32)">
+            <summary>
+            get global key inside of this namespace
+            </summary>
+            <param name="key"></param>
+            <param name="numUniquePrefixes">prefixes can be added for name deconfliction</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.RedisNamespace.Sanitize(System.String)">
+            <summary>
+            replace UniqueCharacter with its double, to avoid name clash
+            </summary>
+            <param name="dirtyString"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.RedisNamespace.Sanitize(System.Object)">
+            <summary>
+            
+            </summary>
+            <param name="dirtyString"></param>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.Redis.Support.RedisNamespace.LockingStrategy">
+            <summary>
+            get locking strategy
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Support.OrderedDictionary`2">
+            <summary>
+            Represents a generic collection of key/value pairs that are ordered independently of the key and value.
+            </summary>
+            <typeparam name="TKey">The type of the keys in the dictionary</typeparam>
+            <typeparam name="TValue">The type of the values in the dictionary</typeparam>
+        </member>
+        <member name="T:ServiceStack.Redis.Support.IOrderedDictionary`2">
+            <summary>
+            Represents a generic collection of key/value pairs that are ordered independently of the key and value.
+            </summary>
+            <typeparam name="TKey">The type of the keys in the dictionary</typeparam>
+            <typeparam name="TValue">The type of the values in the dictionary</typeparam>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.IOrderedDictionary`2.Add(`0,`1)">
+            <summary>
+            Adds an entry with the specified key and value into the <see cref="T:ServiceStack.Redis.Support.IOrderedDictionary`2">IOrderedDictionary&lt;TKey,TValue&gt;</see> collection with the lowest available index.
+            </summary>
+            <param name="key">The key of the entry to add.</param>
+            <param name="value">The value of the entry to add.</param>
+            <returns>The index of the newly added entry</returns>
+            <remarks>
+            <para>You can also use the <see cref="P:System.Collections.Generic.IDictionary{TKey,TValue}.Item(TKey)"/> property to add new elements by setting the value of a key that does not exist in the <see cref="T:ServiceStack.Redis.Support.IOrderedDictionary`2">IOrderedDictionary&lt;TKey,TValue&gt;</see> collection; however, if the specified key already exists in the <see cref="T:ServiceStack.Redis.Support.IOrderedDictionary`2">IOrderedDictionary&lt;TKey,TValue&gt;</see>, setting the <see cref="P:Item(TKey)"/> property overwrites the old value. In contrast, the <see cref="M:Add"/> method does not modify existing elements.</para></remarks>
+            <exception cref="T:System.ArgumentException">An element with the same key already exists in the <see cref="T:ServiceStack.Redis.Support.IOrderedDictionary`2">IOrderedDictionary&lt;TKey,TValue&gt;</see></exception>
+            <exception cref="T:System.NotSupportedException">The <see cref="T:ServiceStack.Redis.Support.IOrderedDictionary`2">IOrderedDictionary&lt;TKey,TValue&gt;</see> is read-only.<br/>
+            -or-<br/>
+            The <see cref="T:ServiceStack.Redis.Support.IOrderedDictionary`2">IOrderedDictionary&lt;TKey,TValue&gt;</see> has a fized size.</exception>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.IOrderedDictionary`2.Insert(System.Int32,`0,`1)">
+            <summary>
+            Inserts a new entry into the <see cref="T:ServiceStack.Redis.Support.IOrderedDictionary`2">IOrderedDictionary&lt;TKey,TValue&gt;</see> collection with the specified key and value at the specified index.
+            </summary>
+            <param name="index">The zero-based index at which the element should be inserted.</param>
+            <param name="key">The key of the entry to add.</param>
+            <param name="value">The value of the entry to add. The value can be <null/> if the type of the values in the dictionary is a reference type.</param>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is less than 0.<br/>
+            -or-<br/>
+            <paramref name="index"/> is greater than <see cref="P:System.Collections.ICollection.Count"/>.</exception>
+            <exception cref="T:System.ArgumentException">An element with the same key already exists in the <see cref="T:ServiceStack.Redis.Support.IOrderedDictionary`2">IOrderedDictionary&lt;TKey,TValue&gt;</see>.</exception>
+            <exception cref="T:System.NotSupportedException">The <see cref="T:ServiceStack.Redis.Support.IOrderedDictionary`2">IOrderedDictionary&lt;TKey,TValue&gt;</see> is read-only.<br/>
+            -or-<br/>
+            The <see cref="T:ServiceStack.Redis.Support.IOrderedDictionary`2">IOrderedDictionary&lt;TKey,TValue&gt;</see> has a fized size.</exception>
+        </member>
+        <member name="P:ServiceStack.Redis.Support.IOrderedDictionary`2.Item(System.Int32)">
+            <summary>
+            Gets or sets the value at the specified index.
+            </summary>
+            <param name="index">The zero-based index of the value to get or set.</param>
+            <value>The value of the item at the specified index.</value>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is less than 0.<br/>
+            -or-<br/>
+            <paramref name="index"/> is equal to or greater than <see cref="P:System.Collections.ICollection.Count"/>.</exception>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> class.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> class using the specified initial capacity.
+            </summary>
+            <param name="capacity">The initial number of elements that the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> can contain.</param>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="capacity"/> is less than 0</exception>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.#ctor(System.Collections.Generic.IEqualityComparer{`0})">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> class using the specified comparer.
+            </summary>
+            <param name="comparer">The <see cref="T:System.Collections.Generic.IEqualityComparer`1">IEqualityComparer&lt;TKey&gt;</see> to use when comparing keys, or <null/> to use the default <see cref="T:System.Collections.Generic.EqualityComparer`1">EqualityComparer&lt;TKey&gt;</see> for the type of the key.</param>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.#ctor(System.Int32,System.Collections.Generic.IEqualityComparer{`0})">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> class using the specified initial capacity and comparer.
+            </summary>
+            <param name="capacity">The initial number of elements that the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection can contain.</param>
+            <param name="comparer">The <see cref="T:System.Collections.Generic.IEqualityComparer`1">IEqualityComparer&lt;TKey&gt;</see> to use when comparing keys, or <null/> to use the default <see cref="T:System.Collections.Generic.EqualityComparer`1">EqualityComparer&lt;TKey&gt;</see> for the type of the key.</param>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="capacity"/> is less than 0</exception>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.ConvertToKeyType(System.Object)">
+            <summary>
+            Converts the object passed as a key to the key type of the dictionary
+            </summary>
+            <param name="keyObject">The key object to check</param>
+            <returns>The key object, cast as the key type of the dictionary</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="keyObject"/> is <null/>.</exception>
+            <exception cref="T:System.ArgumentException">The key type of the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> is not in the inheritance hierarchy of <paramref name="keyObject"/>.</exception>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.ConvertToValueType(System.Object)">
+            <summary>
+            Converts the object passed as a value to the value type of the dictionary
+            </summary>
+            <param name="value">The object to convert to the value type of the dictionary</param>
+            <returns>The value object, converted to the value type of the dictionary</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="valueObject"/> is <null/>, and the value type of the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> is a value type.</exception>
+            <exception cref="T:System.ArgumentException">The value type of the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> is not in the inheritance hierarchy of <paramref name="valueObject"/>.</exception>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.Insert(System.Int32,`0,`1)">
+            <summary>
+            Inserts a new entry into the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection with the specified key and value at the specified index.
+            </summary>
+            <param name="index">The zero-based index at which the element should be inserted.</param>
+            <param name="key">The key of the entry to add.</param>
+            <param name="value">The value of the entry to add. The value can be <null/> if the type of the values in the dictionary is a reference type.</param>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is less than 0.<br/>
+            -or-<br/>
+            <paramref name="index"/> is greater than <see cref="P:ServiceStack.Redis.Support.OrderedDictionary`2.Count"/>.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="key"/> is <null/>.</exception>
+            <exception cref="T:System.ArgumentException">An element with the same key already exists in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.</exception>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.System#Collections#Specialized#IOrderedDictionary#Insert(System.Int32,System.Object,System.Object)">
+            <summary>
+            Inserts a new entry into the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection with the specified key and value at the specified index.
+            </summary>
+            <param name="index">The zero-based index at which the element should be inserted.</param>
+            <param name="key">The key of the entry to add.</param>
+            <param name="value">The value of the entry to add. The value can be <null/> if the type of the values in the dictionary is a reference type.</param>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is less than 0.<br/>
+            -or-<br/>
+            <paramref name="index"/> is greater than <see cref="P:ServiceStack.Redis.Support.OrderedDictionary`2.Count"/>.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="key"/> is <null/>.<br/>
+            -or-<br/>
+            <paramref name="value"/> is <null/>, and the value type of the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> is a value type.</exception>
+            <exception cref="T:System.ArgumentException">The key type of the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> is not in the inheritance hierarchy of <paramref name="key"/>.<br/>
+            -or-<br/>
+            The value type of the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> is not in the inheritance hierarchy of <paramref name="value"/>.<br/>
+            -or-<br/>
+            An element with the same key already exists in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.</exception>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.RemoveAt(System.Int32)">
+            <summary>
+            Removes the entry at the specified index from the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.
+            </summary>
+            <param name="index">The zero-based index of the entry to remove.</param>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is less than 0.<br/>
+            -or-<br/>
+            index is equal to or greater than <see cref="P:ServiceStack.Redis.Support.OrderedDictionary`2.Count"/>.</exception>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.System#Collections#Generic#IDictionary{TKey@TValue}#Add(`0,`1)">
+            <summary>
+            Adds an entry with the specified key and value into the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection with the lowest available index.
+            </summary>
+            <param name="key">The key of the entry to add.</param>
+            <param name="value">The value of the entry to add. This value can be <null/>.</param>
+            <remarks>A key cannot be <null/>, but a value can be.
+            <para>You can also use the <see cref="P:OrderedDictionary{TKey,TValue}.Item(TKey)"/> property to add new elements by setting the value of a key that does not exist in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection; however, if the specified key already exists in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>, setting the <see cref="P:OrderedDictionary{TKey,TValue}.Item(TKey)"/> property overwrites the old value. In contrast, the <see cref="M:Add"/> method does not modify existing elements.</para></remarks>
+            <exception cref="T:System.ArgumentNullException"><paramref name="key"/> is <null/></exception>
+            <exception cref="T:System.ArgumentException">An element with the same key already exists in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see></exception>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.Add(`0,`1)">
+            <summary>
+            Adds an entry with the specified key and value into the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection with the lowest available index.
+            </summary>
+            <param name="key">The key of the entry to add.</param>
+            <param name="value">The value of the entry to add. This value can be <null/>.</param>
+            <returns>The index of the newly added entry</returns>
+            <remarks>A key cannot be <null/>, but a value can be.
+            <para>You can also use the <see cref="P:OrderedDictionary{TKey,TValue}.Item(TKey)"/> property to add new elements by setting the value of a key that does not exist in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection; however, if the specified key already exists in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>, setting the <see cref="P:OrderedDictionary{TKey,TValue}.Item(TKey)"/> property overwrites the old value. In contrast, the <see cref="M:Add"/> method does not modify existing elements.</para></remarks>
+            <exception cref="T:System.ArgumentNullException"><paramref name="key"/> is <null/></exception>
+            <exception cref="T:System.ArgumentException">An element with the same key already exists in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see></exception>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.System#Collections#IDictionary#Add(System.Object,System.Object)">
+            <summary>
+            Adds an entry with the specified key and value into the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection with the lowest available index.
+            </summary>
+            <param name="key">The key of the entry to add.</param>
+            <param name="value">The value of the entry to add. This value can be <null/>.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="key"/> is <null/>.<br/>
+            -or-<br/>
+            <paramref name="value"/> is <null/>, and the value type of the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> is a value type.</exception>
+            <exception cref="T:System.ArgumentException">The key type of the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> is not in the inheritance hierarchy of <paramref name="key"/>.<br/>
+            -or-<br/>
+            The value type of the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> is not in the inheritance hierarchy of <paramref name="value"/>.</exception>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.Clear">
+            <summary>
+            Removes all elements from the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.
+            </summary>
+            <remarks>The capacity is not changed as a result of calling this method.</remarks>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.ContainsKey(`0)">
+            <summary>
+            Determines whether the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection contains a specific key.
+            </summary>
+            <param name="key">The key to locate in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.</param>
+            <returns><see langword="true"/> if the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection contains an element with the specified key; otherwise, <see langword="false"/>.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="key"/> is <null/></exception>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.System#Collections#IDictionary#Contains(System.Object)">
+            <summary>
+            Determines whether the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection contains a specific key.
+            </summary>
+            <param name="key">The key to locate in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.</param>
+            <returns><see langword="true"/> if the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection contains an element with the specified key; otherwise, <see langword="false"/>.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="key"/> is <null/></exception>
+            <exception cref="T:System.ArgumentException">The key type of the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> is not in the inheritance hierarchy of <paramref name="key"/>.</exception>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.IndexOfKey(`0)">
+            <summary>
+            Returns the zero-based index of the specified key in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>
+            </summary>
+            <param name="key">The key to locate in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see></param>
+            <returns>The zero-based index of <paramref name="key"/>, if <paramref name="ley"/> is found in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>; otherwise, -1</returns>
+            <remarks>This method performs a linear search; therefore it has a cost of O(n) at worst.</remarks>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.Remove(`0)">
+            <summary>
+            Removes the entry with the specified key from the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.
+            </summary>
+            <param name="key">The key of the entry to remove</param>
+            <returns><see langword="true"/> if the key was found and the corresponding element was removed; otherwise, <see langword="false"/></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.System#Collections#IDictionary#Remove(System.Object)">
+            <summary>
+            Removes the entry with the specified key from the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.
+            </summary>
+            <param name="key">The key of the entry to remove</param>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.System#Collections#ICollection#CopyTo(System.Array,System.Int32)">
+            <summary>
+            Copies the elements of the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> elements to a one-dimensional Array object at the specified index.
+            </summary>
+            <param name="array">The one-dimensional <see cref="T:System.Array"/> object that is the destination of the <see cref="T:KeyValuePair`2&gt;"/> objects copied from the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>. The <see cref="T:System.Array"/> must have zero-based indexing.</param>
+            <param name="index">The zero-based index in <paramref name="array"/> at which copying begins.</param>
+            <remarks>The <see cref="M:CopyTo"/> method preserves the order of the elements in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see></remarks>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.TryGetValue(`0,`1@)">
+            <summary>
+            Gets the value associated with the specified key.
+            </summary>
+            <param name="key">The key of the value to get.</param>
+            <param name="value">When this method returns, contains the value associated with the specified key, if the key is found; otherwise, the default value for the type of <paramref name="value"/>. This parameter can be passed uninitialized.</param>
+            <returns><see langword="true"/> if the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> contains an element with the specified key; otherwise, <see langword="false"/>.</returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.System#Collections#Generic#ICollection{System#Collections#Generic#KeyValuePair{TKey@TValue}}#Add(System.Collections.Generic.KeyValuePair{`0,`1})">
+            <summary>
+            Adds the specified value to the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> with the specified key.
+            </summary>
+            <param name="item">The <see cref="T:KeyValuePair{TKey,TValue}">KeyValuePair&lt;TKey,TValue&gt;</see> structure representing the key and value to add to the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.</param>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.System#Collections#Generic#ICollection{System#Collections#Generic#KeyValuePair{TKey@TValue}}#Contains(System.Collections.Generic.KeyValuePair{`0,`1})">
+            <summary>
+            Determines whether the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> contains a specific key and value.
+            </summary>
+            <param name="item">The <see cref="T:KeyValuePair{TKey,TValue}">KeyValuePair&lt;TKey,TValue&gt;</see> structure to locate in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.</param>
+            <returns><see langword="true"/> if <paramref name="keyValuePair"/> is found in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>; otherwise, <see langword="false"/>.</returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.System#Collections#Generic#ICollection{System#Collections#Generic#KeyValuePair{TKey@TValue}}#CopyTo(System.Collections.Generic.KeyValuePair{`0,`1}[],System.Int32)">
+            <summary>
+            Copies the elements of the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> to an array of type <see cref="T:KeyValuePair`2&gt;"/>, starting at the specified index.
+            </summary>
+            <param name="array">The one-dimensional array of type <see cref="T:KeyValuePair{TKey,TValue}">KeyValuePair&lt;TKey,TValue&gt;</see> that is the destination of the <see cref="T:KeyValuePair{TKey,TValue}">KeyValuePair&lt;TKey,TValue&gt;</see> elements copied from the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>. The array must have zero-based indexing.</param>
+            <param name="arrayIndex">The zero-based index in <paramref name="array"/> at which copying begins.</param>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.OrderedDictionary`2.System#Collections#Generic#ICollection{System#Collections#Generic#KeyValuePair{TKey@TValue}}#Remove(System.Collections.Generic.KeyValuePair{`0,`1})">
+            <summary>
+            Removes a key and value from the dictionary.
+            </summary>
+            <param name="item">The <see cref="T:KeyValuePair{TKey,TValue}">KeyValuePair&lt;TKey,TValue&gt;</see> structure representing the key and value to remove from the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.</param>
+            <returns><see langword="true"/> if the key and value represented by <paramref name="keyValuePair"/> is successfully found and removed; otherwise, <see langword="false"/>. This method returns <see langword="false"/> if <paramref name="keyValuePair"/> is not found in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.</returns>
+        </member>
+        <member name="P:ServiceStack.Redis.Support.OrderedDictionary`2.Dictionary">
+            <summary>
+            Gets the dictionary object that stores the keys and values
+            </summary>
+            <value>The dictionary object that stores the keys and values for the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see></value>
+            <remarks>Accessing this property will create the dictionary object if necessary</remarks>
+        </member>
+        <member name="P:ServiceStack.Redis.Support.OrderedDictionary`2.List">
+            <summary>
+            Gets the list object that stores the key/value pairs.
+            </summary>
+            <value>The list object that stores the key/value pairs for the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see></value>
+            <remarks>Accessing this property will create the list object if necessary.</remarks>
+        </member>
+        <member name="P:ServiceStack.Redis.Support.OrderedDictionary`2.Item(System.Int32)">
+            <summary>
+            Gets or sets the value at the specified index.
+            </summary>
+            <param name="index">The zero-based index of the value to get or set.</param>
+            <value>The value of the item at the specified index.</value>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is less than 0.<br/>
+            -or-<br/>
+            index is equal to or greater than <see cref="P:ServiceStack.Redis.Support.OrderedDictionary`2.Count"/>.</exception>
+        </member>
+        <member name="P:ServiceStack.Redis.Support.OrderedDictionary`2.System#Collections#Specialized#IOrderedDictionary#Item(System.Int32)">
+            <summary>
+            Gets or sets the value at the specified index.
+            </summary>
+            <param name="index">The zero-based index of the value to get or set.</param>
+            <value>The value of the item at the specified index.</value>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is less than 0.<br/>
+            -or-<br/>
+            index is equal to or greater than <see cref="P:ServiceStack.Redis.Support.OrderedDictionary`2.Count"/>.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="valueObject"/> is a null reference, and the value type of the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> is a value type.</exception>
+            <exception cref="T:System.ArgumentException">The value type of the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> is not in the inheritance hierarchy of <paramref name="valueObject"/>.</exception>
+        </member>
+        <member name="P:ServiceStack.Redis.Support.OrderedDictionary`2.System#Collections#IDictionary#IsFixedSize">
+            <summary>
+            Gets a value indicating whether the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> has a fixed size.
+            </summary>
+            <value><see langword="true"/> if the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> has a fixed size; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</value>
+        </member>
+        <member name="P:ServiceStack.Redis.Support.OrderedDictionary`2.IsReadOnly">
+            <summary>
+            Gets a value indicating whether the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection is read-only.
+            </summary>
+            <value><see langword="true"/> if the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> is read-only; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</value>
+            <remarks>
+            A collection that is read-only does not allow the addition, removal, or modification of elements after the collection is created.
+            <para>A collection that is read-only is simply a collection with a wrapper that prevents modification of the collection; therefore, if changes are made to the underlying collection, the read-only collection reflects those changes.</para>
+            </remarks>
+        </member>
+        <member name="P:ServiceStack.Redis.Support.OrderedDictionary`2.System#Collections#IDictionary#Keys">
+            <summary>
+            Gets an <see cref="T:System.Collections.ICollection"/> object containing the keys in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.
+            </summary>
+            <value>An <see cref="T:System.Collections.ICollection"/> object containing the keys in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.</value>
+            <remarks>The returned <see cref="T:System.Collections.ICollection"/> object is not a static copy; instead, the collection refers back to the keys in the original <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>. Therefore, changes to the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> continue to be reflected in the key collection.</remarks>
+        </member>
+        <member name="P:ServiceStack.Redis.Support.OrderedDictionary`2.System#Collections#IDictionary#Values">
+            <summary>
+            Gets an <see cref="T:System.Collections.ICollection"/> object containing the values in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.
+            </summary>
+            <value>An <see cref="T:System.Collections.ICollection"/> object containing the values in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.</value>
+            <remarks>The returned <see cref="T:System.Collections.ICollection"/> object is not a static copy; instead, the <see cref="T:System.Collections.ICollection"/> refers back to the values in the original <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection. Therefore, changes to the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> continue to be reflected in the <see cref="T:System.Collections.ICollection"/>.</remarks>
+        </member>
+        <member name="P:ServiceStack.Redis.Support.OrderedDictionary`2.Item(`0)">
+            <summary>
+            Gets or sets the value with the specified key.
+            </summary>
+            <param name="key">The key of the value to get or set.</param>
+            <value>The value associated with the specified key. If the specified key is not found, attempting to get it returns <null/>, and attempting to set it creates a new element using the specified key.</value>
+        </member>
+        <member name="P:ServiceStack.Redis.Support.OrderedDictionary`2.System#Collections#IDictionary#Item(System.Object)">
+            <summary>
+            Gets or sets the value with the specified key.
+            </summary>
+            <param name="key">The key of the value to get or set.</param>
+            <value>The value associated with the specified key. If the specified key is not found, attempting to get it returns <null/>, and attempting to set it creates a new element using the specified key.</value>
+        </member>
+        <member name="P:ServiceStack.Redis.Support.OrderedDictionary`2.Count">
+            <summary>
+            Gets the number of key/values pairs contained in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.
+            </summary>
+            <value>The number of key/value pairs contained in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.</value>
+        </member>
+        <member name="P:ServiceStack.Redis.Support.OrderedDictionary`2.System#Collections#ICollection#IsSynchronized">
+            <summary>
+            Gets a value indicating whether access to the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> object is synchronized (thread-safe).
+            </summary>
+            <value>This method always returns false.</value>
+        </member>
+        <member name="P:ServiceStack.Redis.Support.OrderedDictionary`2.System#Collections#ICollection#SyncRoot">
+            <summary>
+            Gets an object that can be used to synchronize access to the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> object.
+            </summary>
+            <value>An object that can be used to synchronize access to the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> object.</value>
+        </member>
+        <member name="P:ServiceStack.Redis.Support.OrderedDictionary`2.Keys">
+            <summary>
+            Gets an <see cref="T:System.Collections.Generic.ICollection{TKey}">ICollection&lt;TKey&gt;</see> object containing the keys in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.
+            </summary>
+            <value>An <see cref="T:System.Collections.Generic.ICollection{TKey}">ICollection&lt;TKey&gt;</see> object containing the keys in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.</value>
+            <remarks>The returned <see cref="T:System.Collections.Generic.ICollection{TKey}">ICollection&lt;TKey&gt;</see> object is not a static copy; instead, the collection refers back to the keys in the original <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>. Therefore, changes to the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> continue to be reflected in the key collection.</remarks>
+        </member>
+        <member name="P:ServiceStack.Redis.Support.OrderedDictionary`2.Values">
+            <summary>
+            Gets an <see cref="T:ICollection{TValue}">ICollection&lt;TValue&gt;</see> object containing the values in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.
+            </summary>
+            <value>An <see cref="T:ICollection{TValue}">ICollection&lt;TValue&gt;</see> object containing the values in the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.</value>
+            <remarks>The returned <see cref="T:ICollection{TValue}">ICollection&lt;TKey&gt;</see> object is not a static copy; instead, the collection refers back to the values in the original <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>. Therefore, changes to the <see cref="T:ServiceStack.Redis.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> continue to be reflected in the value collection.</remarks>
+        </member>
+        <member name="T:ServiceStack.Redis.RedisClientSet">
+            <summary>
+            Wrap the common redis set operations under a ICollection[string] interface.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.RedisClientSortedSet">
+            <summary>
+            Wrap the common redis set operations under a ICollection[string] interface.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Support.SerializedObjectWrapper">
+            <summary>
+            wraps a serialized representation of an object
+            </summary>
+            
+        </member>
+        <member name="M:ServiceStack.Redis.Support.SerializedObjectWrapper.#ctor(System.UInt16,System.ArraySegment{System.Byte})">
+            <summary>
+            Initializes a new instance of <see cref="T:ServiceStack.Redis.Support.SerializedObjectWrapper"/>.
+            </summary>
+            <param name="flags">Custom item data.</param>
+            <param name="data">The serialized item.</param>
+        </member>
+        <member name="P:ServiceStack.Redis.Support.SerializedObjectWrapper.Data">
+            <summary>
+            The data representing the item being stored/retireved.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.Support.SerializedObjectWrapper.Flags">
+            <summary>
+            Flags set for this instance.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.RedisClientsManagerExtensions">
+            <summary>
+            Useful wrapper IRedisClientsManager to cut down the boiler plat of most IRedisClient access
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Generic.RedisClientSet`1">
+            <summary>
+            Wrap the common redis set operations under a ICollection[string] interface.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.ConsistentHash`1.AddTarget(`0,System.Int32)">
+            <summary>
+             Adds a node and maps points across the circle
+            </summary>
+            <param name="node"> node to add </param>
+            <param name="weight"> An arbitrary number, specifies how often it occurs relative to other targets. </param>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.ConsistentHash`1.ModifiedBinarySearch(System.UInt64[],System.UInt64)">
+            <summary>
+              A variation of Binary Search algorithm. Given a number, matches the next highest number from the sorted array. 
+              If a higher number does not exist, then the first number in the array is returned.
+            </summary>
+            <param name="sortedArray"> a sorted array to perform the search </param>
+            <param name="val"> number to find the next highest number against </param>
+            <returns> next highest number </returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.ConsistentHash`1.Md5Hash(System.String)">
+            <summary>
+              Given a key, generates an unsigned 64 bit hash code using MD5
+            </summary>
+            <param name="key"> </param>
+            <returns> </returns>
+        </member>
+        <member name="T:ServiceStack.Redis.RedisException">
+            <summary>
+            Redis-specific exception. Thrown if unable to connect to Redis server due to socket exception, for example.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Support.Locking.DisposableDistributedLock">
+            <summary>
+            distributed lock class that follows the Resource Allocation Is Initialization pattern
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Locking.DisposableDistributedLock.#ctor(ServiceStack.Redis.IRedisClient,System.String,System.Int32,System.Int32)">
+            <summary>
+            Lock
+            </summary>
+            <param name="client"></param>
+            <param name="globalLockKey"></param>
+            <param name="acquisitionTimeout">in seconds</param>
+            <param name="lockTimeout">in seconds</param>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Locking.DisposableDistributedLock.Dispose">
+            <summary>
+            unlock
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.RedisTransaction">
+            <summary>
+            Adds support for Redis Transactions (i.e. MULTI/EXEC/DISCARD operations).
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisAllPurposePipeline.#ctor(ServiceStack.Redis.RedisClient)">
+            <summary>
+            General purpose pipeline
+            </summary>
+            <param name="redisClient"></param>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisAllPurposePipeline.Flush">
+            <summary>
+            Flush send buffer, and read responses
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisTransaction.QueueExpectQueued">
+            <summary>
+            Put "QUEUED" messages at back of queue
+            </summary>
+            <param name="queued"></param>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisTransaction.Exec">
+            <summary>
+            Issue exec command (not queued)
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisTransaction.handleMultiDataResultCount(System.Int32)">
+            <summary>
+            callback for after result count is read in
+            </summary>
+            <param name="count"></param>
+        </member>
+        <member name="T:ServiceStack.Redis.Messaging.RedisTransientMessageFactory">
+            <summary>
+            Transient message queues are a one-pass message queue service that starts
+            processing messages when Start() is called. Any subsequent Start() calls 
+            while the service is running is ignored.
+            
+            The transient service will continue to run until all messages have been 
+            processed after which time it will shutdown all processing until Start() is called again.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.Implementation.SerializingRedisClient.Serialize(System.Object)">
+            <summary>
+             Serialize object to buffer
+            </summary>
+            <param name="value">serializable object</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.Implementation.SerializingRedisClient.Serialize(System.Object[])">
+            <summary>
+            
+            </summary>
+            <param name="values">array of serializable objects</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.Implementation.SerializingRedisClient.Deserialize(System.Byte[])">
+            <summary>
+             Deserialize buffer to object
+            </summary>
+            <param name="someBytes">byte array to deserialize</param>
+            <returns></returns>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:ServiceStack.Redis.Support.Queue.Implementation.SerializingRedisClient.Deserialize(System.Byte[][])" -->
+        <member name="P:ServiceStack.Redis.Support.Queue.Implementation.SerializingRedisClient.Serializer">
+            <summary>
+            customize the client serializer
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.PooledRedisClientManager">
+            <summary>
+            Provides thread-safe pooling of redis client connections.
+            Allows load-balancing of master-write and read-slave hosts, ideal for
+            1 master and multiple replicated read slaves.
+            </summary>
+            <summary>
+            For interoperabilty GetCacheClient() and GetReadOnlyCacheClient()
+            return an ICacheClient wrapper around the redis manager which has the affect of calling 
+            GetClient() for all write operations and GetReadOnlyClient() for the read ones.
+            
+            This works well for master-slave replication scenarios where you have 
+            1 master that replicates to multiple read slaves.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.PooledRedisClientManager.#ctor(System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{System.String},ServiceStack.Redis.RedisClientManagerConfig)">
+            <summary>
+            Hosts can be an IP Address or Hostname in the format: host[:port]
+            e.g. 127.0.0.1:6379
+            default is: localhost:6379
+            </summary>
+            <param name="readWriteHosts">The write hosts.</param>
+            <param name="readOnlyHosts">The read hosts.</param>
+            <param name="config">The config.</param>
+        </member>
+        <member name="M:ServiceStack.Redis.PooledRedisClientManager.GetClient">
+            <summary>
+            Returns a Read/Write client (The default) using the hosts defined in ReadWriteHosts
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.PooledRedisClientManager.GetInActiveWriteClient">
+            <summary>
+            Called within a lock
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.PooledRedisClientManager.GetReadOnlyClient">
+            <summary>
+            Returns a ReadOnly client using the hosts defined in ReadOnlyHosts.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.PooledRedisClientManager.GetInActiveReadClient">
+            <summary>
+            Called within a lock
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.PooledRedisClientManager.DisposeReadOnlyClient(ServiceStack.Redis.RedisNativeClient)">
+            <summary>
+            Disposes the read only client.
+            </summary>
+            <param name="client">The client.</param>
+        </member>
+        <member name="M:ServiceStack.Redis.PooledRedisClientManager.DisposeWriteClient(ServiceStack.Redis.RedisNativeClient)">
+            <summary>
+            Disposes the write client.
+            </summary>
+            <param name="client">The client.</param>
+        </member>
+        <member name="P:ServiceStack.Redis.PooledRedisClientManager.NamespacePrefix">
+            <summary>
+            Gets or sets object key prefix.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.PooledRedisClientManager.DisposablePooledClient`1">
+            <summary>
+            Manage a client acquired from the PooledRedisClientManager
+            Dispose method will release the client back to the pool.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.PooledRedisClientManager.DisposablePooledClient`1.#ctor(ServiceStack.Redis.PooledRedisClientManager)">
+            <summary>
+            wrap the acquired client
+            </summary>
+            <param name="clientManager"></param>
+        </member>
+        <member name="M:ServiceStack.Redis.PooledRedisClientManager.DisposablePooledClient`1.Dispose">
+            <summary>
+            release the wrapped client back to the pool
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.PooledRedisClientManager.DisposablePooledClient`1.Client">
+            <summary>
+            access the wrapped client
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.RedisClientFactory">
+            <summary>
+            Provide the default factory implementation for creating a RedisClient that 
+            can be mocked and used by different 'Redis Client Managers' 
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Support.Queue.Implementation.SerializingRedisClientFactory">
+            <summary>
+            Factory to create SerializingRedisClient objects
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Generic.RedisClientSortedSet`1">
+            <summary>
+            Wrap the common redis set operations under a ICollection[string] interface.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Generic.RedisClientHash`2">
+            <summary>
+            Wrap the common redis set operations under a ICollection[string] interface.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Messaging.RedisMqServer">
+            <summary>
+            Creates a Redis MQ Server that processes each message on its own background thread.
+            i.e. if you register 3 handlers it will create 7 background threads:
+              - 1 listening to the Redis MQ Subscription, getting notified of each new message
+              - 3x1 Normal InQ for each message handler
+              - 3x1 PriorityQ for each message handler
+            
+            When RedisMqServer Starts it creates a background thread subscribed to the Redis MQ Topic that
+            listens for new incoming messages. It also starts 2 background threads for each message type:
+             - 1 for processing the services Priority Queue and 1 processing the services normal Inbox Queue.
+            
+            Priority Queue's can be enabled on a message-per-message basis by specifying types in the 
+            OnlyEnablePriortyQueuesForTypes property. The DisableAllPriorityQueues property disables all Queues.
+            
+            The Start/Stop methods are idempotent i.e. It's safe to call them repeatedly on multiple threads 
+            and the Redis MQ Server will only have Started or Stopped once.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.Messaging.RedisMqServer.RequestFilter">
+            <summary>
+            Execute global transformation or custom logic before a request is processed.
+            Must be thread-safe.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.Messaging.RedisMqServer.ResponseFilter">
+            <summary>
+            Execute global transformation or custom logic on the response.
+            Must be thread-safe.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.Messaging.RedisMqServer.ErrorHandler">
+            <summary>
+            Execute global error handler logic. Must be thread-safe.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.Messaging.RedisMqServer.OnlyEnablePriortyQueuesForTypes">
+            <summary>
+            If you only want to enable priority queue handlers (and threads) for specific msg types
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.Messaging.RedisMqServer.DisableAllPriorityQueues">
+            <summary>
+            Don't listen on any Priority Queues
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.BasicRedisClientManager">
+            <summary>
+            BasicRedisClientManager for ICacheClient
+            
+            For more interoperabilty I'm also implementing the ICacheClient on
+            this cache client manager which has the affect of calling 
+            GetCacheClient() for all write operations and GetReadOnlyCacheClient() 
+            for the read ones.
+            
+            This works well for master-slave replication scenarios where you have 
+            1 master that replicates to multiple read slaves.
+            </summary>
+            <summary>
+            Provides thread-safe retrievel of redis clients since each client is a new one.
+            Allows the configuration of different ReadWrite and ReadOnly hosts
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.BasicRedisClientManager.#ctor(System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Hosts can be an IP Address or Hostname in the format: host[:port]
+            e.g. 127.0.0.1:6379
+            default is: localhost:6379
+            </summary>
+            <param name="readWriteHosts">The write hosts.</param>
+            <param name="readOnlyHosts">The read hosts.</param>
+        </member>
+        <member name="M:ServiceStack.Redis.BasicRedisClientManager.GetClient">
+            <summary>
+            Returns a Read/Write client (The default) using the hosts defined in ReadWriteHosts
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.BasicRedisClientManager.GetReadOnlyClient">
+            <summary>
+            Returns a ReadOnly client using the hosts defined in ReadOnlyHosts.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.Redis.BasicRedisClientManager.NamespacePrefix">
+            <summary>
+            Gets or sets object key prefix.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Support.Locking.ReadLock">
+            <summary>
+            This class manages a read lock for a local readers/writer lock, 
+            using the Resource Acquisition Is Initialization pattern
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Locking.ReadLock.#ctor(System.Threading.ReaderWriterLockSlim)">
+            <summary>
+            RAII initialization 
+            </summary>
+            <param name="lockObject"></param>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Locking.ReadLock.Dispose">
+            <summary>
+            RAII disposal
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Pipeline.QueuedRedisCommand">
+            <summary>
+            A complete redis command, with method to send command, receive response, and run callback on success or failure
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.ISequentialData`1.PopAndUnlock">
+            <summary>
+            pop numProcessed items from queue and unlock queue for work item id that dequeued
+            items are associated with
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.ISequentialData`1.DoneProcessedWorkItem">
+            <summary>
+            A dequeued work item has been processed. When all of the dequeued items have been processed,
+            all items will be popped from the queue,and the queue unlocked for the work item id that
+            the dequeued items are associated with
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.ISequentialData`1.UpdateNextUnprocessed(`0)">
+            <summary>
+            Update first unprocessed item with new work item.
+            </summary>
+            <param name="newWorkItem"></param>
+        </member>
+        <member name="P:ServiceStack.Redis.Support.Queue.ISequentialData`1.DequeueItems">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.Implementation.SequentialData`1.PopAndUnlock">
+            <summary>
+            pop remaining items that were returned by dequeue, and unlock queue
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.Implementation.SequentialData`1.DoneProcessedWorkItem">
+            <summary>
+            indicate that an item has been processed by the caller
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.Implementation.SequentialData`1.UpdateNextUnprocessed(`0)">
+            <summary>
+            Update first unprocessed work item
+            </summary>
+            <param name="newWorkItem"></param>
+        </member>
+        <member name="T:ServiceStack.Redis.ShardedConnectionPool">
+            <summary>
+            Provides a redis connection pool that can be sharded
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Redis.ShardedConnectionPool.name">
+            <summary>
+            logical name
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Redis.ShardedConnectionPool.weight">
+            <summary>
+            An arbitrary weight relative to other nodes
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.ShardedConnectionPool.#ctor(System.String,System.Int32,System.String[])">
+            <param name="name">logical name</param>
+            <param name="weight">An arbitrary weight relative to other nodes</param>
+            <param name="readWriteHosts">redis nodes</param>
+        </member>
+        <member name="T:ServiceStack.Redis.ShardedRedisClientManager">
+            <summary>
+            Provides sharding of redis client connections.
+            uses consistent hashing to distribute keys across connection pools
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.ShardedRedisClientManager.GetConnectionPool(System.String)">
+            <summary>
+            maps a key to a redis connection pool
+            </summary>
+            <param name="key">key to map</param>
+            <returns>a redis connection pool</returns>
+        </member>
+        <member name="T:ServiceStack.Redis.Support.Queue.Implementation.RedisSimpleWorkQueue`1">
+            <summary>
+            simple distributed work item queue 
+            
+            
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.Implementation.RedisSimpleWorkQueue`1.Enqueue(`0)">
+            <summary>
+            Queue incoming messages
+            </summary>
+            <param name="msg"></param>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.Queue.Implementation.RedisSimpleWorkQueue`1.Dequeue(System.Int32)">
+            <summary>
+            Dequeue next batch of work items for processing. After this method is called,
+            no other work items with same id will be available for
+            dequeuing until PostDequeue is called
+            </summary>
+            <returns>KeyValuePair: key is work item id, and value is list of dequeued items.
+            </returns>
+        </member>
+        <member name="T:ServiceStack.Redis.BufferPool">
+            <summary>
+            Courtesy of @marcgravell
+            http://code.google.com/p/protobuf-net/source/browse/trunk/protobuf-net/BufferPool.cs
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.RedisCacheClientFactory">
+            <summary>
+            Provide the factory implementation for creating a RedisCacheClient that 
+            can be mocked and used by different 'Redis Client Managers' 
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Messaging.RedisMqHost">
+            <summary>
+            Creates an MQ Host that processes all messages on a single background thread. 
+            i.e. If you register 3 handlers it will only create 1 background thread.
+            
+            The same background thread that listens to the Redis MQ Subscription for new messages 
+            also cycles through each registered handler processing all pending messages one-at-a-time:
+            first in the message PriorityQ, then in the normal message InQ.
+            
+            The Start/Stop methods are idempotent i.e. It's safe to call them repeatedly on multiple threads 
+            and the Redis MQ Host will only have Started/Stopped once.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.Messaging.RedisMqHost.ReplyClientFactory">
+            <summary>
+            Inject your own Reply Client Factory to handle custom Message.ReplyTo urls.
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -1,37 +1,34 @@
-﻿using MediaBrowser.Model.Entities;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Logging;
+using MediaBrowser.Common.Win32;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Controller.Sorting;
+using MediaBrowser.Model.Entities;
 using System;
-using System.Threading.Tasks;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Model.Tasks;
+using SortOrder = MediaBrowser.Controller.Sorting.SortOrder;
 
 namespace MediaBrowser.Controller.Entities
 {
+    /// <summary>
+    /// Class Folder
+    /// </summary>
     public class Folder : BaseItem
     {
-        #region Events
         /// <summary>
-        /// Fires whenever a validation routine updates our children.  The added and removed children are properties of the args.
-        /// *** Will fire asynchronously. ***
+        /// Gets a value indicating whether this instance is folder.
         /// </summary>
-        public event EventHandler<ChildrenChangedEventArgs> ChildrenChanged;
-        protected void OnChildrenChanged(ChildrenChangedEventArgs args)
-        {
-            if (ChildrenChanged != null)
-            {
-                Task.Run( () => 
-                    {
-                        ChildrenChanged(this, args);
-                        Kernel.Instance.OnLibraryChanged(args);
-                    });
-            }
-        }
-
-        #endregion
-
+        /// <value><c>true</c> if this instance is folder; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
         public override bool IsFolder
         {
             get
@@ -40,49 +37,536 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is physical root.
+        /// </summary>
+        /// <value><c>true</c> if this instance is physical root; otherwise, <c>false</c>.</value>
+        public bool IsPhysicalRoot { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is root.
+        /// </summary>
+        /// <value><c>true</c> if this instance is root; otherwise, <c>false</c>.</value>
         public bool IsRoot { get; set; }
 
-        public bool IsVirtualFolder
+        /// <summary>
+        /// Gets a value indicating whether this instance is virtual folder.
+        /// </summary>
+        /// <value><c>true</c> if this instance is virtual folder; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
+        public virtual bool IsVirtualFolder
         {
             get
             {
-                return Parent != null && Parent.IsRoot;
+                return false;
             }
         }
-        protected object childLock = new object();
-        protected List<BaseItem> children;
-        protected virtual List<BaseItem> ActualChildren
+
+        /// <summary>
+        /// Return the id that should be used to key display prefs for this item.
+        /// Default is based on the type for everything except actual generic folders.
+        /// </summary>
+        /// <value>The display prefs id.</value>
+        [IgnoreDataMember]
+        public virtual Guid DisplayPrefsId
         {
             get
             {
-                if (children == null)
+                var thisType = GetType();
+                return thisType == typeof(Folder) ? Id : thisType.FullName.GetMD5();
+            }
+        }
+
+        /// <summary>
+        /// The _display prefs
+        /// </summary>
+        private IEnumerable<DisplayPreferences> _displayPrefs;
+        /// <summary>
+        /// The _display prefs initialized
+        /// </summary>
+        private bool _displayPrefsInitialized;
+        /// <summary>
+        /// The _display prefs sync lock
+        /// </summary>
+        private object _displayPrefsSyncLock = new object();
+        /// <summary>
+        /// Gets the display prefs.
+        /// </summary>
+        /// <value>The display prefs.</value>
+        [IgnoreDataMember]
+        public IEnumerable<DisplayPreferences> DisplayPrefs
+        {
+            get
+            {
+                // Call ToList to exhaust the stream because we'll be iterating over this multiple times
+                LazyInitializer.EnsureInitialized(ref _displayPrefs, ref _displayPrefsInitialized, ref _displayPrefsSyncLock, () => Kernel.Instance.DisplayPreferencesRepository.RetrieveDisplayPrefs(this).ToList());
+                return _displayPrefs;
+            }
+            private set
+            {
+                _displayPrefs = value;
+
+                if (value == null)
                 {
-                    LoadChildren();
+                    _displayPrefsInitialized = false;
                 }
-                return children;
+            }
+        }
+
+        /// <summary>
+        /// Gets the display prefs.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="createIfNull">if set to <c>true</c> [create if null].</param>
+        /// <returns>DisplayPreferences.</returns>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        public DisplayPreferences GetDisplayPrefs(User user, bool createIfNull)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException();
             }
 
-            set
+            if (DisplayPrefs == null)
             {
-                children = value;
+                if (!createIfNull)
+                {
+                    return null;
+                }
+
+                AddOrUpdateDisplayPrefs(user, new DisplayPreferences { UserId = user.Id });
+            }
+
+            var data = DisplayPrefs.FirstOrDefault(u => u.UserId == user.Id);
+
+            if (data == null && createIfNull)
+            {
+                data = new DisplayPreferences { UserId = user.Id };
+                AddOrUpdateDisplayPrefs(user, data);
+            }
+
+            return data;
+        }
+
+        /// <summary>
+        /// Adds the or update display prefs.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="data">The data.</param>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        public void AddOrUpdateDisplayPrefs(User user, DisplayPreferences data)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            if (data == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            data.UserId = user.Id;
+
+            if (DisplayPrefs == null)
+            {
+                DisplayPrefs = new[] { data };
+            }
+            else
+            {
+                var list = DisplayPrefs.Where(u => u.UserId != user.Id).ToList();
+                list.Add(data);
+                DisplayPrefs = list;
+            }
+        }
+
+        #region Sorting
+
+        /// <summary>
+        /// The _sort by options
+        /// </summary>
+        private Dictionary<string, IComparer<BaseItem>> _sortByOptions;
+        /// <summary>
+        /// Dictionary of sort options - consists of a display value (localized) and an IComparer of BaseItem
+        /// </summary>
+        /// <value>The sort by options.</value>
+        [IgnoreDataMember]
+        public Dictionary<string, IComparer<BaseItem>> SortByOptions
+        {
+            get { return _sortByOptions ?? (_sortByOptions = GetSortByOptions()); }
+        }
+
+        /// <summary>
+        /// Returns the valid set of sort by options for this folder type.
+        /// Override or extend to modify.
+        /// </summary>
+        /// <returns>Dictionary{System.StringIComparer{BaseItem}}.</returns>
+        protected virtual Dictionary<string, IComparer<BaseItem>> GetSortByOptions()
+        {
+            return new Dictionary<string, IComparer<BaseItem>> {            
+                {LocalizedStrings.Instance.GetString("NameDispPref"), new BaseItemComparer(SortOrder.Name)},
+                {LocalizedStrings.Instance.GetString("DateDispPref"), new BaseItemComparer(SortOrder.Date)},
+                {LocalizedStrings.Instance.GetString("RatingDispPref"), new BaseItemComparer(SortOrder.Rating)},
+                {LocalizedStrings.Instance.GetString("RuntimeDispPref"), new BaseItemComparer(SortOrder.Runtime)},
+                {LocalizedStrings.Instance.GetString("YearDispPref"), new BaseItemComparer(SortOrder.Year)}
+            };
+
+        }
+
+        /// <summary>
+        /// Get a sorting comparer by name
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns>IComparer{BaseItem}.</returns>
+        private IComparer<BaseItem> GetSortingFunction(string name)
+        {
+            IComparer<BaseItem> sorting;
+            SortByOptions.TryGetValue(name ?? "", out sorting);
+            return sorting ?? new BaseItemComparer(SortOrder.Name);
+        }
+
+        /// <summary>
+        /// Get the list of sort by choices for this folder (localized).
+        /// </summary>
+        /// <value>The sort by option strings.</value>
+        [IgnoreDataMember]
+        public IEnumerable<string> SortByOptionStrings
+        {
+            get { return SortByOptions.Keys; }
+        }
+
+        #endregion
+
+        #region Indexing
+
+        /// <summary>
+        /// The _index by options
+        /// </summary>
+        private Dictionary<string, Func<User, IEnumerable<BaseItem>>> _indexByOptions;
+        /// <summary>
+        /// Dictionary of index options - consists of a display value and an indexing function
+        /// which takes User as a parameter and returns an IEnum of BaseItem
+        /// </summary>
+        /// <value>The index by options.</value>
+        [IgnoreDataMember]
+        public Dictionary<string, Func<User, IEnumerable<BaseItem>>> IndexByOptions
+        {
+            get { return _indexByOptions ?? (_indexByOptions = GetIndexByOptions()); }
+        }
+
+        /// <summary>
+        /// Returns the valid set of index by options for this folder type.
+        /// Override or extend to modify.
+        /// </summary>
+        /// <returns>Dictionary{System.StringFunc{UserIEnumerable{BaseItem}}}.</returns>
+        protected virtual Dictionary<string, Func<User, IEnumerable<BaseItem>>> GetIndexByOptions()
+        {
+            return new Dictionary<string, Func<User, IEnumerable<BaseItem>>> {            
+                {LocalizedStrings.Instance.GetString("NoneDispPref"), null}, 
+                {LocalizedStrings.Instance.GetString("PerformerDispPref"), GetIndexByPerformer},
+                {LocalizedStrings.Instance.GetString("GenreDispPref"), GetIndexByGenre},
+                {LocalizedStrings.Instance.GetString("DirectorDispPref"), GetIndexByDirector},
+                {LocalizedStrings.Instance.GetString("YearDispPref"), GetIndexByYear},
+                {LocalizedStrings.Instance.GetString("OfficialRatingDispPref"), null},
+                {LocalizedStrings.Instance.GetString("StudioDispPref"), GetIndexByStudio}
+            };
+
+        }
+
+        /// <summary>
+        /// Gets the index by actor.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        protected IEnumerable<BaseItem> GetIndexByPerformer(User user)
+        {
+            return GetIndexByPerson(user, new List<string> { PersonType.Actor, PersonType.MusicArtist }, LocalizedStrings.Instance.GetString("PerformerDispPref"));
+        }
+
+        /// <summary>
+        /// Gets the index by director.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        protected IEnumerable<BaseItem> GetIndexByDirector(User user)
+        {
+            return GetIndexByPerson(user, new List<string> { PersonType.Director }, LocalizedStrings.Instance.GetString("DirectorDispPref"));
+        }
+
+        /// <summary>
+        /// Gets the index by person.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="personTypes">The person types we should match on</param>
+        /// <param name="indexName">Name of the index.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        protected IEnumerable<BaseItem> GetIndexByPerson(User user, List<string> personTypes, string indexName)
+        {
+
+            // Even though this implementation means multiple iterations over the target list - it allows us to defer
+            // the retrieval of the individual children for each index value until they are requested.
+            using (new Profiler(indexName + " Index Build for " + Name))
+            {
+                // Put this in a local variable to avoid an implicitly captured closure
+                var currentIndexName = indexName;
+
+                var us = this;
+                var candidates = RecursiveChildren.Where(i => i.IncludeInIndex && i.AllPeople != null).ToList();
+
+                return candidates.AsParallel().SelectMany(i => i.AllPeople.Where(p => personTypes.Contains(p.Type))
+                    .Select(a => a.Name))
+                    .Distinct()
+                    .Select(i =>
+                    {
+                        try
+                        {
+                            return Kernel.Instance.LibraryManager.GetPerson(i).Result;
+                        }
+                        catch (IOException ex)
+                        {
+                            Logger.LogException("Error getting person {0}", ex, i);
+                            return null;
+                        }
+                        catch (AggregateException ex)
+                        {
+                            Logger.LogException("Error getting person {0}", ex, i);
+                            return null;
+                        }
+                    })
+                    .Where(i => i != null)
+                    .Select(a => new IndexFolder(us, a,
+                                        candidates.Where(i => i.AllPeople.Any(p => personTypes.Contains(p.Type) && p.Name.Equals(a.Name, StringComparison.OrdinalIgnoreCase))
+                                        ), currentIndexName));
+
+            }
+        }
+
+        /// <summary>
+        /// Gets the index by studio.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        protected IEnumerable<BaseItem> GetIndexByStudio(User user)
+        {
+            // Even though this implementation means multiple iterations over the target list - it allows us to defer
+            // the retrieval of the individual children for each index value until they are requested.
+            using (new Profiler("Studio Index Build for " + Name))
+            {
+                var indexName = LocalizedStrings.Instance.GetString("StudioDispPref");
+
+                var candidates = RecursiveChildren.Where(i => i.IncludeInIndex && i.Studios != null).ToList();
+
+                return candidates.AsParallel().SelectMany(i => i.Studios)
+                    .Distinct()
+                    .Select(i =>
+                    {
+                        try
+                        {
+                            return Kernel.Instance.LibraryManager.GetStudio(i).Result;
+                        }
+                        catch (IOException ex)
+                        {
+                            Logger.LogException("Error getting studio {0}", ex, i);
+                            return null;
+                        }
+                        catch (AggregateException ex)
+                        {
+                            Logger.LogException("Error getting studio {0}", ex, i);
+                            return null;
+                        }
+                    })
+                    .Where(i => i != null)
+                    .Select(ndx => new IndexFolder(this, ndx, candidates.Where(i => i.Studios.Any(s => s.Equals(ndx.Name, StringComparison.OrdinalIgnoreCase))), indexName));
+            }
+        }
+
+        /// <summary>
+        /// Gets the index by genre.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        protected IEnumerable<BaseItem> GetIndexByGenre(User user)
+        {
+            // Even though this implementation means multiple iterations over the target list - it allows us to defer
+            // the retrieval of the individual children for each index value until they are requested.
+            using (new Profiler("Genre Index Build for " + Name))
+            {
+                var indexName = LocalizedStrings.Instance.GetString("GenreDispPref");
+
+                //we need a copy of this so we don't double-recurse
+                var candidates = RecursiveChildren.Where(i => i.IncludeInIndex && i.Genres != null).ToList();
+
+                return candidates.AsParallel().SelectMany(i => i.Genres)
+                    .Distinct()
+                    .Select(i =>
+                        {
+                            try
+                            {
+                                return Kernel.Instance.LibraryManager.GetGenre(i).Result;
+                            }
+                            catch (IOException ex)
+                            {
+                                Logger.LogException("Error getting genre {0}", ex, i);
+                                return null;
+                            }
+                            catch (AggregateException ex)
+                            {
+                                Logger.LogException("Error getting genre {0}", ex, i);
+                                return null;
+                            }
+                        })
+                    .Where(i => i != null)
+                    .Select(genre => new IndexFolder(this, genre, candidates.Where(i => i.Genres.Any(g => g.Equals(genre.Name, StringComparison.OrdinalIgnoreCase))), indexName)
+                );
+            }
+        }
+
+        /// <summary>
+        /// Gets the index by year.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        protected IEnumerable<BaseItem> GetIndexByYear(User user)
+        {
+            // Even though this implementation means multiple iterations over the target list - it allows us to defer
+            // the retrieval of the individual children for each index value until they are requested.
+            using (new Profiler("Production Year Index Build for " + Name))
+            {
+                var indexName = LocalizedStrings.Instance.GetString("YearDispPref");
+
+                //we need a copy of this so we don't double-recurse
+                var candidates = RecursiveChildren.Where(i => i.IncludeInIndex && i.ProductionYear.HasValue).ToList();
+
+                return candidates.AsParallel().Select(i => i.ProductionYear.Value)
+                    .Distinct()
+                    .Select(i =>
+                    {
+                        try
+                        {
+                            return Kernel.Instance.LibraryManager.GetYear(i).Result;
+                        }
+                        catch (IOException ex)
+                        {
+                            Logger.LogException("Error getting year {0}", ex, i);
+                            return null;
+                        }
+                        catch (AggregateException ex)
+                        {
+                            Logger.LogException("Error getting year {0}", ex, i);
+                            return null;
+                        }
+                    })
+                    .Where(i => i != null)
+
+                    .Select(ndx => new IndexFolder(this, ndx, candidates.Where(i => i.ProductionYear == int.Parse(ndx.Name)), indexName));
+
+            }
+        }
+
+        /// <summary>
+        /// Returns the indexed children for this user from the cache. Caches them if not already there.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="indexBy">The index by.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        private IEnumerable<BaseItem> GetIndexedChildren(User user, string indexBy)
+        {
+            List<BaseItem> result;
+            var cacheKey = user.Name + indexBy;
+            IndexCache.TryGetValue(cacheKey, out result);
+
+            if (result == null)
+            {
+                //not cached - cache it
+                Func<User, IEnumerable<BaseItem>> indexing;
+                IndexByOptions.TryGetValue(indexBy, out indexing);
+                result = BuildIndex(indexBy, indexing, user);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Get the list of indexy by choices for this folder (localized).
+        /// </summary>
+        /// <value>The index by option strings.</value>
+        [IgnoreDataMember]
+        public IEnumerable<string> IndexByOptionStrings
+        {
+            get { return IndexByOptions.Keys; }
+        }
+
+        /// <summary>
+        /// The index cache
+        /// </summary>
+        protected ConcurrentDictionary<string, List<BaseItem>> IndexCache = new ConcurrentDictionary<string, List<BaseItem>>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Builds the index.
+        /// </summary>
+        /// <param name="indexKey">The index key.</param>
+        /// <param name="indexFunction">The index function.</param>
+        /// <param name="user">The user.</param>
+        /// <returns>List{BaseItem}.</returns>
+        protected virtual List<BaseItem> BuildIndex(string indexKey, Func<User, IEnumerable<BaseItem>> indexFunction, User user)
+        {
+            return indexFunction != null
+                       ? IndexCache[user.Name + indexKey] = indexFunction(user).ToList()
+                       : null;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// The children
+        /// </summary>
+        private ConcurrentBag<BaseItem> _children;
+        /// <summary>
+        /// The _children initialized
+        /// </summary>
+        private bool _childrenInitialized;
+        /// <summary>
+        /// The _children sync lock
+        /// </summary>
+        private object _childrenSyncLock = new object();
+        /// <summary>
+        /// Gets or sets the actual children.
+        /// </summary>
+        /// <value>The actual children.</value>
+        protected virtual ConcurrentBag<BaseItem> ActualChildren
+        {
+            get
+            {
+                LazyInitializer.EnsureInitialized(ref _children, ref _childrenInitialized, ref _childrenSyncLock, LoadChildren);
+                return _children;
+            }
+            private set
+            {
+                _children = value;
+
+                if (value == null)
+                {
+                    _childrenInitialized = false;
+                }
             }
         }
 
         /// <summary>
         /// thread-safe access to the actual children of this folder - without regard to user
         /// </summary>
-        public IEnumerable<BaseItem> Children
+        /// <value>The children.</value>
+        [IgnoreDataMember]
+        public ConcurrentBag<BaseItem> Children
         {
             get
             {
-                lock (childLock)
-                    return ActualChildren.ToList();
+                return ActualChildren;
             }
         }
 
         /// <summary>
         /// thread-safe access to all recursive children of this folder - without regard to user
         /// </summary>
+        /// <value>The recursive children.</value>
+        [IgnoreDataMember]
         public IEnumerable<BaseItem> RecursiveChildren
         {
             get
@@ -91,10 +575,10 @@ namespace MediaBrowser.Controller.Entities
                 {
                     yield return item;
 
-                    var subFolder = item as Folder;
-
-                    if (subFolder != null)
+                    if (item.IsFolder)
                     {
+                        var subFolder = (Folder)item;
+
                         foreach (var subitem in subFolder.RecursiveChildren)
                         {
                             yield return subitem;
@@ -103,215 +587,348 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
         }
-                
+
 
         /// <summary>
-        /// Loads and validates our children
+        /// Loads our children.  Validation will occur externally.
+        /// We want this sychronous.
         /// </summary>
-        protected virtual void LoadChildren()
+        /// <returns>ConcurrentBag{BaseItem}.</returns>
+        protected virtual ConcurrentBag<BaseItem> LoadChildren()
         {
-            //first - load our children from the repo
-            lock (childLock)
-                children = GetCachedChildren();
-
-            //then kick off a validation against the actual file system
-            Task.Run(() => ValidateChildren());
+            //just load our children from the repo - the library will be validated and maintained in other processes
+            return new ConcurrentBag<BaseItem>(GetCachedChildren());
         }
 
-        protected bool ChildrenValidating = false;
+        /// <summary>
+        /// Gets or sets the current validation cancellation token source.
+        /// </summary>
+        /// <value>The current validation cancellation token source.</value>
+        private CancellationTokenSource CurrentValidationCancellationTokenSource { get; set; }
+
+        /// <summary>
+        /// Validates that the children of the folder still exist
+        /// </summary>
+        /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="recursive">if set to <c>true</c> [recursive].</param>
+        /// <returns>Task.</returns>
+        public async Task ValidateChildren(IProgress<TaskProgress> progress, CancellationToken cancellationToken, bool? recursive = null)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Cancel the current validation, if any
+            if (CurrentValidationCancellationTokenSource != null)
+            {
+                CurrentValidationCancellationTokenSource.Cancel();
+            }
+
+            // Create an inner cancellation token. This can cancel all validations from this level on down,
+            // but nothing above this
+            var innerCancellationTokenSource = new CancellationTokenSource();
+
+            try
+            {
+                CurrentValidationCancellationTokenSource = innerCancellationTokenSource;
+
+                var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(innerCancellationTokenSource.Token, cancellationToken);
+
+                await ValidateChildrenInternal(progress, linkedCancellationTokenSource.Token, recursive).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException ex)
+            {
+                Logger.LogInfo("ValidateChildren cancelled for " + Name);
+
+                // If the outer cancelletion token in the cause for the cancellation, throw it
+                if (cancellationToken.IsCancellationRequested && ex.CancellationToken == cancellationToken)
+                {
+                    throw;
+                }
+            }
+            finally
+            {
+                // Null out the token source             
+                if (CurrentValidationCancellationTokenSource == innerCancellationTokenSource)
+                {
+                    CurrentValidationCancellationTokenSource = null;
+                }
+
+                innerCancellationTokenSource.Dispose();
+            }
+        }
 
         /// <summary>
         /// Compare our current children (presumably just read from the repo) with the current state of the file system and adjust for any changes
         /// ***Currently does not contain logic to maintain items that are unavailable in the file system***
         /// </summary>
-        /// <returns></returns>
-        protected async virtual void ValidateChildren()
+        /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="recursive">if set to <c>true</c> [recursive].</param>
+        /// <returns>Task.</returns>
+        protected async virtual Task ValidateChildrenInternal(IProgress<TaskProgress> progress, CancellationToken cancellationToken, bool? recursive = null)
         {
-            if (ChildrenValidating) return; //only ever want one of these going at once and don't want them to fire off in sequence so don't use lock
-            ChildrenValidating = true;
-            bool changed = false; //this will save us a little time at the end if nothing changes
+            // Nothing to do here
+            if (LocationType != LocationType.FileSystem)
+            {
+                return;
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             var changedArgs = new ChildrenChangedEventArgs(this);
+
             //get the current valid children from filesystem (or wherever)
-            var nonCachedChildren = await GetNonCachedChildren();
+            var nonCachedChildren = GetNonCachedChildren();
+
             if (nonCachedChildren == null) return; //nothing to validate
+
+            progress.Report(new TaskProgress { PercentComplete = 5 });
+
             //build a dictionary of the current children we have now by Id so we can compare quickly and easily
-            Dictionary<Guid, BaseItem> currentChildren;
-            lock (childLock)
-                currentChildren =  ActualChildren.ToDictionary(i => i.Id);
-            
+            var currentChildren = ActualChildren.ToDictionary(i => i.Id);
+
             //create a list for our validated children
-            var validChildren = new List<BaseItem>();
-            //now traverse the valid children and find any changed or new items
-            foreach (var child in nonCachedChildren)
+            var validChildren = new ConcurrentBag<Tuple<BaseItem, bool>>();
+
+            cancellationToken.ThrowIfCancellationRequested();
+            
+            Parallel.ForEach(nonCachedChildren, child =>
             {
                 BaseItem currentChild;
-                currentChildren.TryGetValue(child.Id, out currentChild);
-                if (currentChild == null)
-                {
-                    //brand new item - needs to be added
-                    changed = true;
-                    changedArgs.ItemsAdded.Add(child);
-                    //refresh it
-                    child.RefreshMetadata();
-                    Logger.LogInfo("New Item Added to Library: ("+child.GetType().Name+") "+ child.Name + " (" + child.Path + ")");
-                    //save it in repo...
 
-                    //and add it to our valid children
-                    validChildren.Add(child);
-                    //fire an added event...?
-                    //if it is a folder we need to validate its children as well
-                    Folder folder = child as Folder;
-                    if (folder != null)
+                if (currentChildren.TryGetValue(child.Id, out currentChild))
+                {
+                    currentChild.ResolveArgs = child.ResolveArgs;
+
+                    //existing item - check if it has changed
+                    if (currentChild.HasChanged(child))
                     {
-                        folder.ValidateChildren();
-                        //probably need to refresh too...
+                        EntityResolutionHelper.EnsureDates(currentChild, child.ResolveArgs);
+
+                        changedArgs.AddUpdatedItem(currentChild);
+                        validChildren.Add(new Tuple<BaseItem, bool>(currentChild, true));
+                    }
+                    else
+                    {
+                        validChildren.Add(new Tuple<BaseItem, bool>(currentChild, false));
                     }
                 }
                 else
                 {
-                    //existing item - check if it has changed
-                    if (currentChild.IsChanged(child))
-                    {
-                        changed = true;
-                        //update resolve args and refresh meta
-                        //  Note - we are refreshing the existing child instead of the newly found one so the "Except" operation below
-                        //  will identify this item as the same one
-                        currentChild.ResolveArgs = child.ResolveArgs;
-                        currentChild.RefreshMetadata();
-                        Logger.LogInfo("Item Changed: ("+currentChild.GetType().Name+") "+ currentChild.Name + " (" + currentChild.Path + ")");
-                        //save it in repo...
-                        validChildren.Add(currentChild);
-                    }
-                    else
-                    {
-                        //current child that didn't change - just put it in the valid children
-                        validChildren.Add(currentChild);
-                    }
+                    //brand new item - needs to be added
+                    changedArgs.AddNewItem(child);
+
+                    validChildren.Add(new Tuple<BaseItem, bool>(child, true));
                 }
+            });
+
+            // If any items were added or removed....
+            if (!changedArgs.ItemsAdded.IsEmpty || currentChildren.Count != validChildren.Count)
+            {
+                var newChildren = validChildren.Select(c => c.Item1).ToList();
+
+                //that's all the new and changed ones - now see if there are any that are missing
+                changedArgs.ItemsRemoved = currentChildren.Values.Except(newChildren).ToList();
+
+                foreach (var item in changedArgs.ItemsRemoved)
+                {
+                    Logger.LogInfo("** " + item.Name + " Removed from library.");
+                }
+
+                var childrenReplaced = false;
+
+                if (changedArgs.ItemsRemoved.Count > 0)
+                {
+                    ActualChildren = new ConcurrentBag<BaseItem>(newChildren);
+                    childrenReplaced = true;
+                }
+
+                var saveTasks = new List<Task>();
+
+                foreach (var item in changedArgs.ItemsAdded)
+                {
+                    Logger.LogInfo("** " + item.Name + " Added to library.");
+
+                    if (!childrenReplaced)
+                    {
+                        _children.Add(item);
+                    }
+
+                    saveTasks.Add(Kernel.Instance.ItemRepository.SaveItem(item, CancellationToken.None));
+                }
+
+                await Task.WhenAll(saveTasks).ConfigureAwait(false);
+
+                //and save children in repo...
+                Logger.LogInfo("*** Saving " + newChildren.Count + " children for " + Name);
+                await Kernel.Instance.ItemRepository.SaveChildren(Id, newChildren, CancellationToken.None).ConfigureAwait(false);
             }
 
-            //that's all the new and changed ones - now see if there are any that are missing
-            changedArgs.ItemsRemoved = currentChildren.Values.Except(validChildren);
-            changed |= changedArgs.ItemsRemoved != null;
-
-            //now, if anything changed - replace our children
-            if (changed)
+            if (changedArgs.HasChange)
             {
-                if (changedArgs.ItemsRemoved != null) foreach (var item in changedArgs.ItemsRemoved) Logger.LogDebugInfo("** " + item.Name + " Removed from library.");
-
-                lock (childLock)
-                    ActualChildren = validChildren;
-                //and save children in repo...
+                //force the indexes to rebuild next time
+                IndexCache.Clear();
 
                 //and fire event
-                this.OnChildrenChanged(changedArgs);
+                Kernel.Instance.LibraryManager.OnLibraryChanged(changedArgs);
             }
-            ChildrenValidating = false;
 
+            progress.Report(new TaskProgress { PercentComplete = 15 });
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await RefreshChildren(validChildren, progress, cancellationToken, recursive).ConfigureAwait(false);
+
+            progress.Report(new TaskProgress { PercentComplete = 100 });
+        }
+
+        /// <summary>
+        /// Refreshes the children.
+        /// </summary>
+        /// <param name="children">The children.</param>
+        /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="recursive">if set to <c>true</c> [recursive].</param>
+        /// <returns>Task.</returns>
+        private Task RefreshChildren(IEnumerable<Tuple<BaseItem, bool>> children, IProgress<TaskProgress> progress, CancellationToken cancellationToken, bool? recursive)
+        {
+            var numComplete = 0;
+
+            var list = children.ToList();
+
+            var tasks = list.Select(tuple => Task.Run(async () =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var child = tuple.Item1;
+
+                //refresh it
+                await child.RefreshMetadata(cancellationToken, resetResolveArgs: child.IsFolder).ConfigureAwait(false);
+
+                //and add it to our valid children
+                //fire an added event...?
+                //if it is a folder we need to validate its children as well
+
+                // Refresh children if a folder and the item changed or recursive is set to true
+                var refreshChildren = child.IsFolder && (tuple.Item2 || (recursive.HasValue && recursive.Value));
+
+                if (refreshChildren)
+                {
+                    // Don't refresh children if explicitly set to false
+                    if (recursive.HasValue && recursive.Value == false)
+                    {
+                        refreshChildren = false;
+                    }
+                }
+
+                if (refreshChildren)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    await ((Folder)child).ValidateChildren(new Progress<TaskProgress> { }, cancellationToken, recursive: recursive).ConfigureAwait(false);
+                }
+
+                lock (progress)
+                {
+                    numComplete++;
+
+                    double percent = numComplete;
+                    percent /= list.Count;
+
+                    progress.Report(new TaskProgress { PercentComplete = (85 * percent) + 15 });
+                }
+            }));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return Task.WhenAll(tasks);
         }
 
         /// <summary>
         /// Get the children of this folder from the actual file system
         /// </summary>
-        /// <returns></returns>
-        protected async virtual Task<IEnumerable<BaseItem>> GetNonCachedChildren()
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        protected virtual IEnumerable<BaseItem> GetNonCachedChildren()
         {
-            ItemResolveEventArgs args = new ItemResolveEventArgs()
-            {
-                FileInfo = FileData.GetFileData(this.Path),
-                Parent = this.Parent,
-                Cancel = false,
-                Path = this.Path
-            };
+            IEnumerable<WIN32_FIND_DATA> fileSystemChildren;
 
-            // Gather child folder and files
-            if (args.IsDirectory)
+            try
             {
-                args.FileSystemChildren = FileData.GetFileSystemEntries(this.Path, "*").ToArray();
-
-                bool isVirtualFolder = Parent != null && Parent.IsRoot;
-                args = FileSystemHelper.FilterChildFileSystemEntries(args, isVirtualFolder);
+                fileSystemChildren = ResolveArgs.FileSystemChildren;
             }
-            else
+            catch (IOException ex)
             {
-                Logger.LogError("Folder has a path that is not a directory: " + this.Path);
-                return null;
+                Logger.LogException("Error getting ResolveArgs for {0}", ex, Path);
+                return new List<BaseItem> { };
             }
 
-            if (!EntityResolutionHelper.ShouldResolvePathContents(args))
-            {
-                return null;
-            }
-            return (await Task.WhenAll<BaseItem>(GetChildren(args.FileSystemChildren)).ConfigureAwait(false))
-                        .Where(i => i != null).OrderBy(f =>
-                        {
-                            return string.IsNullOrEmpty(f.SortName) ? f.Name : f.SortName;
-
-                        });
-
+            return Kernel.Instance.LibraryManager.GetItems<BaseItem>(fileSystemChildren, this);
         }
-
-        /// <summary>
-        /// Resolves a path into a BaseItem
-        /// </summary>
-        protected async Task<BaseItem> GetChild(string path,  WIN32_FIND_DATA? fileInfo = null)
-        {
-            ItemResolveEventArgs args = new ItemResolveEventArgs()
-            {
-                FileInfo = fileInfo ?? FileData.GetFileData(path),
-                Parent = this,
-                Cancel = false,
-                Path = path
-            };
-
-            args.FileSystemChildren = FileData.GetFileSystemEntries(path, "*").ToArray();
-            args = FileSystemHelper.FilterChildFileSystemEntries(args, false);
-
-            return Kernel.Instance.ResolveItem(args);
-
-        }
-
-        /// <summary>
-        /// Finds child BaseItems for us
-        /// </summary>
-        protected Task<BaseItem>[] GetChildren(WIN32_FIND_DATA[] fileSystemChildren)
-        {
-            Task<BaseItem>[] tasks = new Task<BaseItem>[fileSystemChildren.Length];
-
-            for (int i = 0; i < fileSystemChildren.Length; i++)
-            {
-                var child = fileSystemChildren[i];
-
-                tasks[i] = GetChild(child.Path, child);
-            }
-
-            return tasks;
-        }
-
 
         /// <summary>
         /// Get our children from the repo - stubbed for now
         /// </summary>
-        /// <returns></returns>
-        protected virtual List<BaseItem> GetCachedChildren()
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        protected virtual IEnumerable<BaseItem> GetCachedChildren()
         {
-            return new List<BaseItem>();
+            return Kernel.Instance.ItemRepository.RetrieveChildren(this);
         }
 
         /// <summary>
         /// Gets allowed children of an item
         /// </summary>
-        public IEnumerable<BaseItem> GetChildren(User user)
+        /// <param name="user">The user.</param>
+        /// <param name="indexBy">The index by.</param>
+        /// <param name="sortBy">The sort by.</param>
+        /// <param name="sortOrder">The sort order.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        public virtual IEnumerable<BaseItem> GetChildren(User user, string indexBy = null, string sortBy = null, Model.Entities.SortOrder? sortOrder = null)
         {
-            lock(childLock)
-                return ActualChildren.Where(c => c.IsParentalAllowed(user));
+            if (user == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            //the true root should return our users root folder children
+            if (IsPhysicalRoot) return user.RootFolder.GetChildren(user, indexBy, sortBy, sortOrder);
+
+            IEnumerable<BaseItem> result = null;
+
+            if (!string.IsNullOrEmpty(indexBy))
+            {
+                result = GetIndexedChildren(user, indexBy);
+            }
+
+            // If indexed is false or the indexing function is null
+            if (result == null)
+            {
+                result = ActualChildren.Where(c => c.IsVisible(user));
+            }
+
+            if (string.IsNullOrEmpty(sortBy))
+            {
+                return result;
+            }
+
+            return sortOrder.HasValue && sortOrder.Value == Model.Entities.SortOrder.Descending
+                       ? result.OrderByDescending(i => i, GetSortingFunction(sortBy))
+                       : result.OrderBy(i => i, GetSortingFunction(sortBy));
         }
 
         /// <summary>
         /// Gets allowed recursive children of an item
         /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        /// <exception cref="System.ArgumentNullException"></exception>
         public IEnumerable<BaseItem> GetRecursiveChildren(User user)
         {
+            if (user == null)
+            {
+                throw new ArgumentNullException();
+            }
+
             foreach (var item in GetChildren(user))
             {
                 yield return item;
@@ -331,289 +948,100 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Folders need to validate and refresh
         /// </summary>
-        /// <returns></returns>
-        public override Task ChangedExternally()
+        /// <returns>Task.</returns>
+        public override async Task ChangedExternally()
         {
-            return Task.Run(() =>
-                {
-                    if (this.IsRoot)
-                    {
-                        Kernel.Instance.ReloadRoot().ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        RefreshMetadata();
-                        ValidateChildren();
-                    }
-                });
-        }
+            await base.ChangedExternally().ConfigureAwait(false);
 
-        /// <summary>
-        /// Since it can be slow to make all of these calculations at once, this method will provide a way to get them all back together
-        /// </summary>
-        public ItemSpecialCounts GetSpecialCounts(User user)
-        {
-            var counts = new ItemSpecialCounts();
+            var progress = new Progress<TaskProgress> { };
 
-            IEnumerable<BaseItem> recursiveChildren = GetRecursiveChildren(user);
-
-            var recentlyAddedItems = GetRecentlyAddedItems(recursiveChildren, user);
-
-            counts.RecentlyAddedItemCount = recentlyAddedItems.Count;
-            counts.RecentlyAddedUnPlayedItemCount = GetRecentlyAddedUnplayedItems(recentlyAddedItems, user).Count;
-            counts.InProgressItemCount = GetInProgressItems(recursiveChildren, user).Count;
-            counts.PlayedPercentage = GetPlayedPercentage(recursiveChildren, user);
-
-            return counts;
-        }
-
-        /// <summary>
-        /// Finds all recursive items within a top-level parent that contain the given genre and are allowed for the current user
-        /// </summary>
-        public IEnumerable<BaseItem> GetItemsWithGenre(string genre, User user)
-        {
-            return GetRecursiveChildren(user).Where(f => f.Genres != null && f.Genres.Any(s => s.Equals(genre, StringComparison.OrdinalIgnoreCase)));
-        }
-
-        /// <summary>
-        /// Finds all recursive items within a top-level parent that contain the given year and are allowed for the current user
-        /// </summary>
-        public IEnumerable<BaseItem> GetItemsWithYear(int year, User user)
-        {
-            return GetRecursiveChildren(user).Where(f => f.ProductionYear.HasValue && f.ProductionYear == year);
-        }
-
-        /// <summary>
-        /// Finds all recursive items within a top-level parent that contain the given studio and are allowed for the current user
-        /// </summary>
-        public IEnumerable<BaseItem> GetItemsWithStudio(string studio, User user)
-        {
-            return GetRecursiveChildren(user).Where(f => f.Studios != null && f.Studios.Any(s => s.Equals(studio, StringComparison.OrdinalIgnoreCase)));
-        }
-
-        /// <summary>
-        /// Finds all recursive items within a top-level parent that the user has marked as a favorite
-        /// </summary>
-        public IEnumerable<BaseItem> GetFavoriteItems(User user)
-        {
-            return GetRecursiveChildren(user).Where(c =>
-            {
-                UserItemData data = c.GetUserData(user, false);
-
-                if (data != null)
-                {
-                    return data.IsFavorite;
-                }
-
-                return false;
-            });
-        }
-
-        /// <summary>
-        /// Finds all recursive items within a top-level parent that contain the given person and are allowed for the current user
-        /// </summary>
-        public IEnumerable<BaseItem> GetItemsWithPerson(string person, User user)
-        {
-            return GetRecursiveChildren(user).Where(c =>
-            {
-                if (c.People != null)
-                {
-                    return c.People.ContainsKey(person);
-                }
-
-                return false;
-            });
-        }
-
-        /// <summary>
-        /// Finds all recursive items within a top-level parent that contain the given person and are allowed for the current user
-        /// </summary>
-        /// <param name="personType">Specify this to limit results to a specific PersonType</param>
-        public IEnumerable<BaseItem> GetItemsWithPerson(string person, string personType, User user)
-        {
-            return GetRecursiveChildren(user).Where(c =>
-            {
-                if (c.People != null)
-                {
-                    return c.People.ContainsKey(person) && c.People[person].Type.Equals(personType, StringComparison.OrdinalIgnoreCase);
-                }
-
-                return false;
-            });
-        }
-
-        /// <summary>
-        /// Gets all recently added items (recursive) within a folder, based on configuration and parental settings
-        /// </summary>
-        public List<BaseItem> GetRecentlyAddedItems(User user)
-        {
-            return GetRecentlyAddedItems(GetRecursiveChildren(user), user);
-        }
-
-        /// <summary>
-        /// Gets all recently added unplayed items (recursive) within a folder, based on configuration and parental settings
-        /// </summary>
-        public List<BaseItem> GetRecentlyAddedUnplayedItems(User user)
-        {
-            return GetRecentlyAddedUnplayedItems(GetRecursiveChildren(user), user);
-        }
-
-        /// <summary>
-        /// Gets all in-progress items (recursive) within a folder
-        /// </summary>
-        public List<BaseItem> GetInProgressItems(User user)
-        {
-            return GetInProgressItems(GetRecursiveChildren(user), user);
-        }
-
-        /// <summary>
-        /// Takes a list of items and returns the ones that are recently added
-        /// </summary>
-        private static List<BaseItem> GetRecentlyAddedItems(IEnumerable<BaseItem> itemSet, User user)
-        {
-            var list = new List<BaseItem>();
-
-            foreach (var item in itemSet)
-            {
-                if (!item.IsFolder && item.IsRecentlyAdded(user))
-                {
-                    list.Add(item);
-                }
-            }
-
-            return list;
-        }
-
-        /// <summary>
-        /// Takes a list of items and returns the ones that are recently added and unplayed
-        /// </summary>
-        private static List<BaseItem> GetRecentlyAddedUnplayedItems(IEnumerable<BaseItem> itemSet, User user)
-        {
-            var list = new List<BaseItem>();
-
-            foreach (var item in itemSet)
-            {
-                if (!item.IsFolder && item.IsRecentlyAdded(user))
-                {
-                    var userdata = item.GetUserData(user, false);
-
-                    if (userdata == null || userdata.PlayCount == 0)
-                    {
-                        list.Add(item);
-                    }
-                }
-            }
-
-            return list;
-        }
-
-        /// <summary>
-        /// Takes a list of items and returns the ones that are in progress
-        /// </summary>
-        private static List<BaseItem> GetInProgressItems(IEnumerable<BaseItem> itemSet, User user)
-        {
-            var list = new List<BaseItem>();
-
-            foreach (var item in itemSet)
-            {
-                if (!item.IsFolder)
-                {
-                    var userdata = item.GetUserData(user, false);
-
-                    if (userdata != null && userdata.PlaybackPositionTicks > 0)
-                    {
-                        list.Add(item);
-                    }
-                }
-            }
-
-            return list;
-        }
-
-        /// <summary>
-        /// Gets the total played percentage for a set of items
-        /// </summary>
-        private static decimal GetPlayedPercentage(IEnumerable<BaseItem> itemSet, User user)
-        {
-            itemSet = itemSet.Where(i => !(i.IsFolder));
-
-            decimal totalPercent = 0;
-
-            int count = 0;
-
-            foreach (BaseItem item in itemSet)
-            {
-                count++;
-                
-                UserItemData data = item.GetUserData(user, false);
-
-                if (data == null)
-                {
-                    continue;
-                }
-
-                if (data.PlayCount > 0)
-                {
-                    totalPercent += 100;
-                }
-                else if (data.PlaybackPositionTicks > 0 && item.RunTimeTicks.HasValue)
-                {
-                    decimal itemPercent = data.PlaybackPositionTicks;
-                    itemPercent /= item.RunTimeTicks.Value;
-                    totalPercent += itemPercent;
-                }
-            }
-
-            if (count == 0)
-            {
-                return 0;
-            }
-
-            return totalPercent / count;
+            await ValidateChildren(progress, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Marks the item as either played or unplayed
         /// </summary>
-        public override void SetPlayedStatus(User user, bool wasPlayed)
+        /// <param name="user">The user.</param>
+        /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
+        /// <returns>Task.</returns>
+        public override async Task SetPlayedStatus(User user, bool wasPlayed)
         {
-            base.SetPlayedStatus(user, wasPlayed);
+            await base.SetPlayedStatus(user, wasPlayed).ConfigureAwait(false);
 
             // Now sweep through recursively and update status
-            foreach (BaseItem item in GetChildren(user))
-            {
-                item.SetPlayedStatus(user, wasPlayed);
-            }
+            var tasks = GetChildren(user).Select(c => c.SetPlayedStatus(user, wasPlayed));
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Finds an item by ID, recursively
         /// </summary>
-        public override BaseItem FindItemById(Guid id)
+        /// <param name="id">The id.</param>
+        /// <param name="user">The user.</param>
+        /// <returns>BaseItem.</returns>
+        public override BaseItem FindItemById(Guid id, User user)
         {
-            var result = base.FindItemById(id);
+            var result = base.FindItemById(id, user);
 
             if (result != null)
             {
                 return result;
             }
 
-            //this should be functionally equivilent to what was here since it is IEnum and works on a thread-safe copy
-            return RecursiveChildren.FirstOrDefault(i => i.Id == id);
+            var children = user == null ? ActualChildren : GetChildren(user);
+
+            foreach (var child in children)
+            {
+                result = child.FindItemById(id, user);
+
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
         /// Finds an item by path, recursively
         /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>BaseItem.</returns>
+        /// <exception cref="System.ArgumentNullException"></exception>
         public BaseItem FindByPath(string path)
         {
-            if (PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(path))
             {
-                return this;
+                throw new ArgumentNullException();
+            }
+
+            try
+            {
+                if (ResolveArgs.PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase))
+                {
+                    return this;
+                }
+            }
+            catch (IOException ex)
+            {
+                Logger.LogException("Error getting ResolveArgs for {0}", ex, Path);
             }
 
             //this should be functionally equivilent to what was here since it is IEnum and works on a thread-safe copy
-            return RecursiveChildren.FirstOrDefault(i => i.PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase));
+            return RecursiveChildren.FirstOrDefault(i =>
+            {
+                try
+                {
+                    return i.ResolveArgs.PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase);
+                }
+                catch (IOException ex)
+                {
+                    Logger.LogException("Error getting ResolveArgs for {0}", ex, Path);
+                    return false;
+                }
+            });
         }
     }
 }

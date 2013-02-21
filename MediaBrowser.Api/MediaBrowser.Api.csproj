@@ -11,6 +11,8 @@
     <AssemblyName>MediaBrowser.Api</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -20,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -33,21 +36,53 @@
     <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MoreLinq">
+      <HintPath>..\packages\morelinq.1.0.15631-beta\lib\net35\MoreLinq.dll</HintPath>
+    </Reference>
+    <Reference Include="protobuf-net, Version=2.0.0.621, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\protobuf-net.2.0.0.621\lib\net40\protobuf-net.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack">
+      <HintPath>..\packages\ServiceStack.3.9.37\lib\net35\ServiceStack.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Common">
+      <HintPath>..\packages\ServiceStack.Common.3.9.37\lib\net35\ServiceStack.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\packages\ServiceStack.Common.3.9.37\lib\net35\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.OrmLite">
+      <HintPath>..\packages\ServiceStack.OrmLite.SqlServer.3.9.37\lib\ServiceStack.OrmLite.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.OrmLite.SqlServer">
+      <HintPath>..\packages\ServiceStack.OrmLite.SqlServer.3.9.37\lib\ServiceStack.OrmLite.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Redis">
+      <HintPath>..\packages\ServiceStack.Redis.3.9.37\lib\net35\ServiceStack.Redis.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.ServiceInterface">
+      <HintPath>..\packages\ServiceStack.3.9.37\lib\net35\ServiceStack.ServiceInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Text">
+      <HintPath>..\packages\ServiceStack.Text.3.9.37\lib\net35\ServiceStack.Text.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Reactive.Core, Version=2.0.20823.0, Culture=neutral, PublicKeyToken=f300afd708cefcd3, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Rx-Core.2.0.20823\lib\Net45\System.Reactive.Core.dll</HintPath>
+      <HintPath>..\packages\Rx-Core.2.0.21114\lib\Net45\System.Reactive.Core.dll</HintPath>
     </Reference>
     <Reference Include="System.Reactive.Interfaces, Version=2.0.20823.0, Culture=neutral, PublicKeyToken=f300afd708cefcd3, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Rx-Interfaces.2.0.20823\lib\Net45\System.Reactive.Interfaces.dll</HintPath>
+      <HintPath>..\packages\Rx-Interfaces.2.0.21114\lib\Net45\System.Reactive.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="System.Reactive.Linq, Version=2.0.20823.0, Culture=neutral, PublicKeyToken=f300afd708cefcd3, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Rx-Linq.2.0.20823\lib\Net45\System.Reactive.Linq.dll</HintPath>
+      <HintPath>..\packages\Rx-Linq.2.0.21114\lib\Net45\System.Reactive.Linq.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
@@ -58,33 +93,37 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiService.cs" />
-    <Compile Include="HttpHandlers\AudioHandler.cs" />
-    <Compile Include="HttpHandlers\BaseMediaHandler.cs" />
-    <Compile Include="HttpHandlers\FavoriteStatusHandler.cs" />
-    <Compile Include="HttpHandlers\MovieSpecialFeaturesHandler.cs" />
-    <Compile Include="HttpHandlers\PlayedStatusHandler.cs" />
-    <Compile Include="HttpHandlers\UserHandler.cs" />
-    <Compile Include="HttpHandlers\GenreHandler.cs" />
-    <Compile Include="HttpHandlers\GenresHandler.cs" />
-    <Compile Include="HttpHandlers\ImageHandler.cs" />
-    <Compile Include="HttpHandlers\ItemHandler.cs" />
-    <Compile Include="HttpHandlers\ItemListHandler.cs" />
-    <Compile Include="HttpHandlers\PersonHandler.cs" />
-    <Compile Include="HttpHandlers\PluginAssemblyHandler.cs" />
-    <Compile Include="HttpHandlers\PluginConfigurationHandler.cs" />
-    <Compile Include="HttpHandlers\PluginsHandler.cs" />
-    <Compile Include="HttpHandlers\ServerConfigurationHandler.cs" />
-    <Compile Include="HttpHandlers\StudioHandler.cs" />
-    <Compile Include="HttpHandlers\StudiosHandler.cs" />
-    <Compile Include="HttpHandlers\UserAuthenticationHandler.cs" />
-    <Compile Include="HttpHandlers\UserItemRatingHandler.cs" />
-    <Compile Include="HttpHandlers\UsersHandler.cs" />
-    <Compile Include="HttpHandlers\VideoHandler.cs" />
-    <Compile Include="HttpHandlers\WeatherHandler.cs" />
-    <Compile Include="HttpHandlers\YearHandler.cs" />
-    <Compile Include="HttpHandlers\YearsHandler.cs" />
+    <Compile Include="EnvironmentService.cs" />
+    <Compile Include="HttpHandlers\PlaybackCheckInHandler.cs" />
+    <Compile Include="Images\ImageRequest.cs" />
+    <Compile Include="Images\ImageService.cs" />
+    <Compile Include="Images\ImageWriter.cs" />
+    <Compile Include="Images\UploadImageHandler.cs" />
+    <Compile Include="LibraryService.cs" />
+    <Compile Include="LocalizationService.cs" />
+    <Compile Include="PackageService.cs" />
+    <Compile Include="PluginService.cs" />
+    <Compile Include="SystemService.cs" />
+    <Compile Include="Streaming\AudioHandler.cs" />
+    <Compile Include="Streaming\BaseHlsPlaylistHandler.cs" />
+    <Compile Include="Streaming\BaseProgressiveStreamingHandler.cs" />
+    <Compile Include="Streaming\BaseStreamingHandler.cs" />
+    <Compile Include="UserLibrary\BaseItemsByNameService.cs" />
+    <Compile Include="UserLibrary\GenresService.cs" />
+    <Compile Include="UserLibrary\ItemsService.cs" />
+    <Compile Include="UserLibrary\PersonsService.cs" />
+    <Compile Include="UserLibrary\StudiosService.cs" />
+    <Compile Include="UserLibrary\UserLibraryService.cs" />
+    <Compile Include="UserLibrary\YearsService.cs" />
+    <Compile Include="UserService.cs" />
+    <Compile Include="Streaming\HlsAudioPlaylistHandler.cs" />
+    <Compile Include="Streaming\HlsSegmentHandler.cs" />
+    <Compile Include="Streaming\HlsVideoPlaylistHandler.cs" />
+    <Compile Include="HttpHandlers\UpdateMediaLibraryHandler.cs" />
+    <Compile Include="Streaming\VideoHandler.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WeatherService.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
@@ -103,10 +142,15 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="options.xml" />
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\ProgramData-Server\Plugins\" /y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\MediaBrowser.ServerApplication\" /y</PostBuildEvent>
   </PropertyGroup>
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

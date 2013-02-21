@@ -1,20 +1,29 @@
 ﻿using MediaBrowser.Model.DTO;
-using MediaBrowser.UI.Controller;
+using MediaBrowser.Model.Net;
 using System;
 using System.Globalization;
-using System.Net.Cache;
 using System.Windows.Data;
-using System.Windows.Media.Imaging;
 
 namespace MediaBrowser.UI.Converters
 {
+    /// <summary>
+    /// Class UserImageConverter
+    /// </summary>
     public class UserImageConverter : IValueConverter
     {
+        /// <summary>
+        /// Converts a value.
+        /// </summary>
+        /// <param name="value">The value produced by the binding source.</param>
+        /// <param name="targetType">The type of the binding target property.</param>
+        /// <param name="parameter">The converter parameter to use.</param>
+        /// <param name="culture">The culture to use in the converter.</param>
+        /// <returns>A converted value. If the method returns null, the valid null value is used.</returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var user = value as DtoUser;
 
-            if (user != null && user.HasImage)
+            if (user != null && user.HasPrimaryImage)
             {
                 var config = parameter as string;
 
@@ -33,14 +42,33 @@ namespace MediaBrowser.UI.Converters
                     maxHeight = GetSize(vals[3]);
                 }
 
-                var uri = UIKernel.Instance.ApiClient.GetUserImageUrl(user.Id, width, height, maxWidth, maxHeight, 100);
+                var uri = App.Instance.ApiClient.GetUserImageUrl(user, new ImageOptions
+                {
+                    Width = width,
+                    Height = height,
+                    MaxWidth = maxWidth,
+                    MaxHeight = maxHeight,
+                    Quality = 100
+                });
 
-                return new BitmapImage(new Uri(uri), new RequestCachePolicy(RequestCacheLevel.Revalidate));
+                try
+                {
+                    return App.Instance.GetRemoteBitmapAsync(uri).Result;
+                }
+                catch (HttpException)
+                {
+                    
+                }
             }
 
             return null;
         }
 
+        /// <summary>
+        /// Gets the size.
+        /// </summary>
+        /// <param name="val">The val.</param>
+        /// <returns>System.Nullable{System.Int32}.</returns>
         private int? GetSize(string val)
         {
             if (string.IsNullOrEmpty(val) || val == "0")
@@ -52,6 +80,15 @@ namespace MediaBrowser.UI.Converters
         }
 
 
+        /// <summary>
+        /// Converts a value.
+        /// </summary>
+        /// <param name="value">The value that is produced by the binding target.</param>
+        /// <param name="targetType">The type to convert to.</param>
+        /// <param name="parameter">The converter parameter to use.</param>
+        /// <param name="culture">The culture to use in the converter.</param>
+        /// <returns>A converted value. If the method returns null, the valid null value is used.</returns>
+        /// <exception cref="System.NotImplementedException"></exception>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();

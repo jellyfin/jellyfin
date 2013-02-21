@@ -1,0 +1,55 @@
+﻿<controls:BaseUserControl x:Class="MediaBrowser.UI.Controls.NavigationBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:MediaBrowser.UI.Controls;assembly=MediaBrowser.UI.Controls"
+                          mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid x:Name="NavBarGrid" Style="{StaticResource NavBarGrid}">
+
+        <Grid Style="{StaticResource NavBarBackgroundGrid}"></Grid>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"></ColumnDefinition>
+                <ColumnDefinition Width="1*"></ColumnDefinition>
+                <ColumnDefinition Width="1*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+
+            <Grid x:Name="SeekGrid" Grid.Row="0" Grid.ColumnSpan="3" Margin="150 15 150 5" Visibility="Collapsed">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="auto"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock x:Name="TxtCurrentPosition" Grid.Column="0" Style="{StaticResource TextBlockStyle}" Margin="0 0 10 0"></TextBlock>
+                <Slider x:Name="CurrentPositionSlider" Grid.Column="1" VerticalAlignment="Center" Minimum="0" Thumb.DragStarted="CurrentPositionSlider_DragStarted" Thumb.DragCompleted="CurrentPositionSlider_DragCompleted" IsMoveToPointEnabled="True"></Slider>
+                <TextBlock x:Name="TxtDuration" Grid.Column="2" Style="{StaticResource TextBlockStyle}" Margin="10 0 0 0"></TextBlock>
+
+            </Grid>
+
+            <StackPanel Style="{StaticResource NavBarGridLeftPanel}" Grid.Row="1">
+                <Button x:Name="BackButton" Style="{StaticResource BackButton}"></Button>
+            </StackPanel>
+            <StackPanel Style="{StaticResource NavBarGridCenterPanel}" Grid.Row="1">
+                <Button x:Name="PreviousChapterButton" Style="{StaticResource PreviousChapterButton}" Visibility="Collapsed"></Button>
+                <Button x:Name="PlayButton" Style="{StaticResource PlayButton}" Visibility="Collapsed"></Button>
+                <Button x:Name="PauseButton" Style="{StaticResource PauseButton}" Visibility="Collapsed"></Button>
+                <Button x:Name="StopButton" Style="{StaticResource StopButton}" Visibility="Collapsed"></Button>
+                <Button x:Name="NextChapterButton" Style="{StaticResource NextChapterButton}" Visibility="Collapsed"></Button>
+            </StackPanel>
+            <StackPanel Style="{StaticResource NavBarGridRightPanel}" Grid.Row="1">
+                <Button x:Name="MuteButton" Style="{StaticResource MuteButton}" Visibility="Collapsed"></Button>
+                <Button x:Name="VolumeDownButton" Style="{StaticResource VolumeDownButton}" Visibility="Collapsed"></Button>
+                <Button x:Name="VolumeUpButton" Style="{StaticResource VolumeUpButton}" Visibility="Collapsed"></Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</controls:BaseUserControl>

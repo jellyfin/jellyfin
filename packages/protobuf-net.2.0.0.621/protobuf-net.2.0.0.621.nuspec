@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>protobuf-net</id>
+    <version>2.0.0.621</version>
+    <authors>Marc Gravell</authors>
+    <owners>Marc Gravell</owners>
+    <licenseUrl>http://protobuf-net.googlecode.com/svn/trunk/Licence.txt</licenseUrl>
+    <projectUrl>http://code.google.com/p/protobuf-net/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Protocol Buffers is the name of the binary serialization format used by Google for much of their data communications. It is designed to be: small in size - efficient data storage (far smaller than xml) cheap to process - both at the client and server platform independent - portable between different programming architectures extensible - to add new data to old messages. protobuf-net is a .NET implementation of this, allowing you to serialize your .NET objects efficiently and easily. It is compatible with most of the .NET family, including .NET 2.0/3.0/3.5/4.0, .NET CF 2.0/3.5, Mono 2.x, Silverlight, etc.</description>
+    <summary>Provides simple access to fast and efficient "Protocol Buffers" serialization from .NET applications</summary>
+    <releaseNotes>* 2.0.0.621 - fix: nasty regression in r619, where GetSchema() could cause base-type corruption
+      * 2.0.0.619 - fix: GetSchema() should use ultimate base-type names when modelling inheritance
+                  - fix: ensure precomile always generates a .ctor() on the concrete serializer
+                  - add: support out-of-order fields when deseiralizing inheritance from other protobuf implementations
+      * 2.0.0.614 - fix: enum handling of ": byte" confusing signed/unsigned bytes
+      * 2.0.0.612 - fix: allow adding enum maps at runtime via MetaType
+      * 2.0.0.611 - fix: *Specified should work with non-public methods
+                  - performance: pre-compiled serializers now use dictionary lookups where appropriate
+                  - fix: nuget package for portable library should be more inclusive
+      * 2.0.0.602 - added precompiler support for internal-types and [InternalsVisibleTo(...)]-forwarding
+                  - made AllowParseableTypes available on default type-model
+      * 2.0.0.601 - added phone8 support</releaseNotes>
+    <language>en-US</language>
+    <tags>binary serialization protocol buffers protobuf deserialization</tags>
+    <references>
+      <reference file="protobuf-net.dll" />
+    </references>
+  </metadata>
+</package>

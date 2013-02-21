@@ -1,0 +1,876 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Options>
+  <!-- ************************************************************* -->
+  <!-- * DO NOT EDIT MANUALLY USE METABROWSER SETTINGS GUI TO EDIT * -->
+  <!-- ************************************************************* -->
+  <Locations>
+    <Location enabled="True" group="">D:\Video\TV\</Location>
+    <Location enabled="True" group="">D:\Video\Movies\</Location>
+    <Location enabled="True" group="Music Videos">D:\Video\Music Videos\</Location>
+  </Locations>
+  <Window>
+    <MetaBrowser Maximized="True" Width="444" Height="2224" X="240" Y="50" />
+    <Options Maximized="False" Width="1120" Height="885" X="470" Y="239" />
+    <AutoUpdate Maximized="False" Width="745" Height="556" X="332" Y="220" />
+    <Search Maximized="False" Width="622" Height="533" X="642" Y="532" />
+    <Poster Maximized="False" Width="994" Height="352" X="1150" Y="542" />
+    <Backdrop Maximized="False" Width="806" Height="440" X="542" Y="332" />
+    <Banner Maximized="False" Width="794" Height="410" X="915" Y="515" />
+    <Episode Maximized="False" Width="798" Height="250" X="0" Y="0" />
+    <Logo Maximized="False" Width="645" Height="400" X="349" Y="312" />
+    <ClearArt Maximized="False" Width="806" Height="440" X="0" Y="0" />
+    <Thumb Maximized="False" Width="806" Height="440" X="0" Y="0" />
+    <Person Maximized="False" Width="994" Height="350" X="0" Y="0" />
+    <ExportList Maximized="False" Width="802" Height="600" X="927" Y="383" />
+    <ManageFilters Maximized="False" Width="860" Height="580" X="157" Y="226" />
+    <DeleteMedia Maximized="False" Width="600" Height="420" X="0" Y="0" />
+    <ProcessProfile Maximized="False" Width="691" Height="868" X="1605" Y="333" />
+    <RealtimeUpdateFields Maximized="False" Width="350" Height="473" X="390" Y="436" />
+    <RenameHistory Maximized="False" Width="1083" Height="677" X="128" Y="252" />
+    <MovieConfirm Maximized="False" Width="800" Height="600" X="0" Y="0" />
+  </Window>
+  <IsFirstRun>False</IsFirstRun>
+  <ShowExpireMessage>True</ShowExpireMessage>
+  <Version>2.2.41</Version>
+  <CacheFolder>C:\ProgramData\MetaBrowser 2.0\Cache\</CacheFolder>
+  <EnableLogging>False</EnableLogging>
+  <LogDeleteDays>10</LogDeleteDays>
+  <RefreshOnStart>True</RefreshOnStart>
+  <FetchOnFirstRefresh>False</FetchOnFirstRefresh>
+  <FetchOnEveryRefresh>False</FetchOnEveryRefresh>
+  <RealTimeMonitoring>True</RealTimeMonitoring>
+  <PollLocations>False</PollLocations>
+  <FetchOnDetect>True</FetchOnDetect>
+  <MinimizeToTray>True</MinimizeToTray>
+  <CloseToTray>False</CloseToTray>
+  <LoadOnStartup>True</LoadOnStartup>
+  <LoadMinimizedToTray>False</LoadMinimizedToTray>
+  <ReplaceMissingOnly>False</ReplaceMissingOnly>
+  <ForceUpdateImages>False</ForceUpdateImages>
+  <FetchIdOnly>False</FetchIdOnly>
+  <AutoSave>False</AutoSave>
+  <ForceSave>False</ForceSave>
+  <ForceAutoSave>False</ForceAutoSave>
+  <ImageAddTypePoster>replace</ImageAddTypePoster>
+  <ImageAddTypeBackdrop>add</ImageAddTypeBackdrop>
+  <ImageAddTypeBanner>replace</ImageAddTypeBanner>
+  <ImageAddTypeLogo>replace</ImageAddTypeLogo>
+  <ImageAddTypeClearArt>replace</ImageAddTypeClearArt>
+  <ImageAddTypeThumb>replace</ImageAddTypeThumb>
+  <ValidVideoExtensions>.iso;.ts;.avi;.mpg;.mkv;.mp4;.mov;.wmv;.dvr-ms;.m4v;.wtv;.flv;.ogm</ValidVideoExtensions>
+  <DynamicFiltering>True</DynamicFiltering>
+  <IgnoreHiddenItems>True</IgnoreHiddenItems>
+  <EnableMapping>True</EnableMapping>
+  <ExtensionAsType>True</ExtensionAsType>
+  <ACD>
+  </ACD>
+  <ValueLists>
+    <MediaTypes>
+      <Value>AVI</Value>
+      <Value>Blu-ray</Value>
+      <Value>DVD</Value>
+      <Value>HD DVD</Value>
+      <Value>MKV</Value>
+    </MediaTypes>
+    <Genres>
+      <Value>Action</Value>
+      <Value>Adventure</Value>
+      <Value>Animation</Value>
+      <Value>Biography</Value>
+      <Value>Comedy</Value>
+      <Value>Crime</Value>
+      <Value>Documentary</Value>
+      <Value>Drama</Value>
+      <Value>Family</Value>
+      <Value>Fantasy</Value>
+      <Value>Film-Noir</Value>
+      <Value>Game-Show</Value>
+      <Value>History</Value>
+      <Value>Horror</Value>
+      <Value>Music</Value>
+      <Value>Musical</Value>
+      <Value>Mystery</Value>
+      <Value>News</Value>
+      <Value>Reality-TV</Value>
+      <Value>Romance</Value>
+      <Value>Sci-Fi</Value>
+      <Value>Short</Value>
+      <Value>Sport</Value>
+      <Value>Talk-Show</Value>
+      <Value>Thriller</Value>
+      <Value>War</Value>
+      <Value>Western</Value>
+    </Genres>
+    <AspectRatio>
+      <Value>1.33:1</Value>
+      <Value>1.78:1</Value>
+      <Value>1.85:1</Value>
+      <Value>2.35:1</Value>
+      <Value>2.40:1</Value>
+    </AspectRatio>
+    <MovieStudios>
+      <Value>20th Century Fox</Value>
+      <Value>20th Century Fox Home Entertainment</Value>
+      <Value>Amblin Entertainment</Value>
+      <Value>Beacon Pictures</Value>
+      <Value>Castle Rock</Value>
+      <Value>Centropolis Entertainment</Value>
+      <Value>Columbia Pictures</Value>
+      <Value>Dimension Films</Value>
+      <Value>Disney</Value>
+      <Value>DreamWorks Pictures</Value>
+      <Value>Hollywood Pictures</Value>
+      <Value>Hyde Park Entertainment</Value>
+      <Value>Imagine Entertainment</Value>
+      <Value>Legendary Pictures</Value>
+      <Value>Lions Gate</Value>
+      <Value>Metro-Goldwyn-Mayer Pictures</Value>
+      <Value>Metro-Goldwyn-Mayer Studios</Value>
+      <Value>MGM Home Entertainment</Value>
+      <Value>Millennium Films</Value>
+      <Value>Miramax Films</Value>
+      <Value>Momentum Pictures</Value>
+      <Value>New Line Cinema</Value>
+      <Value>New Line Home Entertainment</Value>
+      <Value>Paramount Pictures</Value>
+      <Value>Sony Pictures</Value>
+      <Value>Sony Pictures Home Entertainment</Value>
+      <Value>Spyglass Entertainment</Value>
+      <Value>Studio Canal</Value>
+      <Value>Summit Entertainment</Value>
+      <Value>Touchstone Pictures</Value>
+      <Value>Universal Pictures</Value>
+      <Value>Universal Studios</Value>
+      <Value>Universal Studios Home Entertainment</Value>
+      <Value>Valhalla Motion Pictures</Value>
+      <Value>Walt Disney Home Entertainment</Value>
+      <Value>Walt Disney Pictures</Value>
+      <Value>Warner Bros.</Value>
+      <Value>Warner Bros. Entertainment</Value>
+      <Value>Warner Bros. Pictures</Value>
+      <Value>Weinstein Company</Value>
+      <Value>Working Title Productions</Value>
+    </MovieStudios>
+    <MovieRatings>
+      <Value>CS</Value>
+      <Value>G</Value>
+      <Value>NC-17</Value>
+      <Value>NR</Value>
+      <Value>PG</Value>
+      <Value>PG-13</Value>
+      <Value>R</Value>
+      <Value>S</Value>
+    </MovieRatings>
+    <MovieCrewType>
+      <Value>Art Director</Value>
+      <Value>Assistant Director</Value>
+      <Value>Associate Producer</Value>
+      <Value>Background Artist</Value>
+      <Value>Best Boy</Value>
+      <Value>Body Double</Value>
+      <Value>Boom Operator</Value>
+      <Value>Camera Loader</Value>
+      <Value>Casting Director</Value>
+      <Value>Choreographer</Value>
+      <Value>Cinematographer</Value>
+      <Value>Color Consultant</Value>
+      <Value>Composer</Value>
+      <Value>Conductor</Value>
+      <Value>Construction Coordinator</Value>
+      <Value>Costume Designer</Value>
+      <Value>Costumer</Value>
+      <Value>Creator</Value>
+      <Value>Dialog Coach</Value>
+      <Value>Director</Value>
+      <Value>Director of Photography</Value>
+      <Value>Dolly Grip</Value>
+      <Value>Editor</Value>
+      <Value>Executive Producer</Value>
+      <Value>Extra</Value>
+      <Value>Foley Artist</Value>
+      <Value>Gaffer</Value>
+      <Value>Greensman</Value>
+      <Value>Grip</Value>
+      <Value>Key Grip</Value>
+      <Value>Line Producer</Value>
+      <Value>Location Manager</Value>
+      <Value>Matte Artist</Value>
+      <Value>Producer</Value>
+      <Value>Production Assistant</Value>
+      <Value>Production Illustrator</Value>
+      <Value>Production Manager</Value>
+      <Value>Property Master</Value>
+      <Value>Screenwriter</Value>
+      <Value>Set Decorator</Value>
+      <Value>Set Designer</Value>
+      <Value>Sound Designer</Value>
+      <Value>Technical Advisor</Value>
+      <Value>Unit Production Manager</Value>
+      <Value>Wrangler</Value>
+    </MovieCrewType>
+    <TVNetworks>
+      <Value>A&amp;E</Value>
+      <Value>ABC</Value>
+      <Value>AMC</Value>
+      <Value>BET</Value>
+      <Value>BRAVO</Value>
+      <Value>CBS</Value>
+      <Value>CMDY</Value>
+      <Value>DISC</Value>
+      <Value>E!</Value>
+      <Value>FOOD</Value>
+      <Value>FOX</Value>
+      <Value>HBO</Value>
+      <Value>HGTV</Value>
+      <Value>HIST</Value>
+      <Value>LIFE</Value>
+      <Value>MSNBC</Value>
+      <Value>MTV</Value>
+      <Value>MTV2</Value>
+      <Value>NBC</Value>
+      <Value>NICK</Value>
+      <Value>SPIKE</Value>
+      <Value>SPIKE</Value>
+      <Value>SYFY</Value>
+      <Value>TBS</Value>
+      <Value>TLC</Value>
+      <Value>TNT</Value>
+      <Value>TOON</Value>
+      <Value>TOONW</Value>
+      <Value>TRUTV</Value>
+      <Value>TVLND</Value>
+      <Value>USA</Value>
+    </TVNetworks>
+    <TVRatings>
+      <Value>CS</Value>
+      <Value>TV-14</Value>
+      <Value>TV-G</Value>
+      <Value>TV-MA</Value>
+      <Value>TV-PG</Value>
+      <Value>TV-Y</Value>
+      <Value>TV-Y7</Value>
+      <Value>TV-Y7-FV</Value>
+    </TVRatings>
+    <VideoCodecs>
+      <Value>ASF</Value>
+      <Value>AVC</Value>
+      <Value>DivX</Value>
+      <Value>H.264</Value>
+      <Value>MPEG-1</Value>
+      <Value>MPEG-2</Value>
+      <Value>RealVideo</Value>
+      <Value>VC-1</Value>
+      <Value>WMV</Value>
+      <Value>XviD</Value>
+    </VideoCodecs>
+    <AudioCodecs>
+      <Value>AAC</Value>
+      <Value>AC-3</Value>
+      <Value>DTS</Value>
+      <Value>DTS-HD MA</Value>
+      <Value>E-AC-3</Value>
+      <Value>FLAC</Value>
+      <Value>MP2</Value>
+      <Value>MP3</Value>
+      <Value>MPEG AUDIO</Value>
+      <Value>PCM</Value>
+      <Value>RealAudio</Value>
+      <Value>TrueHD</Value>
+      <Value>Vorbis</Value>
+      <Value>WMA</Value>
+    </AudioCodecs>
+  </ValueLists>
+  <Mappings>
+    <Movies>
+    </Movies>
+    <TV>
+    </TV>
+    <Sorting>
+      <Mapping Key="(?i)^shameless.*?$" MatchCase="False" ExactMatch="False" Type="Regex">Shameless (US)</Mapping>
+      <Mapping Key="(?i)^castle.*?$" MatchCase="False" ExactMatch="False" Type="Regex">Castle (2009)</Mapping>
+      <Mapping Key="(?i)^the.river.*?$" MatchCase="False" ExactMatch="False" Type="Regex">The River (2012)</Mapping>
+      <Mapping Key="(?i)^parenthood.*?$" MatchCase="False" ExactMatch="False" Type="Regex">Parenthood (2010)</Mapping>
+      <Mapping Key="(?i)^the.office.*?$" MatchCase="False" ExactMatch="False" Type="Regex">The Office (US)</Mapping>
+      <Mapping Key="(?i)^smash.*?$" MatchCase="False" ExactMatch="False" Type="Regex">Smash (2012)</Mapping>
+      <Mapping Key="(?i)^rob.*?$" MatchCase="False" ExactMatch="False" Type="Regex">¡Rob!</Mapping>
+      <Mapping Key="(?i)^archer.*?$" MatchCase="False" ExactMatch="False" Type="Regex">Archer (2009)</Mapping>
+      <Mapping Key="(?i)^once.upon.a.time.*?$" MatchCase="False" ExactMatch="False" Type="Regex">Once Upon a Time (2011)</Mapping>
+      <Mapping Key="(?i)^lifes.too.short.*?$" MatchCase="False" ExactMatch="False" Type="Regex">Life's Too Short</Mapping>
+      <Mapping Key="(?i)^eastbound.and.down.*?$" MatchCase="False" ExactMatch="False" Type="Regex">Eastbound &amp; Down</Mapping>
+      <Mapping Key="(?i)^the.killing.*?$" MatchCase="False" ExactMatch="False" Type="Regex">The Killing (2011)</Mapping>
+      <Mapping Key="(?i)^touch.*?$" MatchCase="False" ExactMatch="False" Type="Regex">Touch (2012)</Mapping>
+      <Mapping Key="(?i)^missing.*?$" MatchCase="False" ExactMatch="False" Type="Regex">Missing (2012)</Mapping>
+      <Mapping Key="(?i)^scandal.*?$" MatchCase="False" ExactMatch="False" Type="Regex">Scandal (2012)</Mapping>
+      <Mapping Key="(?i)^wilfred.*?$" MatchCase="False" ExactMatch="False" Type="Regex">Wilfred (US)</Mapping>
+      <Mapping Key="(?i)^louie.*?$" MatchCase="False" ExactMatch="False" Type="Regex">Louie (2010)</Mapping>
+      <Mapping Key="(?i)^the.newsroom.*?$" MatchCase="False" ExactMatch="False" Type="Regex">The Newsroom (2012)</Mapping>
+      <Mapping Key="(?i)^boss.*?$" MatchCase="False" ExactMatch="False" Type="Regex">Boss (2011)</Mapping>
+    </Sorting>
+    <SortingFilename>
+    </SortingFilename>
+    <Type>
+      <VIDEO_TS>DVD</VIDEO_TS>
+      <BDMV>Blu-ray</BDMV>
+      <HVDVD_TS>HD DVD</HVDVD_TS>
+    </Type>
+  </Mappings>
+  <WebService>
+    <LoadOnStartup>False</LoadOnStartup>
+    <Port>8085</Port>
+    <PasswordProtected>False</PasswordProtected>
+    <Username>
+    </Username>
+    <SortByDateAdded>False</SortByDateAdded>
+    <Password>
+    </Password>
+    <AllowedPathsEnabled>False</AllowedPathsEnabled>
+  </WebService>
+  <MetadataVisibleFields>
+    <movies>
+      <LocalTitle>True</LocalTitle>
+      <OriginalTitle>True</OriginalTitle>
+      <SortTitle>True</SortTitle>
+      <movieSet>True</movieSet>
+      <DateAdded>True</DateAdded>
+      <ProductionYear>True</ProductionYear>
+      <Runtime>True</Runtime>
+      <Rating>True</Rating>
+      <MPAARating>True</MPAARating>
+      <MPAADescription>True</MPAADescription>
+      <CustomRating>True</CustomRating>
+      <Plot>True</Plot>
+      <Description>True</Description>
+      <Type>True</Type>
+      <AspectRatio>True</AspectRatio>
+      <Watched>True</Watched>
+      <Comment>True</Comment>
+      <AllowRenaming>True</AllowRenaming>
+      <CollectionNumber>True</CollectionNumber>
+      <TrailerUrl>True</TrailerUrl>
+      <IMDbId>True</IMDbId>
+      <TMDbId>True</TMDbId>
+      <MyMoviesId>True</MyMoviesId>
+      <NetflixId>True</NetflixId>
+      <MovieMeterId>True</MovieMeterId>
+      <AlloCineId>True</AlloCineId>
+      <FilmAffinityId>True</FilmAffinityId>
+      <YahooIndiaId>True</YahooIndiaId>
+      <AmazonId>True</AmazonId>
+      <RottenTomatoesId>True</RottenTomatoesId>
+      <CineFactsId>True</CineFactsId>
+      <OFDbId>True</OFDbId>
+      <CSFDId>True</CSFDId>
+      <MoviePlayerId>True</MoviePlayerId>
+      <AdultDVDEmpireId>True</AdultDVDEmpireId>
+      <CDUniverseId>True</CDUniverseId>
+    </movies>
+    <series>
+      <SeriesName>True</SeriesName>
+      <AirDay>True</AirDay>
+      <AirTime>True</AirTime>
+      <Runtime>True</Runtime>
+      <Network>True</Network>
+      <MPAARating>True</MPAARating>
+      <CustomRating>True</CustomRating>
+      <Status>True</Status>
+      <FirstAirDate>True</FirstAirDate>
+      <Description>True</Description>
+      <Rating>True</Rating>
+      <Language>True</Language>
+      <Comment>True</Comment>
+      <AllowRenaming>True</AllowRenaming>
+      <CustomRenamePattern>True</CustomRenamePattern>
+      <DisplayOrder>True</DisplayOrder>
+      <FetchOrder>True</FetchOrder>
+      <IMDbId>True</IMDbId>
+      <TVDbId>True</TVDbId>
+      <TVcomId>True</TVcomId>
+      <TVcom2Id>True</TVcom2Id>
+      <MoviePlayerId>True</MoviePlayerId>
+    </series>
+    <episode>
+      <EpisodeName>True</EpisodeName>
+      <SeasonNumber>True</SeasonNumber>
+      <EpisodeNumber>True</EpisodeNumber>
+      <DVDSeasonNumber>True</DVDSeasonNumber>
+      <DVDEpisodeNumber>True</DVDEpisodeNumber>
+      <AbsoluteEpisodeNumber>True</AbsoluteEpisodeNumber>
+      <AirsAfterSeason>True</AirsAfterSeason>
+      <AirsBeforeEpisode>True</AirsBeforeEpisode>
+      <AirsBeforeSeason>True</AirsBeforeSeason>
+      <DateAdded>True</DateAdded>
+      <FirstAirDate>True</FirstAirDate>
+      <GuestStars>True</GuestStars>
+      <Description>True</Description>
+      <Writer>True</Writer>
+      <Director>True</Director>
+      <Rating>True</Rating>
+      <Type>True</Type>
+      <Watched>True</Watched>
+      <CustomRating>True</CustomRating>
+      <Comment>True</Comment>
+    </episode>
+    <season>
+      <Description>True</Description>
+      <Comment>True</Comment>
+      <CustomRating>True</CustomRating>
+    </season>
+    <music>
+      <Title>True</Title>
+      <Album>True</Album>
+      <AlbumArtist>True</AlbumArtist>
+      <TitleSort>True</TitleSort>
+      <AlbumSort>True</AlbumSort>
+      <Performer>True</Performer>
+      <DateAdded>True</DateAdded>
+      <Year>True</Year>
+      <Genre>True</Genre>
+      <Composer>True</Composer>
+      <Track>True</Track>
+      <TrackCount>True</TrackCount>
+      <Disc>True</Disc>
+      <DiscCount>True</DiscCount>
+      <Comment>True</Comment>
+      <Copyright>True</Copyright>
+      <Publisher>True</Publisher>
+      <Grouping>True</Grouping>
+      <MusicBrainzTrackId>True</MusicBrainzTrackId>
+      <MusicBrainzReleaseId>True</MusicBrainzReleaseId>
+    </music>
+  </MetadataVisibleFields>
+  <Misc>
+    <MediaIconsLocation>Poster</MediaIconsLocation>
+    <MediaIconsPosition>top</MediaIconsPosition>
+    <MediaIconsOpacity>50</MediaIconsOpacity>
+    <FFmpegLocation>
+    </FFmpegLocation>
+    <FFProbeLocation>
+    </FFProbeLocation>
+    <UseDisplayAspectRatio>False</UseDisplayAspectRatio>
+    <ColorDefault>-16777216</ColorDefault>
+    <ColorNoMetadata>-65536</ColorNoMetadata>
+    <ColorIncompleteMetadata>-16776961</ColorIncompleteMetadata>
+    <ColorCompleteMetadata>-16744448</ColorCompleteMetadata>
+    <HighlightParent>True</HighlightParent>
+    <ShowRedDots>True</ShowRedDots>
+    <ShowAsCompleteWhenLocked>True</ShowAsCompleteWhenLocked>
+    <LoadWithCollapsedGroups>False</LoadWithCollapsedGroups>
+    <UseTieredExpandCollapse>False</UseTieredExpandCollapse>
+    <DoNotExceedOriginalImageSizeOnPanel>True</DoNotExceedOriginalImageSizeOnPanel>
+    <SkipCleanupAfterManualSave>False</SkipCleanupAfterManualSave>
+    <ResumePauseSeconds>0</ResumePauseSeconds>
+    <DefaultExternalSubLanguage>
+    </DefaultExternalSubLanguage>
+    <AllowMultiSelect>True</AllowMultiSelect>
+    <AsyncMultiSelectMinimum>50</AsyncMultiSelectMinimum>
+    <AsyncSaveMinimum>1</AsyncSaveMinimum>
+  </Misc>
+  <Movies>
+    <AllowMultipleMoviesPerFolder>False</AllowMultipleMoviesPerFolder>
+    <AppendProductionYear>True</AppendProductionYear>
+    <GroupMovieSets>True</GroupMovieSets>
+    <FlattenFolders>False</FlattenFolders>
+    <UseFolderNameForSortTitle>False</UseFolderNameForSortTitle>
+    <SelectFirstSearchResult>False</SelectFirstSearchResult>
+    <DisplayValuePattern>%lt</DisplayValuePattern>
+    <SortValue>SortTitle</SortValue>
+    <FetchValue>OriginalTitle</FetchValue>
+    <PreferredPosterPlugin>7291961d-21e7-4ee2-a996-4febdb7661eb</PreferredPosterPlugin>
+    <UsePreferredPosterPluginOnly>True</UsePreferredPosterPluginOnly>
+    <PosterMinimumWidth>0</PosterMinimumWidth>
+    <PosterMinimumHeight>0</PosterMinimumHeight>
+    <PostersToDownload>1</PostersToDownload>
+    <PreferredBackdropPlugin>546eda50-7029-4421-9596-09b2bae293f7</PreferredBackdropPlugin>
+    <UsePreferredBackdropPluginOnly>True</UsePreferredBackdropPluginOnly>
+    <BackdropMinimumWidth>1920</BackdropMinimumWidth>
+    <BackdropMinimumHeight>0</BackdropMinimumHeight>
+    <BackdropsToDownload>3</BackdropsToDownload>
+    <PreferredClearArtPlugin>01a001e8-316b-4e49-8e9a-52b5b3179067</PreferredClearArtPlugin>
+    <UsePreferredClearArtPluginOnly>False</UsePreferredClearArtPluginOnly>
+    <PreferredCastPlugin>c422bc7f-2910-4e62-9370-a5ba5ee69514</PreferredCastPlugin>
+    <UsePreferredCastPluginOnly>False</UsePreferredCastPluginOnly>
+    <PreferredTrailerPlugin>d3dd7a50-859f-4bcd-91c9-51e218ce29eb</PreferredTrailerPlugin>
+    <UsePreferredTrailerPluginOnly>False</UsePreferredTrailerPluginOnly>
+    <PreferredTrailerResolution>0</PreferredTrailerResolution>
+    <DownloadNextAvailableTrailerResolution>True</DownloadNextAvailableTrailerResolution>
+    <DeleteTrailerFromCache>True</DeleteTrailerFromCache>
+    <DownloadAllTrailersIncludeLocked>False</DownloadAllTrailersIncludeLocked>
+    <UseMediaInfoRuntime>True</UseMediaInfoRuntime>
+    <RenameMovie>False</RenameMovie>
+    <RenameMovieFolder>False</RenameMovieFolder>
+    <RenameMoviePattern>
+    </RenameMoviePattern>
+    <RenameMovieFolderPattern>
+    </RenameMovieFolderPattern>
+    <UpdateFields>
+      <FetchIdOnly>False</FetchIdOnly>
+      <ReplaceMissingOnly>False</ReplaceMissingOnly>
+      <Information>True</Information>
+      <Posters>True</Posters>
+      <Backdrops>True</Backdrops>
+      <Logos>True</Logos>
+      <ClearArts>True</ClearArts>
+      <Trailers>False</Trailers>
+      <Rename>True</Rename>
+      <LocalTitle>True</LocalTitle>
+      <OriginalTitle>True</OriginalTitle>
+      <SortTitle>True</SortTitle>
+      <ProductionYear>True</ProductionYear>
+      <Runtime>True</Runtime>
+      <Rating>True</Rating>
+      <MPAARating>True</MPAARating>
+      <MPAADescription>True</MPAADescription>
+      <Plot>True</Plot>
+      <Description>True</Description>
+      <Type>True</Type>
+      <AspectRatio>True</AspectRatio>
+      <TrailerUrl>True</TrailerUrl>
+      <Watched>True</Watched>
+      <CastCrew>True</CastCrew>
+      <CastCrewImages>False</CastCrewImages>
+      <Genres>True</Genres>
+      <Studios>True</Studios>
+      <Countries>True</Countries>
+      <Taglines>True</Taglines>
+      <MediaInfoCustom>True</MediaInfoCustom>
+    </UpdateFields>
+    <MetadataCompleteFields>
+      <LocalTitle>True</LocalTitle>
+      <OriginalTitle>True</OriginalTitle>
+      <SortTitle>True</SortTitle>
+      <ProductionYear>True</ProductionYear>
+      <Runtime>True</Runtime>
+      <Rating>True</Rating>
+      <MPAARating>True</MPAARating>
+      <MPAADescription>False</MPAADescription>
+      <CustomRating>False</CustomRating>
+      <Plot>False</Plot>
+      <Description>True</Description>
+      <Type>True</Type>
+      <AspectRatio>True</AspectRatio>
+      <TrailerUrl>True</TrailerUrl>
+      <Watched>False</Watched>
+      <Comment>False</Comment>
+      <CollectionNumber>False</CollectionNumber>
+      <CastCrew>True</CastCrew>
+      <Genres>True</Genres>
+      <Studios>False</Studios>
+      <Countries>False</Countries>
+      <Taglines>True</Taglines>
+      <MediaInfoCustom>True</MediaInfoCustom>
+      <Trailers>True</Trailers>
+      <Posters>True</Posters>
+      <Backdrops>True</Backdrops>
+      <Logos>True</Logos>
+      <ClearArts>False</ClearArts>
+    </MetadataCompleteFields>
+    <Plugins>
+      <Locals>
+        <Id Order="0" State="0">529c3819-0ca4-4741-b6b5-48360ace62ee</Id>
+      </Locals>
+      <Fetchers>
+        <RealTime>6d06642d-d028-4b10-a6fd-3060637e9883</RealTime>
+        <LocalTitle>6d06642d-d028-4b10-a6fd-3060637e9883</LocalTitle>
+        <OriginalTitle>6d06642d-d028-4b10-a6fd-3060637e9883</OriginalTitle>
+        <SortTitle>6d06642d-d028-4b10-a6fd-3060637e9883</SortTitle>
+        <ProductionYear>6d06642d-d028-4b10-a6fd-3060637e9883</ProductionYear>
+        <Runtime>6d06642d-d028-4b10-a6fd-3060637e9883</Runtime>
+        <Rating>6d06642d-d028-4b10-a6fd-3060637e9883</Rating>
+        <MPAARating>6d06642d-d028-4b10-a6fd-3060637e9883</MPAARating>
+        <MPAADescription>6d06642d-d028-4b10-a6fd-3060637e9883</MPAADescription>
+        <Plot>6d06642d-d028-4b10-a6fd-3060637e9883</Plot>
+        <Description>6d06642d-d028-4b10-a6fd-3060637e9883</Description>
+        <AspectRatio>6d06642d-d028-4b10-a6fd-3060637e9883</AspectRatio>
+        <TrailerUrl>6d06642d-d028-4b10-a6fd-3060637e9883</TrailerUrl>
+        <Watched>6d06642d-d028-4b10-a6fd-3060637e9883</Watched>
+        <CastCrew>6d06642d-d028-4b10-a6fd-3060637e9883</CastCrew>
+        <Genres>6d06642d-d028-4b10-a6fd-3060637e9883</Genres>
+        <Studios>6d06642d-d028-4b10-a6fd-3060637e9883</Studios>
+        <Countries>6d06642d-d028-4b10-a6fd-3060637e9883</Countries>
+        <Taglines>6d06642d-d028-4b10-a6fd-3060637e9883</Taglines>
+      </Fetchers>
+      <Savers>
+        <Id Order="0" State="1">a04f5745-d062-4e14-bc36-24a673cfed22</Id>
+        <Id Order="1" State="1">d04f5745-d062-4e14-bd36-24a673cfed22</Id>
+      </Savers>
+    </Plugins>
+    <Trailers>
+      <DownloadPath>D:\Video\Coming Soon\</DownloadPath>
+      <MaxTrailers>1000</MaxTrailers>
+      <Quality>HD</Quality>
+      <OnlyDownloadNewerThanLastPostdate>False</OnlyDownloadNewerThanLastPostdate>
+      <CreateFolders>True</CreateFolders>
+      <FetchMetadata>True</FetchMetadata>
+      <PopulateMPAARating>True</PopulateMPAARating>
+      <DeleteTrailers>True</DeleteTrailers>
+      <DeleteTrailersDays>120</DeleteTrailersDays>
+      <DeleteTrailersLowerLimit>25</DeleteTrailersLowerLimit>
+      <SchedulerEnabled>True</SchedulerEnabled>
+      <SchedulerDay>-1</SchedulerDay>
+      <SchedulerTime>2/1/0001 12:00:00 AM</SchedulerTime>
+      <RenameTrailer>True</RenameTrailer>
+      <RenameTrailerPattern>%ot (%py).%ext</RenameTrailerPattern>
+      <SkipGenres>
+      </SkipGenres>
+    </Trailers>
+  </Movies>
+  <TV>
+    <ValidSeasons>Season;Series;Specials</ValidSeasons>
+    <SortValue>Default</SortValue>
+    <EnableSeasonLevelBanners>False</EnableSeasonLevelBanners>
+    <RefreshLocked>True</RefreshLocked>
+    <PreferredPosterPlugin>fcb4d2d3-c609-432a-8c51-25136d847a32</PreferredPosterPlugin>
+    <UsePreferredPosterPluginOnly>True</UsePreferredPosterPluginOnly>
+    <PosterMinimumWidth>0</PosterMinimumWidth>
+    <PosterMinimumHeight>0</PosterMinimumHeight>
+    <PostersToDownload>1</PostersToDownload>
+    <ExtractEpisodeImages>False</ExtractEpisodeImages>
+    <OnlyExtractEpisodeImages>False</OnlyExtractEpisodeImages>
+    <PreferredBackdropPlugin>621f9839-4750-4ceb-a286-06fe96cd7f98</PreferredBackdropPlugin>
+    <UsePreferredBackdropPluginOnly>True</UsePreferredBackdropPluginOnly>
+    <BackdropMinimumWidth>1920</BackdropMinimumWidth>
+    <BackdropMinimumHeight>0</BackdropMinimumHeight>
+    <BackdropsToDownload>3</BackdropsToDownload>
+    <PreferredBannerPlugin>36e97d3d-fa00-43d6-b809-ef3595f0b5da</PreferredBannerPlugin>
+    <UsePreferredBannerPluginOnly>True</UsePreferredBannerPluginOnly>
+    <BannersToDownload>1</BannersToDownload>
+    <PreferredClearArtPlugin>01a001e8-316b-4e49-8e9a-52b5b3179067</PreferredClearArtPlugin>
+    <UsePreferredClearArtPluginOnly>False</UsePreferredClearArtPluginOnly>
+    <PreferredCastPlugin>c422bc7f-2910-4e62-9370-a5ba5ee69514</PreferredCastPlugin>
+    <UsePreferredCastPluginOnly>False</UsePreferredCastPluginOnly>
+    <RenameTV>True</RenameTV>
+    <RenameTVPattern>%sn - %sx%0e - %en.%ext</RenameTVPattern>
+    <UpdateFields>
+      <Series>
+        <FetchIdOnly>False</FetchIdOnly>
+        <ReplaceMissingOnly>False</ReplaceMissingOnly>
+        <Information>True</Information>
+        <Posters>True</Posters>
+        <Backdrops>True</Backdrops>
+        <Banners>True</Banners>
+        <Logos>True</Logos>
+        <ClearArts>True</ClearArts>
+        <Thumbs>True</Thumbs>
+        <SeriesName>True</SeriesName>
+        <AirDay>True</AirDay>
+        <FirstAirDate>True</FirstAirDate>
+        <AirTime>True</AirTime>
+        <Runtime>True</Runtime>
+        <Rating>True</Rating>
+        <MPAARating>True</MPAARating>
+        <Description>True</Description>
+        <Network>True</Network>
+        <Status>True</Status>
+        <CastCrew>True</CastCrew>
+        <CastCrewImages>False</CastCrewImages>
+        <Genres>True</Genres>
+      </Series>
+      <Season>
+        <Posters>True</Posters>
+        <Backdrops>False</Backdrops>
+        <Banners>True</Banners>
+        <Thumbs>True</Thumbs>
+      </Season>
+      <Episode>
+        <ReplaceMissingOnly>False</ReplaceMissingOnly>
+        <Information>True</Information>
+        <Posters>True</Posters>
+        <Rename>True</Rename>
+        <EpisodeName>True</EpisodeName>
+        <FirstAirDate>True</FirstAirDate>
+        <GuestStars>True</GuestStars>
+        <Description>True</Description>
+        <Writer>True</Writer>
+        <Director>True</Director>
+        <Rating>True</Rating>
+        <Type>True</Type>
+        <Watched>True</Watched>
+        <MediaInfoCustom>True</MediaInfoCustom>
+        <CastCrewImages>True</CastCrewImages>
+      </Episode>
+    </UpdateFields>
+    <MetadataCompleteFields>
+      <Series>
+        <SeriesName>True</SeriesName>
+        <AirDay>False</AirDay>
+        <FirstAirDate>True</FirstAirDate>
+        <AirTime>False</AirTime>
+        <Runtime>True</Runtime>
+        <Rating>True</Rating>
+        <MPAARating>False</MPAARating>
+        <Description>True</Description>
+        <Network>True</Network>
+        <Status>True</Status>
+        <CastCrew>True</CastCrew>
+        <Genres>True</Genres>
+        <Comment>False</Comment>
+        <Posters>True</Posters>
+        <Backdrops>True</Backdrops>
+        <Banners>True</Banners>
+        <Logos>True</Logos>
+        <ClearArts>False</ClearArts>
+        <Thumbs>False</Thumbs>
+      </Series>
+      <Season>
+        <Description>False</Description>
+        <Comment>False</Comment>
+        <Posters>True</Posters>
+        <Backdrops>False</Backdrops>
+        <Banners>False</Banners>
+        <Thumbs>False</Thumbs>
+      </Season>
+      <Episode>
+        <EpisodeName>True</EpisodeName>
+        <FirstAirDate>False</FirstAirDate>
+        <GuestStars>False</GuestStars>
+        <Description>True</Description>
+        <Writer>False</Writer>
+        <Director>False</Director>
+        <Rating>False</Rating>
+        <Type>False</Type>
+        <Watched>False</Watched>
+        <Comment>False</Comment>
+        <MediaInfoCustom>False</MediaInfoCustom>
+        <Posters>True</Posters>
+      </Episode>
+    </MetadataCompleteFields>
+    <Plugins>
+      <Locals>
+        <Id Order="0" State="0">5b118517-cc37-427c-bf03-34dec95db959</Id>
+      </Locals>
+      <Fetchers>
+        <Series>
+          <RealTime>default</RealTime>
+          <SeriesName>29f3e4f0-5a4b-4462-a0fe-45f0593ca5f1</SeriesName>
+          <AirDay>29f3e4f0-5a4b-4462-a0fe-45f0593ca5f1</AirDay>
+          <FirstAirDate>29f3e4f0-5a4b-4462-a0fe-45f0593ca5f1</FirstAirDate>
+          <AirTime>29f3e4f0-5a4b-4462-a0fe-45f0593ca5f1</AirTime>
+          <Runtime>29f3e4f0-5a4b-4462-a0fe-45f0593ca5f1</Runtime>
+          <Rating>29f3e4f0-5a4b-4462-a0fe-45f0593ca5f1</Rating>
+          <MPAARating>29f3e4f0-5a4b-4462-a0fe-45f0593ca5f1</MPAARating>
+          <Description>29f3e4f0-5a4b-4462-a0fe-45f0593ca5f1</Description>
+          <Network>29f3e4f0-5a4b-4462-a0fe-45f0593ca5f1</Network>
+          <Status>29f3e4f0-5a4b-4462-a0fe-45f0593ca5f1</Status>
+          <CastCrew>29f3e4f0-5a4b-4462-a0fe-45f0593ca5f1</CastCrew>
+          <Genres>29f3e4f0-5a4b-4462-a0fe-45f0593ca5f1</Genres>
+        </Series>
+        <Episode>
+          <EpisodeName>29f3e4f0-5a4b-4462-a0fe-45f0593ca5f1</EpisodeName>
+          <FirstAirDate>29f3e4f0-5a4b-4462-a0fe-45f0593ca5f1</FirstAirDate>
+          <GuestStars>29f3e4f0-5a4b-4462-a0fe-45f0593ca5f1</GuestStars>
+          <Description>29f3e4f0-5a4b-4462-a0fe-45f0593ca5f1</Description>
+          <Writer>29f3e4f0-5a4b-4462-a0fe-45f0593ca5f1</Writer>
+          <Director>29f3e4f0-5a4b-4462-a0fe-45f0593ca5f1</Director>
+          <Rating>29f3e4f0-5a4b-4462-a0fe-45f0593ca5f1</Rating>
+          <Watched>29f3e4f0-5a4b-4462-a0fe-45f0593ca5f1</Watched>
+        </Episode>
+      </Fetchers>
+      <Savers>
+        <Id Order="0" State="1">59e2f1dc-8dc7-49a7-9e47-29ce066084c3</Id>
+      </Savers>
+    </Plugins>
+    <Sorting>
+      <MinimumFileSize>50</MinimumFileSize>
+      <AutoPoll>True</AutoPoll>
+      <DeleteEmptyFolders>False</DeleteEmptyFolders>
+      <TransferMethod>move</TransferMethod>
+      <MoveAccompanyingFiles>True</MoveAccompanyingFiles>
+      <NotifyMCEClients>False</NotifyMCEClients>
+      <DeleteLeftOverFiles>False</DeleteLeftOverFiles>
+      <LeftOverFilesExtensions>.nfo;.txt</LeftOverFilesExtensions>
+      <SeasonFolderPattern>Season %s</SeasonFolderPattern>
+      <SeasonZeroFolderPattern>Season %0s</SeasonZeroFolderPattern>
+      <OnlyCreateSeriesFolderForS1E1>True</OnlyCreateSeriesFolderForS1E1>
+      <MoveDuplicateEpisodes>False</MoveDuplicateEpisodes>
+      <MoveDuplicateEpisodesLocation>D:\Temp\</MoveDuplicateEpisodesLocation>
+      <OverwiteExistingEpisodes>True</OverwiteExistingEpisodes>
+      <OverwriteOnResolution>False</OverwriteOnResolution>
+      <OverwriteOnWords>False</OverwriteOnWords>
+      <OverwriteWords>PROPER;REPACK</OverwriteWords>
+      <CreateFolders>True</CreateFolders>
+      <ConfirmBeforeProcessing>True</ConfirmBeforeProcessing>
+      <Monitored location="D:\Temp\_MetaBrowserWatcher\" type="0">
+        <Destination>D:\Video\TV\</Destination>
+      </Monitored>
+    </Sorting>
+    <Schedule enabled="True" autofilterseries="False">
+    </Schedule>
+  </TV>
+  <Music>
+    <Enabled>False</Enabled>
+    <SortValue>Default</SortValue>
+    <RenameMusic>False</RenameMusic>
+    <RenameMusicPattern>
+    </RenameMusicPattern>
+    <UpdateFields>
+      <FetchIdOnly>False</FetchIdOnly>
+      <ReplaceMissingOnly>False</ReplaceMissingOnly>
+      <Information>True</Information>
+      <Posters>True</Posters>
+      <Rename>True</Rename>
+      <Title>True</Title>
+      <TitleSort>True</TitleSort>
+      <Album>True</Album>
+      <AlbumSort>True</AlbumSort>
+      <AlbumArtist>True</AlbumArtist>
+      <Performer>True</Performer>
+      <Track>True</Track>
+      <TrackCount>True</TrackCount>
+      <Disc>False</Disc>
+      <DiscCount>True</DiscCount>
+      <Year>True</Year>
+      <Genre>True</Genre>
+      <Comment>True</Comment>
+      <Composer>True</Composer>
+      <Publisher>True</Publisher>
+      <Copyright>True</Copyright>
+      <Lyrics>True</Lyrics>
+    </UpdateFields>
+    <MetadataCompleteFields>
+      <Title>True</Title>
+      <TitleSort>False</TitleSort>
+      <Album>True</Album>
+      <AlbumSort>False</AlbumSort>
+      <AlbumArtist>True</AlbumArtist>
+      <Performer>False</Performer>
+      <Track>True</Track>
+      <TrackCount>False</TrackCount>
+      <Disc>False</Disc>
+      <DiscCount>False</DiscCount>
+      <Year>True</Year>
+      <Genre>True</Genre>
+      <Comment>False</Comment>
+      <Composer>False</Composer>
+      <Publisher>False</Publisher>
+      <Copyright>False</Copyright>
+      <Lyrics>False</Lyrics>
+      <Posters>True</Posters>
+    </MetadataCompleteFields>
+    <Plugins>
+      <Locals>
+      </Locals>
+      <Fetchers>
+        <RealTime>00000000-0000-0000-0000-000000000000</RealTime>
+        <Title>00000000-0000-0000-0000-000000000000</Title>
+        <TitleSort>00000000-0000-0000-0000-000000000000</TitleSort>
+        <Album>00000000-0000-0000-0000-000000000000</Album>
+        <AlbumSort>00000000-0000-0000-0000-000000000000</AlbumSort>
+        <AlbumArtist>00000000-0000-0000-0000-000000000000</AlbumArtist>
+        <Performer>00000000-0000-0000-0000-000000000000</Performer>
+        <Track>00000000-0000-0000-0000-000000000000</Track>
+        <TrackCount>00000000-0000-0000-0000-000000000000</TrackCount>
+        <Disc>00000000-0000-0000-0000-000000000000</Disc>
+        <DiscCount>00000000-0000-0000-0000-000000000000</DiscCount>
+        <Year>00000000-0000-0000-0000-000000000000</Year>
+        <Genre>00000000-0000-0000-0000-000000000000</Genre>
+        <Comment>00000000-0000-0000-0000-000000000000</Comment>
+        <Composer>00000000-0000-0000-0000-000000000000</Composer>
+        <Publisher>00000000-0000-0000-0000-000000000000</Publisher>
+        <Copyright>00000000-0000-0000-0000-000000000000</Copyright>
+        <Lyrics>00000000-0000-0000-0000-000000000000</Lyrics>
+      </Fetchers>
+      <Savers>
+      </Savers>
+    </Plugins>
+  </Music>
+</Options>

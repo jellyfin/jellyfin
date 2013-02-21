@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>ServiceStack</id>
+    <version>3.9.37</version>
+    <title>ServiceStack webservice framework: Faster, Cleaner, Modern WCF alternative</title>
+    <authors>Demis Bellot</authors>
+    <owners>Demis Bellot</owners>
+    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
+    <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Binaries for the ServiceStack web framework.
+      Visit http://www.servicestack.net/ServiceStack.Hello/
+      and https://github.com/ServiceStack/ServiceStack/wiki/Create-your-first-webservice
+      for walk throughs and docs on creating your first web service.</description>
+    <summary>Opensource .NET and Mono REST Web Services framework</summary>
+    <copyright>servicestack.net 2012 and contributors</copyright>
+    <language>en-US</language>
+    <tags>Fast JSON XML CSV HTML SOAP JSV REST Web Service Framework MONO ServiceStack</tags>
+    <dependencies>
+      <dependency id="ServiceStack.Common" />
+      <dependency id="ServiceStack.Redis" />
+      <dependency id="ServiceStack.OrmLite.SqlServer" />
+    </dependencies>
+    <references>
+      <reference file="ServiceStack.dll" />
+      <reference file="ServiceStack.ServiceInterface.dll" />
+    </references>
+  </metadata>
+</package>

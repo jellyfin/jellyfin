@@ -1,96 +1,304 @@
 ﻿using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Logging;
+using MediaBrowser.Common.Plugins;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaInfo;
+using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Persistence.SQLite;
+using MediaBrowser.Controller.Playback;
+using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Controller.ScheduledTasks;
+using MediaBrowser.Controller.Updates;
 using MediaBrowser.Controller.Weather;
-using MediaBrowser.Model.Authentication;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Progress;
-using MediaBrowser.Common.Extensions;
+using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller
 {
+    /// <summary>
+    /// Class Kernel
+    /// </summary>
     public class Kernel : BaseKernel<ServerConfiguration, ServerApplicationPaths>
     {
-        #region Events
         /// <summary>
-        /// Fires whenever any validation routine adds or removes items.  The added and removed items are properties of the args.
-        /// *** Will fire asynchronously. ***
+        /// The MB admin URL
         /// </summary>
-        public event EventHandler<ChildrenChangedEventArgs> LibraryChanged;
-        public void OnLibraryChanged(ChildrenChangedEventArgs args)
-        {
-            if (LibraryChanged != null)
-            {
-                Task.Run(() => LibraryChanged(this, args));
-            }
-        }
+        public const string MBAdminUrl = "http://mb3admin.com/admin/";
 
-        #endregion
+        /// <summary>
+        /// Gets the instance.
+        /// </summary>
+        /// <value>The instance.</value>
         public static Kernel Instance { get; private set; }
 
-        public ItemController ItemController { get; private set; }
+        /// <summary>
+        /// Gets the library manager.
+        /// </summary>
+        /// <value>The library manager.</value>
+        public LibraryManager LibraryManager { get; private set; }
 
-        public IEnumerable<User> Users { get; private set; }
-        public Folder RootFolder { get; private set; }
+        /// <summary>
+        /// Gets the image manager.
+        /// </summary>
+        /// <value>The image manager.</value>
+        public ImageManager ImageManager { get; private set; }
 
-        private DirectoryWatchers DirectoryWatchers { get; set; }
+        /// <summary>
+        /// Gets the user manager.
+        /// </summary>
+        /// <value>The user manager.</value>
+        public UserManager UserManager { get; private set; }
 
-        private string MediaRootFolderPath
+        /// <summary>
+        /// Gets the FFMPEG controller.
+        /// </summary>
+        /// <value>The FFMPEG controller.</value>
+        public FFMpegManager FFMpegManager { get; private set; }
+
+        /// <summary>
+        /// Gets the installation manager.
+        /// </summary>
+        /// <value>The installation manager.</value>
+        public InstallationManager InstallationManager { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the file system manager.
+        /// </summary>
+        /// <value>The file system manager.</value>
+        public FileSystemManager FileSystemManager { get; private set; }
+
+        /// <summary>
+        /// Gets the provider manager.
+        /// </summary>
+        /// <value>The provider manager.</value>
+        public ProviderManager ProviderManager { get; private set; }
+
+        /// <summary>
+        /// Gets the user data manager.
+        /// </summary>
+        /// <value>The user data manager.</value>
+        public UserDataManager UserDataManager { get; private set; }
+
+        /// <summary>
+        /// Gets the plug-in security manager.
+        /// </summary>
+        /// <value>The plug-in security manager.</value>
+        public PluginSecurityManager PluginSecurityManager { get; private set; }
+
+        /// <summary>
+        /// The _users
+        /// </summary>
+        private IEnumerable<User> _users;
+        /// <summary>
+        /// The _user lock
+        /// </summary>
+        private object _usersSyncLock = new object();
+        /// <summary>
+        /// The _users initialized
+        /// </summary>
+        private bool _usersInitialized;
+        /// <summary>
+        /// Gets the users.
+        /// </summary>
+        /// <value>The users.</value>
+        public IEnumerable<User> Users
         {
             get
             {
-                return ApplicationPaths.RootFolderPath;
+                // Call ToList to exhaust the stream because we'll be iterating over this multiple times
+                LazyInitializer.EnsureInitialized(ref _users, ref _usersInitialized, ref _usersSyncLock, UserManager.LoadUsers);
+                return _users;
+            }
+            internal set
+            {
+                _users = value;
+
+                if (value == null)
+                {
+                    _usersInitialized = false;
+                }
             }
         }
 
+        /// <summary>
+        /// The _root folder
+        /// </summary>
+        private AggregateFolder _rootFolder;
+        /// <summary>
+        /// The _root folder sync lock
+        /// </summary>
+        private object _rootFolderSyncLock = new object();
+        /// <summary>
+        /// The _root folder initialized
+        /// </summary>
+        private bool _rootFolderInitialized;
+        /// <summary>
+        /// Gets the root folder.
+        /// </summary>
+        /// <value>The root folder.</value>
+        public AggregateFolder RootFolder
+        {
+            get
+            {
+                LazyInitializer.EnsureInitialized(ref _rootFolder, ref _rootFolderInitialized, ref _rootFolderSyncLock, LibraryManager.CreateRootFolder);
+                return _rootFolder;
+            }
+            private set
+            {
+                _rootFolder = value;
+
+                if (value == null)
+                {
+                    _rootFolderInitialized = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the kernel context.
+        /// </summary>
+        /// <value>The kernel context.</value>
         public override KernelContext KernelContext
         {
             get { return KernelContext.Server; }
         }
 
         /// <summary>
+        /// Gets the list of plugin configuration pages
+        /// </summary>
+        /// <value>The configuration pages.</value>
+        [ImportMany(typeof(BaseConfigurationPage))]
+        public IEnumerable<BaseConfigurationPage> PluginConfigurationPages { get; private set; }
+
+        /// <summary>
+        /// Gets the intro providers.
+        /// </summary>
+        /// <value>The intro providers.</value>
+        [ImportMany(typeof(BaseIntroProvider))]
+        public IEnumerable<BaseIntroProvider> IntroProviders { get; private set; }
+
+        /// <summary>
         /// Gets the list of currently registered weather prvoiders
         /// </summary>
+        /// <value>The weather providers.</value>
         [ImportMany(typeof(BaseWeatherProvider))]
         public IEnumerable<BaseWeatherProvider> WeatherProviders { get; private set; }
 
         /// <summary>
         /// Gets the list of currently registered metadata prvoiders
         /// </summary>
+        /// <value>The metadata providers enumerable.</value>
         [ImportMany(typeof(BaseMetadataProvider))]
-        private IEnumerable<BaseMetadataProvider> MetadataProvidersEnumerable { get; set; }
+        public BaseMetadataProvider[] MetadataProviders { get; private set; }
 
         /// <summary>
-        /// Once MEF has loaded the resolvers, sort them by priority and store them in this array
-        /// Given the sheer number of times they'll be iterated over it'll be faster to loop through an array
+        /// Gets the list of currently registered image processors
+        /// Image processors are specialized metadata providers that run after the normal ones
         /// </summary>
-        private BaseMetadataProvider[] MetadataProviders { get; set; }
+        /// <value>The image enhancers.</value>
+        [ImportMany(typeof(BaseImageEnhancer))]
+        public BaseImageEnhancer[] ImageEnhancers { get; private set; }
 
         /// <summary>
         /// Gets the list of currently registered entity resolvers
         /// </summary>
+        /// <value>The entity resolvers enumerable.</value>
         [ImportMany(typeof(IBaseItemResolver))]
-        private IEnumerable<IBaseItemResolver> EntityResolversEnumerable { get; set; }
+        internal IBaseItemResolver[] EntityResolvers { get; private set; }
 
         /// <summary>
-        /// Once MEF has loaded the resolvers, sort them by priority and store them in this array
-        /// Given the sheer number of times they'll be iterated over it'll be faster to loop through an array
+        /// Gets the list of BasePluginFolders added by plugins
         /// </summary>
-        internal IBaseItemResolver[] EntityResolvers { get; private set; }
+        /// <value>The plugin folders.</value>
+        [ImportMany(typeof(BasePluginFolder))]
+        internal IEnumerable<BasePluginFolder> PluginFolders { get; private set; }
+
+        /// <summary>
+        /// Gets the list of available user repositories
+        /// </summary>
+        /// <value>The user repositories.</value>
+        [ImportMany(typeof(IUserRepository))]
+        private IEnumerable<IUserRepository> UserRepositories { get; set; }
+
+        /// <summary>
+        /// Gets the active user repository
+        /// </summary>
+        /// <value>The user repository.</value>
+        public IUserRepository UserRepository { get; private set; }
+
+        /// <summary>
+        /// Gets the active user repository
+        /// </summary>
+        /// <value>The display preferences repository.</value>
+        public IDisplayPreferencesRepository DisplayPreferencesRepository { get; private set; }
+
+        /// <summary>
+        /// Gets the list of available item repositories
+        /// </summary>
+        /// <value>The item repositories.</value>
+        [ImportMany(typeof(IItemRepository))]
+        private IEnumerable<IItemRepository> ItemRepositories { get; set; }
+
+        /// <summary>
+        /// Gets the active item repository
+        /// </summary>
+        /// <value>The item repository.</value>
+        public IItemRepository ItemRepository { get; private set; }
+
+        /// <summary>
+        /// Gets the list of available item repositories
+        /// </summary>
+        /// <value>The user data repositories.</value>
+        [ImportMany(typeof(IUserDataRepository))]
+        private IEnumerable<IUserDataRepository> UserDataRepositories { get; set; }
+
+        /// <summary>
+        /// Gets the list of available DisplayPreferencesRepositories
+        /// </summary>
+        /// <value>The display preferences repositories.</value>
+        [ImportMany(typeof(IDisplayPreferencesRepository))]
+        private IEnumerable<IDisplayPreferencesRepository> DisplayPreferencesRepositories { get; set; }
+
+        /// <summary>
+        /// Gets the list of entity resolution ignore rules
+        /// </summary>
+        /// <value>The entity resolution ignore rules.</value>
+        [ImportMany(typeof(BaseResolutionIgnoreRule))]
+        internal IEnumerable<BaseResolutionIgnoreRule> EntityResolutionIgnoreRules { get; private set; }
+
+        /// <summary>
+        /// Gets the active user data repository
+        /// </summary>
+        /// <value>The user data repository.</value>
+        public IUserDataRepository UserDataRepository { get; private set; }
+
+        /// <summary>
+        /// Limits simultaneous access to various resources
+        /// </summary>
+        /// <value>The resource pools.</value>
+        public ResourcePool ResourcePools { get; set; }
+
+        /// <summary>
+        /// Gets the UDP server port number.
+        /// </summary>
+        /// <value>The UDP server port number.</value>
+        public override int UdpServerPortNumber
+        {
+            get { return 7359; }
+        }
 
         /// <summary>
         /// Creates a kernel based on a Data path, which is akin to our current programdata path
@@ -102,285 +310,290 @@ namespace MediaBrowser.Controller
         }
 
         /// <summary>
-        /// Performs initializations that only occur once
-        /// </summary>
-        protected override void InitializeInternal(IProgress<TaskProgress> progress)
-        {
-            base.InitializeInternal(progress);
-
-            ItemController = new ItemController();
-            DirectoryWatchers = new DirectoryWatchers();
-
-
-            ExtractFFMpeg();
-        }
-
-        /// <summary>
         /// Performs initializations that can be reloaded at anytime
         /// </summary>
-        protected override async Task ReloadInternal(IProgress<TaskProgress> progress)
+        /// <returns>Task.</returns>
+        protected override async Task ReloadInternal()
         {
-            await base.ReloadInternal(progress).ConfigureAwait(false);
+            Logger.Info("Extracting tools");
 
-            ReportProgress(progress, "Loading Users");
-            ReloadUsers();
+            // Reset these so that they can be lazy loaded again
+            Users = null;
+            RootFolder = null;
 
-            ReportProgress(progress, "Loading Media Library");
+            ReloadResourcePools();
+            InstallationManager = new InstallationManager(this);
+            LibraryManager = new LibraryManager(this);
+            UserManager = new UserManager(this);
+            FFMpegManager = new FFMpegManager(this);
+            ImageManager = new ImageManager(this);
+            ProviderManager = new ProviderManager(this);
+            UserDataManager = new UserDataManager(this);
+            PluginSecurityManager = new PluginSecurityManager(this);
 
-            await ReloadRoot(allowInternetProviders: false).ConfigureAwait(false);
+            await base.ReloadInternal().ConfigureAwait(false);
 
+            ReloadFileSystemManager();
+
+            await UserManager.RefreshUsersMetadata(CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
-        /// Completely disposes the Kernel
+        /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
-        public override void Dispose()
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected override void Dispose(bool dispose)
         {
-            base.Dispose();
+            if (dispose)
+            {
+                DisposeResourcePools();
 
-            DirectoryWatchers.Stop();
+                DisposeFileSystemManager();
+            }
 
+            base.Dispose(dispose);
         }
 
-        protected override void OnComposablePartsLoaded()
+        /// <summary>
+        /// Disposes the resource pools.
+        /// </summary>
+        private void DisposeResourcePools()
+        {
+            if (ResourcePools != null)
+            {
+                ResourcePools.Dispose();
+                ResourcePools = null;
+            }
+        }
+
+        /// <summary>
+        /// Reloads the resource pools.
+        /// </summary>
+        private void ReloadResourcePools()
+        {
+            DisposeResourcePools();
+            ResourcePools = new ResourcePool();
+        }
+
+        /// <summary>
+        /// Called when [composable parts loaded].
+        /// </summary>
+        /// <returns>Task.</returns>
+        protected override async Task OnComposablePartsLoaded()
         {
             // The base class will start up all the plugins
-            base.OnComposablePartsLoaded();
+            await base.OnComposablePartsLoaded().ConfigureAwait(false);
+
+            // Get the current item repository
+            ItemRepository = GetRepository(ItemRepositories, Configuration.ItemRepository, SQLiteItemRepository.RepositoryName);
+            var itemRepoTask = ItemRepository.Initialize();
+
+            // Get the current user repository
+            UserRepository = GetRepository(UserRepositories, Configuration.UserRepository, SQLiteUserRepository.RepositoryName);
+            var userRepoTask = UserRepository.Initialize();
+
+            // Get the current item repository
+            UserDataRepository = GetRepository(UserDataRepositories, Configuration.UserDataRepository, SQLiteUserDataRepository.RepositoryName);
+            var userDataRepoTask = UserDataRepository.Initialize();
+
+            // Get the current display preferences repository
+            DisplayPreferencesRepository = GetRepository(DisplayPreferencesRepositories, Configuration.DisplayPreferencesRepository, SQLiteDisplayPreferencesRepository.RepositoryName);
+            var displayPreferencesRepoTask = DisplayPreferencesRepository.Initialize();
 
             // Sort the resolvers by priority
-            EntityResolvers = EntityResolversEnumerable.OrderBy(e => e.Priority).ToArray();
+            EntityResolvers = EntityResolvers.OrderBy(e => e.Priority).ToArray();
 
             // Sort the providers by priority
-            MetadataProviders = MetadataProvidersEnumerable.OrderBy(e => e.Priority).ToArray();
+            MetadataProviders = MetadataProviders.OrderBy(e => e.Priority).ToArray();
+
+            // Sort the image processors by priority
+            ImageEnhancers = ImageEnhancers.OrderBy(e => e.Priority).ToArray();
+
+            await Task.WhenAll(itemRepoTask, userRepoTask, userDataRepoTask, displayPreferencesRepoTask).ConfigureAwait(false);
         }
 
-        public BaseItem ResolveItem(ItemResolveEventArgs args)
+        protected override IEnumerable<Assembly> GetComposablePartAssemblies()
         {
-            // Try first priority resolvers
-            for (int i = 0; i < EntityResolvers.Length; i++)
-            {
-                var item = EntityResolvers[i].ResolvePath(args);
+            var runningDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
 
-                if (item != null)
-                {
-                    item.ResolveArgs = args;
-                    return item;
-                }
-            }
-
-            return null;
-        }
-
-        private void ReloadUsers()
-        {
-            Users = GetAllUsers();
+            return base.GetComposablePartAssemblies().Concat(new[] { 
+            
+                Assembly.Load(File.ReadAllBytes(Path.Combine(runningDirectory, "MediaBrowser.Api.dll"))),
+                Assembly.Load(File.ReadAllBytes(Path.Combine(runningDirectory, "MediaBrowser.ApiInteraction.Javascript.dll"))),
+                Assembly.Load(File.ReadAllBytes(Path.Combine(runningDirectory, "MediaBrowser.WebDashboard.dll")))
+            });
         }
 
         /// <summary>
-        /// Reloads the root media folder
+        /// Gets a repository by name from a list, and returns the default if not found
         /// </summary>
-        public async Task ReloadRoot(bool allowInternetProviders = true)
+        /// <typeparam name="T"></typeparam>
+        /// <param name="repositories">The repositories.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="defaultName">The default name.</param>
+        /// <returns>``0.</returns>
+        private T GetRepository<T>(IEnumerable<T> repositories, string name, string defaultName)
+            where T : class, IRepository
         {
-            if (!Directory.Exists(MediaRootFolderPath))
-            {
-                Directory.CreateDirectory(MediaRootFolderPath);
-            }
+            var enumerable = repositories as T[] ?? repositories.ToArray();
 
-            DirectoryWatchers.Stop();
-
-            RootFolder = await ItemController.GetItem(MediaRootFolderPath, allowInternetProviders: allowInternetProviders).ConfigureAwait(false) as Folder;
-            RootFolder.ChildrenChanged += RootFolder_ChildrenChanged;
-
-            DirectoryWatchers.Start();
-        }
-
-        void RootFolder_ChildrenChanged(object sender, ChildrenChangedEventArgs e)
-        {
-            Logger.LogDebugInfo("Root Folder Children Changed.  Added: " + e.ItemsAdded.Count + " Removed: " + e.ItemsRemoved.Count());
-            //re-start the directory watchers
-            DirectoryWatchers.Stop();
-            DirectoryWatchers.Start();
-            //Task.Delay(30000); //let's wait and see if more data gets filled in...
-            var allChildren = RootFolder.RecursiveChildren;
-            Logger.LogDebugInfo(string.Format("Loading complete.  Movies: {0} Episodes: {1} Folders: {2}", allChildren.OfType<Entities.Movies.Movie>().Count(), allChildren.OfType<Entities.TV.Episode>().Count(), allChildren.Where(i => i is Folder && !(i is Series || i is Season)).Count()));
-            //foreach (var child in allChildren)
-            //{
-            //    Logger.LogDebugInfo("(" + child.GetType().Name + ") " + child.Name + " (" + child.Path + ")");
-            //}
+            return enumerable.FirstOrDefault(r => r.Name.Equals(name ?? defaultName, StringComparison.OrdinalIgnoreCase)) ??
+                   enumerable.First(r => r.Name.Equals(defaultName, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
-        /// Gets the default user to use when EnableUserProfiles is false
+        /// Disposes the file system manager.
         /// </summary>
-        public User GetDefaultUser()
+        private void DisposeFileSystemManager()
         {
-            User user = Users.FirstOrDefault();
-
-            return user;
+            if (FileSystemManager != null)
+            {
+                FileSystemManager.Dispose();
+                FileSystemManager = null;
+            }
         }
 
         /// <summary>
-        /// Persists a User
+        /// Reloads the file system manager.
         /// </summary>
-        public void SaveUser(User user)
+        private void ReloadFileSystemManager()
         {
+            DisposeFileSystemManager();
 
+            FileSystemManager = new FileSystemManager(this);
+            FileSystemManager.StartWatchers();
         }
 
         /// <summary>
-        /// Authenticates a User and returns a result indicating whether or not it succeeded
+        /// Gets a User by Id
         /// </summary>
-        public AuthenticationResult AuthenticateUser(User user, string password)
+        /// <param name="id">The id.</param>
+        /// <returns>User.</returns>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        public User GetUserById(Guid id)
         {
-            var result = new AuthenticationResult();
-
-            // When EnableUserProfiles is false, only the default User can login
-            if (!Configuration.EnableUserProfiles)
+            if (id == Guid.Empty)
             {
-                result.Success = user.Id == GetDefaultUser().Id;
-            }
-            else if (string.IsNullOrEmpty(user.Password))
-            {
-                result.Success = true;
-            }
-            else
-            {
-                password = password ?? string.Empty;
-                result.Success = password.GetMD5().ToString().Equals(user.Password);
+                throw new ArgumentNullException();
             }
 
-            // Update LastActivityDate and LastLoginDate, then save
-            if (result.Success)
-            {
-                user.LastActivityDate = user.LastLoginDate = DateTime.UtcNow;
-                SaveUser(user);
-            }
-
-            return result;
+            return Users.FirstOrDefault(u => u.Id == id);
         }
 
         /// <summary>
-        /// Finds a library item by Id
+        /// Finds a library item by Id and UserId.
         /// </summary>
+        /// <param name="id">The id.</param>
+        /// <param name="userId">The user id.</param>
+        /// <returns>BaseItem.</returns>
+        /// <exception cref="System.ArgumentNullException">id</exception>
+        public BaseItem GetItemById(Guid id, Guid userId)
+        {
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            if (userId == Guid.Empty)
+            {
+                throw new ArgumentNullException("userId");
+            }
+
+            var user = GetUserById(userId);
+            var userRoot = user.RootFolder;
+
+            return userRoot.FindItemById(id, user);
+        }
+
+        /// <summary>
+        /// Gets the item by id.
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns>BaseItem.</returns>
+        /// <exception cref="System.ArgumentNullException">id</exception>
         public BaseItem GetItemById(Guid id)
         {
             if (id == Guid.Empty)
             {
-                return RootFolder;
+                throw new ArgumentNullException("id");
             }
 
-            return RootFolder.FindItemById(id);
+            return RootFolder.FindItemById(id, null);
         }
 
         /// <summary>
-        /// Gets all users within the system
+        /// Completely overwrites the current configuration with a new copy
         /// </summary>
-        private IEnumerable<User> GetAllUsers()
+        /// <param name="config">The config.</param>
+        public void UpdateConfiguration(ServerConfiguration config)
         {
-            var list = new List<User>();
+            var oldConfiguration = Configuration;
 
-            // Return a dummy user for now since all calls to get items requre a userId
-            var user = new User { };
+            var reloadLogger = config.ShowLogWindow != oldConfiguration.ShowLogWindow;
 
-            user.Name = "Default User";
-            user.Id = Guid.Parse("5d1cf7fce25943b790d140095457a42b");
-            user.PrimaryImagePath = "D:\\Video\\TV\\Archer (2009)\\backdrop.jpg";
-            list.Add(user);
+            // Figure out whether or not we should refresh people after the update is finished
+            var refreshPeopleAfterUpdate = !oldConfiguration.EnableInternetProviders && config.EnableInternetProviders;
 
-            user = new User { };
-            user.Name = "Abobader";
-            user.Id = Guid.NewGuid();
-            user.LastLoginDate = DateTime.UtcNow.AddDays(-1);
-            user.LastActivityDate = DateTime.UtcNow.AddHours(-3);
-            user.Password = ("1234").GetMD5().ToString();
-            list.Add(user);
+            // This is true if internet providers has just been turned on, or if People have just been removed from InternetProviderExcludeTypes
+            if (!refreshPeopleAfterUpdate)
+            {
+                var oldConfigurationFetchesPeopleImages = oldConfiguration.InternetProviderExcludeTypes == null || !oldConfiguration.InternetProviderExcludeTypes.Contains(typeof(Person).Name, StringComparer.OrdinalIgnoreCase);
+                var newConfigurationFetchesPeopleImages = config.InternetProviderExcludeTypes == null || !config.InternetProviderExcludeTypes.Contains(typeof(Person).Name, StringComparer.OrdinalIgnoreCase);
 
-            user = new User { };
-            user.Name = "Scottisafool";
-            user.Id = Guid.NewGuid();
-            list.Add(user);
+                refreshPeopleAfterUpdate = newConfigurationFetchesPeopleImages && !oldConfigurationFetchesPeopleImages;
+            }
 
-            user = new User { };
-            user.Name = "Redshirt";
-            user.Id = Guid.NewGuid();
-            list.Add(user);
+            Configuration = config;
+            SaveConfiguration();
 
-            /*user = new User();
-            user.Name = "Test User 4";
-            user.Id = Guid.NewGuid();
-            list.Add(user);
+            if (reloadLogger)
+            {
+                ReloadLogger();
+            }
 
-            user = new User();
-            user.Name = "Test User 5";
-            user.Id = Guid.NewGuid();
-            list.Add(user);
+            TcpManager.OnApplicationConfigurationChanged(oldConfiguration, config);
 
-            user = new User();
-            user.Name = "Test User 6";
-            user.Id = Guid.NewGuid();
-            list.Add(user);*/
+            // Validate currently executing providers, in the background
+            Task.Run(() =>
+            {
+                ProviderManager.ValidateCurrentlyRunningProviders();
 
-            return list;
+                // Any number of configuration settings could change the way the library is refreshed, so do that now
+                TaskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
+
+                if (refreshPeopleAfterUpdate)
+                {
+                    TaskManager.CancelIfRunningAndQueue<PeopleValidationTask>();
+                }
+            });
         }
 
         /// <summary>
-        /// Runs all metadata providers for an entity
+        /// Removes the plugin.
         /// </summary>
-        internal async Task ExecuteMetadataProviders(BaseEntity item, bool allowInternetProviders = true)
+        /// <param name="plugin">The plugin.</param>
+        internal void RemovePlugin(IPlugin plugin)
         {
-            // Run them sequentially in order of priority
-            for (int i = 0; i < MetadataProviders.Length; i++)
-            {
-                var provider = MetadataProviders[i];
-
-                // Skip if internet providers are currently disabled
-                if (provider.RequiresInternet && (!Configuration.EnableInternetProviders || !allowInternetProviders))
-                {
-                    continue;
-                }
-
-                // Skip if the provider doesn't support the current item
-                if (!provider.Supports(item))
-                {
-                    continue;
-                }
-
-                try
-                {
-                    await provider.FetchIfNeededAsync(item).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogException(ex);
-                }
-            }
-        }
-
-        private void ExtractFFMpeg()
-        {
-            ExtractFFMpeg(ApplicationPaths.FFMpegPath);
-            ExtractFFMpeg(ApplicationPaths.FFProbePath);
+            var list = Plugins.ToList();
+            list.Remove(plugin);
+            Plugins = list;
         }
 
         /// <summary>
-        /// Run these during Init.
-        /// Can't run do this on-demand because there will be multiple workers accessing them at once and we'd have to lock them
+        /// Gets the system info.
         /// </summary>
-        private void ExtractFFMpeg(string exe)
+        /// <returns>SystemInfo.</returns>
+        public override SystemInfo GetSystemInfo()
         {
-            if (File.Exists(exe))
+            var info = base.GetSystemInfo();
+
+            if (InstallationManager != null)
             {
-                File.Delete(exe);
+                info.InProgressInstallations = InstallationManager.CurrentInstallations.Select(i => i.Item1).ToArray();
+                info.CompletedInstallations = InstallationManager.CompletedInstallations.ToArray();
             }
 
-            // Extract exe
-            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Controller.FFMpeg." + Path.GetFileName(exe)))
-            {
-                using (var fileStream = new FileStream(exe, FileMode.Create))
-                {
-                    stream.CopyTo(fileStream);
-                }
-            }
+            return info;
         }
     }
 }

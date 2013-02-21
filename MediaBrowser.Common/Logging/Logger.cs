@@ -1,93 +1,110 @@
-﻿using System;
-using System.Diagnostics;
-using System.Text;
-using System.Threading;
-using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Model.Logging;
+using System;
 
 namespace MediaBrowser.Common.Logging
 {
+    /// <summary>
+    /// Class Logger
+    /// </summary>
     public static class Logger
     {
-        internal static IKernel Kernel { get; set; }
+        /// <summary>
+        /// Gets or sets the logger instance.
+        /// </summary>
+        /// <value>The logger instance.</value>
+        internal static ILogger LoggerInstance { get; set; }
 
+        /// <summary>
+        /// Logs the info.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="paramList">The param list.</param>
         public static void LogInfo(string message, params object[] paramList)
         {
-            LogEntry(message, LogSeverity.Info, paramList);
+            LogEntry(message, LogSeverity.Info, null, paramList);
         }
 
+        /// <summary>
+        /// Logs the debug info.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="paramList">The param list.</param>
         public static void LogDebugInfo(string message, params object[] paramList)
         {
-            LogEntry(message, LogSeverity.Debug, paramList);
+            LogEntry(message, LogSeverity.Debug, null, paramList);
         }
-
+        
+        /// <summary>
+        /// Logs the error.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="paramList">The param list.</param>
         public static void LogError(string message, params object[] paramList)
         {
-            LogEntry(message, LogSeverity.Error, paramList);
+            LogEntry(message, LogSeverity.Error, null, paramList);
         }
-
-        public static void LogException(Exception ex, params object[] paramList)
-        {
-            LogException(string.Empty, ex, paramList);
-        }
-
+        
+        /// <summary>
+        /// Logs the exception.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="ex">The ex.</param>
+        /// <param name="paramList">The param list.</param>
         public static void LogException(string message, Exception ex, params object[] paramList)
         {
-            var builder = new StringBuilder();
-
-            if (ex != null)
-            {
-                builder.AppendFormat("Exception.  Type={0} Msg={1} StackTrace={3}{2}",
-                    ex.GetType().FullName,
-                    ex.Message,
-                    ex.StackTrace,
-                    Environment.NewLine);
-            }
-
-            message = FormatMessage(message, paramList);
-
-            LogError(string.Format("{0} ( {1} )", message, builder));
+            LogEntry(message, LogSeverity.Error, ex, paramList);
         }
 
+        /// <summary>
+        /// Fatals the exception.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="ex">The ex.</param>
+        /// <param name="paramList">The param list.</param>
+        public static void FatalException(string message, Exception ex, params object[] paramList)
+        {
+            LogEntry(message, LogSeverity.Fatal, ex, paramList);
+        }
+        
+        /// <summary>
+        /// Logs the warning.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="paramList">The param list.</param>
         public static void LogWarning(string message, params object[] paramList)
         {
-            LogEntry(message, LogSeverity.Warning, paramList);
+            LogEntry(message, LogSeverity.Warn, null, paramList);
         }
 
-        private static void LogEntry(string message, LogSeverity severity, params object[] paramList)
+        /// <summary>
+        /// Logs the entry.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="level">The level.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="paramList">The param list.</param>
+        private static void LogEntry(string message, LogSeverity level, Exception exception, params object[] paramList)
         {
-            message = FormatMessage(message, paramList);
-
-            Thread currentThread = Thread.CurrentThread;
-
-            var row = new LogRow
+            if (LoggerInstance == null)
             {
-                Severity = severity,
-                Message = message,
-                ThreadId = currentThread.ManagedThreadId,
-                ThreadName = currentThread.Name,
-                Time = DateTime.Now
-            };
-
-            if (Kernel.Loggers != null)
-            {
-                foreach (var logger in Kernel.Loggers)
-                {
-                    logger.LogEntry(row);
-                }
-            }
-        }
-
-        private static string FormatMessage(string message, params object[] paramList)
-        {
-            if (paramList != null)
-            {
-                for (int i = 0; i < paramList.Length; i++)
-                {
-                    message = message.Replace("{" + i + "}", paramList[i].ToString());
-                }
+                return;
             }
 
-            return message;
+            if (exception == null)
+            {
+                LoggerInstance.Log(level, message, paramList);
+            }
+            else
+            {
+                if (level == LogSeverity.Fatal)
+                {
+                    LoggerInstance.FatalException(message, exception, paramList);
+                }
+                else
+                {
+                    LoggerInstance.ErrorException(message, exception, paramList);
+                }
+            }
         }
     }
 }

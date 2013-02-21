@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Controller.IO;
+using System;
 using System.ComponentModel.Composition;
 using System.IO;
 
@@ -13,6 +13,10 @@ namespace MediaBrowser.Controller.Resolvers
     [Export(typeof(IBaseItemResolver))]
     public class VideoResolver : BaseVideoResolver<Video>
     {
+        /// <summary>
+        /// Gets the priority.
+        /// </summary>
+        /// <value>The priority.</value>
         public override ResolverPriority Priority
         {
             get { return ResolverPriority.Last; }
@@ -22,17 +26,26 @@ namespace MediaBrowser.Controller.Resolvers
     /// <summary>
     /// Resolves a Path into a Video or Video subclass
     /// </summary>
+    /// <typeparam name="T"></typeparam>
     public abstract class BaseVideoResolver<T> : BaseItemResolver<T>
         where T : Video, new()
     {
-        protected override T Resolve(ItemResolveEventArgs args)
+        /// <summary>
+        /// Resolves the specified args.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns>`0.</returns>
+        protected override T Resolve(ItemResolveArgs args)
         {
             // If the path is a file check for a matching extensions
             if (!args.IsDirectory)
             {
-                if (FileSystemHelper.IsVideoFile(args.Path))
+                if (EntityResolutionHelper.IsVideoFile(args.Path))
                 {
-                    VideoType type = Path.GetExtension(args.Path).EndsWith("iso", System.StringComparison.OrdinalIgnoreCase) ? VideoType.Iso : VideoType.VideoFile;
+                    var extension = Path.GetExtension(args.Path);
+
+                    var type = string.Equals(extension, ".iso", StringComparison.OrdinalIgnoreCase) || string.Equals(extension, ".img", StringComparison.OrdinalIgnoreCase) ? 
+                        VideoType.Iso : VideoType.VideoFile;
 
                     return new T
                     {
@@ -42,59 +55,19 @@ namespace MediaBrowser.Controller.Resolvers
                 }
             }
 
-            else
-            {
-                // If the path is a folder, check if it's bluray or dvd
-                T item = ResolveFromFolderName(args.Path);
-
-                if (item != null)
-                {
-                    return item;
-                }
-
-                // Also check the subfolders for bluray or dvd
-                for (int i = 0; i < args.FileSystemChildren.Length; i++)
-                {
-                    var folder = args.FileSystemChildren[i];
-
-                    if (!folder.IsDirectory)
-                    {
-                        continue;
-                    }
-
-                    item = ResolveFromFolderName(folder.Path);
-
-                    if (item != null)
-                    {
-                        return item;
-                    }
-                }
-            }
-
             return null;
         }
 
-        private T ResolveFromFolderName(string folder)
+        /// <summary>
+        /// Sets the initial item values.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="args">The args.</param>
+        protected override void SetInitialItemValues(T item, ItemResolveArgs args)
         {
-            if (folder.IndexOf("video_ts", System.StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                return new T
-                {
-                    VideoType = VideoType.Dvd,
-                    Path = Path.GetDirectoryName(folder)
-                };
-            }
-            if (folder.IndexOf("bdmv", System.StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                return new T
-                {
-                    VideoType = VideoType.BluRay,
-                    Path = Path.GetDirectoryName(folder)
-                };
-            }
+            base.SetInitialItemValues(item, args);
 
-            return null;
+            item.VideoFormat = item.Path.IndexOf("[3d]", StringComparison.OrdinalIgnoreCase) != -1 ? VideoFormat.Digital3D : item.Path.IndexOf("[sbs3d]", StringComparison.OrdinalIgnoreCase) != -1 ? VideoFormat.Sbs3D : VideoFormat.Standard;
         }
-
     }
 }

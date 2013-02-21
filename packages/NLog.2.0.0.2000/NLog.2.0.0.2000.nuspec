@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>NLog</id>
+    <version>2.0.0.2000</version>
+    <title>NLog</title>
+    <authors>Jaroslaw Kowalski</authors>
+    <owners>Jaroslaw Kowalski</owners>
+    <licenseUrl>https://raw.github.com/jkowalski/NLog/master/LICENSE.txt</licenseUrl>
+    <projectUrl>http://nlog-project.org/</projectUrl>
+    <iconUrl>http://nlog-project.org/N.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>NLog is a logging platform for .NET with rich log routing and management capabilities. It can help you produce and manage high-quality logs for your application regardless of its size or complexity.
+This package installs NLog.dll with includes core logging functionality.
+For your main project also need to install "NLog Configuration" package.</description>
+    <summary>NLog - Advanced .NET and Silverlight Logging</summary>
+    <references>
+      <reference file="NLog.dll" />
+    </references>
+  </metadata>
+</package>

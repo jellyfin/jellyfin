@@ -1,59 +1,122 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
+using System;
 using System.ComponentModel.Composition;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Providers.TV
 {
+    /// <summary>
+    /// Class EpisodeProviderFromXml
+    /// </summary>
     [Export(typeof(BaseMetadataProvider))]
     public class EpisodeProviderFromXml : BaseMetadataProvider
     {
-        public override bool Supports(BaseEntity item)
+        /// <summary>
+        /// Supportses the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        public override bool Supports(BaseItem item)
         {
-            return item is Episode;
+            return item is Episode && item.LocationType == LocationType.FileSystem;
         }
 
+        /// <summary>
+        /// Gets the priority.
+        /// </summary>
+        /// <value>The priority.</value>
         public override MetadataProviderPriority Priority
         {
             get { return MetadataProviderPriority.First; }
         }
 
-        public override async Task FetchAsync(BaseEntity item, ItemResolveEventArgs args)
+        protected override bool RefreshOnFileSystemStampChange
         {
-            await Task.Run(() => Fetch(item, args)).ConfigureAwait(false);
+            get
+            {
+                return true;
+            }
         }
 
-        private void Fetch(BaseEntity item, ItemResolveEventArgs args)
+        /// <summary>
+        /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="force">if set to <c>true</c> [force].</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{System.Boolean}.</returns>
+        protected override Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            string metadataFolder = Path.Combine(args.Parent.Path, "metadata");
-
-            string metadataFile = Path.Combine(metadataFolder, Path.ChangeExtension(Path.GetFileName(args.Path), ".xml"));
-
-            FetchMetadata(item as Episode, args.Parent as Season, metadataFile);
+            return Task.Run(() => Fetch(item, cancellationToken));
         }
 
-        private void FetchMetadata(Episode item, Season season, string metadataFile)
+        /// <summary>
+        /// Override this to return the date that should be compared to the last refresh date
+        /// to determine if this provider should be re-fetched.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>DateTime.</returns>
+        protected override DateTime CompareDate(BaseItem item)
         {
-            if (season == null)
+            var metadataFile = Path.Combine(item.MetaLocation, Path.ChangeExtension(Path.GetFileName(item.Path), ".xml"));
+
+            var file = item.ResolveArgs.Parent.ResolveArgs.GetMetaFileByPath(metadataFile);
+
+            if (!file.HasValue)
             {
-                // Episode directly in Series folder
-                // Need to validate it the slow way
-                if (!File.Exists(metadataFile))
-                {
-                    return;
-                }
-            }
-            else
-            {
-                if (!season.ContainsMetadataFile(metadataFile))
-                {
-                    return;
-                }
+                return base.CompareDate(item);
             }
 
-            new EpisodeXmlParser().Fetch(item, metadataFile);
+            return file.Value.LastWriteTimeUtc;
+        }
+
+        /// <summary>
+        /// Fetches the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        private bool Fetch(BaseItem item, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            
+            var metadataFile = Path.Combine(item.MetaLocation, Path.ChangeExtension(Path.GetFileName(item.Path), ".xml"));
+
+            var episode = (Episode)item;
+
+            if (!FetchMetadata(episode, item.ResolveArgs.Parent, metadataFile, cancellationToken))
+            {
+                // Don't set last refreshed if we didn't do anything
+                return false;
+            }
+
+            SetLastRefreshed(item, DateTime.UtcNow);
+            return true;
+        }
+
+        /// <summary>
+        /// Fetches the metadata.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="parent">The parent.</param>
+        /// <param name="metadataFile">The metadata file.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        private bool FetchMetadata(Episode item, Folder parent, string metadataFile, CancellationToken cancellationToken)
+        {
+            var file = parent.ResolveArgs.GetMetaFileByPath(metadataFile);
+
+            if (!file.HasValue)
+            {
+                return false;
+            }
+
+            new EpisodeXmlParser().Fetch(item, metadataFile, cancellationToken);
+            return true;
         }
     }
 }

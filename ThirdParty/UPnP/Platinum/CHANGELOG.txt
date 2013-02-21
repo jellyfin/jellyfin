@@ -1,0 +1,667 @@
+Platinum 1.0.3.0
+----------------
+- fixed: potential deadlock when subscribing to a service from the delegate upon being notified a device is ready
+- fixed: crash when device disappears while processing an event notification
+- changed: made posix mutexes recursive to simplify PLT_CtrlPoint implementation
+
+Platinum 1.0.2.1
+----------------
+- fixed: fault XML for DLNA compliance
+
+Platinum 1.0.2.0
+----------------
+- fixed: deadlock in PLT_CtrlPoint
+
+Platinum 1.0.1.0
+----------------
+- added: GetPort method to PLT_CtrlPoint in case one wants to attach to the event http server for serving static content
+- fixed: deadlocks with new PLT_CtrlPoint pending notifications
+- changed: increased subscriber notification renewal to 90 secs before end of subscription
+- fixed: PLT_CtrlPoint log formatting error
+- fixed: memory leaks in PLT_CtrlPoint
+- fixed: PLT_HttpServer now properly supports chunked-encoding responses.
+
+Platinum 1.0.9.3
+----------------
+changed: reworked event notifications to be reprocessed if subscriber is not known yet immediately after a subscription.
+fixed: some deadlocks due limiting number of tasks in task manager by default now.
+added: now keep track of pending inspections so that a bunch of SSDP notifications don't all trigger a bunch description requests.
+added: support for armv7s, Xcode 4.5
+added: added support for changing default TTL values
+changed: made DecomposeVar protected virtual
+
+Platinum 0.6.9.3
+----------------
+fixed: passing 0 for frequency to Search/Discover now disables repeat
+added: support for Scons 2.1
+changed: improved UPnP stopping process 
+changed: limit max number of tasks per task manager to 50 by default
+changed: limit max number of HTTP clients handled by HTTP server to 50 by default
+changed: made PltCtrlPoint AddDevice & RemoveDevice protected so they can be called by custom implementations to manually remove expired devices
+
+Platinum 0.6.9.2
+----------------
+changed: less strict about invalid protocol info extra params parsing
+fixed: fixed embedded test
+added: android jni module and sample
+fixed: subscription notification events wouldn't be received after upnp got restarted
+fixed: task manager stop could be hanging while waiting for tasks to finish if a task was started during cancellation
+
+Platinum 0.6.9.1
+----------------
+added: support to bridge Neptune Logging to other loggers such as Cocoa Lumberjack
+fixed: better support for embedded devices detection
+added: GetVolumeState to PltMediaController
+fixed: crash in NPT_Socket::Cancel when stopping HTTP clients
+
+Platinum 0.6.9
+--------------
+changed: reverted trying to bind to source port 1900, it would fail eventually
+added: added back support for sending SSDP messages over broadcast in case multicast is blocked by routers or firewalls
+fixed: MediaRenderer channel attribute for volume was wrong
+changed: MediaBrowser caches only metadata now
+fixed: Scons XCode 4.3.1 support
+added: workaround for servers that start to return bogus total matches on the last page
+updated: Neptune 1.1.3
+added: some CTT 2.0 compliance re SSDP
+added: Date HTTP header to requests
+fixed: crash on exit due to static finalizers being called in random order
+fixed: Host HTTP header wasn't being reset properly on redirects
+removed: OSX Platinum frameworks depending on SystemConfiguration and Foundation frameworks
+
+Platinum 0.6.8
+--------------
+changed: try to bind source port to 1900 for ssdp notify and search responses
+added: capability to change user agent on the fly
+added: didl parsing and formatting of dc:description & upnp:icon
+added: user agent header to SSDP packets
+fixed: Windows build
+added: UPnP AV Renderer functions
+changed: verify we can seek the body of the response before returning Accept-Range: bytes
+fixed: don't use localhost address for SSDP announcements
+changed: short connection time out for subscribers since they may not exist and this would block when exiting
+fixed: bug when parsing W3C date time
+fixed: compiling issues when removing TLS support
+fixed: recursion that prevented some logs to be written
+fixed: potential issue with thread safe references
+added: support for removing HTTP header in a request or response before sending it
+changed: support bytes:0- range request for non seekable streams and avoid returning 416.
+changed: return 416 instead of 500 in case we can't stream the body and a range request was made (this makes XBox and PS3 happier)
+changed: make all references thread safe by default
+
+Platinum 0.6.7
+--------------
+fixed: request would fail when retrying on a new connection after the previous one failed because server closed it without using a Connection:close header. Only happens with requests containing a body.
+fixed: always adding Connection:close in HTTP 1.1 responses due to checking content-length prior to setting it.
+changed: allow DLNA interactive request. 
+changed: Don't override accept-range header if already set.
+changed: more DLNA compliance for DMC
+changed: better handling of path extraction. Now url encodes url root as well
+changed: better support for persistent connections with http 1.0
+changed: eturn HTTP 416 if Accept-Range header is not bytes in the request and the server makes a range request
+
+Platinum 0.6.6
+--------------
+fixed: mime type detection was not properly handled
+fixed: bad parsing of file path from url when MediaServer url root was just '/'
+fixed: now builds universal framework for iOS and OSX properly
+added: missing files
+
+Platinum 0.6.5
+--------------
+added: Platinum.xcodeproj now builds Platinum.Framework for both iOS and OSX to make it easier to integrate as a 3rd party.
+changed: Better chunked-encoding support (don't write Content-Length)
+changed: Add Accept-Range header when returning HTTP 416 as per spec
+updated: based on Neptune 1.1.2 now
+fixed: potential crash due to using non thread safe references
+fixed: FindDevice could return invalid root device, now keep a reference of root device when fetching all SCPDs of root device and embedded devices just in case root device goes away
+fixed: crashes in MediaCrawler sample code
+changed: simplified getting default mime type
+changed: only allow keep-alive in response if it contains a ContentLength header or a Chunked transfer encoding
+changed: handlers can now be owned by NPT_HttpServer
+changed: simplified HttpClientTask by using new NPT_HttpClient pipelining feature
+fixed: now detects devices with SCPD urls containing query param or hash tags
+fixed: C++/CLR Managed Binding enumeration of embedded devices not using reference
+changed: removed VS2005 support
+changed: removing broadcast support (only needed for obsolete XBox v1)
+fixed: potential case where a task can be added as we're stopping
+changed: don't add Accept-Range bytes header if chunked encoding is used
+changed: when enumerating interfaces for SSDP, only returned MULTICAST enabled Interfaces and removed Point-To-Point ones
+changed: Forces port 1900 for SSDP now and don't depend on default Multicast interface and instead join on all valid interfaces
+changed: don't advertise resources on all interfaces unless ALLIP is found in filter (DLNA)
+fixed: localinterface not being set for embedded devices resulting in event subscription failing because the subscription IP was 0.0.0.0 rather than the IP of the control point.
+added: Sonos support back using Rhapsody (only visible in Desktop Controller though)
+fixed: @refID mask detection and use cases insensitive compare for tags now
+added: support to serve byte range requests for a stream, not just a file
+added: More DLNA compliance with certain DLNA HTTP headers
+changed: simplified XBox & WMP support to fix "Not Authorized" seen for Denon DLNA devices.
+fixed: mask overlapping with another, added more masks support for DLNA compliance
+fixed: more dlna compliance, let serveFile add Accept-Range header
+fixed: DLNA test failing due to sending refId when not requested
+fixed: DLNA protocol info parsing error due to trailing semi-colon
+fixed: ring buffer stream to only return prematurely on abort and not on eos
+added: .wavm for mono wave extension
+changed: stopped sending byebye first to stop confusing slow devices
+fixed: Windows Media Player 12 not being happy with wav protocol info
+fixed: deadlock when receiving a description response for an invalid device while doing house keeping on subscribers. Now uses only one lock.
+fixed: better handling of stopping UPnP immediately after starting it
+changed: don't bind hard for SSDP multicast listen
+changed: updated Server and UA HTTP header (does not include OS anymore)
+added: basic support for WMP11
+changed: lowered SSDP response time to 5 secs
+changed: no more accept-ranges on any file requests, only on serveFile
+fixed: DLNA profile didl attribute was not being written for albumArtURI
+added: lpcm working for both XBox 360 and PS3
+changed: asks for searchable and childCount didl attributes by default
+removed: extra logging when not finding didl attribute
+fixed: mimetype parsing
+added: support for audio/L16;44100...
+fixed: fails if can't get file length only if a range request is passed
+changed: returns 404 instead of 500 when file is missing
+added: didl support for multiple album arts
+improved: string serialization, reduces too many string copies during didl creation
+added: audio/L16 support to XBox
+fixed: dlna serialization, added audio/L16
+
+Platinum 0.6.4
+--------------
+fixed: android compilation
+fixed: crash when running FileMediaServerTest on a directory with Chinese characters
+fixed: now use real Computer Name or User Name next to Server name
+
+Platinum 0.6.3
+--------------
+fixed: 2005 and 2010 solutions
+added: 2010 Platinum.Managed strong-name signed assembly
+
+Platinum 0.6.2
+--------------
+improved: DLNA flags masks
+fixed: Managed wrapper now keeping the pointer to the native member when passed so we can modify members in place. But we have to be careful to not pass local stack objects that will be deallocated which will cause crashes
+added: Managed now can pass uuid to MediaServer
+fixed: Managed not running on x64 machines
+fixed: new XBox Dashboard support
+fixed: UTF-8 was not properly handled through Managed Interface
+changed: put back default byebye first otherwise xbox doesn't detect when same device arrives after a crash
+added: device signature detection (PS3, XBOX, WMP)
+changed: addIcon is now public
+changed: forced to bind on every interface on port 1900 otherwise we don't receive SSDP search requests sometimes
+changed: MediaConnect only advertise ContentDirectory with Search action to WMP and XBox now
+fixed: returning all resource metadata when receiving only "res" filter
+added: support for @duration metadata filter
+changed: don't prevent serializing resource in didl if it's invalid
+changed: allow ProtocolInfo without PN
+added: DeviceIcon .Net mapping
+added: now can pass byte[] through .Net interface when responding to HTTP request (thumbnails)
+changed: Managed don't throw exception when stopping UPnP if it hasn't been started
+added: signature to Platinum.Managed
+fixed: crash when stopping an already disposed Managed instance (?)
+changed: now exports to Targets root subfolder
+fixed: missing log4net bundle
+
+Platinum 0.6.1
+--------------
+fixed: potential vulnerability when receiving SSDP messages or SOAP requests
+added: now compiles for Android NDK
+added: PLT_UPnP::IsRunning method
+changed: moved LastChange variable parsing into controlpoint
+changed: pass sort criteria entire string to delegate instead of parsed split list
+added: Cocoa layer for Mac
+added: Managed C++ layer for .Net
+added: new Managed MediaServer Test
+changed: improved MimeType and ProtocolInfo support
+changed: being more strict on MX to pass UPnP certification
+fixed: dc:title is required
+added: serialization and parsing of upnp:searchClass and upnp:objectClass name attribute
+changed: searchable attribute is false by default
+changed: Can now pass uuid to Managed MediaServer
+changed: Can change lease time from Managed MediaServer
+changed: Don't adverstise bye-bye SSDP messages by default on startup anymore to pass DLNA compliance
+
+Platinum 0.6.0
+--------------
+added: Documentation Platinum-HTML.zip in Platinum/Docs/Doxygen subfolder
+added: fix for detecting requests with url decoded paths (for example from Windows Media Player)
+changed: PLT_SsdpListenTask timeout to 1 sec only for iPhone
+changed: Removed some PLT_HttpHelper functions that were problematic
+changed: No need to force contentlength to 0, task should set it automatically if no entity
+fixed: Socket leak in PLT_UPnP
+changed: completely reworked HTTP response handling
+changed: osx default target is leopard now
+fixed: osx i386 build issue
+changed: revamped & simplified media server delegate
+changed: updated latest Neptune and now use new time/date support
+changed: PLT_HttpRequestHandler not a template anymore
+updated: normalized use of timeout
+added: basic HTTP caching headers support to HTTP file server
+added: made PLT_MediaCache generic, MediaServer now sorts by date and caches directory listing
+added: axTls to build system for ssl connections (HTTPS)
+added: MicroMediaController can be specified a folder directly using the "cd" command
+fixed: Renderer Channel environment variable attribute name (must be "channel")
+fixed: crashes when enumerating net interfaces on iPhone
+added: more log to MicroMediaController
+added: XmlHelper Serialize function
+
+
+Platinum 0.5.4
+--------------
+updated: msdev 2008 output
+fixed: incorrect local filepath extraction from url
+fixed: xcode project
+fixed: gcc warnings
+added: CocoaTouchBrowser sample iphone app started (not finished)
+added: Platinum xcode proj for iphone into arm-apple-darwin
+changed: handling of http requests when device host server is being used for serving content from derived device (like FileMediaServer Device)
+added: more log to MicroMediaController
+added: XmlHelper Serialize function
+fixed: WMP wouldn't return resource url if the browse filter didn't contain 'res'
+changed: be more relaxed about invalid  or missing resource uri and invalid protocolinfo, maybe the filter didn't request it afterall
+
+Platinum 0.5.3
+--------------
+fixed: MediaCrawler app updated 
+fixed: crash on exit while Browse action is requested
+fixed: bug in ChunkDecoder
+changed: better support for HTTP 100 continue
+changed: DLNA compliance (handle 1xx responses, shutdown sockets better)
+added: code to check if ip or interface is within same network 
+changed: increased stream copy buffer to 16k for better streaming performance
+fixed: crash on exit due to logging in PosixThread wait function
+changed: FileMediaServer now serves files at the root url and not "/content" anymore so that it can serve "/crossdomain.xml" url for Flash if needed.
+changed: putting back GetVolumeDBRange & GetVolumeDB since it seems to be required by DLNA
+fixed: GetTransportAction not returning current protocol info
+changed: remove argument from argument list if value was not allowed
+changed: now returns NPT_ERROR_INVALID_PARAMETERS when validating state variable value if failed
+changed: dont' fail if action contains unknown argument names, simply return NPT_ERROR_NO_SUCH_NAME
+changed: now uses individual scpd cpp files for each scpd
+updated: now uses a batch file and header tool to convert scpd xml file to cpp for inclusion
+added: PlayTo functionality by supporting advertising and responding on localhost
+changed: more DLNA compliance
+added: time class
+
+Platinum 0.5.2
+--------------
+fixed: recursive posix deadlock when notifying new devices are ready and delegates try to subscribe to services
+added: seek command to MicroMediaController
+changed: lowered log levels
+changed: removed SsdpProxy from Build.scons
+updated: scpd for MediaRenderer now has GetVolumeDB, SetVolumeDB, GetVolumeDBRange
+changed: now attach root device to action instead of device (in case of embedded) since embedded devices are not referenced, they're children of main root device
+changed: better embedded devices support in ctrl point, now keeps only root devices in list
+fixed: crashes when device goes away while an action is performed on service or waiting for responses
+fixed: scpd retrieval for embedded devices with same service (Sonos with onnectionManager service for example in both DMS and DMR)
+fixed: action arguments are serialized in same order as defined as scpd (to make WMP12 happy)
+changed: Search sockets are bound on port > 1024 and different than 1900 according to DLNA
+added: When looking for device, can return root if device is known to be embedded
+fixed: root device reference is attached to task that need to access service or action in response to prevent release if device goes away while waiting
+fixed: don't check if subscriber sid start with 'uuid:' even though it's the spec
+added: more WMP12 support parsing xml responses (uses UPnPError instead of upnp_error and any namespace)
+fixed: random crashes
+fixed: PS3 DLNA errors
+changed: Advertise on localhost now and respond properly if search was receiving on localhost
+changed: Now can ignore all local UUIDs when multiple devices are attached
+fixed: MediaController made AVTransport optional and RenderingControl required service
+added: MediaController added SetVolume, GetVolume
+fixed: MediaController better handling of invalid timestamp or duration
+added: MediaRenderer GetVolumeDBRange and SetVolumeDB
+added: Didl support for bitspersample, nraudiochannels and samplefrequency
+changed: Didl adding .000 for frame in timestamp otherwise 360 won't play tracks
+improved: Didl parsing if invalid xml node found
+fixed: Filter criteria was missing in Search function prototype
+added: Can now decide if protocol info should contain DLNA info or not
+added: MediaBrowser added search 
+fixed: When receiving didl for item, don't try to validate resource url protocol and ip as it could be rtsp:// or FQDN addresses
+fixed: SetVariableValue can pass csvs and each value will be indepedently validated
+added: Can now set extra attributes to a state variables (for Volume that has a Channel)
+changed: The state variable now serializes itself into an xml node instead of the service doing it. That way we can add extra parameters if needed
+added: helper GetIPAddresses can be passed a flag to add localhost to list if needed
+fixed: vs2005 projects with new Neptune path
+changed: simplified AVTransport scpd for renderer
+added: Renderer now supports Windows 7 WMP PlayTo feature!
+added: now can choose to add xml header or not (some implementations like WMP needs it)
+fixed: bug where it would never keep a connection alive on the server side
+added: more DLNA improvements
+removed: Neptune from ThirdParty, now same level as Platinum in PlatinumKit
+fixed: 360 can play mov files now
+added: mimetype by extension
+fixed: WMP can see Platinum again (needs <?xml ?>
+changed: change mediatype after calling ServeFile instead of before, or it may get changed
+
+Platinum 0.5.1
+--------------
+removed: DMS 1.5 for 360, no need for it
+changed: more DLNA support, fixed deadlock when removing devices
+changed: moved back apps to Platinum proj on OSX
+fixed: ctrl point now renews subscribers in time
+added: mute/unmute function to micromediacontroller to pass DLNA tests
+fixed: fixed subscriber renewal, now wait 10 secs before doing first house keeping of old devices not renewed
+fixed: scons 1.2 support
+fixed: osx config for scons 1.2
+added: MediaServer Device Discovery & Control DLNA compliance
+changed: uses built-in Platinum icons instead of file based
+fixed: iPhone build
+fixed: xbox 360 was not playing divx anymore
+
+Platinum 0.5.0
+--------------
+added: better dlna support for embedded devices
+changed: now wait a bit before fetching device description after receiving first ssdp message just in case we have more ssdp byebye messages we have not received yet which could cause the device to be removed after we've just added it
+added: full support for HTTP/1.1 and persistent connections in compliance with dlna 1.5
+fixed: fixed rare deadlock
+changed: now uses http 1.1 for DLNA compliance
+changed: queues scpd requests instead of using one thread per scpd
+added: near DLNA compliance for device host and control point
+fixed: http server returning more than requested during HTTP byte range requests (fixed iphone playback)
+change: now DMS 1.5 for 360
+fixed: browse issue with syncbrowser
+added: SetDelegate functions to PLT_MediaBrowser and PLT_MediaController in case it is subclassed and this cannot be passed to ctor
+
+Platinum 0.4.9
+--------------
+added: PlatinumiPhone target to Platinum.xcodeproj
+changed: PlatinumApps.xcodeproj now depends on Platinum.xcodeproj
+changed: PLT_MediaBrowser and PLT_MediaController now asks delegate before subscribing to events to let a chance to decide if device is worth listening to events
+changed: renamed PLT_MediaBrowserListener to PLT_MediaBrowserDelegate and PLT_MediaControllerListener to PLT_MediaControllerDelegate
+changed: check for new event to notify every 100ms instead of 10ms, also reduce link list modifications to reduce allocatio/free
+added: can now specify custom user-agent and server http header
+fixed: missing didl resource if no protection attribute was set
+fixed: can now stop/restart devices without restarting entire upnp stack
+changed: honor Connection header from response if keep-alive is true
+fixed: more PS3 support
+added: now can specify initial port can be ignored if failed and try again with a random port
+added: support for resolution in didl, can now prevent certain files from being advertised in didl, better mimetype support in FileServer
+fixed: now aborts properly client socket tasks
+removed: null/null in array, uses NPT_ARRAY_SIZE instead
+removed: NPT_ERROR_INTERNAL result when closing a socket while still reading on it, now returns NPT_ERROR_EOS
+added: support for icons (MediaConnect sample for PS3)
+added: PLT_HttpRequestContext can hold a request and a context now
+changed: better dlna support, can now use request information to decide what to return (important to support xbox 360, ps3, etc..)
+fixed: XBox 360 not finding us anymore, don't hardcode same guid! and fix mp4 playback on 360
+
+Platinum 0.4.8
+--------------
+fixed: XBox 360 and PS3 video playback
+added: removed some FATAL logs, can pass path to MediaConnect cmd line
+changed: changes to http server to support path without a query
+added: frame streamer example (mjpeg live stream advertised via upnp)
+changed: verified that content-length was indeed set on the entity before writing it, to avoid writing 0 when the length wasn't known (multipart)
+
+Platinum 0.4.7
+--------------
+fixed: listener being called multiple times with same device when appearing or disapearing
+added: dc:date support in didl
+added: better dlna support for videos
+changed: don't cache empty results in media cache
+fixed: WMP 11 crash when unsubscribing
+fixed: crash after 15 min due to not cleaning up properly interface list before reusing it
+changed: allow for services with no actions (although not upnp compliant)
+fixed: lock media cache before access
+changed: switching to native eol
+changed: fixed xcode proj, add delay to get description/scpd for Rhapsody to be happy
+changed: uses HTTP 1.1 in server with keep-alive. Greatly improves performance
+updated: license is now GPLv2 or later
+changed: do not search, announce or respond on localhost anymore
+
+Platinum 0.4.6
+--------------
+changed: upnp server now uses same port for upnp and serving files (helps with firewall)
+added: upnp support for embedded devices
+changed: upnp device description can now be modified according to request (user agent header)
+fixed: better upnp eventing mechanism, can now pause eventing to set multiple state variables, and send update in a batch
+changed: detect xbox and change description to pretend to be WMP
+fixed: artist role attribute is not supposed to be in upnp namespace
+updated: Neptune to support Unicode filenames
+added: Sonos support! XBMC server can now be browsed by Sonos Desktop Controller and music can be played on multiple Sonos ZonePlayers all synchronously and streamed from XBMC. Sweeeeeeeeeeet!
+fixed: deadlock on subscribe
+fixed: crach on subscription cancellation
+fixed: first event notification was sent to early and could be missed
+fixed: UPnP Renderer Intel Validity Tool tests
+
+Platinum 0.4.5
+--------------
+fixed: better embedded devices support
+fixed: Unicode support on Win32 platforms
+changed: now can pause eventing to set multiple state variables and resume eventing then
+
+Platinum 0.4.3
+--------------
+fixed: vs2008 solution
+fixed: mp3 invalid protocol
+
+Platinum 0.4.2
+--------------
+changed: don't set an entity on request if no body is expected
+added: support for PS3 (basic dlna support)
+changed: MediaCrawler now derives from MediaConnect so that it's seen by XBox 360
+fixed: now passes the proper reachable interface when subscribing to events by keeping track of which interface was used when retrieving a device description
+fixed: gcc 4.2.3 errors (Ubuntu 8.04)
+changed: removed all NPT_Integer references
+fixed: didl parsing of resource with size > 2GB
+changed: didl resource duration is now unsigned
+added: support for SCons 1.0 (0.98.5)
+fixed: support for files > 4GB
+fixed: SIGPIPE errors on both Ubuntu and MacOSX
+fixed: potential memory leaks reported by valgrind
+changed: updated to use Neptune 1.0.1
+
+Platinum 0.4.1
+--------------
+fixed: crash caused by typo when fixing gcc warnings, was adding the wrong http handler
+changed: don't use an outside lock for requests in PltHttpClientTask which can cause delay and hang out when queuing requests in a row like when updating state (Thanks Andy B.!)
+added: copyright 2008
+
+Platinum 0.4.0
+--------------
+added: new PlatinumApps project for XCode
+added: apple iphone target
+fixed: fixing scons build, automatic stripping in release mode now
+fixed: potential crash due to trying to use connector of a client that didn't exist anymore
+added: support for Vs2008
+fixed: leopard support with both 10.4 and 10.5 sdk installed
+fixed: gcc 4 warnings
+changed: renamed fopen_s to fopen_wrapper
+fixed: Fix for unbuffered file streams on OSX (was callign setvbuf after seek)
+added: Support for SO_REUSEPORT on OSX
+added: Set NOSIGPIPE flag
+
+Platinum 0.3.9
+--------------
+added: Xbox360 support!
+fixed: warning appearing with gcc4 on macosx
+fixed: leaks when getting ip addresses
+added: new ring buffer stream and tests
+changed: Browse to pass a flag instead of UPnP browse text flag
+changed: Browse prototype
+changed: switched to static crt
+added: can now pass http port to FileMediaServerTest
+added: more mediatypes (avi, divx) support
+fixed: content-type not being set properly if file extension was uppercase
+fixed: MediaCrawler prototypes due to changes to Browse signature
+added: MediaConnect project
+added: arm-unknown-linux config (iphone support)
+added: RingBufferStream class
+fixed: NPT_Xml now writes the xml header
+changed: listen task now passed to Start/Stop function to have ctrlpoint, device remove themselves from it
+changed: working on better subscriber support in ctrlpoints (switching to references)
+removed: embedded devices support until we have a better idea on how to support it (is it DLNA compliant anyway?)
+added: a PresentationUrl element to description only if present otherwise Intel UPnP DeviceSpy is confused!
+added: avi & divx extension support to content-type
+added: custom http chunk decoder even though we don't support HTTP 1.1 yet
+fixed: server not reading socket info properly when receiving datagrams which would cause a device to respond to M-SEARCH requests on the wrong udp port (and Xbox360s to not discover our server!)
+fixed: Http Server handlers seem to trigger only on the path of a url NOT including the query which means that SCPD Urls with queries currently don't work! For now we switch to not use queries in SCPD urls
+changed: now announce and respond to search requests on loopback adapter
+fixed: Task manager thread was not sleeping enough! now 100ms
+added: ContentDirectorywSearchSCPD.xml SCPD (Xbox 360 needs Search !)
+updated: latest Neptune
+added: jpg content-type
+fixed: now don't allow to start if specified port for server is in use already
+added: more mimetype to class support
+added: can now pass a port for the file server of PLT_FileMediaServer
+changed: Device host and ctrl points now get their own task manager so that when they stop, all tasks stop so there's no need to keep track of running tasks
+changed: ctrl point now issue a search at least on localhost if no interfaces were found
+fixed: UPnP devices and ctrl points are now freed when stopped (removed)
+fixed: UPnP devices and ctrl points can be restarted (reused) now 
+added: better support for icons
+fixed: EventSubscribers now have their own task and try to reuse the socket (Connection Keep-Alive) when possible
+changed: Service uses NPT_List instead of NPT_Arrays to improve manipulation of state vars
+added: Can now use Connection keep-alive with HTTP/1.0 clients
+added: State variables can now be moderated. Service has a task that monitors if vars have changed and send updates if it's time (according to moderation)
+added: Service now supports the "LastChange" state variable
+changed: PLT_SsdpInitMulticastIterator joins group on any interface
+fixed: possible lock when stopping all tasks (lock, notify tasks to stop, unlock then wait for list to be empty)
+added: some dlna support
+changed: moved File Media server from PLT_MediaServer to PLT_FileMediaServer
+added: placeholder for Search in PLT_MediaServer
+changed: removed MediaRenderer and MediaServer projects, now all is in Platinum project
+changed: moved MediaConnect source in Source/Devices
+fixed: build to not include ../ in path.. hopefully fixing gcc 3.3.5 errors
+added: MediaServer now sets variable rate
+fixed: bug where subscribers were deleted all the time after first notification
+fixed: eventing of moderated state variable changes
+fixed: temporary hack for XBMC support of Xbox360, we urlencoded the ? to that the 360 doesn't strip out the query and then the query ends being parsed as part of the path
+changed: didl now forces an empty upnp:artist
+added: Search action to look for ContainerID instead of ObjectId in xml since that's what the xbox 360 sends!
+changed: refactored to use NPT_HttpRequestContext instead of NPT_SocketInfo
+added: new macosx target (universal)
+fixed: use of NPT_CONFIG_THREAD_STACK_SIZE for xbox
+added: can now reset the connector of a NPT_HttpClient
+changed: Updates missing headers only if they're really missing (user_agent, connection, ..)
+changed: Updated NPT_MessageQueue to reflect new blocking way
+changed: Neptune Http server now uses reuse_address when binding
+fixed: single quote in urls
+changed: now can abort NPT_HttpServer
+fixed: If a request is forwarded, don't try to send the body if there's no content length...
+fixed: UPnP Renderer now receives moderated events properly
+fixed: Platinum scons Build, added MediaConnect target
+improved: HttpClientSocketTask now uses keep-alive so if the server is 1.1 or 1.0 with Connection: Keep-alive, it reuses the socket, useful for eventing
+added: Split up MediaConnect support and services into separate class, now CUPnPServer derives from PLT_MediaConnect.
+refactored: move httpserver in start/stop so that it actually stops and cleans up when the device is stopped
+fixed: now starts a thread only when there's a need to event state variable changes to subscribers instead of in the ctor. Useful since the class is also used by ctrl points and they don't need to notify.
+fixed: check that the body stream of a request is rewindable before trying to send a request on a keep-alive socket. If it fails, we wouldn't be able to resend it, so instead, we close the socket and reopen a new one.
+added: new downloader class
+fixed: potential deadlock when stopping upnp while devices are running
+changed: made file server port public in PLT_FileMediaServer so that we can update/query it without recreating a new class (no need for setter/getter)
+
+Platinum 0.3.8
+---------------
+
+fixed: crash in MicroMediaController (ctrlpoint really) when devices go away and a new one reappear. The control point was not removing subscribers from its list for the removed device.
+added: Visual Studio 2005 project files
+changed: switched to using new Neptune Logging system
+changed: PLT_DeviceHost now appends the ip address to friendly name if asked
+
+Platinum 0.3.7
+---------------
+changed: removed projects in the works from solution
+changed: dont restrict an interface to have the MULTICAST flag to send multicast data. If it's not multicast, it just won't send it. Cygwin doesn't report MULTICAST flag properly on interfaces that are multicast so that's why.
+fixed: clear SyncMediaBrowser cache for a device when it disappears
+changed: put back interface matching in proxy using netmask
+fixed: linux build
+fixed: workaround Windows Media Player bug that replaces back slashes to forward slashes in a url query !
+fixed: duplicate headers in crawler response
+changed: fileserver now defaults to serving root "/" with all children so that crawler can use /foo.wma
+changed: made ProcessFileRequest overridable for Crawler
+changed: Mega update:
+ - revamped to use http handlers from Neptune
+ - extensive switch to using address instead of pointers for NPT_HttpRequest & NPT_HttpResponse
+ - using eventhandlers now in devicehost (static for desc & scpds + dynamic for control/event) and controlpoint (event notifications)
+ - fixed host advertising twice byebye on exit
+ - Moved DeviceHost and Ctrlpoint Start/Stop into protected. It's PLT_UPnP now that starts and stop a device (via Add/Remove..)
+ - Created templated PLT_HttpRequestHandler
+fixed: 10 secs to get a M-SEARCH response is fine
+fixed: make it possible to pass an address to send the response back from a search, this is necessary when the udp.connect didn't actually find out which local interface to use
+fixed: now advertises on all interfaces even in broadcast
+fixed: setting MX to 1 in proxy, setting extra header to make sure we don't loop more
+changed: new ssdp proxy using broadcast instead of unicast, no need to keep track of unicasters anymore
+changed: when using broadcast mode, try to use interface broadcast address instead of 255.255.255.255
+changed: made presentation url public (so it can be overridden from the outside)
+hacked: device icons
+changed: better advertising in broadcast mode (less verbose)
+fixed: crash when a device disappears while trying to unsubscribe
+fixed: subscribers being added twice
+fixed: no need to set random seed in task, must be done in threads instead (using thread id)
+changed: added a media cache to cache data responses from servers to speed up
+fixed: better event support (fixed a couple of bugs), unsubscribe on device remove, still need to implement subscription renewal
+changed: improved NPT_Directory to read size & type with 1 call
+fixed: assuming forward unix style delimiters in resource urls was wrong, we want to keep whatever we're passed, it may matter
+changed: now can specify to keep file extension in item title
+changed: can now put a list of UUIDs to ignore in a ctrl point
+changed: now sends a search on localhost if no valid interfaces were found
+changed: now supports broadcast announcements for devices (mainly used by XBOX)
+fixed: changed callbackurls list to be NPT_List<NPT_String> instead of NPT_List<NPT_String*> for event subscribers to fix a weird crash
+fixed: SsdpListenTask takes a true UdpSocket if broadcast mode set
+changed: adding support of NPT_StringFinder for NPT_List<NPT_String> containers
+changed: using a HttpUrl for base urls instead of string
+changed: StreamHandler interface, now passing socket info to ModifyResource
+
+Platinum 0.3.6
+---------------
+- fixed list of devices not being cleared when ctrl point is stopped
+- fixed setting bad content length when serving a file with a byte-range request causing
+- filemediaserver now exposes one resource per network interface and put the proper one first (one the browse request was received on)
+- start listening for ssdp when upnp starts and stops when it stops
+- reversing back adding the Search method to ContentDirectory service
+- rewrite of action processing after finding a major flaw due to parallel processing of multiple calls to the same action. Now each invocation of an action gets its own sets of arguments (in and out).
+
+Platinum 0.3.5
+---------------
+Fixes/Changes:
+- updated directory structure so that everything falls under Build/Targets (even scons based stuff)
+- Fixing ip address being 0.0.0.0 in media resources under cygwin in some cases
+- switching to using HTTP/1.0 for http responses
+- scons build output to Targets top level folder now
+- fixed bug where files with no extensions were not advertised (linux)
+- now strips the executables in Targets folder only in release build
+- Fixed cygwin bug where devices wouldn't be detected when started after a Control Point. Was advertising on disconnected interfaces.
+- Fixed logging wrong ip address, now defaults to 127.0.0.1 if no valid one found
+- fixed bug in server socket task
+- added back HttpClientTests to solution
+- fixed bug in client socket task
+- switch to using NPT_StringOutputStream instead of PLT_OutputStringStream
+- improved PLT_Downloader
+- started working on a SQLite abstraction layer for a better Media Server (work in progress)
+
+Platinum 0.3.2
+---------------
+Fixes/Changes:
+- Tasks and TaskManager rewrote. No more housekeeping thread to cleanup tasks. Tasks are automatically cleaned up when done.
+- Stopping a ControlPoint will also stop the SSDP search tasks.
+- HttpServer can limit the number of connections (threads) it can handle at once.
+- Didl processing rewrote. Didl objects are more C++ oriented now.
+- Some progress in regards to DLNA validation. HTTP Server is 1.0 only (connections are closed immediately once all data has been sent. No more keep-alive support).
+- Started working on Ozone (Sqlite3 abstraction layer)
+
+Platinum 0.3.1 
+---------------
+Fixes/Changes:
+- Fixed LightSample Test
+- Fixed MediaRenderer Test
+- Removed old source and project files to avoid confusion
+
+Platinum 0.3.00 
+---------------
+Fixes/Changes:
+- Added MacOSX support.
+- Fixed socket abortion problem on Linux (using a pipe).
+- Complete rewrite to use threads instead of interrupt driven round-robin. The benefit is that throughput is now greatly improved (for streaming especially).
+- Addded a new App: MediaCrawler
+- Split up AV MediaServer code. Now the FileMediaServer is one implementation of the AV MediaServer. More to follow.
+- Added README, CHANGELOG, LICENSE files
+
+Known issues:
+- AV MediaServer Search not implemented yet.
+- Http server does not use a thread pool. This can be a problem with hungry ControlPoints like the Intel Tools AV MediaController.
+
+Platinum 0.2.00 
+---------------
+Fixes/Changes:
+- Added support for Linux, Xbox, cygwin platforms (using Scons http://scons.org)
+- Now using timeouts on sockets. Fixed search not being repeatly sent.
+- Moved Neptune under ThirdParty folder
+
+Known issues:
+- Aborting on some platforms (linux/xbox) is not immediate. Sockets cannot be easily aborted by simply calling closesocket.
+
+Platinum 0.1.00 
+---------------
+Initial Release

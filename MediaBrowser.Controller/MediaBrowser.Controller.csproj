@@ -11,6 +11,8 @@
     <AssemblyName>MediaBrowser.Controller</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -29,27 +31,66 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="protobuf-net">
-      <HintPath>..\protobuf-net\Full\net30\protobuf-net.dll</HintPath>
+    <Reference Include="Ionic.Zip">
+      <HintPath>..\packages\DotNetZip.1.9.1.8\lib\net20\Ionic.Zip.dll</HintPath>
+    </Reference>
+    <Reference Include="Mediabrowser.PluginSecurity">
+      <HintPath>Plugins\Mediabrowser.PluginSecurity.dll</HintPath>
+    </Reference>
+    <Reference Include="MoreLinq">
+      <HintPath>..\packages\morelinq.1.0.15631-beta\lib\net35\MoreLinq.dll</HintPath>
+    </Reference>
+    <Reference Include="protobuf-net, Version=2.0.0.621, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\protobuf-net.2.0.0.621\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data.SQLite, Version=1.0.84.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\System.Data.SQLite.1.0.84.0\lib\net45\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.Linq, Version=1.0.84.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\System.Data.SQLite.1.0.84.0\lib\net45\System.Data.SQLite.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.Net" />
     <Reference Include="System.Reactive.Core, Version=2.0.20823.0, Culture=neutral, PublicKeyToken=f300afd708cefcd3, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Rx-Core.2.0.20823\lib\Net45\System.Reactive.Core.dll</HintPath>
+      <HintPath>..\packages\Rx-Core.2.0.21114\lib\Net45\System.Reactive.Core.dll</HintPath>
     </Reference>
     <Reference Include="System.Reactive.Interfaces, Version=2.0.20823.0, Culture=neutral, PublicKeyToken=f300afd708cefcd3, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Rx-Interfaces.2.0.20823\lib\Net45\System.Reactive.Interfaces.dll</HintPath>
+      <HintPath>..\packages\Rx-Interfaces.2.0.21114\lib\Net45\System.Reactive.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="System.Reactive.Linq, Version=2.0.20823.0, Culture=neutral, PublicKeyToken=f300afd708cefcd3, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Rx-Linq.2.0.20823\lib\Net45\System.Reactive.Linq.dll</HintPath>
+      <HintPath>..\packages\Rx-Linq.2.0.21114\lib\Net45\System.Reactive.Linq.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
@@ -59,67 +100,142 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Drawing\DrawingUtils.cs" />
-    <Compile Include="Drawing\ImageProcessor.cs" />
-    <Compile Include="Entities\Audio.cs" />
-    <Compile Include="Entities\BaseEntity.cs" />
+    <Compile Include="Drawing\ImageManager.cs" />
+    <Compile Include="Entities\AggregateFolder.cs" />
+    <Compile Include="Entities\Audio\Audio.cs" />
+    <Compile Include="Entities\Audio\MusicAlbum.cs" />
+    <Compile Include="Entities\Audio\MusicArtist.cs" />
     <Compile Include="Entities\BaseItem.cs" />
+    <Compile Include="Entities\BasePluginFolder.cs" />
     <Compile Include="Entities\Folder.cs" />
     <Compile Include="Entities\Genre.cs" />
+    <Compile Include="Entities\ICollectionFolder.cs" />
+    <Compile Include="Entities\IndexFolder.cs" />
     <Compile Include="Entities\Movies\BoxSet.cs" />
+    <Compile Include="Entities\ISupportsSpecialFeatures.cs" />
     <Compile Include="Entities\Movies\Movie.cs" />
     <Compile Include="Entities\Person.cs" />
+    <Compile Include="Entities\PlaybackProgressEventArgs.cs" />
     <Compile Include="Entities\Studio.cs" />
+    <Compile Include="Entities\Trailer.cs" />
     <Compile Include="Entities\TV\Episode.cs" />
     <Compile Include="Entities\TV\Season.cs" />
     <Compile Include="Entities\TV\Series.cs" />
     <Compile Include="Entities\User.cs" />
     <Compile Include="Entities\UserItemData.cs" />
+    <Compile Include="Entities\UserRootFolder.cs" />
     <Compile Include="Entities\Video.cs" />
+    <Compile Include="Entities\CollectionFolder.cs" />
     <Compile Include="Entities\Year.cs" />
-    <Compile Include="IO\FileSystemHelper.cs" />
+    <Compile Include="IO\FileSystemManager.cs" />
     <Compile Include="Library\ChildrenChangedEventArgs.cs" />
+    <Compile Include="Library\DtoBuilder.cs" />
+    <Compile Include="Library\Profiler.cs" />
+    <Compile Include="Library\UserDataManager.cs" />
+    <Compile Include="Library\UserManager.cs" />
+    <Compile Include="Localization\AURatingsDictionary.cs" />
+    <Compile Include="Localization\BaseStrings.cs" />
+    <Compile Include="Localization\GBRatingsDictionary.cs" />
+    <Compile Include="Localization\LocalizedStrings.cs" />
+    <Compile Include="Localization\NLRatingsDictionary.cs" />
+    <Compile Include="Localization\Ratings.cs" />
+    <Compile Include="Localization\RatingsDefinition.cs" />
+    <Compile Include="Localization\USRatingsDictionary.cs" />
+    <Compile Include="MediaInfo\BDInfoResult.cs" />
+    <Compile Include="MediaInfo\FFMpegManager.cs" />
+    <Compile Include="MediaInfo\FFProbeResult.cs" />
+    <Compile Include="Persistence\IDisplayPreferencesRepository.cs" />
+    <Compile Include="Persistence\IItemRepository.cs" />
+    <Compile Include="Persistence\IRepository.cs" />
+    <Compile Include="Persistence\IUserDataRepository.cs" />
+    <Compile Include="Persistence\IUserRepository.cs" />
+    <Compile Include="Persistence\SQLite\SQLiteDisplayPreferencesRepository.cs" />
+    <Compile Include="Persistence\SQLite\SQLiteExtensions.cs" />
+    <Compile Include="Persistence\SQLite\SQLiteItemRepository.cs" />
+    <Compile Include="Persistence\SQLite\SQLiteRepository.cs" />
+    <Compile Include="Persistence\SQLite\SQLiteUserDataRepository.cs" />
+    <Compile Include="Persistence\SQLite\SQLiteUserRepository.cs" />
+    <Compile Include="Persistence\TypeMapper.cs" />
+    <Compile Include="Playback\BaseIntroProvider.cs" />
+    <Compile Include="Plugins\BaseConfigurationPage.cs" />
+    <Compile Include="Plugins\PluginSecurityManager.cs" />
+    <Compile Include="Providers\BaseImageEnhancer.cs" />
+    <Compile Include="Providers\FanartBaseProvider.cs" />
+    <Compile Include="Providers\ImagesByNameProvider.cs" />
+    <Compile Include="Providers\MediaInfo\BaseFFMpegImageProvider.cs" />
+    <Compile Include="Providers\MediaInfo\BaseFFMpegProvider.cs" />
+    <Compile Include="Providers\MediaInfo\BDInfoProvider.cs" />
+    <Compile Include="Providers\MediaInfo\FFMpegAudioImageProvider.cs" />
+    <Compile Include="Providers\MediaInfo\BaseFFProbeProvider.cs" />
     <Compile Include="Providers\BaseProviderInfo.cs" />
+    <Compile Include="Providers\Movies\FanArtMovieProvider.cs" />
+    <Compile Include="Providers\Movies\MovieDbProvider.cs" />
+    <Compile Include="Providers\Movies\MovieProviderFromJson.cs" />
     <Compile Include="Providers\Movies\MovieProviderFromXml.cs" />
-    <Compile Include="Providers\Movies\MovieSpecialFeaturesProvider.cs" />
+    <Compile Include="Providers\Movies\PersonProviderFromJson.cs" />
+    <Compile Include="Providers\Movies\TmdbPersonProvider.cs" />
+    <Compile Include="Providers\ProviderManager.cs" />
+    <Compile Include="Providers\SortNameProvider.cs" />
     <Compile Include="Providers\TV\EpisodeImageFromMediaLocationProvider.cs" />
     <Compile Include="Providers\TV\EpisodeProviderFromXml.cs" />
     <Compile Include="Providers\TV\EpisodeXmlParser.cs" />
+    <Compile Include="Providers\TV\FanArtTVProvider.cs" />
+    <Compile Include="Providers\TV\RemoteEpisodeProvider.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Providers\TV\RemoteSeasonProvider.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Providers\TV\RemoteSeriesProvider.cs" />
     <Compile Include="Providers\TV\SeriesProviderFromXml.cs" />
     <Compile Include="Providers\TV\SeriesXmlParser.cs" />
+    <Compile Include="Providers\MediaInfo\FFMpegVideoImageProvider.cs" />
+    <Compile Include="Resolvers\Audio\MusicAlbumResolver.cs" />
+    <Compile Include="Resolvers\Audio\MusicArtistResolver.cs" />
+    <Compile Include="Resolvers\BaseResolutionIgnoreRule.cs" />
+    <Compile Include="Resolvers\CoreResolutionIgnoreRule.cs" />
     <Compile Include="Resolvers\EntityResolutionHelper.cs" />
+    <Compile Include="Resolvers\LocalTrailerResolver.cs" />
     <Compile Include="Resolvers\Movies\BoxSetResolver.cs" />
     <Compile Include="Resolvers\Movies\MovieResolver.cs" />
     <Compile Include="Resolvers\TV\EpisodeResolver.cs" />
     <Compile Include="Resolvers\TV\SeasonResolver.cs" />
     <Compile Include="Resolvers\TV\SeriesResolver.cs" />
     <Compile Include="Resolvers\TV\TVUtils.cs" />
+    <Compile Include="Library\ResourcePool.cs" />
+    <Compile Include="ScheduledTasks\ChapterImagesTask.cs" />
+    <Compile Include="ScheduledTasks\ImageCleanupTask.cs" />
+    <Compile Include="ScheduledTasks\PeopleValidationTask.cs" />
+    <Compile Include="ScheduledTasks\PluginUpdateTask.cs" />
+    <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
     <Compile Include="ServerApplicationPaths.cs" />
-    <Compile Include="Library\ItemResolveEventArgs.cs" />
-    <Compile Include="FFMpeg\FFProbe.cs" />
-    <Compile Include="FFMpeg\FFProbeResult.cs" />
+    <Compile Include="Library\ItemResolveArgs.cs" />
     <Compile Include="IO\DirectoryWatchers.cs" />
     <Compile Include="IO\FileData.cs" />
-    <Compile Include="IO\Shortcut.cs" />
-    <Compile Include="Library\ItemController.cs" />
+    <Compile Include="Library\LibraryManager.cs" />
     <Compile Include="Kernel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\BaseMetadataProvider.cs" />
-    <Compile Include="Providers\AudioInfoProvider.cs" />
+    <Compile Include="Providers\MediaInfo\FFProbeAudioInfoProvider.cs" />
     <Compile Include="Providers\FolderProviderFromXml.cs" />
     <Compile Include="Providers\ImageFromMediaLocationProvider.cs" />
-    <Compile Include="Providers\LocalTrailerProvider.cs" />
-    <Compile Include="Providers\VideoInfoProvider.cs" />
-    <Compile Include="Resolvers\AudioResolver.cs" />
+    <Compile Include="Providers\MediaInfo\FFProbeVideoInfoProvider.cs" />
+    <Compile Include="Resolvers\Audio\AudioResolver.cs" />
     <Compile Include="Resolvers\BaseItemResolver.cs" />
     <Compile Include="Resolvers\FolderResolver.cs" />
     <Compile Include="Resolvers\VideoResolver.cs" />
+    <Compile Include="Sorting\BaseItemComparer.cs" />
+    <Compile Include="Sorting\SortOrder.cs" />
+    <Compile Include="Updates\InstallationManager.cs" />
     <Compile Include="Weather\BaseWeatherProvider.cs" />
     <Compile Include="Weather\WeatherProvider.cs" />
     <Compile Include="Providers\BaseItemXmlParser.cs" />
-    <Compile Include="Xml\XmlExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\BDInfo\BDInfo.csproj">
+      <Project>{07b509c0-0c28-4f3f-8963-5263281f7e3d}</Project>
+      <Name>BDInfo</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
       <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>
       <Name>MediaBrowser.Common</Name>
@@ -130,16 +246,29 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="MediaInfo\ffmpeg20130209.zip" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="FFMpeg\ffmpeg.exe" />
+    <Content Include="MediaInfo\readme.txt" />
+    <Content Include="x64\SQLite.Interop.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x86\SQLite.Interop.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="FFMpeg\ffprobe.exe" />
-    <Content Include="FFMpeg\readme.txt" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

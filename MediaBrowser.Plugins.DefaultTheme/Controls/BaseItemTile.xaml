@@ -1,0 +1,23 @@
+﻿<controls:BaseUserControl x:Class="MediaBrowser.Plugins.DefaultTheme.Controls.BaseItemTile"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:MediaBrowser.UI.Controls;assembly=MediaBrowser.UI.Controls"
+                          mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+
+    <Grid x:Name="mainGrid" HorizontalAlignment="Center">
+
+        <Border x:Name="border">
+            <Image x:Name="image" Stretch="Uniform"></Image>
+        </Border>
+
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom">
+            <Grid.Background>
+                <SolidColorBrush Color="#A6000000"></SolidColorBrush>
+            </Grid.Background>
+            <TextBlock x:Name="txtName" Margin="10 5 0 10" Foreground="White" TextWrapping="Wrap" Style="{StaticResource TextBlockStyle}"></TextBlock>
+        </Grid>
+    </Grid>
+</controls:BaseUserControl>

@@ -1,5 +1,5 @@
-﻿using System.IO;
-using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.Kernel;
+using System.IO;
 
 namespace MediaBrowser.Controller
 {
@@ -8,17 +8,21 @@ namespace MediaBrowser.Controller
     /// </summary>
     public class ServerApplicationPaths : BaseApplicationPaths
     {
+        /// <summary>
+        /// The _root folder path
+        /// </summary>
         private string _rootFolderPath;
         /// <summary>
-        /// Gets the path to the root media directory
+        /// Gets the path to the base root media directory
         /// </summary>
+        /// <value>The root folder path.</value>
         public string RootFolderPath
         {
             get
             {
                 if (_rootFolderPath == null)
                 {
-                    _rootFolderPath = Path.Combine(ProgramDataPath, "root");
+                    _rootFolderPath = Path.Combine(ProgramDataPath, "Root");
                     if (!Directory.Exists(_rootFolderPath))
                     {
                         Directory.CreateDirectory(_rootFolderPath);
@@ -28,10 +32,62 @@ namespace MediaBrowser.Controller
             }
         }
 
+        /// <summary>
+        /// The _default user views path
+        /// </summary>
+        private string _defaultUserViewsPath;
+        /// <summary>
+        /// Gets the path to the default user view directory.  Used if no specific user view is defined.
+        /// </summary>
+        /// <value>The default user views path.</value>
+        public string DefaultUserViewsPath
+        {
+            get
+            {
+                if (_defaultUserViewsPath == null)
+                {
+                    _defaultUserViewsPath = Path.Combine(RootFolderPath, "Default");
+                    if (!Directory.Exists(_defaultUserViewsPath))
+                    {
+                        Directory.CreateDirectory(_defaultUserViewsPath);
+                    }
+                }
+                return _defaultUserViewsPath;
+            }
+        }
+
+        /// <summary>
+        /// The _localization path
+        /// </summary>
+        private string _localizationPath;
+        /// <summary>
+        /// Gets the path to localization data.
+        /// </summary>
+        /// <value>The localization path.</value>
+        public string LocalizationPath
+        {
+            get
+            {
+                if (_localizationPath == null)
+                {
+                    _localizationPath = Path.Combine(ProgramDataPath, "Localization");
+                    if (!Directory.Exists(_localizationPath))
+                    {
+                        Directory.CreateDirectory(_localizationPath);
+                    }
+                }
+                return _localizationPath;
+            }
+        }
+
+        /// <summary>
+        /// The _ibn path
+        /// </summary>
         private string _ibnPath;
         /// <summary>
         /// Gets the path to the Images By Name directory
         /// </summary>
+        /// <value>The images by name path.</value>
         public string ImagesByNamePath
         {
             get
@@ -49,73 +105,89 @@ namespace MediaBrowser.Controller
             }
         }
 
-        private string _PeoplePath;
+        /// <summary>
+        /// The _people path
+        /// </summary>
+        private string _peoplePath;
         /// <summary>
         /// Gets the path to the People directory
         /// </summary>
+        /// <value>The people path.</value>
         public string PeoplePath
         {
             get
             {
-                if (_PeoplePath == null)
+                if (_peoplePath == null)
                 {
-                    _PeoplePath = Path.Combine(ImagesByNamePath, "People");
-                    if (!Directory.Exists(_PeoplePath))
+                    _peoplePath = Path.Combine(ImagesByNamePath, "People");
+                    if (!Directory.Exists(_peoplePath))
                     {
-                        Directory.CreateDirectory(_PeoplePath);
+                        Directory.CreateDirectory(_peoplePath);
                     }
                 }
 
-                return _PeoplePath;
+                return _peoplePath;
             }
         }
 
-        private string _GenrePath;
+        /// <summary>
+        /// The _genre path
+        /// </summary>
+        private string _genrePath;
         /// <summary>
         /// Gets the path to the Genre directory
         /// </summary>
+        /// <value>The genre path.</value>
         public string GenrePath
         {
             get
             {
-                if (_GenrePath == null)
+                if (_genrePath == null)
                 {
-                    _GenrePath = Path.Combine(ImagesByNamePath, "Genre");
-                    if (!Directory.Exists(_GenrePath))
+                    _genrePath = Path.Combine(ImagesByNamePath, "Genre");
+                    if (!Directory.Exists(_genrePath))
                     {
-                        Directory.CreateDirectory(_GenrePath);
+                        Directory.CreateDirectory(_genrePath);
                     }
                 }
 
-                return _GenrePath;
+                return _genrePath;
             }
         }
 
-        private string _StudioPath;
+        /// <summary>
+        /// The _studio path
+        /// </summary>
+        private string _studioPath;
         /// <summary>
         /// Gets the path to the Studio directory
         /// </summary>
+        /// <value>The studio path.</value>
         public string StudioPath
         {
             get
             {
-                if (_StudioPath == null)
+                if (_studioPath == null)
                 {
-                    _StudioPath = Path.Combine(ImagesByNamePath, "Studio");
-                    if (!Directory.Exists(_StudioPath))
+                    _studioPath = Path.Combine(ImagesByNamePath, "Studio");
+                    if (!Directory.Exists(_studioPath))
                     {
-                        Directory.CreateDirectory(_StudioPath);
+                        Directory.CreateDirectory(_studioPath);
                     }
                 }
 
-                return _StudioPath;
+                return _studioPath;
             }
         }
 
+        /// <summary>
+        /// The _year path
+        /// </summary>
         private string _yearPath;
         /// <summary>
         /// Gets the path to the Year directory
         /// </summary>
+        /// <value>The year path.</value>
         public string YearPath
         {
             get
@@ -133,17 +205,71 @@ namespace MediaBrowser.Controller
             }
         }
 
+        /// <summary>
+        /// The _general path
+        /// </summary>
+        private string _generalPath;
+        /// <summary>
+        /// Gets the path to the General IBN directory
+        /// </summary>
+        /// <value>The general path.</value>
+        public string GeneralPath
+        {
+            get
+            {
+                if (_generalPath == null)
+                {
+                    _generalPath = Path.Combine(ImagesByNamePath, "General");
+                    if (!Directory.Exists(_generalPath))
+                    {
+                        Directory.CreateDirectory(_generalPath);
+                    }
+                }
+
+                return _generalPath;
+            }
+        }
+
+        /// <summary>
+        /// The _ratings path
+        /// </summary>
+        private string _ratingsPath;
+        /// <summary>
+        /// Gets the path to the Ratings IBN directory
+        /// </summary>
+        /// <value>The ratings path.</value>
+        public string RatingsPath
+        {
+            get
+            {
+                if (_ratingsPath == null)
+                {
+                    _ratingsPath = Path.Combine(ImagesByNamePath, "Ratings");
+                    if (!Directory.Exists(_ratingsPath))
+                    {
+                        Directory.CreateDirectory(_ratingsPath);
+                    }
+                }
+
+                return _ratingsPath;
+            }
+        }
+
+        /// <summary>
+        /// The _user configuration directory path
+        /// </summary>
         private string _userConfigurationDirectoryPath;
         /// <summary>
         /// Gets the path to the user configuration directory
         /// </summary>
+        /// <value>The user configuration directory path.</value>
         public string UserConfigurationDirectoryPath
         {
             get
             {
                 if (_userConfigurationDirectoryPath == null)
                 {
-                    _userConfigurationDirectoryPath = Path.Combine(ConfigurationDirectoryPath, "user");
+                    _userConfigurationDirectoryPath = Path.Combine(ConfigurationDirectoryPath, "users");
                     if (!Directory.Exists(_userConfigurationDirectoryPath))
                     {
                         Directory.CreateDirectory(_userConfigurationDirectoryPath);
@@ -153,125 +279,55 @@ namespace MediaBrowser.Controller
             }
         }
 
-        private string _CacheDirectory;
         /// <summary>
-        /// Gets the folder path to the cache directory
+        /// The _f F MPEG stream cache path
         /// </summary>
-        public string CacheDirectory
+        private string _fFMpegStreamCachePath;
+        /// <summary>
+        /// Gets the FF MPEG stream cache path.
+        /// </summary>
+        /// <value>The FF MPEG stream cache path.</value>
+        public string FFMpegStreamCachePath
         {
             get
             {
-                if (_CacheDirectory == null)
+                if (_fFMpegStreamCachePath == null)
                 {
-                    _CacheDirectory = Path.Combine(Kernel.Instance.ApplicationPaths.ProgramDataPath, "cache");
+                    _fFMpegStreamCachePath = Path.Combine(CachePath, "ffmpeg-streams");
 
-                    if (!Directory.Exists(_CacheDirectory))
+                    if (!Directory.Exists(_fFMpegStreamCachePath))
                     {
-                        Directory.CreateDirectory(_CacheDirectory);
+                        Directory.CreateDirectory(_fFMpegStreamCachePath);
                     }
                 }
 
-                return _CacheDirectory;
+                return _fFMpegStreamCachePath;
             }
         }
 
-        private string _FFProbeAudioCacheDirectory;
         /// <summary>
-        /// Gets the folder path to the ffprobe audio cache directory
+        /// The _media tools path
         /// </summary>
-        public string FFProbeAudioCacheDirectory
+        private string _mediaToolsPath;
+        /// <summary>
+        /// Gets the folder path to tools
+        /// </summary>
+        /// <value>The media tools path.</value>
+        public string MediaToolsPath
         {
             get
             {
-                if (_FFProbeAudioCacheDirectory == null)
+                if (_mediaToolsPath == null)
                 {
-                    _FFProbeAudioCacheDirectory = Path.Combine(Kernel.Instance.ApplicationPaths.CacheDirectory, "ffprobe-audio");
+                    _mediaToolsPath = Path.Combine(ProgramDataPath, "MediaTools");
 
-                    if (!Directory.Exists(_FFProbeAudioCacheDirectory))
+                    if (!Directory.Exists(_mediaToolsPath))
                     {
-                        Directory.CreateDirectory(_FFProbeAudioCacheDirectory);
+                        Directory.CreateDirectory(_mediaToolsPath);
                     }
                 }
 
-                return _FFProbeAudioCacheDirectory;
-            }
-        }
-
-        private string _FFProbeVideoCacheDirectory;
-        /// <summary>
-        /// Gets the folder path to the ffprobe video cache directory
-        /// </summary>
-        public string FFProbeVideoCacheDirectory
-        {
-            get
-            {
-                if (_FFProbeVideoCacheDirectory == null)
-                {
-                    _FFProbeVideoCacheDirectory = Path.Combine(Kernel.Instance.ApplicationPaths.CacheDirectory, "ffprobe-video");
-
-                    if (!Directory.Exists(_FFProbeVideoCacheDirectory))
-                    {
-                        Directory.CreateDirectory(_FFProbeVideoCacheDirectory);
-                    }
-                }
-
-                return _FFProbeVideoCacheDirectory;
-            }
-        }
-        
-        private string _FFMpegDirectory;
-        /// <summary>
-        /// Gets the folder path to ffmpeg
-        /// </summary>
-        public string FFMpegDirectory
-        {
-            get
-            {
-                if (_FFMpegDirectory == null)
-                {
-                    _FFMpegDirectory = Path.Combine(Kernel.Instance.ApplicationPaths.ProgramDataPath, "FFMpeg");
-
-                    if (!Directory.Exists(_FFMpegDirectory))
-                    {
-                        Directory.CreateDirectory(_FFMpegDirectory);
-                    }
-                }
-
-                return _FFMpegDirectory;
-            }
-        }
-
-        private string _FFMpegPath;
-        /// <summary>
-        /// Gets the path to ffmpeg.exe
-        /// </summary>
-        public string FFMpegPath
-        {
-            get
-            {
-                if (_FFMpegPath == null)
-                {
-                    _FFMpegPath = Path.Combine(FFMpegDirectory, "ffmpeg.exe");
-                }
-
-                return _FFMpegPath;
-            }
-        }
-
-        private string _FFProbePath;
-        /// <summary>
-        /// Gets the path to ffprobe.exe
-        /// </summary>
-        public string FFProbePath
-        {
-            get
-            {
-                if (_FFProbePath == null)
-                {
-                    _FFProbePath = Path.Combine(FFMpegDirectory, "ffprobe.exe");
-                }
-
-                return _FFProbePath;
+                return _mediaToolsPath;
             }
         }
     }

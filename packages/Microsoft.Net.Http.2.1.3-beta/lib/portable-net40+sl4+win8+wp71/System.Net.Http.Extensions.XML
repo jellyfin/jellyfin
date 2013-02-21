@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>System.Net.Http.Extensions</name>
+    </assembly>
+    <members>
+        <member name="T:System.Net.Http.HttpClientHandlerExtensions">
+            <summary>
+            Extension methods for <see cref="T:System.Net.Http.HttpClientHandler"/> which expose differences in platform specific capabilities.
+            </summary>
+        </member>
+        <member name="M:System.Net.Http.HttpClientHandlerExtensions.SupportsPreAuthenticate(System.Net.Http.HttpClientHandler)">
+            <summary>
+            Gets a value that indicates if <see cref="P:System.Net.Http.HttpClientHandler.PreAuthenticate" /> is supported by the handler.
+            </summary>
+            <param name="handler">The <see cref="T:System.Net.Http.HttpClientHandler"/> to check.</param>
+            <returns>Returns <see cref="T:System.Boolean" />.true if the if the handler supports configuration settings for the <see cref="P:System.Net.Http.HttpClientHandler.PreAuthenticate" /> property; otherwise false.</returns>
+        </member>
+        <member name="M:System.Net.Http.HttpClientHandlerExtensions.SupportsProtocolVersion(System.Net.Http.HttpClientHandler)">
+            <summary>
+            Gets a value that indicates if <see cref="P:System.Net.Http.HttpClientHandler.ProtocolVersion" />, <see cref="P:System.Net.Http.HttpRequestMessage.ProtocolVersion">HttpRequestMessage.ProtocolVersion</see>, and <see cref="P:System.Net.Http.HttpResponseMessage.ProtocolVersion">HttpResponseMessage.ProtocolVersion</see> are supported by the handler.
+            </summary>
+            <param name="handler">The <see cref="T:System.Net.Http.HttpClientHandler"/> to check.</param>
+            <returns>Returns <see cref="T:System.Boolean" />.true if the if the handler supports configuration settings for the <see cref="P:System.Net.Http.HttpClientHandler.ProtocolVersion" />, <see cref="P:System.Net.Http.HttpRequestMessage.ProtocolVersion">HttpRequestMessage.ProtocolVersion</see>, and <see cref="P:System.Net.Http.HttpResponseMessage.ProtocolVersion">HttpResponseMessage.ProtocolVersion</see> properties; otherwise false.</returns>
+        </member>
+        <member name="M:System.Net.Http.HttpClientHandlerExtensions.SupportsTransferEncodingChunked(System.Net.Http.HttpClientHandler)">
+            <summary>
+            Gets a value that indicates if <see cref="P:System.Net.Http.HttpRequestMessage.Headers">HttpRequestMessage.Headers</see> with <see cref="P:System.Net.Http.HttpRequestHeaders.TransferEncodingChunked"/> or <see cref="P:System.Net.Http.HttpRequestHeaders.TransferEncoding"/> header value of 'chunked' is supported by the handler.
+            </summary>
+            <param name="handler">The <see cref="T:System.Net.Http.HttpClientHandler"/> to check.</param>
+            <returns>Returns <see cref="T:System.Boolean" />.true if the if the handler supports setting <see cref="P:System.Net.Http.HttpRequestMessage.Headers">HttpRequestMessage.Headers</see> with <see cref="P:System.Net.Http.HttpRequestHeaders.TransferEncodingChunked"/> or <see cref="P:System.Net.Http.HttpRequestHeaders.TransferEncoding"/> header value of 'chunked'; otherwise false.</returns>
+        </member>
+    </members>
+</doc>

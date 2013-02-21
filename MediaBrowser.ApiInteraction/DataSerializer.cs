@@ -1,55 +1,39 @@
-﻿using ServiceStack.Text;
+﻿using ProtoBuf;
+using ProtoBuf.Meta;
+using ServiceStack.Text;
 using System;
 using System.IO;
 
 namespace MediaBrowser.ApiInteraction
 {
+    /// <summary>
+    /// Class DataSerializer
+    /// </summary>
     public static class DataSerializer
     {
         /// <summary>
-        /// This is an auto-generated Protobuf Serialization assembly for best performance.
-        /// It is created during the Model project's post-build event.
-        /// This means that this class can currently only handle types within the Model project.
-        /// If we need to, we can always add a param indicating whether or not the model serializer should be used.
+        /// Gets or sets the dynamically created serializer.
         /// </summary>
-        private static readonly ProtobufModelSerializer ProtobufModelSerializer = new ProtobufModelSerializer();
-        
-        /// <summary>
-        /// Deserializes an object using generics
-        /// </summary>
-        public static T DeserializeFromStream<T>(Stream stream, SerializationFormats format)
-            where T : class
-        {
-            if (format == SerializationFormats.Protobuf)
-            {
-                //return Serializer.Deserialize<T>(stream);
-                return ProtobufModelSerializer.Deserialize(stream, null, typeof(T)) as T;
-            }
-            if (format == SerializationFormats.Jsv)
-            {
-                return TypeSerializer.DeserializeFromStream<T>(stream);
-            }
-            if (format == SerializationFormats.Json)
-            {
-                return JsonSerializer.DeserializeFromStream<T>(stream);
-            }
-
-            throw new NotImplementedException();
-        }
+        /// <value>The dynamic serializer.</value>
+        public static TypeModel DynamicSerializer { get; set; }
 
         /// <summary>
         /// Deserializes an object
         /// </summary>
+        /// <param name="stream">The stream.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="type">The type.</param>
+        /// <returns>System.Object.</returns>
+        /// <exception cref="System.NotImplementedException"></exception>
         public static object DeserializeFromStream(Stream stream, SerializationFormats format, Type type)
         {
             if (format == SerializationFormats.Protobuf)
             {
-                //throw new NotImplementedException();
-                return ProtobufModelSerializer.Deserialize(stream, null, type);
-            }
-            if (format == SerializationFormats.Jsv)
-            {
-                return TypeSerializer.DeserializeFromStream(type, stream);
+                if (DynamicSerializer != null)
+                {
+                    return DynamicSerializer.Deserialize(stream, null, type);
+                }
+                return Serializer.NonGeneric.Deserialize(type, stream);
             }
             if (format == SerializationFormats.Json)
             {
@@ -59,19 +43,24 @@ namespace MediaBrowser.ApiInteraction
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Serializes to json.
+        /// </summary>
+        /// <param name="obj">The obj.</param>
+        /// <returns>System.String.</returns>
+        public static string SerializeToJsonString(object obj)
+        {
+            return JsonSerializer.SerializeToString(obj, obj.GetType());
+        }
+
+        /// <summary>
+        /// Configures this instance.
+        /// </summary>
         public static void Configure()
         {
             JsConfig.DateHandler = JsonDateHandler.ISO8601;
             JsConfig.ExcludeTypeInfo = true;
             JsConfig.IncludeNullValues = false;
-        }
-
-        public static bool CanDeSerializeJsv
-        {
-            get
-            {
-                return true;
-            }
         }
     }
 }

@@ -13,6 +13,8 @@
     <TargetFrameworkProfile>Profile4</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -31,45 +33,96 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="Configuration\BaseApplicationConfiguration.cs" />
     <Compile Include="Configuration\ServerConfiguration.cs" />
-    <Compile Include="DTO\AudioInfo.cs" />
-    <Compile Include="DTO\AudioOutputFormats.cs" />
+    <Compile Include="DTO\BaseItemPerson.cs" />
+    <Compile Include="DTO\ChapterInfoDto.cs" />
+    <Compile Include="DTO\MediaType.cs" />
+    <Compile Include="Entities\BaseItemInfo.cs" />
+    <Compile Include="Connectivity\ClientConnectionInfo.cs" />
+    <Compile Include="Connectivity\ClientType.cs" />
+    <Compile Include="Entities\ChapterInfo.cs" />
+    <Compile Include="Entities\LocationType.cs" />
+    <Compile Include="Entities\MBRegistrationRecord.cs" />
+    <Compile Include="Entities\MediaType.cs" />
+    <Compile Include="Entities\PersonType.cs" />
+    <Compile Include="Entities\PluginSecurityInfo.cs" />
+    <Compile Include="Globalization\CountryInfo.cs" />
+    <Compile Include="Globalization\CultureDto.cs" />
+    <Compile Include="IO\FileSystemEntryInfo.cs" />
+    <Compile Include="DTO\ImageOptions.cs" />
+    <Compile Include="DTO\ItemFilter.cs" />
+    <Compile Include="DTO\ItemQuery.cs" />
+    <Compile Include="Entities\LibraryUpdateInfo.cs" />
+    <Compile Include="Entities\ParentalRating.cs" />
+    <Compile Include="DTO\StreamOptions.cs" />
+    <Compile Include="Entities\VirtualFolderInfo.cs" />
+    <Compile Include="Entities\IHasMediaStreams.cs" />
+    <Compile Include="Entities\VideoFormat.cs" />
+    <Compile Include="Extensions\ModelExtensions.cs" />
+    <Compile Include="Logging\ILogger.cs" />
+    <Compile Include="Logging\LogSeverity.cs" />
+    <Compile Include="Net\HttpException.cs" />
+    <Compile Include="Updates\InstallationInfo.cs" />
+    <Compile Include="Updates\PackageType.cs" />
+    <Compile Include="Updates\PackageVersionClass.cs" />
+    <Compile Include="Entities\RequestResult.cs" />
+    <Compile Include="Configuration\UserConfiguration.cs" />
+    <Compile Include="Drawing\DrawingUtils.cs" />
     <Compile Include="DTO\DtoUserItemData.cs" />
-    <Compile Include="DTO\MovieInfo.cs" />
-    <Compile Include="DTO\SeriesInfo.cs" />
-    <Compile Include="Authentication\AuthenticationResult.cs" />
+    <Compile Include="DTO\ItemFields.cs" />
+    <Compile Include="DTO\ItemSortBy.cs" />
     <Compile Include="DTO\DtoBaseItem.cs" />
     <Compile Include="DTO\DtoUser.cs" />
-    <Compile Include="DTO\VideoInfo.cs" />
-    <Compile Include="DTO\VideoOutputFormats.cs" />
-    <Compile Include="DTO\IbnItem.cs" />
-    <Compile Include="Entities\AudioStream.cs" />
+    <Compile Include="DTO\ItemsResult.cs" />
+    <Compile Include="Entities\DisplayPreferences.cs" />
     <Compile Include="Entities\ImageType.cs" />
     <Compile Include="Entities\IHasProviderIds.cs" />
-    <Compile Include="Entities\ItemSpecialCounts.cs" />
     <Compile Include="Entities\MetadataProviders.cs" />
-    <Compile Include="Entities\SubtitleStream.cs" />
+    <Compile Include="Entities\SeriesStatus.cs" />
+    <Compile Include="Entities\MediaStream.cs" />
     <Compile Include="Entities\VideoType.cs" />
     <Compile Include="Plugins\BasePluginConfiguration.cs" />
-    <Compile Include="DTO\PluginInfo.cs" />
-    <Compile Include="Progress\TaskProgress.cs" />
+    <Compile Include="Plugins\PluginInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="System\SystemInfo.cs" />
+    <Compile Include="Tasks\SystemEvent.cs" />
+    <Compile Include="Tasks\TaskCompletionStatus.cs" />
+    <Compile Include="Tasks\TaskResult.cs" />
+    <Compile Include="Tasks\TaskInfo.cs" />
+    <Compile Include="Tasks\TaskProgress.cs" />
+    <Compile Include="Tasks\TaskState.cs" />
+    <Compile Include="Tasks\TaskTriggerInfo.cs" />
+    <Compile Include="Updates\PackageInfo.cs" />
+    <Compile Include="Updates\PackageVersionInfo.cs" />
     <Compile Include="Weather\WeatherForecast.cs" />
     <Compile Include="Weather\WeatherInfo.cs" />
     <Compile Include="Weather\WeatherStatus.cs" />
     <Compile Include="Weather\WeatherUnits.cs" />
+    <Compile Include="Web\QueryStringDictionary.cs" />
+    <None Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="protobuf-net">
-      <HintPath>..\protobuf-net\Full\portable\protobuf-net.dll</HintPath>
+    <Reference Include="PropertyChanged">
+      <HintPath>..\packages\PropertyChanged.Fody.1.32.2.0\lib\portable-net4+sl4+wp7+win8\PropertyChanged.dll</HintPath>
     </Reference>
+    <Reference Include="protobuf-net">
+      <HintPath>..\packages\protobuf-net.2.0.0.621\lib\portable-sl4+net40+wp7+windows8\protobuf-net.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"$(ProjectDir)..\protobuf-net\Precompile\precompile.exe" "$(TargetPath)" -o:"$(ProjectDir)bin\ProtobufModelSerializer.dll" -t:ProtobufModelSerializer</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
@@ -77,4 +130,5 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Import Project="$(ProjectDir)\..\Tools\Fody\Fody.targets" />
 </Project>

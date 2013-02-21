@@ -1,0 +1,67 @@
+﻿<controls:BaseModalWindow x:Class="MediaBrowser.UI.Controls.ModalWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:Controls="clr-namespace:MediaBrowser.UI.Controls"
+                          xmlns:controls="clr-namespace:MediaBrowser.UI.Controls;assembly=MediaBrowser.UI.Controls"
+                          Title="ModalWindow"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Style="{StaticResource ModalWindow}">
+
+    <Grid>
+        <Grid Style="{StaticResource ModalOverlayStyle}">
+
+        </Grid>
+        <Grid Style="{StaticResource ModalContentStyle}" RenderTransformOrigin="1,0">
+            <Grid Style="{StaticResource ModalContentInnerStyle}">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"></RowDefinition>
+                    <RowDefinition Height="auto"></RowDefinition>
+                    <RowDefinition Height="auto"></RowDefinition>
+                </Grid.RowDefinitions>
+
+                <Image Grid.Row="0" Grid.RowSpan="3" Grid.Column="0" Style="{StaticResource ModalButtonImage}"></Image>
+
+                <TextBlock x:Name="txtCaption" Text="{Binding Caption}" Style="{StaticResource Heading2TextBlockStyle}" Grid.Row="0" Grid.Column="1" Margin="0 30 0 10"></TextBlock>
+
+                <Grid x:Name="pnlContent" HorizontalAlignment="Stretch" Grid.Row="1" Grid.Column="1">
+
+                </Grid>
+
+                <StackPanel x:Name="pnlButtons" Style="{StaticResource ModalButtonPanel}" Grid.Row="2" Grid.Column="1">
+                    <controls:ExtendedButton x:Name="btnYes" Content="Yes" Style="{StaticResource ModalButton}"></controls:ExtendedButton>
+                    <controls:ExtendedButton x:Name="btnNo" Content="No" Style="{StaticResource ModalButton}"></controls:ExtendedButton>
+                    <controls:ExtendedButton x:Name="btnOk" Content="OK" Style="{StaticResource ModalButton}"></controls:ExtendedButton>
+                    <controls:ExtendedButton x:Name="btnCancel" Content="Cancel" Style="{StaticResource ModalButton}"></controls:ExtendedButton>
+                </StackPanel>
+            </Grid>
+            <!-- Animation -->
+            <Grid.Triggers>
+                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)">
+                                <SplineDoubleKeyFrame KeyTime="0:0:0" Value="0"/>
+                                <SplineDoubleKeyFrame KeyTime="0:0:0.15" Value="1"/>
+                            </DoubleAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Grid.Triggers>
+
+            <Grid.RenderTransform>
+                <ScaleTransform ScaleX="1" />
+            </Grid.RenderTransform>
+        </Grid>
+
+        <Grid.LayoutTransform>
+            <ScaleTransform ScaleX="{Binding Path=ContentScale}" ScaleY="{Binding Path=ContentScale}" CenterX="0" CenterY="0" />
+        </Grid.LayoutTransform>
+
+    </Grid>
+</controls:BaseModalWindow>

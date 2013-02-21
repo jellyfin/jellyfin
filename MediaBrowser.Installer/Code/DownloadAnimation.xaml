@@ -1,0 +1,39 @@
+﻿<UserControl x:Class="MediaBrowser.Installer.Code.DownloadAnimation"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" Height="257.143" Width="502.041">
+    <UserControl.Resources>
+        <Style TargetType="Ellipse">
+            <Setter Property="Fill" Value="LightGray" />
+            <Setter Property="Width" Value="8" />
+            <Setter Property="Height" Value="8" />
+        </Style>
+    </UserControl.Resources>
+    <Canvas Height="58" Width="275">
+        <Ellipse Canvas.Left="56" Canvas.Top="23" />
+        <Ellipse Canvas.Left="70" Canvas.Top="23" />
+        <Ellipse Canvas.Left="84" Canvas.Top="23" />
+        <Ellipse Canvas.Left="98" Canvas.Top="23" />
+        <Ellipse Canvas.Left="112" Canvas.Top="23" />
+        <Ellipse Canvas.Left="126" Canvas.Top="23" />
+        <Ellipse Canvas.Left="140" Canvas.Top="23" />
+        <Ellipse Canvas.Left="154" Canvas.Top="23" />
+        <Ellipse Canvas.Left="168" Canvas.Top="23" />
+        <Ellipse Canvas.Left="182" Canvas.Top="23" />
+        <Ellipse Canvas.Left="196" Canvas.Top="23" />
+        <Ellipse Canvas.Left="210" Canvas.Top="23" />
+        <Canvas Canvas.Left="10" Canvas.Top="19" 
+		Name="SlidingCanvas" Height="17" Width="46">
+            <Ellipse Canvas.Left="4" Canvas.Top="4" Fill="Orange" />
+            <Ellipse Canvas.Left="18" Canvas.Top="4" Fill="Orange" />
+            <Ellipse Canvas.Left="32" Canvas.Top="4" Fill="Orange" />
+        </Canvas>
+        <Image Canvas.Left="-49" Canvas.Top="-19" 
+		Source="/MediaBrowser.Server.Installer;component/Code/Images/internet-globe.jpg" Stretch="None" Height="94" Width="100" RenderTransformOrigin="0.341,0.403" />
+        <Image Canvas.Left="224" Canvas.Top="-25" 
+		Source="Images\computer_256.png" Height="100" Width="100" Stretch="None" />
+    </Canvas>
+            
+</UserControl>

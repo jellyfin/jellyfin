@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.Net.Http</id>
+    <version>2.1.3-beta</version>
+    <title>HTTP Client Libraries</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <licenseUrl>http://go.microsoft.com/fwlink/?LinkID=279007</licenseUrl>
+    <projectUrl>http://www.asp.net/web-api</projectUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>This package provides a programming interface for modern HTTP applications on .NET Framework 4, Silverlight 4 and 5, Windows Phone 7.5 and 8. This package includes HttpClient for sending requests over HTTP, as well as HttpRequestMessage and HttpResponseMessage for processing HTTP messages.
+
+This package also supports Portable Class Libraries.
+
+This package is not supported in Visual Studio 2010, and is only required for projects targeting .NET Framework 4.5 or .NET for Windows Store apps when consuming a library that uses this package. For known issues, please see: http://go.microsoft.com/fwlink/?LinkID=279987.</description>
+    <summary>This package provides a programming interface for modern HTTP applications on .NET Framework 4, Silverlight 4 and 5, Windows Phone 7.5 and 8.</summary>
+    <copyright>Copyright © Microsoft Corporation</copyright>
+    <language>en-US</language>
+    <dependencies>
+      <group>
+        <dependency id="Microsoft.Bcl" version="1.0.16-rc" />
+        <dependency id="Microsoft.Bcl.Build" version="1.0.0-rc" />
+      </group>
+      <group targetFramework=".NETFramework4.0">
+        <dependency id="Microsoft.Bcl.Build" version="1.0.0-rc" />
+      </group>
+      <group targetFramework=".NETFramework4.5" />
+      <group targetFramework="Windows8.0" />
+      <group targetFramework=".NETPortable0.0-net45+win80" />
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System.Net.Http" targetFramework=".NETFramework4.5" />
+      <frameworkAssembly assemblyName="System.Net.Http.WebRequest" targetFramework=".NETFramework4.5" />
+    </frameworkAssemblies>
+    <references>
+      <reference file="System.Net.Http.dll" />
+      <reference file="System.Net.Http.Extensions.dll" />
+      <reference file="System.Net.Http.Primitives.dll" />
+      <reference file="System.Net.Http.WebRequest.dll" />
+    </references>
+  </metadata>
+</package>

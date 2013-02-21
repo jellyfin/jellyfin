@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata>
+    <id>MahApps.Metro</id>
+    <version>0.10.1.21-ALPHA</version>
+    <title>MahApps.Metro</title>
+    <authors>Paul Jenkins; Jake Ginnivan</authors>
+    <owners>Paul Jenkins; Jake Ginnivan</owners>
+    <licenseUrl>http://www.opensource.org/licenses/MS-PL</licenseUrl>
+    <projectUrl>https://github.com/MahApps/MahApps.Metro</projectUrl>
+    <iconUrl>http://c713056.r56.cf2.rackcdn.com/mahapps.metro.logo2.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>The goal of MahApps.Metro is to allow devs to quickly and easily cobble togther a "Metro" UI for their WPF4+ apps, with minimal effort.</description>
+    <summary>The goal of MahApps.Metro is to allow devs to quickly and easily cobble togther a "Metro" UI for their WPF4+ apps, with minimal effort.</summary>
+    <releaseNotes />
+    <tags>WPF UI Metro</tags>
+    <references>
+      <reference file="MahApps.Metro.dll" />
+      <reference file="System.Windows.Interactivity.dll" />
+    </references>
+  </metadata>
+</package>

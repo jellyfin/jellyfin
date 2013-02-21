@@ -1,0 +1,34 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Plugins</title>
+</head>
+<body>
+    <div id="pluginUpdatesPage" data-role="page" class="page type-interior pluginConfigurationPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="plugins.html" data-role="button">Installed Plugins</a>
+                    <a href="pluginCatalog.html" data-role="button">Plugin Catalog</a>
+                    <a href="pluginUpdates.html" data-role="button" class="ui-btn-active">Automatic Updates</a>
+                </div>
+
+                <form id="pluginUpdatesForm">
+
+                    <table id="tblPluginUpdates">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Automatic updates</th>
+                                <th>Update level</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyPluginUpdates"></tbody>
+                    </table>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

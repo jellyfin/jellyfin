@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Log File</title>
+</head>
+<body>
+    <div id="logPage" data-role="page" class="page type-interior">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="support.html" data-role="button">General</a>
+                    <a href="log.html" data-role="button" class="ui-btn-active">View Log</a>
+                    <a href="supporter.html" data-role="button">Become a Supporter</a>
+                        <a href="supporterKey.html" data-role="button">Supporter Key</a>
+                </div>
+                <p>
+                    <label for="chkAutoScroll">Auto-scroll</label>
+                    <input type="checkbox" id="chkAutoScroll" onchange="LogPage.updateAutoScroll(this.checked);" name="chkAutoScroll" data-inline="true" />
+                </p>
+                <textarea id="logContents" class="pre" style="overflow-y:hidden;"></textarea>
+                <p>
+                    <label for="chkAutoScrollBottom">Auto-scroll</label>
+                    <input type="checkbox" id="chkAutoScrollBottom" name="chkAutoScrollBottom" onchange="LogPage.updateAutoScroll(this.checked);" data-inline="true" />
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

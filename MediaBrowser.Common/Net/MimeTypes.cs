@@ -3,55 +3,73 @@ using System.IO;
 
 namespace MediaBrowser.Common.Net
 {
+    /// <summary>
+    /// Class MimeTypes
+    /// </summary>
     public static class MimeTypes
     {
+        /// <summary>
+        /// The json MIME type
+        /// </summary>
         public static string JsonMimeType = "application/json";
 
+        /// <summary>
+        /// Gets the type of the MIME.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">path</exception>
+        /// <exception cref="System.InvalidOperationException">Argument not supported:  + path</exception>
         public static string GetMimeType(string path)
         {
-            var ext = Path.GetExtension(path);
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+            
+            var ext = Path.GetExtension(path) ?? string.Empty;
 
             // http://en.wikipedia.org/wiki/Internet_media_type
             // Add more as needed
 
             // Type video
-            if (ext.EndsWith("mpg", StringComparison.OrdinalIgnoreCase) || ext.EndsWith("mpeg", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".mpg", StringComparison.OrdinalIgnoreCase) || ext.EndsWith("mpeg", StringComparison.OrdinalIgnoreCase))
             {
                 return "video/mpeg";
             }
-            if (ext.EndsWith("mp4", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".mp4", StringComparison.OrdinalIgnoreCase))
             {
                 return "video/mp4";
             }
-            if (ext.EndsWith("ogv", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".ogv", StringComparison.OrdinalIgnoreCase))
             {
                 return "video/ogg";
             }
-            if (ext.EndsWith("mov", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".mov", StringComparison.OrdinalIgnoreCase))
             {
                 return "video/quicktime";
             }
-            if (ext.EndsWith("webm", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".webm", StringComparison.OrdinalIgnoreCase))
             {
                 return "video/webm";
             }
-            if (ext.EndsWith("mkv", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".mkv", StringComparison.OrdinalIgnoreCase))
             {
                 return "video/x-matroska";
             }
-            if (ext.EndsWith("wmv", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".wmv", StringComparison.OrdinalIgnoreCase))
             {
                 return "video/x-ms-wmv";
             }
-            if (ext.EndsWith("flv", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".flv", StringComparison.OrdinalIgnoreCase))
             {
                 return "video/x-flv";
             }
-            if (ext.EndsWith("avi", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".avi", StringComparison.OrdinalIgnoreCase))
             {
                 return "video/avi";
             }
-            if (ext.EndsWith("m4v", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".m4v", StringComparison.OrdinalIgnoreCase))
             {
                 return "video/x-m4v";
             }
@@ -59,99 +77,127 @@ namespace MediaBrowser.Common.Net
             {
                 return "video/x-ms-asf";
             }
-            if (ext.EndsWith("3gp", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".3gp", StringComparison.OrdinalIgnoreCase))
             {
                 return "video/3gpp";
             }
-            if (ext.EndsWith("3g2", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".3g2", StringComparison.OrdinalIgnoreCase))
             {
                 return "video/3gpp2";
             }
-            if (ext.EndsWith("ts", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".ts", StringComparison.OrdinalIgnoreCase))
             {
                 return "video/mp2t";
             }
 
             // Type text
-            if (ext.EndsWith("css", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".css", StringComparison.OrdinalIgnoreCase))
             {
                 return "text/css";
             }
-            if (ext.EndsWith("csv", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".csv", StringComparison.OrdinalIgnoreCase))
             {
                 return "text/csv";
             }
-            if (ext.EndsWith("html", StringComparison.OrdinalIgnoreCase) || ext.EndsWith("html", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".html", StringComparison.OrdinalIgnoreCase) || ext.Equals(".htm", StringComparison.OrdinalIgnoreCase))
             {
-                return "text/html";
+                return "text/html; charset=UTF-8";
             }
-            if (ext.EndsWith("txt", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".txt", StringComparison.OrdinalIgnoreCase))
             {
                 return "text/plain";
             }
+            if (ext.Equals(".xml", StringComparison.OrdinalIgnoreCase))
+            {
+                return "application/xml";
+            }
 
             // Type image
-            if (ext.EndsWith("gif", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".gif", StringComparison.OrdinalIgnoreCase))
             {
                 return "image/gif";
             }
-            if (ext.EndsWith("jpg", StringComparison.OrdinalIgnoreCase) || ext.EndsWith("jpeg", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".jpg", StringComparison.OrdinalIgnoreCase) || ext.Equals(".jpeg", StringComparison.OrdinalIgnoreCase))
             {
                 return "image/jpeg";
             }
-            if (ext.EndsWith("png", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".png", StringComparison.OrdinalIgnoreCase))
             {
                 return "image/png";
             }
-            if (ext.EndsWith("ico", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".ico", StringComparison.OrdinalIgnoreCase))
             {
                 return "image/vnd.microsoft.icon";
             }
 
              // Type audio
-            if (ext.EndsWith("mp3", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".mp3", StringComparison.OrdinalIgnoreCase))
             {
                 return "audio/mpeg";
             }
-            if (ext.EndsWith("m4a", StringComparison.OrdinalIgnoreCase) || ext.EndsWith("aac", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".m4a", StringComparison.OrdinalIgnoreCase) || ext.Equals(".aac", StringComparison.OrdinalIgnoreCase))
             {
                 return "audio/mp4";
             }
-            if (ext.EndsWith("webma", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".webma", StringComparison.OrdinalIgnoreCase))
             {
                 return "audio/webm";
             }
-            if (ext.EndsWith("wav", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".wav", StringComparison.OrdinalIgnoreCase))
             {
                 return "audio/wav";
             }
-            if (ext.EndsWith("wma", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".wma", StringComparison.OrdinalIgnoreCase))
             {
                 return "audio/x-ms-wma";
             }
-            if (ext.EndsWith("flac", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".flac", StringComparison.OrdinalIgnoreCase))
             {
                 return "audio/flac";
             }
-            if (ext.EndsWith("aac", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".aac", StringComparison.OrdinalIgnoreCase))
             {
                 return "audio/x-aac";
             }
-            if (ext.EndsWith("ogg", StringComparison.OrdinalIgnoreCase) || ext.EndsWith("oga", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".ogg", StringComparison.OrdinalIgnoreCase) || ext.Equals(".oga", StringComparison.OrdinalIgnoreCase))
             {
                 return "audio/ogg";
             }
 
             // Playlists
-            if (ext.EndsWith("m3u8", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".m3u8", StringComparison.OrdinalIgnoreCase))
             {
                 return "application/x-mpegURL";
             }
 
             // Misc
-            if (ext.EndsWith("dll", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".dll", StringComparison.OrdinalIgnoreCase))
             {
                 return "application/x-msdownload";
+            }
+
+            // Web
+            if (ext.Equals(".js", StringComparison.OrdinalIgnoreCase))
+            {
+                return "application/x-javascript";
+            }
+
+            if (ext.Equals(".woff", StringComparison.OrdinalIgnoreCase))
+            {
+                return "font/woff";
+            }
+
+            if (ext.Equals(".ttf", StringComparison.OrdinalIgnoreCase))
+            {
+                return "font/ttf";
+            }
+            if (ext.Equals(".eot", StringComparison.OrdinalIgnoreCase))
+            {
+                return "application/vnd.ms-fontobject";
+            }
+            if (ext.Equals(".svg", StringComparison.OrdinalIgnoreCase) || ext.Equals(".svgz", StringComparison.OrdinalIgnoreCase))
+            {
+                return "image/svg+xml";
             }
 
             throw new InvalidOperationException("Argument not supported: " + path);

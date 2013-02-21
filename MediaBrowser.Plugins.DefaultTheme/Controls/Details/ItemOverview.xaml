@@ -1,0 +1,68 @@
+﻿<details:BaseDetailsControl x:Class="MediaBrowser.Plugins.DefaultTheme.Controls.Details.ItemOverview"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                             xmlns:details="clr-namespace:MediaBrowser.Plugins.DefaultTheme.Controls.Details"
+                             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="0" x:Name="PnlAlbum" Visibility="Collapsed">
+
+            <TextBlock Style="{StaticResource TextBlockStyle}" Width="250" Text="album"></TextBlock>
+            <TextBlock Style="{StaticResource TextBlockStyle}" x:Name="Album"></TextBlock>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="1" x:Name="PnlArtist" Visibility="Collapsed">
+
+            <TextBlock Style="{StaticResource TextBlockStyle}" Width="250" Text="artist"></TextBlock>
+            <TextBlock Style="{StaticResource TextBlockStyle}" x:Name="Artist"></TextBlock>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="2" x:Name="PnlAlbumArtist" Visibility="Collapsed">
+
+            <TextBlock Style="{StaticResource TextBlockStyle}" Width="250" Text="album artist"></TextBlock>
+            <TextBlock Style="{StaticResource TextBlockStyle}" x:Name="AlbumArtist"></TextBlock>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="3" x:Name="PnlDirectors" Visibility="Collapsed">
+
+            <TextBlock Style="{StaticResource TextBlockStyle}" x:Name="DirectorLabel" Width="250"></TextBlock>
+            <TextBlock Style="{StaticResource TextBlockStyle}" x:Name="Directors"></TextBlock>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="4" x:Name="PnlGenres" Visibility="Collapsed">
+
+            <TextBlock Style="{StaticResource TextBlockStyle}" x:Name="GenreLabel" Width="250"></TextBlock>
+            <TextBlock Style="{StaticResource TextBlockStyle}" x:Name="Genres"></TextBlock>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="5" x:Name="PnlStudios" Visibility="Collapsed">
+
+            <TextBlock Style="{StaticResource TextBlockStyle}" x:Name="StudiosLabel" Width="250"></TextBlock>
+            <TextBlock Style="{StaticResource TextBlockStyle}" x:Name="Studios"></TextBlock>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="6" x:Name="PnlPremiereDate" Visibility="Collapsed">
+
+            <TextBlock Style="{StaticResource TextBlockStyle}" Width="250" Text="premiere date"></TextBlock>
+            <TextBlock Style="{StaticResource TextBlockStyle}" x:Name="PremiereDate"></TextBlock>
+        </StackPanel>
+
+        <Grid Grid.Row="7">
+
+            <TextBlock Style="{StaticResource TextBlockStyle}" x:Name="Overview" Margin="0 20 0 0"></TextBlock>
+        </Grid>
+    </Grid>
+</details:BaseDetailsControl>

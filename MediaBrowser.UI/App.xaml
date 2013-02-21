@@ -7,6 +7,8 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/AppResources.xaml" />
                 <ResourceDictionary Source="Resources/MainWindowResources.xaml" />
+                <ResourceDictionary Source="Resources/ModalMessage.xaml" />
+                <ResourceDictionary Source="Resources/NotificationMessage.xaml" />
                 <ResourceDictionary Source="Resources/NavBarResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

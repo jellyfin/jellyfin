@@ -1,11 +1,10 @@
-﻿using MediaBrowser.Common.Logging;
-using MediaBrowser.Common.Plugins;
-using MediaBrowser.Common.Serialization;
-using MediaBrowser.Model.DTO;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Logging;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Plugins;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.ComponentModel.Composition.Hosting;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,38 +17,23 @@ namespace MediaBrowser.UI.Controller
     public class PluginUpdater
     {
         /// <summary>
-        /// Gets the list of currently installed UI plugins
+        /// Updates the plugins.
         /// </summary>
-        [ImportMany(typeof(BasePlugin))]
-        private IEnumerable<BasePlugin> CurrentPlugins { get; set; }
-
-        private CompositionContainer CompositionContainer { get; set; }
-
+        /// <returns>Task{PluginUpdateResult}.</returns>
         public async Task<PluginUpdateResult> UpdatePlugins()
         {
-            // First load the plugins that are currently installed
-            ReloadComposableParts();
-
             Logger.LogInfo("Downloading list of installed plugins");
-            PluginInfo[] allInstalledPlugins = await UIKernel.Instance.ApiClient.GetInstalledPluginsAsync().ConfigureAwait(false);
+            var allInstalledPlugins = await UIKernel.Instance.ApiClient.GetInstalledPluginsAsync().ConfigureAwait(false);
 
-            IEnumerable<PluginInfo> uiPlugins = allInstalledPlugins.Where(p => p.DownloadToUI);
+            var uiPlugins = allInstalledPlugins.Where(p => p.DownloadToUI).ToList();
 
-            PluginUpdateResult result = new PluginUpdateResult();
+            var result = new PluginUpdateResult { };
 
             result.DeletedPlugins = DeleteUninstalledPlugins(uiPlugins);
 
             await DownloadPluginAssemblies(uiPlugins, result).ConfigureAwait(false);
 
-            // If any new assemblies were downloaded we'll have to reload the CurrentPlugins list
-            if (result.NewlyInstalledPlugins.Any())
-            {
-                ReloadComposableParts();
-            }
-
             result.UpdatedConfigurations = await DownloadPluginConfigurations(uiPlugins).ConfigureAwait(false);
-
-            CompositionContainer.Dispose();
 
             return result;
         }
@@ -57,38 +41,72 @@ namespace MediaBrowser.UI.Controller
         /// <summary>
         /// Downloads plugin assemblies from the server, if they need to be installed or updated.
         /// </summary>
+        /// <param name="uiPlugins">The UI plugins.</param>
+        /// <param name="result">The result.</param>
+        /// <returns>Task.</returns>
         private async Task DownloadPluginAssemblies(IEnumerable<PluginInfo> uiPlugins, PluginUpdateResult result)
         {
-            List<PluginInfo> newlyInstalledPlugins = new List<PluginInfo>();
-            List<PluginInfo> updatedPlugins = new List<PluginInfo>();
+            var newlyInstalledPlugins = new List<PluginInfo>();
+            var updatedPlugins = new List<PluginInfo>();
 
             // Loop through the list of plugins that are on the server
-            foreach (PluginInfo pluginInfo in uiPlugins)
+            foreach (var pluginInfo in uiPlugins)
             {
                 // See if it is already installed in the UI
-                BasePlugin installedPlugin = CurrentPlugins.FirstOrDefault(p => p.AssemblyFileName.Equals(pluginInfo.AssemblyFileName, StringComparison.OrdinalIgnoreCase));
+                var currentAssemblyPath = Path.Combine(UIKernel.Instance.ApplicationPaths.PluginsPath, pluginInfo.AssemblyFileName);
+
+                var isPluginInstalled = File.Exists(currentAssemblyPath);
 
                 // Download the plugin if it is not present, or if the current version is out of date
-                bool downloadPlugin = installedPlugin == null;
+                bool downloadPlugin;
 
-                if (installedPlugin != null)
+                if (!isPluginInstalled)
                 {
-                    Version serverVersion = Version.Parse(pluginInfo.Version);
+                    downloadPlugin = true;
+                    Logger.LogInfo("{0} is not installed and needs to be downloaded.", pluginInfo.Name);
+                }
+                else
+                {
+                    var serverVersion = Version.Parse(pluginInfo.Version);
 
-                    downloadPlugin = serverVersion > installedPlugin.Version;
+                    var fileVersion = FileVersionInfo.GetVersionInfo(currentAssemblyPath).FileVersion ?? string.Empty;
+
+                    downloadPlugin = string.IsNullOrEmpty(fileVersion) || Version.Parse(fileVersion) < serverVersion;
+
+                    if (downloadPlugin)
+                    {
+                        Logger.LogInfo("{0} has an updated version on the server and needs to be downloaded. Server version: {1}, UI version: {2}", pluginInfo.Name, serverVersion, fileVersion);
+                    }
                 }
 
                 if (downloadPlugin)
                 {
-                    await DownloadPlugin(pluginInfo).ConfigureAwait(false);
-
-                    if (installedPlugin == null)
+                    if (UIKernel.Instance.ApplicationVersion < Version.Parse(pluginInfo.MinimumRequiredUIVersion))
                     {
-                        newlyInstalledPlugins.Add(pluginInfo);
+                        Logger.LogWarning("Can't download new version of {0} because the application needs to be updated first.", pluginInfo.Name);
+                        continue;
                     }
-                    else
+
+                    try
                     {
-                        updatedPlugins.Add(pluginInfo);
+                        await DownloadPlugin(pluginInfo).ConfigureAwait(false);
+
+                        if (isPluginInstalled)
+                        {
+                            updatedPlugins.Add(pluginInfo);
+                        }
+                        else
+                        {
+                            newlyInstalledPlugins.Add(pluginInfo);
+                        }
+                    }
+                    catch (HttpException ex)
+                    {
+                        Logger.LogException("Error downloading {0} configuration", ex, pluginInfo.Name);
+                    }
+                    catch (IOException ex)
+                    {
+                        Logger.LogException("Error saving plugin assembly for {0}", ex, pluginInfo.Name);
                     }
                 }
             }
@@ -100,21 +118,54 @@ namespace MediaBrowser.UI.Controller
         /// <summary>
         /// Downloads plugin configurations from the server.
         /// </summary>
+        /// <param name="uiPlugins">The UI plugins.</param>
+        /// <returns>Task{List{PluginInfo}}.</returns>
         private async Task<List<PluginInfo>> DownloadPluginConfigurations(IEnumerable<PluginInfo> uiPlugins)
         {
-            List<PluginInfo> updatedPlugins = new List<PluginInfo>();
+            var updatedPlugins = new List<PluginInfo>();
 
             // Loop through the list of plugins that are on the server
-            foreach (PluginInfo pluginInfo in uiPlugins)
+            foreach (var pluginInfo in uiPlugins
+                .Where(p => UIKernel.Instance.ApplicationVersion >= Version.Parse(p.MinimumRequiredUIVersion)))
             {
                 // See if it is already installed in the UI
-                BasePlugin installedPlugin = CurrentPlugins.First(p => p.AssemblyFileName.Equals(pluginInfo.AssemblyFileName, StringComparison.OrdinalIgnoreCase));
+                var path = Path.Combine(UIKernel.Instance.ApplicationPaths.PluginConfigurationsPath, pluginInfo.ConfigurationFileName);
 
-                if (installedPlugin.ConfigurationDateLastModified < pluginInfo.ConfigurationDateLastModified)
+                var download = false;
+
+                if (!File.Exists(path))
                 {
-                    await DownloadPluginConfiguration(installedPlugin, pluginInfo).ConfigureAwait(false);
+                    download = true;
+                    Logger.LogInfo("{0} configuration was not found needs to be downloaded.", pluginInfo.Name);
+                }
+                else if (File.GetLastWriteTimeUtc(path) < pluginInfo.ConfigurationDateLastModified)
+                {
+                    download = true;
+                    Logger.LogInfo("{0} has an updated configuration on the server and needs to be downloaded.", pluginInfo.Name);
+                }
 
-                    updatedPlugins.Add(pluginInfo);
+                if (download)
+                {
+                    if (UIKernel.Instance.ApplicationVersion < Version.Parse(pluginInfo.MinimumRequiredUIVersion))
+                    {
+                        Logger.LogWarning("Can't download updated configuration of {0} because the application needs to be updated first.", pluginInfo.Name);
+                        continue;
+                    }
+                    
+                    try
+                    {
+                        await DownloadPluginConfiguration(pluginInfo, path).ConfigureAwait(false);
+
+                        updatedPlugins.Add(pluginInfo);
+                    }
+                    catch (HttpException ex)
+                    {
+                        Logger.LogException("Error downloading {0} configuration", ex, pluginInfo.Name);
+                    }
+                    catch (IOException ex)
+                    {
+                        Logger.LogException("Error saving plugin configuration to {0}", ex, path);
+                    }
                 }
             }
 
@@ -124,22 +175,24 @@ namespace MediaBrowser.UI.Controller
         /// <summary>
         /// Downloads a plugin assembly from the server
         /// </summary>
+        /// <param name="plugin">The plugin.</param>
+        /// <returns>Task.</returns>
         private async Task DownloadPlugin(PluginInfo plugin)
         {
             Logger.LogInfo("Downloading {0} Plugin", plugin.Name);
 
-            string path = Path.Combine(UIKernel.Instance.ApplicationPaths.PluginsPath, plugin.AssemblyFileName);
+            var path = Path.Combine(UIKernel.Instance.ApplicationPaths.PluginsPath, plugin.AssemblyFileName);
 
             // First download to a MemoryStream. This way if the download is cut off, we won't be left with a partial file
-            using (MemoryStream memoryStream = new MemoryStream())
+            using (var memoryStream = new MemoryStream())
             {
-                Stream assemblyStream = await UIKernel.Instance.ApiClient.GetPluginAssemblyAsync(plugin).ConfigureAwait(false);
+                var assemblyStream = await UIKernel.Instance.ApiClient.GetPluginAssemblyAsync(plugin).ConfigureAwait(false);
 
                 await assemblyStream.CopyToAsync(memoryStream).ConfigureAwait(false);
 
                 memoryStream.Position = 0;
 
-                using (FileStream fileStream = new FileStream(path, FileMode.Create))
+                using (var fileStream = new FileStream(path, FileMode.Create))
                 {
                     await memoryStream.CopyToAsync(fileStream).ConfigureAwait(false);
                 }
@@ -149,33 +202,59 @@ namespace MediaBrowser.UI.Controller
         /// <summary>
         /// Downloads the latest configuration for a plugin
         /// </summary>
-        private async Task DownloadPluginConfiguration(BasePlugin plugin, PluginInfo pluginInfo)
+        /// <param name="pluginInfo">The plugin info.</param>
+        /// <param name="path">The path.</param>
+        /// <returns>Task.</returns>
+        private async Task DownloadPluginConfiguration(PluginInfo pluginInfo, string path)
         {
-            Logger.LogInfo("Downloading {0} Configuration", plugin.Name);
+            Logger.LogInfo("Downloading {0} Configuration", pluginInfo.Name);
 
-            object config = await UIKernel.Instance.ApiClient.GetPluginConfigurationAsync(pluginInfo, plugin.ConfigurationType).ConfigureAwait(false);
+            // First download to a MemoryStream. This way if the download is cut off, we won't be left with a partial file
+            using (var stream = await UIKernel.Instance.ApiClient.GetPluginConfigurationFileAsync(pluginInfo.UniqueId).ConfigureAwait(false))
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
 
-            XmlSerializer.SerializeToFile(config, plugin.ConfigurationFilePath);
+                    memoryStream.Position = 0;
 
-            File.SetLastWriteTimeUtc(plugin.ConfigurationFilePath, pluginInfo.ConfigurationDateLastModified);
+                    using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, true))
+                    {
+                        await memoryStream.CopyToAsync(fs).ConfigureAwait(false);
+                    }
+                }
+            }
+
+            File.SetLastWriteTimeUtc(path, pluginInfo.ConfigurationDateLastModified);
         }
 
         /// <summary>
         /// Deletes any plugins that have been uninstalled from the server
         /// </summary>
+        /// <param name="uiPlugins">The UI plugins.</param>
+        /// <returns>IEnumerable{System.String}.</returns>
         private IEnumerable<string> DeleteUninstalledPlugins(IEnumerable<PluginInfo> uiPlugins)
         {
             var deletedPlugins = new List<string>();
 
-            foreach (BasePlugin plugin in CurrentPlugins)
+            foreach (var plugin in Directory.EnumerateFiles(UIKernel.Instance.ApplicationPaths.PluginsPath, "*.dll", SearchOption.TopDirectoryOnly)
+                .Select(Path.GetFileName)
+                .ToList())
             {
-                PluginInfo latest = uiPlugins.FirstOrDefault(p => p.AssemblyFileName.Equals(plugin.AssemblyFileName, StringComparison.OrdinalIgnoreCase));
+                var serverPlugin = uiPlugins.FirstOrDefault(p => p.AssemblyFileName.Equals(plugin, StringComparison.OrdinalIgnoreCase));
 
-                if (latest == null)
+                if (serverPlugin == null)
                 {
-                    DeletePlugin(plugin);
+                    try
+                    {
+                        DeletePlugin(plugin);
 
-                    deletedPlugins.Add(plugin.Name);
+                        deletedPlugins.Add(plugin);
+                    }
+                    catch (IOException ex)
+                    {
+                        Logger.LogException("Error deleting plugin assembly {0}", ex, plugin);
+                    }
                 }
             }
 
@@ -186,46 +265,42 @@ namespace MediaBrowser.UI.Controller
         /// Deletes an installed ui plugin.
         /// Leaves config and data behind in the event it is later re-installed
         /// </summary>
-        private void DeletePlugin(BasePlugin plugin)
+        /// <param name="plugin">The plugin.</param>
+        private void DeletePlugin(string plugin)
         {
-            Logger.LogInfo("Deleting {0} Plugin", plugin.Name);
+            Logger.LogInfo("Deleting {0} Plugin", plugin);
 
-            string path = plugin.AssemblyFilePath;
-
-            if (File.Exists(path))
+            if (File.Exists(plugin))
             {
-                File.Delete(path);
-            }
-        }
-
-        /// <summary>
-        /// Re-uses MEF within the kernel to discover installed plugins
-        /// </summary>
-        private void ReloadComposableParts()
-        {
-            if (CompositionContainer != null)
-            {
-                CompositionContainer.Dispose();
-            }
-
-            CompositionContainer = UIKernel.Instance.GetCompositionContainer();
-
-            CompositionContainer.ComposeParts(this);
-
-            CompositionContainer.Catalog.Dispose();
-
-            foreach (BasePlugin plugin in CurrentPlugins)
-            {
-                plugin.Initialize(UIKernel.Instance, false);
+                File.Delete(plugin);
             }
         }
     }
 
+    /// <summary>
+    /// Class PluginUpdateResult
+    /// </summary>
     public class PluginUpdateResult
     {
+        /// <summary>
+        /// Gets or sets the deleted plugins.
+        /// </summary>
+        /// <value>The deleted plugins.</value>
         public IEnumerable<string> DeletedPlugins { get; set; }
+        /// <summary>
+        /// Gets or sets the newly installed plugins.
+        /// </summary>
+        /// <value>The newly installed plugins.</value>
         public IEnumerable<PluginInfo> NewlyInstalledPlugins { get; set; }
+        /// <summary>
+        /// Gets or sets the updated plugins.
+        /// </summary>
+        /// <value>The updated plugins.</value>
         public IEnumerable<PluginInfo> UpdatedPlugins { get; set; }
+        /// <summary>
+        /// Gets or sets the updated configurations.
+        /// </summary>
+        /// <value>The updated configurations.</value>
         public IEnumerable<PluginInfo> UpdatedConfigurations { get; set; }
     }
 }

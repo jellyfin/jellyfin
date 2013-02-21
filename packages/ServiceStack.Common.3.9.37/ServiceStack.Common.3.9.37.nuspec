@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>ServiceStack.Common</id>
+    <version>3.9.37</version>
+    <title>Service Clients and Common libs for ServiceStack projects</title>
+    <authors>Demis Bellot</authors>
+    <owners>Demis Bellot</owners>
+    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
+    <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Common library dependency for other ServiceStack projects.
+      Includes JSON, XML, JSV and SOAP Generic Service Clients.
+      Contains:
+      - ServiceStack.Interfaces
+      - ServiceStack.Common
+      Dependencies:
+      - ServiceStack.Text</description>
+    <summary>Opensource .NET and Mono REST Web Services framework</summary>
+    <copyright>servicestack.net 2012 and contributors</copyright>
+    <language>en-US</language>
+    <tags>ServiceStack Common Framework Clients ServiceClients Gateway</tags>
+    <dependencies>
+      <dependency id="ServiceStack.Text" />
+    </dependencies>
+    <references>
+      <reference file="ServiceStack.Common.dll" />
+      <reference file="ServiceStack.Interfaces.dll" />
+    </references>
+  </metadata>
+</package>

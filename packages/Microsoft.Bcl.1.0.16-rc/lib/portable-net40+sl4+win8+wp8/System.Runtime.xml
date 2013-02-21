@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>System.Runtime</name>
+    </assembly>
+    <members>
+        <member name="T:System.IProgress`1">
+            <summary>Defines a provider for progress updates.</summary>
+            <typeparam name="T">The type of progress update value.</typeparam>
+        </member>
+        <member name="M:System.IProgress`1.Report(`0)">
+            <summary>Reports a progress update.</summary>
+            <param name="value">The value of the updated progress.</param>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.AsyncStateMachineAttribute">
+            <summary>Identities the async state machine type for this method.</summary>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.StateMachineAttribute">
+            <summary>Identities the state machine type for this method.</summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.StateMachineAttribute.#ctor(System.Type)">
+            <summary>Initializes the attribute.</summary>
+            <param name="stateMachineType">The type that implements the state machine.</param>
+        </member>
+        <member name="P:System.Runtime.CompilerServices.StateMachineAttribute.StateMachineType">
+            <summary>Gets the type that implements the state machine.</summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncStateMachineAttribute.#ctor(System.Type)">
+            <summary>Initializes the attribute.</summary>
+            <param name="stateMachineType">The type that implements the state machine.</param>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.CallerMemberNameAttribute">
+            <summary>
+            Allows you to obtain the method or property name of the caller to the method.
+            </summary>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.CallerLineNumberAttribute">
+            <summary>
+            Allows you to obtain the line number in the source file at which the method is called.
+            </summary>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.CallerFilePathAttribute">
+            <summary>
+            Allows you to obtain the full path of the source file that contains the caller.
+            This is the file path at the time of compile.
+            </summary>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.IteratorStateMachineAttribute">
+            <summary>Identities the iterator state machine type for this method.</summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.IteratorStateMachineAttribute.#ctor(System.Type)">
+            <summary>Initializes the attribute.</summary>
+            <param name="stateMachineType">The type that implements the state machine.</param>
+        </member>
+    </members>
+</doc>

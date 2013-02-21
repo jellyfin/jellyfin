@@ -1,0 +1,128 @@
+/*
+	jQuery Mobile Icon Pack
+	andy matthews
+	@commadelimited
+*/
+
+/* Icons
+-----------------------------------------------------------------------------------------------------------*/
+
+.ui-icon,
+.ui-icon-searchfield:after {
+	background: #666666;
+	background:  rgba(0,0,0,.4);
+	background-image: url('images/icons-18-white-pack.png');
+	background-repeat: no-repeat;
+	-moz-border-radius: 9px;
+	-webkit-border-radius: 9px;
+	border-radius: 9px;
+}
+
+
+/* Alt icon color
+-----------------------------------------------------------------------------------------------------------*/
+
+.ui-icon-alt {
+	background: #ffffff;
+	background: rgba(255,255,255,.3);
+	background-image: url('images/icons-18-black-pack.png');
+	background-repeat: no-repeat;
+}
+
+/* restore default loading image */
+.ui-icon-loading {
+    background: url('images/ajax-loader.gif');
+    background-size: 46px 46px;
+}
+
+/* HD/"retina" sprite
+-----------------------------------------------------------------------------------------------------------*/
+
+@media only screen and (-webkit-min-device-pixel-ratio: 1.3),
+		only screen and (-o-min-device-pixel-ratio: 3/2),
+		only screen and (min--moz-device-pixel-ratio: 1.3),
+		only screen and (min-device-pixel-ratio: 1.3),
+		only screen and (min-resolution: 1.3dppx) {
+
+	.ui-icon-plus, .ui-icon-minus, .ui-icon-delete, .ui-icon-arrow-r,
+	.ui-icon-arrow-l, .ui-icon-arrow-u, .ui-icon-arrow-d, .ui-icon-check,
+	.ui-icon-gear, .ui-icon-refresh, .ui-icon-forward, .ui-icon-back,
+	.ui-icon-grid, .ui-icon-star, .ui-icon-alert, .ui-icon-info, .ui-icon-home, .ui-icon-search, .ui-icon-searchfield:after,
+	.ui-icon-checkbox-off, .ui-icon-checkbox-on, .ui-icon-radio-off, .ui-icon-radio-on, .ui-icon-email , .ui-icon-page,
+	.ui-icon-question , .ui-icon-foursquare , .ui-icon-twitter , .ui-icon-facebook , .ui-icon-dollar , .ui-icon-euro,
+	.ui-icon-pound , .ui-icon-apple , .ui-icon-chat , .ui-icon-trash , .ui-icon-bell , .ui-icon-mappin , .ui-icon-direction,
+	.ui-icon-heart , .ui-icon-wrench , .ui-icon-play , .ui-icon-pause , .ui-icon-stop , .ui-icon-person , .ui-icon-music,
+	.ui-icon-rss , .ui-icon-wifi , .ui-icon-phone , .ui-icon-power , .ui-icon-lock , .ui-icon-flag , .ui-icon-calendar,
+	.ui-icon-lightning , .ui-icon-drink , .ui-icon-android , .ui-icon-edit {
+		background-image: url('images/icons-36-white-pack.png');
+		-moz-background-size: 774px 54px;
+		-o-background-size: 774px 54px;
+		-webkit-background-size: 774px 54px;
+		background-size: 774px 54px;
+	}
+	.ui-icon-alt {
+		background-image: url('images/icons-36-black-pack.png'	);
+	}
+}
+
+/* first row */
+.ui-icon-plus { background-position: -0 -0; }
+.ui-icon-minus { background-position: -36px -0; }
+.ui-icon-delete { background-position: -72px -0; }
+.ui-icon-arrow-r { background-position: -108px -0; }
+.ui-icon-arrow-l { background-position: -144px -0; }
+.ui-icon-arrow-u { background-position: -180px -0; }
+.ui-icon-arrow-d { background-position: -216px -0; }
+.ui-icon-check { background-position: -252px -0; }
+.ui-icon-gear { background-position: -288px -0; }
+.ui-icon-refresh { background-position: -324px -0; }
+.ui-icon-forward { background-position: -360px -0; }
+.ui-icon-back { background-position: -396px -0; }
+.ui-icon-grid { background-position: -432px -0; }
+.ui-icon-star { background-position: -468px -0; }
+.ui-icon-alert { background-position: -504px -0; }
+.ui-icon-info { background-position: -540px -0; }
+.ui-icon-home { background-position: -576px -0; }
+.ui-icon-search,.ui-icon-searchfield:after { background-position: -612px -0; }
+.ui-icon-checkbox-off { background-position: -684px -0; }
+.ui-icon-checkbox-on { background-position: -648px -0; }
+.ui-icon-radio-off { background-position: -756px -0; }
+.ui-icon-radio-on { background-position: -718px -0; }
+
+/* begin icon pack definitions */
+/* second row */
+.ui-icon-email { background-position: -0 -18px; }
+.ui-icon-page { background-position: -36px -18px; }
+.ui-icon-question { background-position: -72px -18px; }
+.ui-icon-foursquare { background-position: -108px -18px; }
+.ui-icon-twitter { background-position: -144px -18px; }
+.ui-icon-facebook { background-position: -180px -18px; }
+.ui-icon-dollar { background-position: -216px -18px; }
+.ui-icon-euro { background-position: -252px -18px; }
+.ui-icon-pound { background-position: -288px -18px; }
+.ui-icon-apple { background-position: -324px -18px; }
+.ui-icon-chat { background-position: -360px -18px; }
+.ui-icon-trash { background-position: -396px -18px; }
+.ui-icon-bell { background-position: -432px -18px; }
+.ui-icon-mappin { background-position: -468px -18px;}
+.ui-icon-direction { background-position: -504px -18px; }
+.ui-icon-heart { background-position: -540px -18px; }
+.ui-icon-wrench { background-position: -576px -18px; }
+.ui-icon-play { background-position: -612px -18px; }
+.ui-icon-pause { background-position: -648px -18px; }
+.ui-icon-stop { background-position: -684px -18px; }
+.ui-icon-person { background-position: -720px -18px; }
+.ui-icon-music { background-position: -756px -18px; }
+
+/* third row */
+.ui-icon-rss { background-position: -0 -36px; }
+.ui-icon-wifi { background-position: -36px -36px; }
+.ui-icon-phone { background-position: -72px -36px; }
+.ui-icon-power { background-position: -108px -36px; }
+.ui-icon-lock { background-position: -144px -36px; }
+.ui-icon-flag { background-position: -180px -36px; }
+.ui-icon-calendar { background-position: -216px -36px; }
+.ui-icon-lightning { background-position: -252px -36px; }
+.ui-icon-drink { background-position: -288px -36px; }
+.ui-icon-android { background-position: -324px -36px; }
+.ui-icon-edit { background-position: -360px -36px; }

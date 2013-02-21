@@ -1,7 +1,11 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Logging;
-using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.ScheduledTasks;
+using MediaBrowser.Model.Logging;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,132 +14,437 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.IO
 {
-    public class DirectoryWatchers
+    /// <summary>
+    /// Class DirectoryWatchers
+    /// </summary>
+    public class DirectoryWatchers : IDisposable
     {
-        private readonly List<FileSystemWatcher> FileSystemWatchers = new List<FileSystemWatcher>();
+        /// <summary>
+        /// The file system watchers
+        /// </summary>
+        private ConcurrentBag<FileSystemWatcher> FileSystemWatchers = new ConcurrentBag<FileSystemWatcher>();
+        /// <summary>
+        /// The update timer
+        /// </summary>
         private Timer updateTimer;
-        private List<string> affectedPaths = new List<string>();
+        /// <summary>
+        /// The affected paths
+        /// </summary>
+        private readonly ConcurrentDictionary<string, string> affectedPaths = new ConcurrentDictionary<string, string>();
 
-        private const int TimerDelayInSeconds = 30;
+        /// <summary>
+        /// A dynamic list of paths that should be ignored.  Added to during our own file sytem modifications.
+        /// </summary>
+        private readonly ConcurrentDictionary<string,string> TempIgnoredPaths = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-        public void Start()
+        /// <summary>
+        /// The timer lock
+        /// </summary>
+        private readonly object timerLock = new object();
+
+        /// <summary>
+        /// Add the path to our temporary ignore list.  Use when writing to a path within our listening scope.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        public void TemporarilyIgnore(string path)
         {
-            var pathsToWatch = new List<string>();
+            TempIgnoredPaths[path] = path;
+        }
 
-            var rootFolder = Kernel.Instance.RootFolder;
+        /// <summary>
+        /// Removes the temp ignore.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        public void RemoveTempIgnore(string path)
+        {
+            string val;
+            TempIgnoredPaths.TryRemove(path, out val);
+        }
 
-            pathsToWatch.Add(rootFolder.Path);
+        /// <summary>
+        /// Gets or sets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
+        private ILogger Logger { get; set; }
 
-            foreach (Folder folder in rootFolder.Children.OfType<Folder>())
-            {
-                foreach (string path in folder.PhysicalLocations)
-                {
-                    if (Path.IsPathRooted(path) && !pathsToWatch.ContainsParentFolder(path))
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DirectoryWatchers" /> class.
+        /// </summary>
+        public DirectoryWatchers()
+        {
+            Logger = LogManager.GetLogger(GetType().Name);
+        }
+        
+        /// <summary>
+        /// Starts this instance.
+        /// </summary>
+        internal void Start()
+        {
+            Kernel.Instance.LibraryManager.LibraryChanged += Instance_LibraryChanged;
+          
+            var pathsToWatch = new List<string> { Kernel.Instance.RootFolder.Path };
+
+            var paths = Kernel.Instance.RootFolder.Children.OfType<Folder>()
+                .SelectMany(f =>
                     {
-                        pathsToWatch.Add(path);
-                    }
+                        try
+                        {
+                            // Accessing ResolveArgs could involve file system access
+                            return f.ResolveArgs.PhysicalLocations;
+                        }
+                        catch (IOException)
+                        {
+                            return new string[] {};
+                        }
+
+                    })
+                .Where(Path.IsPathRooted);
+
+            foreach (var path in paths)
+            {
+                if (!ContainsParentFolder(pathsToWatch, path))
+                {
+                    pathsToWatch.Add(path);
                 }
             }
 
-            foreach (string path in pathsToWatch)
+            foreach (var path in pathsToWatch)
             {
-                Logger.LogInfo("Watching directory " + path + " for changes.");
-
-                var watcher = new FileSystemWatcher(path, "*") { }; 
-                watcher.IncludeSubdirectories = true;
-
-                //watcher.Changed += watcher_Changed;
-
-                // All the others seem to trigger change events on the parent, so let's keep it simple for now.
-                //   Actually, we really need to only watch created, deleted and renamed as changed fires too much -ebr
-                watcher.Created += watcher_Changed;
-                watcher.Deleted += watcher_Changed;
-                watcher.Renamed += watcher_Changed;
-
-                watcher.EnableRaisingEvents = true;
-                FileSystemWatchers.Add(watcher);
+                StartWatchingPath(path);
             }
         }
 
-        void watcher_Changed(object sender, FileSystemEventArgs e)
+        /// <summary>
+        /// Examine a list of strings assumed to be file paths to see if it contains a parent of
+        /// the provided path.
+        /// </summary>
+        /// <param name="lst">The LST.</param>
+        /// <param name="path">The path.</param>
+        /// <returns><c>true</c> if [contains parent folder] [the specified LST]; otherwise, <c>false</c>.</returns>
+        /// <exception cref="System.ArgumentNullException">path</exception>
+        private static bool ContainsParentFolder(IEnumerable<string> lst, string path)
         {
-            Logger.LogDebugInfo("****** Watcher sees change of type " + e.ChangeType.ToString() + " to " + e.FullPath);
-            lock (affectedPaths)
+            if (string.IsNullOrEmpty(path))
             {
-                //Since we're watching created, deleted and renamed we always want the parent of the item to be the affected path
-                var affectedPath = Path.GetDirectoryName(e.FullPath);
-                
-                if (e.ChangeType == WatcherChangeTypes.Renamed)
-                {
-                    var renamedArgs = e as RenamedEventArgs;
-                    if (affectedPaths.Contains(renamedArgs.OldFullPath))
-                    {
-                    Logger.LogDebugInfo("****** Removing " + renamedArgs.OldFullPath + " from affected paths.");
-                    affectedPaths.Remove(renamedArgs.OldFullPath);
-                    }
-                }
-
-                //If anything underneath this path was already marked as affected - remove it as it will now get captured by this one
-                affectedPaths.RemoveAll(p => p.StartsWith(e.FullPath, StringComparison.OrdinalIgnoreCase));
-                
-                if (!affectedPaths.ContainsParentFolder(affectedPath))
-                {
-                    Logger.LogDebugInfo("****** Adding " + affectedPath + " to affected paths.");
-                    affectedPaths.Add(affectedPath);
-                }
+                throw new ArgumentNullException("path");
             }
 
-            if (updateTimer == null)
+            path = path.TrimEnd(Path.DirectorySeparatorChar);
+
+            return lst.Any(str =>
             {
-                updateTimer = new Timer(TimerStopped, null, TimeSpan.FromSeconds(TimerDelayInSeconds), TimeSpan.FromMilliseconds(-1));
+                //this should be a little quicker than examining each actual parent folder...
+                var compare = str.TrimEnd(Path.DirectorySeparatorChar);
+
+                return (path.Equals(compare, StringComparison.OrdinalIgnoreCase) || (path.StartsWith(compare, StringComparison.OrdinalIgnoreCase) && path[compare.Length] == Path.DirectorySeparatorChar));
+            });
+        }
+
+        /// <summary>
+        /// Starts the watching path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        private void StartWatchingPath(string path)
+        {
+            // Creating a FileSystemWatcher over the LAN can take hundreds of milliseconds, so wrap it in a Task to do them all in parallel
+            Task.Run(() =>
+            {
+                var newWatcher = new FileSystemWatcher(path, "*") { IncludeSubdirectories = true, InternalBufferSize = 32767 };
+
+                newWatcher.Created += watcher_Changed;
+                newWatcher.Deleted += watcher_Changed;
+                newWatcher.Renamed += watcher_Changed;
+                newWatcher.Changed += watcher_Changed;
+
+                newWatcher.Error += watcher_Error;
+
+                try
+                {
+                    newWatcher.EnableRaisingEvents = true;
+                    FileSystemWatchers.Add(newWatcher);
+
+                    Logger.Info("Watching directory " + path);
+                }
+                catch (IOException ex)
+                {
+                    Logger.ErrorException("Error watching path: {0}", ex, path);
+                }
+                catch (PlatformNotSupportedException ex)
+                {
+                    Logger.ErrorException("Error watching path: {0}", ex, path);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Stops the watching path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        private void StopWatchingPath(string path)
+        {
+            var watcher = FileSystemWatchers.FirstOrDefault(f => f.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
+
+            if (watcher != null)
+            {
+                DisposeWatcher(watcher);
+            }
+        }
+
+        /// <summary>
+        /// Disposes the watcher.
+        /// </summary>
+        /// <param name="watcher">The watcher.</param>
+        private void DisposeWatcher(FileSystemWatcher watcher)
+        {
+            Logger.Info("Stopping directory watching for path {0}", watcher.Path);
+
+            watcher.EnableRaisingEvents = false;
+            watcher.Dispose();
+
+            var watchers = FileSystemWatchers.ToList();
+
+            watchers.Remove(watcher);
+
+            FileSystemWatchers = new ConcurrentBag<FileSystemWatcher>(watchers);
+        }
+
+        /// <summary>
+        /// Handles the LibraryChanged event of the Kernel
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Library.ChildrenChangedEventArgs" /> instance containing the event data.</param>
+        void Instance_LibraryChanged(object sender, ChildrenChangedEventArgs e)
+        {
+            if (e.Folder is AggregateFolder && e.HasAddOrRemoveChange)
+            {
+                if (e.ItemsRemoved != null)
+                {
+                    foreach (var item in e.ItemsRemoved.OfType<Folder>())
+                    {
+                        StopWatchingPath(item.Path);
+                    }
+                }
+                if (e.ItemsAdded != null)
+                {
+                    foreach (var item in e.ItemsAdded.OfType<Folder>())
+                    {
+                        StartWatchingPath(item.Path);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the Error event of the watcher control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="ErrorEventArgs" /> instance containing the event data.</param>
+        async void watcher_Error(object sender, ErrorEventArgs e)
+        {
+            var ex = e.GetException();
+            var dw = (FileSystemWatcher) sender;
+
+            Logger.ErrorException("Error in Directory watcher for: "+dw.Path, ex);
+
+            if (ex.Message.Contains("network name is no longer available"))
+            {
+                //Network either dropped or, we are coming out of sleep and it hasn't reconnected yet - wait and retry
+                Logger.Warn("Network connection lost - will retry...");
+                var retries = 0;
+                var success = false;
+                while (!success && retries < 10)
+                {
+                    await Task.Delay(500).ConfigureAwait(false);
+
+                    try
+                    {
+                        dw.EnableRaisingEvents = false;
+                        dw.EnableRaisingEvents = true;
+                        success = true;
+                    }
+                    catch (IOException)
+                    {
+                        Logger.Warn("Network still unavailable...");
+                        retries++;
+                    }
+                }
+                if (!success)
+                {
+                    Logger.Warn("Unable to access network. Giving up.");
+                    DisposeWatcher(dw);
+                }
+
             }
             else
             {
-                updateTimer.Change(TimeSpan.FromSeconds(TimerDelayInSeconds), TimeSpan.FromMilliseconds(-1));
+                if (!ex.Message.Contains("BIOS command limit"))
+                {
+                    Logger.Info("Attempting to re-start watcher.");
+
+                    dw.EnableRaisingEvents = false;
+                    dw.EnableRaisingEvents = true;
+                }
+                
             }
         }
 
+        /// <summary>
+        /// Handles the Changed event of the watcher control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="FileSystemEventArgs" /> instance containing the event data.</param>
+        void watcher_Changed(object sender, FileSystemEventArgs e)
+        {
+            if (e.ChangeType == WatcherChangeTypes.Created && e.Name == "New folder")
+            {
+                return;
+            }
+            if (TempIgnoredPaths.ContainsKey(e.FullPath))
+            {
+                Logger.Info("Watcher requested to ignore change to " + e.FullPath);
+                return;
+            }
+
+            Logger.Info("Watcher sees change of type " + e.ChangeType.ToString() + " to " + e.FullPath);
+
+            //Since we're watching created, deleted and renamed we always want the parent of the item to be the affected path
+            var affectedPath = e.FullPath;
+
+            affectedPaths.AddOrUpdate(affectedPath, affectedPath, (key, oldValue) => affectedPath);
+
+            lock (timerLock)
+            {
+                if (updateTimer == null)
+                {
+                    updateTimer = new Timer(TimerStopped, null, TimeSpan.FromSeconds(Kernel.Instance.Configuration.FileWatcherDelay), TimeSpan.FromMilliseconds(-1));
+                }
+                else
+                {
+                    updateTimer.Change(TimeSpan.FromSeconds(Kernel.Instance.Configuration.FileWatcherDelay), TimeSpan.FromMilliseconds(-1));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Timers the stopped.
+        /// </summary>
+        /// <param name="stateInfo">The state info.</param>
         private async void TimerStopped(object stateInfo)
         {
-            updateTimer.Dispose();
-            updateTimer = null;
-            List<string> paths;
-            lock (affectedPaths)
+            lock (timerLock)
             {
-                paths = affectedPaths;
-                affectedPaths = new List<string>();
+                // Extend the timer as long as any of the paths are still being written to.
+                if (affectedPaths.Any(p => IsFileLocked(p.Key)))
+                {
+                    Logger.Info("Timer extended.");
+                    updateTimer.Change(TimeSpan.FromSeconds(Kernel.Instance.Configuration.FileWatcherDelay), TimeSpan.FromMilliseconds(-1));
+                    return;
+                }
+
+                Logger.Info("Timer stopped.");
+
+                updateTimer.Dispose();
+                updateTimer = null;
             }
+
+            var paths = affectedPaths.Keys.ToList();
+            affectedPaths.Clear();
 
             await ProcessPathChanges(paths).ConfigureAwait(false);
         }
 
-        private Task ProcessPathChanges(IEnumerable<string> paths)
+        /// <summary>
+        /// Try and determine if a file is locked
+        /// This is not perfect, and is subject to race conditions, so I'd rather not make this a re-usable library method.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns><c>true</c> if [is file locked] [the specified path]; otherwise, <c>false</c>.</returns>
+        private bool IsFileLocked(string path)
         {
-            var itemsToRefresh = new List<BaseItem>();
-
-            foreach (BaseItem item in paths.Select(p => GetAffectedBaseItem(p)))
+            try
             {
-                if (item != null && !itemsToRefresh.Contains(item))
+                var data = FileSystem.GetFileData(path);
+
+                if (!data.HasValue || data.Value.IsDirectory)
                 {
-                    itemsToRefresh.Add(item);
+                    return false;
                 }
             }
-
-            if (itemsToRefresh.Any(i =>
-                {
-                    var folder = i as Folder;
-
-                    return folder != null && folder.IsRoot;
-                }))
+            catch (IOException)
             {
-                return Kernel.Instance.ReloadRoot();
+                return false;
             }
 
-            foreach (var p in paths) Logger.LogDebugInfo("*********  "+ p + " reports change.");
-            foreach (var i in itemsToRefresh) Logger.LogDebugInfo("*********  "+i.Name + " ("+ i.Path + ") will be refreshed.");
-            return Task.WhenAll(itemsToRefresh.Select(i => i.ChangedExternally()));
+            FileStream stream = null;
+
+            try
+            {
+                stream = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+            }
+            catch
+            {
+                //the file is unavailable because it is:
+                //still being written to
+                //or being processed by another thread
+                //or does not exist (has already been processed)
+                return true;
+            }
+            finally
+            {
+                if (stream != null)
+                    stream.Close();
+            }
+
+            //file is not locked
+            return false;
         }
 
+        /// <summary>
+        /// Processes the path changes.
+        /// </summary>
+        /// <param name="paths">The paths.</param>
+        /// <returns>Task.</returns>
+        private async Task ProcessPathChanges(List<string> paths)
+        {
+            var itemsToRefresh = paths.Select(Path.GetDirectoryName)
+                .Select(GetAffectedBaseItem)
+                .Where(item => item != null)
+                .Distinct()
+                .ToList();
+
+            foreach (var p in paths) Logger.Info(p + " reports change.");
+
+            // If the root folder changed, run the library task so the user can see it
+            if (itemsToRefresh.Any(i => i is AggregateFolder))
+            {
+                Kernel.Instance.TaskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
+                return;
+            }
+
+            await Task.WhenAll(itemsToRefresh.Select(i => Task.Run(async () =>
+            {
+                Logger.Info(i.Name + " (" + i.Path + ") will be refreshed.");
+                
+                try
+                {
+                    await i.ChangedExternally().ConfigureAwait(false);
+                }
+                catch (IOException ex)
+                {
+                    // For now swallow and log. 
+                    // Research item: If an IOException occurs, the item may be in a disconnected state (media unavailable)
+                    // Should we remove it from it's parent?
+                    Logger.ErrorException("Error refreshing {0}", ex, i.Name);
+                }
+
+            }))).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Gets the affected base item.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>BaseItem.</returns>
         private BaseItem GetAffectedBaseItem(string path)
         {
             BaseItem item = null;
@@ -147,26 +456,70 @@ namespace MediaBrowser.Controller.IO
                 path = Path.GetDirectoryName(path);
             }
 
+            if (item != null)
+            {
+                // If the item has been deleted find the first valid parent that still exists
+                while (!Directory.Exists(item.Path) && !File.Exists(item.Path))
+                {
+                    item = item.Parent;
+
+                    if (item == null)
+                    {
+                        break;
+                    }
+                }
+            }
+
             return item;
         }
 
-        public void Stop()
+        /// <summary>
+        /// Stops this instance.
+        /// </summary>
+        private void Stop()
         {
-            foreach (FileSystemWatcher watcher in FileSystemWatchers)
+            Kernel.Instance.LibraryManager.LibraryChanged -= Instance_LibraryChanged;
+
+            FileSystemWatcher watcher;
+
+            while (FileSystemWatchers.TryTake(out watcher))
             {
                 watcher.Changed -= watcher_Changed;
                 watcher.EnableRaisingEvents = false;
                 watcher.Dispose();
             }
 
-            if (updateTimer != null)
+            lock (timerLock)
             {
-                updateTimer.Dispose();
-                updateTimer = null;
-            }
+                if (updateTimer != null)
+                {
+                    updateTimer.Dispose();
+                    updateTimer = null;
+                }
+            } 
 
-            FileSystemWatchers.Clear();
             affectedPaths.Clear();
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                Stop();
+            }
         }
     }
 }

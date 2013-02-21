@@ -1,20 +1,32 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.IO;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Common.Extensions;
-using System;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace MediaBrowser.Controller.Resolvers
 {
+    /// <summary>
+    /// Class BaseItemResolver
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public abstract class BaseItemResolver<T> : IBaseItemResolver
         where T : BaseItem, new()
     {
-        protected virtual T Resolve(ItemResolveEventArgs args)
+        /// <summary>
+        /// Resolves the specified args.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns>`0.</returns>
+        protected virtual T Resolve(ItemResolveArgs args)
         {
             return null;
         }
 
+        /// <summary>
+        /// Gets the priority.
+        /// </summary>
+        /// <value>The priority.</value>
         public virtual ResolverPriority Priority
         {
             get
@@ -26,7 +38,9 @@ namespace MediaBrowser.Controller.Resolvers
         /// <summary>
         /// Sets initial values on the newly resolved item
         /// </summary>
-        protected virtual void SetInitialItemValues(T item, ItemResolveEventArgs args)
+        /// <param name="item">The item.</param>
+        /// <param name="args">The args.</param>
+        protected virtual void SetInitialItemValues(T item, ItemResolveArgs args)
         {
             // If the subclass didn't specify this
             if (string.IsNullOrEmpty(item.Path))
@@ -40,15 +54,24 @@ namespace MediaBrowser.Controller.Resolvers
                 item.Parent = args.Parent;
             }
 
-            item.Id = (item.GetType().FullName + item.Path).GetMD5();
+            item.Id = item.Path.GetMBId(item.GetType());
+            item.DisplayMediaType = item.GetType().Name;
         }
 
-        public BaseItem ResolvePath(ItemResolveEventArgs args)
+        /// <summary>
+        /// Resolves the path.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns>BaseItem.</returns>
+        public BaseItem ResolvePath(ItemResolveArgs args)
         {
             T item = Resolve(args);
 
             if (item != null)
             {
+                // Set the args on the item
+                item.ResolveArgs = args;
+
                 // Set initial values on the newly resolved item
                 SetInitialItemValues(item, args);
 
@@ -56,54 +79,46 @@ namespace MediaBrowser.Controller.Resolvers
                 EnsureName(item);
 
                 // Make sure DateCreated and DateModified have values
-                EnsureDates(item, args);
+                EntityResolutionHelper.EnsureDates(item, args);
             }
 
             return item;
         }
 
+        /// <summary>
+        /// Ensures the name.
+        /// </summary>
+        /// <param name="item">The item.</param>
         private void EnsureName(T item)
         {
             // If the subclass didn't supply a name, add it here
-            if (string.IsNullOrEmpty(item.Name))
+            if (string.IsNullOrEmpty(item.Name) && !string.IsNullOrEmpty(item.Path))
             {
-                item.Name = Path.GetFileNameWithoutExtension(item.Path);
+                //we use our resolve args name here to get the name of the containg folder, not actual video file
+                item.Name = GetMBName(item.ResolveArgs.FileInfo.cFileName, item.ResolveArgs.FileInfo.IsDirectory);
             }
-
         }
 
         /// <summary>
-        /// Ensures DateCreated and DateModified have values
+        /// The MB name regex
         /// </summary>
-        private void EnsureDates(T item, ItemResolveEventArgs args)
+        private static readonly Regex MBNameRegex = new Regex("(\\[.*\\])", RegexOptions.Compiled);
+
+        /// <summary>
+        /// Strip out attribute items and return just the name we will use for items
+        /// </summary>
+        /// <param name="path">Assumed to be a file or directory path</param>
+        /// <param name="isDirectory">if set to <c>true</c> [is directory].</param>
+        /// <returns>The cleaned name</returns>
+        private static string GetMBName(string path, bool isDirectory)
         {
-            if (!Path.IsPathRooted(item.Path))
-            {
-                return;
-            }
+            //first just get the file or directory name
+            var fn = isDirectory ? Path.GetFileName(path) : Path.GetFileNameWithoutExtension(path);
 
-            // See if a different path came out of the resolver than what went in
-            if (!args.Path.Equals(item.Path, StringComparison.OrdinalIgnoreCase))
-            {
-                WIN32_FIND_DATA? childData = args.GetFileSystemEntry(item.Path);
+            //now - strip out anything inside brackets
+            fn = MBNameRegex.Replace(fn, string.Empty);
 
-                if (childData != null)
-                {
-                    item.DateCreated = childData.Value.CreationTimeUtc;
-                    item.DateModified = childData.Value.LastWriteTimeUtc;
-                }
-                else
-                {
-                    WIN32_FIND_DATA fileData = FileData.GetFileData(item.Path);
-                    item.DateCreated = fileData.CreationTimeUtc;
-                    item.DateModified = fileData.LastWriteTimeUtc;
-                }
-            }
-            else
-            {
-                item.DateCreated = args.FileInfo.CreationTimeUtc;
-                item.DateModified = args.FileInfo.LastWriteTimeUtc;
-            }
+            return fn;
         }
     }
 
@@ -112,15 +127,39 @@ namespace MediaBrowser.Controller.Resolvers
     /// </summary>
     public interface IBaseItemResolver
     {
-        BaseItem ResolvePath(ItemResolveEventArgs args);
+        /// <summary>
+        /// Resolves the path.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns>BaseItem.</returns>
+        BaseItem ResolvePath(ItemResolveArgs args);
+        /// <summary>
+        /// Gets the priority.
+        /// </summary>
+        /// <value>The priority.</value>
         ResolverPriority Priority { get; }
     }
 
+    /// <summary>
+    /// Enum ResolverPriority
+    /// </summary>
     public enum ResolverPriority
     {
+        /// <summary>
+        /// The first
+        /// </summary>
         First = 1,
+        /// <summary>
+        /// The second
+        /// </summary>
         Second = 2,
+        /// <summary>
+        /// The third
+        /// </summary>
         Third = 3,
+        /// <summary>
+        /// The last
+        /// </summary>
         Last = 4
     }
 }

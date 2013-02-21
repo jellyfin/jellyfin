@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>ServiceStack.Redis</id>
+    <version>3.9.37</version>
+    <title>C# Redis client for the Redis NoSQL DB</title>
+    <authors>Demis Bellot</authors>
+    <owners>Demis Bellot</owners>
+    <licenseUrl>https://github.com/ServiceStack/ServiceStack.Redis/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/ServiceStack/ServiceStack.Redis</projectUrl>
+    <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>C# Redis Client for the worlds fastest distributed NoSQL datastore. Byte[], String and POCO Typed clients.
+		Thread-Safe Basic and Pooled client managers included.</description>
+    <copyright>ServiceStack 2013 and contributors</copyright>
+    <language>en-US</language>
+    <tags>Redis NoSQL Client Distributed Cache PubSub Messaging Transactions</tags>
+    <dependencies>
+      <dependency id="ServiceStack.Common" />
+    </dependencies>
+    <references>
+      <reference file="ServiceStack.Redis.dll" />
+    </references>
+  </metadata>
+</package>

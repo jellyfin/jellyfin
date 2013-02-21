@@ -1,0 +1,119 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Trailers</title>
+</head>
+<body>
+    <div id="trailersConfigurationPage" data-role="page" class="page type-interior pluginConfigurationPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <form id="trailersConfigurationForm">
+
+                    <ul class="ulForm" data-role="listview">
+                        <li>
+                            <label for="txtFolderName">
+                                Trailer collection name:
+                            </label>
+                            <input id="txtFolderName" name="txtFolderName" />
+                        </li>
+                        <li>
+                            <label for="txtMaxTrailerAge">
+                                Max trailer age (days):
+                            </label>
+                            <input type="number" id="txtMaxTrailerAge" name="txtMaxTrailerAge" pattern="[0-9]*" min="1" />
+                            <div class="fieldDescription">
+                                If specified, trailers older than this will not be downloaded
+                            </div>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="chkDeleteOldTrailers" name="chkDeleteOldTrailers" />
+                            <label for="chkDeleteOldTrailers">Delete trailers older than the max age</label>
+                        </li>
+                        <li>
+                            <label for="txtDownloadPath">
+                                Download path:
+                            </label>
+                            <div style="display: inline-block; width:92%;">
+                                <input id="txtDownloadPath" name="txtDownloadPath" data-inline="true" />
+                            </div>
+                            <button type="button" data-icon="folder-close" data-iconpos="notext" data-inline="true" onclick="TrailersConfigurationPage.selectDirectory();">Select Directory</button>
+                            <div class="fieldDescription">
+                                By default, trailers are downloaded to an internal data directory. Using a different location may make it easier to share over your network.
+                            </div>
+                        </li>
+                        <li>
+                            <button type="submit" data-theme="b">Save</button>
+                            <button type="button" onclick="history.back();">Cancel</button>
+                        </li>
+                    </ul>
+
+                </form>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+
+            var TrailersConfigurationPage = {
+                pluginUniqueId: "986a7283-205a-4436-862d-23135c067f8a",
+
+                selectDirectory: function () {
+
+                    Dashboard.selectDirectory({
+                        callback: function (path) {
+
+                            if (path) {
+                                $('#txtDownloadPath', $.mobile.activePage).val(path);
+                            }
+                            $('#popupDirectoryPicker', $.mobile.activePage).popup("close");
+                        },
+
+                        header: "Select Trailer Path"
+                    });
+
+                }
+            };
+
+            $('#trailersConfigurationPage').on('pageshow', function (event) {
+
+                Dashboard.showLoadingMsg();
+
+                var page = this;
+
+                ApiClient.getPluginConfiguration(TrailersConfigurationPage.pluginUniqueId).done(function (config) {
+
+                    $('#txtDownloadPath', page).val(config.DownloadPath);
+                    $('#txtFolderName', page).val(config.FolderName);
+                    $('#txtMaxTrailerAge', page).val(config.MaxTrailerAge || "");
+                    $('#chkDeleteOldTrailers', page).checked(config.DeleteOldTrailers).checkboxradio("refresh");
+
+                    Dashboard.hideLoadingMsg();
+                });
+            });
+
+            $('#trailersConfigurationForm').on('submit', function (e) {
+
+                Dashboard.showLoadingMsg();
+
+                var form = this;
+
+                ApiClient.getPluginConfiguration(TrailersConfigurationPage.pluginUniqueId).done(function (config) {
+
+                    config.DownloadPath = $('#txtDownloadPath', form).val();
+                    config.FolderName = $('#txtFolderName', form).val();
+                    var maxTrailerAge = $('#txtMaxTrailerAge', form).val();
+
+                    config.MaxTrailerAge = maxTrailerAge ? maxTrailerAge : null;
+
+                    config.DeleteOldTrailers = $('#chkDeleteOldTrailers', form).checked();
+
+                    ApiClient.updatePluginConfiguration(TrailersConfigurationPage.pluginUniqueId, config).done(Dashboard.processPluginConfigurationUpdateResult);
+                });
+
+                // Disable default form submission
+                return false;
+            });
+        </script>
+    </div>
+</body>
+</html>

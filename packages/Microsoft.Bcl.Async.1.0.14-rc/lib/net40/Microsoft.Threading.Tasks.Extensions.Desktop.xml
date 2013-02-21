@@ -1,0 +1,684 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Microsoft.Threading.Tasks.Extensions.Desktop</name>
+    </assembly>
+    <members>
+        <member name="M:System.Threading.Tasks.TaskServices.FromCancellation(System.Threading.CancellationToken)">
+            <summary>Returns a canceled task.</summary>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns>The canceled task.</returns>
+        </member>
+        <member name="M:System.Threading.Tasks.TaskServices.FromCancellation``1(System.Threading.CancellationToken)">
+            <summary>Returns a canceled task.</summary>
+            <typeparam name="TResult">Specifies the type of the result.</typeparam>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns>The canceled task.</returns>
+        </member>
+        <member name="M:System.Threading.Tasks.TaskServices.HandleEapCompletion``1(System.Threading.Tasks.TaskCompletionSource{``0},System.Boolean,System.ComponentModel.AsyncCompletedEventArgs,System.Func{``0},System.Action)">
+            <summary>
+            Completes the Task if the user state matches the TaskCompletionSource.
+            </summary>
+            <typeparam name="T">Specifies the type of data returned by the Task.</typeparam>
+            <param name="tcs">The TaskCompletionSource.</param>
+            <param name="e">The completion event arguments.</param>
+            <param name="requireMatch">Whether we require the tcs to match the e.UserState.</param>
+            <param name="getResult">A function that gets the result with which to complete the task.</param>
+            <param name="unregisterHandler">An action used to unregister work when the operaiton completes.</param>
+        </member>
+        <member name="T:AsyncPlatformExtensions">
+            <summary>
+                Provides asynchronous wrappers for .NET Framework operations.
+            </summary>
+            <summary>
+                Provides asynchronous wrappers for .NET Framework operations.
+            </summary>
+        </member>
+        <member name="M:AsyncPlatformExtensions.DownloadStringTaskAsync(System.Net.WebClient,System.String)">
+            <summary>Downloads the resource with the specified URI as a string, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI from which to download data.</param>
+            <returns>A Task that contains the downloaded string.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.DownloadStringTaskAsync(System.Net.WebClient,System.Uri)">
+            <summary>Downloads the resource with the specified URI as a string, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI from which to download data.</param>
+            <returns>A Task that contains the downloaded string.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.OpenReadTaskAsync(System.Net.WebClient,System.String)">
+            <summary>Opens a readable stream for the data downloaded from a resource, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI for which the stream should be opened.</param>
+            <returns>A Task that contains the opened stream.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.OpenReadTaskAsync(System.Net.WebClient,System.Uri)">
+            <summary>Opens a readable stream for the data downloaded from a resource, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI for which the stream should be opened.</param>
+            <returns>A Task that contains the opened stream.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.OpenWriteTaskAsync(System.Net.WebClient,System.String)">
+            <summary>Opens a writeable stream for uploading data to a resource, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI for which the stream should be opened.</param>
+            <returns>A Task that contains the opened stream.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.OpenWriteTaskAsync(System.Net.WebClient,System.Uri)">
+            <summary>Opens a writeable stream for uploading data to a resource, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI for which the stream should be opened.</param>
+            <returns>A Task that contains the opened stream.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.OpenWriteTaskAsync(System.Net.WebClient,System.String,System.String)">
+            <summary>Opens a writeable stream for uploading data to a resource, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI for which the stream should be opened.</param>
+            <param name="method">The HTTP method that should be used to open the stream.</param>
+            <returns>A Task that contains the opened stream.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.OpenWriteTaskAsync(System.Net.WebClient,System.Uri,System.String)">
+            <summary>Opens a writeable stream for uploading data to a resource, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI for which the stream should be opened.</param>
+            <param name="method">The HTTP method that should be used to open the stream.</param>
+            <returns>A Task that contains the opened stream.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.UploadStringTaskAsync(System.Net.WebClient,System.String,System.String)">
+            <summary>Uploads data in a string to the specified resource, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI to which the data should be uploaded.</param>
+            <param name="data">The data to upload.</param>
+            <returns>A Task containing the data in the response from the upload.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.UploadStringTaskAsync(System.Net.WebClient,System.Uri,System.String)">
+            <summary>Uploads data in a string to the specified resource, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI to which the data should be uploaded.</param>
+            <param name="data">The data to upload.</param>
+            <returns>A Task containing the data in the response from the upload.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.UploadStringTaskAsync(System.Net.WebClient,System.String,System.String,System.String)">
+            <summary>Uploads data in a string to the specified resource, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI to which the data should be uploaded.</param>
+            <param name="method">The HTTP method that should be used to upload the data.</param>
+            <param name="data">The data to upload.</param>
+            <returns>A Task containing the data in the response from the upload.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.UploadStringTaskAsync(System.Net.WebClient,System.Uri,System.String,System.String)">
+            <summary>Uploads data in a string to the specified resource, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI to which the data should be uploaded.</param>
+            <param name="method">The HTTP method that should be used to upload the data.</param>
+            <param name="data">The data to upload.</param>
+            <returns>A Task containing the data in the response from the upload.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.GetUri(System.Net.WebClient,System.String)">
+            <summary>Converts a path to a Uri using the WebClient's logic.</summary>
+            <remarks>Based on WebClient's private GetUri method.</remarks>
+        </member>
+        <member name="M:AsyncPlatformExtensions.GetUri(System.Net.WebClient,System.Uri)">
+            <summary>Converts a path to a Uri using the WebClient's logic.</summary>
+            <remarks>Based on WebClient's private GetUri method.</remarks>
+        </member>
+        <member name="M:AsyncPlatformExtensions.DownloadDataTaskAsync(System.Net.WebClient,System.String)">
+            <summary>Downloads the resource with the specified URI as a byte array, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI from which to download data.</param>
+            <returns>A Task that contains the downloaded data.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.DownloadDataTaskAsync(System.Net.WebClient,System.Uri)">
+            <summary>Downloads the resource with the specified URI as a byte array, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI from which to download data.</param>
+            <returns>A Task that contains the downloaded data.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.DownloadFileTaskAsync(System.Net.WebClient,System.String,System.String)">
+            <summary>Downloads the resource with the specified URI to a local file, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI from which to download data.</param>
+            <param name="fileName">The name of the local file that is to receive the data.</param>
+            <returns>A Task that contains the downloaded data.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.DownloadFileTaskAsync(System.Net.WebClient,System.Uri,System.String)">
+            <summary>Downloads the resource with the specified URI to a local file, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI from which to download data.</param>
+            <param name="fileName">The name of the local file that is to receive the data.</param>
+            <returns>A Task that contains the downloaded data.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.UploadDataTaskAsync(System.Net.WebClient,System.String,System.Byte[])">
+            <summary>Uploads data to the specified resource, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI to which the data should be uploaded.</param>
+            <param name="data">The data to upload.</param>
+            <returns>A Task containing the data in the response from the upload.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.UploadDataTaskAsync(System.Net.WebClient,System.Uri,System.Byte[])">
+            <summary>Uploads data to the specified resource, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI to which the data should be uploaded.</param>
+            <param name="data">The data to upload.</param>
+            <returns>A Task containing the data in the response from the upload.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.UploadDataTaskAsync(System.Net.WebClient,System.String,System.String,System.Byte[])">
+            <summary>Uploads data to the specified resource, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI to which the data should be uploaded.</param>
+            <param name="method">The HTTP method that should be used to upload the data.</param>
+            <param name="data">The data to upload.</param>
+            <returns>A Task containing the data in the response from the upload.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.UploadDataTaskAsync(System.Net.WebClient,System.Uri,System.String,System.Byte[])">
+            <summary>Uploads data to the specified resource, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI to which the data should be uploaded.</param>
+            <param name="method">The HTTP method that should be used to upload the data.</param>
+            <param name="data">The data to upload.</param>
+            <returns>A Task containing the data in the response from the upload.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.UploadFileTaskAsync(System.Net.WebClient,System.String,System.String)">
+            <summary>Uploads a file to the specified resource, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI to which the file should be uploaded.</param>
+            <param name="fileName">A path to the file to upload.</param>
+            <returns>A Task containing the data in the response from the upload.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.UploadFileTaskAsync(System.Net.WebClient,System.Uri,System.String)">
+            <summary>Uploads a file to the specified resource, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI to which the file should be uploaded.</param>
+            <param name="fileName">A path to the file to upload.</param>
+            <returns>A Task containing the data in the response from the upload.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.UploadFileTaskAsync(System.Net.WebClient,System.String,System.String,System.String)">
+            <summary>Uploads a file to the specified resource, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI to which the file should be uploaded.</param>
+            <param name="method">The HTTP method that should be used to upload the file.</param>
+            <param name="fileName">A path to the file to upload.</param>
+            <returns>A Task containing the data in the response from the upload.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.UploadFileTaskAsync(System.Net.WebClient,System.Uri,System.String,System.String)">
+            <summary>Uploads a file to the specified resource, asynchronously.</summary>
+            <param name="webClient">The WebClient.</param>
+            <param name="address">The URI to which the file should be uploaded.</param>
+            <param name="method">The HTTP method that should be used to upload the file.</param>
+            <param name="fileName">A path to the file to upload.</param>
+            <returns>A Task containing the data in the response from the upload.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.AnnounceOnlineTaskAsync(System.ServiceModel.Discovery.AnnouncementClient,System.ServiceModel.Discovery.EndpointDiscoveryMetadata)">
+            <summary>Causes an online announcement (Hello) message to be sent asynchronously with the specified endpoint discovery metadata and user-defined state. The specified  is called when the operation completes.</summary>
+            <returns>Task instance.</returns>
+            <param name="discoveryMetadata">The endpoint discovery metadata.</param>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.AnnounceOfflineTaskAsync(System.ServiceModel.Discovery.AnnouncementClient,System.ServiceModel.Discovery.EndpointDiscoveryMetadata)">
+            <summary>Causes an offline announcement (Bye) message to be sent asynchronously with the specified endpoint discovery metadata and user-defined state. The specified  is called when the operation completes.</summary>
+            <returns>Task instance.</returns>
+            <param name="discoveryMetadata">The endpoint discovery metadata.</param>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.GetContextAsync(System.Net.HttpListener)">
+            <summary>Begins asynchronously retrieving an incoming request.</summary>
+            <returns>Task object that indicates the status of the asynchronous operation.</returns>
+            <exception cref="T:System.Net.HttpListenerException">A Win32 function call failed. Check the exception's  property to determine the cause of the exception.</exception>
+            <exception cref="T:System.InvalidOperationException">This object has not been started or is currently stopped.</exception>
+            <exception cref="T:System.ObjectDisposedException">This object is closed.</exception>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.GetClientCertificateAsync(System.Net.HttpListenerRequest)">
+            <summary>Starts an asynchronous request for the client's X.509 v.3 certificate.</summary>
+            <returns>Task that indicates the status of the operation.</returns>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.AuthenticateAsClientAsync(System.Net.Security.NegotiateStream)">
+            <summary>Called by clients to begin an asynchronous operation to authenticate the client, and optionally the server, in a client-server connection. This method does not block.</summary>
+            <returns>Task object indicating the status of the asynchronous operation. </returns>
+            <exception cref="T:System.Security.Authentication.AuthenticationException">The authentication failed. You can use this object to retry the authentication.</exception>
+            <exception cref="T:System.Security.Authentication.InvalidCredentialException">The authentication failed. You can use this object to retry the authentication.</exception>
+            <exception cref="T:System.ObjectDisposedException">This object has been closed.</exception>
+            <exception cref="T:System.InvalidOperationException">Authentication has already occurred.- or -This stream was used previously to attempt authentication as the server. You cannot use the stream to retry authentication as the client.</exception>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.AuthenticateAsClientAsync(System.Net.Security.NegotiateStream,System.Net.NetworkCredential,System.String)">
+            <summary>Called by clients to begin an asynchronous operation to authenticate the client, and optionally the server, in a client-server connection. The authentication process uses the specified credentials. This method does not block.</summary>
+            <returns>Task object indicating the status of the asynchronous operation. </returns>
+            <param name="credential">The  that is used to establish the identity of the client.</param>
+            <param name="targetName">The Service Principal Name (SPN) that uniquely identifies the server to authenticate.</param>
+            <exception cref="T:System.ArgumentNullException"> is null.- or -<paramref name="targetName" /> is null.</exception>
+            <exception cref="T:System.Security.Authentication.AuthenticationException">The authentication failed. You can use this object to retry the authentication.</exception>
+            <exception cref="T:System.Security.Authentication.InvalidCredentialException">The authentication failed. You can use this object to retry the authentication.</exception>
+            <exception cref="T:System.ObjectDisposedException">This object has been closed.</exception>
+            <exception cref="T:System.InvalidOperationException">Authentication has already occurred.- or -This stream was used previously to attempt authentication as the server. You cannot use the stream to retry authentication as the client.</exception>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.AuthenticateAsClientAsync(System.Net.Security.NegotiateStream,System.Net.NetworkCredential,System.Security.Authentication.ExtendedProtection.ChannelBinding,System.String)">
+            <summary>Called by clients to begin an asynchronous operation to authenticate the client, and optionally the server, in a client-server connection. The authentication process uses the specified credentials and channel binding. This method does not block.</summary>
+            <returns>Task object indicating the status of the asynchronous operation.</returns>
+            <param name="credential">The  that is used to establish the identity of the client.</param>
+            <param name="binding">The  that is used for extended protection.</param>
+            <param name="targetName">The Service Principal Name (SPN) that uniquely identifies the server to authenticate.</param>
+            <exception cref="T:System.ArgumentNullException"> is null.- or -<paramref name="targetName" /> is null.</exception>
+            <exception cref="T:System.Security.Authentication.AuthenticationException">The authentication failed. You can use this object to retry the authentication.</exception>
+            <exception cref="T:System.Security.Authentication.InvalidCredentialException">The authentication failed. You can use this object to retry the authentication.</exception>
+            <exception cref="T:System.InvalidOperationException">Authentication has already occurred.- or -This stream was used previously to attempt authentication as the server. You cannot use the stream to retry authentication as the client.</exception>
+            <exception cref="T:System.ObjectDisposedException">This object has been closed.</exception>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.AuthenticateAsServerAsync(System.Net.Security.NegotiateStream)">
+            <summary>Called by servers to begin an asynchronous operation to authenticate the client, and optionally the server, in a client-server connection. This method does not block.</summary>
+            <returns>Task object indicating the status of the asynchronous operation. </returns>
+            <exception cref="T:System.Security.Authentication.AuthenticationException">The authentication failed. You can use this object to retry the authentication.</exception>
+            <exception cref="T:System.Security.Authentication.InvalidCredentialException">The authentication failed. You can use this object to retry the authentication.</exception>
+            <exception cref="T:System.ObjectDisposedException">This object has been closed.</exception>
+            <exception cref="T:System.NotSupportedException">Windows 95 and Windows 98 are not supported.</exception>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.AuthenticateAsServerAsync(System.Net.Security.NegotiateStream,System.Security.Authentication.ExtendedProtection.ExtendedProtectionPolicy)">
+            <summary>Called by servers to begin an asynchronous operation to authenticate the client, and optionally the server, in a client-server connection. The authentication process uses the specified extended protection policy. This method does not block.</summary>
+            <returns>Task object indicating the status of the asynchronous operation.</returns>
+            <param name="policy">The  that is used for extended protection.</param>
+            <exception cref="T:System.ArgumentException">The  and <see cref="P:System.Security.Authentication.ExtendedProtection.ExtendedProtectionPolicy.CustomServiceNames" /> on the extended protection policy passed in the  parameter are both null.</exception>
+            <exception cref="T:System.Security.Authentication.AuthenticationException">The authentication failed. You can use this object to retry the authentication.</exception>
+            <exception cref="T:System.Security.Authentication.InvalidCredentialException">The authentication failed. You can use this object to retry the authentication.</exception>
+            <exception cref="T:System.NotSupportedException">Windows 95 and Windows 98 are not supported.</exception>
+            <exception cref="T:System.ObjectDisposedException">This object has been closed.</exception>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.AuthenticateAsServerAsync(System.Net.Security.NegotiateStream,System.Net.NetworkCredential,System.Net.Security.ProtectionLevel,System.Security.Principal.TokenImpersonationLevel)">
+            <summary>Called by servers to begin an asynchronous operation to authenticate the client, and optionally the server, in a client-server connection. The authentication process uses the specified server credentials and authentication options. This method does not block.</summary>
+            <returns>Task object indicating the status of the asynchronous operation. </returns>
+            <param name="credential">The  that is used to establish the identity of the client.</param>
+            <param name="requiredProtectionLevel">One of the  values, indicating the security services for the stream.</param>
+            <param name="requiredImpersonationLevel">One of the  values, indicating how the server can use the client's credentials to access resources.</param>
+            <exception cref="T:System.ArgumentNullException"> is null.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"> must be , <see cref="F:System.Security.Principal.TokenImpersonationLevel.Impersonation" />, or <see cref="F:System.Security.Principal.TokenImpersonationLevel.Delegation" />,</exception>
+            <exception cref="T:System.Security.Authentication.AuthenticationException">The authentication failed. You can use this object to retry the authentication.</exception>
+            <exception cref="T:System.Security.Authentication.InvalidCredentialException">The authentication failed. You can use this object to retry the authentication.</exception>
+            <exception cref="T:System.ObjectDisposedException">This object has been closed.</exception>
+            <exception cref="T:System.InvalidOperationException">Authentication has already occurred.- or -This stream was used previously to attempt authentication as the client. You cannot use the stream to retry authentication as the server.</exception>
+            <exception cref="T:System.NotSupportedException">Windows 95 and Windows 98 are not supported.</exception>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.AuthenticateAsClientAsync(System.Net.Security.SslStream,System.String)">
+            <summary>Called by clients to begin an asynchronous operation to authenticate the server and optionally the client.</summary>
+            <returns>Task object that indicates the status of the asynchronous operation. </returns>
+            <param name="targetHost">The name of the server that shares this .</param>
+            <exception cref="T:System.ArgumentNullException"> is null.</exception>
+            <exception cref="T:System.Security.Authentication.AuthenticationException">The authentication failed and left this object in an unusable state.</exception>
+            <exception cref="T:System.InvalidOperationException">Authentication has already occurred.-or-Server authentication using this  was tried previously.-or- Authentication is already in progress.</exception>
+            <exception cref="T:System.ObjectDisposedException">This object has been closed.</exception>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.AuthenticateAsServerAsync(System.Net.Security.SslStream,System.Security.Cryptography.X509Certificates.X509Certificate)">
+            <summary>Called by servers to begin an asynchronous operation to authenticate the client and optionally the server in a client-server connection.</summary>
+            <returns>Task object indicating the status of the asynchronous operation. </returns>
+            <param name="serverCertificate">The X509Certificate used to authenticate the server.</param>
+            <exception cref="T:System.ArgumentNullException"> is null.</exception>
+            <exception cref="T:System.Security.Authentication.AuthenticationException">The authentication failed and left this object in an unusable state.</exception>
+            <exception cref="T:System.InvalidOperationException">Authentication has already occurred.-or-Client authentication using this  was tried previously.-or- Authentication is already in progress.</exception>
+            <exception cref="T:System.ObjectDisposedException">This object has been closed.</exception>
+            <exception cref="T:System.PlatformNotSupportedException">The  method is not supported on Windows 95, Windows 98, or Windows Millennium.</exception>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.ConnectAsync(System.Net.Sockets.TcpClient,System.String,System.Int32)">
+            <summary>Starts an asynchronous request for a remote host connection. The host is specified by a host name and a port number.</summary>
+            <returns>Task that represents the asynchronous connection.</returns>
+            <param name="hostname">The name of the remote host.</param>
+            <param name="port">The port number of the remote host.</param>
+            <exception cref="T:System.ArgumentNullException"> is null. </exception>
+            <exception cref="T:System.ObjectDisposedException">The  has been closed. </exception>
+            <exception cref="T:System.NotSupportedException">This method is valid for sockets in the  or  families.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException">The port number is not valid.</exception>
+            <exception cref="T:System.InvalidOperationException">The  is ing.</exception>
+            <PermissionSet>    <IPermission class="System.Security.Permissions.EnvironmentPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />    <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />    <IPermission class="System.Security.Permissions.SecurityPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />    <IPermission class="System.Diagnostics.PerformanceCounterPermission, System, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />    <IPermission class="System.Net.SocketPermission, System, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />  </PermissionSet>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.ConnectAsync(System.Net.Sockets.TcpClient,System.Net.IPAddress,System.Int32)">
+            <summary>Starts an asynchronous request for a remote host connection. The host is specified by an  and a port number.</summary>
+            <returns>Task that represents the asynchronous connection.</returns>
+            <param name="address">The  of the remote host.</param>
+            <param name="port">The port number of the remote host.</param>
+            <exception cref="T:System.ArgumentNullException"> is null. </exception>
+            <exception cref="T:System.Net.Sockets.SocketException">An error occurred when attempting to access the socket. See the Remarks section for more information. </exception>
+            <exception cref="T:System.ObjectDisposedException">The  has been closed. </exception>
+            <exception cref="T:System.NotSupportedException">The  is not in the socket family.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException">The port number is not valid.</exception>
+            <exception cref="T:System.ArgumentException">The length of  is zero.</exception>
+            <exception cref="T:System.InvalidOperationException">The  is ing.</exception>
+            <PermissionSet>    <IPermission class="System.Security.Permissions.EnvironmentPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />    <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />    <IPermission class="System.Security.Permissions.SecurityPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />    <IPermission class="System.Diagnostics.PerformanceCounterPermission, System, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />    <IPermission class="System.Net.SocketPermission, System, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />  </PermissionSet>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.ConnectAsync(System.Net.Sockets.TcpClient,System.Net.IPAddress[],System.Int32)">
+            <summary>Starts an asynchronous request for a remote host connection. The host is specified by an  array and a port number.</summary>
+            <returns>Task that represents the asynchronous connections.</returns>
+            <param name="ipAddresses">At least one , designating the remote host.</param>
+            <param name="port">The port number of the remote host.</param>
+            <exception cref="T:System.ArgumentNullException"> is null. </exception>
+            <exception cref="T:System.Net.Sockets.SocketException">An error occurred when attempting to access the socket. See the Remarks section for more information. </exception>
+            <exception cref="T:System.ObjectDisposedException">The  has been closed. </exception>
+            <exception cref="T:System.NotSupportedException">This method is valid for sockets that use  or .</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException">The port number is not valid.</exception>
+            <exception cref="T:System.ArgumentException">The length of  is zero.</exception>
+            <exception cref="T:System.InvalidOperationException">The  is ing.</exception>
+            <PermissionSet>    <IPermission class="System.Security.Permissions.EnvironmentPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />    <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />    <IPermission class="System.Security.Permissions.SecurityPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />    <IPermission class="System.Diagnostics.PerformanceCounterPermission, System, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />    <IPermission class="System.Net.SocketPermission, System, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />  </PermissionSet>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.AcceptSocketAsync(System.Net.Sockets.TcpListener)">
+            <summary>Starts an asynchronous operation to accept an incoming connection attempt.</summary>
+            <returns>Task that represents the asynchronous creation of the <see cref="T:System.Net.Sockets.Socket" />.</returns>
+            <exception cref="T:System.Net.Sockets.SocketException">An error occurred while attempting to access the socket. See the Remarks section for more information. </exception>
+            <exception cref="T:System.ObjectDisposedException">The  has been closed. </exception>
+            <PermissionSet>    <IPermission class="System.Security.Permissions.EnvironmentPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />    <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />    <IPermission class="System.Security.Permissions.SecurityPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Flags="UnmanagedCode, ControlEvidence" />    <IPermission class="System.Diagnostics.PerformanceCounterPermission, System, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />  </PermissionSet>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.AcceptTcpClientAsync(System.Net.Sockets.TcpListener)">
+            <summary>Starts an asynchronous operation to accept an incoming connection attempt.</summary>
+            <returns>Task that represents the asynchronous creation of the <see cref="T:System.Net.Sockets.TcpClient" />.</returns>
+            <exception cref="T:System.Net.Sockets.SocketException">An error occurred while attempting to access the socket. See the Remarks section for more information. </exception>
+            <exception cref="T:System.ObjectDisposedException">The  has been closed. </exception>
+            <PermissionSet>    <IPermission class="System.Security.Permissions.EnvironmentPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />    <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />    <IPermission class="System.Security.Permissions.SecurityPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Flags="UnmanagedCode, ControlEvidence" />    <IPermission class="System.Diagnostics.PerformanceCounterPermission, System, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />  </PermissionSet>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.SendAsync(System.Net.Sockets.UdpClient,System.Byte[],System.Int32,System.Net.IPEndPoint)">
+            <summary>Sends a datagram to a destination asynchronously. The destination is specified by a .</summary>
+            <returns>Task object that represents the asynchronous send.</returns>
+            <param name="datagram">A  array that contains the data to be sent.</param>
+            <param name="bytes">The number of bytes to send.</param>
+            <param name="endPoint">The  that represents the destination for the data.</param>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.SendAsync(System.Net.Sockets.UdpClient,System.Byte[],System.Int32)">
+            <summary>Sends a datagram to a remote host asynchronously. The destination was specified previously by a call to .</summary>
+            <returns>Task object that represents the asynchronous send.</returns>
+            <param name="datagram">A  array that contains the data to be sent.</param>
+            <param name="bytes">The number of bytes to send.</param>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.SendAsync(System.Net.Sockets.UdpClient,System.Byte[],System.Int32,System.String,System.Int32)">
+            <summary>Sends a datagram to a remote host asynchronously. The destination was specified previously by a call to .</summary>
+            <returns>Task object that represents the asynchronous send.</returns>
+            <param name="datagram">A  array that contains the data to be sent.</param>
+            <param name="bytes">The number of bytes to send.</param>
+            <param name="hostname">The host name.</param>
+            <param name="port">The host name.</param>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.GetUnicastAddressesAsync(System.Net.NetworkInformation.IPGlobalProperties)">
+            <summary>Starts an asynchronous request to retrieve the stable unicast IP address table on the local computer.</summary>
+            <returns>Task that represents the asynchronous request.</returns>
+            <exception cref="T:System.NotImplementedException">This method is not implemented on the platform. This method uses the native NotifyStableUnicastIpAddressTable function that is supported on Windows Vista and later. </exception>
+            <exception cref="T:System.ComponentModel.Win32Exception">The call to the native NotifyStableUnicastIpAddressTable function failed.</exception>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.OpenAsync(System.Data.SqlClient.SqlConnection)">
+            <summary>Opens the connection asynchronously.</summary>
+            <param name="source">The source.</param>
+            <returns>Task that represents the asynchronous request.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.OpenAsync(System.Data.SqlClient.SqlConnection,System.Threading.CancellationToken)">
+             <summary>Opens the connection asynchronously.</summary>
+             <param name="source">The source.</param>
+             <param name="cancellationToken">The cancellation token.</param>
+            <returns>Task that represents the asynchronous request.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.ExecuteNonQueryAsync(System.Data.SqlClient.SqlCommand)">
+            <summary>Initiates the asynchronous execution of the Transact-SQL statement or stored procedure that is described by this , given a callback procedure and state information.</summary>
+            <returns>Task that can be used to poll or wait for results, or both; this value is also needed when invoking <see cref="M:System.Data.SqlClient.SqlCommand.EndExecuteNonQuery(System.IAsyncResult)" />, which returns the number of affected rows.</returns>
+            <exception cref="T:System.Data.SqlClient.SqlException">Any error that occurred while executing the command text.</exception>
+            <exception cref="T:System.InvalidOperationException">The name/value pair "Asynchronous Processing=true" was not included within the connection string defining the connection for this .</exception>
+            <filterpriority>2</filterpriority>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.ExecuteNonQueryAsync(System.Data.SqlClient.SqlCommand,System.Threading.CancellationToken)">
+            <summary>Initiates the asynchronous execution of the Transact-SQL statement or stored procedure that is described by this , given a callback procedure and state information.</summary>
+            <returns>Task that can be used to poll or wait for results, or both; this value is also needed when invoking <see cref="M:System.Data.SqlClient.SqlCommand.EndExecuteNonQuery(System.IAsyncResult)" />, which returns the number of affected rows.</returns>
+            <exception cref="T:System.Data.SqlClient.SqlException">Any error that occurred while executing the command text.</exception>
+            <exception cref="T:System.InvalidOperationException">The name/value pair "Asynchronous Processing=true" was not included within the connection string defining the connection for this .</exception>
+            <filterpriority>2</filterpriority>
+            <param name="cancellationToken">The cancellation token.</param>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.ExecuteXmlReaderAsync(System.Data.SqlClient.SqlCommand)">
+            <summary>Initiates the asynchronous execution of the Transact-SQL statement or stored procedure that is described by this  and returns results as an <see cref="T:System.Xml.XmlReader" /> object, using a callback procedure.</summary>
+            <returns>Task that can be used to poll, wait for results, or both; this value is also needed when the <see cref="M:System.Data.SqlClient.SqlCommand.EndExecuteXmlReader(System.IAsyncResult)" /> is called, which returns the results of the command as XML.</returns>
+            <exception cref="T:System.Data.SqlClient.SqlException">Any error that occurred while executing the command text.</exception>
+            <exception cref="T:System.InvalidOperationException">The name/value pair "Asynchronous Processing=true" was not included within the connection string defining the connection for this .</exception>
+            <filterpriority>2</filterpriority>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.ExecuteXmlReaderAsync(System.Data.SqlClient.SqlCommand,System.Threading.CancellationToken)">
+            <summary>Initiates the asynchronous execution of the Transact-SQL statement or stored procedure that is described by this  and returns results as an <see cref="T:System.Xml.XmlReader" /> object, using a callback procedure.</summary>
+            <returns>Task that can be used to poll, wait for results, or both; this value is also needed when the <see cref="M:System.Data.SqlClient.SqlCommand.EndExecuteXmlReader(System.IAsyncResult)" /> is called, which returns the results of the command as XML.</returns>
+            <exception cref="T:System.Data.SqlClient.SqlException">Any error that occurred while executing the command text.</exception>
+            <exception cref="T:System.InvalidOperationException">The name/value pair "Asynchronous Processing=true" was not included within the connection string defining the connection for this .</exception>
+            <filterpriority>2</filterpriority>
+            <param name="cancellationToken">The cancellation token.</param>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.ExecuteReaderAsync(System.Data.SqlClient.SqlCommand)">
+            <summary>Initiates the asynchronous execution of the Transact-SQL statement or stored procedure that is described by this  and retrieves one or more result sets from the server, given a callback procedure and state information.</summary>
+            <returns>Task that can be used to poll, wait for results, or both; this value is also needed when invoking <see cref="M:System.Data.SqlClient.SqlCommand.EndExecuteReader(System.IAsyncResult)" />, which returns a <see cref="T:System.Data.SqlClient.SqlDataReader" /> instance which can be used to retrieve the returned rows.</returns>
+            <exception cref="T:System.Data.SqlClient.SqlException">Any error that occurred while executing the command text.</exception>
+            <exception cref="T:System.InvalidOperationException">The name/value pair "Asynchronous Processing=true" was not included within the connection string defining the connection for this .</exception>
+            <filterpriority>2</filterpriority>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.ExecuteReaderAsync(System.Data.SqlClient.SqlCommand,System.Threading.CancellationToken)">
+            <summary>Initiates the asynchronous execution of the Transact-SQL statement or stored procedure that is described by this  and retrieves one or more result sets from the server, given a callback procedure and state information.</summary>
+            <returns>Task that can be used to poll, wait for results, or both; this value is also needed when invoking <see cref="M:System.Data.SqlClient.SqlCommand.EndExecuteReader(System.IAsyncResult)" />, which returns a <see cref="T:System.Data.SqlClient.SqlDataReader" /> instance which can be used to retrieve the returned rows.</returns>
+            <exception cref="T:System.Data.SqlClient.SqlException">Any error that occurred while executing the command text.</exception>
+            <exception cref="T:System.InvalidOperationException">The name/value pair "Asynchronous Processing=true" was not included within the connection string defining the connection for this .</exception>
+            <filterpriority>2</filterpriority>
+            <param name="cancellationToken">The cancellation token.</param>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.GetMetadataAsync(System.ServiceModel.Description.MetadataExchangeClient)">
+            <summary>Starts an asynchronous method call that returns a .</summary>
+            <returns>The metadata.</returns>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.GetMetadataAsync(System.ServiceModel.Description.MetadataExchangeClient,System.Uri,System.ServiceModel.Description.MetadataExchangeClientMode)">
+            <summary>Starts an asynchronous method call that returns a  using the specified address, callback, asynchronous state, and download mechanism.</summary>
+            <returns>The metadata obtained from the specified .</returns>
+            <param name="address">The address of the metadata.</param>
+            <param name="mode">The  value to use when downloading the metadata.</param>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.GetMetadataAsync(System.ServiceModel.Description.MetadataExchangeClient,System.ServiceModel.EndpointAddress)">
+            <summary>Starts an asynchronous method call that returns a  using the specified address, callback, and asynchronous state.</summary>
+            <returns>The metadata obtained from the specified .</returns>
+            <param name="address">The address of the metadata.</param>
+            <param name="source">The source.</param>
+        </member>
+        <member name="M:AsyncPlatformExtensions.FindTaskAsync(System.ServiceModel.Discovery.DiscoveryClient,System.ServiceModel.Discovery.FindCriteria)">
+            <summary>
+            Begins an asynchronous find operation with the specified criteria.
+            </summary>
+            <param name="discoveryClient">The discovery client.</param>
+            <param name="criteria">The criteria for finding services.</param>
+            <returns>A Task that represents the asynchronous operation.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.ResolveTaskAsync(System.ServiceModel.Discovery.DiscoveryClient,System.ServiceModel.Discovery.ResolveCriteria)">
+            <summary>
+            Begins an asynchronous resolve operation with the specified criteria.
+            </summary>
+            <param name="discoveryClient">The discovery client.</param>
+            <param name="criteria">The criteria for matching a service endpoint.</param>
+            <returns>A Task that represents the asynchronous operation.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.SendTaskAsync(System.Net.NetworkInformation.Ping,System.Net.IPAddress)">
+            <summary>
+            Asynchronously attempts to send an Internet Control Message Protocol (ICMP) echo message.
+            </summary>
+            <param name="ping">The Ping.</param>
+            <param name="address">An IPAddress that identifies the computer that is the destination for the ICMP echo message.</param>
+            <returns>A task that represents the asynchronous operation.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.SendTaskAsync(System.Net.NetworkInformation.Ping,System.String)">
+            <summary>
+            Asynchronously attempts to send an Internet Control Message Protocol (ICMP) echo message.
+            </summary>
+            <param name="ping">The Ping.</param>
+            <param name="hostNameOrAddress">
+            A String that identifies the computer that is the destination for the ICMP echo message. 
+            The value specified for this parameter can be a host name or a string representation of an IP address.
+            </param>
+            <returns>A task that represents the asynchronous operation.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.SendTaskAsync(System.Net.NetworkInformation.Ping,System.Net.IPAddress,System.Int32)">
+            <summary>
+            Asynchronously attempts to send an Internet Control Message Protocol (ICMP) echo message.
+            </summary>
+            <param name="ping">The Ping.</param>
+            <param name="address">An IPAddress that identifies the computer that is the destination for the ICMP echo message.</param>
+            <param name="timeout">
+            An Int32 value that specifies the maximum number of milliseconds (after sending the echo message) 
+            to wait for the ICMP echo reply message.
+            </param>
+            <returns>A task that represents the asynchronous operation.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.SendTaskAsync(System.Net.NetworkInformation.Ping,System.String,System.Int32)">
+            <summary>
+            Asynchronously attempts to send an Internet Control Message Protocol (ICMP) echo message.
+            </summary>
+            <param name="ping">The Ping.</param>
+            <param name="hostNameOrAddress">
+            A String that identifies the computer that is the destination for the ICMP echo message. 
+            The value specified for this parameter can be a host name or a string representation of an IP address.
+            </param>
+            <param name="timeout">
+            An Int32 value that specifies the maximum number of milliseconds (after sending the echo message) 
+            to wait for the ICMP echo reply message.
+            </param>
+            <returns>A task that represents the asynchronous operation.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.SendTaskAsync(System.Net.NetworkInformation.Ping,System.Net.IPAddress,System.Int32,System.Byte[])">
+            <summary>
+            Asynchronously attempts to send an Internet Control Message Protocol (ICMP) echo message.
+            </summary>
+            <param name="ping">The Ping.</param>
+            <param name="address">An IPAddress that identifies the computer that is the destination for the ICMP echo message.</param>
+            <param name="timeout">
+            An Int32 value that specifies the maximum number of milliseconds (after sending the echo message) 
+            to wait for the ICMP echo reply message.
+            </param>
+            <param name="buffer">
+            A Byte array that contains data to be sent with the ICMP echo message and returned 
+            in the ICMP echo reply message. The array cannot contain more than 65,500 bytes.
+            </param>
+            <returns>A task that represents the asynchronous operation.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.SendTaskAsync(System.Net.NetworkInformation.Ping,System.String,System.Int32,System.Byte[])">
+            <summary>
+            Asynchronously attempts to send an Internet Control Message Protocol (ICMP) echo message.
+            </summary>
+            <param name="ping">The Ping.</param>
+            <param name="hostNameOrAddress">
+            A String that identifies the computer that is the destination for the ICMP echo message. 
+            The value specified for this parameter can be a host name or a string representation of an IP address.
+            </param>
+            <param name="timeout">
+            An Int32 value that specifies the maximum number of milliseconds (after sending the echo message) 
+            to wait for the ICMP echo reply message.
+            </param>
+            <param name="buffer">
+            A Byte array that contains data to be sent with the ICMP echo message and returned 
+            in the ICMP echo reply message. The array cannot contain more than 65,500 bytes.
+            </param>
+            <returns>A task that represents the asynchronous operation.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.SendTaskAsync(System.Net.NetworkInformation.Ping,System.Net.IPAddress,System.Int32,System.Byte[],System.Net.NetworkInformation.PingOptions)">
+            <summary>
+            Asynchronously attempts to send an Internet Control Message Protocol (ICMP) echo message.
+            </summary>
+            <param name="ping">The Ping.</param>
+            <param name="address">An IPAddress that identifies the computer that is the destination for the ICMP echo message.</param>
+            <param name="timeout">
+            An Int32 value that specifies the maximum number of milliseconds (after sending the echo message) 
+            to wait for the ICMP echo reply message.
+            </param>
+            <param name="buffer">
+            A Byte array that contains data to be sent with the ICMP echo message and returned 
+            in the ICMP echo reply message. The array cannot contain more than 65,500 bytes.
+            </param>
+            <param name="options">A PingOptions object used to control fragmentation and Time-to-Live values for the ICMP echo message packet.</param>
+            <returns>A task that represents the asynchronous operation.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.SendTaskAsync(System.Net.NetworkInformation.Ping,System.String,System.Int32,System.Byte[],System.Net.NetworkInformation.PingOptions)">
+            <summary>
+            Asynchronously attempts to send an Internet Control Message Protocol (ICMP) echo message.
+            </summary>
+            <param name="ping">The Ping.</param>
+            <param name="hostNameOrAddress">
+            A String that identifies the computer that is the destination for the ICMP echo message. 
+            The value specified for this parameter can be a host name or a string representation of an IP address.
+            </param>
+            <param name="timeout">
+            An Int32 value that specifies the maximum number of milliseconds (after sending the echo message) 
+            to wait for the ICMP echo reply message.
+            </param>
+            <param name="buffer">
+            A Byte array that contains data to be sent with the ICMP echo message and returned 
+            in the ICMP echo reply message. The array cannot contain more than 65,500 bytes.
+            </param>
+            <param name="options">A PingOptions object used to control fragmentation and Time-to-Live values for the ICMP echo message packet.</param>
+            <returns>A task that represents the asynchronous operation.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.SendTaskAsyncCore(System.Net.NetworkInformation.Ping,System.Object,System.Action{System.Threading.Tasks.TaskCompletionSource{System.Net.NetworkInformation.PingReply}})">
+            <summary>The core implementation of SendTaskAsync.</summary>
+            <param name="ping">The Ping.</param>
+            <param name="userToken">A user-defined object stored in the resulting Task.</param>
+            <param name="sendAsync">
+            A delegate that initiates the asynchronous send.
+            The provided TaskCompletionSource must be passed as the user-supplied state to the actual Ping.SendAsync method.
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.SendTaskAsync(System.Net.Mail.SmtpClient,System.String,System.String,System.String,System.String)">
+            <summary>Sends an e-mail message asynchronously.</summary>
+            <param name="smtpClient">The client.</param>
+            <param name="from">A String that contains the address information of the message sender.</param>
+            <param name="recipients">A String that contains the address that the message is sent to.</param>
+            <param name="subject">A String that contains the subject line for the message.</param>
+            <param name="body">A String that contains the message body.</param>
+            <returns>A Task that represents the asynchronous send.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.SendTaskAsync(System.Net.Mail.SmtpClient,System.Net.Mail.MailMessage)">
+            <summary>Sends an e-mail message asynchronously.</summary>
+            <param name="smtpClient">The client.</param>
+            <param name="message">A MailMessage that contains the message to send.</param>
+            <returns>A Task that represents the asynchronous send.</returns>
+        </member>
+        <member name="M:AsyncPlatformExtensions.SendTaskAsyncCore(System.Net.Mail.SmtpClient,System.Object,System.Action{System.Threading.Tasks.TaskCompletionSource{System.Object}})">
+            <summary>The core implementation of SendTaskAsync.</summary>
+            <param name="smtpClient">The client.</param>
+            <param name="userToken">The user-supplied state.</param>
+            <param name="sendAsync">
+            A delegate that initiates the asynchronous send.
+            The provided TaskCompletionSource must be passed as the user-supplied state to the actual SmtpClient.SendAsync method.
+            </param>
+            <returns></returns>
+        </member>
+        <member name="T:System.Net.DnsEx">
+            <summary>Provides asynchronous wrappers for the <see cref="T:System.Net.Dns"/> class.</summary>
+        </member>
+        <member name="M:System.Net.DnsEx.GetHostAddressesAsync(System.String)">
+            <summary>Asynchronously returns the Internet Protocol (IP) addresses for the specified host.</summary>
+            <param name="hostNameOrAddress">The host name or IP address to resolve.</param>
+            <returns>An array of type System.Net.IPAddress that holds the IP addresses for the host specified.</returns>
+        </member>
+        <member name="M:System.Net.DnsEx.GetHostEntryAsync(System.Net.IPAddress)">
+            <summary>Asynchronously resolves an IP address to an System.Net.IPHostEntry instance.</summary>
+            <param name="address">The IP address to resolve.</param>
+            <returns>An System.Net.IPHostEntry instance that contains address information about the host.</returns>
+        </member>
+        <member name="M:System.Net.DnsEx.GetHostEntryAsync(System.String)">
+            <summary>Asynchronously resolves an IP address to an System.Net.IPHostEntry instance.</summary>
+            <param name="hostNameOrAddress">The host name or IP address to resolve.</param>
+            <returns>An System.Net.IPHostEntry instance that contains address information about the host.</returns>
+        </member>
+    </members>
+</doc>

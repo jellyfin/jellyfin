@@ -1,42 +1,125 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using System.Security.Cryptography;
+using System.Windows.Threading;
 
 namespace MediaBrowser.Common.Extensions
 {
+    /// <summary>
+    /// Class BaseExtensions
+    /// </summary>
     public static class BaseExtensions
     {
-        static MD5CryptoServiceProvider md5Provider = new MD5CryptoServiceProvider();
+        /// <summary>
+        /// Tries the add.
+        /// </summary>
+        /// <typeparam name="TKey">The type of the T key.</typeparam>
+        /// <typeparam name="TValue">The type of the T value.</typeparam>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        public static bool TryAdd<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue value)
+        {
+            if (dictionary.ContainsKey(key))
+            {
+                return false;
+            }
 
+            dictionary.Add(key, value);
+            return true;
+        }
+
+        /// <summary>
+        /// Provides an additional overload for string.split
+        /// </summary>
+        /// <param name="val">The val.</param>
+        /// <param name="separator">The separator.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String[][].</returns>
+        public static string[] Split(this string val, char separator, StringSplitOptions options)
+        {
+            return val.Split(new[] { separator }, options);
+        }
+
+        /// <summary>
+        /// Invokes an action after a specified delay
+        /// </summary>
+        /// <param name="dispatcher">The dispatcher.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="delayMs">The delay ms.</param>
+        public static void InvokeWithDelay(this Dispatcher dispatcher, Action action, long delayMs)
+        {
+            var timer = new DispatcherTimer(DispatcherPriority.Normal, dispatcher);
+            timer.Interval = TimeSpan.FromMilliseconds(delayMs);
+            timer.Tick += (sender, args) =>
+            {
+                timer.Stop();
+                action();
+            };
+            timer.Start();
+        }
+
+        /// <summary>
+        /// Provides a non-blocking method to start a process and wait asynchronously for it to exit
+        /// </summary>
+        /// <param name="process">The process.</param>
+        /// <returns>Task{System.Boolean}.</returns>
+        public static Task<bool> RunAsync(this Process process)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+
+            process.EnableRaisingEvents = true;
+            process.Exited += (sender, args) => tcs.SetResult(true);
+
+            process.Start();
+
+            return tcs.Task;
+        }
+
+        /// <summary>
+        /// Shuffles an IEnumerable
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list">The list.</param>
+        /// <returns>IEnumerable{``0}.</returns>
+        public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> list)
+        {
+            return list.OrderBy(x => Guid.NewGuid());
+        }
+
+        /// <summary>
+        /// Gets the M d5.
+        /// </summary>
+        /// <param name="str">The STR.</param>
+        /// <returns>Guid.</returns>
         public static Guid GetMD5(this string str)
         {
-            lock (md5Provider)
+            using (var provider = new MD5CryptoServiceProvider())
             {
-                return new Guid(md5Provider.ComputeHash(Encoding.Unicode.GetBytes(str)));
+                return new Guid(provider.ComputeHash(Encoding.Unicode.GetBytes(str)));
             }
         }
 
         /// <summary>
-        /// Examine a list of strings assumed to be file paths to see if it contains a parent of 
-        /// the provided path.
+        /// Gets the MB id.
         /// </summary>
-        /// <param name="lst"></param>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        public static bool ContainsParentFolder(this List<string> lst, string path)
+        /// <param name="str">The STR.</param>
+        /// <param name="aType">A type.</param>
+        /// <returns>Guid.</returns>
+        /// <exception cref="System.ArgumentNullException">aType</exception>
+        public static Guid GetMBId(this string str, Type aType)
         {
-            path = path.TrimEnd('\\');
-            foreach (var str in lst)
+            if (aType == null)
             {
-                //this should be a little quicker than examining each actual parent folder...
-                var compare = str.TrimEnd('\\');
-                if (path.Equals(compare,StringComparison.OrdinalIgnoreCase) 
-                    || (path.StartsWith(compare, StringComparison.OrdinalIgnoreCase) && path[compare.Length] == '\\')) return true;
+                throw new ArgumentNullException("aType");
             }
-            return false;
+            
+            return (aType.FullName + str.ToLower()).GetMD5();
         }
 
         /// <summary>
@@ -44,10 +127,10 @@ namespace MediaBrowser.Common.Extensions
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <typeparam name="U"></typeparam>
-        /// <param name="dictionary"></param>
-        /// <param name="key"></param>
-        /// <param name="defaultValue"></param>
-        /// <returns></returns>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <returns>``1.</returns>
         public static U GetValueOrDefault<T, U>(this Dictionary<T, U> dictionary, T key, U defaultValue)
         {
             U val;
@@ -59,5 +142,29 @@ namespace MediaBrowser.Common.Extensions
 
         }
 
+        /// <summary>
+        /// Gets the attribute value.
+        /// </summary>
+        /// <param name="str">The STR.</param>
+        /// <param name="attrib">The attrib.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">attrib</exception>
+        public static string GetAttributeValue(this string str, string attrib)
+        {
+            if (attrib == null)
+            {
+                throw new ArgumentNullException("attrib");
+            }
+            
+            string srch = "[" + attrib + "=";
+            int start = str.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
+            if (start > -1)
+            {
+                start += srch.Length;
+                int end = str.IndexOf(']', start);
+                return str.Substring(start, end - start);
+            }
+            return null;
+        }
     }
 }

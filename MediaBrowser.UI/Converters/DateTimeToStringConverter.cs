@@ -16,10 +16,17 @@ namespace MediaBrowser.UI.Converters
             {
                 return date.ToString();
             }
-            
-            if (format.Equals("shorttime", StringComparison.OrdinalIgnoreCase))
+
+            // If a theme asks for this, they know it's only going to work if the current culture is en-us
+            if (format.Equals("timesuffixlower", StringComparison.OrdinalIgnoreCase))
             {
-                return date.ToShortTimeString();
+                if (CultureInfo.CurrentCulture.Name.Equals("en-US", StringComparison.OrdinalIgnoreCase))
+                {
+                    var time = date.ToString("t");
+                    var values = time.Split(' ');
+                    return values[values.Length - 1].ToLower();
+                }
+                return string.Empty;
             }
 
             return date.ToString(format);

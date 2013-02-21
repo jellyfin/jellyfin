@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>ServiceStack.Text</id>
+    <version>3.9.37</version>
+    <title>.NET's fastest JSON Serializer by ServiceStack</title>
+    <authors>Demis Bellot</authors>
+    <owners>Demis Bellot</owners>
+    <licenseUrl>https://github.com/ServiceStack/ServiceStack.Text/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/ServiceStack/ServiceStack.Text</projectUrl>
+    <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>.NET's fastest JSON, JSV and CSV Text Serializers (3x faster than JSON.NET). Fast, Light, Resilient.
+        Benchmarks at: http://servicestack.net/benchmarks/
+        Includes the String and Stream functionality for all the ServiceStack projects including: 
+          - T.Dump() generic extension method for easy dbugging and introspection of types
+          - WebRequest, List, Dictionary and DateTime extensions</description>
+    <summary>.NET's fastest JSON, JSV and CSV Text Serializers (3x faster than JSON.NET)</summary>
+    <copyright>ServiceStack 2013 and contributors</copyright>
+    <language>en-US</language>
+    <tags>JSON Text Serializer CSV JSV Dump PrettyPrint Fast</tags>
+    <references>
+      <reference file="ServiceStack.Text.dll" />
+      <reference file="ServiceStack.Text.WP.dll" />
+    </references>
+  </metadata>
+</package>
