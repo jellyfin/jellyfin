@@ -1,10 +1,9 @@
 ﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Logging;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.IsoMounter
 {
@@ -13,8 +12,6 @@ namespace MediaBrowser.IsoMounter
     /// </summary>
     public class PismoIsoManager : IIsoManager
     {
-        private ILogger Logger = LogManager.GetLogger("IsoManager");
-
         /// <summary>
         /// The mount semaphore - limit to four at a time.
         /// </summary>
@@ -69,8 +66,15 @@ namespace MediaBrowser.IsoMounter
         /// </summary>
         private bool _hasInitialized;
 
-        public PismoIsoManager()
+        /// <summary>
+        /// Gets or sets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
+        private ILogger Logger { get; set; }
+        
+        public PismoIsoManager(ILogger logger)
         {
+            Logger = logger;
         }
 
         /// <summary>
@@ -144,7 +148,7 @@ namespace MediaBrowser.IsoMounter
                 throw new IOException("Unable to start mount for " + isoPath);
             }
 
-            return new PismoMount(mount, isoPath, this);
+            return new PismoMount(mount, isoPath, this, Logger);
         }
 
         public void Dispose()

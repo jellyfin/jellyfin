@@ -76,6 +76,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Drawing\ImageExtensions.cs" />
+    <Compile Include="Drawing\ImageHeader.cs" />
     <Compile Include="Drawing\ImageManager.cs" />
     <Compile Include="Entities\AggregateFolder.cs" />
     <Compile Include="Entities\Audio\Audio.cs" />
@@ -197,8 +199,7 @@
     <Compile Include="Sorting\BaseItemComparer.cs" />
     <Compile Include="Sorting\SortOrder.cs" />
     <Compile Include="Updates\InstallationManager.cs" />
-    <Compile Include="Weather\BaseWeatherProvider.cs" />
-    <Compile Include="Weather\WeatherProvider.cs" />
+    <Compile Include="Weather\IWeatherProvider.cs" />
     <Compile Include="Providers\BaseItemXmlParser.cs" />
   </ItemGroup>
   <ItemGroup>

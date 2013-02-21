@@ -441,7 +441,7 @@ namespace MediaBrowser.Common.Kernel
 
             AddLogTarget(logFile, "ApplicationLogFile");
 
-            Logging.Logger.LoggerInstance = Logging.LogManager.GetLogger("Global");
+            Logging.Logger.LoggerInstance = Logging.LogManager.GetLogger("App");
 
             OnLoggerLoaded();
         }
@@ -484,6 +484,7 @@ namespace MediaBrowser.Common.Kernel
             CompositionContainer = MefUtils.GetSafeCompositionContainer(Assemblies.Select(i => new AssemblyCatalog(i)));
 
             CompositionContainer.ComposeExportedValue("kernel", this);
+            CompositionContainer.ComposeExportedValue("logger", Logging.LogManager.GetLogger("App"));
 
             CompositionContainer.ComposeParts(this);
 

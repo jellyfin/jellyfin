@@ -1,5 +1,7 @@
-﻿using MediaBrowser.Common.Logging;
-using MediaBrowser.Common.Serialization;
+﻿using MediaBrowser.Common.Serialization;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Weather;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Weather;
 using System;
 using System.ComponentModel.Composition;
@@ -7,15 +9,37 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.Weather
+namespace MediaBrowser.Server.WorldWeatherOnline
 {
     /// <summary>
     /// Based on http://www.worldweatheronline.com/free-weather-feed.aspx
     /// The classes in this file are a reproduction of the json output, which will then be converted to our weather model classes
     /// </summary>
-    [Export(typeof(BaseWeatherProvider))]
-    public class WeatherProvider : BaseWeatherProvider
+    [Export(typeof(IWeatherProvider))]
+    public class WeatherProvider : IWeatherProvider
     {
+        /// <summary>
+        /// Gets or sets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
+        private ILogger Logger { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WeatherProvider" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <exception cref="System.ArgumentNullException">logger</exception>
+        [ImportingConstructor]
+        public WeatherProvider([Import("logger")] ILogger logger)
+        {
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+
+            Logger = logger;
+        }
+
         /// <summary>
         /// The _weather semaphore
         /// </summary>
@@ -28,7 +52,7 @@ namespace MediaBrowser.Controller.Weather
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{WeatherInfo}.</returns>
         /// <exception cref="System.ArgumentNullException">location</exception>
-        public override async Task<WeatherInfo> GetWeatherInfoAsync(string location, CancellationToken cancellationToken)
+        public async Task<WeatherInfo> GetWeatherInfoAsync(string location, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(location))
             {
@@ -39,13 +63,13 @@ namespace MediaBrowser.Controller.Weather
             {
                 throw new ArgumentNullException("cancellationToken");
             }
-            
+
             const int numDays = 5;
             const string apiKey = "24902f60f1231941120109";
 
             var url = "http://free.worldweatheronline.com/feed/weather.ashx?q=" + location + "&format=json&num_of_days=" + numDays + "&key=" + apiKey;
 
-            Logger.LogInfo("Accessing weather from " + url);
+            Logger.Info("Accessing weather from " + url);
 
             using (var stream = await Kernel.Instance.HttpManager.Get(url, _weatherSemaphore, cancellationToken).ConfigureAwait(false))
             {

@@ -95,7 +95,6 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Deployment" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Management" />
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http" />
@@ -118,7 +117,6 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -129,8 +127,6 @@
     <Compile Include="Api\ScheduledTasks\ScheduledTaskService.cs" />
     <Compile Include="Api\ScheduledTasks\ScheduledTasksWebSocketListener.cs" />
     <Compile Include="Api\SystemInfoWebSocketListener.cs" />
-    <Compile Include="Drawing\ImageExtensions.cs" />
-    <Compile Include="Drawing\ImageHeader.cs" />
     <Compile Include="Events\EventHelper.cs" />
     <Compile Include="Extensions\BaseExtensions.cs" />
     <Compile Include="Events\GenericEventArgs.cs" />

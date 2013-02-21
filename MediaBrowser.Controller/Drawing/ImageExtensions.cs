@@ -5,7 +5,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 
-namespace MediaBrowser.Common.Drawing
+namespace MediaBrowser.Controller.Drawing
 {
     /// <summary>
     /// Class ImageExtensions
