@@ -56,7 +56,7 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         internal void OnConfigurationUpdated()
         {
-            EventHelper.QueueEventIfNotNull(ConfigurationUpdated, this, EventArgs.Empty);
+            EventHelper.QueueEventIfNotNull(ConfigurationUpdated, this, EventArgs.Empty, Logger);
 
             // Notify connected clients
             TcpManager.SendWebSocketMessage("ConfigurationUpdated", Configuration);
@@ -73,7 +73,7 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         private void OnLoggerLoaded()
         {
-            EventHelper.QueueEventIfNotNull(LoggerLoaded, this, EventArgs.Empty);
+            EventHelper.QueueEventIfNotNull(LoggerLoaded, this, EventArgs.Empty, Logger);
         }
         #endregion
 
@@ -87,7 +87,7 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         private void OnReloadBeginning()
         {
-            EventHelper.QueueEventIfNotNull(ReloadBeginning, this, EventArgs.Empty);
+            EventHelper.QueueEventIfNotNull(ReloadBeginning, this, EventArgs.Empty, Logger);
         }
         #endregion
 
@@ -101,7 +101,7 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         private void OnReloadCompleted()
         {
-            EventHelper.QueueEventIfNotNull(ReloadCompleted, this, EventArgs.Empty);
+            EventHelper.QueueEventIfNotNull(ReloadCompleted, this, EventArgs.Empty, Logger);
         }
         #endregion
 
@@ -116,7 +116,7 @@ namespace MediaBrowser.Common.Kernel
         /// <param name="newVersion">The new version.</param>
         public void OnApplicationUpdated(Version newVersion)
         {
-            EventHelper.QueueEventIfNotNull(ApplicationUpdated, this, new GenericEventArgs<Version> { Argument = newVersion });
+            EventHelper.QueueEventIfNotNull(ApplicationUpdated, this, new GenericEventArgs<Version> { Argument = newVersion }, Logger);
 
             NotifyPendingRestart();
         }
@@ -351,9 +351,21 @@ namespace MediaBrowser.Common.Kernel
         /// Initializes a new instance of the <see cref="BaseKernel{TApplicationPathsType}" /> class.
         /// </summary>
         /// <param name="isoManager">The iso manager.</param>
-        protected BaseKernel(IIsoManager isoManager)
+        /// <param name="logger">The logger.</param>
+        protected BaseKernel(IIsoManager isoManager, ILogger logger)
         {
+            if (isoManager == null)
+            {
+                throw new ArgumentNullException("isoManager");
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+            
             IsoManager = isoManager;
+            Logger = logger;
         }
 
         /// <summary>
@@ -362,8 +374,6 @@ namespace MediaBrowser.Common.Kernel
         /// <returns>Task.</returns>
         public async Task Init()
         {
-            Logger = Logging.LogManager.GetLogger(GetType().Name);
-
             ApplicationPaths = new TApplicationPathsType();
 
             IsFirstRun = !File.Exists(ApplicationPaths.SystemConfigurationFilePath);
@@ -496,7 +506,7 @@ namespace MediaBrowser.Common.Kernel
         /// <param name="container">The container.</param>
         protected virtual void ComposeExportedValues(CompositionContainer container)
         {
-            container.ComposeExportedValue("logger", Logging.LogManager.GetLogger("App"));
+            container.ComposeExportedValue("logger", Logger);
         }
 
         /// <summary>
@@ -588,7 +598,7 @@ namespace MediaBrowser.Common.Kernel
 
                     try
                     {
-                        plugin.Initialize(this, Logging.LogManager.GetLogger(plugin.GetType().Name));
+                        plugin.Initialize(this, Logger);
 
                         Logger.Info("{0} {1} initialized.", plugin.Name, plugin.Version);
                     }
@@ -609,7 +619,7 @@ namespace MediaBrowser.Common.Kernel
 
             TcpManager.SendWebSocketMessage("HasPendingRestartChanged", GetSystemInfo());
 
-            EventHelper.QueueEventIfNotNull(HasPendingRestartChanged, this, EventArgs.Empty);
+            EventHelper.QueueEventIfNotNull(HasPendingRestartChanged, this, EventArgs.Empty, Logger);
         }
 
         /// <summary>
@@ -749,7 +759,7 @@ namespace MediaBrowser.Common.Kernel
         {
             Logger.Info("Restarting the application");
 
-            EventHelper.QueueEventIfNotNull(ApplicationRestartRequested, this, EventArgs.Empty);
+            EventHelper.QueueEventIfNotNull(ApplicationRestartRequested, this, EventArgs.Empty, Logger);
         }
 
         /// <summary>

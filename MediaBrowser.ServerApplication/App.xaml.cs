@@ -3,6 +3,7 @@ using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.UI;
 using MediaBrowser.Controller;
 using MediaBrowser.IsoMounter;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Uninstall;
 using MediaBrowser.ServerApplication.Implementations;
 using System;
@@ -24,7 +25,10 @@ namespace MediaBrowser.ServerApplication
         [STAThread]
         public static void Main()
         {
-            RunApplication<App>("MediaBrowserServer");
+            var application = new App(LogManager.GetLogger("App"));
+            application.InitializeComponent();
+
+            application.Run();
         }
 
         /// <summary>
@@ -37,6 +41,16 @@ namespace MediaBrowser.ServerApplication
             {
                 return Current as App;
             }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="App" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        public App(ILogger logger)
+            : base(logger)
+        {
+            
         }
 
         /// <summary>
@@ -170,7 +184,7 @@ namespace MediaBrowser.ServerApplication
         /// <returns>IKernel.</returns>
         protected override IKernel InstantiateKernel()
         {
-            return new Kernel(new PismoIsoManager(LogManager.GetLogger("PismoIsoManager")), new DotNetZipClient(), new BdInfoExaminer());
+            return new Kernel(new PismoIsoManager(Logger), new DotNetZipClient(), new BdInfoExaminer(), Logger);
         }
 
         /// <summary>
@@ -179,7 +193,7 @@ namespace MediaBrowser.ServerApplication
         /// <returns>Window.</returns>
         protected override Window InstantiateMainWindow()
         {
-            return new MainWindow(LogManager.GetLogger("MainWindow"));
+            return new MainWindow(Logger);
         }
     }
 }

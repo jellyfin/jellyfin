@@ -3,6 +3,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Logging;
 using MediaBrowser.Model.Connectivity;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.UI.Configuration;
 using MediaBrowser.UI.Playback;
@@ -46,8 +47,8 @@ namespace MediaBrowser.UI.Controller
         /// <summary>
         /// Initializes a new instance of the <see cref="UIKernel" /> class.
         /// </summary>
-        public UIKernel(IIsoManager isoManager)
-            : base(isoManager)
+        public UIKernel(IIsoManager isoManager, ILogger logger)
+            : base(isoManager, logger)
         {
             Instance = this;
         }

@@ -65,7 +65,7 @@ namespace MediaBrowser.Controller.Library
             {
                 Argument = item,
                 User = user
-            });
+            }, Logger);
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace MediaBrowser.Controller.Library
                 Argument = item,
                 User = user,
                 PlaybackPositionTicks = positionTicks
-            });
+            }, Logger);
         }
 
         /// <summary>
@@ -150,7 +150,7 @@ namespace MediaBrowser.Controller.Library
                 Argument = item,
                 User = user,
                 PlaybackPositionTicks = positionTicks
-            });
+            }, Logger);
         }
 
         /// <summary>

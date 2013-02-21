@@ -345,7 +345,7 @@ namespace MediaBrowser.Controller.Entities
                 // When resolving the root, we need it's grandchildren (children of user views)
                 var flattenFolderDepth = args.IsPhysicalRoot ? 2 : 0;
 
-                args.FileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, flattenFolderDepth: flattenFolderDepth, args: args);
+                args.FileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, Logger, flattenFolderDepth: flattenFolderDepth, args: args);
             }
 
             //update our dates

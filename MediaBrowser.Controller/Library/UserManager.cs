@@ -62,7 +62,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         internal void OnUserUpdated(User user)
         {
-            EventHelper.QueueEventIfNotNull(UserUpdated, this, new GenericEventArgs<User> { Argument = user });
+            EventHelper.QueueEventIfNotNull(UserUpdated, this, new GenericEventArgs<User> { Argument = user }, Logger);
 
             // Notify connected ui's
             Kernel.TcpManager.SendWebSocketMessage("UserUpdated", DtoBuilder.GetDtoUser(user));
@@ -80,7 +80,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         internal void OnUserDeleted(User user)
         {
-            EventHelper.QueueEventIfNotNull(UserDeleted, this, new GenericEventArgs<User> { Argument = user });
+            EventHelper.QueueEventIfNotNull(UserDeleted, this, new GenericEventArgs<User> { Argument = user }, Logger);
 
             // Notify connected ui's
             Kernel.TcpManager.SendWebSocketMessage("UserDeleted", user.Id.ToString());

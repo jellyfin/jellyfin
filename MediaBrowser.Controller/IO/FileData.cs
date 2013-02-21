@@ -16,14 +16,10 @@ namespace MediaBrowser.Controller.IO
     public static class FileData
     {
         /// <summary>
-        /// The logger
-        /// </summary>
-        private static readonly ILogger Logger = LogManager.GetLogger("FileData");
-        
-        /// <summary>
         /// Gets all file system entries within a foler
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="logger">The logger.</param>
         /// <param name="searchPattern">The search pattern.</param>
         /// <param name="includeFiles">if set to <c>true</c> [include files].</param>
         /// <param name="includeDirectories">if set to <c>true</c> [include directories].</param>
@@ -32,7 +28,7 @@ namespace MediaBrowser.Controller.IO
         /// <returns>Dictionary{System.StringWIN32_FIND_DATA}.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
         /// <exception cref="System.IO.IOException">GetFileSystemEntries failed</exception>
-        public static Dictionary<string, WIN32_FIND_DATA> GetFilteredFileSystemEntries(string path, string searchPattern = "*", bool includeFiles = true, bool includeDirectories = true, int flattenFolderDepth = 0, ItemResolveArgs args = null)
+        public static Dictionary<string, WIN32_FIND_DATA> GetFilteredFileSystemEntries(string path, ILogger logger, string searchPattern = "*", bool includeFiles = true, bool includeDirectories = true, int flattenFolderDepth = 0, ItemResolveArgs args = null)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -93,7 +89,7 @@ namespace MediaBrowser.Controller.IO
                     if (string.IsNullOrWhiteSpace(newPath))
                     {
                         //invalid shortcut - could be old or target could just be unavailable
-                        Logger.Warn("Encountered invalid shortuct: "+lpFindFileData.Path);
+                        logger.Warn("Encountered invalid shortuct: " + lpFindFileData.Path);
                         continue;
                     }
                     var data = FileSystem.GetFileData(newPath);
@@ -117,7 +113,7 @@ namespace MediaBrowser.Controller.IO
                 }
                 else if (flattenFolderDepth > 0 && lpFindFileData.IsDirectory)
                 {
-                    foreach (var child in GetFilteredFileSystemEntries(lpFindFileData.Path, flattenFolderDepth: flattenFolderDepth - 1))
+                    foreach (var child in GetFilteredFileSystemEntries(lpFindFileData.Path, logger, flattenFolderDepth: flattenFolderDepth - 1))
                     {
                         dict[child.Key] = child.Value;
                     }

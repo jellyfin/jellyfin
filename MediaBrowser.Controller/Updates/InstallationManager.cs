@@ -45,7 +45,7 @@ namespace MediaBrowser.Controller.Updates
         /// <param name="plugin">The plugin.</param>
         private void OnPluginUninstalled(IPlugin plugin)
         {
-            EventHelper.QueueEventIfNotNull(PluginUninstalled, this, new GenericEventArgs<IPlugin> { Argument = plugin });
+            EventHelper.QueueEventIfNotNull(PluginUninstalled, this, new GenericEventArgs<IPlugin> { Argument = plugin }, Logger);
 
             // Notify connected ui's
             Kernel.TcpManager.SendWebSocketMessage("PluginUninstalled", plugin.GetPluginInfo());
@@ -66,7 +66,7 @@ namespace MediaBrowser.Controller.Updates
         {
             Logger.Info("Plugin updated: {0} {1} {2}", newVersion.name, newVersion.version, newVersion.classification);
 
-            EventHelper.QueueEventIfNotNull(PluginUpdated, this, new GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> { Argument = new Tuple<IPlugin, PackageVersionInfo>(plugin, newVersion) });
+            EventHelper.QueueEventIfNotNull(PluginUpdated, this, new GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> { Argument = new Tuple<IPlugin, PackageVersionInfo>(plugin, newVersion) }, Logger);
             
             Kernel.NotifyPendingRestart();
         }
@@ -85,7 +85,7 @@ namespace MediaBrowser.Controller.Updates
         {
             Logger.Info("New plugin installed: {0} {1} {2}", package.name, package.version, package.classification);
 
-            EventHelper.QueueEventIfNotNull(PluginInstalled, this, new GenericEventArgs<PackageVersionInfo> { Argument = package });
+            EventHelper.QueueEventIfNotNull(PluginInstalled, this, new GenericEventArgs<PackageVersionInfo> { Argument = package }, Logger);
 
             Kernel.NotifyPendingRestart();
         }

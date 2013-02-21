@@ -38,7 +38,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="args">The <see cref="ChildrenChangedEventArgs" /> instance containing the event data.</param>
         internal void OnLibraryChanged(ChildrenChangedEventArgs args)
         {
-            EventHelper.QueueEventIfNotNull(LibraryChanged, this, args);
+            EventHelper.QueueEventIfNotNull(LibraryChanged, this, args, Logger);
 
             // Had to put this in a separate method to avoid an implicitly captured closure
             SendLibraryChangedWebSocketMessage(args);
@@ -115,7 +115,7 @@ namespace MediaBrowser.Controller.Library
                 // When resolving the root, we need it's grandchildren (children of user views)
                 var flattenFolderDepth = args.IsPhysicalRoot ? 2 : 0;
 
-                args.FileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, flattenFolderDepth: flattenFolderDepth, args: args);
+                args.FileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, Logger, flattenFolderDepth: flattenFolderDepth, args: args);
             }
 
             // Check to see if we should resolve based on our contents

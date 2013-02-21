@@ -160,7 +160,7 @@ namespace MediaBrowser.ServerApplication
             // Show the notification
             if (newItems.Count == 1)
             {
-                Dispatcher.InvokeAsync(() => MbTaskbarIcon.ShowCustomBalloon(new ItemUpdateNotification(LogManager.GetLogger("ItemUpdateNotification"))
+                Dispatcher.InvokeAsync(() => MbTaskbarIcon.ShowCustomBalloon(new ItemUpdateNotification(_logger)
                 {
                     DataContext = newItems[0]
 
@@ -168,7 +168,7 @@ namespace MediaBrowser.ServerApplication
             }
             else if (newItems.Count > 1)
             {
-                Dispatcher.InvokeAsync(() => MbTaskbarIcon.ShowCustomBalloon(new MultiItemUpdateNotification(LogManager.GetLogger("ItemUpdateNotification"))
+                Dispatcher.InvokeAsync(() => MbTaskbarIcon.ShowCustomBalloon(new MultiItemUpdateNotification(_logger)
                 {
                     DataContext = newItems
 

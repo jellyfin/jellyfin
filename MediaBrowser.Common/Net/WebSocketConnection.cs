@@ -37,7 +37,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// The logger
         /// </summary>
-        private static readonly ILogger Logger = LogManager.GetLogger("WebSocketConnection");
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketConnection" /> class.
@@ -46,7 +46,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="receiveAction">The receive action.</param>
         /// <exception cref="System.ArgumentNullException">socket</exception>
-        public WebSocketConnection(IWebSocket socket, EndPoint remoteEndPoint, Action<WebSocketMessageInfo> receiveAction)
+        public WebSocketConnection(IWebSocket socket, EndPoint remoteEndPoint, Action<WebSocketMessageInfo> receiveAction, ILogger logger)
         {
             if (socket == null)
             {
@@ -60,10 +60,15 @@ namespace MediaBrowser.Common.Net
             {
                 throw new ArgumentNullException("receiveAction");
             }
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
 
             _socket = socket;
             _socket.OnReceiveDelegate = info => OnReceive(info, receiveAction);
             RemoteEndPoint = remoteEndPoint;
+            _logger = logger;
         }
 
         /// <summary>
@@ -81,7 +86,7 @@ namespace MediaBrowser.Common.Net
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error processing web socket message", ex);
+                _logger.ErrorException("Error processing web socket message", ex);
             }
         }
 
@@ -148,13 +153,13 @@ namespace MediaBrowser.Common.Net
             }
             catch (OperationCanceledException)
             {
-                Logger.Info("WebSocket message to {0} was cancelled", RemoteEndPoint);
+                _logger.Info("WebSocket message to {0} was cancelled", RemoteEndPoint);
 
                 throw;
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error sending WebSocket message {0}", ex, RemoteEndPoint);
+                _logger.ErrorException("Error sending WebSocket message {0}", ex, RemoteEndPoint);
 
                 throw;
             }
