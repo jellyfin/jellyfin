@@ -1,0 +1,33 @@
+﻿<Controls:MetroWindow x:Class="MediaBrowser.Common.UI.Splash"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        Title="MediaBrowser" 
+        Height="230" 
+        Width="520" 
+        ShowInTaskbar="True" 
+        ResizeMode="NoResize" 
+        WindowStartupLocation="CenterScreen"
+        WindowState="Normal" 
+        FontSize="14">
+    <Window.Resources>
+        <ResourceDictionary>
+            <Style TargetType="{x:Type Controls:WindowCommands}">
+                <Setter Property="Visibility" Value="Hidden" />
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Window.Background>
+        <RadialGradientBrush RadiusX=".75" RadiusY=".75">
+            <GradientStop Color="White" Offset="0.0"/>
+            <GradientStop Color="WhiteSmoke" Offset="0.65"/>
+            <GradientStop Color="#cfcfcf" Offset="1.0"/>
+        </RadialGradientBrush>
+    </Window.Background>
+    <Grid Name="splashGrid">
+        <Image x:Name="imgLogo" HorizontalAlignment="Left" VerticalAlignment="Top" Stretch="Uniform" Grid.Row="0" Margin="10 10 10 10" Source="../Resources/Images/mblogoblack.png"/>
+        <StackPanel Margin="0,130,10,0" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="2" Orientation="Horizontal">
+            <TextBlock Name="lblProgress" FontSize="18" Foreground="Black" Text="Label"></TextBlock>
+        </StackPanel>
+    </Grid>
+</Controls:MetroWindow>

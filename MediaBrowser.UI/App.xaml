@@ -1,0 +1,14 @@
+﻿<z:BaseApplication x:Class="MediaBrowser.UI.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:z="clr-namespace:MediaBrowser.Common.UI;assembly=MediaBrowser.Common">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/AppResources.xaml" />
+                <ResourceDictionary Source="Resources/MainWindowResources.xaml" />
+                <ResourceDictionary Source="Resources/NavBarResources.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</z:BaseApplication>
