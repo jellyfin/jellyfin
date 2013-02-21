@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Xml;
 
-namespace MediaBrowser.Common.Extensions
+namespace MediaBrowser.Controller.Extensions
 {
     /// <summary>
     /// Class XmlExtensions

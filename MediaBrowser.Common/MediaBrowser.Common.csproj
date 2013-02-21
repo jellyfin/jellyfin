@@ -132,7 +132,6 @@
     <Compile Include="Events\GenericEventArgs.cs" />
     <Compile Include="Extensions\NamedLock.cs" />
     <Compile Include="Extensions\ResourceNotFoundException.cs" />
-    <Compile Include="Extensions\XmlExtensions.cs" />
     <Compile Include="IO\FileSystem.cs" />
     <Compile Include="IO\FileSystemRepository.cs" />
     <Compile Include="IO\IIsoManager.cs" />
