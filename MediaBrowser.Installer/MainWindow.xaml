@@ -2,11 +2,15 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:Code="clr-namespace:MediaBrowser.Installer.Code" x:Class="MediaBrowser.Installer.MainWindow"
-        Title="Install Media Browser Server" Height="338.057" Width="667.453" ResizeMode="NoResize">
-    <Grid Margin="0,0,0,2">
-        <ProgressBar x:Name="prgProgress" HorizontalAlignment="Left" Height="11" Margin="52,266,0,0" VerticalAlignment="Top" Width="460"/>
-        <Code:DownloadAnimation x:Name="dlAnimation" HorizontalAlignment="Left" Margin="26,10,0,0" VerticalAlignment="Top" Height="196" Width="574" RenderTransformOrigin="0.5,0.5"/>
-        <Button x:Name="btnCancel" Content="Cancel" HorizontalAlignment="Left" Margin="547,255,0,0" VerticalAlignment="Top" Width="79" FontSize="14" Click="btnCancel_Click"/>
-        <Label x:Name="lblStatus" Content="Status" HorizontalAlignment="Left" Margin="52,210,0,0" VerticalAlignment="Top" Width="574" FontSize="14" FontWeight="Bold"/>
-    </Grid>
+        Title="Install Media Browser Server" Height="383.481" Width="663.057" ResizeMode="NoResize" WindowStyle="None">
+    <Border BorderBrush="DarkGray" BorderThickness="2">
+        <Grid Margin="0,0,0,2">
+            <Image x:Name="imgLogo" HorizontalAlignment="Center" Height="172" Margin="10,10,57,0" VerticalAlignment="Top" Width="590" Source="Code/Images/mb3logo800.png" Opacity="0.5"/>
+            <ProgressBar x:Name="prgProgress" HorizontalAlignment="Left" Height="11" Margin="52,320,0,0" VerticalAlignment="Top" Width="460"/>
+            <Code:DownloadAnimation x:Name="dlAnimation" HorizontalAlignment="Left" Margin="26,97,0,0" VerticalAlignment="Top" Height="196" Width="574" RenderTransformOrigin="0.5,0.5"/>
+            <Button x:Name="btnCancel" Content="Cancel" HorizontalAlignment="Left" Margin="547,309,0,0" VerticalAlignment="Top" Width="79" FontSize="14" Click="btnCancel_Click"/>
+            <Label x:Name="lblStatus" Content="Status" HorizontalAlignment="Left" Margin="52,264,0,0" VerticalAlignment="Top" Width="574" FontSize="14" FontWeight="Bold"/>
+        </Grid>
+        
+    </Border>
 </Window>
