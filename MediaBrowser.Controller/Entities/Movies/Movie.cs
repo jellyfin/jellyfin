@@ -1,7 +1,11 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Logging;
+using MediaBrowser.Common.Win32;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
@@ -12,7 +16,7 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video, ISupportsSpecialFeatures
+    public class Movie : Video
     {
         /// <summary>
         /// Should be overridden to return the proper folder where metadata lives
@@ -66,7 +70,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _specialFeatures, ref _specialFeaturesInitialized, ref _specialFeaturesSyncLock, () => Entities.SpecialFeatures.LoadSpecialFeatures(this).ToList());
+                LazyInitializer.EnsureInitialized(ref _specialFeatures, ref _specialFeaturesInitialized, ref _specialFeaturesSyncLock, () => LoadSpecialFeatures().ToList());
                 return _specialFeatures;
             }
             private set
@@ -139,6 +143,60 @@ namespace MediaBrowser.Controller.Entities.Movies
             }
 
             return null;
+        }        
+        
+        /// <summary>
+        /// Loads special features from the file system
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <returns>List{Video}.</returns>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        private IEnumerable<Video> LoadSpecialFeatures()
+        {
+            WIN32_FIND_DATA? folder;
+
+            try
+            {
+                folder = ResolveArgs.GetFileSystemEntryByName("specials");
+            }
+            catch (IOException ex)
+            {
+                Logger.LogException("Error getting ResolveArgs for {0}", ex, Path);
+                return new List<Video> { };
+            }
+
+            // Path doesn't exist. No biggie
+            if (folder == null)
+            {
+                return new List<Video> { };
+            }
+
+            IEnumerable<WIN32_FIND_DATA> files;
+
+            try
+            {
+                files = FileSystem.GetFiles(folder.Value.Path);
+            }
+            catch (IOException ex)
+            {
+                Logger.LogException("Error loading trailers for {0}", ex, Name);
+                return new List<Video> { };
+            }
+
+            return Kernel.Instance.LibraryManager.GetItems<Video>(files, null).Select(video =>
+            {
+                // Try to retrieve it from the db. If we don't find it, use the resolved version
+                var dbItem = Kernel.Instance.ItemRepository.RetrieveItem(video.Id) as Video;
+
+                if (dbItem != null)
+                {
+                    dbItem.ResolveArgs = video.ResolveArgs;
+                    video = dbItem;
+                }
+
+                return video;
+            });
         }
+
     }
 }
