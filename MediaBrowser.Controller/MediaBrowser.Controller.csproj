@@ -105,6 +105,7 @@
     <Compile Include="Entities\Video.cs" />
     <Compile Include="Entities\CollectionFolder.cs" />
     <Compile Include="Entities\Year.cs" />
+    <Compile Include="Extensions\XmlExtensions.cs" />
     <Compile Include="IO\FileSystemManager.cs" />
     <Compile Include="Library\ChildrenChangedEventArgs.cs" />
     <Compile Include="Library\DtoBuilder.cs" />

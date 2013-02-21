@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Resolvers.TV;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
