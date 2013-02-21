@@ -1,0 +1,8 @@
+﻿<z:BaseApplication x:Class="MediaBrowser.ServerApplication.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:z="clr-namespace:MediaBrowser.Common.UI;assembly=MediaBrowser.Common">
+    <Application.Resources>
+
+    </Application.Resources>
+</z:BaseApplication>

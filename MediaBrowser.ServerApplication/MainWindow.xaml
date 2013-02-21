@@ -1,0 +1,41 @@
+﻿<Window x:Class="MediaBrowser.ServerApplication.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:tb="http://www.hardcodet.net/taskbar"
+        Title="MainWindow" Height="350" Width="525" AllowsTransparency="True" Background="Transparent" WindowStyle="None" ShowInTaskbar="False">
+    <Grid>
+        <tb:TaskbarIcon Name="MbTaskbarIcon" ToolTipText="MediaBrowser Server">
+
+            <tb:TaskbarIcon.ContextMenu>
+                <ContextMenu Background="White">
+                    <MenuItem Name="cmOpenDashboard" Header="Open Dashboard" Click="cmOpenDashboard_click"/>
+                    <MenuItem Name="cmdReloadServer" Header="Reload Server" Click="cmdReloadServer_click"/>
+                    <MenuItem Name="cmVisitCT" Header="Visit Community Tracker" Click="cmVisitCT_click"/>
+                    <Separator/>
+                    <MenuItem Name="cmExit" Header="Exit" Click="cmExit_click"/>
+                </ContextMenu>
+            </tb:TaskbarIcon.ContextMenu>
+
+            <tb:TaskbarIcon.Style>
+                <Style TargetType="{x:Type tb:TaskbarIcon}">
+                    <Setter Property="IconSource" Value="/Resources/Images/icon.ico" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding LoadingImageIndex}" Value="1">
+                            <Setter Property="IconSource" Value="/Resources/Images/loadingIcon1.ico" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding LoadingImageIndex}" Value="2">
+                            <Setter Property="IconSource" Value="/Resources/Images/loadingIcon2.ico" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding LoadingImageIndex}" Value="3">
+                            <Setter Property="IconSource" Value="/Resources/Images/loadingIcon3.ico" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding LoadingImageIndex}" Value="4">
+                            <Setter Property="IconSource" Value="/Resources/Images/loadingIcon4.ico" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </tb:TaskbarIcon.Style>
+
+        </tb:TaskbarIcon>
+    </Grid>
+</Window>
