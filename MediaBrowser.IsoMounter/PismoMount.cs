@@ -8,7 +8,7 @@ namespace MediaBrowser.IsoMounter
     /// <summary>
     /// Class IsoMount
     /// </summary>
-    internal class IsoMount : IIsoMount
+    internal class PismoMount : IIsoMount
     {
         /// <summary>
         /// The logger
@@ -35,15 +35,15 @@ namespace MediaBrowser.IsoMounter
         /// <summary>
         /// The _iso manager
         /// </summary>
-        private readonly IsoManager _isoManager;
+        private readonly PismoIsoManager _isoManager;
 
         /// <summary>
-        /// Prevents a default instance of the <see cref="IsoMount" /> class from being created.
+        /// Prevents a default instance of the <see cref="PismoMount" /> class from being created.
         /// </summary>
         /// <param name="mount">The mount.</param>
         /// <param name="isoPath">The iso path.</param>
         /// <param name="isoManager">The iso manager.</param>
-        internal IsoMount(PfmFileMount mount, string isoPath, IsoManager isoManager)
+        internal PismoMount(PfmFileMount mount, string isoPath, PismoIsoManager isoManager)
         {
             _pfmFileMount = mount;
             IsoPath = isoPath;

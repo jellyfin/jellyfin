@@ -1,5 +1,6 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Controller;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Persistence;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -8,13 +9,13 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.Persistence.SQLite
+namespace MediaBrowser.Server.Sqlite
 {
     /// <summary>
-    /// Class SQLiteDisplayPreferencesRepository
+    /// Class SQLiteUserDataRepository
     /// </summary>
-    [Export(typeof(IDisplayPreferencesRepository))]
-    class SQLiteDisplayPreferencesRepository : SqliteRepository, IDisplayPreferencesRepository
+    [Export(typeof(IUserDataRepository))]
+    public class SQLiteUserDataRepository : SqliteRepository, IUserDataRepository
     {
         /// <summary>
         /// The repository name
@@ -39,14 +40,14 @@ namespace MediaBrowser.Controller.Persistence.SQLite
         /// <returns>Task.</returns>
         public async Task Initialize()
         {
-            var dbFile = Path.Combine(Kernel.Instance.ApplicationPaths.DataPath, "displaypreferences.db");
+            var dbFile = Path.Combine(Kernel.Instance.ApplicationPaths.DataPath, "userdata.db");
 
             await ConnectToDB(dbFile).ConfigureAwait(false);
 
             string[] queries = {
 
-                                "create table if not exists display_prefs (item_id GUID, user_id GUID, data BLOB)",
-                                "create unique index if not exists idx_display_prefs on display_prefs (item_id, user_id)",
+                                "create table if not exists user_data (item_id GUID, user_id GUID, data BLOB)",
+                                "create unique index if not exists idx_user_data on user_data (item_id, user_id)",
                                 "create table if not exists schema_version (table_name primary key, version)",
                                 //pragmas
                                 "pragma temp_store = memory"
@@ -56,13 +57,13 @@ namespace MediaBrowser.Controller.Persistence.SQLite
         }
 
         /// <summary>
-        /// Save the display preferences associated with an item in the repo
+        /// Save the user specific data associated with an item in the repo
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public Task SaveDisplayPrefs(Folder item, CancellationToken cancellationToken)
+        public Task SaveUserData(BaseItem item, CancellationToken cancellationToken)
         {
             if (item == null)
             {
@@ -74,24 +75,24 @@ namespace MediaBrowser.Controller.Persistence.SQLite
                 throw new ArgumentNullException("cancellationToken");
             }
             
-            cancellationToken.ThrowIfCancellationRequested();
-
             return Task.Run(() =>
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var cmd = connection.CreateCommand();
 
-                cmd.CommandText = "delete from display_prefs where item_id = @guid";
-                cmd.AddParam("@guid", item.DisplayPrefsId);
+                cmd.CommandText = "delete from user_data where item_id = @guid";
+                cmd.AddParam("@guid", item.UserDataId);
 
                 QueueCommand(cmd);
 
-                if (item.DisplayPrefs != null)
+                if (item.UserData != null)
                 {
-                    foreach (var data in item.DisplayPrefs)
+                    foreach (var data in item.UserData)
                     {
                         cmd = connection.CreateCommand();
-                        cmd.CommandText = "insert into display_prefs (item_id, user_id, data) values (@1, @2, @3)";
-                        cmd.AddParam("@1", item.DisplayPrefsId);
+                        cmd.CommandText = "insert into user_data (item_id, user_id, data) values (@1, @2, @3)";
+                        cmd.AddParam("@1", item.UserDataId);
                         cmd.AddParam("@2", data.UserId);
 
                         cmd.AddParam("@3", Kernel.Instance.ProtobufSerializer.SerializeToBytes(data));
@@ -103,12 +104,12 @@ namespace MediaBrowser.Controller.Persistence.SQLite
         }
 
         /// <summary>
-        /// Gets display preferences for an item
+        /// Gets user data for an item
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <returns>IEnumerable{DisplayPreferences}.</returns>
+        /// <returns>IEnumerable{UserItemData}.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public IEnumerable<DisplayPreferences> RetrieveDisplayPrefs(Folder item)
+        public IEnumerable<UserItemData> RetrieveUserData(BaseItem item)
         {
             if (item == null)
             {
@@ -116,9 +117,9 @@ namespace MediaBrowser.Controller.Persistence.SQLite
             }
 
             var cmd = connection.CreateCommand();
-            cmd.CommandText = "select data from display_prefs where item_id = @guid";
+            cmd.CommandText = "select data from user_data where item_id = @guid";
             var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
-            guidParam.Value = item.DisplayPrefsId;
+            guidParam.Value = item.UserDataId;
 
             using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
             {
@@ -126,7 +127,7 @@ namespace MediaBrowser.Controller.Persistence.SQLite
                 {
                     using (var stream = GetStream(reader, 0))
                     {
-                        var data = Kernel.Instance.ProtobufSerializer.DeserializeFromStream<DisplayPreferences>(stream);
+                        var data = Kernel.Instance.ProtobufSerializer.DeserializeFromStream<UserItemData>(stream);
                         if (data != null)
                         {
                             yield return data;

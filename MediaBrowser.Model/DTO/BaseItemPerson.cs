@@ -46,7 +46,10 @@ namespace MediaBrowser.Model.DTO
         [IgnoreDataMember]
         public bool HasPrimaryImage
         {
-            get { return PrimaryImageTag.HasValue; }
+            get
+            {
+                return PrimaryImageTag.HasValue;
+            }
         }
 
         /// <summary>

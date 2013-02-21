@@ -1,7 +1,5 @@
-﻿using System.Net;
-using System.Net.Cache;
-using System.Net.Http;
-using MediaBrowser.ApiInteraction;
+﻿using MediaBrowser.ApiInteraction;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Logging;
 using MediaBrowser.Model.Connectivity;
@@ -14,6 +12,9 @@ using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Cache;
+using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -45,8 +46,8 @@ namespace MediaBrowser.UI.Controller
         /// <summary>
         /// Initializes a new instance of the <see cref="UIKernel" /> class.
         /// </summary>
-        public UIKernel()
-            : base()
+        public UIKernel(IIsoManager isoManager)
+            : base(isoManager)
         {
             Instance = this;
         }
@@ -145,20 +146,6 @@ namespace MediaBrowser.UI.Controller
             PlaybackManager = new PlaybackManager(this);
 
             return base.ReloadInternal();
-        }
-
-        /// <summary>
-        /// Gets the composable part assemblies.
-        /// </summary>
-        /// <returns>IEnumerable{Assembly}.</returns>
-        protected override IEnumerable<Assembly> GetComposablePartAssemblies()
-        {
-            var runningDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
-
-            return base.GetComposablePartAssemblies().Concat(new[] { 
-            
-                Assembly.Load(File.ReadAllBytes(Path.Combine(runningDirectory, "MediaBrowser.Plugins.DefaultTheme.dll")))
-            });
         }
 
         /// <summary>

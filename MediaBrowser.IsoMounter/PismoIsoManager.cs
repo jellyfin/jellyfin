@@ -1,17 +1,20 @@
 ﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Kernel;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Logging;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.IsoMounter
 {
     /// <summary>
     /// Class IsoManager
     /// </summary>
-    public class IsoManager : BaseManager<IKernel>, IIsoManager
+    public class PismoIsoManager : IIsoManager
     {
+        private ILogger Logger = LogManager.GetLogger("IsoManager");
+
         /// <summary>
         /// The mount semaphore - limit to four at a time.
         /// </summary>
@@ -66,12 +69,7 @@ namespace MediaBrowser.IsoMounter
         /// </summary>
         private bool _hasInitialized;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="IsoManager" /> class.
-        /// </summary>
-        /// <param name="kernel">The kernel.</param>
-        public IsoManager(IKernel kernel)
-            : base(kernel)
+        public PismoIsoManager()
         {
         }
 
@@ -146,14 +144,19 @@ namespace MediaBrowser.IsoMounter
                 throw new IOException("Unable to start mount for " + isoPath);
             }
 
-            return new IsoMount(mount, isoPath, this);
+            return new PismoMount(mount, isoPath, this);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
 
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected override void Dispose(bool dispose)
+        protected virtual void Dispose(bool dispose)
         {
             if (dispose)
             {
@@ -166,8 +169,6 @@ namespace MediaBrowser.IsoMounter
                     PfmStatic.ApiUnload();
                 }
             }
-
-            base.Dispose(dispose);
         }
 
         /// <summary>
@@ -192,7 +193,7 @@ namespace MediaBrowser.IsoMounter
         /// Called when [unmount].
         /// </summary>
         /// <param name="mount">The mount.</param>
-        internal void OnUnmount(IsoMount mount)
+        internal void OnUnmount(PismoMount mount)
         {
             _mountSemaphore.Release();
         }

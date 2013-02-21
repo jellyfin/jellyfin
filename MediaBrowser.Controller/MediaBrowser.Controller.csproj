@@ -69,14 +69,6 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.SQLite, Version=1.0.84.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\System.Data.SQLite.1.0.84.0\lib\net45\System.Data.SQLite.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Data.SQLite.Linq, Version=1.0.84.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\System.Data.SQLite.1.0.84.0\lib\net45\System.Data.SQLite.Linq.dll</HintPath>
-    </Reference>
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Net" />
@@ -149,12 +141,6 @@
     <Compile Include="Persistence\IRepository.cs" />
     <Compile Include="Persistence\IUserDataRepository.cs" />
     <Compile Include="Persistence\IUserRepository.cs" />
-    <Compile Include="Persistence\SQLite\SQLiteDisplayPreferencesRepository.cs" />
-    <Compile Include="Persistence\SQLite\SQLiteExtensions.cs" />
-    <Compile Include="Persistence\SQLite\SQLiteItemRepository.cs" />
-    <Compile Include="Persistence\SQLite\SQLiteRepository.cs" />
-    <Compile Include="Persistence\SQLite\SQLiteUserDataRepository.cs" />
-    <Compile Include="Persistence\SQLite\SQLiteUserRepository.cs" />
     <Compile Include="Persistence\TypeMapper.cs" />
     <Compile Include="Playback\BaseIntroProvider.cs" />
     <Compile Include="Plugins\BaseConfigurationPage.cs" />
@@ -251,12 +237,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaInfo\readme.txt" />
-    <Content Include="x64\SQLite.Interop.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\SQLite.Interop.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

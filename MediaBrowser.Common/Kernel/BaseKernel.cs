@@ -116,7 +116,7 @@ namespace MediaBrowser.Common.Kernel
         /// <param name="newVersion">The new version.</param>
         public void OnApplicationUpdated(Version newVersion)
         {
-            EventHelper.QueueEventIfNotNull(ApplicationUpdated, this, new GenericEventArgs<Version> {Argument = newVersion});
+            EventHelper.QueueEventIfNotNull(ApplicationUpdated, this, new GenericEventArgs<Version> { Argument = newVersion });
 
             NotifyPendingRestart();
         }
@@ -258,7 +258,7 @@ namespace MediaBrowser.Common.Kernel
         /// <value>The rest services.</value>
         [ImportMany(typeof(IRestfulService))]
         public IEnumerable<IRestfulService> RestServices { get; private set; }
-        
+
         /// <summary>
         /// The _protobuf serializer initialized
         /// </summary>
@@ -348,14 +348,20 @@ namespace MediaBrowser.Common.Kernel
         public Assembly[] Assemblies { get; private set; }
 
         /// <summary>
-        /// Initializes the Kernel
+        /// Initializes a new instance of the <see cref="BaseKernel{TApplicationPathsType}" /> class.
         /// </summary>
         /// <param name="isoManager">The iso manager.</param>
-        /// <returns>Task.</returns>
-        public async Task Init(IIsoManager isoManager)
+        protected BaseKernel(IIsoManager isoManager)
         {
             IsoManager = isoManager;
+        }
 
+        /// <summary>
+        /// Initializes the Kernel
+        /// </summary>
+        /// <returns>Task.</returns>
+        public async Task Init()
+        {
             Logger = Logging.LogManager.GetLogger(GetType().Name);
 
             ApplicationPaths = new TApplicationPathsType();
@@ -539,10 +545,10 @@ namespace MediaBrowser.Common.Kernel
             {
                 yield return pluginAssembly;
             }
-            
+
             // Include composable parts in the Model assembly 
-            yield return typeof (SystemInfo).Assembly;
-            
+            yield return typeof(SystemInfo).Assembly;
+
             // Include composable parts in the Common assembly 
             yield return Assembly.GetExecutingAssembly();
 
@@ -636,7 +642,7 @@ namespace MediaBrowser.Common.Kernel
                 IsoManager = null;
             }
         }
-        
+
         /// <summary>
         /// Disposes the TCP manager.
         /// </summary>
@@ -760,7 +766,7 @@ namespace MediaBrowser.Common.Kernel
         /// The _save lock
         /// </summary>
         private readonly object _configurationSaveLock = new object();
-        
+
         /// <summary>
         /// Saves the current configuration
         /// </summary>

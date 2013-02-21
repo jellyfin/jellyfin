@@ -51,7 +51,7 @@ namespace MediaBrowser.Common.Kernel
         /// Inits this instance.
         /// </summary>
         /// <returns>Task.</returns>
-        Task Init(IIsoManager isoManager);
+        Task Init();
 
         /// <summary>
         /// Reloads this instance.

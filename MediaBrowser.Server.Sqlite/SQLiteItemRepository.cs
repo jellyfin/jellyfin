@@ -1,5 +1,7 @@
 using MediaBrowser.Common.Serialization;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Persistence;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -8,7 +10,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.Persistence.SQLite
+namespace MediaBrowser.Server.Sqlite
 {
     /// <summary>
     /// Class SQLiteItemRepository

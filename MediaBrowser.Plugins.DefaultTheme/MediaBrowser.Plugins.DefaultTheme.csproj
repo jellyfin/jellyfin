@@ -342,7 +342,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\MediaBrowser.UI\" /y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\MediaBrowser.UI\CorePlugins\" /y</PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

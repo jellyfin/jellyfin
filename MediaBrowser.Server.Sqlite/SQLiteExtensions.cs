@@ -2,7 +2,7 @@
 using System.Data;
 using System.Data.SQLite;
 
-namespace MediaBrowser.Controller.Persistence.SQLite
+namespace MediaBrowser.Server.Sqlite
 {
     /// <summary>
     /// Class SQLiteExtensions

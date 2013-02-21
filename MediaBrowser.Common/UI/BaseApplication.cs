@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Logging;
@@ -9,7 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Deployment.Application;
 using System.Net.Cache;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -82,13 +80,6 @@ namespace MediaBrowser.Common.UI
         /// </summary>
         /// <value>The logger.</value>
         protected ILogger Logger { get; set; }
-
-        /// <summary>
-        /// Instantiates the iso manager.
-        /// </summary>
-        /// <param name="kernel">The kernel.</param>
-        /// <returns>IIsoManager.</returns>
-        protected abstract IIsoManager InstantiateIsoManager(IKernel kernel);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplication" /> class.
@@ -176,7 +167,7 @@ namespace MediaBrowser.Common.UI
 
                 var now = DateTime.UtcNow;
 
-                await Kernel.Init(InstantiateIsoManager(Kernel));
+                await Kernel.Init();
 
                 var done = (DateTime.UtcNow - now);
                 Logger.Info("Kernel.Init completed in {0}{1} minutes and {2} seconds.", done.Hours > 0 ? done.Hours + " Hours " : "", done.Minutes, done.Seconds);

@@ -815,8 +815,8 @@ var ApiClient = {
         }
 
         // Don't put these on the query string
-        options.type = null;
-        options.index = null;
+        delete options.type;
+        delete options.index;
 
         return ApiClient.getUrl(url, options);
     },
@@ -849,8 +849,8 @@ var ApiClient = {
         }
 
         // Don't put these on the query string
-        options.type = null;
-        options.index = null;
+        delete options.type;
+        delete options.index;
 
         return ApiClient.getUrl(url, options);
     },
@@ -883,8 +883,8 @@ var ApiClient = {
         }
 
         // Don't put these on the query string
-        options.type = null;
-        options.index = null;
+        delete options.type;
+        delete options.index;
 
         return ApiClient.getUrl(url, options);
     },
@@ -917,8 +917,8 @@ var ApiClient = {
         }
 
         // Don't put these on the query string
-        options.type = null;
-        options.index = null;
+        delete options.type;
+        delete options.index;
 
         return ApiClient.getUrl(url, options);
     },
@@ -951,8 +951,8 @@ var ApiClient = {
         }
 
         // Don't put these on the query string
-        options.type = null;
-        options.index = null;
+        delete options.type;
+        delete options.index;
 
         return ApiClient.getUrl(url, options);
     },
@@ -987,8 +987,8 @@ var ApiClient = {
         }
 
         // Don't put these on the query string
-        options.type = null;
-        options.index = null;
+        delete options.type;
+        delete options.index;
 
         return ApiClient.getUrl(url, options);
     },

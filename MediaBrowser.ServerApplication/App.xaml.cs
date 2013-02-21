@@ -76,16 +76,6 @@ namespace MediaBrowser.ServerApplication
         }
 
         /// <summary>
-        /// Instantiates the iso manager.
-        /// </summary>
-        /// <param name="kernel">The kernel.</param>
-        /// <returns>IIsoManager.</returns>
-        protected override IIsoManager InstantiateIsoManager(IKernel kernel)
-        {
-            return new IsoManager(kernel);
-        }
-
-        /// <summary>
         /// Called when [second instance launched].
         /// </summary>
         /// <param name="args">The args.</param>
@@ -180,7 +170,7 @@ namespace MediaBrowser.ServerApplication
         /// <returns>IKernel.</returns>
         protected override IKernel InstantiateKernel()
         {
-            return new Kernel();
+            return new Kernel(new PismoIsoManager());
         }
 
         /// <summary>
