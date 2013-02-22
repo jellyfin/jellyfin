@@ -386,6 +386,8 @@ xcopy "$(TargetDir)x86" "$(SolutionDir)..\Deploy\Server\System\x86" /y
 mkdir "$(SolutionDir)..\Deploy\Server\System\CorePlugins"
 xcopy "$(TargetDir)CorePlugins" "$(SolutionDir)..\Deploy\Server\System\CorePlugins" /y
 
+del 
+"$(SolutionDir)7za" a -tzip "$(SolutionDir)..\Deploy\MBServer.zip" "$(SolutionDir)..\Deploy\Server\*"
 )</PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
