@@ -49,21 +49,23 @@
             if (plugin.isPremium) {
                 html += "<div class='premiumBanner'><img src='css/images/premiumflag.png' /></div>";
             }
-            
+
             var color = plugin.tileColor || Dashboard.getRandomMetroColor();
-            
+
             html += "<div class='posterViewItemText' style='background:" + color + "'>";
 
             var installedPlugin = installedPlugins.filter(function (ip) {
                 return ip.Name == plugin.name;
             })[0];
 
+            html += "<div>";
             if (installedPlugin) {
 
                 html += plugin.name + " (Installed)";
             } else {
                 html += plugin.name;
             }
+            html += "</div>";
 
             html += "</div>";
 

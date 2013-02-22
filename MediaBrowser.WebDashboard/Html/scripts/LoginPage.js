@@ -62,10 +62,12 @@
 
             var background = Dashboard.getRandomMetroColor();
 
+            html += '<div class="posterViewItem">';
+
             if (user.HasPassword) {
-                html += "<a id='" + linkId + "' data-userid='" + user.Id + "' data-username='" + user.Name + "' href='#popupLogin' data-rel='popup' onclick='LoginPage.authenticatingLinkId=this.id;' class='userItem'>";
+                html += "<a id='" + linkId + "' data-userid='" + user.Id + "' data-username='" + user.Name + "' href='#popupLogin' data-rel='popup' onclick='LoginPage.authenticatingLinkId=this.id;' \">";
             } else {
-                html += "<a id='" + linkId + "' data-userid='" + user.Id + "' data-username='" + user.Name + "' href='#' onclick='LoginPage.authenticateUserLink(this);' class='userItem'>";
+                html += "<a id='" + linkId + "' data-userid='" + user.Id + "' data-username='" + user.Name + "' href='#' onclick='LoginPage.authenticateUserLink(this);' \">";
             }
 
             if (user.PrimaryImageTag) {
@@ -76,20 +78,28 @@
                     type: "Primary"
                 });
 
-                html += '<img class="userItemImage" src="' + imgUrl + '" />';
+                html += '<img src="' + imgUrl + '" />';
             } else {
-                html += '<img class="userItemImage" src="css/images/logindefault.png" style="background:' + background + ';" />';
+                html += '<img style="background:' + background + ';" src="css/images/logindefault.png"/>';
             }
 
-            html += '<div class="userItemContent" style="background:' + background + ';">';
+            html += '<div class="posterViewItemText">';
 
-            html += '<div class="userItemContentInner">';
-            html += '<p class="userItemHeader">' + user.Name + '</p>';
-            html += '<p>' + LoginPage.getLastSeenText(user.LastActivityDate) + '</p>';
+            html += '<div>' + user.Name + '</div>';
+            html += '<div>';
+            var lastSeen = LoginPage.getLastSeenText(user.LastActivityDate);
+            if (lastSeen != "") {
+                html += lastSeen;
+            }
+            else {
+                html += "&nbsp;";
+            }
             html += '</div>';
 
             html += '</div>';
             html += '</a>';
+
+            html += '</div>';
         }
 
         $('#divUsers', '#loginPage').html(html);
