@@ -137,7 +137,7 @@
     <Compile Include="Kernel\BaseApplicationPaths.cs" />
     <Compile Include="Kernel\BaseManager.cs" />
     <Compile Include="Kernel\BasePeriodicWebSocketListener.cs" />
-    <Compile Include="Kernel\BaseWebSocketListener.cs" />
+    <Compile Include="Kernel\IWebSocketListener.cs" />
     <Compile Include="Kernel\IApplicationHost.cs" />
     <Compile Include="Kernel\IKernel.cs" />
     <Compile Include="Kernel\TcpManager.cs" />

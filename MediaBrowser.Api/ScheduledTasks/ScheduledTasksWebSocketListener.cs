@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Controller;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// Class ScheduledTasksWebSocketListener
     /// </summary>
     [Export(typeof(IWebSocketListener))]
-    public class ScheduledTasksWebSocketListener : BasePeriodicWebSocketListener<IKernel, IEnumerable<TaskInfo>, object>
+    public class ScheduledTasksWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<TaskInfo>, object>
     {
         /// <summary>
         /// Gets the name.
@@ -25,14 +26,20 @@ namespace MediaBrowser.Api.ScheduledTasks
         }
 
         /// <summary>
+        /// The _kernel
+        /// </summary>
+        private readonly IKernel _kernel;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledTasksWebSocketListener" /> class.
         /// </summary>
+        /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
         [ImportingConstructor]
-        public ScheduledTasksWebSocketListener([Import("logger")] ILogger logger)
+        public ScheduledTasksWebSocketListener([Import("kernel")] Kernel kernel, [Import("logger")] ILogger logger)
             : base(logger)
         {
-
+            _kernel = kernel;
         }
 
         /// <summary>
@@ -42,7 +49,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// <returns>Task{IEnumerable{TaskInfo}}.</returns>
         protected override Task<IEnumerable<TaskInfo>> GetDataToSend(object state)
         {
-            return Task.FromResult(Kernel.ScheduledTasks.OrderBy(i => i.Name)
+            return Task.FromResult(_kernel.ScheduledTasks.OrderBy(i => i.Name)
                          .Select(ScheduledTaskHelpers.GetTaskInfo));
         }
     }

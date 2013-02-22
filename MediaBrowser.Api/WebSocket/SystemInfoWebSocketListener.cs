@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Kernel;
+using MediaBrowser.Controller;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
 using System.ComponentModel.Composition;
@@ -10,7 +11,7 @@ namespace MediaBrowser.Api.WebSocket
     /// Class SystemInfoWebSocketListener
     /// </summary>
     [Export(typeof(IWebSocketListener))]
-    public class SystemInfoWebSocketListener : BasePeriodicWebSocketListener<IKernel, SystemInfo, object>
+    public class SystemInfoWebSocketListener : BasePeriodicWebSocketListener<SystemInfo, object>
     {
         /// <summary>
         /// Gets the name.
@@ -22,14 +23,20 @@ namespace MediaBrowser.Api.WebSocket
         }
 
         /// <summary>
+        /// The _kernel
+        /// </summary>
+        private readonly IKernel _kernel;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SystemInfoWebSocketListener" /> class.
         /// </summary>
+        /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
         [ImportingConstructor]
-        public SystemInfoWebSocketListener([Import("logger")] ILogger logger)
+        public SystemInfoWebSocketListener([Import("kernel")] Kernel kernel, [Import("logger")] ILogger logger)
             : base(logger)
         {
-            
+            _kernel = kernel;
         }
 
         /// <summary>
@@ -39,7 +46,7 @@ namespace MediaBrowser.Api.WebSocket
         /// <returns>Task{SystemInfo}.</returns>
         protected override Task<SystemInfo> GetDataToSend(object state)
         {
-            return Task.FromResult(Kernel.GetSystemInfo());
+            return Task.FromResult(_kernel.GetSystemInfo());
         }
     }
 }

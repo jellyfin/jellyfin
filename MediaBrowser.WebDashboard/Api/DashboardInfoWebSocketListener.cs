@@ -10,7 +10,7 @@ namespace MediaBrowser.WebDashboard.Api
     /// Class DashboardInfoWebSocketListener
     /// </summary>
     [Export(typeof(IWebSocketListener))]
-    class DashboardInfoWebSocketListener : BasePeriodicWebSocketListener<IKernel, DashboardInfo, object>
+    class DashboardInfoWebSocketListener : BasePeriodicWebSocketListener<DashboardInfo, object>
     {
         /// <summary>
         /// Gets the name.
@@ -22,14 +22,20 @@ namespace MediaBrowser.WebDashboard.Api
         }
 
         /// <summary>
+        /// The _kernel
+        /// </summary>
+        private readonly Kernel _kernel;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="DashboardInfoWebSocketListener" /> class.
         /// </summary>
+        /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
         [ImportingConstructor]
-        public DashboardInfoWebSocketListener([Import("logger")] ILogger logger)
+        public DashboardInfoWebSocketListener([Import("kernel")] Kernel kernel, [Import("logger")] ILogger logger)
             : base(logger)
         {
-
+            _kernel = kernel;
         }
 
         /// <summary>
@@ -39,7 +45,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>Task{IEnumerable{TaskInfo}}.</returns>
         protected override Task<DashboardInfo> GetDataToSend(object state)
         {
-            return Task.FromResult(DashboardService.GetDashboardInfo((Kernel)Kernel, Logger));
+            return Task.FromResult(DashboardService.GetDashboardInfo(_kernel, Logger));
         }
     }
 }

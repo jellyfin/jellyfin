@@ -1,12 +1,13 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
+using MediaBrowser.Controller;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Api.WebSocket
 {
@@ -14,7 +15,7 @@ namespace MediaBrowser.Api.WebSocket
     /// Class ScheduledTasksWebSocketListener
     /// </summary>
     [Export(typeof(IWebSocketListener))]
-    public class LogFileWebSocketListener : BasePeriodicWebSocketListener<IKernel, IEnumerable<string>, LogFileWebSocketState>
+    public class LogFileWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<string>, LogFileWebSocketState>
     {
         /// <summary>
         /// Gets the name.
@@ -26,25 +27,21 @@ namespace MediaBrowser.Api.WebSocket
         }
 
         /// <summary>
+        /// The _kernel
+        /// </summary>
+        private readonly IKernel _kernel;
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="LogFileWebSocketListener" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
+        /// <param name="kernel">The kernel.</param>
         [ImportingConstructor]
-        public LogFileWebSocketListener([Import("logger")] ILogger logger)
+        public LogFileWebSocketListener([Import("logger")] ILogger logger, [Import("kernel")] Kernel kernel)
             : base(logger)
         {
-
-        }
-
-        /// <summary>
-        /// Initializes the specified kernel.
-        /// </summary>
-        /// <param name="kernel">The kernel.</param>
-        public override void Initialize(IKernel kernel)
-        {
-            base.Initialize(kernel);
-
-            kernel.LoggerLoaded += kernel_LoggerLoaded;
+            _kernel = kernel;
+            _kernel.LoggerLoaded += kernel_LoggerLoaded;
         }
 
         /// <summary>
@@ -54,9 +51,9 @@ namespace MediaBrowser.Api.WebSocket
         /// <returns>IEnumerable{System.String}.</returns>
         protected override async Task<IEnumerable<string>> GetDataToSend(LogFileWebSocketState state)
         {
-            if (!string.Equals(Kernel.LogFilePath, state.LastLogFilePath))
+            if (!string.Equals(_kernel.LogFilePath, state.LastLogFilePath))
             {
-                state.LastLogFilePath = Kernel.LogFilePath;
+                state.LastLogFilePath = _kernel.LogFilePath;
                 state.StartLine = 0;
             }
 
@@ -75,7 +72,7 @@ namespace MediaBrowser.Api.WebSocket
         {
             if (dispose)
             {
-                Kernel.LoggerLoaded -= kernel_LoggerLoaded;
+                _kernel.LoggerLoaded -= kernel_LoggerLoaded;
             }
             base.Dispose(dispose);
         }
