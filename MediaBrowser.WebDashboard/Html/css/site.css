@@ -425,7 +425,6 @@ form, .readOnlyContent {
     font-size: 15px;
     padding: 0;
     position: relative;
-    padding-bottom: 28px;
 }
 
     .posterViewItem a {
@@ -436,7 +435,7 @@ form, .readOnlyContent {
 
     .posterViewItem img {
         max-width: 155px;
-        max-height: 148px;
+        max-height: 155px;
         vertical-align: bottom;
     }
 
@@ -454,18 +453,24 @@ form, .readOnlyContent {
 .posterViewItemText {
     text-overflow: ellipsis;
     overflow: hidden;
-    text-wrap: none;
     white-space: nowrap;
     margin: 0;
-    padding: 4px 2px 0;
-    position: absolute;
+    padding: 4px 0px 0;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 24px;
     background: #181818;
     text-shadow: none;
+    max-width: 155px;
 }
+
+    .posterViewItemText div{
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        margin: 0px 4px;
+        height: 24px;
+    }
 
 .posterViewItem:hover, .userItem:hover {
     -moz-box-shadow: 0 0 20px 3px #2572EB;
@@ -477,11 +482,11 @@ form, .readOnlyContent {
 
     .posterViewItem {
         font-size: 16px;
-        padding-bottom: 29px;
     }
 
     .posterViewItemText {
         padding-top: 5px;
+        max-width: 190px;
     }
 
     .posterViewItem img {
@@ -496,29 +501,37 @@ form, .readOnlyContent {
         font-size: 17px;
     }
 
-        .posterViewItem img {
-            max-width: 280px;
-            max-height: 250px;
-        }
+    .posterViewItem img {
+        max-width: 280px;
+        max-height: 280px;
+    }
+
+    .posterViewItemText {
+        max-width: 280px;
+    }
 }
 
 @media all and (min-width: 1920px) {
 
     .posterViewItem {
         font-size: 19px;
-        padding-bottom: 33px;
     }
 
-    .posterViewItemText {
+    .posterViewItemText div{
         height: 28px;
     }
 
     .posterViewItem img {
         max-width: 352px;
-        max-height: 300px;
+        max-height: 352px;
+    }
+
+    .posterViewItemText {
+        max-width: 352px;
     }
 }
 
+/*DEPRECATED userItem classes
 .userItem {
     display: inline-block;
     margin: 5px;
@@ -620,7 +633,8 @@ form, .readOnlyContent {
     .userItemHeader {
         font-size: 40px;
     }
-}
+}*/
+/*DEPRECATED userItem classes END
 
 /* Startup wizard */
 .wizardPage {
