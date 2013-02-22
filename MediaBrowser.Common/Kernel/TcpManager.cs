@@ -64,6 +64,11 @@ namespace MediaBrowser.Common.Kernel
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
+
+        /// <summary>
+        /// The _application host
+        /// </summary>
+        private readonly IApplicationHost _applicationHost;
         
         /// <summary>
         /// The _supports native web socket
@@ -108,12 +113,14 @@ namespace MediaBrowser.Common.Kernel
         /// <summary>
         /// Initializes a new instance of the <see cref="TcpManager" /> class.
         /// </summary>
+        /// <param name="applicationHost">The application host.</param>
         /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
-        public TcpManager(IKernel kernel, ILogger logger)
+        public TcpManager(IApplicationHost applicationHost, IKernel kernel, ILogger logger)
             : base(kernel)
         {
             _logger = logger;
+            _applicationHost = applicationHost;
 
             if (kernel.IsFirstRun)
             {
@@ -182,7 +189,7 @@ namespace MediaBrowser.Common.Kernel
 
             try
             {
-                HttpServer = new HttpServer(Kernel.HttpServerUrlPrefix, "Media Browser", Kernel, _logger);
+                HttpServer = new HttpServer(Kernel.HttpServerUrlPrefix, "Media Browser", _applicationHost, Kernel, _logger);
             }
             catch (HttpListenerException ex)
             {

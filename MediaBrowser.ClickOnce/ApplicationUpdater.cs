@@ -1,11 +1,10 @@
-﻿using MediaBrowser.Model.Tasks;
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Deployment.Application;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Updates
+namespace MediaBrowser.ClickOnce
 {
     /// <summary>
     /// Class ApplicationUpdater
@@ -20,7 +19,7 @@ namespace MediaBrowser.Common.Updates
         /// <summary>
         /// The _progress
         /// </summary>
-        private IProgress<TaskProgress> _progress;
+        private IProgress<double> _progress;
 
         /// <summary>
         /// Updates the application
@@ -29,7 +28,7 @@ namespace MediaBrowser.Common.Updates
         /// <param name="progress">The progress.</param>
         /// <returns>Task{AsyncCompletedEventArgs}.</returns>
         /// <exception cref="System.InvalidOperationException">Current deployment is not network deployed.</exception>
-        public Task<AsyncCompletedEventArgs> UpdateApplication(CancellationToken cancellationToken, IProgress<TaskProgress> progress)
+        public Task<AsyncCompletedEventArgs> UpdateApplication(CancellationToken cancellationToken, IProgress<double> progress)
         {
             if (!ApplicationDeployment.IsNetworkDeployed)
             {
@@ -87,7 +86,7 @@ namespace MediaBrowser.Common.Updates
         /// <param name="e">The <see cref="DeploymentProgressChangedEventArgs" /> instance containing the event data.</param>
         void deployment_UpdateProgressChanged(object sender, DeploymentProgressChangedEventArgs e)
         {
-            _progress.Report(new TaskProgress { PercentComplete = e.ProgressPercentage });
+            _progress.Report(e.ProgressPercentage);
         }
     }
 }

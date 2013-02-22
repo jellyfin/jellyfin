@@ -3,7 +3,7 @@ using System.IO;
 using System.Collections;
 using System.Runtime.InteropServices;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Controller.IO
 {
     /// <summary>
     /// Type of share

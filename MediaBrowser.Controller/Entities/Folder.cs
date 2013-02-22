@@ -612,7 +612,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
         /// <returns>Task.</returns>
-        public async Task ValidateChildren(IProgress<TaskProgress> progress, CancellationToken cancellationToken, bool? recursive = null)
+        public async Task ValidateChildren(IProgress<double> progress, CancellationToken cancellationToken, bool? recursive = null)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -664,7 +664,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
         /// <returns>Task.</returns>
-        protected async virtual Task ValidateChildrenInternal(IProgress<TaskProgress> progress, CancellationToken cancellationToken, bool? recursive = null)
+        protected async virtual Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool? recursive = null)
         {
             // Nothing to do here
             if (LocationType != LocationType.FileSystem)
@@ -681,7 +681,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (nonCachedChildren == null) return; //nothing to validate
 
-            progress.Report(new TaskProgress { PercentComplete = 5 });
+            progress.Report(5);
 
             //build a dictionary of the current children we have now by Id so we can compare quickly and easily
             var currentChildren = ActualChildren.ToDictionary(i => i.Id);
@@ -772,13 +772,13 @@ namespace MediaBrowser.Controller.Entities
                 Kernel.Instance.LibraryManager.OnLibraryChanged(changedArgs);
             }
 
-            progress.Report(new TaskProgress { PercentComplete = 15 });
+            progress.Report(15);
 
             cancellationToken.ThrowIfCancellationRequested();
 
             await RefreshChildren(validChildren, progress, cancellationToken, recursive).ConfigureAwait(false);
 
-            progress.Report(new TaskProgress { PercentComplete = 100 });
+            progress.Report(100);
         }
 
         /// <summary>
@@ -789,7 +789,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
         /// <returns>Task.</returns>
-        private Task RefreshChildren(IEnumerable<Tuple<BaseItem, bool>> children, IProgress<TaskProgress> progress, CancellationToken cancellationToken, bool? recursive)
+        private Task RefreshChildren(IEnumerable<Tuple<BaseItem, bool>> children, IProgress<double> progress, CancellationToken cancellationToken, bool? recursive)
         {
             var numComplete = 0;
 
@@ -824,7 +824,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    await ((Folder)child).ValidateChildren(new Progress<TaskProgress> { }, cancellationToken, recursive: recursive).ConfigureAwait(false);
+                    await ((Folder)child).ValidateChildren(new Progress<double> { }, cancellationToken, recursive: recursive).ConfigureAwait(false);
                 }
 
                 lock (progress)
@@ -834,7 +834,7 @@ namespace MediaBrowser.Controller.Entities
                     double percent = numComplete;
                     percent /= list.Count;
 
-                    progress.Report(new TaskProgress { PercentComplete = (85 * percent) + 15 });
+                    progress.Report((85 * percent) + 15);
                 }
             }));
 
@@ -952,7 +952,7 @@ namespace MediaBrowser.Controller.Entities
         {
             await base.ChangedExternally().ConfigureAwait(false);
 
-            var progress = new Progress<TaskProgress> { };
+            var progress = new Progress<double> { };
 
             await ValidateChildren(progress, CancellationToken.None).ConfigureAwait(false);
         }

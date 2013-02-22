@@ -31,7 +31,7 @@ namespace MediaBrowser.Controller.ScheduledTasks
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        protected override Task ExecuteInternal(CancellationToken cancellationToken, IProgress<TaskProgress> progress)
+        protected override Task ExecuteInternal(CancellationToken cancellationToken, IProgress<double> progress)
         {
             var videos = Kernel.RootFolder.RecursiveChildren.OfType<Video>().Where(v => v.Chapters != null).ToList();
 
@@ -59,7 +59,7 @@ namespace MediaBrowser.Controller.ScheduledTasks
                         double percent = numComplete;
                         percent /= videos.Count;
 
-                        progress.Report(new TaskProgress { PercentComplete = 100 * percent });
+                        progress.Report(100 * percent);
                     }
                 }
             }));

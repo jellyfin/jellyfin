@@ -31,11 +31,11 @@ namespace MediaBrowser.Common.ScheduledTasks.Tasks
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        protected override Task ExecuteInternal(CancellationToken cancellationToken, IProgress<TaskProgress> progress)
+        protected override Task ExecuteInternal(CancellationToken cancellationToken, IProgress<double> progress)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            progress.Report(new TaskProgress { PercentComplete = 0 });
+            progress.Report(0);
             
             return Task.Run(() => Kernel.ReloadLogger());
         }

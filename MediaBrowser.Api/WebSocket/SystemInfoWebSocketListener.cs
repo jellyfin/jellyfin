@@ -1,15 +1,16 @@
 ﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.System;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Api
+namespace MediaBrowser.Api.WebSocket
 {
     /// <summary>
     /// Class SystemInfoWebSocketListener
     /// </summary>
     [Export(typeof(IWebSocketListener))]
-    public class SystemInfoWebSocketListener : BasePeriodicWebSocketListener<IKernel, Model.System.SystemInfo, object>
+    public class SystemInfoWebSocketListener : BasePeriodicWebSocketListener<IKernel, SystemInfo, object>
     {
         /// <summary>
         /// Gets the name.
@@ -36,7 +37,7 @@ namespace MediaBrowser.Common.Api
         /// </summary>
         /// <param name="state">The state.</param>
         /// <returns>Task{SystemInfo}.</returns>
-        protected override Task<Model.System.SystemInfo> GetDataToSend(object state)
+        protected override Task<SystemInfo> GetDataToSend(object state)
         {
             return Task.FromResult(Kernel.GetSystemInfo());
         }

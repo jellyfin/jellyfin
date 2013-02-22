@@ -39,12 +39,12 @@ namespace MediaBrowser.Plugins.Trailers.ScheduledTasks
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        protected override async Task ExecuteInternal(CancellationToken cancellationToken, IProgress<TaskProgress> progress)
+        protected override async Task ExecuteInternal(CancellationToken cancellationToken, IProgress<double> progress)
         {
             // Get the list of trailers
             var trailers = await AppleTrailerListingDownloader.GetTrailerList(cancellationToken).ConfigureAwait(false);
 
-            progress.Report(new TaskProgress { PercentComplete = 1 });
+            progress.Report(1);
 
             var trailersToDownload = trailers.Where(t => !IsOldTrailer(t.Video)).ToList();
 
@@ -74,7 +74,7 @@ namespace MediaBrowser.Plugins.Trailers.ScheduledTasks
                     percent /= trailersToDownload.Count;
 
                     // Leave 1% for DeleteOldTrailers
-                    progress.Report(new TaskProgress { PercentComplete = (99 * percent) + 1 });
+                    progress.Report((99 * percent) + 1);
                 }
             }));
 
@@ -90,7 +90,7 @@ namespace MediaBrowser.Plugins.Trailers.ScheduledTasks
                 DeleteOldTrailers();
             }
 
-            progress.Report(new TaskProgress { PercentComplete = 100 });
+            progress.Report(100);
         }
 
         /// <summary>

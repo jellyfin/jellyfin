@@ -34,7 +34,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// Gets the current progress.
         /// </summary>
         /// <value>The current progress.</value>
-        TaskProgress CurrentProgress { get; }
+        double? CurrentProgress { get; }
 
         /// <summary>
         /// Gets the name of the task

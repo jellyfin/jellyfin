@@ -119,8 +119,7 @@
             }
             else if (task.State == "Running") {
 
-                var progress = task.CurrentProgress || { PercentComplete: 0 };
-                progress = Math.round(progress.PercentComplete);
+                var progress = Math.round(task.CurrentProgressPercentage || 0);
                 
                 html += '<p><progress max="100" value="' + progress + '" title="' + progress + '%">';
                 html += '' + progress + '%';

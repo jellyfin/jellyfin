@@ -52,9 +52,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
-      <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>
-      <Name>MediaBrowser.Common</Name>
+    <ProjectReference Include="..\MediaBrowser.ClickOnce\MediaBrowser.ClickOnce.csproj">
+      <Project>{cc96bf3e-0bda-4809-bc4b-bb6d418f4a84}</Project>
+      <Name>MediaBrowser.ClickOnce</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

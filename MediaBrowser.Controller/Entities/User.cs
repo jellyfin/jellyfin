@@ -205,7 +205,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        public async Task ValidateMediaLibrary(IProgress<TaskProgress> progress, CancellationToken cancellationToken)
+        public async Task ValidateMediaLibrary(IProgress<double> progress, CancellationToken cancellationToken)
         {
             Logger.Info("Validating media library for {0}", Name);
             await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
@@ -221,7 +221,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        public async Task ValidateCollectionFolders(IProgress<TaskProgress> progress, CancellationToken cancellationToken)
+        public async Task ValidateCollectionFolders(IProgress<double> progress, CancellationToken cancellationToken)
         {
             Logger.Info("Validating collection folders for {0}", Name);
             await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
@@ -279,7 +279,7 @@ namespace MediaBrowser.Controller.Entities
             RootFolder = null;
 
             // Kick off a task to validate the media library
-            Task.Run(() => ValidateMediaLibrary(new Progress<TaskProgress> { }, CancellationToken.None));
+            Task.Run(() => ValidateMediaLibrary(new Progress<double> { }, CancellationToken.None));
 
             return RefreshMetadata(CancellationToken.None, forceSave: true, forceRefresh: true);
         }

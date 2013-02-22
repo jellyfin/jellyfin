@@ -46,6 +46,12 @@ namespace MediaBrowser.Common.Net
         private IKernel Kernel { get; set; }
 
         /// <summary>
+        /// Gets or sets the application host.
+        /// </summary>
+        /// <value>The application host.</value>
+        private IApplicationHost ApplicationHost { get; set; }
+        
+        /// <summary>
         /// This subscribes to HttpListener requests and finds the appropriate BaseHandler to process it
         /// </summary>
         /// <value>The HTTP listener.</value>
@@ -67,11 +73,12 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="urlPrefix">The URL.</param>
         /// <param name="serverName">Name of the product.</param>
+        /// <param name="applicationHost">The application host.</param>
         /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="defaultRedirectpath">The default redirectpath.</param>
         /// <exception cref="System.ArgumentNullException">urlPrefix</exception>
-        public HttpServer(string urlPrefix, string serverName, IKernel kernel, ILogger logger, string defaultRedirectpath = null)
+        public HttpServer(string urlPrefix, string serverName, IApplicationHost applicationHost, IKernel kernel, ILogger logger, string defaultRedirectpath = null)
             : base()
         {
             if (string.IsNullOrEmpty(urlPrefix))
@@ -86,9 +93,14 @@ namespace MediaBrowser.Common.Net
             {
                 throw new ArgumentNullException("logger");
             }
+            if (applicationHost == null)
+            {
+                throw new ArgumentNullException("applicationHost");
+            }
 
             DefaultRedirectPath = defaultRedirectpath;
             _logger = logger;
+            ApplicationHost = applicationHost;
 
             EndpointHostConfig.Instance.ServiceStackHandlerFactoryPath = null;
             EndpointHostConfig.Instance.MetadataRedirectPath = "metadata";
@@ -144,6 +156,7 @@ namespace MediaBrowser.Common.Net
             
             container.Register(Kernel);
             container.Register(_logger);
+            container.Register(ApplicationHost);
 
             foreach (var service in Kernel.RestServices)
             {

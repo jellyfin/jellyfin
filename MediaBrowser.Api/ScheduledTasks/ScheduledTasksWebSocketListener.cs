@@ -7,7 +7,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Api.ScheduledTasks
+namespace MediaBrowser.Api.ScheduledTasks
 {
     /// <summary>
     /// Class ScheduledTasksWebSocketListener

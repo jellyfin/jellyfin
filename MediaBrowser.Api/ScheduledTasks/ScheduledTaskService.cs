@@ -11,7 +11,7 @@ using System.IO;
 using System.Linq;
 using ServiceStack.Text.Controller;
 
-namespace MediaBrowser.Common.Api.ScheduledTasks
+namespace MediaBrowser.Api.ScheduledTasks
 {
     /// <summary>
     /// Class GetScheduledTask

@@ -20,7 +20,7 @@ namespace MediaBrowser.Common.ScheduledTasks
             return new TaskInfo
             {
                 Name = task.Name,
-                CurrentProgress = task.CurrentProgress,
+                CurrentProgressPercentage = task.CurrentProgress,
                 State = task.State,
                 Id = task.Id,
                 LastExecutionResult = task.LastExecutionResult,

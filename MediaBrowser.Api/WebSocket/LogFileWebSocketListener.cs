@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Logging;
 
-namespace MediaBrowser.Common.Api.Logging
+namespace MediaBrowser.Api.WebSocket
 {
     /// <summary>
     /// Class ScheduledTasksWebSocketListener

@@ -66,14 +66,11 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiService.cs" />
@@ -87,6 +84,8 @@
     <Compile Include="LocalizationService.cs" />
     <Compile Include="PackageService.cs" />
     <Compile Include="PluginService.cs" />
+    <Compile Include="ScheduledTasks\ScheduledTaskService.cs" />
+    <Compile Include="ScheduledTasks\ScheduledTasksWebSocketListener.cs" />
     <Compile Include="SystemService.cs" />
     <Compile Include="Streaming\AudioHandler.cs" />
     <Compile Include="Streaming\BaseHlsPlaylistHandler.cs" />
@@ -108,6 +107,8 @@
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WeatherService.cs" />
+    <Compile Include="WebSocket\LogFileWebSocketListener.cs" />
+    <Compile Include="WebSocket\SystemInfoWebSocketListener.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">

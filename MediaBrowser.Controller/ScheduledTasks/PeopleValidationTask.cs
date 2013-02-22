@@ -34,7 +34,7 @@ namespace MediaBrowser.Controller.ScheduledTasks
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        protected override Task ExecuteInternal(CancellationToken cancellationToken, IProgress<TaskProgress> progress)
+        protected override Task ExecuteInternal(CancellationToken cancellationToken, IProgress<double> progress)
         {
             return Kernel.LibraryManager.ValidatePeople(cancellationToken, progress);
         }

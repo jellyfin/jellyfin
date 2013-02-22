@@ -41,7 +41,7 @@ namespace MediaBrowser.ServerApplication
             _logger = logger;
 
             InitializeComponent();
-            lblVersion.Content = "Version: " + Kernel.Instance.DisplayVersion;
+            lblVersion.Content = "Version: " + Kernel.Instance.ApplicationVersion;
             foreach (var user in Kernel.Instance.Users)
                 ddlProfile.Items.Add(user);
             ddlProfile.Items.Insert(0,new User {Name = "Physical"});

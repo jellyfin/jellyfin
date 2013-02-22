@@ -56,7 +56,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
         /// <returns>Task.</returns>
-        protected override Task ValidateChildrenInternal(IProgress<TaskProgress> progress, CancellationToken cancellationToken, bool? recursive = null)
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool? recursive = null)
         {
             //we don't directly validate our children
             //but we do need to clear out the index cache...

@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.UI.Controls", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Logging.NLog", "MediaBrowser.Logging.NLog\MediaBrowser.Logging.NLog.csproj", "{67310740-0EC4-4DC2-9921-33DF38B20167}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.ClickOnce", "MediaBrowser.ClickOnce\MediaBrowser.ClickOnce.csproj", "{CC96BF3E-0BDA-4809-BC4B-BB6D418F4A84}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -155,6 +157,16 @@ Global
 		{67310740-0EC4-4DC2-9921-33DF38B20167}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{67310740-0EC4-4DC2-9921-33DF38B20167}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{67310740-0EC4-4DC2-9921-33DF38B20167}.Release|x86.ActiveCfg = Release|Any CPU
+		{CC96BF3E-0BDA-4809-BC4B-BB6D418F4A84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC96BF3E-0BDA-4809-BC4B-BB6D418F4A84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC96BF3E-0BDA-4809-BC4B-BB6D418F4A84}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{CC96BF3E-0BDA-4809-BC4B-BB6D418F4A84}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{CC96BF3E-0BDA-4809-BC4B-BB6D418F4A84}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CC96BF3E-0BDA-4809-BC4B-BB6D418F4A84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC96BF3E-0BDA-4809-BC4B-BB6D418F4A84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC96BF3E-0BDA-4809-BC4B-BB6D418F4A84}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{CC96BF3E-0BDA-4809-BC4B-BB6D418F4A84}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{CC96BF3E-0BDA-4809-BC4B-BB6D418F4A84}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

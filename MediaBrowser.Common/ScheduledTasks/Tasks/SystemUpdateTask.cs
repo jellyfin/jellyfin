@@ -1,10 +1,7 @@
 ﻿using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Updates;
-using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Deployment.Application;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,6 +13,21 @@ namespace MediaBrowser.Common.ScheduledTasks.Tasks
     [Export(typeof(IScheduledTask))]
     public class SystemUpdateTask : BaseScheduledTask<IKernel>
     {
+        /// <summary>
+        /// The _app host
+        /// </summary>
+        private readonly IApplicationHost _appHost;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SystemUpdateTask" /> class.
+        /// </summary>
+        /// <param name="appHost">The app host.</param>
+        [ImportingConstructor]
+        public SystemUpdateTask([Import("appHost")] IApplicationHost appHost)
+        {
+            _appHost = appHost;
+        }
+
         /// <summary>
         /// Creates the triggers that define when the task will run
         /// </summary>
@@ -37,26 +49,26 @@ namespace MediaBrowser.Common.ScheduledTasks.Tasks
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        protected override async Task ExecuteInternal(CancellationToken cancellationToken, IProgress<TaskProgress> progress)
+        protected override async Task ExecuteInternal(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            if (!ApplicationDeployment.IsNetworkDeployed) return;
+            if (!_appHost.CanSelfUpdate) return;
 
-            EventHandler<TaskProgress> innerProgressHandler = (sender, e) => progress.Report(new TaskProgress { PercentComplete = e.PercentComplete * .1 });
+            EventHandler<double> innerProgressHandler = (sender, e) => progress.Report(e * .1);
 
             // Create a progress object for the update check
-            var innerProgress = new Progress<TaskProgress>();
+            var innerProgress = new Progress<double>();
             innerProgress.ProgressChanged += innerProgressHandler;
 
-            var updateInfo = await new ApplicationUpdateCheck().CheckForApplicationUpdate(cancellationToken, innerProgress).ConfigureAwait(false);
+            var updateInfo = await _appHost.CheckForApplicationUpdate(cancellationToken, innerProgress).ConfigureAwait(false);
 
             // Release the event handler
             innerProgress.ProgressChanged -= innerProgressHandler;
 
-            progress.Report(new TaskProgress { PercentComplete = 10 });
+            progress.Report(10);
 
-            if (!updateInfo.UpdateAvailable)
+            if (!updateInfo.IsUpdateAvailable)
             {
-                progress.Report(new TaskProgress { PercentComplete = 100 });
+                progress.Report(100);
                 return;
             }
 
@@ -66,12 +78,12 @@ namespace MediaBrowser.Common.ScheduledTasks.Tasks
             {
                 Logger.Info("Update Revision {0} available.  Updating...", updateInfo.AvailableVersion);
 
-                innerProgressHandler = (sender, e) => progress.Report(new TaskProgress { PercentComplete = (e.PercentComplete * .9) + .1 });
+                innerProgressHandler = (sender, e) => progress.Report((e * .9) + .1);
 
-                innerProgress = new Progress<TaskProgress>();
+                innerProgress = new Progress<double>();
                 innerProgress.ProgressChanged += innerProgressHandler;
 
-                await new ApplicationUpdater().UpdateApplication(cancellationToken, innerProgress).ConfigureAwait(false);
+                await _appHost.UpdateApplication(cancellationToken, innerProgress).ConfigureAwait(false);
 
                 // Release the event handler
                 innerProgress.ProgressChanged -= innerProgressHandler;
@@ -83,7 +95,7 @@ namespace MediaBrowser.Common.ScheduledTasks.Tasks
                 Logger.Info("A new version of Media Browser is available.");
             }
 
-            progress.Report(new TaskProgress { PercentComplete = 100 });
+            progress.Report(100);
         }
 
         /// <summary>

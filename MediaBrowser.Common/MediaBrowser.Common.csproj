@@ -34,7 +34,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Resources\Images\Icon.ico</ApplicationIcon>
+    <ApplicationIcon>
+    </ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Alchemy">
@@ -94,7 +95,6 @@
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Deployment" />
     <Reference Include="System.Management" />
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http" />
@@ -118,13 +118,8 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Api\Logging\LogFileWebSocketListener.cs" />
-    <Compile Include="Api\ScheduledTasks\ScheduledTaskService.cs" />
-    <Compile Include="Api\ScheduledTasks\ScheduledTasksWebSocketListener.cs" />
-    <Compile Include="Api\SystemInfoWebSocketListener.cs" />
     <Compile Include="Events\EventHelper.cs" />
     <Compile Include="Extensions\BaseExtensions.cs" />
     <Compile Include="Events\GenericEventArgs.cs" />
@@ -156,8 +151,6 @@
     <Compile Include="Net\MimeTypes.cs" />
     <Compile Include="Net\NativeWebSocket.cs" />
     <Compile Include="Net\NetUtils.cs" />
-    <Compile Include="Net\NetworkShares.cs" />
-    <Compile Include="Net\StaticResult.cs" />
     <Compile Include="Net\UdpServer.cs" />
     <Compile Include="Net\WebSocketConnection.cs" />
     <Compile Include="Plugins\BaseUiPlugin.cs" />
@@ -193,9 +186,6 @@
     <Compile Include="ScheduledTasks\IntervalTrigger.cs" />
     <Compile Include="ScheduledTasks\IScheduledTask.cs" />
     <Compile Include="ScheduledTasks\WeeklyTrigger.cs" />
-    <Compile Include="Updates\ApplicationUpdateCheck.cs" />
-    <Compile Include="Updates\ApplicationUpdater.cs" />
-    <Compile Include="Updates\ClickOnceHelper.cs" />
     <Compile Include="Win32\NativeMethods.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -215,9 +205,6 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Images\Icon.ico" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="README.txt" />
