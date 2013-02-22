@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
@@ -114,7 +115,7 @@ namespace MediaBrowser.Api.UserLibrary
                 return null;
             }
 
-            var dto = await DtoBuilder.GetDtoBaseItem(item, user, fields).ConfigureAwait(false);
+            var dto = await new DtoBuilder(Logger).GetDtoBaseItem(item, user, fields).ConfigureAwait(false);
 
             dto.ChildCount = stub.Item2();
 

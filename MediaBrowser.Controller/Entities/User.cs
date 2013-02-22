@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Tasks;

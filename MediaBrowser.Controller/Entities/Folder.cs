@@ -1,11 +1,11 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Win32;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -14,7 +14,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Tasks;
 using SortOrder = MediaBrowser.Controller.Sorting.SortOrder;
 
 namespace MediaBrowser.Controller.Entities

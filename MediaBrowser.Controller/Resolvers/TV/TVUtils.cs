@@ -1,9 +1,8 @@
-﻿using MediaBrowser.Common.Logging;
-using MediaBrowser.Common.Win32;
+﻿using MediaBrowser.Common.Win32;
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace MediaBrowser.Controller.Resolvers.TV
 {

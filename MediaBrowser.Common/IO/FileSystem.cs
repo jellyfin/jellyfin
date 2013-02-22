@@ -1,8 +1,7 @@
-﻿using System.Collections.Specialized;
-using MediaBrowser.Common.Logging;
-using MediaBrowser.Common.Win32;
+﻿using MediaBrowser.Common.Win32;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;

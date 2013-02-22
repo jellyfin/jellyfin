@@ -66,10 +66,10 @@ namespace MediaBrowser.Api.HttpHandlers
                     await Kernel.UserDataManager.OnPlaybackStopped(user, item, positionTicks, clientType, device).ConfigureAwait(false);
                 }
             }
-
+             
             var data = item.GetUserData(user, true);
 
-            return DtoBuilder.GetDtoUserItemData(data);
+            return new DtoBuilder(null).GetDtoUserItemData(data);
         }
 
         /// <summary>

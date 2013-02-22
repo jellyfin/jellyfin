@@ -4,7 +4,6 @@ using MediaBrowser.Common.Kernel;
 using MediaBrowser.Model.Logging;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Common.Web;
-using ServiceStack.Logging;
 using ServiceStack.Logging.NLogger;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Cors;
@@ -144,6 +143,7 @@ namespace MediaBrowser.Common.Net
             }
             
             container.Register(Kernel);
+            container.Register(_logger);
 
             foreach (var service in Kernel.RestServices)
             {
@@ -155,7 +155,7 @@ namespace MediaBrowser.Common.Net
 
             Serialization.JsonSerializer.Configure();
 
-            LogManager.LogFactory = new NLogFactory();
+            ServiceStack.Logging.LogManager.LogFactory = new NLogFactory();
         }
 
         /// <summary>

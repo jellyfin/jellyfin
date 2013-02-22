@@ -1,6 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Net.Handlers;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Serialization;
@@ -18,11 +16,6 @@ namespace MediaBrowser.Common.Kernel
     /// </summary>
     public interface IKernel
     {
-        /// <summary>
-        /// Occurs when [application restart requested].
-        /// </summary>
-        event EventHandler ApplicationRestartRequested;
-
         /// <summary>
         /// Gets the application paths.
         /// </summary>

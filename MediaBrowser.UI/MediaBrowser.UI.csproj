@@ -116,6 +116,7 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http" />
@@ -306,6 +307,10 @@
     <ProjectReference Include="..\MediaBrowser.IsoMounter\MediaBrowser.IsoMounter.csproj">
       <Project>{5356ae30-6a6e-4a64-81e3-f76c50595e64}</Project>
       <Name>MediaBrowser.IsoMounter</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Logging.NLog\MediaBrowser.Logging.NLog.csproj">
+      <Project>{67310740-0ec4-4dc2-9921-33df38b20167}</Project>
+      <Name>MediaBrowser.Logging.NLog</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>

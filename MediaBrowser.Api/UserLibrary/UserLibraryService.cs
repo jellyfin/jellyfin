@@ -268,7 +268,9 @@ namespace MediaBrowser.Api.UserLibrary
 
             var movie = (Movie)item;
 
-            var items = movie.SpecialFeatures.Select(i => DtoBuilder.GetDtoBaseItem(item, user, fields)).AsParallel().Select(t => t.Result).ToList();
+            var dtoBuilder = new DtoBuilder(Logger);
+
+            var items = movie.SpecialFeatures.Select(i => dtoBuilder.GetDtoBaseItem(item, user, fields)).AsParallel().Select(t => t.Result).ToList();
 
             return ToOptimizedResult(items);
         }
@@ -284,7 +286,9 @@ namespace MediaBrowser.Api.UserLibrary
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
 
-            var items = item.LocalTrailers.Select(i => DtoBuilder.GetDtoBaseItem(item, user, fields)).AsParallel().Select(t => t.Result).ToList();
+            var dtoBuilder = new DtoBuilder(Logger);
+
+            var items = item.LocalTrailers.Select(i => dtoBuilder.GetDtoBaseItem(item, user, fields)).AsParallel().Select(t => t.Result).ToList();
 
             return ToOptimizedResult(items);
         }
@@ -305,7 +309,9 @@ namespace MediaBrowser.Api.UserLibrary
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
 
-            var result = DtoBuilder.GetDtoBaseItem(item, user, fields).Result;
+            var dtoBuilder = new DtoBuilder(Logger);
+
+            var result = dtoBuilder.GetDtoBaseItem(item, user, fields).Result;
 
             return ToOptimizedResult(result);
         }

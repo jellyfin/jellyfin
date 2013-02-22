@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Localization;
-using MediaBrowser.Common.Logging;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
@@ -19,7 +18,7 @@ namespace MediaBrowser.Controller.Localization
         /// <summary>
         /// The logger
         /// </summary>
-        private static readonly ILogger Logger = LogManager.GetLogger("LocalizedStrings");
+        static internal ILogger Logger { get; set; }
         /// <summary>
         /// The base prefix
         /// </summary>

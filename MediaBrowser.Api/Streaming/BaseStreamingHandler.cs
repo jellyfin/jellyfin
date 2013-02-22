@@ -889,7 +889,7 @@ namespace MediaBrowser.Api.Streaming
 
             Plugin.Instance.OnTranscodeBeginning(outputPath, TranscodingJobType, process);
 
-            Logger.Info(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
+            //Logger.Info(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
 
             var logFilePath = Path.Combine(Kernel.ApplicationPaths.LogDirectoryPath, "ffmpeg-" + Guid.NewGuid() + ".txt");
 
@@ -904,7 +904,7 @@ namespace MediaBrowser.Api.Streaming
             }
             catch (Win32Exception ex)
             {
-                Logger.ErrorException("Error starting ffmpeg", ex);
+                //Logger.ErrorException("Error starting ffmpeg", ex);
 
                 Plugin.Instance.OnTranscodeFailedToStart(outputPath, TranscodingJobType);
 
@@ -953,11 +953,11 @@ namespace MediaBrowser.Api.Streaming
             try
             {
                 exitCode = process.ExitCode;
-                Logger.Info("FFMpeg exited with code {0} for {1}", exitCode.Value, outputFilePath);
+                //Logger.Info("FFMpeg exited with code {0} for {1}", exitCode.Value, outputFilePath);
             }
             catch
             {
-                Logger.Info("FFMpeg exited with an error for {0}", outputFilePath);
+                //Logger.Info("FFMpeg exited with an error for {0}", outputFilePath);
             }
 
             process.Dispose();
@@ -966,7 +966,7 @@ namespace MediaBrowser.Api.Streaming
 
             if (!exitCode.HasValue || exitCode.Value != 0)
             {
-                Logger.Info("Deleting partial stream file(s) {0}", outputFilePath);
+                //Logger.Info("Deleting partial stream file(s) {0}", outputFilePath);
 
                 try
                 {
@@ -974,12 +974,12 @@ namespace MediaBrowser.Api.Streaming
                 }
                 catch (IOException ex)
                 {
-                    Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, outputFilePath);
+                    //Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, outputFilePath);
                 }
             }
             else
             {
-                Logger.Info("FFMpeg completed and exited normally for {0}", outputFilePath);
+                //Logger.Info("FFMpeg completed and exited normally for {0}", outputFilePath);
             }
         }
 

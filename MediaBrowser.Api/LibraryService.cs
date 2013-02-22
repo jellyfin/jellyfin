@@ -128,7 +128,7 @@ namespace MediaBrowser.Api
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
             
-            var result = DtoBuilder.GetDtoBaseItem(item, fields.ToList()).Result;
+            var result = new DtoBuilder(Logger).GetDtoBaseItem(item, fields.ToList()).Result;
 
             return ToOptimizedResult(result);
         }
@@ -147,7 +147,7 @@ namespace MediaBrowser.Api
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
 
-            var result = DtoBuilder.GetDtoBaseItem(item, fields.ToList()).Result;
+            var result = new DtoBuilder(Logger).GetDtoBaseItem(item, fields.ToList()).Result;
 
             return ToOptimizedResult(result);
         }
@@ -166,7 +166,7 @@ namespace MediaBrowser.Api
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
 
-            var result = DtoBuilder.GetDtoBaseItem(item, fields.ToList()).Result;
+            var result = new DtoBuilder(Logger).GetDtoBaseItem(item, fields.ToList()).Result;
 
             return ToOptimizedResult(result);
         }
@@ -185,7 +185,7 @@ namespace MediaBrowser.Api
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
 
-            var result = DtoBuilder.GetDtoBaseItem(item, fields.ToList()).Result;
+            var result = new DtoBuilder(Logger).GetDtoBaseItem(item, fields.ToList()).Result;
 
             return ToOptimizedResult(result);
         }

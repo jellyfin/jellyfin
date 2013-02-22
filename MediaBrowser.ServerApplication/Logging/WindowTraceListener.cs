@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace MediaBrowser.Common.Logging
+namespace MediaBrowser.ServerApplication.Logging
 {
     /// <summary>
     /// Class WindowTraceListener

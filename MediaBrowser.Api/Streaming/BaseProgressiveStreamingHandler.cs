@@ -94,7 +94,7 @@ namespace MediaBrowser.Api.Streaming
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error streaming media", ex);
+                //Logger.ErrorException("Error streaming media", ex);
             }
             finally
             {

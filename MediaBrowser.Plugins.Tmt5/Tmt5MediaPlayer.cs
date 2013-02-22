@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Logging;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.UI.Configuration;
 using MediaBrowser.UI.Playback;
 using MediaBrowser.UI.Playback.ExternalPlayer;
@@ -21,6 +21,12 @@ namespace MediaBrowser.Plugins.Tmt5
     [Export(typeof(BaseMediaPlayer))]
     public class Tmt5MediaPlayer : BaseExternalPlayer
     {
+        [ImportingConstructor]
+        public Tmt5MediaPlayer([Import("logger")] ILogger logger)
+            : base(logger)
+        {
+        }
+
         /// <summary>
         /// Gets the name.
         /// </summary>

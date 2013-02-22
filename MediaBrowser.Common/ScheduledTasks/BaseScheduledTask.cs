@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
@@ -301,9 +300,10 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// Initializes the specified kernel.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        public void Initialize(IKernel kernel)
+        /// <param name="logger">The logger.</param>
+        public void Initialize(IKernel kernel, ILogger logger)
         {
-            Logger = LogManager.GetLogger(GetType().Name);
+            Logger = logger;
             
             Kernel = (TKernelType)kernel;
             ReloadTriggerEvents();

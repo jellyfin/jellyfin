@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Logging;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -18,14 +17,19 @@ namespace MediaBrowser.Controller.Library
     /// <summary>
     /// Generates DTO's from domain entities
     /// </summary>
-    public static class DtoBuilder
+    public class DtoBuilder
     {
         /// <summary>
         /// The index folder delimeter
         /// </summary>
         const string IndexFolderDelimeter = "-index-";
 
-        private static ILogger Logger = LogManager.GetLogger("DtoBuilder");
+        private ILogger Logger;
+
+        public DtoBuilder(ILogger logger)
+        {
+            Logger = logger;
+        }
 
         /// <summary>
         /// Gets the dto base item.
@@ -34,7 +38,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fields">The fields.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public async static Task<BaseItemDto> GetDtoBaseItem(BaseItem item, List<ItemFields> fields)
+        public async Task<BaseItemDto> GetDtoBaseItem(BaseItem item, List<ItemFields> fields)
         {
             if (item == null)
             {
@@ -91,7 +95,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fields">The fields.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public async static Task<BaseItemDto> GetDtoBaseItem(BaseItem item, User user, List<ItemFields> fields)
+        public async Task<BaseItemDto> GetDtoBaseItem(BaseItem item, User user, List<ItemFields> fields)
         {
             if (item == null)
             {
@@ -153,7 +157,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <param name="fields">The fields.</param>
-        private static void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, List<ItemFields> fields)
+        private void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, List<ItemFields> fields)
         {
             dto.IsNew = item.IsRecentlyAdded(user);
 
@@ -192,7 +196,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
         /// <returns>Task.</returns>
-        private static async Task AttachPrimaryImageAspectRatio(BaseItemDto dto, BaseItem item)
+        private async Task AttachPrimaryImageAspectRatio(BaseItemDto dto, BaseItem item)
         {
             var path = item.PrimaryImagePath;
 
@@ -234,7 +238,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
         /// <param name="fields">The fields.</param>
-        private static void AttachBasicFields(BaseItemDto dto, BaseItem item, List<ItemFields> fields)
+        private void AttachBasicFields(BaseItemDto dto, BaseItem item, List<ItemFields> fields)
         {
             if (fields.Contains(ItemFields.DateCreated))
             {
@@ -555,7 +559,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
         /// <returns>Task.</returns>
-        private static async Task AttachPeople(BaseItemDto dto, BaseItem item)
+        private async Task AttachPeople(BaseItemDto dto, BaseItem item)
         {
             if (item.People == null)
             {
@@ -614,7 +618,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>BaseItem.</returns>
-        private static BaseItem GetParentBackdropItem(BaseItem item)
+        private BaseItem GetParentBackdropItem(BaseItem item)
         {
             var parent = item.Parent;
 
@@ -636,7 +640,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>BaseItem.</returns>
-        private static BaseItem GetParentLogoItem(BaseItem item)
+        private BaseItem GetParentLogoItem(BaseItem item)
         {
             var parent = item.Parent;
 
@@ -675,7 +679,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="data">The data.</param>
         /// <returns>DtoUserItemData.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public static UserItemDataDto GetDtoUserItemData(UserItemData data)
+        public UserItemDataDto GetDtoUserItemData(UserItemData data)
         {
             if (data == null)
             {
@@ -699,7 +703,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="chapterInfo">The chapter info.</param>
         /// <param name="item">The item.</param>
         /// <returns>ChapterInfoDto.</returns>
-        private static ChapterInfoDto GetChapterInfoDto(ChapterInfo chapterInfo, BaseItem item)
+        private ChapterInfoDto GetChapterInfoDto(ChapterInfo chapterInfo, BaseItem item)
         {
             var dto = new ChapterInfoDto
             {
@@ -786,7 +790,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <returns>DtoUser.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        public static UserDto GetDtoUser(User user)
+        public UserDto GetDtoUser(User user)
         {
             if (user == null)
             {
@@ -924,7 +928,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>List{System.String}.</returns>
-        private static List<Guid> GetBackdropImageTags(BaseItem item)
+        private List<Guid> GetBackdropImageTags(BaseItem item)
         {
             if (item.BackdropImagePaths == null)
             {

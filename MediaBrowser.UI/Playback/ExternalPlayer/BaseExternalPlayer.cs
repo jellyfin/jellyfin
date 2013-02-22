@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Common.Logging;
-using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.UI.Configuration;
 using MediaBrowser.UI.UserInput;
 using System;
@@ -16,6 +16,10 @@ namespace MediaBrowser.UI.Playback.ExternalPlayer
     /// </summary>
     public abstract class BaseExternalPlayer : BaseMediaPlayer
     {
+        protected BaseExternalPlayer(ILogger logger) : base(logger)
+        {
+        }
+
         /// <summary>
         /// Gets a value indicating whether this instance can mute.
         /// </summary>

@@ -208,12 +208,12 @@ namespace MediaBrowser.Api.Streaming
             {
                 try
                 {
-                    Logger.Info("Deleting HLS file {0}", file);
+                    //Logger.Info("Deleting HLS file {0}", file);
                     File.Delete(file);
                 }
                 catch (IOException ex)
                 {
-                    Logger.ErrorException("Error deleting HLS file {0}", ex, file);
+                    //Logger.ErrorException("Error deleting HLS file {0}", ex, file);
                 }
             }
         }

@@ -1,7 +1,6 @@
-﻿using System;
+﻿using MediaBrowser.Model.Logging;
+using System;
 using System.Diagnostics;
-using MediaBrowser.Common.Logging;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Library
 {

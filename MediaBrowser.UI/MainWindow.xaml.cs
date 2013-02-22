@@ -1,12 +1,10 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Logging;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.UI.Controller;
 using MediaBrowser.UI.Controls;
 using System;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;

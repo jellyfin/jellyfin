@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Logging;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -17,7 +16,7 @@ namespace MediaBrowser.Controller.Providers
         /// Gets the logger.
         /// </summary>
         /// <value>The logger.</value>
-        protected ILogger Logger { get; private set; }
+        protected static internal ILogger Logger { get; internal set; }
 
         // Cache these since they will be used a lot
         /// <summary>
@@ -113,7 +112,6 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         protected virtual void Initialize()
         {
-            Logger = LogManager.GetLogger(GetType().Name);
         }
 
         /// <summary>

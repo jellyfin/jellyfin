@@ -1,10 +1,9 @@
-﻿using MediaBrowser.Common.Logging;
+﻿using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Drawing
 {

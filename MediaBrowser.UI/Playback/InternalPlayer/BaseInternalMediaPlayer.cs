@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.UI.Configuration;
 using System.Collections.Generic;
 using System.Windows;
@@ -10,6 +11,10 @@ namespace MediaBrowser.UI.Playback.InternalPlayer
     /// </summary>
     public abstract class BaseInternalMediaPlayer : BaseMediaPlayer
     {
+        protected BaseInternalMediaPlayer(ILogger logger) : base(logger)
+        {
+        }
+
         /// <summary>
         /// Ensures the media player created.
         /// </summary>

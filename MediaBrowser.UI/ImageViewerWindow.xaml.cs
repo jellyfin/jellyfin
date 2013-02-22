@@ -35,7 +35,7 @@ namespace MediaBrowser.UI
         {
             base.OnLoaded();
 
-            Image.Source = App.Instance.GetBitmapImage(Images.First().Item1);
+            //Image.Source = App.Instance.GetBitmapImage(Images.First().Item1);
         }
     }
 }
