@@ -444,7 +444,9 @@ var Dashboard = {
             }
 
             if (options.showTitle || !hasPrimaryImage || (item.Type !== 'Movie' && item.Type !== 'Series' && item.Type !== 'Season')) {
-                html += "<div class='posterViewItemText'>" + item.Name + "</div>";
+                html += "<div class='posterViewItemText'>";
+                html += "<div>" + item.Name + "</div>";
+                html += "</div>"
             }
 
             html += "</a></div>";
@@ -472,8 +474,7 @@ var Dashboard = {
             var imageUrl = user.PrimaryImageTag ? ApiClient.getUserImageUrl(user.Id, {
 
                 height: 400,
-                tag: user.PrimaryImageTag,
-                type: "Primary"
+                tag: user.PrimaryImageTag
 
             }) : "css/images/userFlyoutDefault.png";
 
@@ -565,18 +566,7 @@ var Dashboard = {
 
         Dashboard.showLoadingMsg();
 
-        var promise;
-        
-        if (path === "Network") {
-            promise = ApiClient.getNetworkComputers();
-        }
-        else if (path) {
-            promise = ApiClient.getDirectoryContents(path, { includeDirectories: true });
-        } else {
-            promise = ApiClient.getDrives();
-        }
-        
-        promise.done(function (folders) {
+        ApiClient.getDirectoryContents(path, { includeDirectories: true }).done(function (folders) {
 
             $('#txtDirectoryPickerPath', page).val(path || "");
 
@@ -693,8 +683,7 @@ var Dashboard = {
 
                 var url = ApiClient.getUserImageUrl(user.Id, {
                     width: 225,
-                    tag: user.PrimaryImageTag,
-                    type: "Primary"
+                    tag: user.PrimaryImageTag
                 });
 
                 headerHtml += '<img src="' + url + '" />';
@@ -1108,7 +1097,7 @@ var Dashboard = {
     setPageTitle: function (title) {
 
         $('.pageTitle', $.mobile.activePage).html(title);
-        
+
         if (title) {
             document.title = title;
         }
@@ -1142,7 +1131,7 @@ $(function () {
     footerHtml += '</div>';
 
     footerHtml += '<div id="footerNotifications"></div>';
-    
+
     footerHtml += '</div>';
 
 
