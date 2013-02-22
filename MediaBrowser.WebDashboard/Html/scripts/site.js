@@ -444,7 +444,9 @@ var Dashboard = {
             }
 
             if (options.showTitle || !hasPrimaryImage || (item.Type !== 'Movie' && item.Type !== 'Series' && item.Type !== 'Season')) {
-                html += "<div class='posterViewItemText'>" + item.Name + "</div>";
+                html += "<div class='posterViewItemText'>";
+                html += "<div>" + item.Name + "</div>";
+                html += "</div>"
             }
 
             html += "</a></div>";
@@ -566,15 +568,15 @@ var Dashboard = {
         Dashboard.showLoadingMsg();
 
         var promise;
-        
+                
         if (path === "Network") {
-            promise = ApiClient.getNetworkComputers();
-        }
+                promise = ApiClient.getNetworkComputers();
+            }
         else if (path) {
-            promise = ApiClient.getDirectoryContents(path, { includeDirectories: true });
-        } else {
+                promise = ApiClient.getDirectoryContents(path, { includeDirectories: true });
+            } else {
             promise = ApiClient.getDrives();
-        }
+                }
         
         promise.done(function (folders) {
 
@@ -1108,7 +1110,7 @@ var Dashboard = {
     setPageTitle: function (title) {
 
         $('.pageTitle', $.mobile.activePage).html(title);
-        
+
         if (title) {
             document.title = title;
         }
@@ -1142,7 +1144,7 @@ $(function () {
     footerHtml += '</div>';
 
     footerHtml += '<div id="footerNotifications"></div>';
-    
+
     footerHtml += '</div>';
 
 
