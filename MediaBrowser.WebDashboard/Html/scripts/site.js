@@ -677,11 +677,11 @@ var Dashboard = {
 
         if (page.hasClass('standalonePage')) {
 
-            headerHtml += '<img class="imgLogo" src="css/images/mblogoblackfull.png" />';
+            headerHtml += '<img class="imgLogoIcon" src="css/images/mblogoicon.png" /><img class="imgLogoText" src="css/images/mblogotextblack.png" />';
         }
         else if (isLibraryPage) {
 
-            headerHtml += '<img class="imgLogo" src="css/images/mblogowhitefull.png" />';
+            headerHtml += '<img class="imgLogoIcon" src="css/images/mblogoicon.png" /><img class="imgLogoText" src="css/images/mblogotextwhite.png" />';
         }
         headerHtml += '</a>';
 
