@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.ApiInteraction;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Logging;
 using MediaBrowser.Model.Connectivity;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
@@ -10,13 +9,9 @@ using MediaBrowser.UI.Playback;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Cache;
 using System.Net.Http;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.UI.Controller
@@ -47,8 +42,8 @@ namespace MediaBrowser.UI.Controller
         /// <summary>
         /// Initializes a new instance of the <see cref="UIKernel" /> class.
         /// </summary>
-        public UIKernel(IIsoManager isoManager, ILogger logger)
-            : base(isoManager, logger)
+        public UIKernel(IApplicationHost appHost, IIsoManager isoManager, ILogger logger)
+            : base(appHost, isoManager, logger)
         {
             Instance = this;
         }
@@ -122,9 +117,7 @@ namespace MediaBrowser.UI.Controller
         {
             DisposeApiClient();
 
-            var logger = LogManager.GetLogger("ApiClient");
-
-            ApiClient = new ApiClient(logger, new AsyncHttpClient(new WebRequestHandler
+            ApiClient = new ApiClient(Logger, new AsyncHttpClient(new WebRequestHandler
             {
                 AutomaticDecompression = DecompressionMethods.Deflate,
                 CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate)

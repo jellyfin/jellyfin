@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Tasks;
 using System;

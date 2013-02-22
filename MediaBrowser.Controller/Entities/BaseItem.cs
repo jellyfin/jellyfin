@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Logging;
 using MediaBrowser.Common.Win32;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -8,6 +7,7 @@ using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,7 +16,6 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -97,7 +96,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The logger
         /// </summary>
-        protected static ILogger Logger = LogManager.GetLogger("BaseItem");
+        protected static internal ILogger Logger { get; internal set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

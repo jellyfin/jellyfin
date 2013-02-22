@@ -2,12 +2,12 @@
 using System;
 using System.Text;
 
-namespace MediaBrowser.Common.Logging
+namespace MediaBrowser.Logging.Nlog
 {
     /// <summary>
     /// Class NLogger
     /// </summary>
-    internal class NLogger : ILogger
+    public class NLogger : ILogger
     {
         /// <summary>
         /// The _logger

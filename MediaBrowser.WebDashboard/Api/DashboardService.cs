@@ -5,6 +5,7 @@ using MediaBrowser.Common.ScheduledTasks.Tasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
@@ -97,17 +98,20 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var kernel = (Kernel)Kernel;
 
-            return GetDashboardInfo(kernel);
+            return GetDashboardInfo(kernel, Logger);
         }
 
         /// <summary>
         /// Gets the dashboard info.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
+        /// <param name="logger">The logger.</param>
         /// <returns>DashboardInfo.</returns>
-        public static DashboardInfo GetDashboardInfo(Kernel kernel)
+        public static DashboardInfo GetDashboardInfo(Kernel kernel, ILogger logger)
         {
             var connections = kernel.UserManager.ActiveConnections.ToArray();
+
+            var dtoBuilder = new DtoBuilder(logger);
 
             return new DashboardInfo
             {
@@ -121,7 +125,7 @@ namespace MediaBrowser.WebDashboard.Api
 
                 ActiveConnections = connections,
 
-                Users = kernel.Users.Where(u => connections.Any(c => c.UserId == u.Id)).Select(DtoBuilder.GetDtoUser).ToArray()
+                Users = kernel.Users.Where(u => connections.Any(c => c.UserId == u.Id)).Select(dtoBuilder.GetDtoUser).ToArray()
             };
         }
 

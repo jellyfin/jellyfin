@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Logging;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Resolvers.TV;
 using MediaBrowser.Model.Entities;

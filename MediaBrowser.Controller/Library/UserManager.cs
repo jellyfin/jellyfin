@@ -73,7 +73,7 @@ namespace MediaBrowser.Controller.Library
             EventHelper.QueueEventIfNotNull(UserUpdated, this, new GenericEventArgs<User> { Argument = user }, _logger);
 
             // Notify connected ui's
-            Kernel.TcpManager.SendWebSocketMessage("UserUpdated", DtoBuilder.GetDtoUser(user));
+            Kernel.TcpManager.SendWebSocketMessage("UserUpdated", new DtoBuilder(_logger).GetDtoUser(user));
         }
         #endregion
 

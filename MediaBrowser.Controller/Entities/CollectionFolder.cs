@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Logging;
 using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Concurrent;

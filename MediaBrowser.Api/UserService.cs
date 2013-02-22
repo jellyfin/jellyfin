@@ -146,7 +146,9 @@ namespace MediaBrowser.Api
         {
             var kernel = (Kernel)Kernel;
 
-            var result = kernel.Users.OrderBy(u => u.Name).Select(DtoBuilder.GetDtoUser).ToList();
+            var dtoBuilder = new DtoBuilder(Logger);
+
+            var result = kernel.Users.OrderBy(u => u.Name).Select(dtoBuilder.GetDtoUser).ToList();
 
             return ToOptimizedResult(result);
         }
@@ -167,7 +169,7 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
-            var result = DtoBuilder.GetDtoUser(user);
+            var result = new DtoBuilder(Logger).GetDtoUser(user);
 
             return ToOptimizedResult(result);
         }
@@ -289,7 +291,7 @@ namespace MediaBrowser.Api
 
             var newUser = kernel.UserManager.CreateUser(dtoUser.Name).Result;
 
-            var result = DtoBuilder.GetDtoUser(newUser);
+            var result = new DtoBuilder(Logger).GetDtoUser(newUser);
 
             return ToOptimizedResult(result);
         }

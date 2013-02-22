@@ -1,9 +1,8 @@
-﻿using MediaBrowser.Common.Logging;
+﻿using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Common.Serialization
 {

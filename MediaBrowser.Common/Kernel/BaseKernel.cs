@@ -9,9 +9,6 @@ using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
-using NLog;
-using NLog.Config;
-using NLog.Targets;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -39,11 +36,6 @@ namespace MediaBrowser.Common.Kernel
         /// Occurs when [has pending restart changed].
         /// </summary>
         public event EventHandler HasPendingRestartChanged;
-
-        /// <summary>
-        /// Notifiies the containing application that a restart has been requested
-        /// </summary>
-        public event EventHandler ApplicationRestartRequested;
 
         #region ConfigurationUpdated Event
         /// <summary>
@@ -342,6 +334,12 @@ namespace MediaBrowser.Common.Kernel
         protected ILogger Logger { get; private set; }
 
         /// <summary>
+        /// Gets or sets the application host.
+        /// </summary>
+        /// <value>The application host.</value>
+        protected IApplicationHost ApplicationHost { get; private set; }
+
+        /// <summary>
         /// Gets the assemblies.
         /// </summary>
         /// <value>The assemblies.</value>
@@ -350,10 +348,17 @@ namespace MediaBrowser.Common.Kernel
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseKernel{TApplicationPathsType}" /> class.
         /// </summary>
+        /// <param name="appHost">The app host.</param>
         /// <param name="isoManager">The iso manager.</param>
         /// <param name="logger">The logger.</param>
-        protected BaseKernel(IIsoManager isoManager, ILogger logger)
+        /// <exception cref="System.ArgumentNullException">isoManager</exception>
+        protected BaseKernel(IApplicationHost appHost, IIsoManager isoManager, ILogger logger)
         {
+            if (appHost == null)
+            {
+                throw new ArgumentNullException("appHost");
+            }
+            
             if (isoManager == null)
             {
                 throw new ArgumentNullException("isoManager");
@@ -363,7 +368,8 @@ namespace MediaBrowser.Common.Kernel
             {
                 throw new ArgumentNullException("logger");
             }
-            
+
+            ApplicationHost = appHost;
             IsoManager = isoManager;
             Logger = logger;
         }
@@ -440,40 +446,9 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         public void ReloadLogger()
         {
-            DisposeLogger();
-
-            LogFilePath = Path.Combine(ApplicationPaths.LogDirectoryPath, KernelContext + "-" + DateTime.Now.Ticks + ".log");
-
-            var logFile = new FileTarget();
-
-            logFile.FileName = LogFilePath;
-            logFile.Layout = "${longdate}, ${level}, ${logger}, ${message}";
-
-            AddLogTarget(logFile, "ApplicationLogFile");
-
+            ApplicationHost.ReloadLogger();
+            
             OnLoggerLoaded();
-        }
-
-        /// <summary>
-        /// Adds the log target.
-        /// </summary>
-        /// <param name="target">The target.</param>
-        /// <param name="name">The name.</param>
-        private void AddLogTarget(Target target, string name)
-        {
-            var config = LogManager.Configuration;
-
-            config.RemoveTarget(name);
-
-            target.Name = name;
-            config.AddTarget(name, target);
-
-            var level = Configuration.EnableDebugLevelLogging ? LogLevel.Debug : LogLevel.Info;
-
-            var rule = new LoggingRule("*", level, target);
-            config.LoggingRules.Add(rule);
-
-            LogManager.Configuration = config;
         }
 
         /// <summary>
@@ -588,7 +563,7 @@ namespace MediaBrowser.Common.Kernel
 
                 foreach (var task in ScheduledTasks)
                 {
-                    task.Initialize(this);
+                    task.Initialize(this, Logger);
                 }
 
                 // Start-up each plugin
@@ -708,23 +683,6 @@ namespace MediaBrowser.Common.Kernel
         }
 
         /// <summary>
-        /// Disposes all logger resources
-        /// </summary>
-        private void DisposeLogger()
-        {
-            // Dispose all current loggers
-            var listeners = Trace.Listeners.OfType<TraceListener>().ToList();
-
-            Trace.Listeners.Clear();
-
-            foreach (var listener in listeners)
-            {
-                listener.Dispose();
-            }
-
-        }
-
-        /// <summary>
         /// Gets the current application version
         /// </summary>
         /// <value>The application version.</value>
@@ -759,7 +717,7 @@ namespace MediaBrowser.Common.Kernel
         {
             Logger.Info("Restarting the application");
 
-            EventHelper.QueueEventIfNotNull(ApplicationRestartRequested, this, EventArgs.Empty, Logger);
+            ApplicationHost.Restart();
         }
 
         /// <summary>

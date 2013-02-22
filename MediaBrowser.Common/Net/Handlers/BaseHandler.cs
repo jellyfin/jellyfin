@@ -1,7 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Logging;
-using MediaBrowser.Model.Logging;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,19 +22,12 @@ namespace MediaBrowser.Common.Net.Handlers
         where TKernelType : IKernel
     {
         /// <summary>
-        /// Gets the logger.
-        /// </summary>
-        /// <value>The logger.</value>
-        protected ILogger Logger { get; private set; }
-
-        /// <summary>
         /// Initializes the specified kernel.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         public void Initialize(IKernel kernel)
         {
             Kernel = (TKernelType)kernel;
-            Logger = SharedLogger.Logger;
         }
 
         /// <summary>
@@ -303,7 +294,7 @@ namespace MediaBrowser.Common.Net.Handlers
 
             response.ContentType = "text/plain";
 
-            Logger.ErrorException("Error processing request", ex);
+            //Logger.ErrorException("Error processing request", ex);
             
             if (!string.IsNullOrEmpty(ex.Message))
             {
@@ -321,7 +312,7 @@ namespace MediaBrowser.Common.Net.Handlers
             }
             catch (Exception ex1)
             {
-                Logger.ErrorException("Error dumping stack trace", ex1);
+                //Logger.ErrorException("Error dumping stack trace", ex1);
             }
         }
 
@@ -449,7 +440,7 @@ namespace MediaBrowser.Common.Net.Handlers
 
             if (Kernel.Configuration.EnableHttpLevelLogging)
             {
-                Logger.LogMultiline(msg, LogSeverity.Debug, log);
+                //Logger.LogMultiline(msg, LogSeverity.Debug, log);
             }
         }
 
@@ -604,7 +595,7 @@ namespace MediaBrowser.Common.Net.Handlers
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error disposing compressed stream", ex);
+                    //Logger.ErrorException("Error disposing compressed stream", ex);
                 }
             }
 
@@ -615,7 +606,7 @@ namespace MediaBrowser.Common.Net.Handlers
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error disposing response", ex);
+                //Logger.ErrorException("Error disposing response", ex);
             }
         }
 
@@ -748,14 +739,6 @@ namespace MediaBrowser.Common.Net.Handlers
 
             return formVars;
         }
-    }
-
-    internal static class SharedLogger
-    {
-        /// <summary>
-        /// The logger
-        /// </summary>
-        internal static ILogger Logger = LogManager.GetLogger("Http Handler");
     }
 
     /// <summary>

@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace MediaBrowser.Common.Logging
+namespace MediaBrowser.ServerApplication.Logging
 {
     /// <summary>
     /// Interaction logic for LogWindow.xaml

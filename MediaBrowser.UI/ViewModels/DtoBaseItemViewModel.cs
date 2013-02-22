@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Logging;
-using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.UI.Pages;
 using System;

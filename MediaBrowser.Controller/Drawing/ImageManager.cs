@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -15,7 +16,6 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Drawing
 {
@@ -581,7 +581,20 @@ namespace MediaBrowser.Controller.Drawing
             // Run the enhancers sequentially in order of priority
             foreach (var enhancer in imageEnhancers)
             {
-                result = await enhancer.EnhanceImageAsync(item, result, imageType, imageIndex).ConfigureAwait(false);
+                var typeName = enhancer.GetType().Name;
+
+                _logger.Debug("Running {0} for {1}", typeName, item.Path ?? item.Name ?? "--Unknown--");
+
+                try
+                {
+                    result = await enhancer.EnhanceImageAsync(item, result, imageType, imageIndex).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("{0} failed enhancing {1}", ex, typeName, item.Name);
+
+                    throw;
+                }
             }
 
             return result;

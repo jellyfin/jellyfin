@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Logging;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
@@ -212,9 +211,9 @@ namespace MediaBrowser.UI.Playback
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseMediaPlayer" /> class.
         /// </summary>
-        protected BaseMediaPlayer()
+        protected BaseMediaPlayer(ILogger logger)
         {
-            Logger = LogManager.GetLogger(GetType().Name);
+            Logger = logger;
         }
 
         /// <summary>

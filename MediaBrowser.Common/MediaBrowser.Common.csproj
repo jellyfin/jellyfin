@@ -114,8 +114,6 @@
     <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
@@ -142,16 +140,10 @@
     <Compile Include="Kernel\BaseManager.cs" />
     <Compile Include="Kernel\BasePeriodicWebSocketListener.cs" />
     <Compile Include="Kernel\BaseWebSocketListener.cs" />
+    <Compile Include="Kernel\IApplicationHost.cs" />
     <Compile Include="Kernel\IKernel.cs" />
     <Compile Include="Kernel\TcpManager.cs" />
     <Compile Include="Localization\LocalizedStringData.cs" />
-    <Compile Include="Logging\LogHelper.cs" />
-    <Compile Include="Logging\LogManager.cs" />
-    <Compile Include="Logging\LogWindow.xaml.cs">
-      <DependentUpon>LogWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Logging\NLogger.cs" />
-    <Compile Include="Logging\WindowTraceListener.cs" />
     <Compile Include="Mef\MefUtils.cs" />
     <Compile Include="Net\AlchemyWebSocket.cs" />
     <Compile Include="Net\BaseRestService.cs" />
@@ -201,7 +193,6 @@
     <Compile Include="ScheduledTasks\IntervalTrigger.cs" />
     <Compile Include="ScheduledTasks\IScheduledTask.cs" />
     <Compile Include="ScheduledTasks\WeeklyTrigger.cs" />
-    <Compile Include="UI\BaseApplication.cs" />
     <Compile Include="Updates\ApplicationUpdateCheck.cs" />
     <Compile Include="Updates\ApplicationUpdater.cs" />
     <Compile Include="Updates\ClickOnceHelper.cs" />
@@ -229,12 +220,6 @@
     <Resource Include="Resources\Images\Icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Logging\LogWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="README.txt" />
     <Content Include="swagger-ui\css\screen.css" />
     <Resource Include="swagger-ui\images\pet_store_api.png" />
@@ -251,6 +236,7 @@
     <Content Include="swagger-ui\swagger-ui.js" />
     <Content Include="swagger-ui\swagger-ui.min.js" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Logging;
 using MediaBrowser.Model.Logging;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
@@ -23,16 +22,17 @@ namespace MediaBrowser.Common.Net
     public class BaseRestService : Service, IRestfulService
     {
         /// <summary>
-        /// The logger
-        /// </summary>
-        protected ILogger Logger = LogManager.GetLogger("RestService");
-
-        /// <summary>
         /// Gets or sets the kernel.
         /// </summary>
         /// <value>The kernel.</value>
         public IKernel Kernel { get; set; }
 
+        /// <summary>
+        /// Gets or sets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
+        public ILogger Logger { get; set; }
+        
         /// <summary>
         /// Gets a value indicating whether this instance is range request.
         /// </summary>

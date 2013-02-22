@@ -1,20 +1,20 @@
-﻿using System.IO;
-using Declarations.Events;
+﻿using Declarations.Events;
 using Declarations.Media;
 using Declarations.Players;
 using Implementation;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.UI.Configuration;
 using MediaBrowser.UI.Playback.InternalPlayer;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using MediaState = Declarations.MediaState;
 
 namespace MediaBrowser.UI.Playback.NVlc
 {
@@ -24,6 +24,12 @@ namespace MediaBrowser.UI.Playback.NVlc
     [Export(typeof(BaseMediaPlayer))]
     public class InternalMediaPlayerNVlc : BaseInternalMediaPlayer
     {
+        [ImportingConstructor]
+        public InternalMediaPlayerNVlc([Import("logger")] ILogger logger)
+            : base(logger)
+        {
+        }
+
         /// <summary>
         /// Gets or sets the media player factory.
         /// </summary>

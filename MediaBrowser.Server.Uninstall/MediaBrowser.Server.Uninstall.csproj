@@ -44,15 +44,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\MediaBrowser.Common\Updates\ClickOnceHelper.cs">
-      <Link>ClickOnceHelper.cs</Link>
-    </Compile>
     <Compile Include="Globals.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
+      <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>
+      <Name>MediaBrowser.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

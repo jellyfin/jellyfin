@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Kernel;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
@@ -76,7 +77,8 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// Initializes the specified kernel.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        void Initialize(IKernel kernel);
+        /// <param name="logger">The logger.</param>
+        void Initialize(IKernel kernel, ILogger logger);
 
         /// <summary>
         /// Cancels if running.

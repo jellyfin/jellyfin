@@ -1,7 +1,6 @@
-﻿<z:BaseApplication x:Class="MediaBrowser.UI.App"
+﻿<Application x:Class="MediaBrowser.UI.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:z="clr-namespace:MediaBrowser.Common.UI;assembly=MediaBrowser.Common">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -13,4 +12,4 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
-</z:BaseApplication>
+</Application>

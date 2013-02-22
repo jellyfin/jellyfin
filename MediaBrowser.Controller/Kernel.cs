@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playback;
@@ -312,12 +313,18 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The bluray examiner.</value>
         private IBlurayExaminer BlurayExaminer { get; set; }
-        
+
         /// <summary>
         /// Creates a kernel based on a Data path, which is akin to our current programdata path
         /// </summary>
-        public Kernel(IIsoManager isoManager, IZipClient zipClient, IBlurayExaminer blurayExaminer, ILogger logger)
-            : base(isoManager, logger)
+        /// <param name="appHost">The app host.</param>
+        /// <param name="isoManager">The iso manager.</param>
+        /// <param name="zipClient">The zip client.</param>
+        /// <param name="blurayExaminer">The bluray examiner.</param>
+        /// <param name="logger">The logger.</param>
+        /// <exception cref="System.ArgumentNullException">isoManager</exception>
+        public Kernel(IApplicationHost appHost, IIsoManager isoManager, IZipClient zipClient, IBlurayExaminer blurayExaminer, ILogger logger)
+            : base(appHost, isoManager, logger)
         {
             if (isoManager == null)
             {
@@ -337,6 +344,13 @@ namespace MediaBrowser.Controller
             Instance = this;
             ZipClient = zipClient;
             BlurayExaminer = blurayExaminer;
+
+            // For now there's no real way to inject this properly
+            BaseItem.Logger = logger;
+            Ratings.Logger = logger;
+            LocalizedStrings.Logger = logger;
+            // For now, until this can become an interface
+            BaseMetadataProvider.Logger = logger;
         }
 
         /// <summary>

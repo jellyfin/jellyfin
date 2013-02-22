@@ -1,10 +1,13 @@
-﻿using MediaBrowser.ApiInteraction;
+﻿using System.Deployment.Application;
+using System.Net.Cache;
+using System.Windows.Media;
+using MediaBrowser.ApiInteraction;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Logging;
-using MediaBrowser.Common.UI;
+using MediaBrowser.Common.Updates;
 using MediaBrowser.IsoMounter;
+using MediaBrowser.Logging.Nlog;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Logging;
@@ -24,14 +27,21 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using Microsoft.Win32;
 
 namespace MediaBrowser.UI
 {
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : BaseApplication, IApplication
+    public partial class App : Application, IApplicationHost
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether [last run at startup value].
+        /// </summary>
+        /// <value><c>null</c> if [last run at startup value] contains no value, <c>true</c> if [last run at startup value]; otherwise, <c>false</c>.</value>
+        private bool? LastRunAtStartupValue { get; set; }
+        
         /// <summary>
         /// Gets or sets the clock timer.
         /// </summary>
@@ -44,10 +54,38 @@ namespace MediaBrowser.UI
         private Timer ServerConfigurationTimer { get; set; }
 
         /// <summary>
+        /// The single instance mutex
+        /// </summary>
+        private Mutex SingleInstanceMutex;
+
+        /// <summary>
+        /// Gets or sets the kernel.
+        /// </summary>
+        /// <value>The kernel.</value>
+        protected IKernel Kernel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
+        protected ILogger Logger { get; set; }
+
+        /// <summary>
+        /// Gets or sets the log file path.
+        /// </summary>
+        /// <value>The log file path.</value>
+        private string LogFilePath { get; set; }
+
+        /// <summary>
+        /// Occurs when [property changed].
+        /// </summary>
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        /// <summary>
         /// Gets the name of the product.
         /// </summary>
         /// <value>The name of the product.</value>
-        protected override string ProductName
+        protected string ProductName
         {
             get { return Globals.ProductName; }
         }
@@ -56,7 +94,7 @@ namespace MediaBrowser.UI
         /// Gets the name of the publisher.
         /// </summary>
         /// <value>The name of the publisher.</value>
-        protected override string PublisherName
+        protected string PublisherName
         {
             get { return Globals.PublisherName; }
         }
@@ -65,7 +103,7 @@ namespace MediaBrowser.UI
         /// Gets the name of the suite.
         /// </summary>
         /// <value>The name of the suite.</value>
-        protected override string SuiteName
+        protected string SuiteName
         {
             get { return Globals.SuiteName; }
         }
@@ -74,7 +112,7 @@ namespace MediaBrowser.UI
         /// Gets the name of the uninstaller file.
         /// </summary>
         /// <value>The name of the uninstaller file.</value>
-        protected override string UninstallerFileName
+        protected string UninstallerFileName
         {
             get { return "MediaBrowser.UI.Uninstall.exe"; }
         }
@@ -236,7 +274,7 @@ namespace MediaBrowser.UI
         [STAThread]
         public static void Main()
         {
-            var application = new App(LogManager.GetLogger("App"));
+            var application = new App(new NLogger("App"));
             application.InitializeComponent();
 
             application.Run();
@@ -247,25 +285,26 @@ namespace MediaBrowser.UI
         /// </summary>
         /// <param name="logger">The logger.</param>
         public App(ILogger logger)
-            : base(logger)
         {
+            Logger = logger;
 
+            InitializeComponent();
         }
         
         /// <summary>
         /// Instantiates the kernel.
         /// </summary>
         /// <returns>IKernel.</returns>
-        protected override IKernel InstantiateKernel()
+        protected IKernel InstantiateKernel()
         {
-            return new UIKernel(new PismoIsoManager(Logger), Logger);
+            return new UIKernel(this, new PismoIsoManager(Logger), Logger);
         }
 
         /// <summary>
         /// Instantiates the main window.
         /// </summary>
         /// <returns>Window.</returns>
-        protected override Window InstantiateMainWindow()
+        protected Window InstantiateMainWindow()
         {
             HiddenWindow = new HiddenWindow { };
 
@@ -361,7 +400,7 @@ namespace MediaBrowser.UI
         /// <summary>
         /// Loads the kernel.
         /// </summary>
-        protected override async void LoadKernel()
+        protected async void LoadKernel()
         {
             // Without this the app will shutdown after the splash screen closes
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
@@ -378,7 +417,7 @@ namespace MediaBrowser.UI
 
                 ShutdownMode = System.Windows.ShutdownMode.OnLastWindowClose;
 
-                await OnKernelLoaded();
+                OnKernelLoaded();
 
                 InstantiateMainWindow().Show();
 
@@ -401,9 +440,11 @@ namespace MediaBrowser.UI
         /// Called when [kernel loaded].
         /// </summary>
         /// <returns>Task.</returns>
-        protected override async Task OnKernelLoaded()
+        protected void OnKernelLoaded()
         {
-            await base.OnKernelLoaded().ConfigureAwait(false);
+            Kernel.ConfigurationUpdated += Kernel_ConfigurationUpdated;
+
+            ConfigureClickOnceStartup();
 
             PropertyChanged += AppPropertyChanged;
 
@@ -421,6 +462,71 @@ namespace MediaBrowser.UI
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Windows.Application.Startup" /> event.
+        /// </summary>
+        /// <param name="e">A <see cref="T:System.Windows.StartupEventArgs" /> that contains the event data.</param>
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            bool createdNew;
+            SingleInstanceMutex = new Mutex(true, @"Local\" + GetType().Assembly.GetName().Name, out createdNew);
+            if (!createdNew)
+            {
+                SingleInstanceMutex = null;
+                Shutdown();
+                return;
+            }
+
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            LoadKernel();
+
+            SystemEvents.SessionEnding += SystemEvents_SessionEnding;
+        }
+
+        /// <summary>
+        /// Handles the UnhandledException event of the CurrentDomain control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="UnhandledExceptionEventArgs" /> instance containing the event data.</param>
+        void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            var exception = (Exception)e.ExceptionObject;
+
+            Logger.ErrorException("UnhandledException", exception);
+
+            MessageBox.Show("Unhandled exception: " + exception.Message);
+        }
+
+        /// <summary>
+        /// Called when [property changed].
+        /// </summary>
+        /// <param name="info">The info.</param>
+        public void OnPropertyChanged(String info)
+        {
+            if (PropertyChanged != null)
+            {
+                try
+                {
+                    PropertyChanged(this, new PropertyChangedEventArgs(info));
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error in event handler", ex);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the SessionEnding event of the SystemEvents control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="SessionEndingEventArgs" /> instance containing the event data.</param>
+        void SystemEvents_SessionEnding(object sender, SessionEndingEventArgs e)
+        {
+            // Try to shut down gracefully
+            Shutdown();
+        }
+        
         /// <summary>
         /// Raises the <see cref="E:System.Windows.Application.Exit" /> event.
         /// </summary>
@@ -441,9 +547,29 @@ namespace MediaBrowser.UI
                 UIKernel.Instance.SaveConfiguration();
             }
 
+            ReleaseMutex();
+
             base.OnExit(e);
+
+            Kernel.Dispose();
         }
 
+        /// <summary>
+        /// Releases the mutex.
+        /// </summary>
+        private void ReleaseMutex()
+        {
+            if (SingleInstanceMutex == null)
+            {
+                return;
+            }
+
+            SingleInstanceMutex.ReleaseMutex();
+            SingleInstanceMutex.Close();
+            SingleInstanceMutex.Dispose();
+            SingleInstanceMutex = null;
+        }
+        
         /// <summary>
         /// Apps the property changed.
         /// </summary>
@@ -770,6 +896,113 @@ namespace MediaBrowser.UI
                 bitmapImage.Freeze();
                 return bitmapImage;
             }
+        }
+        
+        /// <summary>
+        /// Handles the ConfigurationUpdated event of the Kernel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        void Kernel_ConfigurationUpdated(object sender, EventArgs e)
+        {
+            if (!LastRunAtStartupValue.HasValue || LastRunAtStartupValue.Value != Kernel.Configuration.RunAtStartup)
+            {
+                ConfigureClickOnceStartup();
+            }
+        }
+
+        /// <summary>
+        /// Configures the click once startup.
+        /// </summary>
+        private void ConfigureClickOnceStartup()
+        {
+            if (!ApplicationDeployment.IsNetworkDeployed)
+            {
+                return;
+            }
+
+            try
+            {
+                var clickOnceHelper = new ClickOnceHelper(PublisherName, ProductName, SuiteName);
+
+                if (Kernel.Configuration.RunAtStartup)
+                {
+                    clickOnceHelper.UpdateUninstallParameters(UninstallerFileName);
+                    clickOnceHelper.AddShortcutToStartup();
+                }
+                else
+                {
+                    clickOnceHelper.RemoveShortcutFromStartup();
+                }
+
+                LastRunAtStartupValue = Kernel.Configuration.RunAtStartup;
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error configuring ClickOnce", ex);
+            }
+        }
+
+        public void Restart()
+        {
+            Dispatcher.Invoke(ReleaseMutex);
+
+            Kernel.Dispose();
+
+            System.Windows.Forms.Application.Restart();
+
+            Dispatcher.Invoke(Shutdown);
+        }
+
+        public void ReloadLogger()
+        {
+            LogFilePath = Path.Combine(Kernel.ApplicationPaths.LogDirectoryPath, "Server-" + DateTime.Now.Ticks + ".log");
+
+            NlogManager.AddFileTarget(LogFilePath, Kernel.Configuration.EnableDebugLevelLogging);
+        }        
+        
+        /// <summary>
+        /// Gets the bitmap image.
+        /// </summary>
+        /// <param name="uri">The URI.</param>
+        /// <returns>BitmapImage.</returns>
+        /// <exception cref="System.ArgumentNullException">uri</exception>
+        public BitmapImage GetBitmapImage(string uri)
+        {
+            if (string.IsNullOrEmpty(uri))
+            {
+                throw new ArgumentNullException("uri");
+            }
+
+            return GetBitmapImage(new Uri(uri));
+        }
+
+        /// <summary>
+        /// Gets the bitmap image.
+        /// </summary>
+        /// <param name="uri">The URI.</param>
+        /// <returns>BitmapImage.</returns>
+        /// <exception cref="System.ArgumentNullException">uri</exception>
+        public BitmapImage GetBitmapImage(Uri uri)
+        {
+            if (uri == null)
+            {
+                throw new ArgumentNullException("uri");
+            }
+
+            var bitmap = new BitmapImage
+            {
+                CreateOptions = BitmapCreateOptions.DelayCreation,
+                CacheOption = BitmapCacheOption.OnDemand,
+                UriCachePolicy = new RequestCachePolicy(RequestCacheLevel.CacheIfAvailable)
+            };
+
+            bitmap.BeginInit();
+            bitmap.UriSource = uri;
+            bitmap.EndInit();
+
+            RenderOptions.SetBitmapScalingMode(bitmap, BitmapScalingMode.Fant);
+            return bitmap;
         }
     }
 }

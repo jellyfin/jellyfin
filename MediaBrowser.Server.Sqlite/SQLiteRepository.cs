@@ -1,4 +1,3 @@
-using MediaBrowser.Common.Logging;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;

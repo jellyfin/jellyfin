@@ -1,8 +1,6 @@
-﻿using MediaBrowser.Common.Logging;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
 using System;
 using System.Drawing;
 using System.Threading.Tasks;
@@ -14,10 +12,6 @@ namespace MediaBrowser.Controller.Providers
     /// </summary>
     public abstract class BaseImageEnhancer : IDisposable
     {
-        /// <summary>
-        /// The logger
-        /// </summary>
-        private static readonly ILogger Logger = LogManager.GetLogger("ImageEnhancer");
         /// <summary>
         /// Return true only if the given image for the given item will be enhanced by this enhancer.
         /// </summary>
@@ -92,27 +86,14 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns>Task{Image}.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public async Task<Image> EnhanceImageAsync(BaseItem item, Image originalImage, ImageType imageType, int imageIndex)
+        public Task<Image> EnhanceImageAsync(BaseItem item, Image originalImage, ImageType imageType, int imageIndex)
         {
             if (item == null || originalImage == null)
             {
                 throw new ArgumentNullException();
             }
 
-            var typeName = GetType().Name;
-
-            Logger.Debug("Running {0} for {1}", typeName, item.Path ?? item.Name ?? "--Unknown--");
-
-            try
-            {
-                return await EnhanceImageAsyncInternal(item, originalImage, imageType, imageIndex).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("{0} failed enhancing {1}", ex, typeName, item.Name);
-
-                throw;
-            }
+            return EnhanceImageAsyncInternal(item, originalImage, imageType, imageIndex);
         }
     }
 }

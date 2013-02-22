@@ -1,12 +1,11 @@
-﻿using MediaBrowser.Common.Logging;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Common.Kernel
 {

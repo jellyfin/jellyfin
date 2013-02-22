@@ -120,6 +120,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\DotNetZip.1.9.1.8\lib\net20\Ionic.Zip.dll</HintPath>
     </Reference>
+    <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\NLog.2.0.0.2000\lib\net40\NLog.dll</HintPath>
+    </Reference>
     <Reference Include="Platinum.Managed, Version=1.0.4794.22684, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\UPnP\Libs\Platinum.Managed.dll</HintPath>
@@ -134,9 +138,11 @@
     <Reference Include="System.Data.SQLite.Linq">
       <HintPath>..\packages\System.Data.SQLite.1.0.84.0\lib\net45\System.Data.SQLite.Linq.dll</HintPath>
     </Reference>
+    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -166,6 +172,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Logging\LogWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -185,6 +195,10 @@
     <Compile Include="LibraryExplorer.xaml.cs">
       <DependentUpon>LibraryExplorer.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Logging\LogWindow.xaml.cs">
+      <DependentUpon>LogWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Logging\WindowTraceListener.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -237,6 +251,10 @@
     <ProjectReference Include="..\MediaBrowser.IsoMounter\MediaBrowser.IsoMounter.csproj">
       <Project>{5356ae30-6a6e-4a64-81e3-f76c50595e64}</Project>
       <Name>MediaBrowser.IsoMounter</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Logging.NLog\MediaBrowser.Logging.NLog.csproj">
+      <Project>{67310740-0ec4-4dc2-9921-33df38b20167}</Project>
+      <Name>MediaBrowser.Logging.NLog</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>

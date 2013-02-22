@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Common.Logging;
-using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.UI.Configuration;
 using MediaBrowser.UI.Controller;
 using MediaBrowser.UI.Playback;
@@ -31,6 +31,12 @@ namespace MediaBrowser.Plugins.MpcHc
         /// The MPC HTTP interface resource pool
         /// </summary>
         private SemaphoreSlim MpcHttpInterfaceResourcePool = new SemaphoreSlim(1, 1);
+
+        [ImportingConstructor]
+        public MpcHcMediaPlayer([Import("logger")] ILogger logger)
+            : base(logger)
+        {
+        }
 
         /// <summary>
         /// Gets or sets the HTTP interface cancellation token.
