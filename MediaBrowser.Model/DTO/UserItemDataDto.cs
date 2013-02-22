@@ -4,7 +4,7 @@ using ProtoBuf;
 namespace MediaBrowser.Model.Dto
 {
     /// <summary>
-    /// Class DtoUserItemData
+    /// Class UserItemDataDto
     /// </summary>
     [ProtoContract]
     public class UserItemDataDto : INotifyPropertyChanged

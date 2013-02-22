@@ -656,7 +656,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="itemId">The item id.</param>
         /// <param name="userId">The user id.</param>
-        /// <returns>Task{DtoUserItemData}.</returns>
+        /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
         public Task<UserItemDataDto> ReportPlaybackStartAsync(string itemId, Guid userId)
         {
@@ -686,7 +686,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="itemId">The item id.</param>
         /// <param name="userId">The user id.</param>
         /// <param name="positionTicks">The position ticks.</param>
-        /// <returns>Task{DtoUserItemData}.</returns>
+        /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
         public Task<UserItemDataDto> ReportPlaybackProgressAsync(string itemId, Guid userId, long? positionTicks)
         {
@@ -718,7 +718,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="itemId">The item id.</param>
         /// <param name="userId">The user id.</param>
         /// <param name="positionTicks">The position ticks.</param>
-        /// <returns>Task{DtoUserItemData}.</returns>
+        /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
         public Task<UserItemDataDto> ReportPlaybackStoppedAsync(string itemId, Guid userId, long? positionTicks)
         {
@@ -749,7 +749,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="itemId">The item id.</param>
         /// <param name="userId">The user id.</param>
-        /// <returns>Task{DtoUserItemData}.</returns>
+        /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
         public Task ClearUserItemRatingAsync(string itemId, Guid userId)
         {
@@ -774,7 +774,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="itemId">The item id.</param>
         /// <param name="userId">The user id.</param>
         /// <param name="likes">if set to <c>true</c> [likes].</param>
-        /// <returns>Task{DtoUserItemData}.</returns>
+        /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
         public Task<UserItemDataDto> UpdateUserItemRatingAsync(string itemId, Guid userId, bool likes)
         {
