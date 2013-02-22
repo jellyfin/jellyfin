@@ -41,9 +41,6 @@
     <Reference Include="Alchemy">
       <HintPath>..\packages\Alchemy.2.2.1\lib\net40\Alchemy.dll</HintPath>
     </Reference>
-    <Reference Include="MoreLinq">
-      <HintPath>..\packages\morelinq.1.0.15631-beta\lib\net35\MoreLinq.dll</HintPath>
-    </Reference>
     <Reference Include="NLog">
       <HintPath>..\packages\NLog.2.0.0.2000\lib\net40\NLog.dll</HintPath>
     </Reference>
