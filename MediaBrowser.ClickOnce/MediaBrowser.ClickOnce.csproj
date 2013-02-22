@@ -40,6 +40,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SharedVersion.cs">
+      <Link>Properties\SharedVersion.cs</Link>
+    </Compile>
     <Compile Include="ApplicationUpdateCheck.cs" />
     <Compile Include="ApplicationUpdater.cs" />
     <Compile Include="ClickOnceHelper.cs" />
