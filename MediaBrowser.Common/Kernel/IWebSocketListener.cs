@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Net;
+using System;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.Kernel
@@ -6,7 +7,7 @@ namespace MediaBrowser.Common.Kernel
     /// <summary>
     ///This is an interface for listening to messages coming through a web socket connection
     /// </summary>
-    public interface IWebSocketListener
+    public interface IWebSocketListener : IDisposable
     {
         /// <summary>
         /// Processes the message.
