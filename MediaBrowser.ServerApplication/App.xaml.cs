@@ -1,14 +1,14 @@
-﻿using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Updates;
+﻿using MediaBrowser.ClickOnce;
+using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Logging.Nlog;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Updates;
 using MediaBrowser.Server.Uninstall;
 using MediaBrowser.ServerApplication.Implementations;
 using Microsoft.Win32;
 using System;
-using System.Deployment.Application;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -71,7 +71,7 @@ namespace MediaBrowser.ServerApplication
         /// Gets or sets the log file path.
         /// </summary>
         /// <value>The log file path.</value>
-        private string LogFilePath { get; set; }
+        public string LogFilePath { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="App" /> class.
@@ -235,24 +235,9 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         private void ConfigureClickOnceStartup()
         {
-            if (!ApplicationDeployment.IsNetworkDeployed)
-            {
-                return;
-            }
-
             try
             {
-                var clickOnceHelper = new ClickOnceHelper(PublisherName, ProductName, SuiteName);
-
-                if (Kernel.Configuration.RunAtStartup)
-                {
-                    clickOnceHelper.UpdateUninstallParameters(UninstallerFileName);
-                    clickOnceHelper.AddShortcutToStartup();
-                }
-                else
-                {
-                    clickOnceHelper.RemoveShortcutFromStartup();
-                }
+                ClickOnceHelper.ConfigureClickOnceStartupIfInstalled(PublisherName, ProductName, SuiteName, Kernel.Configuration.RunAtStartup, UninstallerFileName);
 
                 LastRunAtStartupValue = Kernel.Configuration.RunAtStartup;
             }
@@ -468,6 +453,37 @@ namespace MediaBrowser.ServerApplication
 
             RenderOptions.SetBitmapScalingMode(bitmap, BitmapScalingMode.Fant);
             return bitmap;
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can self update.
+        /// </summary>
+        /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
+        public bool CanSelfUpdate
+        {
+            get { return ClickOnceHelper.IsNetworkDeployed; }
+        }
+
+        /// <summary>
+        /// Checks for update.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <returns>Task{CheckForUpdateResult}.</returns>
+        public Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
+        {
+            return new ApplicationUpdateCheck().CheckForApplicationUpdate(cancellationToken, progress);
+        }
+
+        /// <summary>
+        /// Updates the application.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <returns>Task.</returns>
+        public Task UpdateApplication(CancellationToken cancellationToken, IProgress<double> progress)
+        {
+            return new ApplicationUpdater().UpdateApplication(cancellationToken, progress);
         }
     }
 }

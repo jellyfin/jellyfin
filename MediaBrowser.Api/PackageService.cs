@@ -1,8 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
-using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Updates;
 using ServiceStack.ServiceHost;
 using System;
@@ -98,6 +97,12 @@ namespace MediaBrowser.Api
     public class PackageService : BaseRestService
     {
         /// <summary>
+        /// Gets or sets the application host.
+        /// </summary>
+        /// <value>The application host.</value>
+        public IApplicationHost ApplicationHost { get; set; }
+
+        /// <summary>
         /// Gets the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -116,9 +121,9 @@ namespace MediaBrowser.Api
 
             else if (request.PackageType == PackageType.System || request.PackageType == PackageType.All)
             {
-                var updateCheckResult = new ApplicationUpdateCheck().CheckForApplicationUpdate(CancellationToken.None, new Progress<TaskProgress> { }).Result;
+                var updateCheckResult = ApplicationHost.CheckForApplicationUpdate(CancellationToken.None, new Progress<double> { }).Result;
 
-                if (updateCheckResult.UpdateAvailable)
+                if (updateCheckResult.IsUpdateAvailable)
                 {
                     result.Add(new PackageVersionInfo
                     {

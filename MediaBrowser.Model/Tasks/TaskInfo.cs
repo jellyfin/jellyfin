@@ -28,7 +28,7 @@ namespace MediaBrowser.Model.Tasks
         /// </summary>
         /// <value>The progress.</value>
         [ProtoMember(3)]
-        public TaskProgress CurrentProgress { get; set; }
+        public double? CurrentProgressPercentage { get; set; }
 
         /// <summary>
         /// Gets or sets the id.

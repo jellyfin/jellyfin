@@ -67,7 +67,6 @@
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Net" />
     <Reference Include="System.Runtime.Serialization" />
@@ -106,6 +105,7 @@
     <Compile Include="Entities\Year.cs" />
     <Compile Include="Extensions\XmlExtensions.cs" />
     <Compile Include="IO\FileSystemManager.cs" />
+    <Compile Include="IO\NetworkShares.cs" />
     <Compile Include="Library\ChildrenChangedEventArgs.cs" />
     <Compile Include="Library\DtoBuilder.cs" />
     <Compile Include="Library\Profiler.cs" />

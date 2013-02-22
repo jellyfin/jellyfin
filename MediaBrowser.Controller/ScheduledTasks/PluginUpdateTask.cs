@@ -38,13 +38,13 @@ namespace MediaBrowser.Controller.ScheduledTasks
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        protected override async Task ExecuteInternal(CancellationToken cancellationToken, IProgress<TaskProgress> progress)
+        protected override async Task ExecuteInternal(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            progress.Report(new TaskProgress { Description = "Checking for plugin updates", PercentComplete = 0 });
+            progress.Report(0);
 
             var packagesToInstall = (await Kernel.InstallationManager.GetAvailablePluginUpdates(true, cancellationToken).ConfigureAwait(false)).ToList();
 
-            progress.Report(new TaskProgress { PercentComplete = 10 });
+            progress.Report(10);
 
             var numComplete = 0;
 
@@ -81,7 +81,7 @@ namespace MediaBrowser.Controller.ScheduledTasks
                     double percent = numComplete;
                     percent /= packagesToInstall.Count;
 
-                    progress.Report(new TaskProgress { PercentComplete = (90 * percent) + 10 });
+                    progress.Report((90 * percent) + 10);
                 }
             }));
 
@@ -89,7 +89,7 @@ namespace MediaBrowser.Controller.ScheduledTasks
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            progress.Report(new TaskProgress { PercentComplete = 100 });
+            progress.Report(100);
         }
 
         /// <summary>

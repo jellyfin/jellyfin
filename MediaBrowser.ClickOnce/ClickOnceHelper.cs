@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using System.Deployment.Application;
+using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -6,7 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.AccessControl;
 
-namespace MediaBrowser.Common.Updates
+namespace MediaBrowser.ClickOnce
 {
     /// <summary>
     /// Class ClickOnceHelper
@@ -41,6 +42,15 @@ namespace MediaBrowser.Common.Updates
         private static string Location
         {
             get { return Assembly.GetExecutingAssembly().Location; }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is network deployed.
+        /// </summary>
+        /// <value><c>true</c> if this instance is network deployed; otherwise, <c>false</c>.</value>
+        public static bool IsNetworkDeployed
+        {
+            get { return ApplicationDeployment.IsNetworkDeployed; }
         }
 
         /// <summary>
@@ -212,6 +222,34 @@ namespace MediaBrowser.Common.Updates
                 }
 
             }.Start();
+        }
+
+        /// <summary>
+        /// Configures the click once startup.
+        /// </summary>
+        /// <param name="publisherName">Name of the publisher.</param>
+        /// <param name="productName">Name of the product.</param>
+        /// <param name="suiteName">Name of the suite.</param>
+        /// <param name="runAtStartup">if set to <c>true</c> [run at startup].</param>
+        /// <param name="uninstallerFilename">The uninstaller filename.</param>
+        public static void ConfigureClickOnceStartupIfInstalled(string publisherName, string productName, string suiteName, bool runAtStartup, string uninstallerFilename)
+        {
+            if (!ApplicationDeployment.IsNetworkDeployed)
+            {
+                return;
+            }
+
+            var clickOnceHelper = new ClickOnceHelper(publisherName, productName, suiteName);
+
+            if (runAtStartup)
+            {
+                clickOnceHelper.UpdateUninstallParameters(uninstallerFilename);
+                clickOnceHelper.AddShortcutToStartup();
+            }
+            else
+            {
+                clickOnceHelper.RemoveShortcutFromStartup();
+            }
         }
     }
 }

@@ -116,7 +116,6 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http" />
@@ -153,6 +152,7 @@
     <Compile Include="Controls\NotificationMessage.xaml.cs">
       <DependentUpon>NotificationMessage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\Extensions.cs" />
     <Compile Include="HiddenWindow.xaml.cs">
       <DependentUpon>HiddenWindow.xaml</DependentUpon>
     </Compile>
@@ -299,6 +299,10 @@
     <ProjectReference Include="..\MediaBrowser.ApiInteraction\MediaBrowser.ApiInteraction.csproj">
       <Project>{921c0f64-fda7-4e9f-9e73-0cb0eedb2422}</Project>
       <Name>MediaBrowser.ApiInteraction</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.ClickOnce\MediaBrowser.ClickOnce.csproj">
+      <Project>{cc96bf3e-0bda-4809-bc4b-bb6d418f4a84}</Project>
+      <Name>MediaBrowser.ClickOnce</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
       <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>

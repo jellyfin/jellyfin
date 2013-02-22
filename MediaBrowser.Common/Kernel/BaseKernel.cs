@@ -13,7 +13,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
-using System.Deployment.Application;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -154,12 +153,6 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <value><c>true</c> if this instance is first run; otherwise, <c>false</c>.</value>
         public bool IsFirstRun { get; private set; }
-
-        /// <summary>
-        /// The version of the application to display
-        /// </summary>
-        /// <value>The display version.</value>
-        public string DisplayVersion { get { return ApplicationVersion.ToString(); } }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has changes that require the entire application to restart.
@@ -325,7 +318,10 @@ namespace MediaBrowser.Common.Kernel
         /// Gets the log file path.
         /// </summary>
         /// <value>The log file path.</value>
-        public string LogFilePath { get; private set; }
+        public string LogFilePath
+        {
+            get { return ApplicationHost.LogFilePath; }
+        }
 
         /// <summary>
         /// Gets the logger.
@@ -429,7 +425,7 @@ namespace MediaBrowser.Common.Kernel
             await ReloadComposableParts().ConfigureAwait(false);
 
             DisposeTcpManager();
-            TcpManager = new TcpManager(this, Logger);
+            TcpManager = new TcpManager(ApplicationHost, this, Logger);
         }
 
         /// <summary>
@@ -482,6 +478,7 @@ namespace MediaBrowser.Common.Kernel
         protected virtual void ComposeExportedValues(CompositionContainer container)
         {
             container.ComposeExportedValue("logger", Logger);
+            container.ComposeExportedValue("appHost", ApplicationHost);
         }
 
         /// <summary>
@@ -729,8 +726,8 @@ namespace MediaBrowser.Common.Kernel
             return new SystemInfo
             {
                 HasPendingRestart = HasPendingRestart,
-                Version = DisplayVersion,
-                IsNetworkDeployed = ApplicationDeployment.IsNetworkDeployed,
+                Version = ApplicationVersion.ToString(),
+                IsNetworkDeployed = ApplicationHost.CanSelfUpdate,
                 WebSocketPortNumber = TcpManager.WebSocketPortNumber,
                 SupportsNativeWebSocket = TcpManager.SupportsNativeWebSocket,
                 FailedPluginAssemblies = FailedPluginAssemblies.ToArray()

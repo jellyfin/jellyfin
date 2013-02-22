@@ -33,7 +33,7 @@ namespace MediaBrowser.Common.ScheduledTasks.Tasks
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        protected override Task ExecuteInternal(CancellationToken cancellationToken, IProgress<TaskProgress> progress)
+        protected override Task ExecuteInternal(CancellationToken cancellationToken, IProgress<double> progress)
         {
             return Task.Run(() =>
             {
@@ -51,7 +51,7 @@ namespace MediaBrowser.Common.ScheduledTasks.Tasks
                     double percent = index;
                     percent /= filesToDelete.Count;
 
-                    progress.Report(new TaskProgress { Description = file.FullName, PercentComplete = 100 * percent });
+                    progress.Report(100 * percent);
 
                     cancellationToken.ThrowIfCancellationRequested();
 
@@ -60,7 +60,7 @@ namespace MediaBrowser.Common.ScheduledTasks.Tasks
                     index++;
                 }
 
-                progress.Report(new TaskProgress { PercentComplete = 100 });
+                progress.Report(100);
             });
         }
 

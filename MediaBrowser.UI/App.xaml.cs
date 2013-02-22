@@ -1,33 +1,33 @@
-﻿using System.Deployment.Application;
-using System.Net.Cache;
-using System.Windows.Media;
-using MediaBrowser.ApiInteraction;
+﻿using MediaBrowser.ApiInteraction;
+using MediaBrowser.ClickOnce;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Updates;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Logging.Nlog;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Updates;
 using MediaBrowser.Model.Weather;
 using MediaBrowser.UI.Controller;
 using MediaBrowser.UI.Controls;
 using MediaBrowser.UI.Pages;
 using MediaBrowser.UI.Uninstall;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Net.Cache;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Microsoft.Win32;
 
 namespace MediaBrowser.UI
 {
@@ -74,7 +74,7 @@ namespace MediaBrowser.UI
         /// Gets or sets the log file path.
         /// </summary>
         /// <value>The log file path.</value>
-        private string LogFilePath { get; set; }
+        public string LogFilePath { get; private set; }
 
         /// <summary>
         /// Occurs when [property changed].
@@ -916,24 +916,9 @@ namespace MediaBrowser.UI
         /// </summary>
         private void ConfigureClickOnceStartup()
         {
-            if (!ApplicationDeployment.IsNetworkDeployed)
-            {
-                return;
-            }
-
             try
             {
-                var clickOnceHelper = new ClickOnceHelper(PublisherName, ProductName, SuiteName);
-
-                if (Kernel.Configuration.RunAtStartup)
-                {
-                    clickOnceHelper.UpdateUninstallParameters(UninstallerFileName);
-                    clickOnceHelper.AddShortcutToStartup();
-                }
-                else
-                {
-                    clickOnceHelper.RemoveShortcutFromStartup();
-                }
+                ClickOnceHelper.ConfigureClickOnceStartupIfInstalled(PublisherName, ProductName, SuiteName, Kernel.Configuration.RunAtStartup, UninstallerFileName);
 
                 LastRunAtStartupValue = Kernel.Configuration.RunAtStartup;
             }
@@ -1003,6 +988,37 @@ namespace MediaBrowser.UI
 
             RenderOptions.SetBitmapScalingMode(bitmap, BitmapScalingMode.Fant);
             return bitmap;
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can self update.
+        /// </summary>
+        /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
+        public bool CanSelfUpdate
+        {
+            get { return ClickOnceHelper.IsNetworkDeployed; }
+        }
+
+        /// <summary>
+        /// Checks for update.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <returns>Task{CheckForUpdateResult}.</returns>
+        public Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
+        {
+            return new ApplicationUpdateCheck().CheckForApplicationUpdate(cancellationToken, progress);
+        }
+
+        /// <summary>
+        /// Updates the application.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <returns>Task.</returns>
+        public Task UpdateApplication(CancellationToken cancellationToken, IProgress<double> progress)
+        {
+            return new ApplicationUpdater().UpdateApplication(cancellationToken, progress);
         }
     }
 }

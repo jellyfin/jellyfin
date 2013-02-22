@@ -138,7 +138,6 @@
     <Reference Include="System.Data.SQLite.Linq">
       <HintPath>..\packages\System.Data.SQLite.1.0.84.0\lib\net45\System.Data.SQLite.Linq.dll</HintPath>
     </Reference>
-    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Web.Extensions" />
@@ -239,6 +238,10 @@
     <ProjectReference Include="..\BDInfo\BDInfo.csproj">
       <Project>{07b509c0-0c28-4f3f-8963-5263281f7e3d}</Project>
       <Name>BDInfo</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.ClickOnce\MediaBrowser.ClickOnce.csproj">
+      <Project>{cc96bf3e-0bda-4809-bc4b-bb6d418f4a84}</Project>
+      <Name>MediaBrowser.ClickOnce</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
       <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>

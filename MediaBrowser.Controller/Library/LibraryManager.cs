@@ -369,7 +369,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        internal async Task ValidatePeople(CancellationToken cancellationToken, IProgress<TaskProgress> progress)
+        internal async Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
         {
             // Clear the IBN cache
             ImagesByNameItemCache.Clear();
@@ -422,14 +422,14 @@ namespace MediaBrowser.Controller.Library
                         double percent = numComplete;
                         percent /= people.Count;
 
-                        progress.Report(new TaskProgress { PercentComplete = 100 * percent });
+                        progress.Report(100 * percent);
                     }
                 }));
             }
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            progress.Report(new TaskProgress { PercentComplete = 100 });
+            progress.Report(100);
 
             _logger.Info("People validation complete");
         }
@@ -440,17 +440,17 @@ namespace MediaBrowser.Controller.Library
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        internal async Task ValidateMediaLibrary(IProgress<TaskProgress> progress, CancellationToken cancellationToken)
+        internal async Task ValidateMediaLibrary(IProgress<double> progress, CancellationToken cancellationToken)
         {
             _logger.Info("Validating media library");
 
             await Kernel.RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
             // Start by just validating the children of the root, but go no further
-            await Kernel.RootFolder.ValidateChildren(new Progress<TaskProgress> { }, cancellationToken, recursive: false);
+            await Kernel.RootFolder.ValidateChildren(new Progress<double> { }, cancellationToken, recursive: false);
 
             // Validate only the collection folders for each user, just to make them available as quickly as possible
-            var userCollectionFolderTasks = Kernel.Users.AsParallel().Select(user => user.ValidateCollectionFolders(new Progress<TaskProgress> { }, cancellationToken));
+            var userCollectionFolderTasks = Kernel.Users.AsParallel().Select(user => user.ValidateCollectionFolders(new Progress<double> { }, cancellationToken));
             await Task.WhenAll(userCollectionFolderTasks).ConfigureAwait(false);
 
             // Now validate the entire media library
@@ -458,7 +458,7 @@ namespace MediaBrowser.Controller.Library
 
             foreach (var user in Kernel.Users)
             {
-                await user.ValidateMediaLibrary(new Progress<TaskProgress> { }, cancellationToken).ConfigureAwait(false);
+                await user.ValidateMediaLibrary(new Progress<double> { }, cancellationToken).ConfigureAwait(false);
             }
         }
 

@@ -252,8 +252,8 @@
             html += task.Name;
 
             if (task.State == "Running") {
-                var progress = task.CurrentProgress || { PercentComplete: 0 };
-                html += '<span style="color:#267F00;margin-right:5px;font-weight:bold;"> - ' + Math.round(progress.PercentComplete) + '%</span>';
+                var progress = Math.round(task.CurrentProgressPercentage || 0);
+                html += '<span style="color:#267F00;margin-right:5px;font-weight:bold;"> - ' + progress + '%</span>';
 
                 html += '<button type="button" data-icon="stop" data-iconpos="notext" data-inline="true" data-theme="b" data-mini="true" onclick="DashboardPage.stopTask(\'' + task.Id + '\');">Stop</button>';
             }

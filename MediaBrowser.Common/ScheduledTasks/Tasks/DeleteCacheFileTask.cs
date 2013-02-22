@@ -33,7 +33,7 @@ namespace MediaBrowser.Common.ScheduledTasks.Tasks
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        protected override Task ExecuteInternal(CancellationToken cancellationToken, IProgress<TaskProgress> progress)
+        protected override Task ExecuteInternal(CancellationToken cancellationToken, IProgress<double> progress)
         {
             return Task.Run(() =>
             {
@@ -51,7 +51,7 @@ namespace MediaBrowser.Common.ScheduledTasks.Tasks
         /// <param name="directory">The directory.</param>
         /// <param name="minDateModified">The min date modified.</param>
         /// <param name="progress">The progress.</param>
-        private void DeleteCacheFilesFromDirectory(CancellationToken cancellationToken, string directory, DateTime minDateModified, IProgress<TaskProgress> progress)
+        private void DeleteCacheFilesFromDirectory(CancellationToken cancellationToken, string directory, DateTime minDateModified, IProgress<double> progress)
         {
             var filesToDelete = new DirectoryInfo(directory).EnumerateFileSystemInfos("*", SearchOption.AllDirectories)
                 .Where(f => !f.Attributes.HasFlag(FileAttributes.Directory) && f.LastWriteTimeUtc < minDateModified)
@@ -64,7 +64,7 @@ namespace MediaBrowser.Common.ScheduledTasks.Tasks
                 double percent = index;
                 percent /= filesToDelete.Count;
 
-                progress.Report(new TaskProgress { Description = file.FullName, PercentComplete = 100 * percent });
+                progress.Report(100 * percent);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -73,7 +73,7 @@ namespace MediaBrowser.Common.ScheduledTasks.Tasks
                 index++;
             }
 
-            progress.Report(new TaskProgress { PercentComplete = 100 });
+            progress.Report(100);
         }
 
         /// <summary>

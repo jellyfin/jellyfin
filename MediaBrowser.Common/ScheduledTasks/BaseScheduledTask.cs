@@ -171,7 +171,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// Gets the current progress.
         /// </summary>
         /// <value>The current progress.</value>
-        public TaskProgress CurrentProgress { get; private set; }
+        public double? CurrentProgress { get; private set; }
 
         /// <summary>
         /// The _triggers
@@ -246,7 +246,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        protected abstract Task ExecuteInternal(CancellationToken cancellationToken, IProgress<TaskProgress> progress);
+        protected abstract Task ExecuteInternal(CancellationToken cancellationToken, IProgress<double> progress);
 
         /// <summary>
         /// Gets the name of the task
@@ -355,7 +355,7 @@ namespace MediaBrowser.Common.ScheduledTasks
 
             Logger.Info("Executing {0}", Name);
 
-            var progress = new Progress<TaskProgress>();
+            var progress = new Progress<double>();
 
             progress.ProgressChanged += progress_ProgressChanged;
 
@@ -426,7 +426,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        void progress_ProgressChanged(object sender, TaskProgress e)
+        void progress_ProgressChanged(object sender, double e)
         {
             CurrentProgress = e;
         }

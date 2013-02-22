@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Updates;
+﻿using MediaBrowser.ClickOnce;
 using System;
 using System.IO;
 

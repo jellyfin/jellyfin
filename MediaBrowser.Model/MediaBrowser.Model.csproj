@@ -70,6 +70,7 @@
     <Compile Include="Logging\LogSeverity.cs" />
     <Compile Include="MediaInfo\IBlurayExaminer.cs" />
     <Compile Include="Net\HttpException.cs" />
+    <Compile Include="Updates\CheckForUpdateResult.cs" />
     <Compile Include="Updates\InstallationInfo.cs" />
     <Compile Include="Updates\PackageType.cs" />
     <Compile Include="Updates\PackageVersionClass.cs" />
@@ -97,7 +98,6 @@
     <Compile Include="Tasks\TaskCompletionStatus.cs" />
     <Compile Include="Tasks\TaskResult.cs" />
     <Compile Include="Tasks\TaskInfo.cs" />
-    <Compile Include="Tasks\TaskProgress.cs" />
     <Compile Include="Tasks\TaskState.cs" />
     <Compile Include="Tasks\TaskTriggerInfo.cs" />
     <Compile Include="Updates\PackageInfo.cs" />

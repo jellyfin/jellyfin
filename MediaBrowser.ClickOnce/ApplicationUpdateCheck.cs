@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Model.Tasks;
+﻿using MediaBrowser.Model.Updates;
 using System;
 using System.Deployment.Application;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Updates
+namespace MediaBrowser.ClickOnce
 {
     /// <summary>
     /// Class ApplicationUpdateCheck
@@ -14,12 +14,12 @@ namespace MediaBrowser.Common.Updates
         /// <summary>
         /// The _task completion source
         /// </summary>
-        private TaskCompletionSource<CheckForUpdateCompletedEventArgs> _taskCompletionSource;
+        private TaskCompletionSource<CheckForUpdateResult> _taskCompletionSource;
 
         /// <summary>
         /// The _progress
         /// </summary>
-        private IProgress<TaskProgress> _progress;
+        private IProgress<double> _progress;
 
         /// <summary>
         /// Checks for application update.
@@ -28,7 +28,7 @@ namespace MediaBrowser.Common.Updates
         /// <param name="progress">The progress.</param>
         /// <returns>Task{CheckForUpdateCompletedEventArgs}.</returns>
         /// <exception cref="System.InvalidOperationException">Current deployment is not a ClickOnce deployment</exception>
-        public Task<CheckForUpdateCompletedEventArgs> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<TaskProgress> progress)
+        public Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
             if (!ApplicationDeployment.IsNetworkDeployed)
             {
@@ -36,8 +36,8 @@ namespace MediaBrowser.Common.Updates
             }
 
             _progress = progress;
-            
-            _taskCompletionSource = new TaskCompletionSource<CheckForUpdateCompletedEventArgs>();
+
+            _taskCompletionSource = new TaskCompletionSource<CheckForUpdateResult>();
 
             var deployment = ApplicationDeployment.CurrentDeployment;
 
@@ -51,6 +51,20 @@ namespace MediaBrowser.Common.Updates
             deployment.CheckForUpdateAsync();
 
             return _taskCompletionSource.Task;
+        }
+
+        /// <summary>
+        /// To the result.
+        /// </summary>
+        /// <param name="args">The <see cref="CheckForUpdateCompletedEventArgs" /> instance containing the event data.</param>
+        /// <returns>CheckForUpdateResult.</returns>
+        private CheckForUpdateResult ToResult(CheckForUpdateCompletedEventArgs args)
+        {
+            return new CheckForUpdateResult
+            {
+                AvailableVersion = args.AvailableVersion,
+                IsUpdateAvailable = args.UpdateAvailable
+            };
         }
 
         /// <summary>
@@ -75,7 +89,7 @@ namespace MediaBrowser.Common.Updates
             }
             else
             {
-                _taskCompletionSource.SetResult(e);
+                _taskCompletionSource.SetResult(ToResult(e));
             }
         }
 
@@ -86,7 +100,7 @@ namespace MediaBrowser.Common.Updates
         /// <param name="e">The <see cref="DeploymentProgressChangedEventArgs" /> instance containing the event data.</param>
         void deployment_CheckForUpdateProgressChanged(object sender, DeploymentProgressChangedEventArgs e)
         {
-            _progress.Report(new TaskProgress { PercentComplete = e.ProgressPercentage });
+            _progress.Report(e.ProgressPercentage);
         }
     }
 }
