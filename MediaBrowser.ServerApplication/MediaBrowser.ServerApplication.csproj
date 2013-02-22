@@ -66,7 +66,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <PropertyGroup>
-    <RunPostBuildEvent>Always</RunPostBuildEvent>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>9633DCDB4A07D3328EFB99299C6DFB1823EBC4BE</ManifestCertificateThumbprint>
@@ -373,7 +373,19 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(SolutionDir)\packages\System.Data.SQLite.1.0.84.0\content\net40\x86\SQLite.Interop.dll" "$(TargetDir)" /y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(SolutionDir)\packages\System.Data.SQLite.1.0.84.0\content\net40\x86\SQLite.Interop.dll" "$(TargetDir)" /y
+
+xcopy "$(TargetDir)*.dll" "$(SolutionDir)..\Deploy\Server\System" /y
+mkdir "$(SolutionDir)..\Deploy\Server\System\x64"
+xcopy "$(TargetDir)x64" "$(SolutionDir)..\Deploy\Server\System\x64" /y
+
+mkdir "$(SolutionDir)..\Deploy\Server\System\x86"
+xcopy "$(TargetDir)x86" "$(SolutionDir)..\Deploy\Server\System\x86" /y
+
+mkdir "$(SolutionDir)..\Deploy\Server\System\CorePlugins"
+xcopy "$(TargetDir)CorePlugins" "$(SolutionDir)..\Deploy\Server\System\CorePlugins" /y
+
+compress -Z "$(SolutionDir)..\Deploy\Server\*.*"</PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
