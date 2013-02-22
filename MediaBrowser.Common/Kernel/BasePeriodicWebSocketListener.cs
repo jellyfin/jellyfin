@@ -12,11 +12,9 @@ namespace MediaBrowser.Common.Kernel
     /// <summary>
     /// Starts sending data over a web socket periodically when a message is received, and then stops when a corresponding stop message is received
     /// </summary>
-    /// <typeparam name="TKernelType">The type of the T kernel type.</typeparam>
     /// <typeparam name="TReturnDataType">The type of the T return data type.</typeparam>
     /// <typeparam name="TStateType">The type of the T state type.</typeparam>
-    public abstract class BasePeriodicWebSocketListener<TKernelType, TReturnDataType, TStateType> : BaseWebSocketListener<TKernelType>
-        where TKernelType : IKernel
+    public abstract class BasePeriodicWebSocketListener<TReturnDataType, TStateType> : IWebSocketListener, IDisposable
         where TStateType : class, new()
     {
         /// <summary>
@@ -47,6 +45,7 @@ namespace MediaBrowser.Common.Kernel
         /// Initializes a new instance of the <see cref="BasePeriodicWebSocketListener{TStateType}" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
+        /// <exception cref="System.ArgumentNullException">logger</exception>
         protected BasePeriodicWebSocketListener(ILogger logger)
         {
             if (logger == null)
@@ -58,11 +57,16 @@ namespace MediaBrowser.Common.Kernel
         }
 
         /// <summary>
-        /// Processes the message internal.
+        /// The null task result
+        /// </summary>
+        protected Task NullTaskResult = Task.FromResult(true);
+
+        /// <summary>
+        /// Processes the message.
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>Task.</returns>
-        protected override Task ProcessMessageInternal(WebSocketMessageInfo message)
+        public Task ProcessMessage(WebSocketMessageInfo message)
         {
             if (message.MessageType.Equals(Name + "Start", StringComparison.OrdinalIgnoreCase))
             {
@@ -223,7 +227,7 @@ namespace MediaBrowser.Common.Kernel
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected override void Dispose(bool dispose)
+        protected virtual void Dispose(bool dispose)
         {
             if (dispose)
             {
@@ -235,8 +239,14 @@ namespace MediaBrowser.Common.Kernel
                     }
                 }
             }
+        }
 
-            base.Dispose(dispose);
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;

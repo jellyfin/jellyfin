@@ -553,11 +553,6 @@ namespace MediaBrowser.Common.Kernel
         {
             return Task.Run(() =>
             {
-                foreach (var listener in WebSocketListeners)
-                {
-                    listener.Initialize(this);
-                }
-
                 foreach (var task in ScheduledTasks)
                 {
                     task.Initialize(this, Logger);
