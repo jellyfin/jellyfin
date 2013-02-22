@@ -75,6 +75,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SharedVersion.cs">
+      <Link>Properties\SharedVersion.cs</Link>
+    </Compile>
     <Compile Include="Drawing\ImageExtensions.cs" />
     <Compile Include="Drawing\ImageHeader.cs" />
     <Compile Include="Drawing\ImageManager.cs" />

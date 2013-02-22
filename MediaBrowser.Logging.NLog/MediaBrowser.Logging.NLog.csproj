@@ -44,6 +44,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SharedVersion.cs">
+      <Link>Properties\SharedVersion.cs</Link>
+    </Compile>
     <Compile Include="LogHelper.cs" />
     <Compile Include="NLogger.cs" />
     <Compile Include="NlogManager.cs" />

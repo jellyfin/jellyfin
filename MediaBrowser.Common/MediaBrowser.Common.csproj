@@ -120,6 +120,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SharedVersion.cs">
+      <Link>Properties\SharedVersion.cs</Link>
+    </Compile>
     <Compile Include="Events\EventHelper.cs" />
     <Compile Include="Extensions\BaseExtensions.cs" />
     <Compile Include="Events\GenericEventArgs.cs" />
