@@ -100,8 +100,13 @@ pre, textarea.pre {
     padding: 10px 0 10px 10px;
 }
 
-.imgLogo {
+.imgLogoIcon {
     height: 45px;
+}
+
+.imgLogoText {
+    height: 45px;
+    display: none;
 }
 
 
@@ -268,8 +273,13 @@ form, .readOnlyContent {
 
 @media all and (min-width: 650px) {
 
-    .imgLogo {
+    .imgLogoIcon {
         height: 60px;
+    }
+
+    .imgLogoText {
+        height: 60px;
+        display: inline;
     }
 
     .header {
