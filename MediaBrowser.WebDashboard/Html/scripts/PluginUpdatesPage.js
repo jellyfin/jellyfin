@@ -41,7 +41,7 @@
         var options = PluginUpdatesPage.getHtmlOptions(["Off", "On"], (plugin.EnableAutoUpdate ? "On" : "Off"));
 
         html += "<td>";
-        html += "<select data-uniqueid='" + plugin.UniqueId + "' onchange='PluginUpdatesPage.setAutoUpdate(this);' data-role='slider' id='" + fieldId + "' name='" + fieldId + "'>" + options + "</select>";
+        html += "<select data-id='" + plugin.Id + "' onchange='PluginUpdatesPage.setAutoUpdate(this);' data-role='slider' id='" + fieldId + "' name='" + fieldId + "'>" + options + "</select>";
         html += "</td>";
 
         fieldId = "liPluginUpdateFieldb" + fieldIndex;
@@ -49,7 +49,7 @@
         options = PluginUpdatesPage.getHtmlOptions(["Release", "Beta", "Dev"], plugin.UpdateClass);
 
         html += "<td>";
-        html += "<select data-uniqueid='" + plugin.UniqueId + "' onchange='PluginUpdatesPage.setUpdateClass(this);' data-inline='true' id='" + fieldId + "' name='" + fieldId + "'>" + options + "</select>";
+        html += "<select data-id='" + plugin.Id + "' onchange='PluginUpdatesPage.setUpdateClass(this);' data-inline='true' id='" + fieldId + "' name='" + fieldId + "'>" + options + "</select>";
         html += "</td>";
 
         html += "</tr>";
@@ -79,7 +79,7 @@
 
     setAutoUpdate: function (select) {
 
-        var id = $(select).attr('data-uniqueid');
+        var id = $(select).attr('data-id');
 
         Dashboard.showLoadingMsg();
 
@@ -93,7 +93,7 @@
 
     setUpdateClass: function (select) {
 
-        var id = $(select).attr('data-uniqueid');
+        var id = $(select).attr('data-id');
 
         Dashboard.showLoadingMsg();
 

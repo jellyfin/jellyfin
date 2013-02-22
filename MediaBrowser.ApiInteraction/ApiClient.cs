@@ -362,7 +362,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("plugin");
             }
 
-            var url = GetApiUrl("Plugins/" + plugin.UniqueId + "/Assembly");
+            var url = GetApiUrl("Plugins/" + plugin.Id + "/Assembly");
 
             return HttpClient.GetStreamAsync(url, Logger, CancellationToken.None);
         }

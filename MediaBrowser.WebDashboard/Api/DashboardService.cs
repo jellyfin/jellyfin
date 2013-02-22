@@ -25,7 +25,7 @@ namespace MediaBrowser.WebDashboard.Api
     /// Class GetDashboardConfigurationPages
     /// </summary>
     [Route("/dashboard/ConfigurationPages", "GET")]
-    public class GetDashboardConfigurationPages : IReturn<List<BaseConfigurationPage>>
+    public class GetDashboardConfigurationPages : IReturn<List<IPluginConfigurationPage>>
     {
         /// <summary>
         /// Gets or sets the type of the page.
@@ -38,7 +38,7 @@ namespace MediaBrowser.WebDashboard.Api
     /// Class GetDashboardConfigurationPage
     /// </summary>
     [Route("/dashboard/ConfigurationPage", "GET")]
-    public class GetDashboardConfigurationPage : IReturn<BaseConfigurationPage>
+    public class GetDashboardConfigurationPage : IReturn<IPluginConfigurationPage>
     {
         /// <summary>
         /// Gets or sets the name.
@@ -139,9 +139,8 @@ namespace MediaBrowser.WebDashboard.Api
             var kernel = (Kernel)Kernel;
 
             var page = kernel.PluginConfigurationPages.First(p => p.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
-            var plugin = page.GetOwnerPlugin();
 
-            return ToStaticResult(plugin.Version.ToString().GetMD5(), plugin.AssemblyDateLastModified, null, MimeTypes.GetMimeType("page.html"), () => ModifyHtml(page.GetHtmlStream()));
+            return ToStaticResult(page.Version.GetMD5(), page.DateLastModified, null, MimeTypes.GetMimeType("page.html"), () => ModifyHtml(page.GetHtmlStream()));
         }
 
         /// <summary>
