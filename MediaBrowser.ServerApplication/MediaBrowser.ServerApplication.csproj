@@ -375,6 +375,7 @@
   <PropertyGroup>
     <PostBuildEvent>xcopy "$(SolutionDir)\packages\System.Data.SQLite.1.0.84.0\content\net40\x86\SQLite.Interop.dll" "$(TargetDir)" /y
 
+if $(ConfigurationName) == Release (
 xcopy "$(TargetDir)*.dll" "$(SolutionDir)..\Deploy\Server\System" /y
 mkdir "$(SolutionDir)..\Deploy\Server\System\x64"
 xcopy "$(TargetDir)x64" "$(SolutionDir)..\Deploy\Server\System\x64" /y
@@ -385,7 +386,7 @@ xcopy "$(TargetDir)x86" "$(SolutionDir)..\Deploy\Server\System\x86" /y
 mkdir "$(SolutionDir)..\Deploy\Server\System\CorePlugins"
 xcopy "$(TargetDir)CorePlugins" "$(SolutionDir)..\Deploy\Server\System\CorePlugins" /y
 
-compress -Z "$(SolutionDir)..\Deploy\Server\*.*"</PostBuildEvent>
+)</PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
