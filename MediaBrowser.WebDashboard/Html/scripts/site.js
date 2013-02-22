@@ -474,7 +474,8 @@ var Dashboard = {
             var imageUrl = user.PrimaryImageTag ? ApiClient.getUserImageUrl(user.Id, {
 
                 height: 400,
-                tag: user.PrimaryImageTag
+                tag: user.PrimaryImageTag,
+                type: "Primary"
 
             }) : "css/images/userFlyoutDefault.png";
 
@@ -566,7 +567,18 @@ var Dashboard = {
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getDirectoryContents(path, { includeDirectories: true }).done(function (folders) {
+        var promise;
+                
+        if (path === "Network") {
+                promise = ApiClient.getNetworkComputers();
+            }
+        else if (path) {
+                promise = ApiClient.getDirectoryContents(path, { includeDirectories: true });
+            } else {
+            promise = ApiClient.getDrives();
+                }
+        
+        promise.done(function (folders) {
 
             $('#txtDirectoryPickerPath', page).val(path || "");
 
@@ -683,7 +695,8 @@ var Dashboard = {
 
                 var url = ApiClient.getUserImageUrl(user.Id, {
                     width: 225,
-                    tag: user.PrimaryImageTag
+                    tag: user.PrimaryImageTag,
+                    type: "Primary"
                 });
 
                 headerHtml += '<img src="' + url + '" />';

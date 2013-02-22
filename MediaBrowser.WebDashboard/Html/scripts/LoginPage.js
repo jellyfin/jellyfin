@@ -23,7 +23,8 @@
 
         return ApiClient.getUserImageUrl(user.Id, {
             width: 240,
-            tag: user.PrimaryImageTag
+            tag: user.PrimaryImageTag,
+            type: "Primary"
         });
     },
 
@@ -73,7 +74,8 @@
 
                 var imgUrl = ApiClient.getUserImageUrl(user.Id, {
                     width: 500,
-                    tag: user.PrimaryImageTag
+                    tag: user.PrimaryImageTag,
+                    type: "Primary"
                 });
 
                 html += '<img src="' + imgUrl + '" />';
