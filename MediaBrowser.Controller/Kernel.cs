@@ -182,8 +182,8 @@ namespace MediaBrowser.Controller
         /// Gets the list of plugin configuration pages
         /// </summary>
         /// <value>The configuration pages.</value>
-        [ImportMany(typeof(BaseConfigurationPage))]
-        public IEnumerable<BaseConfigurationPage> PluginConfigurationPages { get; private set; }
+        [ImportMany(typeof(IPluginConfigurationPage))]
+        public IEnumerable<IPluginConfigurationPage> PluginConfigurationPages { get; private set; }
 
         /// <summary>
         /// Gets the intro providers.

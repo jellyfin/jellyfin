@@ -217,7 +217,7 @@ namespace MediaBrowser.UI.Controller
             _logger.Info("Downloading {0} Configuration", pluginInfo.Name);
 
             // First download to a MemoryStream. This way if the download is cut off, we won't be left with a partial file
-            using (var stream = await UIKernel.Instance.ApiClient.GetPluginConfigurationFileAsync(pluginInfo.UniqueId).ConfigureAwait(false))
+            using (var stream = await UIKernel.Instance.ApiClient.GetPluginConfigurationFileAsync(pluginInfo.Id).ConfigureAwait(false))
             {
                 using (var memoryStream = new MemoryStream())
                 {

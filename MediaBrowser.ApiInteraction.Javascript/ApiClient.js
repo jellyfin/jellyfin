@@ -382,15 +382,15 @@ var ApiClient = {
 
     /**
      * Gets the configuration of a plugin
-     * @param {String} uniqueId
+     * @param {String} Id
      */
-    getPluginConfiguration: function (uniqueId) {
+    getPluginConfiguration: function (id) {
 
-        if (!uniqueId) {
-            throw new Error("null uniqueId");
+        if (!id) {
+            throw new Error("null Id");
         }
 
-        var url = ApiClient.getUrl("Plugins/" + uniqueId + "/Configuration");
+        var url = ApiClient.getUrl("Plugins/" + id + "/Configuration");
 
         return $.getJSON(url);
     },
@@ -407,15 +407,15 @@ var ApiClient = {
 
     /**
      * Uninstalls a plugin
-     * @param {String} uniqueId
+     * @param {String} Id
      */
-    uninstallPlugin: function (uniqueId) {
+    uninstallPlugin: function (id) {
 
-        if (!uniqueId) {
-            throw new Error("null uniqueId");
+        if (!id) {
+            throw new Error("null Id");
         }
 
-        var url = ApiClient.getUrl("Plugins/" + uniqueId);
+        var url = ApiClient.getUrl("Plugins/" + id);
 
         return $.ajax({
             type: "DELETE",
@@ -1207,20 +1207,20 @@ var ApiClient = {
 
     /**
      * Updates a plugin's configuration
-     * @param {String} uniqueId
+     * @param {String} Id
      * @param {Object} configuration
      */
-    updatePluginConfiguration: function (uniqueId, configuration) {
+    updatePluginConfiguration: function (id, configuration) {
 
-        if (!uniqueId) {
-            throw new Error("null uniqueId");
+        if (!id) {
+            throw new Error("null Id");
         }
 
         if (!configuration) {
             throw new Error("null configuration");
         }
 
-        var url = ApiClient.getUrl("Plugins/" + uniqueId + "/Configuration");
+        var url = ApiClient.getUrl("Plugins/" + id + "/Configuration");
 
         return $.post(url, JSON.stringify(configuration));
     },

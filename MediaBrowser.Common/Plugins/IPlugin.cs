@@ -35,7 +35,7 @@ namespace MediaBrowser.Common.Plugins
         /// Gets the unique id.
         /// </summary>
         /// <value>The unique id.</value>
-        Guid UniqueId { get; }
+        Guid Id { get; }
 
         /// <summary>
         /// Gets the plugin version

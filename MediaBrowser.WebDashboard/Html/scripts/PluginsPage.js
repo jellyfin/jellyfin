@@ -40,7 +40,7 @@
             }
             
             var configPage = $.grep(pluginConfigurationPages, function (pluginConfigurationPage) {
-                return pluginConfigurationPage.OwnerPluginName == plugin.Name;
+                return pluginConfigurationPage.PluginId == plugin.Id;
             })[0];
 
             html += "<li>";
@@ -56,7 +56,7 @@
             html += "</a>";
 
             if (!plugin.IsCorePlugin) {
-                html += "<a data-uniqueid='" + plugin.UniqueId + "' data-pluginname='" + plugin.Name + "' onclick='PluginsPage.deletePlugin(this);' href='#'>Delete</a>";
+                html += "<a data-id='" + plugin.Id + "' data-pluginname='" + plugin.Name + "' onclick='PluginsPage.deletePlugin(this);' href='#'>Delete</a>";
             }
 
             html += "</li>";
@@ -70,7 +70,7 @@
     deletePlugin: function (link) {
 
         var name = link.getAttribute('data-pluginname');
-        var uniqueid = link.getAttribute('data-uniqueid');
+        var uniqueid = link.getAttribute('data-id');
 
         var msg = "Are you sure you wish to uninstall " + name + "?";
 

@@ -90,7 +90,7 @@ namespace MediaBrowser.Common.Plugins
         /// Gets the unique id.
         /// </summary>
         /// <value>The unique id.</value>
-        public Guid UniqueId
+        public Guid Id
         {
             get
             {
@@ -419,7 +419,7 @@ namespace MediaBrowser.Common.Plugins
                 ConfigurationDateLastModified = ConfigurationDateLastModified,
                 Description = Description,
                 IsCorePlugin = IsCorePlugin,
-                UniqueId = UniqueId,
+                Id = Id,
                 EnableAutoUpdate = Configuration.EnableAutoUpdate,
                 UpdateClass = Configuration.UpdateClass,
                 ConfigurationFileName = ConfigurationFileName
