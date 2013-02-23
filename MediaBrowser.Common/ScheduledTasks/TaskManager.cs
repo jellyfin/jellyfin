@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Kernel;
-using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
@@ -10,8 +9,14 @@ namespace MediaBrowser.Common.ScheduledTasks
     /// <summary>
     /// Class TaskManager
     /// </summary>
-    public class TaskManager : BaseManager<IKernel>
+    internal class TaskManager : ITaskManager
     {
+        /// <summary>
+        /// Gets the list of Scheduled Tasks
+        /// </summary>
+        /// <value>The scheduled tasks.</value>
+        public IScheduledTask[] ScheduledTasks { get; private set; }
+
         /// <summary>
         /// The _task queue
         /// </summary>
@@ -25,12 +30,17 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// <summary>
         /// Initializes a new instance of the <see cref="TaskManager" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
-        public TaskManager(IKernel kernel, ILogger logger)
-            : base(kernel)
+        public TaskManager(ILogger logger)
         {
+            if (logger == null)
+            {
+                throw new ArgumentException("logger");
+            }
+
             _logger = logger;
+
+            ScheduledTasks = new IScheduledTask[] {};
         }
 
         /// <summary>
@@ -40,7 +50,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         public void CancelIfRunningAndQueue<T>()
                  where T : IScheduledTask
         {
-            Kernel.ScheduledTasks.OfType<T>().First().CancelIfRunning();
+            ScheduledTasks.OfType<T>().First().CancelIfRunning();
             QueueScheduledTask<T>();
         }
 
@@ -51,7 +61,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         public void QueueScheduledTask<T>()
             where T : IScheduledTask
         {
-            var scheduledTask = Kernel.ScheduledTasks.OfType<T>().First();
+            var scheduledTask = ScheduledTasks.OfType<T>().First();
 
             QueueScheduledTask(scheduledTask);
         }
@@ -64,7 +74,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         {
             var type = task.GetType();
 
-            var scheduledTask = Kernel.ScheduledTasks.First(t => t.GetType() == type);
+            var scheduledTask = ScheduledTasks.First(t => t.GetType() == type);
 
             lock (_taskQueue)
             {
@@ -91,7 +101,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// Called when [task completed].
         /// </summary>
         /// <param name="task">The task.</param>
-        internal void OnTaskCompleted(IScheduledTask task)
+        public void OnTaskCompleted(IScheduledTask task)
         {
             // Execute queued tasks
             lock (_taskQueue)
@@ -100,7 +110,7 @@ namespace MediaBrowser.Common.ScheduledTasks
 
                 foreach (var type in copy)
                 {
-                    var scheduledTask = Kernel.ScheduledTasks.First(t => t.GetType() == type);
+                    var scheduledTask = ScheduledTasks.First(t => t.GetType() == type);
 
                     if (scheduledTask.State == TaskState.Idle)
                     {
@@ -110,6 +120,40 @@ namespace MediaBrowser.Common.ScheduledTasks
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
+        {
+            foreach (var task in ScheduledTasks)
+            {
+                task.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Adds the tasks.
+        /// </summary>
+        /// <param name="tasks">The tasks.</param>
+        public void AddTasks(IEnumerable<IScheduledTask> tasks)
+        {
+            var myTasks = ScheduledTasks.ToList();
+
+            myTasks.AddRange(tasks);
+
+            ScheduledTasks = myTasks.ToArray();
         }
     }
 }

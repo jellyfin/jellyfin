@@ -2,7 +2,6 @@
 using MediaBrowser.Common.Net;
 using ServiceStack.ServiceHost;
 using System;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -25,7 +24,6 @@ namespace MediaBrowser.ApiInteraction.Javascript
     /// <summary>
     /// Class JavascriptApiClientService
     /// </summary>
-    [Export(typeof(IRestfulService))]
     public class JavascriptApiClientService : BaseRestService
     {
         /// <summary>

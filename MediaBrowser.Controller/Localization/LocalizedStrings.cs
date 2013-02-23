@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Localization;
-using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Globalization;

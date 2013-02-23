@@ -1,13 +1,19 @@
 ﻿using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using System;
-using System.ComponentModel.Composition;
 
 namespace MediaBrowser.Controller.Resolvers.TV
 {
-    [Export(typeof(IBaseItemResolver))]
+    /// <summary>
+    /// Class SeasonResolver
+    /// </summary>
     public class SeasonResolver : BaseFolderResolver<Season>
     {
+        /// <summary>
+        /// Resolves the specified args.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns>Season.</returns>
         protected override Season Resolve(ItemResolveArgs args)
         {
             if (args.Parent is Series && args.IsDirectory)
@@ -21,6 +27,11 @@ namespace MediaBrowser.Controller.Resolvers.TV
             return null;
         }
 
+        /// <summary>
+        /// Sets the initial item values.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="args">The args.</param>
         protected override void SetInitialItemValues(Season item, ItemResolveArgs args)
         {
             base.SetInitialItemValues(item, args);

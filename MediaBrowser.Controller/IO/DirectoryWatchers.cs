@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.ScheduledTasks;
@@ -67,15 +68,26 @@ namespace MediaBrowser.Controller.IO
         private ILogger Logger { get; set; }
 
         /// <summary>
+        /// Gets or sets the task manager.
+        /// </summary>
+        /// <value>The task manager.</value>
+        private ITaskManager TaskManager { get; set; }
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="DirectoryWatchers" /> class.
         /// </summary>
-        public DirectoryWatchers(ILogger logger)
+        public DirectoryWatchers(ILogger logger, ITaskManager taskManager)
         {
             if (logger == null)
             {
                 throw new ArgumentNullException("logger");
             }
+            if (taskManager == null)
+            {
+                throw new ArgumentNullException("taskManager");
+            }
 
+            TaskManager = taskManager;
             Logger = logger;
         }
         
@@ -421,7 +433,7 @@ namespace MediaBrowser.Controller.IO
             // If the root folder changed, run the library task so the user can see it
             if (itemsToRefresh.Any(i => i is AggregateFolder))
             {
-                Kernel.Instance.TaskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
+                TaskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
                 return;
             }
 

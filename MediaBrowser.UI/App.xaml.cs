@@ -118,6 +118,17 @@ namespace MediaBrowser.UI
         }
 
         /// <summary>
+        /// The container
+        /// </summary>
+        private SimpleInjector.Container _container = new SimpleInjector.Container();
+
+        /// <summary>
+        /// Gets or sets the iso manager.
+        /// </summary>
+        /// <value>The iso manager.</value>
+        private IIsoManager IsoManager { get; set; }
+        
+        /// <summary>
         /// Gets the instance.
         /// </summary>
         /// <value>The instance.</value>
@@ -290,15 +301,6 @@ namespace MediaBrowser.UI
 
             InitializeComponent();
         }
-        
-        /// <summary>
-        /// Instantiates the kernel.
-        /// </summary>
-        /// <returns>IKernel.</returns>
-        protected IKernel InstantiateKernel()
-        {
-            return new UIKernel(this, new PismoIsoManager(Logger), Logger);
-        }
 
         /// <summary>
         /// Instantiates the main window.
@@ -405,7 +407,9 @@ namespace MediaBrowser.UI
             // Without this the app will shutdown after the splash screen closes
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-            Kernel = InstantiateKernel();
+            RegisterResources();
+
+            Kernel = new UIKernel(this, Logger);
 
             try
             {
@@ -614,7 +618,8 @@ namespace MediaBrowser.UI
         {
             try
             {
-                ServerConfiguration = await ApiClient.GetServerConfigurationAsync();
+                var b = Kernel;
+                //ServerConfiguration = await ApiClient.GetServerConfigurationAsync();
             }
             catch (HttpException ex)
             {
@@ -1011,6 +1016,19 @@ namespace MediaBrowser.UI
         }
 
         /// <summary>
+        /// Registers resources that classes will depend on
+        /// </summary>
+        private void RegisterResources()
+        {
+            Register<IApplicationHost>(this);
+            Register(Logger);
+
+            IsoManager = new PismoIsoManager(Logger);
+
+            Register<IIsoManager>(IsoManager);
+        }
+
+        /// <summary>
         /// Updates the application.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -1019,6 +1037,62 @@ namespace MediaBrowser.UI
         public Task UpdateApplication(CancellationToken cancellationToken, IProgress<double> progress)
         {
             return new ApplicationUpdater().UpdateApplication(cancellationToken, progress);
+        }
+
+        /// <summary>
+        /// Creates an instance of type and resolves all constructor dependancies
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>System.Object.</returns>
+        public object CreateInstance(Type type)
+        {
+            try
+            {
+                return _container.GetInstance(type);
+            }
+            catch
+            {
+                Logger.Error("Error creating {0}", type.Name);
+
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Registers the specified obj.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj">The obj.</param>
+        public void Register<T>(T obj)
+            where T : class
+        {
+            _container.RegisterSingle(obj);
+        }
+
+        /// <summary>
+        /// Resolves this instance.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>``0.</returns>
+        public T Resolve<T>()
+        {
+            return (T)_container.GetRegistration(typeof(T), true).GetInstance();
+        }
+
+        /// <summary>
+        /// Resolves this instance.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>``0.</returns>
+        public T TryResolve<T>()
+        {
+            var result = _container.GetRegistration(typeof(T), false);
+
+            if (result == null)
+            {
+                return default(T);
+            }
+            return (T)result.GetInstance();
         }
     }
 }

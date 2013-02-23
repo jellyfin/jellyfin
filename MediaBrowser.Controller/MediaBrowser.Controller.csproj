@@ -64,7 +64,6 @@
       <HintPath>..\packages\protobuf-net.2.0.0.621\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -91,6 +90,7 @@
     <Compile Include="Entities\Genre.cs" />
     <Compile Include="Entities\ICollectionFolder.cs" />
     <Compile Include="Entities\IndexFolder.cs" />
+    <Compile Include="Entities\IVirtualFolderCreator.cs" />
     <Compile Include="Entities\Movies\BoxSet.cs" />
     <Compile Include="Entities\Movies\Movie.cs" />
     <Compile Include="Entities\Person.cs" />
@@ -107,6 +107,7 @@
     <Compile Include="Entities\CollectionFolder.cs" />
     <Compile Include="Entities\Year.cs" />
     <Compile Include="Extensions\XmlExtensions.cs" />
+    <Compile Include="IO\FileSystem.cs" />
     <Compile Include="IO\FileSystemManager.cs" />
     <Compile Include="IO\NetworkShares.cs" />
     <Compile Include="Library\ChildrenChangedEventArgs.cs" />
@@ -117,6 +118,7 @@
     <Compile Include="Localization\AURatingsDictionary.cs" />
     <Compile Include="Localization\BaseStrings.cs" />
     <Compile Include="Localization\GBRatingsDictionary.cs" />
+    <Compile Include="Localization\LocalizedStringData.cs" />
     <Compile Include="Localization\LocalizedStrings.cs" />
     <Compile Include="Localization\NLRatingsDictionary.cs" />
     <Compile Include="Localization\Ratings.cs" />
@@ -134,7 +136,7 @@
     <Compile Include="Plugins\IPluginConfigurationPage.cs" />
     <Compile Include="Plugins\PluginSecurityManager.cs" />
     <Compile Include="Providers\FanartBaseProvider.cs" />
-    <Compile Include="Providers\BaseImageEnhancer.cs" />
+    <Compile Include="Providers\IImageEnhancer.cs" />
     <Compile Include="Providers\ImagesByNameProvider.cs" />
     <Compile Include="Providers\MediaInfo\BaseFFMpegImageProvider.cs" />
     <Compile Include="Providers\MediaInfo\BaseFFMpegProvider.cs" />
@@ -165,7 +167,7 @@
     <Compile Include="Providers\MediaInfo\FFMpegVideoImageProvider.cs" />
     <Compile Include="Resolvers\Audio\MusicAlbumResolver.cs" />
     <Compile Include="Resolvers\Audio\MusicArtistResolver.cs" />
-    <Compile Include="Resolvers\BaseResolutionIgnoreRule.cs" />
+    <Compile Include="Resolvers\IResolutionIgnoreRule.cs" />
     <Compile Include="Resolvers\CoreResolutionIgnoreRule.cs" />
     <Compile Include="Resolvers\EntityResolutionHelper.cs" />
     <Compile Include="Resolvers\LocalTrailerResolver.cs" />
@@ -223,8 +225,7 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\" /y /d /r /i</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>

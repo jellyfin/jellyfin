@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Connectivity;
 using MediaBrowser.Model.Dto;
 using System;
-using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.HttpHandlers
@@ -13,7 +12,6 @@ namespace MediaBrowser.Api.HttpHandlers
     /// <summary>
     /// Provides a handler to set played status for an item
     /// </summary>
-    [Export(typeof(IHttpServerHandler))]
     public class PlaybackCheckInHandler : BaseSerializationHandler<Kernel, UserItemDataDto>
     {
         /// <summary>

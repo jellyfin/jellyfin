@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using System;
-using System.ComponentModel.Composition;
 using System.IO;
 
 namespace MediaBrowser.Controller.Resolvers.Movies
@@ -9,7 +8,6 @@ namespace MediaBrowser.Controller.Resolvers.Movies
     /// <summary>
     /// Class BoxSetResolver
     /// </summary>
-    [Export(typeof(IBaseItemResolver))]
     public class BoxSetResolver : BaseFolderResolver<BoxSet>
     {
         /// <summary>

@@ -6,7 +6,6 @@ using MediaBrowser.Model.Updates;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -93,7 +92,6 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class PackageService
     /// </summary>
-    [Export(typeof(IRestfulService))]
     public class PackageService : BaseRestService
     {
         /// <summary>

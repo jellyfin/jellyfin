@@ -1,12 +1,11 @@
-﻿using System.Threading.Tasks;
-using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Net;
 using MediaBrowser.UI;
 using MediaBrowser.UI.Controller;
 using MediaBrowser.UI.Controls;
 using MediaBrowser.UI.Playback;
 using MediaBrowser.UI.Playback.InternalPlayer;
-using System.ComponentModel.Composition;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -15,7 +14,6 @@ namespace MediaBrowser.Plugins.DefaultTheme.Resources
     /// <summary>
     /// Class AppResources
     /// </summary>
-    [Export(typeof(ResourceDictionary))]
     public partial class AppResources : ResourceDictionary
     {
         /// <summary>

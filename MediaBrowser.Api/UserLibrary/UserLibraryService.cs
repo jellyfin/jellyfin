@@ -9,7 +9,6 @@ using MediaBrowser.Model.Entities;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -252,7 +251,6 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class UserLibraryService
     /// </summary>
-    [Export(typeof(IRestfulService))]
     public class UserLibraryService : BaseRestService
     {
         public object Get(GetSpecialFeatures request)

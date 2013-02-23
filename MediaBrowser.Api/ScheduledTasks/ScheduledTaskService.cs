@@ -6,7 +6,6 @@ using MediaBrowser.Model.Tasks;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using ServiceStack.Text.Controller;
@@ -83,9 +82,19 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// <summary>
     /// Class ScheduledTasksService
     /// </summary>
-    [Export(typeof(IRestfulService))]
     public class ScheduledTaskService : BaseRestService
     {
+        /// <summary>
+        /// Gets or sets the task manager.
+        /// </summary>
+        /// <value>The task manager.</value>
+        private ITaskManager TaskManager { get; set; }
+
+        public ScheduledTaskService(ITaskManager taskManager)
+        {
+            TaskManager = taskManager;
+        }
+        
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -93,7 +102,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// <returns>IEnumerable{TaskInfo}.</returns>
         public object Get(GetScheduledTasks request)
         {
-            var result = Kernel.ScheduledTasks.OrderBy(i => i.Name)
+            var result = TaskManager.ScheduledTasks.OrderBy(i => i.Name)
                          .Select(ScheduledTaskHelpers.GetTaskInfo).ToList();
 
             return ToOptimizedResult(result);
@@ -106,7 +115,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// <returns>IEnumerable{TaskInfo}.</returns>
         public object Get(GetScheduledTask request)
         {
-            var task = Kernel.ScheduledTasks.FirstOrDefault(i => i.Id == request.Id);
+            var task = TaskManager.ScheduledTasks.FirstOrDefault(i => i.Id == request.Id);
 
             if (task == null)
             {
@@ -124,7 +133,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// <param name="request">The request.</param>
         public void Post(StartScheduledTask request)
         {
-            var task = Kernel.ScheduledTasks.FirstOrDefault(i => i.Id == request.Id);
+            var task = TaskManager.ScheduledTasks.FirstOrDefault(i => i.Id == request.Id);
 
             if (task == null)
             {
@@ -140,7 +149,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// <param name="request">The request.</param>
         public void Delete(StopScheduledTask request)
         {
-            var task = Kernel.ScheduledTasks.FirstOrDefault(i => i.Id == request.Id);
+            var task = TaskManager.ScheduledTasks.FirstOrDefault(i => i.Id == request.Id);
 
             if (task == null)
             {
@@ -160,8 +169,8 @@ namespace MediaBrowser.Api.ScheduledTasks
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
             var pathInfo = PathInfo.Parse(Request.PathInfo);
             var id = new Guid(pathInfo.GetArgumentValue<string>(1));
-            
-            var task = Kernel.ScheduledTasks.FirstOrDefault(i => i.Id == id);
+
+            var task = TaskManager.ScheduledTasks.FirstOrDefault(i => i.Id == id);
 
             if (task == null)
             {
@@ -170,7 +179,7 @@ namespace MediaBrowser.Api.ScheduledTasks
 
             var triggerInfos = JsonSerializer.DeserializeFromStream<TaskTriggerInfo[]>(request.RequestStream);
 
-            task.Triggers = triggerInfos.Select(t => ScheduledTaskHelpers.GetTrigger(t, Kernel));
+            task.Triggers = triggerInfos.Select(ScheduledTaskHelpers.GetTrigger);
         }
     }
 }

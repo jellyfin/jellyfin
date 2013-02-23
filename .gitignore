@@ -32,6 +32,7 @@ local.properties
 ## Media Browser
 #################
 ProgramData*/
+CorePlugins*/
 ProgramData-Server*/
 ProgramData-UI*/
 
@@ -145,6 +146,7 @@ publish/
 # NuGet Packages Directory
 ## TODO: If you have NuGet Package Restore enabled, uncomment the next line
 packages/
+dlls/
 
 # Windows Azure Build Output
 csx

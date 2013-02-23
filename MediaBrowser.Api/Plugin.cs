@@ -3,7 +3,6 @@ using MediaBrowser.Model.Plugins;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -14,7 +13,6 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class Plugin
     /// </summary>
-    [Export(typeof(IPlugin))]
     public class Plugin : BasePlugin<BasePluginConfiguration>
     {
         /// <summary>

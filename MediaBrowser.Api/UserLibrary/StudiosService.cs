@@ -1,10 +1,8 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
+﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,7 +20,6 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class StudiosService
     /// </summary>
-    [Export(typeof(IRestfulService))]
     public class StudiosService : BaseItemsByNameService<Studio>
     {
         /// <summary>

@@ -7,7 +7,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -20,7 +19,6 @@ namespace MediaBrowser.Controller.Providers.TV
     /// <summary>
     /// Class RemoteSeriesProvider
     /// </summary>
-    [Export(typeof(BaseMetadataProvider))]
     class RemoteSeriesProvider : BaseMetadataProvider
     {
 

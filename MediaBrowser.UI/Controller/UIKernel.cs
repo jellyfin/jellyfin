@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.ApiInteraction;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Model.Connectivity;
 using MediaBrowser.Model.Logging;
@@ -8,7 +7,6 @@ using MediaBrowser.UI.Configuration;
 using MediaBrowser.UI.Playback;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Net;
 using System.Net.Cache;
 using System.Net.Http;
@@ -42,8 +40,8 @@ namespace MediaBrowser.UI.Controller
         /// <summary>
         /// Initializes a new instance of the <see cref="UIKernel" /> class.
         /// </summary>
-        public UIKernel(IApplicationHost appHost, IIsoManager isoManager, ILogger logger)
-            : base(appHost, isoManager, logger)
+        public UIKernel(IApplicationHost appHost, ILogger logger)
+            : base(appHost, logger)
         {
             Instance = this;
         }
@@ -52,14 +50,12 @@ namespace MediaBrowser.UI.Controller
         /// Gets the media players.
         /// </summary>
         /// <value>The media players.</value>
-        [ImportMany(typeof(BaseMediaPlayer))]
         public IEnumerable<BaseMediaPlayer> MediaPlayers { get; private set; }
 
         /// <summary>
         /// Gets the list of currently loaded themes
         /// </summary>
         /// <value>The themes.</value>
-        [ImportMany(typeof(BaseTheme))]
         public IEnumerable<BaseTheme> Themes { get; private set; }
 
         /// <summary>
@@ -132,14 +128,17 @@ namespace MediaBrowser.UI.Controller
         }
 
         /// <summary>
-        /// Reloads the internal.
+        /// Finds the parts.
         /// </summary>
-        /// <returns>Task.</returns>
-        protected override Task ReloadInternal()
+        /// <param name="allTypes">All types.</param>
+        protected override void FindParts(Type[] allTypes)
         {
-            PlaybackManager = new PlaybackManager(this, Logger);
+            PlaybackManager = (PlaybackManager)ApplicationHost.CreateInstance(typeof(PlaybackManager));
+            
+            base.FindParts(allTypes);
 
-            return base.ReloadInternal();
+            Themes = GetExports<BaseTheme>(allTypes);
+            MediaPlayers = GetExports<BaseMediaPlayer>(allTypes);
         }
 
         /// <summary>

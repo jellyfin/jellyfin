@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -14,7 +13,6 @@ namespace MediaBrowser.Controller.Providers
     /// <summary>
     /// Provides images for all types by looking for standard images - folder, backdrop, logo, etc.
     /// </summary>
-    [Export(typeof(BaseMetadataProvider))]
     public class ImageFromMediaLocationProvider : BaseMetadataProvider
     {
         /// <summary>

@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>MediaBrowser.Common</id>
+        <version>1.0.1</version>
+        <title>MediaBrowser.Common</title>
+        <authors>Media Browser Team</authors>
+        <owners />
+        <projectUrl>https://github.com/MediaBrowser/MediaBrowser</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Contains common model objects and interfaces used by all Media Browser solutions.</description>
+    </metadata>
+    <files>
+        <file src="dlls\MediaBrowser.Common.dll" target="lib\net45\MediaBrowser.Common.dll" />
+        <file src="dlls\MediaBrowser.Model.dll" target="lib\net45\MediaBrowser.Model.dll" />
+        <file src="dlls\MediaBrowser.Model.dll" target="lib\portable-net4+sl4+wp7+win8\MediaBrowser.Model.dll" />
+    </files>
+</package>
