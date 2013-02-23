@@ -504,8 +504,8 @@ namespace MediaBrowser.Common.Kernel
         /// <param name="container">The container.</param>
         protected virtual void RegisterExportedValues()
         {
-            ApplicationHost.Register<IKernel>(this);
-            ApplicationHost.Register(TaskManager);
+            ApplicationHost.RegisterSingleInstance<IKernel>(this);
+            ApplicationHost.RegisterSingleInstance(TaskManager);
         }
 
         /// <summary>

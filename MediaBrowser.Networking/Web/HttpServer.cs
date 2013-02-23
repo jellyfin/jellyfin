@@ -1,6 +1,8 @@
+using System.Net.WebSockets;
 using Funq;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Kernel;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Common.Web;
@@ -22,12 +24,12 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Networking.Web
 {
     /// <summary>
     /// Class HttpServer
     /// </summary>
-    public class HttpServer : HttpListenerBase
+    public class HttpServer : HttpListenerBase, IHttpServer
     {
         /// <summary>
         /// The logger
@@ -51,7 +53,7 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <value>The application host.</value>
         private IApplicationHost ApplicationHost { get; set; }
-        
+
         /// <summary>
         /// This subscribes to HttpListener requests and finds the appropriate BaseHandler to process it
         /// </summary>
@@ -67,25 +69,26 @@ namespace MediaBrowser.Common.Net
         /// Gets the default redirect path.
         /// </summary>
         /// <value>The default redirect path.</value>
-        public string DefaultRedirectPath { get; private set; }
+        private string DefaultRedirectPath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the server.
+        /// </summary>
+        /// <value>The name of the server.</value>
+        private string ServerName { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpServer" /> class.
         /// </summary>
-        /// <param name="urlPrefix">The URL.</param>
-        /// <param name="serverName">Name of the product.</param>
         /// <param name="applicationHost">The application host.</param>
         /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="serverName">Name of the server.</param>
         /// <param name="defaultRedirectpath">The default redirectpath.</param>
         /// <exception cref="System.ArgumentNullException">urlPrefix</exception>
-        public HttpServer(string urlPrefix, string serverName, IApplicationHost applicationHost, IKernel kernel, ILogger logger, string defaultRedirectpath = null)
+        public HttpServer(IApplicationHost applicationHost, IKernel kernel, ILogger logger, string serverName, string defaultRedirectpath)
             : base()
         {
-            if (string.IsNullOrEmpty(urlPrefix))
-            {
-                throw new ArgumentNullException("urlPrefix");
-            }
             if (kernel == null)
             {
                 throw new ArgumentNullException("kernel");
@@ -98,7 +101,16 @@ namespace MediaBrowser.Common.Net
             {
                 throw new ArgumentNullException("applicationHost");
             }
+            if (string.IsNullOrEmpty(serverName))
+            {
+                throw new ArgumentNullException("serverName");
+            }
+            if (string.IsNullOrEmpty(defaultRedirectpath))
+            {
+                throw new ArgumentNullException("defaultRedirectpath");
+            }
 
+            ServerName = serverName;
             DefaultRedirectPath = defaultRedirectpath;
             _logger = logger;
             ApplicationHost = applicationHost;
@@ -106,34 +118,12 @@ namespace MediaBrowser.Common.Net
             EndpointHostConfig.Instance.ServiceStackHandlerFactoryPath = null;
             EndpointHostConfig.Instance.MetadataRedirectPath = "metadata";
 
-            UrlPrefix = urlPrefix;
             Kernel = kernel;
 
-            EndpointHost.ConfigureHost(this, serverName, CreateServiceManager());
-
+            EndpointHost.ConfigureHost(this, ServerName, CreateServiceManager());
             ContentTypeFilters.Register(ContentType.ProtoBuf, (reqCtx, res, stream) => Kernel.ProtobufSerializer.SerializeToStream(res, stream), (type, stream) => Kernel.ProtobufSerializer.DeserializeFromStream(stream, type));
 
             Init();
-            Start(urlPrefix);
-        }
-
-        /// <summary>
-        /// Shut down the Web Service
-        /// </summary>
-        public override void Stop()
-        {
-            if (HttpListener != null)
-            {
-                HttpListener.Dispose();
-                HttpListener = null;
-            }
-
-            if (Listener != null)
-            {
-                Listener.Prefixes.Remove(UrlPrefix);
-            }
-
-            base.Stop();
         }
 
         /// <summary>
@@ -142,24 +132,17 @@ namespace MediaBrowser.Common.Net
         /// <param name="container">The container.</param>
         public override void Configure(Container container)
         {
-            if (!string.IsNullOrEmpty(DefaultRedirectPath))
+            SetConfig(new EndpointHostConfig
             {
-                SetConfig(new EndpointHostConfig
-                {
-                    DefaultRedirectPath = DefaultRedirectPath,
+                DefaultRedirectPath = DefaultRedirectPath,
 
-                    // Tell SS to bubble exceptions up to here
-                    WriteErrorsToResponse = false,
+                // Tell SS to bubble exceptions up to here
+                WriteErrorsToResponse = false,
 
-                    DebugMode = true
-                });
-            }
+                DebugMode = true
+            });
 
             container.Adapter = new ContainerAdapter(ApplicationHost);
-            
-            container.Register(Kernel);
-            container.Register(_logger);
-            container.Register(ApplicationHost);
 
             foreach (var service in Kernel.RestServices)
             {
@@ -168,8 +151,6 @@ namespace MediaBrowser.Common.Net
 
             Plugins.Add(new SwaggerFeature());
             Plugins.Add(new CorsFeature());
-
-            Serialization.JsonSerializer.Configure();
 
             ServiceStack.Logging.LogManager.LogFactory = new NLogFactory();
         }
@@ -183,6 +164,11 @@ namespace MediaBrowser.Common.Net
         /// HttpListener.Prefixes property on MSDN.</param>
         public override void Start(string urlBase)
         {
+            if (string.IsNullOrEmpty(urlBase))
+            {
+                throw new ArgumentNullException("urlBase");
+            }
+
             // *** Already running - just leave it in place
             if (IsStarted)
             {
@@ -195,6 +181,8 @@ namespace MediaBrowser.Common.Net
             }
 
             EndpointHost.Config.ServiceStackHandlerFactoryPath = HttpListenerRequestWrapper.GetHandlerPathIfAny(urlBase);
+
+            UrlPrefix = urlBase;
 
             Listener.Prefixes.Add(urlBase);
 
@@ -300,7 +288,7 @@ namespace MediaBrowser.Common.Net
 
                 if (WebSocketConnected != null)
                 {
-                    WebSocketConnected(this, new WebSocketConnectEventArgs { WebSocket = new NativeWebSocket(webSocketContext.WebSocket, _logger), Endpoint = ctx.Request.RemoteEndPoint });
+                    WebSocketConnected(this, new WebSocketConnectEventArgs { WebSocket = new NativeWebSocket(webSocketContext.WebSocket, _logger), Endpoint = ctx.Request.RemoteEndPoint.ToString() });
                 }
             }
             catch (Exception ex)
@@ -325,7 +313,7 @@ namespace MediaBrowser.Common.Net
 
             var type = ctx.Request.IsWebSocketRequest ? "Web Socket" : "HTTP " + ctx.Request.HttpMethod;
 
-            if (Kernel.Configuration.EnableHttpLevelLogging)
+            if (EnableHttpRequestLogging)
             {
                 _logger.LogMultiline(type + " request received from " + ctx.Request.RemoteEndPoint, LogSeverity.Debug, log);
             }
@@ -432,7 +420,7 @@ namespace MediaBrowser.Common.Net
 
             var msg = "Http Response Sent (" + statusode + ") to " + ctx.Request.RemoteEndPoint;
 
-            if (Kernel.Configuration.EnableHttpLevelLogging)
+            if (EnableHttpRequestLogging)
             {
                 _logger.LogMultiline(msg, LogSeverity.Debug, log);
             }
@@ -449,38 +437,98 @@ namespace MediaBrowser.Common.Net
 
             return new ServiceManager(new Container(), new ServiceController(() => types));
         }
+
+        /// <summary>
+        /// Shut down the Web Service
+        /// </summary>
+        public override void Stop()
+        {
+            if (HttpListener != null)
+            {
+                HttpListener.Dispose();
+                HttpListener = null;
+            }
+
+            if (Listener != null)
+            {
+                Listener.Prefixes.Remove(UrlPrefix);
+            }
+
+            base.Stop();
+        }
+
+        /// <summary>
+        /// The _supports native web socket
+        /// </summary>
+        private bool? _supportsNativeWebSocket;
+
+        /// <summary>
+        /// Gets a value indicating whether [supports web sockets].
+        /// </summary>
+        /// <value><c>true</c> if [supports web sockets]; otherwise, <c>false</c>.</value>
+        public bool SupportsWebSockets
+        {
+            get
+            {
+                if (!_supportsNativeWebSocket.HasValue)
+                {
+                    try
+                    {
+                        new ClientWebSocket();
+
+                        _supportsNativeWebSocket = true;
+                    }
+                    catch (PlatformNotSupportedException)
+                    {
+                        _supportsNativeWebSocket = false;
+                    }
+                }
+
+                return _supportsNativeWebSocket.Value;
+            }
+        }
+
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable HTTP request logging].
+        /// </summary>
+        /// <value><c>true</c> if [enable HTTP request logging]; otherwise, <c>false</c>.</value>
+        public bool EnableHttpRequestLogging { get; set; }
     }
 
     /// <summary>
-    /// Class WebSocketConnectEventArgs
+    /// Class ContainerAdapter
     /// </summary>
-    public class WebSocketConnectEventArgs : EventArgs
-    {
-        /// <summary>
-        /// Gets or sets the web socket.
-        /// </summary>
-        /// <value>The web socket.</value>
-        public IWebSocket WebSocket { get; set; }
-        /// <summary>
-        /// Gets or sets the endpoint.
-        /// </summary>
-        /// <value>The endpoint.</value>
-        public IPEndPoint Endpoint { get; set; }
-    }
-
     class ContainerAdapter : IContainerAdapter
     {
+        /// <summary>
+        /// The _app host
+        /// </summary>
         private readonly IApplicationHost _appHost;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContainerAdapter" /> class.
+        /// </summary>
+        /// <param name="appHost">The app host.</param>
         public ContainerAdapter(IApplicationHost appHost)
         {
             _appHost = appHost;
         }
+        /// <summary>
+        /// Resolves this instance.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>``0.</returns>
         public T Resolve<T>()
         {
             return _appHost.Resolve<T>();
         }
 
+        /// <summary>
+        /// Tries the resolve.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>``0.</returns>
         public T TryResolve<T>()
         {
             return _appHost.TryResolve<T>();

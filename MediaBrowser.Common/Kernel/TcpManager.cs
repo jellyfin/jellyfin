@@ -1,6 +1,4 @@
-﻿using Alchemy;
-using Alchemy.Classes;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
@@ -28,20 +26,14 @@ namespace MediaBrowser.Common.Kernel
         /// This is the udp server used for server discovery by clients
         /// </summary>
         /// <value>The UDP server.</value>
-        private UdpServer UdpServer { get; set; }
-
-        /// <summary>
-        /// Gets or sets the UDP listener.
-        /// </summary>
-        /// <value>The UDP listener.</value>
-        private IDisposable UdpListener { get; set; }
+        private IUdpServer UdpServer { get; set; }
 
         /// <summary>
         /// Both the Ui and server will have a built-in HttpServer.
         /// People will inevitably want remote control apps so it's needed in the Ui too.
         /// </summary>
         /// <value>The HTTP server.</value>
-        public HttpServer HttpServer { get; private set; }
+        private IHttpServer HttpServer { get; set; }
 
         /// <summary>
         /// This subscribes to HttpListener requests and finds the appropriate BaseHandler to process it
@@ -58,7 +50,7 @@ namespace MediaBrowser.Common.Kernel
         /// Gets or sets the external web socket server.
         /// </summary>
         /// <value>The external web socket server.</value>
-        private WebSocketServer ExternalWebSocketServer { get; set; }
+        private IWebSocketServer ExternalWebSocketServer { get; set; }
 
         /// <summary>
         /// The _logger
@@ -69,46 +61,24 @@ namespace MediaBrowser.Common.Kernel
         /// The _network manager
         /// </summary>
         private readonly INetworkManager _networkManager;
-        
+
         /// <summary>
         /// The _application host
         /// </summary>
         private readonly IApplicationHost _applicationHost;
-        
-        /// <summary>
-        /// The _supports native web socket
-        /// </summary>
-        private bool? _supportsNativeWebSocket;
 
         /// <summary>
         /// The _kernel
         /// </summary>
         private readonly IKernel _kernel;
-        
+
         /// <summary>
         /// Gets a value indicating whether [supports web socket].
         /// </summary>
         /// <value><c>true</c> if [supports web socket]; otherwise, <c>false</c>.</value>
         internal bool SupportsNativeWebSocket
         {
-            get
-            {
-                if (!_supportsNativeWebSocket.HasValue)
-                {
-                    try
-                    {
-                        new ClientWebSocket();
-
-                        _supportsNativeWebSocket = true;
-                    }
-                    catch (PlatformNotSupportedException)
-                    {
-                        _supportsNativeWebSocket = false;
-                    }
-                }
-
-                return _supportsNativeWebSocket.Value;
-            }
+            get { return HttpServer != null && HttpServer.SupportsWebSockets; }
         }
 
         /// <summary>
@@ -145,7 +115,7 @@ namespace MediaBrowser.Common.Kernel
             {
                 throw new ArgumentNullException("logger");
             }
-            
+
             _logger = logger;
             _kernel = kernel;
             _applicationHost = applicationHost;
@@ -178,26 +148,10 @@ namespace MediaBrowser.Common.Kernel
 
             DisposeExternalWebSocketServer();
 
-            ExternalWebSocketServer = new WebSocketServer(_kernel.Configuration.LegacyWebSocketPortNumber, IPAddress.Any)
-            {
-                OnConnected = OnAlchemyWebSocketClientConnected,
-                TimeOut = TimeSpan.FromMinutes(60)
-            };
+            ExternalWebSocketServer = _applicationHost.Resolve<IWebSocketServer>();
 
-            ExternalWebSocketServer.Start();
-
-            _logger.Info("Alchemy Web Socket Server started");
-        }
-
-        /// <summary>
-        /// Called when [alchemy web socket client connected].
-        /// </summary>
-        /// <param name="context">The context.</param>
-        private void OnAlchemyWebSocketClientConnected(UserContext context)
-        {
-            var connection = new WebSocketConnection(new AlchemyWebSocket(context, _logger), context.ClientAddress, ProcessWebSocketMessageReceived, _logger);
-
-            _webSocketConnections.Add(connection);
+            ExternalWebSocketServer.Start(_kernel.Configuration.LegacyWebSocketPortNumber);
+            ExternalWebSocketServer.WebSocketConnected += HttpServer_WebSocketConnected;
         }
 
         /// <summary>
@@ -218,7 +172,9 @@ namespace MediaBrowser.Common.Kernel
 
             try
             {
-                HttpServer = new HttpServer(_kernel.HttpServerUrlPrefix, "Media Browser", _applicationHost, _kernel, _logger);
+                HttpServer = _applicationHost.Resolve<IHttpServer>();
+                HttpServer.EnableHttpRequestLogging = _kernel.Configuration.EnableHttpLevelLogging;
+                HttpServer.Start(_kernel.HttpServerUrlPrefix);
             }
             catch (HttpListenerException ex)
             {
@@ -295,7 +251,8 @@ namespace MediaBrowser.Common.Kernel
             try
             {
                 // The port number can't be in configuration because we don't want it to ever change
-                UdpServer = new UdpServer(new IPEndPoint(IPAddress.Any, _kernel.UdpServerPortNumber));
+                UdpServer = _applicationHost.Resolve<IUdpServer>();
+                UdpServer.Start(_kernel.UdpServerPortNumber);
             }
             catch (SocketException ex)
             {
@@ -303,21 +260,28 @@ namespace MediaBrowser.Common.Kernel
                 return;
             }
 
-            UdpListener = UdpServer.Subscribe(async res =>
+            UdpServer.MessageReceived += UdpServer_MessageReceived;
+        }
+
+        /// <summary>
+        /// Handles the MessageReceived event of the UdpServer control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="UdpMessageReceivedEventArgs" /> instance containing the event data.</param>
+        async void UdpServer_MessageReceived(object sender, UdpMessageReceivedEventArgs e)
+        {
+            var expectedMessage = String.Format("who is MediaBrowser{0}?", _kernel.KernelContext);
+            var expectedMessageBytes = Encoding.UTF8.GetBytes(expectedMessage);
+
+            if (expectedMessageBytes.SequenceEqual(e.Bytes))
             {
-                var expectedMessage = String.Format("who is MediaBrowser{0}?", _kernel.KernelContext);
-                var expectedMessageBytes = Encoding.UTF8.GetBytes(expectedMessage);
+                _logger.Info("Received UDP server request from " + e.RemoteEndPoint);
 
-                if (expectedMessageBytes.SequenceEqual(res.Buffer))
-                {
-                    _logger.Info("Received UDP server request from " + res.RemoteEndPoint.ToString());
+                // Send a response back with our ip address and port
+                var response = String.Format("MediaBrowser{0}|{1}:{2}", _kernel.KernelContext, _networkManager.GetLocalIpAddress(), _kernel.UdpServerPortNumber);
 
-                    // Send a response back with our ip address and port
-                    var response = String.Format("MediaBrowser{0}|{1}:{2}", _kernel.KernelContext, _networkManager.GetLocalIpAddress(), _kernel.UdpServerPortNumber);
-
-                    await UdpServer.SendAsync(response, res.RemoteEndPoint);
-                }
-            });
+                await UdpServer.SendAsync(Encoding.UTF8.GetBytes(response), e.RemoteEndPoint);
+            }
         }
 
         /// <summary>
@@ -407,12 +371,8 @@ namespace MediaBrowser.Common.Kernel
         {
             if (UdpServer != null)
             {
+                UdpServer.MessageReceived -= UdpServer_MessageReceived;
                 UdpServer.Dispose();
-            }
-
-            if (UdpListener != null)
-            {
-                UdpListener.Dispose();
             }
         }
 
@@ -523,6 +483,8 @@ namespace MediaBrowser.Common.Kernel
         /// <param name="newConfig">The new config.</param>
         public void OnApplicationConfigurationChanged(BaseApplicationConfiguration oldConfig, BaseApplicationConfiguration newConfig)
         {
+            HttpServer.EnableHttpRequestLogging = newConfig.EnableHttpLevelLogging;
+
             if (oldConfig.HttpServerPortNumber != newConfig.HttpServerPortNumber)
             {
                 ReloadHttpServer();

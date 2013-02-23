@@ -21,7 +21,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// The _remote end point
         /// </summary>
-        public readonly EndPoint RemoteEndPoint;
+        public readonly string RemoteEndPoint;
 
         /// <summary>
         /// The _cancellation token source
@@ -45,13 +45,13 @@ namespace MediaBrowser.Common.Net
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="receiveAction">The receive action.</param>
         /// <exception cref="System.ArgumentNullException">socket</exception>
-        public WebSocketConnection(IWebSocket socket, EndPoint remoteEndPoint, Action<WebSocketMessageInfo> receiveAction, ILogger logger)
+        public WebSocketConnection(IWebSocket socket, string remoteEndPoint, Action<WebSocketMessageInfo> receiveAction, ILogger logger)
         {
             if (socket == null)
             {
                 throw new ArgumentNullException("socket");
             }
-            if (remoteEndPoint == null)
+            if (string.IsNullOrEmpty(remoteEndPoint))
             {
                 throw new ArgumentNullException("remoteEndPoint");
             }

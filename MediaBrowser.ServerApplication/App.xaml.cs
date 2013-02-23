@@ -11,6 +11,9 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Networking.Management;
+using MediaBrowser.Networking.Udp;
+using MediaBrowser.Networking.Web;
+using MediaBrowser.Networking.WebSocket;
 using MediaBrowser.Server.Uninstall;
 using MediaBrowser.ServerApplication.Implementations;
 using Microsoft.Win32;
@@ -195,9 +198,9 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         protected async void LoadKernel()
         {
-            RegisterResources();
-
             Kernel = new Kernel(this, Logger);
+
+            RegisterResources();
 
             try
             {
@@ -511,15 +514,18 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         private void RegisterResources()
         {
-            Register<IApplicationHost>(this);
-            Register(Logger);
+            RegisterSingleInstance<IApplicationHost>(this);
+            RegisterSingleInstance(Logger);
 
             IsoManager = new PismoIsoManager(Logger);
 
-            Register(IsoManager);
-            Register<IBlurayExaminer>(new BdInfoExaminer());
-            Register<IZipClient>(new DotNetZipClient());
-            Register(typeof (INetworkManager), typeof (NetworkManager));
+            RegisterSingleInstance(IsoManager);
+            RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
+            RegisterSingleInstance<INetworkManager>(() => new NetworkManager());
+            RegisterSingleInstance<IZipClient>(() => new DotNetZipClient());
+            RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
+            Register(typeof(IUdpServer), typeof(UdpServer));
+            RegisterSingleInstance<IHttpServer>(() => new HttpServer(this, Kernel, Logger, "Media Browser", "index.html"));
         }
 
         /// <summary>
@@ -546,10 +552,32 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="obj">The obj.</param>
-        public void Register<T>(T obj)
+        public void RegisterSingleInstance<T>(T obj)
             where T : class
         {
             _container.RegisterSingle(obj);
+        }
+
+        /// <summary>
+        /// Registers the specified func.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="func">The func.</param>
+        public void Register<T>(Func<T> func)
+            where T : class
+        {
+            _container.Register(func);
+        }
+
+        /// <summary>
+        /// Registers the single instance.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="func">The func.</param>
+        public void RegisterSingleInstance<T>(Func<T> func)
+            where T : class
+        {
+            _container.RegisterSingle(func);
         }
 
         /// <summary>
@@ -559,7 +587,7 @@ namespace MediaBrowser.ServerApplication
         /// <returns>``0.</returns>
         public T Resolve<T>()
         {
-            return (T)_container.GetRegistration(typeof (T), true).GetInstance();
+            return (T)_container.GetRegistration(typeof(T), true).GetInstance();
         }
 
         /// <summary>
@@ -569,7 +597,7 @@ namespace MediaBrowser.ServerApplication
         /// <returns>``0.</returns>
         public T TryResolve<T>()
         {
-            var result = _container.GetRegistration(typeof (T), false);
+            var result = _container.GetRegistration(typeof(T), false);
 
             if (result == null)
             {

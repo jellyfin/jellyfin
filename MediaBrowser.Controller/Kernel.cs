@@ -315,7 +315,7 @@ namespace MediaBrowser.Controller
         /// </summary>
         protected override void RegisterExportedValues()
         {
-            ApplicationHost.Register(this);
+            ApplicationHost.RegisterSingleInstance(this);
             
             base.RegisterExportedValues();
         }
