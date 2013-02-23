@@ -6,7 +6,6 @@ using MediaBrowser.Controller.Providers.Movies;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.IO;
 
 namespace MediaBrowser.Controller.Resolvers.Movies
@@ -14,7 +13,6 @@ namespace MediaBrowser.Controller.Resolvers.Movies
     /// <summary>
     /// Class MovieResolver
     /// </summary>
-    [Export(typeof(IBaseItemResolver))]
     public class MovieResolver : BaseVideoResolver<Movie>
     {
         /// <summary>

@@ -1,18 +1,29 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.ScheduledTasks
 {
-    [Export(typeof(IScheduledTask))]
+    /// <summary>
+    /// Class ChapterImagesTask
+    /// </summary>
     class ChapterImagesTask : BaseScheduledTask<Kernel>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChapterImagesTask" /> class.
+        /// </summary>
+        /// <param name="kernel">The kernel.</param>
+        /// <param name="logger"></param>
+        public ChapterImagesTask(Kernel kernel, ITaskManager taskManager, ILogger logger)
+            : base(kernel, taskManager, logger)
+        {
+        }
+
         /// <summary>
         /// Creates the triggers that define when the task will run
         /// </summary>

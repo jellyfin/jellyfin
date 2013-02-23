@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Entities;
 using System;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +11,6 @@ namespace MediaBrowser.Controller.Providers.TV
     /// <summary>
     /// Class EpisodeProviderFromXml
     /// </summary>
-    [Export(typeof(BaseMetadataProvider))]
     public class EpisodeProviderFromXml : BaseMetadataProvider
     {
         /// <summary>

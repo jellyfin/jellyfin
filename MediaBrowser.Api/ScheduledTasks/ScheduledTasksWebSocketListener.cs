@@ -1,10 +1,8 @@
 ﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Controller;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,9 +11,14 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// <summary>
     /// Class ScheduledTasksWebSocketListener
     /// </summary>
-    [Export(typeof(IWebSocketListener))]
     public class ScheduledTasksWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<TaskInfo>, object>
     {
+        /// <summary>
+        /// Gets or sets the task manager.
+        /// </summary>
+        /// <value>The task manager.</value>
+        private ITaskManager TaskManager { get; set; }
+
         /// <summary>
         /// Gets the name.
         /// </summary>
@@ -33,13 +36,12 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledTasksWebSocketListener" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
-        [ImportingConstructor]
-        public ScheduledTasksWebSocketListener([Import("kernel")] Kernel kernel, [Import("logger")] ILogger logger)
+        /// <param name="taskManager">The task manager.</param>
+        public ScheduledTasksWebSocketListener(ILogger logger, ITaskManager taskManager)
             : base(logger)
         {
-            _kernel = kernel;
+            TaskManager = taskManager;
         }
 
         /// <summary>
@@ -49,7 +51,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// <returns>Task{IEnumerable{TaskInfo}}.</returns>
         protected override Task<IEnumerable<TaskInfo>> GetDataToSend(object state)
         {
-            return Task.FromResult(_kernel.ScheduledTasks.OrderBy(i => i.Name)
+            return Task.FromResult(TaskManager.ScheduledTasks.OrderBy(i => i.Name)
                          .Select(ScheduledTaskHelpers.GetTaskInfo));
         }
     }

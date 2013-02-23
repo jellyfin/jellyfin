@@ -9,7 +9,6 @@ using MediaBrowser.UI.Configuration;
 using MediaBrowser.UI.Playback.InternalPlayer;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -21,11 +20,9 @@ namespace MediaBrowser.UI.Playback.NVlc
     /// <summary>
     /// Class InternalMediaPlayer
     /// </summary>
-    [Export(typeof(BaseMediaPlayer))]
     public class InternalMediaPlayerNVlc : BaseInternalMediaPlayer
     {
-        [ImportingConstructor]
-        public InternalMediaPlayerNVlc([Import("logger")] ILogger logger)
+        public InternalMediaPlayerNVlc(ILogger logger)
             : base(logger)
         {
         }

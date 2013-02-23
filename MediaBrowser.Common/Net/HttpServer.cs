@@ -4,6 +4,7 @@ using MediaBrowser.Common.Kernel;
 using MediaBrowser.Model.Logging;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Common.Web;
+using ServiceStack.Configuration;
 using ServiceStack.Logging.NLogger;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Cors;
@@ -153,6 +154,8 @@ namespace MediaBrowser.Common.Net
                     DebugMode = true
                 });
             }
+
+            container.Adapter = new ContainerAdapter(ApplicationHost);
             
             container.Register(Kernel);
             container.Register(_logger);
@@ -463,5 +466,24 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <value>The endpoint.</value>
         public IPEndPoint Endpoint { get; set; }
+    }
+
+    class ContainerAdapter : IContainerAdapter
+    {
+        private readonly IApplicationHost _appHost;
+
+        public ContainerAdapter(IApplicationHost appHost)
+        {
+            _appHost = appHost;
+        }
+        public T Resolve<T>()
+        {
+            return _appHost.Resolve<T>();
+        }
+
+        public T TryResolve<T>()
+        {
+            return _appHost.TryResolve<T>();
+        }
     }
 }

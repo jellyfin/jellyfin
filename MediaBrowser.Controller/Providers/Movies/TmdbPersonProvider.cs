@@ -4,7 +4,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -17,7 +16,6 @@ namespace MediaBrowser.Controller.Providers.Movies
     /// <summary>
     /// Class TmdbPersonProvider
     /// </summary>
-    [Export(typeof(BaseMetadataProvider))]
     public class TmdbPersonProvider : BaseMetadataProvider
     {
         /// <summary>

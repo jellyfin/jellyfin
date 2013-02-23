@@ -11,6 +11,7 @@ using MediaBrowser.Model.Updates;
 using MediaBrowser.Server.Uninstall;
 using MediaBrowser.ServerApplication.Implementations;
 using Microsoft.Win32;
+using SimpleInjector;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -22,7 +23,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using SimpleInjector;
 
 namespace MediaBrowser.ServerApplication
 {
@@ -130,6 +130,12 @@ namespace MediaBrowser.ServerApplication
         }
 
         /// <summary>
+        /// Gets or sets the iso manager.
+        /// </summary>
+        /// <value>The iso manager.</value>
+        private IIsoManager IsoManager { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [last run at startup value].
         /// </summary>
         /// <value><c>null</c> if [last run at startup value] contains no value, <c>true</c> if [last run at startup value]; otherwise, <c>false</c>.</value>
@@ -179,18 +185,6 @@ namespace MediaBrowser.ServerApplication
         {
             // Try to shut down gracefully
             Shutdown();
-        }
-
-        /// <summary>
-        /// Registers resources that classes will depend on
-        /// </summary>
-        private void RegisterResources()
-        {
-            Register(this);
-            Register(Logger);
-            Register<IIsoManager>(new PismoIsoManager(Logger));
-            Register<IBlurayExaminer>(new BdInfoExaminer());
-            Register<IZipClient>(new DotNetZipClient());
         }
 
         /// <summary>
@@ -510,6 +504,21 @@ namespace MediaBrowser.ServerApplication
         }
 
         /// <summary>
+        /// Registers resources that classes will depend on
+        /// </summary>
+        private void RegisterResources()
+        {
+            Register<IApplicationHost>(this);
+            Register(Logger);
+
+            IsoManager = new PismoIsoManager(Logger);
+
+            Register<IIsoManager>(IsoManager);
+            Register<IBlurayExaminer>(new BdInfoExaminer());
+            Register<IZipClient>(new DotNetZipClient());
+        }
+
+        /// <summary>
         /// Creates an instance of type and resolves all constructor dependancies
         /// </summary>
         /// <param name="type">The type.</param>
@@ -544,9 +553,25 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>``0.</returns>
-        public T Resolve<T>() where T : class
+        public T Resolve<T>()
         {
             return (T)_container.GetRegistration(typeof (T), true).GetInstance();
+        }
+
+        /// <summary>
+        /// Resolves this instance.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>``0.</returns>
+        public T TryResolve<T>()
+        {
+            var result = _container.GetRegistration(typeof (T), false);
+
+            if (result == null)
+            {
+                return default(T);
+            }
+            return (T)result.GetInstance();
         }
     }
 }

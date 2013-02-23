@@ -1,9 +1,8 @@
-﻿using System.Globalization;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Win32;
+﻿using MediaBrowser.Common.Win32;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.IO;
 using System;
-using System.ComponentModel.Composition;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -12,7 +11,6 @@ namespace MediaBrowser.Controller.Providers
     /// <summary>
     /// Provides images for generic types by looking for standard images in the IBN
     /// </summary>
-    [Export(typeof(BaseMetadataProvider))]
     public class ImagesByNameProvider : ImageFromMediaLocationProvider
     {
         /// <summary>

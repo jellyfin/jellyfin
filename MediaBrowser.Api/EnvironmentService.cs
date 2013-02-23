@@ -1,11 +1,9 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -59,7 +57,6 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class EnvironmentService
     /// </summary>
-    [Export(typeof(IRestfulService))]
     public class EnvironmentService : BaseRestService
     {
         /// <summary>

@@ -1,8 +1,8 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,9 +11,18 @@ namespace MediaBrowser.Controller.ScheduledTasks
     /// <summary>
     /// Class RefreshMediaLibraryTask
     /// </summary>
-    [Export(typeof(IScheduledTask))]
     public class RefreshMediaLibraryTask : BaseScheduledTask<Kernel>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RefreshMediaLibraryTask" /> class.
+        /// </summary>
+        /// <param name="kernel">The kernel.</param>
+        /// <param name="logger"></param>
+        public RefreshMediaLibraryTask(Kernel kernel, ITaskManager taskManager, ILogger logger)
+            : base(kernel, taskManager, logger)
+        {
+        }
+
         /// <summary>
         /// Gets the default triggers.
         /// </summary>
@@ -22,7 +31,7 @@ namespace MediaBrowser.Controller.ScheduledTasks
         {
             return new BaseTaskTrigger[] { 
 
-                new StartupTrigger(Kernel),
+                new StartupTrigger(),
 
                 new SystemEventTrigger{ SystemEvent = SystemEvent.WakeFromSleep},
 

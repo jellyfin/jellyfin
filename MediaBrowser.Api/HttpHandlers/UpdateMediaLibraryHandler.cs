@@ -1,19 +1,17 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net.Handlers;
+﻿using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using System;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.IO;
 
 namespace MediaBrowser.Api.HttpHandlers
 {
     /// <summary>
     /// Makes changes to the user's media library
     /// </summary>
-    [Export(typeof(IHttpServerHandler))]
     public class UpdateMediaLibraryHandler : BaseActionHandler<Kernel>
     {
         /// <summary>

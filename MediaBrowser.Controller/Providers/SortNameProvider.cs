@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +10,6 @@ namespace MediaBrowser.Controller.Providers
     /// <summary>
     /// Class SortNameProvider
     /// </summary>
-    [Export(typeof(BaseMetadataProvider))]
     public class SortNameProvider : BaseMetadataProvider
     {
         /// <summary>

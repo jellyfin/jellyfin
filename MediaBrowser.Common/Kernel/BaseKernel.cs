@@ -9,9 +9,6 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.ComponentModel.Composition.Hosting;
-using System.ComponentModel.Composition.Primitives;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -182,27 +179,13 @@ namespace MediaBrowser.Common.Kernel
         /// Gets the list of currently loaded plugins
         /// </summary>
         /// <value>The plugins.</value>
-        [ImportMany(typeof(IPlugin))]
         public IEnumerable<IPlugin> Plugins { get; protected set; }
-
-        /// <summary>
-        /// Gets the list of Scheduled Tasks
-        /// </summary>
-        /// <value>The scheduled tasks.</value>
-        [ImportMany(typeof(IScheduledTask))]
-        public IEnumerable<IScheduledTask> ScheduledTasks { get; private set; }
 
         /// <summary>
         /// Gets the web socket listeners.
         /// </summary>
         /// <value>The web socket listeners.</value>
         public IEnumerable<IWebSocketListener> WebSocketListeners { get; private set; }
-
-        /// <summary>
-        /// Gets the MEF CompositionContainer
-        /// </summary>
-        /// <value>The composition container.</value>
-        private CompositionContainer CompositionContainer { get; set; }
 
         /// <summary>
         /// The _HTTP manager
@@ -215,12 +198,6 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <value>The TCP manager.</value>
         public TcpManager TcpManager { get; private set; }
-
-        /// <summary>
-        /// Gets the task manager.
-        /// </summary>
-        /// <value>The task manager.</value>
-        public TaskManager TaskManager { get; private set; }
 
         /// <summary>
         /// Gets the rest services.
@@ -325,10 +302,16 @@ namespace MediaBrowser.Common.Kernel
         protected IApplicationHost ApplicationHost { get; private set; }
 
         /// <summary>
+        /// Gets or sets the task manager.
+        /// </summary>
+        /// <value>The task manager.</value>
+        protected ITaskManager TaskManager { get; set; }
+
+        /// <summary>
         /// Gets the assemblies.
         /// </summary>
         /// <value>The assemblies.</value>
-        public Assembly[] Assemblies { get; private set; }
+        protected Assembly[] Assemblies { get; private set; }
 
         /// <summary>
         /// Gets all types.
@@ -407,7 +390,7 @@ namespace MediaBrowser.Common.Kernel
             await OnConfigurationLoaded().ConfigureAwait(false);
 
             DisposeTaskManager();
-            TaskManager = new TaskManager(this, Logger);
+            TaskManager = new TaskManager(Logger);
 
             Logger.Info("Loading Plugins");
             await ReloadComposableParts().ConfigureAwait(false);
@@ -453,8 +436,6 @@ namespace MediaBrowser.Common.Kernel
             ComposeParts(AllTypes);
 
             await OnComposablePartsLoaded().ConfigureAwait(false);
-
-            CompositionContainer.Catalog.Dispose();
         }
 
         /// <summary>
@@ -465,11 +446,7 @@ namespace MediaBrowser.Common.Kernel
         {
             var concreteTypes = allTypes.Where(t => t.IsClass && !t.IsAbstract && !t.IsInterface && !t.IsGenericType).ToArray();
 
-            CompositionContainer = GetSafeCompositionContainer(concreteTypes.Select(i => new TypeCatalog(i)));
-
-            RegisterExportedValues(CompositionContainer);
-
-            CompositionContainer.ComposeParts(this);
+            RegisterExportedValues();
 
             FindParts(concreteTypes);
         }
@@ -482,6 +459,11 @@ namespace MediaBrowser.Common.Kernel
         {
             RestServices = GetExports<IRestfulService>(allTypes);
             WebSocketListeners = GetExports<IWebSocketListener>(allTypes);
+            Plugins = GetExports<IPlugin>(allTypes);
+
+            var tasks = GetExports<IScheduledTask>(allTypes, false);
+
+            TaskManager.AddTasks(tasks);
         }
 
         /// <summary>
@@ -489,8 +471,9 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="allTypes">All types.</param>
+        /// <param name="manageLiftime">if set to <c>true</c> [manage liftime].</param>
         /// <returns>IEnumerable{``0}.</returns>
-        protected IEnumerable<T> GetExports<T>(Type[] allTypes)
+        protected IEnumerable<T> GetExports<T>(Type[] allTypes, bool manageLiftime = true)
         {
             var currentType = typeof(T);
 
@@ -498,7 +481,10 @@ namespace MediaBrowser.Common.Kernel
 
             var parts = allTypes.Where(currentType.IsAssignableFrom).Select(Instantiate).Cast<T>().ToArray();
 
-            _disposableParts.AddRange(parts.OfType<IDisposable>());
+            if (manageLiftime)
+            {
+                _disposableParts.AddRange(parts.OfType<IDisposable>());
+            }
 
             return parts;
         }
@@ -517,13 +503,10 @@ namespace MediaBrowser.Common.Kernel
         /// Composes the exported values.
         /// </summary>
         /// <param name="container">The container.</param>
-        protected virtual void RegisterExportedValues(CompositionContainer container)
+        protected virtual void RegisterExportedValues()
         {
             ApplicationHost.Register<IKernel>(this);
-            
-            container.ComposeExportedValue("logger", Logger);
-            container.ComposeExportedValue("appHost", ApplicationHost);
-            container.ComposeExportedValue("isoManager", ApplicationHost.Resolve<IIsoManager>());
+            ApplicationHost.Register(TaskManager);
         }
 
         /// <summary>
@@ -591,46 +574,6 @@ namespace MediaBrowser.Common.Kernel
         }
 
         /// <summary>
-        /// Plugins that live on both the server and UI are going to have references to assemblies from both sides.
-        /// But looks for Parts on one side, it will throw an exception when it seems Types from the other side that it doesn't have a reference to.
-        /// For example, a plugin provides a Resolver. When MEF runs in the UI, it will throw an exception when it sees the resolver because there won't be a reference to the base class.
-        /// This method will catch those exceptions while retining the list of Types that MEF is able to resolve.
-        /// </summary>
-        /// <param name="catalogs">The catalogs.</param>
-        /// <returns>CompositionContainer.</returns>
-        /// <exception cref="System.ArgumentNullException">catalogs</exception>
-        private static CompositionContainer GetSafeCompositionContainer(IEnumerable<ComposablePartCatalog> catalogs)
-        {
-            if (catalogs == null)
-            {
-                throw new ArgumentNullException("catalogs");
-            }
-
-            var newList = new List<ComposablePartCatalog>();
-
-            // Go through each Catalog
-            foreach (var catalog in catalogs)
-            {
-                try
-                {
-                    // Try to have MEF find Parts
-                    catalog.Parts.ToArray();
-
-                    // If it succeeds we can use the entire catalog
-                    newList.Add(catalog);
-                }
-                catch (ReflectionTypeLoadException ex)
-                {
-                    // If it fails we can still get a list of the Types it was able to resolve and create TypeCatalogs
-                    var typeCatalogs = ex.Types.Where(t => t != null).Select(t => new TypeCatalog(t));
-                    newList.AddRange(typeCatalogs);
-                }
-            }
-
-            return new CompositionContainer(new AggregateCatalog(newList));
-        }
-
-        /// <summary>
         /// Gets a list of types within an assembly
         /// This will handle situations that would normally throw an exception - such as a type within the assembly that depends on some other non-existant reference
         /// </summary>
@@ -663,11 +606,6 @@ namespace MediaBrowser.Common.Kernel
         {
             return Task.Run(() =>
             {
-                foreach (var task in ScheduledTasks)
-                {
-                    task.Initialize(this, Logger);
-                }
-
                 // Start-up each plugin
                 Parallel.ForEach(Plugins, plugin =>
                 {
@@ -722,11 +660,6 @@ namespace MediaBrowser.Common.Kernel
 
                 DisposeComposableParts();
 
-                foreach (var part in _disposableParts)
-                {
-                    part.Dispose();
-                }
-
                 _disposableParts.Clear();
             }
         }
@@ -772,9 +705,9 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         protected virtual void DisposeComposableParts()
         {
-            if (CompositionContainer != null)
+            foreach (var part in _disposableParts)
             {
-                CompositionContainer.Dispose();
+                part.Dispose();
             }
         }
 

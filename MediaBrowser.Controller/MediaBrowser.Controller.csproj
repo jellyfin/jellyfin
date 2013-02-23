@@ -64,7 +64,6 @@
       <HintPath>..\packages\protobuf-net.2.0.0.621\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -108,6 +107,7 @@
     <Compile Include="Entities\CollectionFolder.cs" />
     <Compile Include="Entities\Year.cs" />
     <Compile Include="Extensions\XmlExtensions.cs" />
+    <Compile Include="IO\FileSystem.cs" />
     <Compile Include="IO\FileSystemManager.cs" />
     <Compile Include="IO\NetworkShares.cs" />
     <Compile Include="Library\ChildrenChangedEventArgs.cs" />
@@ -118,6 +118,7 @@
     <Compile Include="Localization\AURatingsDictionary.cs" />
     <Compile Include="Localization\BaseStrings.cs" />
     <Compile Include="Localization\GBRatingsDictionary.cs" />
+    <Compile Include="Localization\LocalizedStringData.cs" />
     <Compile Include="Localization\LocalizedStrings.cs" />
     <Compile Include="Localization\NLRatingsDictionary.cs" />
     <Compile Include="Localization\Ratings.cs" />

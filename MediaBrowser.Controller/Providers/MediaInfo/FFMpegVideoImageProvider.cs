@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using System;
-using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,7 +10,6 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     /// <summary>
     /// Uses ffmpeg to create video images
     /// </summary>
-    [Export(typeof(BaseMetadataProvider))]
     public class FFMpegVideoImageProvider : BaseFFMpegImageProvider<Video>
     {
         /// <summary>
@@ -23,8 +21,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// Initializes a new instance of the <see cref="FFMpegVideoImageProvider" /> class.
         /// </summary>
         /// <param name="isoManager">The iso manager.</param>
-        [ImportingConstructor]
-        public FFMpegVideoImageProvider([Import("isoManager")] IIsoManager isoManager)
+        public FFMpegVideoImageProvider(IIsoManager isoManager)
         {
             _isoManager = isoManager;
         }

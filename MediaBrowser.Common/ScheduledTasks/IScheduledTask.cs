@@ -1,6 +1,4 @@
-﻿using MediaBrowser.Common.Kernel;
-using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Tasks;
+﻿using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -72,13 +70,6 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// </summary>
         /// <exception cref="System.InvalidOperationException">Cannot cancel a Task unless it is in the Running state.</exception>
         void Cancel();
-
-        /// <summary>
-        /// Initializes the specified kernel.
-        /// </summary>
-        /// <param name="kernel">The kernel.</param>
-        /// <param name="logger">The logger.</param>
-        void Initialize(IKernel kernel, ILogger logger);
 
         /// <summary>
         /// Cancels if running.

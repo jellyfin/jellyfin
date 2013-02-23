@@ -1,11 +1,9 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.ScheduledTasks;
+﻿using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -16,9 +14,18 @@ namespace MediaBrowser.Controller.ScheduledTasks
     /// <summary>
     /// Class ImageCleanupTask
     /// </summary>
-    [Export(typeof(IScheduledTask))]
     public class ImageCleanupTask : BaseScheduledTask<Kernel>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImageCleanupTask" /> class.
+        /// </summary>
+        /// <param name="kernel">The kernel.</param>
+        /// <param name="logger"></param>
+        public ImageCleanupTask(Kernel kernel, ITaskManager taskManager, ILogger logger)
+            : base(kernel, taskManager, logger)
+        {
+        }
+
         /// <summary>
         /// Creates the triggers that define when the task will run
         /// </summary>

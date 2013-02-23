@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using System;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +10,6 @@ namespace MediaBrowser.Controller.Providers.Movies
     /// <summary>
     /// Class MovieProviderFromXml
     /// </summary>
-    [Export(typeof(BaseMetadataProvider))]
     public class MovieProviderFromXml : BaseMetadataProvider
     {
         /// <summary>

@@ -7,10 +7,8 @@ using MediaBrowser.Model.Plugins;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using ServiceStack.Text.Controller;
 
 namespace MediaBrowser.Api
@@ -119,7 +117,6 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class PluginsService
     /// </summary>
-    [Export(typeof(IRestfulService))]
     public class PluginService : BaseRestService
     {
         /// <summary>

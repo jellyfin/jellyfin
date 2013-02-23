@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Dto;
-using System.ComponentModel.Composition;
 using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.UI.Playback.ExternalPlayer
@@ -7,11 +6,9 @@ namespace MediaBrowser.UI.Playback.ExternalPlayer
     /// <summary>
     /// Class GenericExternalPlayer
     /// </summary>
-    [Export(typeof(BaseMediaPlayer))]
     public class GenericExternalPlayer : BaseExternalPlayer
     {
-        [ImportingConstructor]
-        public GenericExternalPlayer([Import("logger")] ILogger logger)
+        public GenericExternalPlayer(ILogger logger)
             : base(logger)
         {
         }
