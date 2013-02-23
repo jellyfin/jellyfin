@@ -2,13 +2,13 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>MediaBrowser.ApiClient</id>
-        <version>3.0.0.0-beta</version>
-        <title>MediaBrowser.ApiInteraction</title>
+        <version>3.0.0.2-beta</version>
+        <title>MediaBrowser.ApiClient</title>
         <authors>Media Browser Team</authors>
-        <owners>Luke</owners>
+        <owners>scottisafool,Luke</owners>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Description</description>
-        <copyright>Copyright ©  2012</copyright>
+        <description>ApiClient allows .NET clients to easily access the Media Browser 3 web API</description>
+        <copyright>Copyright ©  2013</copyright>
         <dependencies>
             <group>
                 <dependency id="protobuf-net" version="2.0.0.621" />
