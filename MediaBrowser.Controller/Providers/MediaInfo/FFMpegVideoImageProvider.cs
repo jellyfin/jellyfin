@@ -15,6 +15,21 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     public class FFMpegVideoImageProvider : BaseFFMpegImageProvider<Video>
     {
         /// <summary>
+        /// The _iso manager
+        /// </summary>
+        private readonly IIsoManager _isoManager;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FFMpegVideoImageProvider" /> class.
+        /// </summary>
+        /// <param name="isoManager">The iso manager.</param>
+        [ImportingConstructor]
+        public FFMpegVideoImageProvider([Import("isoManager")] IIsoManager isoManager)
+        {
+            _isoManager = isoManager;
+        }
+
+        /// <summary>
         /// Supportses the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -30,7 +45,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
             if (video != null)
             {
-                if (video.VideoType == VideoType.Iso && video.IsoType.HasValue && Kernel.Instance.IsoManager.CanMount(item.Path))
+                if (video.VideoType == VideoType.Iso && video.IsoType.HasValue && _isoManager.CanMount(item.Path))
                 {
                     return true;
                 }
@@ -82,7 +97,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         {
             if (item.VideoType == VideoType.Iso)
             {
-                return Kernel.Instance.IsoManager.Mount(item.Path, cancellationToken);
+                return _isoManager.Mount(item.Path, cancellationToken);
             }
 
             return NullMountTaskResult;

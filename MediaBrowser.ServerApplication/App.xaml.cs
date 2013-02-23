@@ -1,9 +1,12 @@
 ﻿using MediaBrowser.ClickOnce;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Logging.Nlog;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Server.Uninstall;
 using MediaBrowser.ServerApplication.Implementations;
@@ -19,6 +22,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using SimpleInjector;
 
 namespace MediaBrowser.ServerApplication
 {
@@ -72,6 +76,11 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         /// <value>The log file path.</value>
         public string LogFilePath { get; private set; }
+
+        /// <summary>
+        /// The container
+        /// </summary>
+        private Container _container = new Container();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="App" /> class.
@@ -173,11 +182,25 @@ namespace MediaBrowser.ServerApplication
         }
 
         /// <summary>
+        /// Registers resources that classes will depend on
+        /// </summary>
+        private void RegisterResources()
+        {
+            Register(this);
+            Register(Logger);
+            Register<IIsoManager>(new PismoIsoManager(Logger));
+            Register<IBlurayExaminer>(new BdInfoExaminer());
+            Register<IZipClient>(new DotNetZipClient());
+        }
+
+        /// <summary>
         /// Loads the kernel.
         /// </summary>
         protected async void LoadKernel()
         {
-            Kernel = new Kernel(this, new PismoIsoManager(Logger), new DotNetZipClient(), new BdInfoExaminer(), Logger);
+            RegisterResources();
+
+            Kernel = new Kernel(this, Logger);
 
             try
             {
@@ -378,7 +401,7 @@ namespace MediaBrowser.ServerApplication
 
             NlogManager.AddFileTarget(LogFilePath, Kernel.Configuration.EnableDebugLevelLogging);
         }
-        
+
         /// <summary>
         /// Gets the image.
         /// </summary>
@@ -484,6 +507,46 @@ namespace MediaBrowser.ServerApplication
         public Task UpdateApplication(CancellationToken cancellationToken, IProgress<double> progress)
         {
             return new ApplicationUpdater().UpdateApplication(cancellationToken, progress);
+        }
+
+        /// <summary>
+        /// Creates an instance of type and resolves all constructor dependancies
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>System.Object.</returns>
+        public object CreateInstance(Type type)
+        {
+            try
+            {
+                return _container.GetInstance(type);
+            }
+            catch
+            {
+                Logger.Error("Error creating {0}", type.Name);
+
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Registers the specified obj.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj">The obj.</param>
+        public void Register<T>(T obj)
+            where T : class
+        {
+            _container.RegisterSingle(obj);
+        }
+
+        /// <summary>
+        /// Resolves this instance.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>``0.</returns>
+        public T Resolve<T>() where T : class
+        {
+            return (T)_container.GetRegistration(typeof (T), true).GetInstance();
         }
     }
 }

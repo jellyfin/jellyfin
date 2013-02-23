@@ -18,7 +18,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using SimpleInjector;
 
 namespace MediaBrowser.Common.Kernel
 {
@@ -224,12 +223,6 @@ namespace MediaBrowser.Common.Kernel
         public TaskManager TaskManager { get; private set; }
 
         /// <summary>
-        /// Gets the iso manager.
-        /// </summary>
-        /// <value>The iso manager.</value>
-        public IIsoManager IsoManager { get; private set; }
-
-        /// <summary>
         /// Gets the rest services.
         /// </summary>
         /// <value>The rest services.</value>
@@ -347,19 +340,13 @@ namespace MediaBrowser.Common.Kernel
         /// Initializes a new instance of the <see cref="BaseKernel{TApplicationPathsType}" /> class.
         /// </summary>
         /// <param name="appHost">The app host.</param>
-        /// <param name="isoManager">The iso manager.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">isoManager</exception>
-        protected BaseKernel(IApplicationHost appHost, IIsoManager isoManager, ILogger logger)
+        protected BaseKernel(IApplicationHost appHost, ILogger logger)
         {
             if (appHost == null)
             {
                 throw new ArgumentNullException("appHost");
-            }
-            
-            if (isoManager == null)
-            {
-                throw new ArgumentNullException("isoManager");
             }
 
             if (logger == null)
@@ -368,7 +355,6 @@ namespace MediaBrowser.Common.Kernel
             }
 
             ApplicationHost = appHost;
-            IsoManager = isoManager;
             Logger = logger;
         }
 
@@ -472,11 +458,6 @@ namespace MediaBrowser.Common.Kernel
         }
 
         /// <summary>
-        /// The ioc container
-        /// </summary>
-        private readonly Container _iocContainer = new Container();
-
-        /// <summary>
         /// Composes the parts.
         /// </summary>
         /// <param name="allTypes">All types.</param>
@@ -486,19 +467,18 @@ namespace MediaBrowser.Common.Kernel
 
             CompositionContainer = GetSafeCompositionContainer(concreteTypes.Select(i => new TypeCatalog(i)));
 
-            ComposeExportedValues(CompositionContainer, _iocContainer);
+            RegisterExportedValues(CompositionContainer);
 
             CompositionContainer.ComposeParts(this);
 
-            ComposePartsWithIocContainer(concreteTypes, _iocContainer);
+            FindParts(concreteTypes);
         }
 
         /// <summary>
         /// Composes the parts with ioc container.
         /// </summary>
         /// <param name="allTypes">All types.</param>
-        /// <param name="container">The container.</param>
-        protected virtual void ComposePartsWithIocContainer(Type[] allTypes, Container container)
+        protected virtual void FindParts(Type[] allTypes)
         {
             RestServices = GetExports<IRestfulService>(allTypes);
             WebSocketListeners = GetExports<IWebSocketListener>(allTypes);
@@ -530,21 +510,20 @@ namespace MediaBrowser.Common.Kernel
         /// <returns>System.Object.</returns>
         private object Instantiate(Type type)
         {
-            return _iocContainer.GetInstance(type);
+            return ApplicationHost.CreateInstance(type);
         }
 
         /// <summary>
         /// Composes the exported values.
         /// </summary>
         /// <param name="container">The container.</param>
-        /// <param name="iocContainer"></param>
-        protected virtual void ComposeExportedValues(CompositionContainer container, Container iocContainer)
+        protected virtual void RegisterExportedValues(CompositionContainer container)
         {
+            ApplicationHost.Register<IKernel>(this);
+            
             container.ComposeExportedValue("logger", Logger);
             container.ComposeExportedValue("appHost", ApplicationHost);
-
-            iocContainer.RegisterSingle(Logger);
-            iocContainer.RegisterSingle(ApplicationHost);
+            container.ComposeExportedValue("isoManager", ApplicationHost.Resolve<IIsoManager>());
         }
 
         /// <summary>
@@ -739,7 +718,6 @@ namespace MediaBrowser.Common.Kernel
             {
                 DisposeTcpManager();
                 DisposeTaskManager();
-                DisposeIsoManager();
                 DisposeHttpManager();
 
                 DisposeComposableParts();
@@ -750,18 +728,6 @@ namespace MediaBrowser.Common.Kernel
                 }
 
                 _disposableParts.Clear();
-            }
-        }
-
-        /// <summary>
-        /// Disposes the iso manager.
-        /// </summary>
-        private void DisposeIsoManager()
-        {
-            if (IsoManager != null)
-            {
-                IsoManager.Dispose();
-                IsoManager = null;
             }
         }
 

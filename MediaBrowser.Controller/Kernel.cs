@@ -28,7 +28,6 @@ using System.ComponentModel.Composition.Hosting;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SimpleInjector;
 
 namespace MediaBrowser.Controller
 {
@@ -302,47 +301,15 @@ namespace MediaBrowser.Controller
         }
 
         /// <summary>
-        /// Gets or sets the zip client.
-        /// </summary>
-        /// <value>The zip client.</value>
-        private IZipClient ZipClient { get; set; }
-
-        /// <summary>
-        /// Gets or sets the bluray examiner.
-        /// </summary>
-        /// <value>The bluray examiner.</value>
-        private IBlurayExaminer BlurayExaminer { get; set; }
-
-        /// <summary>
         /// Creates a kernel based on a Data path, which is akin to our current programdata path
         /// </summary>
         /// <param name="appHost">The app host.</param>
-        /// <param name="isoManager">The iso manager.</param>
-        /// <param name="zipClient">The zip client.</param>
-        /// <param name="blurayExaminer">The bluray examiner.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">isoManager</exception>
-        public Kernel(IApplicationHost appHost, IIsoManager isoManager, IZipClient zipClient, IBlurayExaminer blurayExaminer, ILogger logger)
-            : base(appHost, isoManager, logger)
+        public Kernel(IApplicationHost appHost, ILogger logger)
+            : base(appHost, logger)
         {
-            if (isoManager == null)
-            {
-                throw new ArgumentNullException("isoManager");
-            }
-
-            if (zipClient == null)
-            {
-                throw new ArgumentNullException("zipClient");
-            }
-
-            if (blurayExaminer == null)
-            {
-                throw new ArgumentNullException("blurayExaminer");
-            }
-            
             Instance = this;
-            ZipClient = zipClient;
-            BlurayExaminer = blurayExaminer;
 
             // For now there's no real way to inject this properly
             BaseItem.Logger = logger;
@@ -356,26 +323,22 @@ namespace MediaBrowser.Controller
         /// Composes the exported values.
         /// </summary>
         /// <param name="container">The container.</param>
-        /// <param name="iocContainer">The _ioc container.</param>
-        protected override void ComposeExportedValues(CompositionContainer container, Container iocContainer)
+        protected override void RegisterExportedValues(CompositionContainer container)
         {
-            base.ComposeExportedValues(container, iocContainer);
-
             container.ComposeExportedValue("kernel", this);
-            container.ComposeExportedValue("blurayExaminer", BlurayExaminer);
 
-            iocContainer.RegisterSingle(this);
-            iocContainer.RegisterSingle(BlurayExaminer);
+            ApplicationHost.Register(this);
+            
+            base.RegisterExportedValues(container);
         }
 
         /// <summary>
         /// Composes the parts with ioc container.
         /// </summary>
         /// <param name="allTypes">All types.</param>
-        /// <param name="container">The container.</param>
-        protected override void ComposePartsWithIocContainer(Type[] allTypes, Container container)
+        protected override void FindParts(Type[] allTypes)
         {
-            base.ComposePartsWithIocContainer(allTypes, container);
+            base.FindParts(allTypes);
 
             EntityResolutionIgnoreRules = GetExports<IResolutionIgnoreRule>(allTypes);
             UserDataRepositories = GetExports<IUserDataRepository>(allTypes);
@@ -395,23 +358,21 @@ namespace MediaBrowser.Controller
         /// <returns>Task.</returns>
         protected override async Task ReloadInternal()
         {
-            Logger.Info("Extracting tools");
-
             // Reset these so that they can be lazy loaded again
             Users = null;
             RootFolder = null;
 
-            ReloadResourcePools();
-            InstallationManager = new InstallationManager(this, ZipClient, Logger);
-            LibraryManager = new LibraryManager(this, Logger);
-            UserManager = new UserManager(this, Logger);
-            FFMpegManager = new FFMpegManager(this, ZipClient, Logger);
-            ImageManager = new ImageManager(this, Logger);
-            ProviderManager = new ProviderManager(this, Logger);
-            UserDataManager = new UserDataManager(this, Logger);
-            PluginSecurityManager = new PluginSecurityManager(this);
-
             await base.ReloadInternal().ConfigureAwait(false);
+
+            ReloadResourcePools();
+            InstallationManager = (InstallationManager)ApplicationHost.CreateInstance(typeof(InstallationManager));
+            FFMpegManager = (FFMpegManager)ApplicationHost.CreateInstance(typeof(FFMpegManager));
+            LibraryManager = (LibraryManager)ApplicationHost.CreateInstance(typeof(LibraryManager));
+            UserManager = (UserManager)ApplicationHost.CreateInstance(typeof(UserManager));
+            ImageManager = (ImageManager)ApplicationHost.CreateInstance(typeof(ImageManager));
+            ProviderManager = (ProviderManager)ApplicationHost.CreateInstance(typeof(ProviderManager));
+            UserDataManager = (UserDataManager)ApplicationHost.CreateInstance(typeof(UserDataManager));
+            PluginSecurityManager = (PluginSecurityManager)ApplicationHost.CreateInstance(typeof(PluginSecurityManager));
 
             ReloadFileSystemManager();
 
