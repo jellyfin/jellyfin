@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Data;
 using System.IO;
 using System.Threading;
@@ -16,7 +15,6 @@ namespace MediaBrowser.Server.Sqlite
     /// <summary>
     /// Class SQLiteUserRepository
     /// </summary>
-    [Export(typeof(IUserRepository))]
     public class SQLiteUserRepository : SqliteRepository, IUserRepository
     {
         /// <summary>
@@ -40,8 +38,7 @@ namespace MediaBrowser.Server.Sqlite
         /// Initializes a new instance of the <see cref="SQLiteUserDataRepository" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        [ImportingConstructor]
-        protected SQLiteUserRepository([Import("logger")] ILogger logger)
+        public SQLiteUserRepository(ILogger logger)
             : base(logger)
         {
         }

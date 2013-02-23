@@ -9,8 +9,8 @@ namespace MediaBrowser.Controller.Resolvers
     /// <summary>
     /// Provides the core resolver ignore rules
     /// </summary>
-    [Export(typeof(BaseResolutionIgnoreRule))]
-    public class CoreResolutionIgnoreRule : BaseResolutionIgnoreRule
+    [Export(typeof(IResolutionIgnoreRule))]
+    public class CoreResolutionIgnoreRule : IResolutionIgnoreRule
     {
         /// <summary>
         /// Any folder named in this list will be ignored - can be added to at runtime for extensibility
@@ -27,7 +27,7 @@ namespace MediaBrowser.Controller.Resolvers
             "extrafanart"
         };
 
-        public override bool ShouldIgnore(ItemResolveArgs args)
+        public bool ShouldIgnore(ItemResolveArgs args)
         {
             // Ignore hidden files and folders
             if (args.IsHidden)

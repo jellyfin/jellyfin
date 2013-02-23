@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Mef;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -213,7 +212,7 @@ namespace MediaBrowser.Api
         {
             var kernel = (Kernel)Kernel;
 
-            var allTypes = kernel.Assemblies.SelectMany(MefUtils.GetTypes).Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(BaseItem)));
+            var allTypes = kernel.AllTypes.Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(BaseItem)));
 
             if (request.HasInternetProvider)
             {
