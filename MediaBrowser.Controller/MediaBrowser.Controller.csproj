@@ -63,6 +63,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\protobuf-net.2.0.0.621\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
+    <Reference Include="SimpleInjector, Version=2.0.0.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\SimpleInjector.2.0.0-beta5\lib\net40-client\SimpleInjector.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
@@ -165,7 +169,7 @@
     <Compile Include="Providers\MediaInfo\FFMpegVideoImageProvider.cs" />
     <Compile Include="Resolvers\Audio\MusicAlbumResolver.cs" />
     <Compile Include="Resolvers\Audio\MusicArtistResolver.cs" />
-    <Compile Include="Resolvers\BaseResolutionIgnoreRule.cs" />
+    <Compile Include="Resolvers\IResolutionIgnoreRule.cs" />
     <Compile Include="Resolvers\CoreResolutionIgnoreRule.cs" />
     <Compile Include="Resolvers\EntityResolutionHelper.cs" />
     <Compile Include="Resolvers\LocalTrailerResolver.cs" />

@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
+using MediaBrowser.Common.Localization;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -27,6 +28,7 @@ using System.ComponentModel.Composition.Hosting;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SimpleInjector;
 
 namespace MediaBrowser.Controller
 {
@@ -179,24 +181,28 @@ namespace MediaBrowser.Controller
         }
 
         /// <summary>
+        /// Gets the list of Localized string files
+        /// </summary>
+        /// <value>The string files.</value>
+        [ImportMany(typeof(LocalizedStringData))]
+        public IEnumerable<LocalizedStringData> StringFiles { get; private set; }
+
+        /// <summary>
         /// Gets the list of plugin configuration pages
         /// </summary>
         /// <value>The configuration pages.</value>
-        [ImportMany(typeof(IPluginConfigurationPage))]
         public IEnumerable<IPluginConfigurationPage> PluginConfigurationPages { get; private set; }
 
         /// <summary>
         /// Gets the intro providers.
         /// </summary>
         /// <value>The intro providers.</value>
-        [ImportMany(typeof(IIntroProvider))]
         public IEnumerable<IIntroProvider> IntroProviders { get; private set; }
 
         /// <summary>
         /// Gets the list of currently registered weather prvoiders
         /// </summary>
         /// <value>The weather providers.</value>
-        [ImportMany(typeof(IWeatherProvider))]
         public IEnumerable<IWeatherProvider> WeatherProviders { get; private set; }
 
         /// <summary>
@@ -232,7 +238,6 @@ namespace MediaBrowser.Controller
         /// Gets the list of available user repositories
         /// </summary>
         /// <value>The user repositories.</value>
-        [ImportMany(typeof(IUserRepository))]
         private IEnumerable<IUserRepository> UserRepositories { get; set; }
 
         /// <summary>
@@ -251,7 +256,6 @@ namespace MediaBrowser.Controller
         /// Gets the list of available item repositories
         /// </summary>
         /// <value>The item repositories.</value>
-        [ImportMany(typeof(IItemRepository))]
         private IEnumerable<IItemRepository> ItemRepositories { get; set; }
 
         /// <summary>
@@ -264,22 +268,19 @@ namespace MediaBrowser.Controller
         /// Gets the list of available item repositories
         /// </summary>
         /// <value>The user data repositories.</value>
-        [ImportMany(typeof(IUserDataRepository))]
         private IEnumerable<IUserDataRepository> UserDataRepositories { get; set; }
 
         /// <summary>
         /// Gets the list of available DisplayPreferencesRepositories
         /// </summary>
         /// <value>The display preferences repositories.</value>
-        [ImportMany(typeof(IDisplayPreferencesRepository))]
         private IEnumerable<IDisplayPreferencesRepository> DisplayPreferencesRepositories { get; set; }
 
         /// <summary>
         /// Gets the list of entity resolution ignore rules
         /// </summary>
         /// <value>The entity resolution ignore rules.</value>
-        [ImportMany(typeof(BaseResolutionIgnoreRule))]
-        internal IEnumerable<BaseResolutionIgnoreRule> EntityResolutionIgnoreRules { get; private set; }
+        internal IEnumerable<IResolutionIgnoreRule> EntityResolutionIgnoreRules { get; private set; }
 
         /// <summary>
         /// Gets the active user data repository
@@ -357,12 +358,35 @@ namespace MediaBrowser.Controller
         /// Composes the exported values.
         /// </summary>
         /// <param name="container">The container.</param>
-        protected override void ComposeExportedValues(CompositionContainer container)
+        /// <param name="iocContainer">The _ioc container.</param>
+        protected override void ComposeExportedValues(CompositionContainer container, Container iocContainer)
         {
-            base.ComposeExportedValues(container);
+            base.ComposeExportedValues(container, iocContainer);
 
             container.ComposeExportedValue("kernel", this);
             container.ComposeExportedValue("blurayExaminer", BlurayExaminer);
+
+            iocContainer.RegisterSingle(this);
+            iocContainer.RegisterSingle(BlurayExaminer);
+        }
+
+        /// <summary>
+        /// Composes the parts with ioc container.
+        /// </summary>
+        /// <param name="allTypes">All types.</param>
+        /// <param name="container">The container.</param>
+        protected override void ComposePartsWithIocContainer(Type[] allTypes, Container container)
+        {
+            base.ComposePartsWithIocContainer(allTypes, container);
+
+            EntityResolutionIgnoreRules = GetExports<IResolutionIgnoreRule>(allTypes);
+            UserDataRepositories = GetExports<IUserDataRepository>(allTypes);
+            UserRepositories = GetExports<IUserRepository>(allTypes);
+            DisplayPreferencesRepositories = GetExports<IDisplayPreferencesRepository>(allTypes);
+            ItemRepositories = GetExports<IItemRepository>(allTypes);
+            WeatherProviders = GetExports<IWeatherProvider>(allTypes);
+            IntroProviders = GetExports<IIntroProvider>(allTypes);
+            PluginConfigurationPages = GetExports<IPluginConfigurationPage>(allTypes);
         }
 
         /// <summary>

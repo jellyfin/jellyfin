@@ -1,7 +1,5 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Localization;
-using MediaBrowser.Common.Mef;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
@@ -13,12 +11,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using System.ComponentModel.Composition.Primitives;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using SimpleInjector;
 
 namespace MediaBrowser.Common.Kernel
 {
@@ -201,13 +201,6 @@ namespace MediaBrowser.Common.Kernel
         public IEnumerable<IWebSocketListener> WebSocketListeners { get; private set; }
 
         /// <summary>
-        /// Gets the list of Localized string files
-        /// </summary>
-        /// <value>The string files.</value>
-        [ImportMany(typeof(LocalizedStringData))]
-        public IEnumerable<LocalizedStringData> StringFiles { get; private set; }
-
-        /// <summary>
         /// Gets the MEF CompositionContainer
         /// </summary>
         /// <value>The composition container.</value>
@@ -241,7 +234,6 @@ namespace MediaBrowser.Common.Kernel
         /// Gets the rest services.
         /// </summary>
         /// <value>The rest services.</value>
-        [ImportMany(typeof(IRestfulService))]
         public IEnumerable<IRestfulService> RestServices { get; private set; }
 
         /// <summary>
@@ -265,7 +257,7 @@ namespace MediaBrowser.Common.Kernel
             get
             {
                 // Lazy load
-                LazyInitializer.EnsureInitialized(ref _protobufSerializer, ref _protobufSerializerInitialized, ref _protobufSerializerSyncLock, () => DynamicProtobufSerializer.Create(Assemblies));
+                LazyInitializer.EnsureInitialized(ref _protobufSerializer, ref _protobufSerializerInitialized, ref _protobufSerializerSyncLock, () => DynamicProtobufSerializer.Create(AllTypes));
                 return _protobufSerializer;
             }
             private set
@@ -340,6 +332,12 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <value>The assemblies.</value>
         public Assembly[] Assemblies { get; private set; }
+
+        /// <summary>
+        /// Gets all types.
+        /// </summary>
+        /// <value>All types.</value>
+        public Type[] AllTypes { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseKernel{TApplicationPathsType}" /> class.
@@ -460,11 +458,9 @@ namespace MediaBrowser.Common.Kernel
 
             Assemblies = GetComposablePartAssemblies().ToArray();
 
-            CompositionContainer = MefUtils.GetSafeCompositionContainer(Assemblies.Select(i => new AssemblyCatalog(i)));
+            AllTypes = Assemblies.SelectMany(GetTypes).ToArray();
 
-            ComposeExportedValues(CompositionContainer);
-
-            CompositionContainer.ComposeParts(this);
+            ComposeParts(AllTypes);
 
             await OnComposablePartsLoaded().ConfigureAwait(false);
 
@@ -472,13 +468,73 @@ namespace MediaBrowser.Common.Kernel
         }
 
         /// <summary>
+        /// The ioc container
+        /// </summary>
+        private readonly Container _iocContainer = new Container();
+
+        /// <summary>
+        /// Composes the parts.
+        /// </summary>
+        /// <param name="allTypes">All types.</param>
+        private void ComposeParts(IEnumerable<Type> allTypes)
+        {
+            var concreteTypes = allTypes.Where(t => t.IsClass && !t.IsAbstract && !t.IsInterface && !t.IsGenericType).ToArray();
+
+            CompositionContainer = GetSafeCompositionContainer(concreteTypes.Select(i => new TypeCatalog(i)));
+
+            ComposeExportedValues(CompositionContainer, _iocContainer);
+
+            CompositionContainer.ComposeParts(this);
+
+            ComposePartsWithIocContainer(concreteTypes, _iocContainer);
+        }
+
+        /// <summary>
+        /// Composes the parts with ioc container.
+        /// </summary>
+        /// <param name="allTypes">All types.</param>
+        /// <param name="container">The container.</param>
+        protected virtual void ComposePartsWithIocContainer(Type[] allTypes, Container container)
+        {
+            RestServices = GetExports<IRestfulService>(allTypes);
+        }
+
+        /// <summary>
+        /// Gets the exports.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="allTypes">All types.</param>
+        /// <returns>IEnumerable{``0}.</returns>
+        protected IEnumerable<T> GetExports<T>(Type[] allTypes)
+        {
+            var currentType = typeof(T);
+
+            Logger.Info("Composing instances of " + currentType.Name);
+
+            return allTypes.Where(currentType.IsAssignableFrom).Select(Instantiate).Cast<T>().ToArray();
+        }
+
+        /// <summary>
+        /// Instantiates the specified type.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>System.Object.</returns>
+        private object Instantiate(Type type)
+        {
+            return _iocContainer.GetInstance(type);
+        }
+
+        /// <summary>
         /// Composes the exported values.
         /// </summary>
         /// <param name="container">The container.</param>
-        protected virtual void ComposeExportedValues(CompositionContainer container)
+        protected virtual void ComposeExportedValues(CompositionContainer container, Container iocContainer)
         {
             container.ComposeExportedValue("logger", Logger);
             container.ComposeExportedValue("appHost", ApplicationHost);
+
+            iocContainer.RegisterSingle(Logger);
+            iocContainer.RegisterSingle(ApplicationHost);
         }
 
         /// <summary>
@@ -543,6 +599,71 @@ namespace MediaBrowser.Common.Kernel
 
             // Include composable parts in the subclass assembly
             yield return GetType().Assembly;
+        }
+
+        /// <summary>
+        /// Plugins that live on both the server and UI are going to have references to assemblies from both sides.
+        /// But looks for Parts on one side, it will throw an exception when it seems Types from the other side that it doesn't have a reference to.
+        /// For example, a plugin provides a Resolver. When MEF runs in the UI, it will throw an exception when it sees the resolver because there won't be a reference to the base class.
+        /// This method will catch those exceptions while retining the list of Types that MEF is able to resolve.
+        /// </summary>
+        /// <param name="catalogs">The catalogs.</param>
+        /// <returns>CompositionContainer.</returns>
+        /// <exception cref="System.ArgumentNullException">catalogs</exception>
+        private static CompositionContainer GetSafeCompositionContainer(IEnumerable<ComposablePartCatalog> catalogs)
+        {
+            if (catalogs == null)
+            {
+                throw new ArgumentNullException("catalogs");
+            }
+
+            var newList = new List<ComposablePartCatalog>();
+
+            // Go through each Catalog
+            foreach (var catalog in catalogs)
+            {
+                try
+                {
+                    // Try to have MEF find Parts
+                    catalog.Parts.ToArray();
+
+                    // If it succeeds we can use the entire catalog
+                    newList.Add(catalog);
+                }
+                catch (ReflectionTypeLoadException ex)
+                {
+                    // If it fails we can still get a list of the Types it was able to resolve and create TypeCatalogs
+                    var typeCatalogs = ex.Types.Where(t => t != null).Select(t => new TypeCatalog(t));
+                    newList.AddRange(typeCatalogs);
+                }
+            }
+
+            return new CompositionContainer(new AggregateCatalog(newList));
+        }
+
+        /// <summary>
+        /// Gets a list of types within an assembly
+        /// This will handle situations that would normally throw an exception - such as a type within the assembly that depends on some other non-existant reference
+        /// </summary>
+        /// <param name="assembly">The assembly.</param>
+        /// <returns>IEnumerable{Type}.</returns>
+        /// <exception cref="System.ArgumentNullException">assembly</exception>
+        private static IEnumerable<Type> GetTypes(Assembly assembly)
+        {
+            if (assembly == null)
+            {
+                throw new ArgumentNullException("assembly");
+            }
+
+            try
+            {
+                return assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                // If it fails we can still get a list of the Types it was able to resolve
+                return ex.Types.Where(t => t != null);
+            }
         }
 
         /// <summary>

@@ -1,11 +1,9 @@
-﻿using MediaBrowser.Common.Mef;
-using ProtoBuf;
+﻿using ProtoBuf;
 using ProtoBuf.Meta;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace MediaBrowser.Common.Serialization
 {
@@ -135,21 +133,20 @@ namespace MediaBrowser.Common.Serialization
         /// <summary>
         /// Creates the specified assemblies.
         /// </summary>
-        /// <param name="assemblies">The assemblies.</param>
         /// <returns>DynamicProtobufSerializer.</returns>
         /// <exception cref="System.ArgumentNullException">assemblies</exception>
-        public static DynamicProtobufSerializer Create(IEnumerable<Assembly> assemblies)
+        public static DynamicProtobufSerializer Create(IEnumerable<Type> types)
         {
-            if (assemblies == null)
+            if (types == null)
             {
-                throw new ArgumentNullException("assemblies");
+                throw new ArgumentNullException("types");
             }
             
             var model = TypeModel.Create();
             var attributeType = typeof(ProtoContractAttribute);
 
             // Find all ProtoContracts in the current assembly
-            foreach (var type in assemblies.SelectMany(a => MefUtils.GetTypes(a).Where(t => Attribute.IsDefined(t, attributeType))))
+            foreach (var type in types.Where(t => Attribute.IsDefined(t, attributeType)))
             {
                 model.Add(type, true);
             }
