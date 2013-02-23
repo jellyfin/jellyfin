@@ -51,6 +51,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.ClickOnce", "M
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Networking", "MediaBrowser.Networking\MediaBrowser.Networking.csproj", "{7C11010E-179A-49B7-BFB2-F1656F5E71AD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Uninstaller", "MediaBrowser.Uninstaller\MediaBrowser.Uninstaller.csproj", "{FACAF749-3E28-46DD-B613-654FCD434959}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -334,6 +336,20 @@ Global
 		{7C11010E-179A-49B7-BFB2-F1656F5E71AD}.Release|Win32.ActiveCfg = Release|Any CPU
 		{7C11010E-179A-49B7-BFB2-F1656F5E71AD}.Release|x64.ActiveCfg = Release|Any CPU
 		{7C11010E-179A-49B7-BFB2-F1656F5E71AD}.Release|x86.ActiveCfg = Release|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|Win32.ActiveCfg = Release|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|x64.ActiveCfg = Release|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
