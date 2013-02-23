@@ -19,7 +19,7 @@ namespace MediaBrowser.Common.Net
     /// <summary>
     /// Class HttpManager
     /// </summary>
-    public class HttpManager : BaseManager<IKernel>
+    public class HttpManager : IDisposable
     {
         /// <summary>
         /// The _logger
@@ -27,14 +27,28 @@ namespace MediaBrowser.Common.Net
         private readonly ILogger _logger;
 
         /// <summary>
+        /// The _kernel
+        /// </summary>
+        private readonly IKernel _kernel;
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="HttpManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
         public HttpManager(IKernel kernel, ILogger logger)
-            : base(kernel)
         {
+            if (kernel == null)
+            {
+                throw new ArgumentNullException("kernel");
+            }
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+            
             _logger = logger;
+            _kernel = kernel;
         }
 
         /// <summary>
@@ -196,7 +210,7 @@ namespace MediaBrowser.Common.Net
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var tempFile = Path.Combine(Kernel.ApplicationPaths.TempDirectory, Guid.NewGuid() + ".tmp");
+            var tempFile = Path.Combine(_kernel.ApplicationPaths.TempDirectory, Guid.NewGuid() + ".tmp");
 
             var message = new HttpRequestMessage(HttpMethod.Get, url);
 
@@ -403,10 +417,19 @@ namespace MediaBrowser.Common.Net
         }
 
         /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected override void Dispose(bool dispose)
+        protected virtual void Dispose(bool dispose)
         {
             if (dispose)
             {
@@ -417,8 +440,6 @@ namespace MediaBrowser.Common.Net
 
                 _httpClients.Clear();
             }
-
-            base.Dispose(dispose);
         }
 
         /// <summary>

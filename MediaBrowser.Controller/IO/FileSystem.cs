@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Win32;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;

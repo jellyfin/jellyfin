@@ -1,14 +1,10 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Win32;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Tasks;
 using MoreLinq;
 using System;
 using System.Collections.Concurrent;

@@ -196,7 +196,6 @@
     <Compile Include="Controls\MultiItemUpdateNotification.xaml.cs">
       <DependentUpon>MultiItemUpdateNotification.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Implementations\BdInfoExaminer.cs" />
     <Compile Include="Implementations\DotNetZipClient.cs" />
     <Compile Include="LibraryExplorer.xaml.cs">
       <DependentUpon>LibraryExplorer.xaml</DependentUpon>
@@ -269,6 +268,10 @@
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
       <Name>MediaBrowser.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Networking\MediaBrowser.Networking.csproj">
+      <Project>{7c11010e-179a-49b7-bfb2-f1656f5e71ad}</Project>
+      <Name>MediaBrowser.Networking</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Server.Uninstall\MediaBrowser.Server.Uninstall.csproj">
       <Project>{5443422f-9548-417a-90dd-2fc91f2b5999}</Project>

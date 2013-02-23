@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Events;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
@@ -396,7 +395,7 @@ namespace MediaBrowser.Common.Kernel
             await ReloadComposableParts().ConfigureAwait(false);
 
             DisposeTcpManager();
-            TcpManager = new TcpManager(ApplicationHost, this, Logger);
+            TcpManager = new TcpManager(ApplicationHost, this, ApplicationHost.Resolve<INetworkManager>(), Logger);
         }
 
         /// <summary>
