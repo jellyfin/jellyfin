@@ -7,7 +7,6 @@ using MediaBrowser.Model.Entities;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 
 namespace MediaBrowser.Api
@@ -96,7 +95,6 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class LibraryService
     /// </summary>
-    [Export(typeof(IRestfulService))]
     public class LibraryService : BaseRestService
     {
         /// <summary>

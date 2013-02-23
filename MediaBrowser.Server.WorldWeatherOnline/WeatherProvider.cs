@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Weather;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Weather;
 using System;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +14,6 @@ namespace MediaBrowser.Server.WorldWeatherOnline
     /// Based on http://www.worldweatheronline.com/free-weather-feed.aspx
     /// The classes in this file are a reproduction of the json output, which will then be converted to our weather model classes
     /// </summary>
-    [Export(typeof(IWeatherProvider))]
     public class WeatherProvider : IWeatherProvider
     {
         /// <summary>
@@ -29,8 +27,7 @@ namespace MediaBrowser.Server.WorldWeatherOnline
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">logger</exception>
-        [ImportingConstructor]
-        public WeatherProvider([Import("logger")] ILogger logger)
+        public WeatherProvider(ILogger logger)
         {
             if (logger == null)
             {

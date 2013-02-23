@@ -1,13 +1,11 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using System.ComponentModel.Composition;
 
 namespace MediaBrowser.Controller.Resolvers
 {
     /// <summary>
     /// Class FolderResolver
     /// </summary>
-    [Export(typeof(IBaseItemResolver))]
     public class FolderResolver : BaseFolderResolver<Folder>
     {
         /// <summary>

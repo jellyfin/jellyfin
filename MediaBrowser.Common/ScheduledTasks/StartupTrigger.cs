@@ -1,6 +1,4 @@
-﻿using MediaBrowser.Common.Kernel;
-using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.ScheduledTasks
 {
@@ -10,33 +8,17 @@ namespace MediaBrowser.Common.ScheduledTasks
     public class StartupTrigger : BaseTaskTrigger
     {
         /// <summary>
-        /// Gets the kernel.
-        /// </summary>
-        /// <value>The kernel.</value>
-        protected IKernel Kernel { get; private set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="StartupTrigger" /> class.
-        /// </summary>
-        /// <param name="kernel">The kernel.</param>
-        public StartupTrigger(IKernel kernel)
-        {
-            Kernel = kernel;
-        }
-
-        /// <summary>
         /// Stars waiting for the trigger action
         /// </summary>
-        protected internal override void Start()
+        /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
+        protected internal async override void Start(bool isApplicationStartup)
         {
-            Kernel.ReloadCompleted += Kernel_ReloadCompleted;
-        }
+            if (isApplicationStartup)
+            {
+                await Task.Delay(2000).ConfigureAwait(false);
 
-        async void Kernel_ReloadCompleted(object sender, EventArgs e)
-        {
-            await Task.Delay(2000).ConfigureAwait(false);
-
-            OnTriggered();
+                OnTriggered();
+            }
         }
 
         /// <summary>
@@ -44,7 +26,6 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// </summary>
         protected internal override void Stop()
         {
-            Kernel.ReloadCompleted -= Kernel_ReloadCompleted;
         }
     }
 }

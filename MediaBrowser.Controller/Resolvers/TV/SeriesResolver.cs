@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using System;
-using System.ComponentModel.Composition;
 using System.IO;
 
 namespace MediaBrowser.Controller.Resolvers.TV
@@ -11,7 +10,6 @@ namespace MediaBrowser.Controller.Resolvers.TV
     /// <summary>
     /// Class SeriesResolver
     /// </summary>
-    [Export(typeof(IBaseItemResolver))]
     public class SeriesResolver : BaseFolderResolver<Series>
     {
         /// <summary>

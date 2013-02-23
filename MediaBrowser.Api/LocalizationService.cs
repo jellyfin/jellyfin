@@ -5,7 +5,6 @@ using MediaBrowser.Model.Globalization;
 using MoreLinq;
 using ServiceStack.ServiceHost;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Linq;
 
@@ -38,7 +37,6 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class CulturesService
     /// </summary>
-    [Export(typeof(IRestfulService))]
     public class LocalizationService : BaseRestService
     {
         /// <summary>

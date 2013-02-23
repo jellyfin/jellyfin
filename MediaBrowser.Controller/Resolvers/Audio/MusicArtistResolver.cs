@@ -1,18 +1,28 @@
 ﻿using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
-using System.ComponentModel.Composition;
 using System.Linq;
 
 namespace MediaBrowser.Controller.Resolvers.Audio
 {
-    [Export(typeof(IBaseItemResolver))]
+    /// <summary>
+    /// Class MusicArtistResolver
+    /// </summary>
     public class MusicArtistResolver : BaseItemResolver<MusicArtist>
     {
+        /// <summary>
+        /// Gets the priority.
+        /// </summary>
+        /// <value>The priority.</value>
         public override ResolverPriority Priority
         {
             get { return ResolverPriority.Third; } // we need to be ahead of the generic folder resolver but behind the movie one
         }
 
+        /// <summary>
+        /// Resolves the specified args.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns>MusicArtist.</returns>
         protected override MusicArtist Resolve(ItemResolveArgs args)
         {
             if (!args.IsDirectory) return null;

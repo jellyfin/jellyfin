@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using System;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +14,6 @@ namespace MediaBrowser.Api.Images
     /// <summary>
     /// Class UploadImageHandler
     /// </summary>
-    [Export(typeof(IHttpServerHandler))]
     class UploadImageHandler : BaseActionHandler<Kernel>
     {
         /// <summary>

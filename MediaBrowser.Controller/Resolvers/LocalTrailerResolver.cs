@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using System;
-using System.ComponentModel.Composition;
 using System.IO;
 
 namespace MediaBrowser.Controller.Resolvers
@@ -9,7 +8,6 @@ namespace MediaBrowser.Controller.Resolvers
     /// <summary>
     /// Class LocalTrailerResolver
     /// </summary>
-    [Export(typeof(IBaseItemResolver))]
     public class LocalTrailerResolver : BaseVideoResolver<Trailer>
     {
         /// <summary>

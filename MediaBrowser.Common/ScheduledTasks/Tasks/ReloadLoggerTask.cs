@@ -1,8 +1,7 @@
 ﻿using MediaBrowser.Common.Kernel;
-using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,9 +10,19 @@ namespace MediaBrowser.Common.ScheduledTasks.Tasks
     /// <summary>
     /// Class ReloadLoggerFileTask
     /// </summary>
-    [Export(typeof(IScheduledTask))]
     public class ReloadLoggerFileTask : BaseScheduledTask<IKernel>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ReloadLoggerFileTask" /> class.
+        /// </summary>
+        /// <param name="kernel">The kernel.</param>
+        /// <param name="taskManager">The task manager.</param>
+        /// <param name="logger">The logger.</param>
+        public ReloadLoggerFileTask(IKernel kernel, ITaskManager taskManager, ILogger logger)
+            : base(kernel, taskManager, logger)
+        {
+        }
+
         /// <summary>
         /// Gets the default triggers.
         /// </summary>

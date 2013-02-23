@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Entities;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,7 +21,6 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GenresService
     /// </summary>
-    [Export(typeof(IRestfulService))]
     public class GenresService : BaseItemsByNameService<Genre>
     {
         /// <summary>

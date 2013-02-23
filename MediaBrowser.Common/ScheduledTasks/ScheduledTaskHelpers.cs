@@ -78,11 +78,10 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// Converts a TaskTriggerInfo into a concrete BaseTaskTrigger
         /// </summary>
         /// <param name="info">The info.</param>
-        /// <param name="kernel">The kernel.</param>
         /// <returns>BaseTaskTrigger.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
         /// <exception cref="System.ArgumentException">Invalid trigger type:  + info.Type</exception>
-        public static BaseTaskTrigger GetTrigger(TaskTriggerInfo info, IKernel kernel)
+        public static BaseTaskTrigger GetTrigger(TaskTriggerInfo info)
         {
             if (info.Type.Equals(typeof(DailyTrigger).Name, StringComparison.OrdinalIgnoreCase))
             {
@@ -144,7 +143,7 @@ namespace MediaBrowser.Common.ScheduledTasks
 
             if (info.Type.Equals(typeof(StartupTrigger).Name, StringComparison.OrdinalIgnoreCase))
             {
-                return new StartupTrigger(kernel);
+                return new StartupTrigger();
             }
 
             throw new ArgumentException("Unrecognized trigger type: " + info.Type);

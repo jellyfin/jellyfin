@@ -1,21 +1,15 @@
-﻿using System.IO;
-using System.Threading;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net.Handlers;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Resolvers;
 using System;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Net;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.Streaming
 {
     /// <summary>
     /// Providers a progressive streaming video api
     /// </summary>
-    [Export(typeof(IHttpServerHandler))]
     class VideoHandler : BaseProgressiveStreamingHandler<Video>
     {
         /// <summary>

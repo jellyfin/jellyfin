@@ -6,7 +6,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using ServiceStack.ServiceHost;
 using System;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -114,7 +113,6 @@ namespace MediaBrowser.Api.Images
     /// <summary>
     /// Class ImageService
     /// </summary>
-    [Export(typeof(IRestfulService))]
     public class ImageService : BaseRestService
     {
         /// <summary>

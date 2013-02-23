@@ -1,7 +1,7 @@
 using System.IO;
 using System.Xml.Serialization;
 
-namespace MediaBrowser.Common.Localization
+namespace MediaBrowser.Controller.Localization
 {
     /// <summary>
     /// Class LocalizedStringData

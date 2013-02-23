@@ -1,12 +1,10 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.Kernel
@@ -70,12 +68,6 @@ namespace MediaBrowser.Common.Kernel
         SystemInfo GetSystemInfo();
 
         /// <summary>
-        /// Gets the scheduled tasks.
-        /// </summary>
-        /// <value>The scheduled tasks.</value>
-        IEnumerable<IScheduledTask> ScheduledTasks { get; }
-
-        /// <summary>
         /// Reloads the logger.
         /// </summary>
         void ReloadLogger();
@@ -134,12 +126,6 @@ namespace MediaBrowser.Common.Kernel
         TcpManager TcpManager { get; }
 
         /// <summary>
-        /// Gets the task manager.
-        /// </summary>
-        /// <value>The task manager.</value>
-        TaskManager TaskManager { get; }
-
-        /// <summary>
         /// Gets the web socket listeners.
         /// </summary>
         /// <value>The web socket listeners.</value>
@@ -159,12 +145,6 @@ namespace MediaBrowser.Common.Kernel
         /// Occurs when [configuration updated].
         /// </summary>
         event EventHandler<EventArgs> ConfigurationUpdated;
-
-        /// <summary>
-        /// Gets the assemblies.
-        /// </summary>
-        /// <value>The assemblies.</value>
-        Assembly[] Assemblies { get; }
 
         /// <summary>
         /// Gets the rest services.

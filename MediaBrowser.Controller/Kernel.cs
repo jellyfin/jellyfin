@@ -1,6 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Localization;
+﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -17,14 +15,10 @@ using MediaBrowser.Controller.ScheduledTasks;
 using MediaBrowser.Controller.Updates;
 using MediaBrowser.Controller.Weather;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.ComponentModel.Composition.Hosting;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -183,7 +177,6 @@ namespace MediaBrowser.Controller
         /// Gets the list of Localized string files
         /// </summary>
         /// <value>The string files.</value>
-        [ImportMany(typeof(LocalizedStringData))]
         public IEnumerable<LocalizedStringData> StringFiles { get; private set; }
 
         /// <summary>
@@ -208,7 +201,6 @@ namespace MediaBrowser.Controller
         /// Gets the list of currently registered metadata prvoiders
         /// </summary>
         /// <value>The metadata providers enumerable.</value>
-        [ImportMany(typeof(BaseMetadataProvider))]
         public BaseMetadataProvider[] MetadataProviders { get; private set; }
 
         /// <summary>
@@ -222,8 +214,7 @@ namespace MediaBrowser.Controller
         /// Gets the list of currently registered entity resolvers
         /// </summary>
         /// <value>The entity resolvers enumerable.</value>
-        [ImportMany(typeof(IBaseItemResolver))]
-        internal IBaseItemResolver[] EntityResolvers { get; private set; }
+        internal IEnumerable<IBaseItemResolver> EntityResolvers { get; private set; }
 
         /// <summary>
         /// Gets the list of BasePluginFolders added by plugins
@@ -322,14 +313,11 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Composes the exported values.
         /// </summary>
-        /// <param name="container">The container.</param>
-        protected override void RegisterExportedValues(CompositionContainer container)
+        protected override void RegisterExportedValues()
         {
-            container.ComposeExportedValue("kernel", this);
-
             ApplicationHost.Register(this);
             
-            base.RegisterExportedValues(container);
+            base.RegisterExportedValues();
         }
 
         /// <summary>
@@ -338,6 +326,15 @@ namespace MediaBrowser.Controller
         /// <param name="allTypes">All types.</param>
         protected override void FindParts(Type[] allTypes)
         {
+            InstallationManager = (InstallationManager)ApplicationHost.CreateInstance(typeof(InstallationManager));
+            FFMpegManager = (FFMpegManager)ApplicationHost.CreateInstance(typeof(FFMpegManager));
+            LibraryManager = (LibraryManager)ApplicationHost.CreateInstance(typeof(LibraryManager));
+            UserManager = (UserManager)ApplicationHost.CreateInstance(typeof(UserManager));
+            ImageManager = (ImageManager)ApplicationHost.CreateInstance(typeof(ImageManager));
+            ProviderManager = (ProviderManager)ApplicationHost.CreateInstance(typeof(ProviderManager));
+            UserDataManager = (UserDataManager)ApplicationHost.CreateInstance(typeof(UserDataManager));
+            PluginSecurityManager = (PluginSecurityManager)ApplicationHost.CreateInstance(typeof(PluginSecurityManager));
+            
             base.FindParts(allTypes);
 
             EntityResolutionIgnoreRules = GetExports<IResolutionIgnoreRule>(allTypes);
@@ -348,8 +345,11 @@ namespace MediaBrowser.Controller
             WeatherProviders = GetExports<IWeatherProvider>(allTypes);
             IntroProviders = GetExports<IIntroProvider>(allTypes);
             PluginConfigurationPages = GetExports<IPluginConfigurationPage>(allTypes);
-            ImageEnhancers = GetExports<IImageEnhancer>(allTypes);
+            ImageEnhancers = GetExports<IImageEnhancer>(allTypes).OrderBy(e => e.Priority).ToArray();
             PluginFolderCreators = GetExports<IVirtualFolderCreator>(allTypes);
+            StringFiles = GetExports<LocalizedStringData>(allTypes);
+            EntityResolvers = GetExports<IBaseItemResolver>(allTypes).OrderBy(e => e.Priority).ToArray();
+            MetadataProviders = GetExports<BaseMetadataProvider>(allTypes).OrderBy(e => e.Priority).ToArray();
         }
 
         /// <summary>
@@ -365,14 +365,6 @@ namespace MediaBrowser.Controller
             await base.ReloadInternal().ConfigureAwait(false);
 
             ReloadResourcePools();
-            InstallationManager = (InstallationManager)ApplicationHost.CreateInstance(typeof(InstallationManager));
-            FFMpegManager = (FFMpegManager)ApplicationHost.CreateInstance(typeof(FFMpegManager));
-            LibraryManager = (LibraryManager)ApplicationHost.CreateInstance(typeof(LibraryManager));
-            UserManager = (UserManager)ApplicationHost.CreateInstance(typeof(UserManager));
-            ImageManager = (ImageManager)ApplicationHost.CreateInstance(typeof(ImageManager));
-            ProviderManager = (ProviderManager)ApplicationHost.CreateInstance(typeof(ProviderManager));
-            UserDataManager = (UserDataManager)ApplicationHost.CreateInstance(typeof(UserDataManager));
-            PluginSecurityManager = (PluginSecurityManager)ApplicationHost.CreateInstance(typeof(PluginSecurityManager));
 
             ReloadFileSystemManager();
 
@@ -441,15 +433,6 @@ namespace MediaBrowser.Controller
             DisplayPreferencesRepository = GetRepository(DisplayPreferencesRepositories, Configuration.DisplayPreferencesRepository);
             var displayPreferencesRepoTask = DisplayPreferencesRepository.Initialize();
 
-            // Sort the resolvers by priority
-            EntityResolvers = EntityResolvers.OrderBy(e => e.Priority).ToArray();
-
-            // Sort the providers by priority
-            MetadataProviders = MetadataProviders.OrderBy(e => e.Priority).ToArray();
-
-            // Sort the image processors by priority
-            ImageEnhancers = ImageEnhancers.OrderBy(e => e.Priority).ToArray();
-
             await Task.WhenAll(itemRepoTask, userRepoTask, userDataRepoTask, displayPreferencesRepoTask).ConfigureAwait(false);
         }
 
@@ -488,7 +471,7 @@ namespace MediaBrowser.Controller
         {
             DisposeFileSystemManager();
 
-            FileSystemManager = new FileSystemManager(this, Logger);
+            FileSystemManager = new FileSystemManager(this, Logger, TaskManager);
             FileSystemManager.StartWatchers();
         }
 

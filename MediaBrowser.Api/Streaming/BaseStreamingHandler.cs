@@ -859,11 +859,11 @@ namespace MediaBrowser.Api.Streaming
         {
             var video = LibraryItem as Video;
 
-            if (video != null && video.VideoType == VideoType.Iso &&
-                video.IsoType.HasValue && Kernel.IsoManager.CanMount(video.Path))
-            {
-                IsoMount = await Kernel.IsoManager.Mount(video.Path, CancellationToken.None).ConfigureAwait(false);
-            }
+            //if (video != null && video.VideoType == VideoType.Iso &&
+            //    video.IsoType.HasValue && Kernel.IsoManager.CanMount(video.Path))
+            //{
+            //    IsoMount = await Kernel.IsoManager.Mount(video.Path, CancellationToken.None).ConfigureAwait(false);
+            //}
 
             var process = new Process
             {

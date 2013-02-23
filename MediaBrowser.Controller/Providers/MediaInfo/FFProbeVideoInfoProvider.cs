@@ -6,7 +6,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -17,7 +16,6 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     /// <summary>
     /// Extracts video information using ffprobe
     /// </summary>
-    [Export(typeof(BaseMetadataProvider))]
     public class FFProbeVideoInfoProvider : BaseFFProbeProvider<Video>
     {
         /// <summary>
@@ -43,8 +41,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// <param name="isoManager">The iso manager.</param>
         /// <param name="blurayExaminer">The bluray examiner.</param>
         /// <exception cref="System.ArgumentNullException">blurayExaminer</exception>
-        [ImportingConstructor]
-        public FFProbeVideoInfoProvider([Import("isoManager")] IIsoManager isoManager, [Import("blurayExaminer")] IBlurayExaminer blurayExaminer)
+        public FFProbeVideoInfoProvider(IIsoManager isoManager, IBlurayExaminer blurayExaminer)
             : base()
         {
             if (blurayExaminer == null)

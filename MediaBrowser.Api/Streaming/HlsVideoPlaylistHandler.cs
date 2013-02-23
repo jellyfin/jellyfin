@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller.Entities;
 using System;
-using System.ComponentModel.Composition;
 using System.Net;
 
 namespace MediaBrowser.Api.Streaming
@@ -9,7 +8,6 @@ namespace MediaBrowser.Api.Streaming
     /// <summary>
     /// Class HlsVideoPlaylistHandler
     /// </summary>
-    [Export(typeof(IHttpServerHandler))]
     public class HlsVideoPlaylistHandler : BaseHlsPlaylistHandler<Video>
     {
         /// <summary>

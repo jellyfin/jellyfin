@@ -4,7 +4,6 @@ using MediaBrowser.Plugins.DefaultTheme.Resources;
 using MediaBrowser.UI;
 using MediaBrowser.UI.Controller;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -13,7 +12,6 @@ namespace MediaBrowser.Plugins.DefaultTheme
     /// <summary>
     /// Class Theme
     /// </summary>
-    [Export(typeof(BaseTheme))]
     class Theme : BaseTheme
     {
         /// <summary>

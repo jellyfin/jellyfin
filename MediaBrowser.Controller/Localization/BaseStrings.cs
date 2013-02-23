@@ -1,9 +1,6 @@
-﻿using MediaBrowser.Common.Localization;
-using System.ComponentModel.Composition;
-
+﻿
 namespace MediaBrowser.Controller.Localization
 {
-    [Export(typeof(LocalizedStringData))]
     public class BaseStrings : LocalizedStringData
     {
         public BaseStrings()

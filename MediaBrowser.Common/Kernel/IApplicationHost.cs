@@ -63,6 +63,13 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>``0.</returns>
-        T Resolve<T>() where T : class;
+        T Resolve<T>();
+
+        /// <summary>
+        /// Resolves this instance.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>``0.</returns>
+        T TryResolve<T>();
     }
 }

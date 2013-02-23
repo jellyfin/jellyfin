@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
 using System;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +11,6 @@ using System.Xml;
 
 namespace MediaBrowser.Controller.Providers.TV
 {
-    [Export(typeof(BaseMetadataProvider))]
     class FanArtTVProvider : FanartBaseProvider
     {
         protected string FanArtBaseUrl = "http://api.fanart.tv/webservice/series/{0}/{1}/xml/all/1/1";

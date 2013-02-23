@@ -1,8 +1,7 @@
 ﻿using MediaBrowser.Common.Kernel;
-using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -13,9 +12,19 @@ namespace MediaBrowser.Common.ScheduledTasks.Tasks
     /// <summary>
     /// Deletes old log files
     /// </summary>
-    [Export(typeof(IScheduledTask))]
     public class DeleteLogFileTask : BaseScheduledTask<IKernel>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeleteLogFileTask" /> class.
+        /// </summary>
+        /// <param name="kernel">The kernel.</param>
+        /// <param name="taskManager">The task manager.</param>
+        /// <param name="logger">The logger.</param>
+        public DeleteLogFileTask(IKernel kernel, ITaskManager taskManager, ILogger logger)
+            : base(kernel, taskManager, logger)
+        {
+        }
+
         /// <summary>
         /// Creates the triggers that define when the task will run
         /// </summary>

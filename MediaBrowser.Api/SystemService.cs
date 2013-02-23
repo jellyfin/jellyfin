@@ -5,7 +5,6 @@ using MediaBrowser.Controller;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.System;
 using ServiceStack.ServiceHost;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -47,7 +46,6 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class SystemInfoService
     /// </summary>
-    [Export(typeof(IRestfulService))]
     public class SystemService : BaseRestService
     {
         /// <summary>

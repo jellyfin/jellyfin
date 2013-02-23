@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Entities;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -27,7 +26,6 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class PersonsService
     /// </summary>
-    [Export(typeof(IRestfulService))]
     public class PersonsService : BaseItemsByNameService<Person>
     {
         /// <summary>

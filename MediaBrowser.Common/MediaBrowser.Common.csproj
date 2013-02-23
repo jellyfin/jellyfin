@@ -89,7 +89,6 @@
       <HintPath>..\packages\ServiceStack.Text.3.9.37\lib\net35\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Management" />
@@ -125,7 +124,6 @@
     <Compile Include="Events\GenericEventArgs.cs" />
     <Compile Include="Extensions\NamedLock.cs" />
     <Compile Include="Extensions\ResourceNotFoundException.cs" />
-    <Compile Include="IO\FileSystem.cs" />
     <Compile Include="IO\FileSystemRepository.cs" />
     <Compile Include="IO\IIsoManager.cs" />
     <Compile Include="IO\IIsoMount.cs" />
@@ -138,7 +136,6 @@
     <Compile Include="Kernel\IApplicationHost.cs" />
     <Compile Include="Kernel\IKernel.cs" />
     <Compile Include="Kernel\TcpManager.cs" />
-    <Compile Include="Localization\LocalizedStringData.cs" />
     <Compile Include="Net\AlchemyWebSocket.cs" />
     <Compile Include="Net\BaseRestService.cs" />
     <Compile Include="Net\Handlers\BaseActionHandler.cs" />
@@ -146,6 +143,7 @@
     <Compile Include="Net\Handlers\StaticFileHandler.cs" />
     <Compile Include="Net\HttpManager.cs" />
     <Compile Include="Net\IRestfulService.cs" />
+    <Compile Include="Net\IUdpServer.cs" />
     <Compile Include="Net\IWebSocket.cs" />
     <Compile Include="Net\MimeTypes.cs" />
     <Compile Include="Net\NativeWebSocket.cs" />
@@ -161,6 +159,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="ScheduledTasks\ITaskManager.cs" />
     <Compile Include="ScheduledTasks\TaskManager.cs" />
     <Compile Include="ScheduledTasks\Tasks\ReloadLoggerTask.cs" />
     <Compile Include="ScheduledTasks\ScheduledTaskHelpers.cs" />

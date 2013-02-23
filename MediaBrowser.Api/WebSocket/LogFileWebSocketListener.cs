@@ -4,7 +4,6 @@ using MediaBrowser.Controller;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,7 +13,6 @@ namespace MediaBrowser.Api.WebSocket
     /// <summary>
     /// Class ScheduledTasksWebSocketListener
     /// </summary>
-    [Export(typeof(IWebSocketListener))]
     public class LogFileWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<string>, LogFileWebSocketState>
     {
         /// <summary>
@@ -36,8 +34,7 @@ namespace MediaBrowser.Api.WebSocket
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="kernel">The kernel.</param>
-        [ImportingConstructor]
-        public LogFileWebSocketListener([Import("logger")] ILogger logger, [Import("kernel")] Kernel kernel)
+        public LogFileWebSocketListener(ILogger logger, Kernel kernel)
             : base(logger)
         {
             _kernel = kernel;
