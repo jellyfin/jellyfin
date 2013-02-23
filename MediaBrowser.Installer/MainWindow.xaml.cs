@@ -204,11 +204,16 @@ namespace MediaBrowser.Installer
             var shell = new WshShell();
             var startMenu = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),"Media Browser");
             if (!Directory.Exists(startMenu)) Directory.CreateDirectory(startMenu);
-            var myShortcut = (IWshShortcut)shell.CreateShortcut(Path.Combine(startMenu, "Media Browser Server.lnk"));
-            myShortcut.TargetPath = targetExe;
-            myShortcut.Description = "Run " + FriendlyName;
-            myShortcut.Save(); 
-            
+            var product = (IWshShortcut)shell.CreateShortcut(Path.Combine(startMenu, FriendlyName+".lnk"));
+            product.TargetPath = targetExe;
+            product.Description = "Run " + FriendlyName;
+            product.Save();
+
+            var uninstall = (IWshShortcut)shell.CreateShortcut(Path.Combine(startMenu, "Uninstall " + FriendlyName + ".lnk"));
+            uninstall.TargetPath = Path.Combine(Path.GetDirectoryName(targetExe),"MediaBrowser.Uninstall.exe "+(PackageName == "MBServer" ? "server" : "mbt"));
+            uninstall.Description = "Uninstall " + FriendlyName;
+            uninstall.Save();
+
         }
 
         /// <summary>
