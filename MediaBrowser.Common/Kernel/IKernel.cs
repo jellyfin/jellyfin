@@ -151,5 +151,10 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <value>The rest services.</value>
         IEnumerable<IRestfulService> RestServices { get; }
+
+        /// <summary>
+        /// Notifies the pending restart.
+        /// </summary>
+        void NotifyPendingRestart();
     }
 }

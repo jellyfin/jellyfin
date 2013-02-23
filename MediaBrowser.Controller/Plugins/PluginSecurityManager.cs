@@ -1,5 +1,8 @@
 ﻿using Mediabrowser.Model.Entities;
 using Mediabrowser.PluginSecurity;
+using MediaBrowser.Common.Kernel;
+using MediaBrowser.Common.Net;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,7 +11,7 @@ namespace MediaBrowser.Controller.Plugins
     /// <summary>
     /// Class PluginSecurityManager
     /// </summary>
-    public class PluginSecurityManager : BaseManager<Kernel>
+    public class PluginSecurityManager
     {
         /// <summary>
         /// The _is MB supporter
@@ -37,11 +40,31 @@ namespace MediaBrowser.Controller.Plugins
         }
 
         /// <summary>
+        /// The _network manager
+        /// </summary>
+        private INetworkManager _networkManager;
+
+        private IKernel _kernel;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PluginSecurityManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        public PluginSecurityManager(Kernel kernel) : base(kernel)
+        /// <param name="networkManager">The network manager.</param>
+        public PluginSecurityManager(IKernel kernel, INetworkManager networkManager)
         {
+            if (kernel == null)
+            {
+                throw new ArgumentNullException("kernel");
+            }
+
+            if (networkManager == null)
+            {
+                throw new ArgumentNullException("networkManager");
+            }
+            
+            _kernel = kernel;
+            _networkManager = networkManager;
         }
 
         /// <summary>
@@ -52,6 +75,7 @@ namespace MediaBrowser.Controller.Plugins
         /// <returns>Task{MBRegistrationRecord}.</returns>
         public async Task<MBRegistrationRecord> GetRegistrationStatus(string feature, string mb2Equivalent = null)
         {
+            // Update this method to add _networkManager as a param.
             return await MBRegistration.GetRegistrationStatus(feature, mb2Equivalent).ConfigureAwait(false);
         }
 
@@ -62,15 +86,16 @@ namespace MediaBrowser.Controller.Plugins
         public string SupporterKey
         {
             get { return MBRegistration.SupporterKey; }
-            set {
+            set
+            {
                 if (value != MBRegistration.SupporterKey)
                 {
                     MBRegistration.SupporterKey = value;
                     // Clear this so it will re-evaluate
                     ResetSupporterInfo();
                     // And we'll need to restart to re-evaluate the status of plug-ins
-                    Kernel.NotifyPendingRestart();
-                    
+                    _kernel.NotifyPendingRestart();
+
                 }
             }
         }
@@ -82,10 +107,11 @@ namespace MediaBrowser.Controller.Plugins
         public string LegacyKey
         {
             get { return MBRegistration.LegacyKey; }
-            set { 
+            set
+            {
                 MBRegistration.LegacyKey = value;
                 // And we'll need to restart to re-evaluate the status of plug-ins
-                Kernel.NotifyPendingRestart();
+                _kernel.NotifyPendingRestart();
             }
         }
 
