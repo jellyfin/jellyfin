@@ -8,16 +8,17 @@
         <owners>Media Browser Team</owners>
         <projectUrl>https://github.com/MediaBrowser/MediaBrowser</projectUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Contains common components shared by Media Browser Server and Media Browser Server. Not intended for plugin developer consumption.</description>
+        <description>Contains common components shared by Media Browser Theatre and Media Browser Server. Not intended for plugin developer consumption.</description>
         <dependencies>
             <dependency id="MediaBrowser.Common" version="3.0.0" />
+            <dependency id="NLog" version="2.0.0.2000" />
         </dependencies>
     </metadata>
     <files>
-        <file src="dlls\MediaBrowser.ClickOnce.dll" target="lib\net45\MediaBrowser.ClickOnce.dll" />
-        <file src="dlls\MediaBrowser.IsoMounter.dll" target="lib\net45\MediaBrowser.IsoMounter.dll" />
-        <file src="dlls\MediaBrowser.Logging.NLog.dll" target="lib\net45\MediaBrowser.Logging.NLog.dll" />
-        <file src="dlls\MediaBrowser.Networking.dll" target="lib\net45\MediaBrowser.Networking.dll" />
-        <file src="dlls\pfmclrapi.dll" target="lib\net45\pfmclrapi.dll" />
+        <file src="lib\net45\MediaBrowser.ClickOnce.dll" target="lib\net45\MediaBrowser.ClickOnce.dll" />
+        <file src="lib\net45\MediaBrowser.IsoMounter.dll" target="lib\net45\MediaBrowser.IsoMounter.dll" />
+        <file src="lib\net45\MediaBrowser.Logging.NLog.dll" target="lib\net45\MediaBrowser.Logging.NLog.dll" />
+        <file src="lib\net45\MediaBrowser.Networking.dll" target="lib\net45\MediaBrowser.Networking.dll" />
+        <file src="lib\net45\pfmclrapi.dll" target="lib\net45\pfmclrapi.dll" />
     </files>
 </package>
