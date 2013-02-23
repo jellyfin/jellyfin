@@ -128,6 +128,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\UPnP\Libs\Platinum.Managed.dll</HintPath>
     </Reference>
+    <Reference Include="SimpleInjector, Version=2.0.0.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\SimpleInjector.2.0.0-beta5\lib\net40-client\SimpleInjector.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
