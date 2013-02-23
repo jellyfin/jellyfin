@@ -230,8 +230,7 @@ namespace MediaBrowser.Controller
         /// Gets the list of BasePluginFolders added by plugins
         /// </summary>
         /// <value>The plugin folders.</value>
-        [ImportMany(typeof(BasePluginFolder))]
-        internal IEnumerable<BasePluginFolder> PluginFolders { get; private set; }
+        internal IEnumerable<IVirtualFolderCreator> PluginFolderCreators { get; private set; }
 
         /// <summary>
         /// Gets the list of available user repositories
@@ -387,6 +386,7 @@ namespace MediaBrowser.Controller
             IntroProviders = GetExports<IIntroProvider>(allTypes);
             PluginConfigurationPages = GetExports<IPluginConfigurationPage>(allTypes);
             ImageEnhancers = GetExports<IImageEnhancer>(allTypes);
+            PluginFolderCreators = GetExports<IVirtualFolderCreator>(allTypes);
         }
 
         /// <summary>
