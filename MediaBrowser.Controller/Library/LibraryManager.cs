@@ -186,9 +186,9 @@ namespace MediaBrowser.Controller.Library
             var rootFolder = Kernel.ItemRepository.RetrieveItem(rootFolderPath.GetMBId(typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)GetItem(rootFolderPath);
 
             // Add in the plug-in folders
-            foreach (var child in Kernel.PluginFolders)
+            foreach (var child in Kernel.PluginFolderCreators)
             {
-                rootFolder.AddVirtualChild(child);
+                rootFolder.AddVirtualChild(child.GetFolder());
             }
 
             return rootFolder;
