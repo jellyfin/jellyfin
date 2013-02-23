@@ -1,4 +1,5 @@
 ﻿using Alchemy.Classes;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Logging;
 using System;
@@ -6,7 +7,7 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Networking.WebSocket
 {
     /// <summary>
     /// Class AlchemyWebSocket

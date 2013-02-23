@@ -56,8 +56,22 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="obj">The obj.</param>
-        void Register<T>(T obj) where T : class;
+        void RegisterSingleInstance<T>(T obj) where T : class;
 
+        /// <summary>
+        /// Registers the single instance.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="func">The func.</param>
+        void RegisterSingleInstance<T>(Func<T> func) where T : class;
+        
+        /// <summary>
+        /// Registers the specified func.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="func">The func.</param>
+        void Register<T>(Func<T> func) where T : class;
+        
         /// <summary>
         /// Registers the specified service type.
         /// </summary>
