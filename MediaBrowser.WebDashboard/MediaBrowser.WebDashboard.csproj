@@ -160,12 +160,6 @@
     <EmbeddedResource Include="Html\scripts\IndexPage.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\mblogowhitefull.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\mblogoblackfull.png" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Html\css\images\defaultCollectionImage.png" />
   </ItemGroup>
   <ItemGroup>
@@ -395,6 +389,9 @@
     <EmbeddedResource Include="Html\css\images\itemDetails\videoDefault.png" />
     <EmbeddedResource Include="Html\css\images\itemDetails\audioDefault.png" />
     <EmbeddedResource Include="Html\css\images\itemDetails\gameDefault.png" />
+    <Content Include="Html\css\images\mblogoicon.png" />
+    <Content Include="Html\css\images\mblogotextblack.png" />
+    <Content Include="Html\css\images\mblogotextwhite.png" />
     <Content Include="Html\css\images\stars.png" />
     <EmbeddedResource Include="Html\scripts\MediaPlayer.js" />
   </ItemGroup>

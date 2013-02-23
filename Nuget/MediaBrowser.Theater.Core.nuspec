@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>MediaBrowser.Theater.Core</id>
+        <version>1.0.0</version>
+        <title>MediaBrowser.Theater.Core</title>
+        <authors>Media Browser Team</authors>
+        <owners />
+        <projectUrl>https://github.com/MediaBrowser/MediaBrowser.Theater</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Contains components required to build plugins for Media Browser Theater.</description>
+        <dependencies>
+            <dependency id="MediaBrowser.Common" version="1.0.1" />
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="dlls\MediaBrowser.UI.Controls.dll" target="lib\net45\MediaBrowser.UI.Controls.dll" />
+        <file src="dlls\MediaBrowser.UI.dll" target="lib\net45\MediaBrowser.UI.dll" />
+    </files>
+</package>
