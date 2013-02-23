@@ -541,7 +541,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="imageType">Type of the image.</param>
         /// <returns>Guid.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public Guid GetImageCacheTag(string originalImagePath, DateTime dateModified, IEnumerable<BaseImageEnhancer> imageEnhancers, BaseItem item, ImageType imageType)
+        public Guid GetImageCacheTag(string originalImagePath, DateTime dateModified, IEnumerable<IImageEnhancer> imageEnhancers, BaseItem item, ImageType imageType)
         {
             if (item == null)
             {
@@ -574,7 +574,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="imageType">Type of the image.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns>Task{EnhancedImage}.</returns>
-        private async Task<Image> ExecuteImageEnhancers(IEnumerable<BaseImageEnhancer> imageEnhancers, Image originalImage, BaseItem item, ImageType imageType, int imageIndex)
+        private async Task<Image> ExecuteImageEnhancers(IEnumerable<IImageEnhancer> imageEnhancers, Image originalImage, BaseItem item, ImageType imageType, int imageIndex)
         {
             var result = originalImage;
 

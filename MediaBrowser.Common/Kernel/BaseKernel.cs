@@ -197,7 +197,6 @@ namespace MediaBrowser.Common.Kernel
         /// Gets the web socket listeners.
         /// </summary>
         /// <value>The web socket listeners.</value>
-        [ImportMany(typeof(IWebSocketListener))]
         public IEnumerable<IWebSocketListener> WebSocketListeners { get; private set; }
 
         /// <summary>
@@ -235,6 +234,11 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <value>The rest services.</value>
         public IEnumerable<IRestfulService> RestServices { get; private set; }
+
+        /// <summary>
+        /// The disposable parts
+        /// </summary>
+        private readonly List<IDisposable> _disposableParts = new List<IDisposable>();
 
         /// <summary>
         /// The _protobuf serializer initialized
@@ -497,6 +501,7 @@ namespace MediaBrowser.Common.Kernel
         protected virtual void ComposePartsWithIocContainer(Type[] allTypes, Container container)
         {
             RestServices = GetExports<IRestfulService>(allTypes);
+            WebSocketListeners = GetExports<IWebSocketListener>(allTypes);
         }
 
         /// <summary>
@@ -511,7 +516,11 @@ namespace MediaBrowser.Common.Kernel
 
             Logger.Info("Composing instances of " + currentType.Name);
 
-            return allTypes.Where(currentType.IsAssignableFrom).Select(Instantiate).Cast<T>().ToArray();
+            var parts = allTypes.Where(currentType.IsAssignableFrom).Select(Instantiate).Cast<T>().ToArray();
+
+            _disposableParts.AddRange(parts.OfType<IDisposable>());
+
+            return parts;
         }
 
         /// <summary>
@@ -528,6 +537,7 @@ namespace MediaBrowser.Common.Kernel
         /// Composes the exported values.
         /// </summary>
         /// <param name="container">The container.</param>
+        /// <param name="iocContainer"></param>
         protected virtual void ComposeExportedValues(CompositionContainer container, Container iocContainer)
         {
             container.ComposeExportedValue("logger", Logger);
@@ -733,6 +743,13 @@ namespace MediaBrowser.Common.Kernel
                 DisposeHttpManager();
 
                 DisposeComposableParts();
+
+                foreach (var part in _disposableParts)
+                {
+                    part.Dispose();
+                }
+
+                _disposableParts.Clear();
             }
         }
 
