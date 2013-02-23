@@ -104,20 +104,35 @@ namespace MediaBrowser.Controller.Updates
         private readonly ILogger _logger;
 
         /// <summary>
+        /// The _network manager
+        /// </summary>
+        private readonly INetworkManager _networkManager;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="InstallationManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="zipClient">The zip client.</param>
+        /// <param name="networkManager">The network manager.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">zipClient</exception>
-        public InstallationManager(Kernel kernel, IZipClient zipClient, ILogger logger)
+        public InstallationManager(Kernel kernel, IZipClient zipClient, INetworkManager networkManager, ILogger logger)
             : base(kernel)
         {
             if (zipClient == null)
             {
                 throw new ArgumentNullException("zipClient");
             }
+            if (networkManager == null)
+            {
+                throw new ArgumentNullException("networkManager");
+            }
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
 
+            _networkManager = networkManager;
             _logger = logger;
             ZipClient = zipClient;
         }
@@ -133,7 +148,7 @@ namespace MediaBrowser.Controller.Updates
             PackageType? packageType = null,
             Version applicationVersion = null)
         {
-            var data = new Dictionary<string, string> { { "key", Kernel.PluginSecurityManager.SupporterKey }, { "mac", NetUtils.GetMacAddress() } };
+            var data = new Dictionary<string, string> { { "key", Kernel.PluginSecurityManager.SupporterKey }, { "mac", _networkManager.GetMacAddress() } };
 
             using (var json = await Kernel.HttpManager.Post(Controller.Kernel.MBAdminUrl + "service/package/retrieveall", data, Kernel.ResourcePools.Mb, cancellationToken).ConfigureAwait(false))
             {

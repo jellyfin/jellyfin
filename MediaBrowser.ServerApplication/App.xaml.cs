@@ -1,6 +1,8 @@
-﻿using MediaBrowser.ClickOnce;
+﻿using BDInfo;
+using MediaBrowser.ClickOnce;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Logging.Nlog;
@@ -8,6 +10,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Updates;
+using MediaBrowser.Networking.Management;
 using MediaBrowser.Server.Uninstall;
 using MediaBrowser.ServerApplication.Implementations;
 using Microsoft.Win32;
@@ -513,9 +516,10 @@ namespace MediaBrowser.ServerApplication
 
             IsoManager = new PismoIsoManager(Logger);
 
-            Register<IIsoManager>(IsoManager);
+            Register(IsoManager);
             Register<IBlurayExaminer>(new BdInfoExaminer());
             Register<IZipClient>(new DotNetZipClient());
+            Register(typeof (INetworkManager), typeof (NetworkManager));
         }
 
         /// <summary>
@@ -572,6 +576,16 @@ namespace MediaBrowser.ServerApplication
                 return default(T);
             }
             return (T)result.GetInstance();
+        }
+
+        /// <summary>
+        /// Registers the specified service type.
+        /// </summary>
+        /// <param name="serviceType">Type of the service.</param>
+        /// <param name="implementation">Type of the concrete.</param>
+        public void Register(Type serviceType, Type implementation)
+        {
+            _container.Register(serviceType, implementation);
         }
     }
 }

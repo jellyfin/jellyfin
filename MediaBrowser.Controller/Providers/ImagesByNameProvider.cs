@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Win32;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using System;
 using System.Globalization;

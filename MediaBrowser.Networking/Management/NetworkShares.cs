@@ -3,7 +3,7 @@ using System.IO;
 using System.Collections;
 using System.Runtime.InteropServices;
 
-namespace MediaBrowser.Controller.IO
+namespace MediaBrowser.Networking.Management
 {
     /// <summary>
     /// Type of share
@@ -123,10 +123,7 @@ namespace MediaBrowser.Controller.IO
                 if (0 == (_shareType & ShareType.Special)) return true;
 
                 // Special disk share (e.g. C$)
-                if (ShareType.Special == _shareType && null != _netName && 0 != _netName.Length)
-                    return true;
-                else
-                    return false;
+                return ShareType.Special == _shareType && !string.IsNullOrEmpty(_netName);
             }
         }
 
@@ -139,16 +136,14 @@ namespace MediaBrowser.Controller.IO
             {
                 if (IsFileSystem)
                 {
-                    if (null == _server || 0 == _server.Length)
-                        if (null == _path || 0 == _path.Length)
+                    if (string.IsNullOrEmpty(_server))
+                        if (string.IsNullOrEmpty(_path))
                             return new DirectoryInfo(ToString());
                         else
                             return new DirectoryInfo(_path);
-                    else
-                        return new DirectoryInfo(ToString());
+                    return new DirectoryInfo(ToString());
                 }
-                else
-                    return null;
+                return null;
             }
         }
 
@@ -160,12 +155,11 @@ namespace MediaBrowser.Controller.IO
         /// <returns></returns>
         public override string ToString()
         {
-            if (null == _server || 0 == _server.Length)
+            if (string.IsNullOrEmpty(_server))
             {
                 return string.Format(@"\\{0}\{1}", Environment.MachineName, _netName);
             }
-            else
-                return string.Format(@"\\{0}\{1}", _server, _netName);
+            return string.Format(@"\\{0}\{1}", _server, _netName);
         }
 
         /// <summary>
@@ -176,7 +170,7 @@ namespace MediaBrowser.Controller.IO
         public bool MatchesPath(string path)
         {
             if (!IsFileSystem) return false;
-            if (null == path || 0 == path.Length) return true;
+            if (string.IsNullOrEmpty(path)) return true;
 
             return path.ToLower().StartsWith(_path.ToLower());
         }

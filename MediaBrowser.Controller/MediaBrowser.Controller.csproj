@@ -77,6 +77,7 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="BaseManager.cs" />
     <Compile Include="Drawing\ImageExtensions.cs" />
     <Compile Include="Drawing\ImageHeader.cs" />
     <Compile Include="Drawing\ImageManager.cs" />
@@ -109,7 +110,7 @@
     <Compile Include="Extensions\XmlExtensions.cs" />
     <Compile Include="IO\FileSystem.cs" />
     <Compile Include="IO\FileSystemManager.cs" />
-    <Compile Include="IO\NetworkShares.cs" />
+    <Compile Include="IO\NativeMethods.cs" />
     <Compile Include="Library\ChildrenChangedEventArgs.cs" />
     <Compile Include="Library\DtoBuilder.cs" />
     <Compile Include="Library\Profiler.cs" />

@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
@@ -59,6 +60,26 @@ namespace MediaBrowser.Api
     /// </summary>
     public class EnvironmentService : BaseRestService
     {
+        /// <summary>
+        /// The _network manager
+        /// </summary>
+        private readonly INetworkManager _networkManager;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EnvironmentService" /> class.
+        /// </summary>
+        /// <param name="networkManager">The network manager.</param>
+        /// <exception cref="System.ArgumentNullException">networkManager</exception>
+        public EnvironmentService(INetworkManager networkManager)
+        {
+            if (networkManager == null)
+            {
+                throw new ArgumentNullException("networkManager");
+            }
+
+            _networkManager = networkManager;
+        }
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -131,7 +152,7 @@ namespace MediaBrowser.Api
         /// <returns>IEnumerable{FileSystemEntryInfo}.</returns>
         private IEnumerable<FileSystemEntryInfo> GetNetworkComputers()
         {
-            return NetUtils.GetNetworkComputers().Select(c => new FileSystemEntryInfo
+            return _networkManager.GetNetworkDevices().Select(c => new FileSystemEntryInfo
             {
                 Name = c,
                 Path = NetworkPrefix + c,
@@ -156,10 +177,10 @@ namespace MediaBrowser.Api
         /// <returns>IEnumerable{FileSystemEntryInfo}.</returns>
         private IEnumerable<FileSystemEntryInfo> GetNetworkShares(string path)
         {
-            return new ShareCollection(path).OfType<Share>().Where(s => s.ShareType == ShareType.Disk).Select(c => new FileSystemEntryInfo
+            return _networkManager.GetNetworkShares(path).Where(s => s.ShareType == NetworkShareType.Disk).Select(c => new FileSystemEntryInfo
             {
-                Name = c.NetName,
-                Path = Path.Combine(path, c.NetName),
+                Name = c.Name,
+                Path = Path.Combine(path, c.Name),
                 Type = FileSystemEntryType.NetworkShare
             });
         }

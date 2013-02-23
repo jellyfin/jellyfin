@@ -59,6 +59,13 @@ namespace MediaBrowser.Common.Kernel
         void Register<T>(T obj) where T : class;
 
         /// <summary>
+        /// Registers the specified service type.
+        /// </summary>
+        /// <param name="serviceType">Type of the service.</param>
+        /// <param name="implementation">Type of the implementation.</param>
+        void Register(Type serviceType, Type implementation);
+
+        /// <summary>
         /// Resolves this instance.
         /// </summary>
         /// <typeparam name="T"></typeparam>

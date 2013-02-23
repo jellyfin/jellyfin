@@ -1,6 +1,7 @@
-﻿using System;
+﻿using MediaBrowser.Common.Kernel;
+using System;
 
-namespace MediaBrowser.Common.Kernel
+namespace MediaBrowser.Controller
 {
     /// <summary>
     /// Class BaseManager

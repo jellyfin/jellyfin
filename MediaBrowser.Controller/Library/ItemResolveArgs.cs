@@ -1,6 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Win32;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;

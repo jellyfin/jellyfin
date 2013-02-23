@@ -45,7 +45,6 @@
       <HintPath>..\packages\NLog.2.0.0.2000\lib\net40\NLog.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
     <Reference Include="protobuf-net, Version=2.0.0.621, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\protobuf-net.2.0.0.621\lib\net40\protobuf-net.dll</HintPath>
@@ -91,7 +90,6 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Management" />
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.WebRequest" />
@@ -107,12 +105,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Rx-Linq.2.0.21114\lib\Net45\System.Reactive.Linq.dll</HintPath>
     </Reference>
-    <Reference Include="System.Runtime.Remoting" />
-    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web" />
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -130,7 +124,6 @@
     <Compile Include="IO\ProgressStream.cs" />
     <Compile Include="IO\StreamDefaults.cs" />
     <Compile Include="Kernel\BaseApplicationPaths.cs" />
-    <Compile Include="Kernel\BaseManager.cs" />
     <Compile Include="Kernel\BasePeriodicWebSocketListener.cs" />
     <Compile Include="Kernel\IWebSocketListener.cs" />
     <Compile Include="Kernel\IApplicationHost.cs" />
@@ -142,12 +135,12 @@
     <Compile Include="Net\Handlers\IHttpServerHandler.cs" />
     <Compile Include="Net\Handlers\StaticFileHandler.cs" />
     <Compile Include="Net\HttpManager.cs" />
+    <Compile Include="Net\INetworkManager.cs" />
     <Compile Include="Net\IRestfulService.cs" />
     <Compile Include="Net\IUdpServer.cs" />
     <Compile Include="Net\IWebSocket.cs" />
     <Compile Include="Net\MimeTypes.cs" />
     <Compile Include="Net\NativeWebSocket.cs" />
-    <Compile Include="Net\NetUtils.cs" />
     <Compile Include="Net\UdpServer.cs" />
     <Compile Include="Net\WebSocketConnection.cs" />
     <Compile Include="Plugins\BaseUiPlugin.cs" />
@@ -184,7 +177,6 @@
     <Compile Include="ScheduledTasks\IntervalTrigger.cs" />
     <Compile Include="ScheduledTasks\IScheduledTask.cs" />
     <Compile Include="ScheduledTasks\WeeklyTrigger.cs" />
-    <Compile Include="Win32\NativeMethods.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

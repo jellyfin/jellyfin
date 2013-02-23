@@ -1,6 +1,5 @@
 ﻿using Mediabrowser.Model.Entities;
 using Mediabrowser.PluginSecurity;
-using MediaBrowser.Common.Kernel;
 using System.Threading;
 using System.Threading.Tasks;
 

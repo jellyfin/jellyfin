@@ -73,6 +73,8 @@
     <Compile Include="Logging\LogSeverity.cs" />
     <Compile Include="MediaInfo\IBlurayExaminer.cs" />
     <Compile Include="Net\HttpException.cs" />
+    <Compile Include="Net\NetworkShare.cs" />
+    <Compile Include="Net\NetworkShareType.cs" />
     <Compile Include="Updates\CheckForUpdateResult.cs" />
     <Compile Include="Updates\InstallationInfo.cs" />
     <Compile Include="Updates\PackageType.cs" />

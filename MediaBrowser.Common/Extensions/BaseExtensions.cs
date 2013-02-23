@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.Extensions
 {
@@ -43,23 +41,6 @@ namespace MediaBrowser.Common.Extensions
         public static string[] Split(this string val, char separator, StringSplitOptions options)
         {
             return val.Split(new[] { separator }, options);
-        }
-
-        /// <summary>
-        /// Provides a non-blocking method to start a process and wait asynchronously for it to exit
-        /// </summary>
-        /// <param name="process">The process.</param>
-        /// <returns>Task{System.Boolean}.</returns>
-        public static Task<bool> RunAsync(this Process process)
-        {
-            var tcs = new TaskCompletionSource<bool>();
-
-            process.EnableRaisingEvents = true;
-            process.Exited += (sender, args) => tcs.SetResult(true);
-
-            process.Start();
-
-            return tcs.Task;
         }
 
         /// <summary>

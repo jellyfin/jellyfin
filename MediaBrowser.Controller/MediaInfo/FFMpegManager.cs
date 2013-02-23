@@ -634,7 +634,7 @@ namespace MediaBrowser.Controller.MediaInfo
 
             await AudioImageResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            await process.RunAsync().ConfigureAwait(false);
+            await RunAsync(process).ConfigureAwait(false);
 
             AudioImageResourcePool.Release();
 
@@ -713,7 +713,7 @@ namespace MediaBrowser.Controller.MediaInfo
 
             await AudioImageResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            await process.RunAsync().ConfigureAwait(false);
+            await RunAsync(process).ConfigureAwait(false);
 
             AudioImageResourcePool.Release();
 
@@ -768,7 +768,7 @@ namespace MediaBrowser.Controller.MediaInfo
 
             await AudioImageResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            await process.RunAsync().ConfigureAwait(false);
+            await RunAsync(process).ConfigureAwait(false);
 
             AudioImageResourcePool.Release();
 
@@ -969,6 +969,23 @@ namespace MediaBrowser.Controller.MediaInfo
         void ProcessExited(object sender, EventArgs e)
         {
             ((Process)sender).Dispose();
+        }
+
+        /// <summary>
+        /// Provides a non-blocking method to start a process and wait asynchronously for it to exit
+        /// </summary>
+        /// <param name="process">The process.</param>
+        /// <returns>Task{System.Boolean}.</returns>
+        private static Task<bool> RunAsync(Process process)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+
+            process.EnableRaisingEvents = true;
+            process.Exited += (sender, args) => tcs.SetResult(true);
+
+            process.Start();
+
+            return tcs.Task;
         }
 
         /// <summary>

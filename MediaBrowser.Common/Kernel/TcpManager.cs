@@ -22,7 +22,7 @@ namespace MediaBrowser.Common.Kernel
     /// <summary>
     /// Manages the Http Server, Udp Server and WebSocket connections
     /// </summary>
-    public class TcpManager : BaseManager<IKernel>
+    public class TcpManager : IDisposable
     {
         /// <summary>
         /// This is the udp server used for server discovery by clients
@@ -66,6 +66,11 @@ namespace MediaBrowser.Common.Kernel
         private readonly ILogger _logger;
 
         /// <summary>
+        /// The _network manager
+        /// </summary>
+        private readonly INetworkManager _networkManager;
+        
+        /// <summary>
         /// The _application host
         /// </summary>
         private readonly IApplicationHost _applicationHost;
@@ -75,6 +80,11 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         private bool? _supportsNativeWebSocket;
 
+        /// <summary>
+        /// The _kernel
+        /// </summary>
+        private readonly IKernel _kernel;
+        
         /// <summary>
         /// Gets a value indicating whether [supports web socket].
         /// </summary>
@@ -107,7 +117,7 @@ namespace MediaBrowser.Common.Kernel
         /// <value>The web socket port number.</value>
         public int WebSocketPortNumber
         {
-            get { return SupportsNativeWebSocket ? Kernel.Configuration.HttpServerPortNumber : Kernel.Configuration.LegacyWebSocketPortNumber; }
+            get { return SupportsNativeWebSocket ? _kernel.Configuration.HttpServerPortNumber : _kernel.Configuration.LegacyWebSocketPortNumber; }
         }
 
         /// <summary>
@@ -115,12 +125,31 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <param name="applicationHost">The application host.</param>
         /// <param name="kernel">The kernel.</param>
+        /// <param name="networkManager">The network manager.</param>
         /// <param name="logger">The logger.</param>
-        public TcpManager(IApplicationHost applicationHost, IKernel kernel, ILogger logger)
-            : base(kernel)
+        public TcpManager(IApplicationHost applicationHost, IKernel kernel, INetworkManager networkManager, ILogger logger)
         {
+            if (applicationHost == null)
+            {
+                throw new ArgumentNullException("applicationHost");
+            }
+            if (kernel == null)
+            {
+                throw new ArgumentNullException("kernel");
+            }
+            if (networkManager == null)
+            {
+                throw new ArgumentNullException("networkManager");
+            }
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+            
             _logger = logger;
+            _kernel = kernel;
             _applicationHost = applicationHost;
+            _networkManager = networkManager;
 
             if (kernel.IsFirstRun)
             {
@@ -142,14 +171,14 @@ namespace MediaBrowser.Common.Kernel
         private void ReloadExternalWebSocketServer()
         {
             // Avoid windows firewall prompts in the ui
-            if (Kernel.KernelContext != KernelContext.Server)
+            if (_kernel.KernelContext != KernelContext.Server)
             {
                 return;
             }
 
             DisposeExternalWebSocketServer();
 
-            ExternalWebSocketServer = new WebSocketServer(Kernel.Configuration.LegacyWebSocketPortNumber, IPAddress.Any)
+            ExternalWebSocketServer = new WebSocketServer(_kernel.Configuration.LegacyWebSocketPortNumber, IPAddress.Any)
             {
                 OnConnected = OnAlchemyWebSocketClientConnected,
                 TimeOut = TimeSpan.FromMinutes(60)
@@ -178,7 +207,7 @@ namespace MediaBrowser.Common.Kernel
         public void ReloadHttpServer(bool registerServerOnFailure = true)
         {
             // Only reload if the port has changed, so that we don't disconnect any active users
-            if (HttpServer != null && HttpServer.UrlPrefix.Equals(Kernel.HttpServerUrlPrefix, StringComparison.OrdinalIgnoreCase))
+            if (HttpServer != null && HttpServer.UrlPrefix.Equals(_kernel.HttpServerUrlPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
@@ -189,7 +218,7 @@ namespace MediaBrowser.Common.Kernel
 
             try
             {
-                HttpServer = new HttpServer(Kernel.HttpServerUrlPrefix, "Media Browser", _applicationHost, Kernel, _logger);
+                HttpServer = new HttpServer(_kernel.HttpServerUrlPrefix, "Media Browser", _applicationHost, _kernel, _logger);
             }
             catch (HttpListenerException ex)
             {
@@ -229,7 +258,7 @@ namespace MediaBrowser.Common.Kernel
         /// <param name="result">The result.</param>
         private async void ProcessWebSocketMessageReceived(WebSocketMessageInfo result)
         {
-            var tasks = Kernel.WebSocketListeners.Select(i => Task.Run(async () =>
+            var tasks = _kernel.WebSocketListeners.Select(i => Task.Run(async () =>
             {
                 try
                 {
@@ -256,7 +285,7 @@ namespace MediaBrowser.Common.Kernel
             }
 
             // Avoid windows firewall prompts in the ui
-            if (Kernel.KernelContext != KernelContext.Server)
+            if (_kernel.KernelContext != KernelContext.Server)
             {
                 return;
             }
@@ -266,7 +295,7 @@ namespace MediaBrowser.Common.Kernel
             try
             {
                 // The port number can't be in configuration because we don't want it to ever change
-                UdpServer = new UdpServer(new IPEndPoint(IPAddress.Any, Kernel.UdpServerPortNumber));
+                UdpServer = new UdpServer(new IPEndPoint(IPAddress.Any, _kernel.UdpServerPortNumber));
             }
             catch (SocketException ex)
             {
@@ -276,7 +305,7 @@ namespace MediaBrowser.Common.Kernel
 
             UdpListener = UdpServer.Subscribe(async res =>
             {
-                var expectedMessage = String.Format("who is MediaBrowser{0}?", Kernel.KernelContext);
+                var expectedMessage = String.Format("who is MediaBrowser{0}?", _kernel.KernelContext);
                 var expectedMessageBytes = Encoding.UTF8.GetBytes(expectedMessage);
 
                 if (expectedMessageBytes.SequenceEqual(res.Buffer))
@@ -284,7 +313,7 @@ namespace MediaBrowser.Common.Kernel
                     _logger.Info("Received UDP server request from " + res.RemoteEndPoint.ToString());
 
                     // Send a response back with our ip address and port
-                    var response = String.Format("MediaBrowser{0}|{1}:{2}", Kernel.KernelContext, NetUtils.GetLocalIpAddress(), Kernel.UdpServerPortNumber);
+                    var response = String.Format("MediaBrowser{0}|{1}:{2}", _kernel.KernelContext, _networkManager.GetLocalIpAddress(), _kernel.UdpServerPortNumber);
 
                     await UdpServer.SendAsync(response, res.RemoteEndPoint);
                 }
@@ -422,7 +451,7 @@ namespace MediaBrowser.Common.Kernel
         private void RegisterServerWithAdministratorAccess()
         {
             // Create a temp file path to extract the bat file to
-            var tmpFile = Path.Combine(Kernel.ApplicationPaths.TempDirectory, Guid.NewGuid() + ".bat");
+            var tmpFile = Path.Combine(_kernel.ApplicationPaths.TempDirectory, Guid.NewGuid() + ".bat");
 
             // Extract the bat file
             using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Common.Kernel.RegisterServer.bat"))
@@ -437,10 +466,10 @@ namespace MediaBrowser.Common.Kernel
             {
                 FileName = tmpFile,
 
-                Arguments = string.Format("{0} {1} {2} {3}", Kernel.Configuration.HttpServerPortNumber,
-                Kernel.HttpServerUrlPrefix,
-                Kernel.UdpServerPortNumber,
-                Kernel.Configuration.LegacyWebSocketPortNumber),
+                Arguments = string.Format("{0} {1} {2} {3}", _kernel.Configuration.HttpServerPortNumber,
+                _kernel.HttpServerUrlPrefix,
+                _kernel.UdpServerPortNumber,
+                _kernel.Configuration.LegacyWebSocketPortNumber),
 
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden,
@@ -455,18 +484,25 @@ namespace MediaBrowser.Common.Kernel
         }
 
         /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected override void Dispose(bool dispose)
+        protected virtual void Dispose(bool dispose)
         {
             if (dispose)
             {
                 DisposeUdpServer();
                 DisposeHttpServer();
             }
-
-            base.Dispose(dispose);
         }
 
         /// <summary>

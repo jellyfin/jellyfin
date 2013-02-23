@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 
-namespace MediaBrowser.Common.Win32
+namespace MediaBrowser.Controller.IO
 {
     /// <summary>
     /// Class NativeMethods

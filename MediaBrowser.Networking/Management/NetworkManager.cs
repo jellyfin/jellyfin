@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Win32;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,29 +9,36 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Networking.Management
 {
     /// <summary>
     /// Class NetUtils
     /// </summary>
-    public static class NetUtils
+    public class NetworkManager : INetworkManager
     {
         /// <summary>
         /// Gets the machine's local ip address
         /// </summary>
         /// <returns>IPAddress.</returns>
-        public static IPAddress GetLocalIpAddress()
+        public string GetLocalIpAddress()
         {
             var host = Dns.GetHostEntry(Dns.GetHostName());
 
-            return host.AddressList.FirstOrDefault(i => i.AddressFamily == AddressFamily.InterNetwork);
+            var ip = host.AddressList.FirstOrDefault(i => i.AddressFamily == AddressFamily.InterNetwork);
+
+            if (ip == null)
+            {
+                return null;
+            }
+
+            return ip.ToString();
         }
 
         /// <summary>
         /// Gets a random port number that is currently available
         /// </summary>
         /// <returns>System.Int32.</returns>
-        public static int GetRandomUnusedPort()
+        public int GetRandomUnusedPort()
         {
             var listener = new TcpListener(IPAddress.Any, 0);
             listener.Start();
@@ -42,13 +50,12 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Creates the netsh URL registration.
         /// </summary>
-        /// <param name="urlPrefix">The URL prefix.</param>
-        public static void CreateNetshUrlRegistration(string urlPrefix)
+        public void AuthorizeHttpListening(string url)
         {
             var startInfo = new ProcessStartInfo
             {
                 FileName = "netsh",
-                Arguments = string.Format("http add urlacl url={0} user=\"NT AUTHORITY\\Authenticated Users\"", urlPrefix),
+                Arguments = string.Format("http add urlacl url={0} user=\"NT AUTHORITY\\Authenticated Users\"", url),
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden,
                 Verb = "runas",
@@ -66,10 +73,10 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="port">The port.</param>
         /// <param name="protocol">The protocol.</param>
-        public static void AddWindowsFirewallRule(int port, NetworkProtocol protocol)
+        public void AddSystemFirewallRule(int port, NetworkProtocol protocol)
         {
             // First try to remove it so we don't end up creating duplicates
-            RemoveWindowsFirewallRule(port, protocol);
+            RemoveSystemFirewallRule(port, protocol);
 
             var args = string.Format("advfirewall firewall add rule name=\"Port {0}\" dir=in action=allow protocol={1} localport={0}", port, protocol);
 
@@ -81,7 +88,7 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="port">The port.</param>
         /// <param name="protocol">The protocol.</param>
-        public static void RemoveWindowsFirewallRule(int port, NetworkProtocol protocol)
+        public void RemoveSystemFirewallRule(int port, NetworkProtocol protocol)
         {
             var args = string.Format("advfirewall firewall delete rule name=\"Port {0}\" protocol={1} localport={0}", port, protocol);
 
@@ -92,7 +99,7 @@ namespace MediaBrowser.Common.Net
         /// Runs the netsh.
         /// </summary>
         /// <param name="args">The args.</param>
-        private static void RunNetsh(string args)
+        private void RunNetsh(string args)
         {
             var startInfo = new ProcessStartInfo
             {
@@ -115,7 +122,7 @@ namespace MediaBrowser.Common.Net
         /// Returns MAC Address from first Network Card in Computer
         /// </summary>
         /// <returns>[string] MAC Address</returns>
-        public static string GetMacAddress()
+        public string GetMacAddress()
         {
             var mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
             var moc = mc.GetInstances();
@@ -148,7 +155,7 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <returns>Arraylist that represents all the SV_TYPE_WORKSTATION and SV_TYPE_SERVER
         /// PC's in the Domain</returns>
-        public static IEnumerable<string> GetNetworkComputers()
+        public IEnumerable<string> GetNetworkDevices()
         {
             //local fields
             const int MAX_PREFERRED_LENGTH = -1;
@@ -200,20 +207,59 @@ namespace MediaBrowser.Common.Net
                 NativeMethods.NetApiBufferFree(buffer);
             }
         }
+
+
+        /// <summary>
+        /// Gets the network shares.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>IEnumerable{NetworkShare}.</returns>
+        public IEnumerable<NetworkShare> GetNetworkShares(string path)
+        {
+            return new ShareCollection(path).OfType<Share>().Select(ToNetworkShare);
+        }
+
+        /// <summary>
+        /// To the network share.
+        /// </summary>
+        /// <param name="share">The share.</param>
+        /// <returns>NetworkShare.</returns>
+        private NetworkShare ToNetworkShare(Share share)
+        {
+            return new NetworkShare
+            {
+                Name = share.NetName,
+                Path = share.Path,
+                Remark = share.Remark,
+                Server = share.Server,
+                ShareType = ToNetworkShareType(share.ShareType)
+            };
+        }
+
+        /// <summary>
+        /// To the type of the network share.
+        /// </summary>
+        /// <param name="shareType">Type of the share.</param>
+        /// <returns>NetworkShareType.</returns>
+        /// <exception cref="System.ArgumentException">Unknown share type</exception>
+        private NetworkShareType ToNetworkShareType(ShareType shareType)
+        {
+            switch (shareType)
+            {
+                case ShareType.Device:
+                    return NetworkShareType.Device;
+                case ShareType.Disk :
+                    return NetworkShareType.Disk;
+                case ShareType.IPC :
+                    return NetworkShareType.Ipc;
+                case ShareType.Printer :
+                    return NetworkShareType.Printer;
+                case ShareType.Special:
+                    return NetworkShareType.Special;
+                default:
+                    throw new ArgumentException("Unknown share type");
+            }
+        }
     }
 
-    /// <summary>
-    /// Enum NetworkProtocol
-    /// </summary>
-    public enum NetworkProtocol
-    {
-        /// <summary>
-        /// The TCP
-        /// </summary>
-        Tcp,
-        /// <summary>
-        /// The UDP
-        /// </summary>
-        Udp
-    }
 }
