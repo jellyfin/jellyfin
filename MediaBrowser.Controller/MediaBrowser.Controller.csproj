@@ -138,7 +138,7 @@
     <Compile Include="Plugins\IPluginConfigurationPage.cs" />
     <Compile Include="Plugins\PluginSecurityManager.cs" />
     <Compile Include="Providers\FanartBaseProvider.cs" />
-    <Compile Include="Providers\BaseImageEnhancer.cs" />
+    <Compile Include="Providers\IImageEnhancer.cs" />
     <Compile Include="Providers\ImagesByNameProvider.cs" />
     <Compile Include="Providers\MediaInfo\BaseFFMpegImageProvider.cs" />
     <Compile Include="Providers\MediaInfo\BaseFFMpegProvider.cs" />

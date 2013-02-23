@@ -217,8 +217,7 @@ namespace MediaBrowser.Controller
         /// Image processors are specialized metadata providers that run after the normal ones
         /// </summary>
         /// <value>The image enhancers.</value>
-        [ImportMany(typeof(BaseImageEnhancer))]
-        public BaseImageEnhancer[] ImageEnhancers { get; private set; }
+        public IEnumerable<IImageEnhancer> ImageEnhancers { get; private set; }
 
         /// <summary>
         /// Gets the list of currently registered entity resolvers
@@ -387,6 +386,7 @@ namespace MediaBrowser.Controller
             WeatherProviders = GetExports<IWeatherProvider>(allTypes);
             IntroProviders = GetExports<IIntroProvider>(allTypes);
             PluginConfigurationPages = GetExports<IPluginConfigurationPage>(allTypes);
+            ImageEnhancers = GetExports<IImageEnhancer>(allTypes);
         }
 
         /// <summary>
