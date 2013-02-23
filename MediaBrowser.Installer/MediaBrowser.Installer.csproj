@@ -25,11 +25,11 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <SupportUrl>http://community.mediabrowser.tv</SupportUrl>
-    <ProductName>Media Browser Server Installer</ProductName>
+    <ProductName>Media Browser Installer</ProductName>
     <PublisherName>Media Browser Team</PublisherName>
     <SuiteName>Media Browser</SuiteName>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>4</ApplicationRevision>
+    <ApplicationRevision>5</ApplicationRevision>
     <ApplicationVersion>0.1.1.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
