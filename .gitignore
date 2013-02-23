@@ -32,6 +32,7 @@ local.properties
 ## Media Browser
 #################
 ProgramData*/
+CorePlugins*/
 ProgramData-Server*/
 ProgramData-UI*/
 
