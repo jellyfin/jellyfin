@@ -1,14 +1,20 @@
-﻿using System;
-using MediaBrowser.Controller.Entities.TV;
+﻿using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using System.ComponentModel.Composition;
 using MediaBrowser.Model.Entities;
+using System;
 
 namespace MediaBrowser.Controller.Resolvers.TV
 {
-    [Export(typeof(IBaseItemResolver))]
+    /// <summary>
+    /// Class EpisodeResolver
+    /// </summary>
     public class EpisodeResolver : BaseVideoResolver<Episode>
     {
+        /// <summary>
+        /// Resolves the specified args.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns>Episode.</returns>
         protected override Episode Resolve(ItemResolveArgs args)
         {
             // If the parent is a Season or Series, then this is an Episode if the VideoResolver returns something
@@ -40,6 +46,11 @@ namespace MediaBrowser.Controller.Resolvers.TV
             return null;
         }
 
+        /// <summary>
+        /// Sets the initial item values.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="args">The args.</param>
         protected override void SetInitialItemValues(Episode item, ItemResolveArgs args)
         {
             base.SetInitialItemValues(item, args);

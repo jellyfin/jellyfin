@@ -1,13 +1,17 @@
 ﻿using MediaBrowser.ClickOnce;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Logging.Nlog;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Server.Uninstall;
 using MediaBrowser.ServerApplication.Implementations;
 using Microsoft.Win32;
+using SimpleInjector;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -74,6 +78,11 @@ namespace MediaBrowser.ServerApplication
         public string LogFilePath { get; private set; }
 
         /// <summary>
+        /// The container
+        /// </summary>
+        private Container _container = new Container();
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="App" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
@@ -119,6 +128,12 @@ namespace MediaBrowser.ServerApplication
         {
             get { return "MediaBrowser.Server.Uninstall.exe"; }
         }
+
+        /// <summary>
+        /// Gets or sets the iso manager.
+        /// </summary>
+        /// <value>The iso manager.</value>
+        private IIsoManager IsoManager { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [last run at startup value].
@@ -177,7 +192,9 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         protected async void LoadKernel()
         {
-            Kernel = new Kernel(this, new PismoIsoManager(Logger), new DotNetZipClient(), new BdInfoExaminer(), Logger);
+            RegisterResources();
+
+            Kernel = new Kernel(this, Logger);
 
             try
             {
@@ -378,7 +395,7 @@ namespace MediaBrowser.ServerApplication
 
             NlogManager.AddFileTarget(LogFilePath, Kernel.Configuration.EnableDebugLevelLogging);
         }
-        
+
         /// <summary>
         /// Gets the image.
         /// </summary>
@@ -484,6 +501,77 @@ namespace MediaBrowser.ServerApplication
         public Task UpdateApplication(CancellationToken cancellationToken, IProgress<double> progress)
         {
             return new ApplicationUpdater().UpdateApplication(cancellationToken, progress);
+        }
+
+        /// <summary>
+        /// Registers resources that classes will depend on
+        /// </summary>
+        private void RegisterResources()
+        {
+            Register<IApplicationHost>(this);
+            Register(Logger);
+
+            IsoManager = new PismoIsoManager(Logger);
+
+            Register<IIsoManager>(IsoManager);
+            Register<IBlurayExaminer>(new BdInfoExaminer());
+            Register<IZipClient>(new DotNetZipClient());
+        }
+
+        /// <summary>
+        /// Creates an instance of type and resolves all constructor dependancies
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>System.Object.</returns>
+        public object CreateInstance(Type type)
+        {
+            try
+            {
+                return _container.GetInstance(type);
+            }
+            catch
+            {
+                Logger.Error("Error creating {0}", type.Name);
+
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Registers the specified obj.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj">The obj.</param>
+        public void Register<T>(T obj)
+            where T : class
+        {
+            _container.RegisterSingle(obj);
+        }
+
+        /// <summary>
+        /// Resolves this instance.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>``0.</returns>
+        public T Resolve<T>()
+        {
+            return (T)_container.GetRegistration(typeof (T), true).GetInstance();
+        }
+
+        /// <summary>
+        /// Resolves this instance.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>``0.</returns>
+        public T TryResolve<T>()
+        {
+            var result = _container.GetRegistration(typeof (T), false);
+
+            if (result == null)
+            {
+                return default(T);
+            }
+            return (T)result.GetInstance();
         }
     }
 }

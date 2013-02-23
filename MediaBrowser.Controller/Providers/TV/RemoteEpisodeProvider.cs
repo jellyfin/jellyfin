@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Resolvers.TV;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
 using System;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -18,7 +17,6 @@ namespace MediaBrowser.Controller.Providers.TV
     /// <summary>
     /// Class RemoteEpisodeProvider
     /// </summary>
-    [Export(typeof(BaseMetadataProvider))]
     class RemoteEpisodeProvider : BaseMetadataProvider
     {
 

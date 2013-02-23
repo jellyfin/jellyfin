@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
 using System;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +14,6 @@ namespace MediaBrowser.Controller.Providers.Movies
     /// <summary>
     /// Class FanArtMovieProvider
     /// </summary>
-    [Export(typeof(BaseMetadataProvider))]
     class FanArtMovieProvider : FanartBaseProvider
     {
         /// <summary>

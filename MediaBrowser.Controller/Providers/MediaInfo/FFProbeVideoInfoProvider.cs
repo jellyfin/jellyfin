@@ -6,7 +6,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -17,7 +16,6 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     /// <summary>
     /// Extracts video information using ffprobe
     /// </summary>
-    [Export(typeof(BaseMetadataProvider))]
     public class FFProbeVideoInfoProvider : BaseFFProbeProvider<Video>
     {
         /// <summary>
@@ -32,13 +30,18 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// <value>The bluray examiner.</value>
         private IBlurayExaminer BlurayExaminer { get; set; }
 
+                /// <summary>
+        /// The _iso manager
+        /// </summary>
+        private readonly IIsoManager _isoManager;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FFProbeVideoInfoProvider" /> class.
         /// </summary>
+        /// <param name="isoManager">The iso manager.</param>
         /// <param name="blurayExaminer">The bluray examiner.</param>
         /// <exception cref="System.ArgumentNullException">blurayExaminer</exception>
-        [ImportingConstructor]
-        public FFProbeVideoInfoProvider([Import("blurayExaminer")] IBlurayExaminer blurayExaminer)
+        public FFProbeVideoInfoProvider(IIsoManager isoManager, IBlurayExaminer blurayExaminer)
             : base()
         {
             if (blurayExaminer == null)
@@ -47,6 +50,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             }
 
             BlurayExaminer = blurayExaminer;
+            _isoManager = isoManager;
 
             BdInfoCache = new FileSystemRepository(Path.Combine(Kernel.Instance.ApplicationPaths.CachePath, "bdinfo"));
         }
@@ -76,7 +80,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             {
                 if (video.VideoType == VideoType.Iso)
                 {
-                    return Kernel.Instance.IsoManager.CanMount(item.Path);
+                    return _isoManager.CanMount(item.Path);
                 }
 
                 return video.VideoType == VideoType.VideoFile || video.VideoType == VideoType.Dvd || video.VideoType == VideoType.BluRay;
@@ -101,7 +105,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             {
                 PopulateDvdStreamFiles(item, mount);
             }
-            
+
             base.OnPreFetch(item, mount);
         }
 
@@ -115,7 +119,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         {
             if (item.VideoType == VideoType.Iso)
             {
-                return Kernel.Instance.IsoManager.Mount(item.Path, cancellationToken);
+                return _isoManager.Mount(item.Path, cancellationToken);
             }
 
             return base.MountIsoIfNeeded(item, cancellationToken);

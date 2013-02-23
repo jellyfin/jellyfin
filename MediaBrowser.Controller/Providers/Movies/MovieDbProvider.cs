@@ -7,7 +7,6 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -29,7 +28,6 @@ namespace MediaBrowser.Controller.Providers.Movies
     /// <summary>
     /// Class MovieDbProvider
     /// </summary>
-    [Export(typeof(BaseMetadataProvider))]
     public class MovieDbProvider : BaseMetadataProvider
     {
         /// <summary>

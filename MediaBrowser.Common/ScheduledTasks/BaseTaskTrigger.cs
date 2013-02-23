@@ -27,13 +27,13 @@ namespace MediaBrowser.Common.ScheduledTasks
 
             await Task.Delay(1000).ConfigureAwait(false);
 
-            Start();
+            Start(false);
         }
 
         /// <summary>
         /// Stars waiting for the trigger action
         /// </summary>
-        protected internal abstract void Start();
+        protected internal abstract void Start(bool isApplicationStartup);
 
         /// <summary>
         /// Stops waiting for the trigger action

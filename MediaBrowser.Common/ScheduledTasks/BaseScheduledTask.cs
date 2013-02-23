@@ -17,13 +17,54 @@ namespace MediaBrowser.Common.ScheduledTasks
     /// </summary>
     /// <typeparam name="TKernelType">The type of the T kernel type.</typeparam>
     public abstract class BaseScheduledTask<TKernelType> : IScheduledTask
-        where TKernelType : IKernel
+        where TKernelType : class, IKernel
     {
         /// <summary>
         /// Gets the kernel.
         /// </summary>
         /// <value>The kernel.</value>
         protected TKernelType Kernel { get; private set; }
+
+        /// <summary>
+        /// Gets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
+        protected ILogger Logger { get; private set; }
+
+        /// <summary>
+        /// Gets the task manager.
+        /// </summary>
+        /// <value>The task manager.</value>
+        protected ITaskManager TaskManager { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseScheduledTask{TKernelType}" /> class.
+        /// </summary>
+        /// <param name="kernel">The kernel.</param>
+        /// <param name="taskManager">The task manager.</param>
+        /// <param name="logger">The logger.</param>
+        /// <exception cref="System.ArgumentNullException">kernel</exception>
+        protected BaseScheduledTask(TKernelType kernel, ITaskManager taskManager, ILogger logger)
+        {
+            if (kernel == null)
+            {
+                throw new ArgumentNullException("kernel");
+            }
+            if (taskManager == null)
+            {
+                throw new ArgumentNullException("taskManager");
+            }
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+
+            Kernel = kernel;
+            TaskManager = taskManager;
+            Logger = logger;
+
+            ReloadTriggerEvents(true);
+        }
 
         /// <summary>
         /// The _last execution result
@@ -199,7 +240,7 @@ namespace MediaBrowser.Common.ScheduledTasks
                     try
                     {
                         return JsonSerializer.DeserializeFromFile<IEnumerable<TaskTriggerInfo>>(ConfigurationFilePath)
-                            .Select(t => ScheduledTaskHelpers.GetTrigger(t, Kernel))
+                            .Select(ScheduledTaskHelpers.GetTrigger)
                             .ToList();
                     }
                     catch (IOException)
@@ -228,7 +269,7 @@ namespace MediaBrowser.Common.ScheduledTasks
 
                 _triggersInitialized = true;
 
-                ReloadTriggerEvents();
+                ReloadTriggerEvents(false);
 
                 JsonSerializer.SerializeToFile(_triggers.Select(ScheduledTaskHelpers.GetTriggerInfo), ConfigurationFilePath);
             }
@@ -291,28 +332,10 @@ namespace MediaBrowser.Common.ScheduledTasks
         }
 
         /// <summary>
-        /// Gets the logger.
-        /// </summary>
-        /// <value>The logger.</value>
-        protected ILogger Logger { get; private set; }
-
-        /// <summary>
-        /// Initializes the specified kernel.
-        /// </summary>
-        /// <param name="kernel">The kernel.</param>
-        /// <param name="logger">The logger.</param>
-        public void Initialize(IKernel kernel, ILogger logger)
-        {
-            Logger = logger;
-            
-            Kernel = (TKernelType)kernel;
-            ReloadTriggerEvents();
-        }
-
-        /// <summary>
         /// Reloads the trigger events.
         /// </summary>
-        private void ReloadTriggerEvents()
+        /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
+        private void ReloadTriggerEvents(bool isApplicationStartup)
         {
             foreach (var trigger in Triggers)
             {
@@ -320,7 +343,7 @@ namespace MediaBrowser.Common.ScheduledTasks
 
                 trigger.Triggered -= trigger_Triggered;
                 trigger.Triggered += trigger_Triggered;
-                trigger.Start();
+                trigger.Start(isApplicationStartup);
             }
         }
 
@@ -335,7 +358,7 @@ namespace MediaBrowser.Common.ScheduledTasks
 
             Logger.Info("{0} fired for task: {1}", trigger.GetType().Name, Name);
 
-            Kernel.TaskManager.QueueScheduledTask(this);
+            TaskManager.QueueScheduledTask(this);
         }
 
         /// <summary>
@@ -392,7 +415,7 @@ namespace MediaBrowser.Common.ScheduledTasks
             CurrentCancellationTokenSource = null;
             CurrentProgress = null;
 
-            Kernel.TaskManager.OnTaskCompleted(this);
+            TaskManager.OnTaskCompleted(this);
         }
 
         /// <summary>

@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Dto;
 using System;
-using System.ComponentModel.Composition;
 using System.Net;
 
 namespace MediaBrowser.Api.Streaming
@@ -10,7 +9,6 @@ namespace MediaBrowser.Api.Streaming
     /// <summary>
     /// Class HlsAudioPlaylistHandler
     /// </summary>
-    [Export(typeof(IHttpServerHandler))]
     public class HlsAudioPlaylistHandler : BaseHlsPlaylistHandler<Audio>
     {
         /// <summary>

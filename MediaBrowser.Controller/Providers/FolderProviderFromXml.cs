@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using System;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +10,6 @@ namespace MediaBrowser.Controller.Providers
     /// <summary>
     /// Provides metadata for Folders and all subclasses by parsing folder.xml
     /// </summary>
-    [Export(typeof(BaseMetadataProvider))]
     public class FolderProviderFromXml : BaseMetadataProvider
     {
         /// <summary>

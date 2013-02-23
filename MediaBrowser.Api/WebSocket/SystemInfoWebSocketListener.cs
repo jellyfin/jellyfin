@@ -2,7 +2,6 @@
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
-using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.WebSocket
@@ -10,7 +9,6 @@ namespace MediaBrowser.Api.WebSocket
     /// <summary>
     /// Class SystemInfoWebSocketListener
     /// </summary>
-    [Export(typeof(IWebSocketListener))]
     public class SystemInfoWebSocketListener : BasePeriodicWebSocketListener<SystemInfo, object>
     {
         /// <summary>
@@ -32,8 +30,7 @@ namespace MediaBrowser.Api.WebSocket
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
-        [ImportingConstructor]
-        public SystemInfoWebSocketListener([Import("kernel")] Kernel kernel, [Import("logger")] ILogger logger)
+        public SystemInfoWebSocketListener(Kernel kernel, ILogger logger)
             : base(logger)
         {
             _kernel = kernel;

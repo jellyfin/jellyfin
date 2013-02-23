@@ -1,9 +1,8 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -14,9 +13,18 @@ namespace MediaBrowser.Controller.ScheduledTasks
     /// <summary>
     /// Plugin Update Task
     /// </summary>
-    [Export(typeof(IScheduledTask))]
     public class PluginUpdateTask : BaseScheduledTask<Kernel>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PluginUpdateTask" /> class.
+        /// </summary>
+        /// <param name="kernel">The kernel.</param>
+        /// <param name="logger"></param>
+        public PluginUpdateTask(Kernel kernel, ITaskManager taskManager, ILogger logger)
+            : base(kernel, taskManager, logger)
+        {
+        }
+
         /// <summary>
         /// Creates the triggers that define when the task will run
         /// </summary>

@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Common.Kernel;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,7 +10,6 @@ namespace MediaBrowser.Common.ScheduledTasks.Tasks
     /// <summary>
     /// Plugin Update Task
     /// </summary>
-    [Export(typeof(IScheduledTask))]
     public class SystemUpdateTask : BaseScheduledTask<IKernel>
     {
         /// <summary>
@@ -22,8 +21,11 @@ namespace MediaBrowser.Common.ScheduledTasks.Tasks
         /// Initializes a new instance of the <see cref="SystemUpdateTask" /> class.
         /// </summary>
         /// <param name="appHost">The app host.</param>
-        [ImportingConstructor]
-        public SystemUpdateTask([Import("appHost")] IApplicationHost appHost)
+        /// <param name="taskManager">The task manager.</param>
+        /// <param name="kernel">The kernel.</param>
+        /// <param name="logger">The logger.</param>
+        public SystemUpdateTask(IApplicationHost appHost, ITaskManager taskManager, IKernel kernel, ILogger logger)
+            : base(kernel, taskManager, logger)
         {
             _appHost = appHost;
         }

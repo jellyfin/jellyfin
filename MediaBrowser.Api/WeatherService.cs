@@ -2,7 +2,6 @@
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Weather;
 using ServiceStack.ServiceHost;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading;
 
@@ -24,7 +23,6 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class WeatherService
     /// </summary>
-    [Export(typeof(IRestfulService))]
     public class WeatherService : BaseRestService
     {
         /// <summary>

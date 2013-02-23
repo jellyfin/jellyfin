@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Library;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 
 namespace MediaBrowser.Controller.Resolvers
@@ -9,8 +8,7 @@ namespace MediaBrowser.Controller.Resolvers
     /// <summary>
     /// Provides the core resolver ignore rules
     /// </summary>
-    [Export(typeof(BaseResolutionIgnoreRule))]
-    public class CoreResolutionIgnoreRule : BaseResolutionIgnoreRule
+    public class CoreResolutionIgnoreRule : IResolutionIgnoreRule
     {
         /// <summary>
         /// Any folder named in this list will be ignored - can be added to at runtime for extensibility
@@ -27,7 +25,12 @@ namespace MediaBrowser.Controller.Resolvers
             "extrafanart"
         };
 
-        public override bool ShouldIgnore(ItemResolveArgs args)
+        /// <summary>
+        /// Shoulds the ignore.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        public bool ShouldIgnore(ItemResolveArgs args)
         {
             // Ignore hidden files and folders
             if (args.IsHidden)

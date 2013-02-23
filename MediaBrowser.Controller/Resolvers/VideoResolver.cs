@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using System;
-using System.ComponentModel.Composition;
 using System.IO;
 
 namespace MediaBrowser.Controller.Resolvers
@@ -10,7 +9,6 @@ namespace MediaBrowser.Controller.Resolvers
     /// <summary>
     /// Resolves a Path into a Video
     /// </summary>
-    [Export(typeof(IBaseItemResolver))]
     public class VideoResolver : BaseVideoResolver<Video>
     {
         /// <summary>

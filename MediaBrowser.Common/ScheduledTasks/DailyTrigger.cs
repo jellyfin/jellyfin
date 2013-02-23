@@ -23,7 +23,8 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// <summary>
         /// Stars waiting for the trigger action
         /// </summary>
-        protected internal override void Start()
+        /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
+        protected internal override void Start(bool isApplicationStartup)
         {
             DisposeTimer();
 

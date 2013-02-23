@@ -79,6 +79,21 @@ namespace MediaBrowser.WebDashboard.Api
     public class DashboardService : BaseRestService
     {
         /// <summary>
+        /// Gets or sets the task manager.
+        /// </summary>
+        /// <value>The task manager.</value>
+        private readonly ITaskManager _taskManager;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DashboardService" /> class.
+        /// </summary>
+        /// <param name="taskManager">The task manager.</param>
+        public DashboardService(ITaskManager taskManager)
+        {
+            _taskManager = taskManager;
+        }
+        
+        /// <summary>
         /// Adds the routes.
         /// </summary>
         /// <param name="appHost">The app host.</param>
@@ -98,7 +113,7 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var kernel = (Kernel)Kernel;
 
-            return GetDashboardInfo(kernel, Logger);
+            return GetDashboardInfo(kernel, Logger, _taskManager);
         }
 
         /// <summary>
@@ -106,8 +121,9 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="taskManager">The task manager.</param>
         /// <returns>DashboardInfo.</returns>
-        public static DashboardInfo GetDashboardInfo(Kernel kernel, ILogger logger)
+        public static DashboardInfo GetDashboardInfo(Kernel kernel, ILogger logger, ITaskManager taskManager)
         {
             var connections = kernel.UserManager.ActiveConnections.ToArray();
 
@@ -117,11 +133,11 @@ namespace MediaBrowser.WebDashboard.Api
             {
                 SystemInfo = kernel.GetSystemInfo(),
 
-                RunningTasks = kernel.ScheduledTasks.Where(i => i.State == TaskState.Running || i.State == TaskState.Cancelling)
+                RunningTasks = taskManager.ScheduledTasks.Where(i => i.State == TaskState.Running || i.State == TaskState.Cancelling)
                                      .Select(ScheduledTaskHelpers.GetTaskInfo)
                                      .ToArray(),
 
-                ApplicationUpdateTaskId = kernel.ScheduledTasks.OfType<SystemUpdateTask>().First().Id,
+                ApplicationUpdateTaskId = taskManager.ScheduledTasks.OfType<SystemUpdateTask>().First().Id,
 
                 ActiveConnections = connections,
 

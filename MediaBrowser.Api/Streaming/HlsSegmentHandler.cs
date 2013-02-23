@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Net.Handlers;
 using MediaBrowser.Controller;
 using System;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -11,7 +10,6 @@ namespace MediaBrowser.Api.Streaming
     /// <summary>
     /// Class HlsSegmentHandler
     /// </summary>
-    [Export(typeof(IHttpServerHandler))]
     public class HlsSegmentHandler : BaseHandler<Kernel>
     {
         /// <summary>

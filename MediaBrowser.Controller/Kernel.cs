@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -16,14 +15,10 @@ using MediaBrowser.Controller.ScheduledTasks;
 using MediaBrowser.Controller.Updates;
 using MediaBrowser.Controller.Weather;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.ComponentModel.Composition.Hosting;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -179,31 +174,33 @@ namespace MediaBrowser.Controller
         }
 
         /// <summary>
+        /// Gets the list of Localized string files
+        /// </summary>
+        /// <value>The string files.</value>
+        public IEnumerable<LocalizedStringData> StringFiles { get; private set; }
+
+        /// <summary>
         /// Gets the list of plugin configuration pages
         /// </summary>
         /// <value>The configuration pages.</value>
-        [ImportMany(typeof(IPluginConfigurationPage))]
         public IEnumerable<IPluginConfigurationPage> PluginConfigurationPages { get; private set; }
 
         /// <summary>
         /// Gets the intro providers.
         /// </summary>
         /// <value>The intro providers.</value>
-        [ImportMany(typeof(IIntroProvider))]
         public IEnumerable<IIntroProvider> IntroProviders { get; private set; }
 
         /// <summary>
         /// Gets the list of currently registered weather prvoiders
         /// </summary>
         /// <value>The weather providers.</value>
-        [ImportMany(typeof(IWeatherProvider))]
         public IEnumerable<IWeatherProvider> WeatherProviders { get; private set; }
 
         /// <summary>
         /// Gets the list of currently registered metadata prvoiders
         /// </summary>
         /// <value>The metadata providers enumerable.</value>
-        [ImportMany(typeof(BaseMetadataProvider))]
         public BaseMetadataProvider[] MetadataProviders { get; private set; }
 
         /// <summary>
@@ -211,28 +208,24 @@ namespace MediaBrowser.Controller
         /// Image processors are specialized metadata providers that run after the normal ones
         /// </summary>
         /// <value>The image enhancers.</value>
-        [ImportMany(typeof(BaseImageEnhancer))]
-        public BaseImageEnhancer[] ImageEnhancers { get; private set; }
+        public IEnumerable<IImageEnhancer> ImageEnhancers { get; private set; }
 
         /// <summary>
         /// Gets the list of currently registered entity resolvers
         /// </summary>
         /// <value>The entity resolvers enumerable.</value>
-        [ImportMany(typeof(IBaseItemResolver))]
-        internal IBaseItemResolver[] EntityResolvers { get; private set; }
+        internal IEnumerable<IBaseItemResolver> EntityResolvers { get; private set; }
 
         /// <summary>
         /// Gets the list of BasePluginFolders added by plugins
         /// </summary>
         /// <value>The plugin folders.</value>
-        [ImportMany(typeof(BasePluginFolder))]
-        internal IEnumerable<BasePluginFolder> PluginFolders { get; private set; }
+        internal IEnumerable<IVirtualFolderCreator> PluginFolderCreators { get; private set; }
 
         /// <summary>
         /// Gets the list of available user repositories
         /// </summary>
         /// <value>The user repositories.</value>
-        [ImportMany(typeof(IUserRepository))]
         private IEnumerable<IUserRepository> UserRepositories { get; set; }
 
         /// <summary>
@@ -251,7 +244,6 @@ namespace MediaBrowser.Controller
         /// Gets the list of available item repositories
         /// </summary>
         /// <value>The item repositories.</value>
-        [ImportMany(typeof(IItemRepository))]
         private IEnumerable<IItemRepository> ItemRepositories { get; set; }
 
         /// <summary>
@@ -264,22 +256,19 @@ namespace MediaBrowser.Controller
         /// Gets the list of available item repositories
         /// </summary>
         /// <value>The user data repositories.</value>
-        [ImportMany(typeof(IUserDataRepository))]
         private IEnumerable<IUserDataRepository> UserDataRepositories { get; set; }
 
         /// <summary>
         /// Gets the list of available DisplayPreferencesRepositories
         /// </summary>
         /// <value>The display preferences repositories.</value>
-        [ImportMany(typeof(IDisplayPreferencesRepository))]
         private IEnumerable<IDisplayPreferencesRepository> DisplayPreferencesRepositories { get; set; }
 
         /// <summary>
         /// Gets the list of entity resolution ignore rules
         /// </summary>
         /// <value>The entity resolution ignore rules.</value>
-        [ImportMany(typeof(BaseResolutionIgnoreRule))]
-        internal IEnumerable<BaseResolutionIgnoreRule> EntityResolutionIgnoreRules { get; private set; }
+        internal IEnumerable<IResolutionIgnoreRule> EntityResolutionIgnoreRules { get; private set; }
 
         /// <summary>
         /// Gets the active user data repository
@@ -303,47 +292,15 @@ namespace MediaBrowser.Controller
         }
 
         /// <summary>
-        /// Gets or sets the zip client.
-        /// </summary>
-        /// <value>The zip client.</value>
-        private IZipClient ZipClient { get; set; }
-
-        /// <summary>
-        /// Gets or sets the bluray examiner.
-        /// </summary>
-        /// <value>The bluray examiner.</value>
-        private IBlurayExaminer BlurayExaminer { get; set; }
-
-        /// <summary>
         /// Creates a kernel based on a Data path, which is akin to our current programdata path
         /// </summary>
         /// <param name="appHost">The app host.</param>
-        /// <param name="isoManager">The iso manager.</param>
-        /// <param name="zipClient">The zip client.</param>
-        /// <param name="blurayExaminer">The bluray examiner.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">isoManager</exception>
-        public Kernel(IApplicationHost appHost, IIsoManager isoManager, IZipClient zipClient, IBlurayExaminer blurayExaminer, ILogger logger)
-            : base(appHost, isoManager, logger)
+        public Kernel(IApplicationHost appHost, ILogger logger)
+            : base(appHost, logger)
         {
-            if (isoManager == null)
-            {
-                throw new ArgumentNullException("isoManager");
-            }
-
-            if (zipClient == null)
-            {
-                throw new ArgumentNullException("zipClient");
-            }
-
-            if (blurayExaminer == null)
-            {
-                throw new ArgumentNullException("blurayExaminer");
-            }
-            
             Instance = this;
-            ZipClient = zipClient;
-            BlurayExaminer = blurayExaminer;
 
             // For now there's no real way to inject this properly
             BaseItem.Logger = logger;
@@ -356,13 +313,43 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Composes the exported values.
         /// </summary>
-        /// <param name="container">The container.</param>
-        protected override void ComposeExportedValues(CompositionContainer container)
+        protected override void RegisterExportedValues()
         {
-            base.ComposeExportedValues(container);
+            ApplicationHost.Register(this);
+            
+            base.RegisterExportedValues();
+        }
 
-            container.ComposeExportedValue("kernel", this);
-            container.ComposeExportedValue("blurayExaminer", BlurayExaminer);
+        /// <summary>
+        /// Composes the parts with ioc container.
+        /// </summary>
+        /// <param name="allTypes">All types.</param>
+        protected override void FindParts(Type[] allTypes)
+        {
+            InstallationManager = (InstallationManager)ApplicationHost.CreateInstance(typeof(InstallationManager));
+            FFMpegManager = (FFMpegManager)ApplicationHost.CreateInstance(typeof(FFMpegManager));
+            LibraryManager = (LibraryManager)ApplicationHost.CreateInstance(typeof(LibraryManager));
+            UserManager = (UserManager)ApplicationHost.CreateInstance(typeof(UserManager));
+            ImageManager = (ImageManager)ApplicationHost.CreateInstance(typeof(ImageManager));
+            ProviderManager = (ProviderManager)ApplicationHost.CreateInstance(typeof(ProviderManager));
+            UserDataManager = (UserDataManager)ApplicationHost.CreateInstance(typeof(UserDataManager));
+            PluginSecurityManager = (PluginSecurityManager)ApplicationHost.CreateInstance(typeof(PluginSecurityManager));
+            
+            base.FindParts(allTypes);
+
+            EntityResolutionIgnoreRules = GetExports<IResolutionIgnoreRule>(allTypes);
+            UserDataRepositories = GetExports<IUserDataRepository>(allTypes);
+            UserRepositories = GetExports<IUserRepository>(allTypes);
+            DisplayPreferencesRepositories = GetExports<IDisplayPreferencesRepository>(allTypes);
+            ItemRepositories = GetExports<IItemRepository>(allTypes);
+            WeatherProviders = GetExports<IWeatherProvider>(allTypes);
+            IntroProviders = GetExports<IIntroProvider>(allTypes);
+            PluginConfigurationPages = GetExports<IPluginConfigurationPage>(allTypes);
+            ImageEnhancers = GetExports<IImageEnhancer>(allTypes).OrderBy(e => e.Priority).ToArray();
+            PluginFolderCreators = GetExports<IVirtualFolderCreator>(allTypes);
+            StringFiles = GetExports<LocalizedStringData>(allTypes);
+            EntityResolvers = GetExports<IBaseItemResolver>(allTypes).OrderBy(e => e.Priority).ToArray();
+            MetadataProviders = GetExports<BaseMetadataProvider>(allTypes).OrderBy(e => e.Priority).ToArray();
         }
 
         /// <summary>
@@ -371,23 +358,13 @@ namespace MediaBrowser.Controller
         /// <returns>Task.</returns>
         protected override async Task ReloadInternal()
         {
-            Logger.Info("Extracting tools");
-
             // Reset these so that they can be lazy loaded again
             Users = null;
             RootFolder = null;
 
-            ReloadResourcePools();
-            InstallationManager = new InstallationManager(this, ZipClient, Logger);
-            LibraryManager = new LibraryManager(this, Logger);
-            UserManager = new UserManager(this, Logger);
-            FFMpegManager = new FFMpegManager(this, ZipClient, Logger);
-            ImageManager = new ImageManager(this, Logger);
-            ProviderManager = new ProviderManager(this, Logger);
-            UserDataManager = new UserDataManager(this, Logger);
-            PluginSecurityManager = new PluginSecurityManager(this);
-
             await base.ReloadInternal().ConfigureAwait(false);
+
+            ReloadResourcePools();
 
             ReloadFileSystemManager();
 
@@ -456,15 +433,6 @@ namespace MediaBrowser.Controller
             DisplayPreferencesRepository = GetRepository(DisplayPreferencesRepositories, Configuration.DisplayPreferencesRepository);
             var displayPreferencesRepoTask = DisplayPreferencesRepository.Initialize();
 
-            // Sort the resolvers by priority
-            EntityResolvers = EntityResolvers.OrderBy(e => e.Priority).ToArray();
-
-            // Sort the providers by priority
-            MetadataProviders = MetadataProviders.OrderBy(e => e.Priority).ToArray();
-
-            // Sort the image processors by priority
-            ImageEnhancers = ImageEnhancers.OrderBy(e => e.Priority).ToArray();
-
             await Task.WhenAll(itemRepoTask, userRepoTask, userDataRepoTask, displayPreferencesRepoTask).ConfigureAwait(false);
         }
 
@@ -503,7 +471,7 @@ namespace MediaBrowser.Controller
         {
             DisposeFileSystemManager();
 
-            FileSystemManager = new FileSystemManager(this, Logger);
+            FileSystemManager = new FileSystemManager(this, Logger, TaskManager);
             FileSystemManager.StartWatchers();
         }
 

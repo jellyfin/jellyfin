@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Controller.IO;
 
 namespace MediaBrowser.Controller.Library
 {

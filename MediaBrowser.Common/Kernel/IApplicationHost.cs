@@ -43,5 +43,33 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <returns>Task.</returns>
         Task UpdateApplication(CancellationToken cancellationToken, IProgress<double> progress);
+
+        /// <summary>
+        /// Creates an instance of type and resolves all constructor dependancies
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>System.Object.</returns>
+        object CreateInstance(Type type);
+
+        /// <summary>
+        /// Registers a service that other classes can use as a dependancy.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj">The obj.</param>
+        void Register<T>(T obj) where T : class;
+
+        /// <summary>
+        /// Resolves this instance.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>``0.</returns>
+        T Resolve<T>();
+
+        /// <summary>
+        /// Resolves this instance.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>``0.</returns>
+        T TryResolve<T>();
     }
 }

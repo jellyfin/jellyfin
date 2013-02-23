@@ -5,7 +5,6 @@ using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +14,6 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     /// <summary>
     /// Extracts audio information using ffprobe
     /// </summary>
-    [Export(typeof(BaseMetadataProvider))]
     public class FFProbeAudioInfoProvider : BaseFFProbeProvider<Audio>
     {
         /// <summary>

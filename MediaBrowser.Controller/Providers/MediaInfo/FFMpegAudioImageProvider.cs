@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Entities;
 using System;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +11,6 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     /// <summary>
     /// Uses ffmpeg to create video images
     /// </summary>
-    [Export(typeof(BaseMetadataProvider))]
     public class FFMpegAudioImageProvider : BaseFFMpegImageProvider<Audio>
     {
         

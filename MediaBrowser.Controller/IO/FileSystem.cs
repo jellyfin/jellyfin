@@ -6,7 +6,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace MediaBrowser.Common.IO
+namespace MediaBrowser.Controller.IO
 {
     /// <summary>
     /// Class FileSystem

@@ -7,7 +7,6 @@ using MediaBrowser.Model.Dto;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -134,7 +133,6 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class UsersService
     /// </summary>
-    [Export(typeof(IRestfulService))]
     public class UserService : BaseRestService
     {
         /// <summary>

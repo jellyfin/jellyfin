@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,9 +10,18 @@ namespace MediaBrowser.Controller.ScheduledTasks
     /// <summary>
     /// Class PeopleValidationTask
     /// </summary>
-    [Export(typeof(IScheduledTask))]
     public class PeopleValidationTask : BaseScheduledTask<Kernel>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PeopleValidationTask" /> class.
+        /// </summary>
+        /// <param name="kernel">The kernel.</param>
+        /// <param name="logger"></param>
+        public PeopleValidationTask(Kernel kernel, ITaskManager taskManager, ILogger logger)
+            : base(kernel, taskManager, logger)
+        {
+        }
+
         /// <summary>
         /// Creates the triggers that define when the task will run
         /// </summary>

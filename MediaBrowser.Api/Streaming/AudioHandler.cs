@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Dto;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Net;
 
@@ -14,7 +13,6 @@ namespace MediaBrowser.Api.Streaming
     /// <summary>
     /// Providers a progressive streaming audio api
     /// </summary>
-    [Export(typeof(IHttpServerHandler))]
     public class AudioHandler : BaseProgressiveStreamingHandler<Audio>
     {
         /// <summary>

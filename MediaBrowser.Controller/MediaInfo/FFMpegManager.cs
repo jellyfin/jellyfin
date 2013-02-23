@@ -4,9 +4,9 @@ using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Serialization;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,7 +17,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.MediaInfo
 {
@@ -26,22 +25,6 @@ namespace MediaBrowser.Controller.MediaInfo
     /// </summary>
     public class FFMpegManager : BaseManager<Kernel>
     {
-        /// <summary>
-        /// Holds the list of new items to generate chapter image for when the NewItemTimer expires
-        /// </summary>
-        private readonly List<Video> _newlyAddedItems = new List<Video>();
-
-        /// <summary>
-        /// The amount of time to wait before generating chapter images
-        /// </summary>
-        private const int NewItemDelay = 300000;
-
-        /// <summary>
-        /// The current new item timer
-        /// </summary>
-        /// <value>The new item timer.</value>
-        private Timer NewItemTimer { get; set; }
-
         /// <summary>
         /// Gets or sets the video image cache.
         /// </summary>
@@ -96,71 +79,7 @@ namespace MediaBrowser.Controller.MediaInfo
             AudioImageCache = new FileSystemRepository(AudioImagesDataPath);
             SubtitleCache = new FileSystemRepository(SubtitleCachePath);
 
-            Kernel.LibraryManager.LibraryChanged += LibraryManager_LibraryChanged;
-
             Task.Run(() => VersionedDirectoryPath = GetVersionedDirectoryPath());
-        }
-
-        /// <summary>
-        /// Handles the LibraryChanged event of the LibraryManager control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="ChildrenChangedEventArgs" /> instance containing the event data.</param>
-        void LibraryManager_LibraryChanged(object sender, ChildrenChangedEventArgs e)
-        {
-            var videos = e.ItemsAdded.OfType<Video>().ToList();
-
-            // Use a timer to prevent lots of these notifications from showing in a short period of time
-            if (videos.Count > 0)
-            {
-                lock (_newlyAddedItems)
-                {
-                    _newlyAddedItems.AddRange(videos);
-
-                    if (NewItemTimer == null)
-                    {
-                        NewItemTimer = new Timer(NewItemTimerCallback, null, NewItemDelay, Timeout.Infinite);
-                    }
-                    else
-                    {
-                        NewItemTimer.Change(NewItemDelay, Timeout.Infinite);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Called when the new item timer expires
-        /// </summary>
-        /// <param name="state">The state.</param>
-        private async void NewItemTimerCallback(object state)
-        {
-            List<Video> newItems;
-
-            // Lock the list and release all resources
-            lock (_newlyAddedItems)
-            {
-                newItems = _newlyAddedItems.ToList();
-                _newlyAddedItems.Clear();
-
-                NewItemTimer.Dispose();
-                NewItemTimer = null;
-            }
-
-            // Limit the number of videos we generate images for
-            // The idea is to catch new items that are added here and there
-            // Mass image generation can be left to the scheduled task
-            foreach (var video in newItems.Where(c => c.Chapters != null).Take(3))
-            {
-                try
-                {
-                    await PopulateChapterImages(video, CancellationToken.None, true, true).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error creating chapter images for {0}", ex, video.Name);
-                }
-            }
         }
 
         /// <summary>
@@ -171,14 +90,7 @@ namespace MediaBrowser.Controller.MediaInfo
         {
             if (dispose)
             {
-                if (NewItemTimer != null)
-                {
-                    NewItemTimer.Dispose();
-                }
-
                 SetErrorMode(ErrorModes.SYSTEM_DEFAULT);
-
-                Kernel.LibraryManager.LibraryChanged -= LibraryManager_LibraryChanged;
 
                 AudioImageCache.Dispose();
                 VideoImageCache.Dispose();
