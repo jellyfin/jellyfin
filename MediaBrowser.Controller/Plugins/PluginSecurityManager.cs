@@ -75,7 +75,6 @@ namespace MediaBrowser.Controller.Plugins
         /// <returns>Task{MBRegistrationRecord}.</returns>
         public async Task<MBRegistrationRecord> GetRegistrationStatus(string feature, string mb2Equivalent = null)
         {
-            // Update this method to add _networkManager as a param.
             return await MBRegistration.GetRegistrationStatus(feature, mb2Equivalent).ConfigureAwait(false);
         }
 
