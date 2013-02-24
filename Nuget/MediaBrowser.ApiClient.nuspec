@@ -8,18 +8,17 @@
         <owners>scottisafool,Luke</owners>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>ApiClient allows .NET clients to easily access the Media Browser 3 web API</description>
-        <copyright>Copyright ©  2013</copyright>
+        <copyright>Copyright © Media Browser 2013</copyright>
         <dependencies>
-            <group>
-                <dependency id="protobuf-net" version="2.0.0.621" />
-            </group>
             <group targetFramework=".NETFramework4.5">
                 <dependency id="ServiceStack.Text" version="3.9.37" />
+				<dependency id="protobuf-net" version="2.0.0.621" />
             </group>
             <group targetFramework=".NETPortable0.0-net45+sl4+wp71+win8">
                 <dependency id="Newtonsoft.Json" version="4.5.11" />
                 <dependency id="Microsoft.Bcl.Async" version="1.0.14-rc" />
                 <dependency id="Microsoft.Net.Http" version="2.1.3-beta" />
+				<dependency id="protobuf-net" version="2.0.0.621" />
             </group>
         </dependencies>
     </metadata>
