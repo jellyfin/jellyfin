@@ -2,16 +2,14 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,7 +22,7 @@ namespace MediaBrowser.Common.Kernel
     /// <typeparam name="TApplicationPathsType">The type of the T application paths type.</typeparam>
     public abstract class BaseKernel<TConfigurationType, TApplicationPathsType> : IDisposable, IKernel
         where TConfigurationType : BaseApplicationConfiguration, new()
-        where TApplicationPathsType : BaseApplicationPaths, new()
+        where TApplicationPathsType : IApplicationPaths
     {
         /// <summary>
         /// Occurs when [has pending restart changed].
@@ -129,7 +127,7 @@ namespace MediaBrowser.Common.Kernel
             get
             {
                 // Lazy load
-                LazyInitializer.EnsureInitialized(ref _configuration, ref _configurationLoaded, ref _configurationSyncLock, () => XmlSerializer.GetXmlConfiguration<TConfigurationType>(ApplicationPaths.SystemConfigurationFilePath, Logger));
+                LazyInitializer.EnsureInitialized(ref _configuration, ref _configurationLoaded, ref _configurationSyncLock, () => GetXmlConfiguration<TConfigurationType>(ApplicationPaths.SystemConfigurationFilePath));
                 return _configuration;
             }
             protected set
@@ -162,19 +160,6 @@ namespace MediaBrowser.Common.Kernel
         public TApplicationPathsType ApplicationPaths { get; private set; }
 
         /// <summary>
-        /// The _failed assembly loads
-        /// </summary>
-        private readonly List<string> _failedPluginAssemblies = new List<string>();
-        /// <summary>
-        /// Gets the plugin assemblies that failed to load.
-        /// </summary>
-        /// <value>The failed assembly loads.</value>
-        public IEnumerable<string> FailedPluginAssemblies
-        {
-            get { return _failedPluginAssemblies; }
-        }
-
-        /// <summary>
         /// Gets the list of currently loaded plugins
         /// </summary>
         /// <value>The plugins.</value>
@@ -203,46 +188,6 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <value>The rest services.</value>
         public IEnumerable<IRestfulService> RestServices { get; private set; }
-
-        /// <summary>
-        /// The disposable parts
-        /// </summary>
-        private readonly List<IDisposable> _disposableParts = new List<IDisposable>();
-
-        /// <summary>
-        /// The _protobuf serializer initialized
-        /// </summary>
-        private bool _protobufSerializerInitialized;
-        /// <summary>
-        /// The _protobuf serializer sync lock
-        /// </summary>
-        private object _protobufSerializerSyncLock = new object();
-        /// <summary>
-        /// Gets a dynamically compiled generated serializer that can serialize protocontracts without reflection
-        /// </summary>
-        private DynamicProtobufSerializer _protobufSerializer;
-        /// <summary>
-        /// Gets the protobuf serializer.
-        /// </summary>
-        /// <value>The protobuf serializer.</value>
-        public DynamicProtobufSerializer ProtobufSerializer
-        {
-            get
-            {
-                // Lazy load
-                LazyInitializer.EnsureInitialized(ref _protobufSerializer, ref _protobufSerializerInitialized, ref _protobufSerializerSyncLock, () => DynamicProtobufSerializer.Create(AllTypes));
-                return _protobufSerializer;
-            }
-            private set
-            {
-                _protobufSerializer = value;
-
-                if (value == null)
-                {
-                    _protobufSerializerInitialized = false;
-                }
-            }
-        }
 
         /// <summary>
         /// Gets the UDP server port number.
@@ -301,42 +246,40 @@ namespace MediaBrowser.Common.Kernel
         protected IApplicationHost ApplicationHost { get; private set; }
 
         /// <summary>
-        /// Gets or sets the task manager.
+        /// The _XML serializer
         /// </summary>
-        /// <value>The task manager.</value>
-        protected ITaskManager TaskManager { get; set; }
-
-        /// <summary>
-        /// Gets the assemblies.
-        /// </summary>
-        /// <value>The assemblies.</value>
-        protected Assembly[] Assemblies { get; private set; }
-
-        /// <summary>
-        /// Gets all types.
-        /// </summary>
-        /// <value>All types.</value>
-        public Type[] AllTypes { get; private set; }
+        private readonly IXmlSerializer _xmlSerializer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseKernel{TApplicationPathsType}" /> class.
         /// </summary>
         /// <param name="appHost">The app host.</param>
+        /// <param name="appPaths">The app paths.</param>
+        /// <param name="xmlSerializer">The XML serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">isoManager</exception>
-        protected BaseKernel(IApplicationHost appHost, ILogger logger)
+        protected BaseKernel(IApplicationHost appHost, TApplicationPathsType appPaths, IXmlSerializer xmlSerializer, ILogger logger)
         {
             if (appHost == null)
             {
                 throw new ArgumentNullException("appHost");
             }
-
+            if (appPaths == null)
+            {
+                throw new ArgumentNullException("appPaths");
+            }
+            if (xmlSerializer == null)
+            {
+                throw new ArgumentNullException("xmlSerializer");
+            }
             if (logger == null)
             {
                 throw new ArgumentNullException("logger");
             }
 
+            ApplicationPaths = appPaths;
             ApplicationHost = appHost;
+            _xmlSerializer = xmlSerializer;
             Logger = logger;
         }
 
@@ -344,14 +287,12 @@ namespace MediaBrowser.Common.Kernel
         /// Initializes the Kernel
         /// </summary>
         /// <returns>Task.</returns>
-        public async Task Init()
+        public Task Init()
         {
-            ApplicationPaths = new TApplicationPathsType();
-
             IsFirstRun = !File.Exists(ApplicationPaths.SystemConfigurationFilePath);
 
             // Performs initializations that can be reloaded at anytime
-            await Reload().ConfigureAwait(false);
+            return Reload();
         }
 
         /// <summary>
@@ -377,7 +318,6 @@ namespace MediaBrowser.Common.Kernel
         {
             // Set these to null so that they can be lazy loaded again
             Configuration = null;
-            ProtobufSerializer = null;
 
             ReloadLogger();
 
@@ -388,14 +328,12 @@ namespace MediaBrowser.Common.Kernel
 
             await OnConfigurationLoaded().ConfigureAwait(false);
 
-            DisposeTaskManager();
-            TaskManager = new TaskManager(Logger);
+            FindParts();
 
-            Logger.Info("Loading Plugins");
-            await ReloadComposableParts().ConfigureAwait(false);
+            await OnComposablePartsLoaded().ConfigureAwait(false);
 
             DisposeTcpManager();
-            TcpManager = new TcpManager(ApplicationHost, this, ApplicationHost.Resolve<INetworkManager>(), Logger);
+            TcpManager = (TcpManager)ApplicationHost.CreateInstance(typeof(TcpManager));
         }
 
         /// <summary>
@@ -418,183 +356,13 @@ namespace MediaBrowser.Common.Kernel
         }
 
         /// <summary>
-        /// Uses MEF to locate plugins
-        /// Subclasses can use this to locate types within plugins
-        /// </summary>
-        /// <returns>Task.</returns>
-        private async Task ReloadComposableParts()
-        {
-            _failedPluginAssemblies.Clear();
-
-            DisposeComposableParts();
-
-            Assemblies = GetComposablePartAssemblies().ToArray();
-
-            AllTypes = Assemblies.SelectMany(GetTypes).ToArray();
-
-            ComposeParts(AllTypes);
-
-            await OnComposablePartsLoaded().ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Composes the parts.
-        /// </summary>
-        /// <param name="allTypes">All types.</param>
-        private void ComposeParts(IEnumerable<Type> allTypes)
-        {
-            var concreteTypes = allTypes.Where(t => t.IsClass && !t.IsAbstract && !t.IsInterface && !t.IsGenericType).ToArray();
-
-            RegisterExportedValues();
-
-            FindParts(concreteTypes);
-        }
-
-        /// <summary>
         /// Composes the parts with ioc container.
         /// </summary>
-        /// <param name="allTypes">All types.</param>
-        protected virtual void FindParts(Type[] allTypes)
+        protected virtual void FindParts()
         {
-            RestServices = GetExports<IRestfulService>(allTypes);
-            WebSocketListeners = GetExports<IWebSocketListener>(allTypes);
-            Plugins = GetExports<IPlugin>(allTypes);
-
-            var tasks = GetExports<IScheduledTask>(allTypes, false);
-
-            TaskManager.AddTasks(tasks);
-        }
-
-        /// <summary>
-        /// Gets the exports.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="allTypes">All types.</param>
-        /// <param name="manageLiftime">if set to <c>true</c> [manage liftime].</param>
-        /// <returns>IEnumerable{``0}.</returns>
-        protected IEnumerable<T> GetExports<T>(Type[] allTypes, bool manageLiftime = true)
-        {
-            var currentType = typeof(T);
-
-            Logger.Info("Composing instances of " + currentType.Name);
-
-            var parts = allTypes.Where(currentType.IsAssignableFrom).Select(Instantiate).Cast<T>().ToArray();
-
-            if (manageLiftime)
-            {
-                _disposableParts.AddRange(parts.OfType<IDisposable>());
-            }
-
-            return parts;
-        }
-
-        /// <summary>
-        /// Instantiates the specified type.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns>System.Object.</returns>
-        private object Instantiate(Type type)
-        {
-            return ApplicationHost.CreateInstance(type);
-        }
-
-        /// <summary>
-        /// Composes the exported values.
-        /// </summary>
-        /// <param name="container">The container.</param>
-        protected virtual void RegisterExportedValues()
-        {
-            ApplicationHost.RegisterSingleInstance<IKernel>(this);
-            ApplicationHost.RegisterSingleInstance(TaskManager);
-        }
-
-        /// <summary>
-        /// Gets the composable part assemblies.
-        /// </summary>
-        /// <returns>IEnumerable{Assembly}.</returns>
-        protected virtual IEnumerable<Assembly> GetComposablePartAssemblies()
-        {
-            // Gets all plugin assemblies by first reading all bytes of the .dll and calling Assembly.Load against that
-            // This will prevent the .dll file from getting locked, and allow us to replace it when needed
-            var pluginAssemblies = Directory.EnumerateFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.TopDirectoryOnly)
-                .Select(file =>
-                {
-                    try
-                    {
-                        return Assembly.Load(File.ReadAllBytes((file)));
-                    }
-                    catch (Exception ex)
-                    {
-                        _failedPluginAssemblies.Add(file);
-                        Logger.ErrorException("Error loading {0}", ex, file);
-                        return null;
-                    }
-
-                }).Where(a => a != null);
-
-            foreach (var pluginAssembly in pluginAssemblies)
-            {
-                yield return pluginAssembly;
-            }
-
-            var runningDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
-            var corePluginDirectory = Path.Combine(runningDirectory, "CorePlugins");
-
-            // This will prevent the .dll file from getting locked, and allow us to replace it when needed
-            pluginAssemblies = Directory.EnumerateFiles(corePluginDirectory, "*.dll", SearchOption.TopDirectoryOnly)
-                .Select(file =>
-                {
-                    try
-                    {
-                        return Assembly.Load(File.ReadAllBytes((file)));
-                    }
-                    catch (Exception ex)
-                    {
-                        _failedPluginAssemblies.Add(file);
-                        Logger.ErrorException("Error loading {0}", ex, file);
-                        return null;
-                    }
-
-                }).Where(a => a != null);
-
-            foreach (var pluginAssembly in pluginAssemblies)
-            {
-                yield return pluginAssembly;
-            }
-
-            // Include composable parts in the Model assembly 
-            yield return typeof(SystemInfo).Assembly;
-
-            // Include composable parts in the Common assembly 
-            yield return Assembly.GetExecutingAssembly();
-
-            // Include composable parts in the subclass assembly
-            yield return GetType().Assembly;
-        }
-
-        /// <summary>
-        /// Gets a list of types within an assembly
-        /// This will handle situations that would normally throw an exception - such as a type within the assembly that depends on some other non-existant reference
-        /// </summary>
-        /// <param name="assembly">The assembly.</param>
-        /// <returns>IEnumerable{Type}.</returns>
-        /// <exception cref="System.ArgumentNullException">assembly</exception>
-        private static IEnumerable<Type> GetTypes(Assembly assembly)
-        {
-            if (assembly == null)
-            {
-                throw new ArgumentNullException("assembly");
-            }
-
-            try
-            {
-                return assembly.GetTypes();
-            }
-            catch (ReflectionTypeLoadException ex)
-            {
-                // If it fails we can still get a list of the Types it was able to resolve
-                return ex.Types.Where(t => t != null);
-            }
+            RestServices = ApplicationHost.GetExports<IRestfulService>();
+            WebSocketListeners = ApplicationHost.GetExports<IWebSocketListener>();
+            Plugins = ApplicationHost.GetExports<IPlugin>();
         }
 
         /// <summary>
@@ -612,7 +380,7 @@ namespace MediaBrowser.Common.Kernel
 
                     try
                     {
-                        plugin.Initialize(this, Logger);
+                        plugin.Initialize(this, _xmlSerializer, Logger);
 
                         Logger.Info("{0} {1} initialized.", plugin.Name, plugin.Version);
                     }
@@ -654,12 +422,7 @@ namespace MediaBrowser.Common.Kernel
             if (dispose)
             {
                 DisposeTcpManager();
-                DisposeTaskManager();
                 DisposeHttpManager();
-
-                DisposeComposableParts();
-
-                _disposableParts.Clear();
             }
         }
 
@@ -676,18 +439,6 @@ namespace MediaBrowser.Common.Kernel
         }
 
         /// <summary>
-        /// Disposes the task manager.
-        /// </summary>
-        private void DisposeTaskManager()
-        {
-            if (TaskManager != null)
-            {
-                TaskManager.Dispose();
-                TaskManager = null;
-            }
-        }
-
-        /// <summary>
         /// Disposes the HTTP manager.
         /// </summary>
         private void DisposeHttpManager()
@@ -696,17 +447,6 @@ namespace MediaBrowser.Common.Kernel
             {
                 HttpManager.Dispose();
                 HttpManager = null;
-            }
-        }
-
-        /// <summary>
-        /// Disposes all objects gathered through MEF composable parts
-        /// </summary>
-        protected virtual void DisposeComposableParts()
-        {
-            foreach (var part in _disposableParts)
-            {
-                part.Dispose();
             }
         }
 
@@ -761,7 +501,7 @@ namespace MediaBrowser.Common.Kernel
                 IsNetworkDeployed = ApplicationHost.CanSelfUpdate,
                 WebSocketPortNumber = TcpManager.WebSocketPortNumber,
                 SupportsNativeWebSocket = TcpManager.SupportsNativeWebSocket,
-                FailedPluginAssemblies = FailedPluginAssemblies.ToArray()
+                FailedPluginAssemblies = ApplicationHost.FailedAssemblies.ToArray()
             };
         }
 
@@ -777,7 +517,7 @@ namespace MediaBrowser.Common.Kernel
         {
             lock (_configurationSaveLock)
             {
-                XmlSerializer.SerializeToFile(Configuration, ApplicationPaths.SystemConfigurationFilePath);
+                _xmlSerializer.SerializeToFile(Configuration, ApplicationPaths.SystemConfigurationFilePath);
             }
 
             OnConfigurationUpdated();
@@ -787,7 +527,7 @@ namespace MediaBrowser.Common.Kernel
         /// Gets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
-        BaseApplicationPaths IKernel.ApplicationPaths
+        IApplicationPaths IKernel.ApplicationPaths
         {
             get { return ApplicationPaths; }
         }
@@ -798,6 +538,63 @@ namespace MediaBrowser.Common.Kernel
         BaseApplicationConfiguration IKernel.Configuration
         {
             get { return Configuration; }
+        }		        
+        
+        /// <summary>
+        /// Reads an xml configuration file from the file system
+        /// It will immediately re-serialize and save if new serialization data is available due to property changes
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="path">The path.</param>
+        /// <returns>System.Object.</returns>
+        public object GetXmlConfiguration(Type type, string path)
+        {
+            Logger.Info("Loading {0} at {1}", type.Name, path);
+
+            object configuration;
+
+            byte[] buffer = null;
+
+            // Use try/catch to avoid the extra file system lookup using File.Exists
+            try
+            {
+                buffer = File.ReadAllBytes(path);
+
+                configuration = _xmlSerializer.DeserializeFromBytes(type, buffer);
+            }
+            catch (FileNotFoundException)
+            {
+                configuration = ApplicationHost.CreateInstance(type);
+            }
+
+            // Take the object we just got and serialize it back to bytes
+            var newBytes = _xmlSerializer.SerializeToBytes(configuration);
+
+            // If the file didn't exist before, or if something has changed, re-save
+            if (buffer == null || !buffer.SequenceEqual(newBytes))
+            {
+                Logger.Info("Saving {0} to {1}", type.Name, path);
+
+                // Save it after load in case we got new items
+                File.WriteAllBytes(path, newBytes);
+            }
+
+            return configuration;
+        }
+
+
+        /// <summary>
+        /// Reads an xml configuration file from the file system
+        /// It will immediately save the configuration after loading it, just
+        /// in case there are new serializable properties
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="path">The path.</param>
+        /// <returns>``0.</returns>
+        private T GetXmlConfiguration<T>(string path)
+            where T : class
+        {
+            return GetXmlConfiguration(typeof(T), path) as T;
         }
     }
 }

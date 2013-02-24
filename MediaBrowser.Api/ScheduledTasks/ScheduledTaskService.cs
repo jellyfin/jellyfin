@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Common.Serialization;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
 using ServiceStack.ServiceHost;
 using System;
@@ -90,11 +90,32 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// <value>The task manager.</value>
         private ITaskManager TaskManager { get; set; }
 
-        public ScheduledTaskService(ITaskManager taskManager)
+        /// <summary>
+        /// The _json serializer
+        /// </summary>
+        private readonly IJsonSerializer _jsonSerializer;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ScheduledTaskService" /> class.
+        /// </summary>
+        /// <param name="taskManager">The task manager.</param>
+        /// <param name="jsonSerializer">The json serializer.</param>
+        /// <exception cref="System.ArgumentNullException">taskManager</exception>
+        public ScheduledTaskService(ITaskManager taskManager, IJsonSerializer jsonSerializer)
         {
+            if (taskManager == null)
+            {
+                throw new ArgumentNullException("taskManager");
+            }
+            if (jsonSerializer == null)
+            {
+                throw new ArgumentNullException("jsonSerializer");
+            }
+
             TaskManager = taskManager;
+            _jsonSerializer = jsonSerializer;
         }
-        
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -113,6 +134,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>IEnumerable{TaskInfo}.</returns>
+        /// <exception cref="MediaBrowser.Common.Extensions.ResourceNotFoundException">Task not found</exception>
         public object Get(GetScheduledTask request)
         {
             var task = TaskManager.ScheduledTasks.FirstOrDefault(i => i.Id == request.Id);
@@ -131,6 +153,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
+        /// <exception cref="MediaBrowser.Common.Extensions.ResourceNotFoundException">Task not found</exception>
         public void Post(StartScheduledTask request)
         {
             var task = TaskManager.ScheduledTasks.FirstOrDefault(i => i.Id == request.Id);
@@ -147,6 +170,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
+        /// <exception cref="MediaBrowser.Common.Extensions.ResourceNotFoundException">Task not found</exception>
         public void Delete(StopScheduledTask request)
         {
             var task = TaskManager.ScheduledTasks.FirstOrDefault(i => i.Id == request.Id);
@@ -163,6 +187,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
+        /// <exception cref="MediaBrowser.Common.Extensions.ResourceNotFoundException">Task not found</exception>
         public void Post(UpdateScheduledTaskTriggers request)
         {
             // We need to parse this manually because we told service stack not to with IRequiresRequestStream
@@ -177,7 +202,7 @@ namespace MediaBrowser.Api.ScheduledTasks
                 throw new ResourceNotFoundException("Task not found");
             }
 
-            var triggerInfos = JsonSerializer.DeserializeFromStream<TaskTriggerInfo[]>(request.RequestStream);
+            var triggerInfos = _jsonSerializer.DeserializeFromStream<TaskTriggerInfo[]>(request.RequestStream);
 
             task.Triggers = triggerInfos.Select(ScheduledTaskHelpers.GetTrigger);
         }

@@ -1,9 +1,9 @@
 ﻿using Alchemy.Classes;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Net.WebSockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -83,9 +83,9 @@ namespace MediaBrowser.Networking.WebSocket
                 {
                     try
                     {
-                        var messageResult = JsonSerializer.DeserializeFromString<WebSocketMessageInfo>(json);
+                        var bytes = Encoding.UTF8.GetBytes(json);
 
-                        OnReceiveDelegate(messageResult);
+                        OnReceiveDelegate(bytes);
                     }
                     catch (Exception ex)
                     {
@@ -128,6 +128,6 @@ namespace MediaBrowser.Networking.WebSocket
         /// Gets or sets the receive action.
         /// </summary>
         /// <value>The receive action.</value>
-        public Action<WebSocketMessageInfo> OnReceiveDelegate { get; set; }
+        public Action<byte[]> OnReceiveDelegate { get; set; }
     }
 }

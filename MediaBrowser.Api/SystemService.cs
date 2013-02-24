@@ -1,15 +1,19 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Serialization;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using ServiceStack.ServiceHost;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
+    /// <summary>
+    /// Class GetSystemInfo
+    /// </summary>
     [Route("/System/Info", "GET")]
     public class GetSystemInfo : IReturn<SystemInfo>
     {
@@ -40,6 +44,10 @@ namespace MediaBrowser.Api
     [Route("/System/Configuration", "POST")]
     public class UpdateConfiguration : IRequiresRequestStream
     {
+        /// <summary>
+        /// The raw Http Request Input Stream
+        /// </summary>
+        /// <value>The request stream.</value>
         public Stream RequestStream { get; set; }
     }
 
@@ -48,6 +56,27 @@ namespace MediaBrowser.Api
     /// </summary>
     public class SystemService : BaseRestService
     {
+        /// <summary>
+        /// The _json serializer
+        /// </summary>
+        private readonly IJsonSerializer _jsonSerializer;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SystemService" /> class.
+        /// </summary>
+        /// <param name="jsonSerializer">The json serializer.</param>
+        /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
+        public SystemService(IJsonSerializer jsonSerializer)
+            : base()
+        {
+            if (jsonSerializer == null)
+            {
+                throw new ArgumentNullException("jsonSerializer");
+            }
+
+            _jsonSerializer = jsonSerializer;
+        }
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -95,8 +124,8 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Post(UpdateConfiguration request)
         {
-            var serverConfig = JsonSerializer.DeserializeFromStream<ServerConfiguration>(request.RequestStream);
-            
+            var serverConfig = _jsonSerializer.DeserializeFromStream<ServerConfiguration>(request.RequestStream);
+
             var kernel = (Kernel)Kernel;
 
             kernel.UpdateConfiguration(serverConfig);

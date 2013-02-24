@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Serialization;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Model.Entities;
@@ -15,6 +14,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Providers.Movies
 {
@@ -30,6 +30,27 @@ namespace MediaBrowser.Controller.Providers.Movies
     /// </summary>
     public class MovieDbProvider : BaseMetadataProvider
     {
+        /// <summary>
+        /// Gets the json serializer.
+        /// </summary>
+        /// <value>The json serializer.</value>
+        protected IJsonSerializer JsonSerializer { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MovieDbProvider" /> class.
+        /// </summary>
+        /// <param name="jsonSerializer">The json serializer.</param>
+        /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
+        public MovieDbProvider(IJsonSerializer jsonSerializer)
+            : base()
+        {
+            if (jsonSerializer == null)
+            {
+                throw new ArgumentNullException("jsonSerializer");
+            }
+            JsonSerializer = jsonSerializer;
+        }
+
         /// <summary>
         /// Gets the priority.
         /// </summary>
@@ -93,7 +114,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _tmdbSettingsTask, ref _tmdbSettingsTaskInitialized, ref _tmdbSettingsTaskSyncLock, GetTmdbSettings);
+                LazyInitializer.EnsureInitialized(ref _tmdbSettingsTask, ref _tmdbSettingsTaskInitialized, ref _tmdbSettingsTaskSyncLock, () => GetTmdbSettings(JsonSerializer));
                 return _tmdbSettingsTask;
             }
         }
@@ -102,13 +123,13 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// Gets the TMDB settings.
         /// </summary>
         /// <returns>Task{TmdbSettingsResult}.</returns>
-        private static async Task<TmdbSettingsResult> GetTmdbSettings()
+        private static async Task<TmdbSettingsResult> GetTmdbSettings(IJsonSerializer jsonSerializer)
         {
             try
             {
                 using (var json = await Kernel.Instance.HttpManager.Get(String.Format(TmdbConfigUrl, ApiKey), Kernel.Instance.ResourcePools.MovieDb, CancellationToken.None).ConfigureAwait(false))
                 {
-                    return JsonSerializer.DeserializeFromStream<TmdbSettingsResult>(json);
+                    return jsonSerializer.DeserializeFromStream<TmdbSettingsResult>(json);
                 }
             }
             catch (HttpException e)
@@ -168,7 +189,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             {
                 //in addition to ours, we need to set the last refreshed time for the local data provider
                 //so it won't see the new files we download and process them all over again
-                if (JsonProvider == null) JsonProvider = new MovieProviderFromJson();
+                if (JsonProvider == null) JsonProvider = new MovieProviderFromJson(JsonSerializer);
                 var data = item.ProviderData.GetValueOrDefault(JsonProvider.Id, new BaseProviderInfo { ProviderId = JsonProvider.Id });
                 data.LastRefreshed = value;
                 item.ProviderData[JsonProvider.Id] = data;

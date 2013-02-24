@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
@@ -16,6 +17,7 @@ using MediaBrowser.Controller.Updates;
 using MediaBrowser.Controller.Weather;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
@@ -28,7 +30,7 @@ namespace MediaBrowser.Controller
     /// <summary>
     /// Class Kernel
     /// </summary>
-    public class Kernel : BaseKernel<ServerConfiguration, ServerApplicationPaths>
+    public class Kernel : BaseKernel<ServerConfiguration, IServerApplicationPaths>
     {
         /// <summary>
         /// The MB admin URL
@@ -291,16 +293,23 @@ namespace MediaBrowser.Controller
             get { return 7359; }
         }
 
+        private readonly ITaskManager _taskManager;
+
         /// <summary>
         /// Creates a kernel based on a Data path, which is akin to our current programdata path
         /// </summary>
         /// <param name="appHost">The app host.</param>
+        /// <param name="appPaths">The app paths.</param>
+        /// <param name="xmlSerializer">The XML serializer.</param>
+        /// <param name="taskManager">The task manager.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">isoManager</exception>
-        public Kernel(IApplicationHost appHost, ILogger logger)
-            : base(appHost, logger)
+        public Kernel(IApplicationHost appHost, IServerApplicationPaths appPaths, IXmlSerializer xmlSerializer, ITaskManager taskManager, ILogger logger)
+            : base(appHost, appPaths, xmlSerializer, logger)
         {
             Instance = this;
+
+            _taskManager = taskManager;
 
             // For now there's no real way to inject this properly
             BaseItem.Logger = logger;
@@ -311,20 +320,9 @@ namespace MediaBrowser.Controller
         }
 
         /// <summary>
-        /// Composes the exported values.
-        /// </summary>
-        protected override void RegisterExportedValues()
-        {
-            ApplicationHost.RegisterSingleInstance(this);
-            
-            base.RegisterExportedValues();
-        }
-
-        /// <summary>
         /// Composes the parts with ioc container.
         /// </summary>
-        /// <param name="allTypes">All types.</param>
-        protected override void FindParts(Type[] allTypes)
+        protected override void FindParts()
         {
             InstallationManager = (InstallationManager)ApplicationHost.CreateInstance(typeof(InstallationManager));
             FFMpegManager = (FFMpegManager)ApplicationHost.CreateInstance(typeof(FFMpegManager));
@@ -335,21 +333,21 @@ namespace MediaBrowser.Controller
             UserDataManager = (UserDataManager)ApplicationHost.CreateInstance(typeof(UserDataManager));
             PluginSecurityManager = (PluginSecurityManager)ApplicationHost.CreateInstance(typeof(PluginSecurityManager));
             
-            base.FindParts(allTypes);
+            base.FindParts();
 
-            EntityResolutionIgnoreRules = GetExports<IResolutionIgnoreRule>(allTypes);
-            UserDataRepositories = GetExports<IUserDataRepository>(allTypes);
-            UserRepositories = GetExports<IUserRepository>(allTypes);
-            DisplayPreferencesRepositories = GetExports<IDisplayPreferencesRepository>(allTypes);
-            ItemRepositories = GetExports<IItemRepository>(allTypes);
-            WeatherProviders = GetExports<IWeatherProvider>(allTypes);
-            IntroProviders = GetExports<IIntroProvider>(allTypes);
-            PluginConfigurationPages = GetExports<IPluginConfigurationPage>(allTypes);
-            ImageEnhancers = GetExports<IImageEnhancer>(allTypes).OrderBy(e => e.Priority).ToArray();
-            PluginFolderCreators = GetExports<IVirtualFolderCreator>(allTypes);
-            StringFiles = GetExports<LocalizedStringData>(allTypes);
-            EntityResolvers = GetExports<IBaseItemResolver>(allTypes).OrderBy(e => e.Priority).ToArray();
-            MetadataProviders = GetExports<BaseMetadataProvider>(allTypes).OrderBy(e => e.Priority).ToArray();
+            EntityResolutionIgnoreRules = ApplicationHost.GetExports<IResolutionIgnoreRule>();
+            UserDataRepositories = ApplicationHost.GetExports<IUserDataRepository>();
+            UserRepositories = ApplicationHost.GetExports<IUserRepository>();
+            DisplayPreferencesRepositories = ApplicationHost.GetExports<IDisplayPreferencesRepository>();
+            ItemRepositories = ApplicationHost.GetExports<IItemRepository>();
+            WeatherProviders = ApplicationHost.GetExports<IWeatherProvider>();
+            IntroProviders = ApplicationHost.GetExports<IIntroProvider>();
+            PluginConfigurationPages = ApplicationHost.GetExports<IPluginConfigurationPage>();
+            ImageEnhancers = ApplicationHost.GetExports<IImageEnhancer>().OrderBy(e => e.Priority).ToArray();
+            PluginFolderCreators = ApplicationHost.GetExports<IVirtualFolderCreator>();
+            StringFiles = ApplicationHost.GetExports<LocalizedStringData>();
+            EntityResolvers = ApplicationHost.GetExports<IBaseItemResolver>().OrderBy(e => e.Priority).ToArray();
+            MetadataProviders = ApplicationHost.GetExports<BaseMetadataProvider>().OrderBy(e => e.Priority).ToArray();
         }
 
         /// <summary>
@@ -471,7 +469,7 @@ namespace MediaBrowser.Controller
         {
             DisposeFileSystemManager();
 
-            FileSystemManager = new FileSystemManager(this, Logger, TaskManager);
+            FileSystemManager = new FileSystemManager(this, Logger, _taskManager);
             FileSystemManager.StartWatchers();
         }
 
@@ -570,11 +568,11 @@ namespace MediaBrowser.Controller
                 ProviderManager.ValidateCurrentlyRunningProviders();
 
                 // Any number of configuration settings could change the way the library is refreshed, so do that now
-                TaskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
+                _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
 
                 if (refreshPeopleAfterUpdate)
                 {
-                    TaskManager.CancelIfRunningAndQueue<PeopleValidationTask>();
+                    _taskManager.CancelIfRunningAndQueue<PeopleValidationTask>();
                 }
             });
         }

@@ -35,7 +35,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// </summary>
         /// <param name="trigger">The trigger.</param>
         /// <returns>TaskTriggerInfo.</returns>
-        public static TaskTriggerInfo GetTriggerInfo(BaseTaskTrigger trigger)
+        public static TaskTriggerInfo GetTriggerInfo(ITaskTrigger trigger)
         {
             var info = new TaskTriggerInfo
             {
@@ -81,7 +81,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// <returns>BaseTaskTrigger.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
         /// <exception cref="System.ArgumentException">Invalid trigger type:  + info.Type</exception>
-        public static BaseTaskTrigger GetTrigger(TaskTriggerInfo info)
+        public static ITaskTrigger GetTrigger(TaskTriggerInfo info)
         {
             if (info.Type.Equals(typeof(DailyTrigger).Name, StringComparison.OrdinalIgnoreCase))
             {

@@ -4,6 +4,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
@@ -61,6 +62,12 @@ namespace MediaBrowser.Networking.Web
         private IDisposable HttpListener { get; set; }
 
         /// <summary>
+        /// Gets or sets the protobuf serializer.
+        /// </summary>
+        /// <value>The protobuf serializer.</value>
+        private IProtobufSerializer ProtobufSerializer { get; set; }
+        
+        /// <summary>
         /// Occurs when [web socket connected].
         /// </summary>
         public event EventHandler<WebSocketConnectEventArgs> WebSocketConnected;
@@ -82,16 +89,21 @@ namespace MediaBrowser.Networking.Web
         /// </summary>
         /// <param name="applicationHost">The application host.</param>
         /// <param name="kernel">The kernel.</param>
+        /// <param name="protobufSerializer">The protobuf serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="serverName">Name of the server.</param>
         /// <param name="defaultRedirectpath">The default redirectpath.</param>
         /// <exception cref="System.ArgumentNullException">urlPrefix</exception>
-        public HttpServer(IApplicationHost applicationHost, IKernel kernel, ILogger logger, string serverName, string defaultRedirectpath)
+        public HttpServer(IApplicationHost applicationHost, IKernel kernel, IProtobufSerializer protobufSerializer, ILogger logger, string serverName, string defaultRedirectpath)
             : base()
         {
             if (kernel == null)
             {
                 throw new ArgumentNullException("kernel");
+            }
+            if (protobufSerializer == null)
+            {
+                throw new ArgumentNullException("protobufSerializer");
             }
             if (logger == null)
             {
@@ -112,6 +124,7 @@ namespace MediaBrowser.Networking.Web
 
             ServerName = serverName;
             DefaultRedirectPath = defaultRedirectpath;
+            ProtobufSerializer = protobufSerializer;
             _logger = logger;
             ApplicationHost = applicationHost;
 
@@ -121,7 +134,7 @@ namespace MediaBrowser.Networking.Web
             Kernel = kernel;
 
             EndpointHost.ConfigureHost(this, ServerName, CreateServiceManager());
-            ContentTypeFilters.Register(ContentType.ProtoBuf, (reqCtx, res, stream) => Kernel.ProtobufSerializer.SerializeToStream(res, stream), (type, stream) => Kernel.ProtobufSerializer.DeserializeFromStream(stream, type));
+            ContentTypeFilters.Register(ContentType.ProtoBuf, (reqCtx, res, stream) => ProtobufSerializer.SerializeToStream(res, stream), (type, stream) => ProtobufSerializer.DeserializeFromStream(stream, type));
 
             Init();
         }
@@ -132,6 +145,10 @@ namespace MediaBrowser.Networking.Web
         /// <param name="container">The container.</param>
         public override void Configure(Container container)
         {
+            JsConfig.DateHandler = JsonDateHandler.ISO8601;
+            JsConfig.ExcludeTypeInfo = true;
+            JsConfig.IncludeNullValues = false;
+            
             SetConfig(new EndpointHostConfig
             {
                 DefaultRedirectPath = DefaultRedirectPath,

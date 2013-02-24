@@ -1,12 +1,12 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Drawing
     /// <summary>
     /// Class ImageManager
     /// </summary>
-    public class ImageManager : BaseManager<Kernel>
+    public class ImageManager : IDisposable
     {
         /// <summary>
         /// Gets the image size cache.
@@ -58,19 +58,31 @@ namespace MediaBrowser.Controller.Drawing
         private readonly ILogger _logger;
 
         /// <summary>
+        /// The _protobuf serializer
+        /// </summary>
+        private readonly IProtobufSerializer _protobufSerializer;
+
+        /// <summary>
+        /// The _kernel
+        /// </summary>
+        private readonly Kernel _kernel;
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="ImageManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
+        /// <param name="protobufSerializer">The protobuf serializer.</param>
         /// <param name="logger">The logger.</param>
-        public ImageManager(Kernel kernel, ILogger logger)
-            : base(kernel)
+        public ImageManager(Kernel kernel, IProtobufSerializer protobufSerializer, ILogger logger)
         {
+            _protobufSerializer = protobufSerializer;
             _logger = logger;
+            _kernel = kernel;
 
-            ImageSizeCache = new FileSystemRepository(Path.Combine(Kernel.ApplicationPaths.ImageCachePath, "image-sizes"));
-            ResizedImageCache = new FileSystemRepository(Path.Combine(Kernel.ApplicationPaths.ImageCachePath, "resized-images"));
-            CroppedImageCache = new FileSystemRepository(Path.Combine(Kernel.ApplicationPaths.ImageCachePath, "cropped-images"));
-            EnhancedImageCache = new FileSystemRepository(Path.Combine(Kernel.ApplicationPaths.ImageCachePath, "enhanced-images"));
+            ImageSizeCache = new FileSystemRepository(Path.Combine(_kernel.ApplicationPaths.ImageCachePath, "image-sizes"));
+            ResizedImageCache = new FileSystemRepository(Path.Combine(_kernel.ApplicationPaths.ImageCachePath, "resized-images"));
+            CroppedImageCache = new FileSystemRepository(Path.Combine(_kernel.ApplicationPaths.ImageCachePath, "cropped-images"));
+            EnhancedImageCache = new FileSystemRepository(Path.Combine(_kernel.ApplicationPaths.ImageCachePath, "enhanced-images"));
         }
 
         /// <summary>
@@ -276,7 +288,7 @@ namespace MediaBrowser.Controller.Drawing
 
             try
             {
-                var result = Kernel.ProtobufSerializer.DeserializeFromFile<int[]>(fullCachePath);
+                var result = _protobufSerializer.DeserializeFromFile<int[]>(fullCachePath);
 
                 return new ImageSize { Width = result[0], Height = result[1] };
             }
@@ -305,7 +317,7 @@ namespace MediaBrowser.Controller.Drawing
         {
             var output = new[] { width, height };
 
-            Kernel.ProtobufSerializer.SerializeToFile(output, cachePath);
+            _protobufSerializer.SerializeToFile(output, cachePath);
         }
 
         /// <summary>
@@ -472,7 +484,7 @@ namespace MediaBrowser.Controller.Drawing
                 throw new ArgumentNullException("item");
             }
 
-            var supportedEnhancers = Kernel.ImageEnhancers.Where(i => i.Supports(item, imageType)).ToList();
+            var supportedEnhancers = _kernel.ImageEnhancers.Where(i => i.Supports(item, imageType)).ToList();
 
             // No enhancement - don't cache
             if (supportedEnhancers.Count == 0)
@@ -526,7 +538,7 @@ namespace MediaBrowser.Controller.Drawing
             
             var dateModified = GetImageDateModified(item, imagePath);
 
-            var supportedEnhancers = Kernel.ImageEnhancers.Where(i => i.Supports(item, imageType));
+            var supportedEnhancers = _kernel.ImageEnhancers.Where(i => i.Supports(item, imageType));
 
             return GetImageCacheTag(imagePath, dateModified, supportedEnhancers, item, imageType);
         }
@@ -600,11 +612,16 @@ namespace MediaBrowser.Controller.Drawing
             return result;
         }
 
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected override void Dispose(bool dispose)
+        protected void Dispose(bool dispose)
         {
             if (dispose)
             {
@@ -613,8 +630,6 @@ namespace MediaBrowser.Controller.Drawing
                 CroppedImageCache.Dispose();
                 EnhancedImageCache.Dispose();
             }
-
-            base.Dispose(dispose);
         }
     }
 }

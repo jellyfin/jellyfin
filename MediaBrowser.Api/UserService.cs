@@ -1,16 +1,16 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Serialization;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Serialization;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text.Controller;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using ServiceStack.Text.Controller;
 
 namespace MediaBrowser.Api
 {
@@ -135,6 +135,39 @@ namespace MediaBrowser.Api
     /// </summary>
     public class UserService : BaseRestService
     {
+        /// <summary>
+        /// The _XML serializer
+        /// </summary>
+        private readonly IXmlSerializer _xmlSerializer;
+
+        /// <summary>
+        /// The _json serializer
+        /// </summary>
+        private readonly IJsonSerializer _jsonSerializer;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserService" /> class.
+        /// </summary>
+        /// <param name="xmlSerializer">The XML serializer.</param>
+        /// <param name="jsonSerializer">The json serializer.</param>
+        /// <exception cref="System.ArgumentNullException">xmlSerializer</exception>
+        public UserService(IXmlSerializer xmlSerializer, IJsonSerializer jsonSerializer)
+            : base()
+        {
+            if (jsonSerializer == null)
+            {
+                throw new ArgumentNullException("jsonSerializer");
+            }
+
+            if (xmlSerializer == null)
+            {
+                throw new ArgumentNullException("xmlSerializer");
+            }
+
+            _jsonSerializer = jsonSerializer;
+            _xmlSerializer = xmlSerializer;
+        }
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -262,10 +295,10 @@ namespace MediaBrowser.Api
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
             var pathInfo = PathInfo.Parse(Request.PathInfo);
             var id = new Guid(pathInfo.GetArgumentValue<string>(1));
-            
+
             var kernel = (Kernel)Kernel;
 
-            var dtoUser = JsonSerializer.DeserializeFromStream<UserDto>(request.RequestStream);
+            var dtoUser = _jsonSerializer.DeserializeFromStream<UserDto>(request.RequestStream);
 
             var user = kernel.GetUserById(id);
 
@@ -273,7 +306,7 @@ namespace MediaBrowser.Api
 
             Task.WaitAll(task);
 
-            user.UpdateConfiguration(dtoUser.Configuration);
+            user.UpdateConfiguration(dtoUser.Configuration, _xmlSerializer);
         }
 
         /// <summary>
@@ -285,7 +318,7 @@ namespace MediaBrowser.Api
         {
             var kernel = (Kernel)Kernel;
 
-            var dtoUser = JsonSerializer.DeserializeFromStream<UserDto>(request.RequestStream);
+            var dtoUser = _jsonSerializer.DeserializeFromStream<UserDto>(request.RequestStream);
 
             var newUser = kernel.UserManager.CreateUser(dtoUser.Name).Result;
 

@@ -14,7 +14,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// Gets the triggers.
         /// </summary>
         /// <value>The triggers.</value>
-        IEnumerable<BaseTaskTrigger> Triggers { get; set; }
+        IEnumerable<ITaskTrigger> Triggers { get; set; }
 
         /// <summary>
         /// Gets the last execution result.
@@ -75,5 +75,11 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// Cancels if running.
         /// </summary>
         void CancelIfRunning();
+
+        /// <summary>
+        /// Gets the default triggers.
+        /// </summary>
+        /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
+        IEnumerable<ITaskTrigger> GetDefaultTriggers();
     }
 }

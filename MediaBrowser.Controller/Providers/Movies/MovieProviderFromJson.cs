@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Common.Serialization;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.IO;
 using System.Threading;
@@ -12,6 +12,10 @@ namespace MediaBrowser.Controller.Providers.Movies
     /// </summary>
     public class MovieProviderFromJson : MovieDbProvider
     {
+        public MovieProviderFromJson(IJsonSerializer jsonSerializer) : base(jsonSerializer)
+        {
+        }
+
         /// <summary>
         /// Gets the priority.
         /// </summary>

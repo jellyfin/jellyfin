@@ -1,11 +1,11 @@
 ﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Serialization;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Serialization;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
@@ -28,7 +28,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         public Guid UserId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
@@ -48,7 +48,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         public Guid UserId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the item id.
         /// </summary>
@@ -68,7 +68,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         public Guid UserId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
@@ -106,7 +106,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         public Guid UserId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
@@ -125,7 +125,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         public Guid UserId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
@@ -144,7 +144,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         public Guid UserId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
@@ -163,7 +163,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         public Guid UserId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
@@ -215,6 +215,9 @@ namespace MediaBrowser.Api.UserLibrary
         public string Id { get; set; }
     }
 
+    /// <summary>
+    /// Class GetLocalTrailers
+    /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/LocalTrailers", "GET")]
     public class GetLocalTrailers : IReturn<List<BaseItemDto>>
     {
@@ -231,6 +234,9 @@ namespace MediaBrowser.Api.UserLibrary
         public string Id { get; set; }
     }
 
+    /// <summary>
+    /// Class GetSpecialFeatures
+    /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/SpecialFeatures", "GET")]
     public class GetSpecialFeatures : IReturn<List<BaseItemDto>>
     {
@@ -253,6 +259,32 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     public class UserLibraryService : BaseRestService
     {
+        /// <summary>
+        /// The _json serializer
+        /// </summary>
+        private readonly IJsonSerializer _jsonSerializer;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserLibraryService" /> class.
+        /// </summary>
+        /// <param name="jsonSerializer">The json serializer.</param>
+        /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
+        public UserLibraryService(IJsonSerializer jsonSerializer)
+            : base()
+        {
+            if (jsonSerializer == null)
+            {
+                throw new ArgumentNullException("jsonSerializer");
+            }
+
+            _jsonSerializer = jsonSerializer;
+        }
+
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
         public object Get(GetSpecialFeatures request)
         {
             var kernel = (Kernel)Kernel;
@@ -260,7 +292,7 @@ namespace MediaBrowser.Api.UserLibrary
             var user = kernel.GetUserById(request.UserId);
 
             var item = DtoBuilder.GetItemByClientId(request.Id, user.Id);
-            
+
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
 
@@ -272,7 +304,12 @@ namespace MediaBrowser.Api.UserLibrary
 
             return ToOptimizedResult(items);
         }
-        
+
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
         public object Get(GetLocalTrailers request)
         {
             var kernel = (Kernel)Kernel;
@@ -280,7 +317,7 @@ namespace MediaBrowser.Api.UserLibrary
             var user = kernel.GetUserById(request.UserId);
 
             var item = DtoBuilder.GetItemByClientId(request.Id, user.Id);
-            
+
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
 
@@ -290,7 +327,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             return ToOptimizedResult(items);
         }
-        
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -303,7 +340,7 @@ namespace MediaBrowser.Api.UserLibrary
             var user = kernel.GetUserById(request.UserId);
 
             var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, user.Id);
-            
+
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
 
@@ -366,7 +403,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = (Folder)DtoBuilder.GetItemByClientId(itemId, user.Id);
 
-            var displayPreferences = JsonSerializer.DeserializeFromStream<DisplayPreferences>(request.RequestStream);
+            var displayPreferences = _jsonSerializer.DeserializeFromStream<DisplayPreferences>(request.RequestStream);
 
             var task = kernel.LibraryManager.SaveDisplayPreferencesForFolder(user, item, displayPreferences);
 

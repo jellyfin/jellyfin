@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Serialization;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
 using System;
@@ -10,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Providers.Movies
 {
@@ -22,6 +22,27 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// The meta file name
         /// </summary>
         protected const string MetaFileName = "MBPerson.json";
+
+        /// <summary>
+        /// Gets the json serializer.
+        /// </summary>
+        /// <value>The json serializer.</value>
+        protected IJsonSerializer JsonSerializer { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MovieDbProvider" /> class.
+        /// </summary>
+        /// <param name="jsonSerializer">The json serializer.</param>
+        /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
+        public TmdbPersonProvider(IJsonSerializer jsonSerializer)
+            : base()
+        {
+            if (jsonSerializer == null)
+            {
+                throw new ArgumentNullException("jsonSerializer");
+            }
+            JsonSerializer = jsonSerializer;
+        }
 
         /// <summary>
         /// Supportses the specified item.
@@ -56,7 +77,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         protected override async Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             var person = (Person)item;
             var tasks = new List<Task>();
 
@@ -169,7 +190,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             if (searchResult != null && searchResult.Biography != null)
             {
                 ProcessInfo(person, searchResult);

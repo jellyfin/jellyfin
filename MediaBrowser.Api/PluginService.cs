@@ -1,15 +1,15 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Serialization;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Plugins;
+using MediaBrowser.Model.Serialization;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text.Controller;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using ServiceStack.Text.Controller;
 
 namespace MediaBrowser.Api
 {
@@ -120,6 +120,27 @@ namespace MediaBrowser.Api
     public class PluginService : BaseRestService
     {
         /// <summary>
+        /// The _json serializer
+        /// </summary>
+        private readonly IJsonSerializer _jsonSerializer;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PluginService" /> class.
+        /// </summary>
+        /// <param name="jsonSerializer">The json serializer.</param>
+        /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
+        public PluginService(IJsonSerializer jsonSerializer)
+            : base()
+        {
+            if (jsonSerializer == null)
+            {
+                throw new ArgumentNullException("jsonSerializer");
+            }
+
+            _jsonSerializer = jsonSerializer;
+        }
+
+        /// <summary>
         /// Gets the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -198,7 +219,7 @@ namespace MediaBrowser.Api
         {
             var kernel = (Kernel)Kernel;
 
-            var info = JsonSerializer.DeserializeFromStream<PluginSecurityInfo>(request.RequestStream);
+            var info = _jsonSerializer.DeserializeFromStream<PluginSecurityInfo>(request.RequestStream);
 
             kernel.PluginSecurityManager.SupporterKey = info.SupporterKey;
             kernel.PluginSecurityManager.LegacyKey = info.LegacyKey;
@@ -217,7 +238,7 @@ namespace MediaBrowser.Api
 
             var plugin = Kernel.Plugins.First(p => p.Id == id);
 
-            var configuration = JsonSerializer.DeserializeFromStream(request.RequestStream, plugin.ConfigurationType) as BasePluginConfiguration;
+            var configuration = _jsonSerializer.DeserializeFromStream(request.RequestStream, plugin.ConfigurationType) as BasePluginConfiguration;
 
             plugin.UpdateConfiguration(configuration);
         }

@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Updates;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,6 +32,26 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
         bool CanSelfUpdate { get; }
+
+        /// <summary>
+        /// Gets the failed assemblies.
+        /// </summary>
+        /// <value>The failed assemblies.</value>
+        IEnumerable<string> FailedAssemblies { get; }
+
+        /// <summary>
+        /// Gets all concrete types.
+        /// </summary>
+        /// <value>All concrete types.</value>
+        Type[] AllConcreteTypes { get; }
+
+        /// <summary>
+        /// Gets the exports.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="manageLiftime">if set to <c>true</c> [manage liftime].</param>
+        /// <returns>IEnumerable{``0}.</returns>
+        IEnumerable<T> GetExports<T>(bool manageLiftime = true);
 
         /// <summary>
         /// Checks for update.

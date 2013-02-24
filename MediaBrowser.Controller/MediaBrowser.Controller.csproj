@@ -110,6 +110,7 @@
     <Compile Include="IO\FileSystem.cs" />
     <Compile Include="IO\FileSystemManager.cs" />
     <Compile Include="IO\NativeMethods.cs" />
+    <Compile Include="IServerApplicationPaths.cs" />
     <Compile Include="Library\ChildrenChangedEventArgs.cs" />
     <Compile Include="Library\DtoBuilder.cs" />
     <Compile Include="Library\Profiler.cs" />
@@ -183,7 +184,6 @@
     <Compile Include="ScheduledTasks\PeopleValidationTask.cs" />
     <Compile Include="ScheduledTasks\PluginUpdateTask.cs" />
     <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
-    <Compile Include="ServerApplicationPaths.cs" />
     <Compile Include="Library\ItemResolveArgs.cs" />
     <Compile Include="IO\DirectoryWatchers.cs" />
     <Compile Include="IO\FileData.cs" />

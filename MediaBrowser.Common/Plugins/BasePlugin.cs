@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Plugins;
 using System;
@@ -7,6 +6,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Common.Plugins
 {
@@ -188,7 +188,7 @@ namespace MediaBrowser.Common.Plugins
             get
             {
                 // Lazy load
-                LazyInitializer.EnsureInitialized(ref _configuration, ref _configurationInitialized, ref _configurationSyncLock, () => XmlSerializer.GetXmlConfiguration(ConfigurationType, ConfigurationFilePath, Logger) as TConfigurationType);
+                LazyInitializer.EnsureInitialized(ref _configuration, ref _configurationInitialized, ref _configurationSyncLock, () => Kernel.GetXmlConfiguration(ConfigurationType, ConfigurationFilePath) as TConfigurationType);
                 return _configuration;
             }
             protected set
@@ -270,25 +270,37 @@ namespace MediaBrowser.Common.Plugins
         public ILogger Logger { get; private set; }
 
         /// <summary>
+        /// Gets the XML serializer.
+        /// </summary>
+        /// <value>The XML serializer.</value>
+        protected IXmlSerializer XmlSerializer { get; private set; }
+
+        /// <summary>
         /// Starts the plugin.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
+        /// <param name="xmlSerializer">The XML serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">kernel</exception>
-        public void Initialize(IKernel kernel, ILogger logger)
+        public void Initialize(IKernel kernel, IXmlSerializer xmlSerializer, ILogger logger)
         {
             if (kernel == null)
             {
                 throw new ArgumentNullException("kernel");
             }
 
+            if (xmlSerializer == null)
+            {
+                throw new ArgumentNullException("xmlSerializer");
+            }
+            
             if (logger == null)
             {
                 throw new ArgumentNullException("logger");
             }
-            
+
+            XmlSerializer = xmlSerializer;
             Logger = logger;
-            
             Kernel = kernel;
 
             if (kernel.KernelContext == KernelContext.Server)
