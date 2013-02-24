@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.System;
 using System;
@@ -18,7 +17,7 @@ namespace MediaBrowser.Common.Kernel
         /// Gets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
-        BaseApplicationPaths ApplicationPaths { get; }
+        IApplicationPaths ApplicationPaths { get; }
 
         /// <summary>
         /// Gets the configuration.
@@ -31,12 +30,6 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <value>The kernel context.</value>
         KernelContext KernelContext { get; }
-
-        /// <summary>
-        /// Gets the protobuf serializer.
-        /// </summary>
-        /// <value>The protobuf serializer.</value>
-        DynamicProtobufSerializer ProtobufSerializer { get; }
 
         /// <summary>
         /// Inits this instance.
@@ -156,5 +149,13 @@ namespace MediaBrowser.Common.Kernel
         /// Notifies the pending restart.
         /// </summary>
         void NotifyPendingRestart();
+
+        /// <summary>
+        /// Gets the XML configuration.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="path">The path.</param>
+        /// <returns>System.Object.</returns>
+        object GetXmlConfiguration(Type type, string path);
     }
 }

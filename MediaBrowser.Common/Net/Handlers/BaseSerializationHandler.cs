@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Serialization;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -104,15 +103,15 @@ namespace MediaBrowser.Common.Net.Handlers
         {
             return Task.Run(() =>
             {
-                switch (SerializationFormat)
-                {
-                    case SerializationFormat.Protobuf:
-                        Kernel.ProtobufSerializer.SerializeToStream(_objectToSerialize, stream);
-                        break;
-                    default:
-                        JsonSerializer.SerializeToStream(_objectToSerialize, stream);
-                        break;
-                }
+                //switch (SerializationFormat)
+                //{
+                //    case SerializationFormat.Protobuf:
+                //        Kernel.ProtobufSerializer.SerializeToStream(_objectToSerialize, stream);
+                //        break;
+                //    default:
+                //        JsonSerializer.SerializeToStream(_objectToSerialize, stream);
+                //        break;
+                //}
             });
         }
     }

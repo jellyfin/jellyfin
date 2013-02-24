@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Tasks;
 using Microsoft.Win32;
+using System;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.ScheduledTasks
@@ -7,7 +8,7 @@ namespace MediaBrowser.Common.ScheduledTasks
     /// <summary>
     /// Class SystemEventTrigger
     /// </summary>
-    public class SystemEventTrigger : BaseTaskTrigger
+    public class SystemEventTrigger : ITaskTrigger
     {
         /// <summary>
         /// Gets or sets the system event.
@@ -19,7 +20,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// Stars waiting for the trigger action
         /// </summary>
         /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
-        protected internal override void Start(bool isApplicationStartup)
+        public void Start(bool isApplicationStartup)
         {
             switch (SystemEvent)
             {
@@ -32,7 +33,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// <summary>
         /// Stops waiting for the trigger action
         /// </summary>
-        protected internal override void Stop()
+        public void Stop()
         {
             SystemEvents.PowerModeChanged -= SystemEvents_PowerModeChanged;
         }
@@ -50,6 +51,22 @@ namespace MediaBrowser.Common.ScheduledTasks
                 await Task.Delay(5000).ConfigureAwait(false);
 
                 OnTriggered();
+            }
+        }
+
+        /// <summary>
+        /// Occurs when [triggered].
+        /// </summary>
+        public event EventHandler<EventArgs> Triggered;
+
+        /// <summary>
+        /// Called when [triggered].
+        /// </summary>
+        private void OnTriggered()
+        {
+            if (Triggered != null)
+            {
+                Triggered(this, EventArgs.Empty);
             }
         }
     }

@@ -112,6 +112,8 @@
     <Compile Include="Management\NetworkManager.cs" />
     <Compile Include="Management\NetworkShares.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Web\ServerFactory.cs" />
+    <Compile Include="Web\NativeWebSocket.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">

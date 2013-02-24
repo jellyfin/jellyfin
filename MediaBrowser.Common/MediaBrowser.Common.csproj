@@ -38,10 +38,6 @@
     </ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="protobuf-net, Version=2.0.0.621, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\protobuf-net.2.0.0.621\lib\net40\protobuf-net.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack, Version=3.9.37.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\ServiceStack.3.9.37\lib\net35\ServiceStack.dll</HintPath>
@@ -75,14 +71,12 @@
       <HintPath>..\packages\ServiceStack.Text.3.9.37\lib\net35\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="System.Web" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
@@ -98,8 +92,8 @@
     <Compile Include="IO\IIsoMount.cs" />
     <Compile Include="IO\ProgressStream.cs" />
     <Compile Include="IO\StreamDefaults.cs" />
-    <Compile Include="Kernel\BaseApplicationPaths.cs" />
     <Compile Include="Kernel\BasePeriodicWebSocketListener.cs" />
+    <Compile Include="Kernel\IApplicationPaths.cs" />
     <Compile Include="Kernel\IWebSocketListener.cs" />
     <Compile Include="Kernel\IApplicationHost.cs" />
     <Compile Include="Kernel\IKernel.cs" />
@@ -116,7 +110,6 @@
     <Compile Include="Net\IWebSocket.cs" />
     <Compile Include="Net\IWebSocketServer.cs" />
     <Compile Include="Net\MimeTypes.cs" />
-    <Compile Include="Net\NativeWebSocket.cs" />
     <Compile Include="Net\UdpMessageReceivedEventArgs.cs" />
     <Compile Include="Net\WebSocketConnectEventArgs.cs" />
     <Compile Include="Net\WebSocketConnection.cs" />
@@ -130,26 +123,18 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="ScheduledTasks\ITaskManager.cs" />
-    <Compile Include="ScheduledTasks\TaskManager.cs" />
-    <Compile Include="ScheduledTasks\Tasks\ReloadLoggerTask.cs" />
+    <Compile Include="ScheduledTasks\ITaskTrigger.cs" />
     <Compile Include="ScheduledTasks\ScheduledTaskHelpers.cs" />
     <Compile Include="ScheduledTasks\StartupTrigger.cs" />
     <Compile Include="ScheduledTasks\SystemEventTrigger.cs" />
-    <Compile Include="ScheduledTasks\Tasks\SystemUpdateTask.cs" />
-    <Compile Include="Serialization\DynamicProtobufSerializer.cs" />
-    <Compile Include="Serialization\JsonSerializer.cs" />
     <Compile Include="Kernel\BaseKernel.cs" />
     <Compile Include="Kernel\KernelContext.cs" />
     <Compile Include="Net\Handlers\BaseHandler.cs" />
     <Compile Include="Net\Handlers\BaseSerializationHandler.cs" />
     <Compile Include="Plugins\BasePlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Serialization\XmlSerializer.cs" />
     <Compile Include="ScheduledTasks\BaseScheduledTask.cs" />
-    <Compile Include="ScheduledTasks\BaseTaskTrigger.cs" />
     <Compile Include="ScheduledTasks\DailyTrigger.cs" />
-    <Compile Include="ScheduledTasks\Tasks\DeleteCacheFileTask.cs" />
-    <Compile Include="ScheduledTasks\Tasks\DeleteLogFileTask.cs" />
     <Compile Include="ScheduledTasks\IntervalTrigger.cs" />
     <Compile Include="ScheduledTasks\IScheduledTask.cs" />
     <Compile Include="ScheduledTasks\WeeklyTrigger.cs" />

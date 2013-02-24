@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Plugins;
+using MediaBrowser.Model.Serialization;
 using System;
 
 namespace MediaBrowser.Common.Plugins
@@ -107,9 +108,10 @@ namespace MediaBrowser.Common.Plugins
         /// Starts the plugin.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
+        /// <param name="xmlSerializer">The XML serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">kernel</exception>
-        void Initialize(IKernel kernel, ILogger logger);
+        void Initialize(IKernel kernel, IXmlSerializer xmlSerializer, ILogger logger);
 
         /// <summary>
         /// Disposes the plugins. Undos all actions performed during Init.

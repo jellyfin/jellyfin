@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Common.ScheduledTasks.Tasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
@@ -137,7 +136,7 @@ namespace MediaBrowser.WebDashboard.Api
                                      .Select(ScheduledTaskHelpers.GetTaskInfo)
                                      .ToArray(),
 
-                ApplicationUpdateTaskId = taskManager.ScheduledTasks.OfType<SystemUpdateTask>().First().Id,
+                ApplicationUpdateTaskId = taskManager.ScheduledTasks.First(t => t.GetType().Name.Equals("SystemUpdateTask", StringComparison.OrdinalIgnoreCase)).Id,
 
                 ActiveConnections = connections,
 

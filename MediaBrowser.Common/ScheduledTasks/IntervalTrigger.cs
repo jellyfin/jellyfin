@@ -6,7 +6,7 @@ namespace MediaBrowser.Common.ScheduledTasks
     /// <summary>
     /// Represents a task trigger that runs repeatedly on an interval
     /// </summary>
-    public class IntervalTrigger : BaseTaskTrigger
+    public class IntervalTrigger : ITaskTrigger
     {
         /// <summary>
         /// Gets or sets the interval.
@@ -24,7 +24,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// Stars waiting for the trigger action
         /// </summary>
         /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
-        protected internal override void Start(bool isApplicationStartup)
+        public void Start(bool isApplicationStartup)
         {
             DisposeTimer();
 
@@ -34,23 +34,9 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// <summary>
         /// Stops waiting for the trigger action
         /// </summary>
-        protected internal override void Stop()
+        public void Stop()
         {
             DisposeTimer();
-        }
-
-        /// <summary>
-        /// Disposes this instance.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected override void Dispose(bool dispose)
-        {
-            if (dispose)
-            {
-                DisposeTimer();
-            }
-
-            base.Dispose(dispose);
         }
 
         /// <summary>
@@ -61,6 +47,22 @@ namespace MediaBrowser.Common.ScheduledTasks
             if (Timer != null)
             {
                 Timer.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Occurs when [triggered].
+        /// </summary>
+        public event EventHandler<EventArgs> Triggered;
+
+        /// <summary>
+        /// Called when [triggered].
+        /// </summary>
+        private void OnTriggered()
+        {
+            if (Triggered != null)
+            {
+                Triggered(this, EventArgs.Empty);
             }
         }
     }

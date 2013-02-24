@@ -80,6 +80,7 @@
     <Compile Include="Images\ImageService.cs" />
     <Compile Include="Images\ImageWriter.cs" />
     <Compile Include="Images\UploadImageHandler.cs" />
+    <Compile Include="Javascript\JavascriptApiClientService.cs" />
     <Compile Include="LibraryService.cs" />
     <Compile Include="LocalizationService.cs" />
     <Compile Include="PackageService.cs" />
@@ -128,6 +129,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Javascript\ApiClient.js" />
     <Content Include="options.xml" />
   </ItemGroup>
   <ItemGroup />

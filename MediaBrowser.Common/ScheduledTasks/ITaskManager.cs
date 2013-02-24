@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Model.Tasks;
+using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Common.ScheduledTasks
@@ -41,6 +42,30 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// Called when [task completed].
         /// </summary>
         /// <param name="task">The task.</param>
-        void OnTaskCompleted(IScheduledTask task);
+        /// <param name="startTime">The start time.</param>
+        /// <param name="endTime">The end time.</param>
+        /// <param name="status">The status.</param>
+        void OnTaskCompleted(IScheduledTask task, DateTime startTime, DateTime endTime, TaskCompletionStatus status);
+
+        /// <summary>
+        /// Gets the last execution result.
+        /// </summary>
+        /// <param name="task">The task.</param>
+        /// <returns>TaskResult.</returns>
+        TaskResult GetLastExecutionResult(IScheduledTask task);
+
+        /// <summary>
+        /// Loads the triggers.
+        /// </summary>
+        /// <param name="task">The task.</param>
+        /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
+        IEnumerable<ITaskTrigger> LoadTriggers(IScheduledTask task);
+
+        /// <summary>
+        /// Saves the triggers.
+        /// </summary>
+        /// <param name="task">The task.</param>
+        /// <param name="triggers">The triggers.</param>
+        void SaveTriggers(IScheduledTask task, IEnumerable<ITaskTrigger> triggers);
     }
 }

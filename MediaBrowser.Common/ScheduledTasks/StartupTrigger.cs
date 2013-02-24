@@ -1,17 +1,18 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.ScheduledTasks
 {
     /// <summary>
     /// Class StartupTaskTrigger
     /// </summary>
-    public class StartupTrigger : BaseTaskTrigger
+    public class StartupTrigger : ITaskTrigger
     {
         /// <summary>
         /// Stars waiting for the trigger action
         /// </summary>
         /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
-        protected internal async override void Start(bool isApplicationStartup)
+        public async void Start(bool isApplicationStartup)
         {
             if (isApplicationStartup)
             {
@@ -24,8 +25,24 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// <summary>
         /// Stops waiting for the trigger action
         /// </summary>
-        protected internal override void Stop()
+        public void Stop()
         {
+        }
+
+        /// <summary>
+        /// Occurs when [triggered].
+        /// </summary>
+        public event EventHandler<EventArgs> Triggered;
+
+        /// <summary>
+        /// Called when [triggered].
+        /// </summary>
+        private void OnTriggered()
+        {
+            if (Triggered != null)
+            {
+                Triggered(this, EventArgs.Empty);
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Kernel;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -97,6 +98,26 @@ namespace MediaBrowser.Api
     /// </summary>
     public class LibraryService : BaseRestService
     {
+        /// <summary>
+        /// The _app host
+        /// </summary>
+        private readonly IApplicationHost _appHost;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LibraryService" /> class.
+        /// </summary>
+        /// <param name="appHost">The app host.</param>
+        /// <exception cref="System.ArgumentNullException">appHost</exception>
+        public LibraryService(IApplicationHost appHost)
+        {
+            if (appHost == null)
+            {
+                throw new ArgumentNullException("appHost");
+            }
+
+            _appHost = appHost;
+        }
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -210,7 +231,7 @@ namespace MediaBrowser.Api
         {
             var kernel = (Kernel)Kernel;
 
-            var allTypes = kernel.AllTypes.Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(BaseItem)));
+            var allTypes = _appHost.AllConcreteTypes.Where(t => t.IsSubclassOf(typeof(BaseItem)));
 
             if (request.HasInternetProvider)
             {

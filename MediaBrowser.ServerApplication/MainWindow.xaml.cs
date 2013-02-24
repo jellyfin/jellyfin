@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.ServerApplication.Controls;
 using MediaBrowser.ServerApplication.Logging;
 using System;
@@ -39,6 +40,11 @@ namespace MediaBrowser.ServerApplication
         private Timer NewItemTimer { get; set; }
 
         /// <summary>
+        /// The _json serializer
+        /// </summary>
+        private readonly IJsonSerializer _jsonSerializer;
+        
+        /// <summary>
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
@@ -48,13 +54,18 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">logger</exception>
-        public MainWindow(ILogger logger)
+        public MainWindow(IJsonSerializer jsonSerializer, ILogger logger)
         {
+            if (jsonSerializer == null)
+            {
+                throw new ArgumentNullException("jsonSerializer");
+            }
             if (logger == null)
             {
                 throw new ArgumentNullException("logger");
             }
 
+            _jsonSerializer = jsonSerializer;
             _logger = logger;
 
             InitializeComponent();
@@ -282,7 +293,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void cmOpenExplorer_click(object sender, RoutedEventArgs e)
         {
-            (new LibraryExplorer(_logger)).Show();
+            (new LibraryExplorer(_jsonSerializer, _logger)).Show();
         }
 
         /// <summary>

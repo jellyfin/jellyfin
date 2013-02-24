@@ -1,11 +1,12 @@
-﻿using MediaBrowser.Common.Serialization;
-using MediaBrowser.Controller;
+﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -18,7 +19,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.ServerApplication
 {
@@ -27,8 +27,10 @@ namespace MediaBrowser.ServerApplication
     /// </summary>
     public partial class LibraryExplorer : Window
     {
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
+        private readonly IJsonSerializer _jsonSerializer;
+        
         /// <summary>
         /// The current user
         /// </summary>
@@ -36,9 +38,10 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryExplorer" /> class.
         /// </summary>
-        public LibraryExplorer(ILogger logger)
+        public LibraryExplorer(IJsonSerializer jsonSerializer, ILogger logger)
         {
             _logger = logger;
+            _jsonSerializer = jsonSerializer;
 
             InitializeComponent();
             lblVersion.Content = "Version: " + Kernel.Instance.ApplicationVersion;
@@ -161,7 +164,7 @@ namespace MediaBrowser.ServerApplication
                     lblIndexBy.Visibility = ddlIndexBy.Visibility = ddlSortBy.Visibility = lblSortBy.Visibility = Visibility.Hidden;
 
                 }
-                txtData.Text = FormatJson(JsonSerializer.SerializeToString(item)) + trailers + features;
+                txtData.Text = FormatJson(_jsonSerializer.SerializeToString(item)) + trailers + features;
 
                 var previews = new List<PreviewItem>();
                 await Task.Run(() =>

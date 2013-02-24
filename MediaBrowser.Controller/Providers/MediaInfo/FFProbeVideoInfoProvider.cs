@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,29 +29,44 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// Gets or sets the bluray examiner.
         /// </summary>
         /// <value>The bluray examiner.</value>
-        private IBlurayExaminer BlurayExaminer { get; set; }
+        private readonly IBlurayExaminer _blurayExaminer;
 
-                /// <summary>
+        /// <summary>
         /// The _iso manager
         /// </summary>
         private readonly IIsoManager _isoManager;
+
+        /// <summary>
+        /// The _protobuf serializer
+        /// </summary>
+        private readonly IProtobufSerializer _protobufSerializer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FFProbeVideoInfoProvider" /> class.
         /// </summary>
         /// <param name="isoManager">The iso manager.</param>
         /// <param name="blurayExaminer">The bluray examiner.</param>
+        /// <param name="protobufSerializer">The protobuf serializer.</param>
         /// <exception cref="System.ArgumentNullException">blurayExaminer</exception>
-        public FFProbeVideoInfoProvider(IIsoManager isoManager, IBlurayExaminer blurayExaminer)
+        public FFProbeVideoInfoProvider(IIsoManager isoManager, IBlurayExaminer blurayExaminer, IProtobufSerializer protobufSerializer)
             : base()
         {
+            if (isoManager == null)
+            {
+                throw new ArgumentNullException("isoManager");
+            }
             if (blurayExaminer == null)
             {
                 throw new ArgumentNullException("blurayExaminer");
             }
+            if (protobufSerializer == null)
+            {
+                throw new ArgumentNullException("protobufSerializer");
+            }
 
-            BlurayExaminer = blurayExaminer;
+            _blurayExaminer = blurayExaminer;
             _isoManager = isoManager;
+            _protobufSerializer = protobufSerializer;
 
             BdInfoCache = new FileSystemRepository(Path.Combine(Kernel.Instance.ApplicationPaths.CachePath, "bdinfo"));
         }
@@ -315,13 +331,13 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
             try
             {
-                result = Kernel.Instance.ProtobufSerializer.DeserializeFromFile<BlurayDiscInfo>(cacheFile);
+                result = _protobufSerializer.DeserializeFromFile<BlurayDiscInfo>(cacheFile);
             }
             catch (FileNotFoundException)
             {
                 result = GetBDInfo(inputPath);
 
-                Kernel.Instance.ProtobufSerializer.SerializeToFile(result, cacheFile);
+                _protobufSerializer.SerializeToFile(result, cacheFile);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -400,7 +416,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// <returns>VideoStream.</returns>
         private BlurayDiscInfo GetBDInfo(string path)
         {
-            return BlurayExaminer.GetDiscInfo(path);
+            return _blurayExaminer.GetDiscInfo(path);
         }
 
         /// <summary>

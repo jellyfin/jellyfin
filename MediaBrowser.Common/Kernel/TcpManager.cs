@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using System;
@@ -14,6 +13,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Common.Kernel
 {
@@ -35,6 +35,12 @@ namespace MediaBrowser.Common.Kernel
         /// <value>The HTTP server.</value>
         private IHttpServer HttpServer { get; set; }
 
+        /// <summary>
+        /// Gets or sets the json serializer.
+        /// </summary>
+        /// <value>The json serializer.</value>
+        private IJsonSerializer _jsonSerializer;
+        
         /// <summary>
         /// This subscribes to HttpListener requests and finds the appropriate BaseHandler to process it
         /// </summary>
@@ -96,8 +102,10 @@ namespace MediaBrowser.Common.Kernel
         /// <param name="applicationHost">The application host.</param>
         /// <param name="kernel">The kernel.</param>
         /// <param name="networkManager">The network manager.</param>
+        /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
-        public TcpManager(IApplicationHost applicationHost, IKernel kernel, INetworkManager networkManager, ILogger logger)
+        /// <exception cref="System.ArgumentNullException">applicationHost</exception>
+        public TcpManager(IApplicationHost applicationHost, IKernel kernel, INetworkManager networkManager, IJsonSerializer jsonSerializer, ILogger logger)
         {
             if (applicationHost == null)
             {
@@ -111,12 +119,17 @@ namespace MediaBrowser.Common.Kernel
             {
                 throw new ArgumentNullException("networkManager");
             }
+            if (jsonSerializer == null)
+            {
+                throw new ArgumentNullException("jsonSerializer");
+            }
             if (logger == null)
             {
                 throw new ArgumentNullException("logger");
             }
 
             _logger = logger;
+            _jsonSerializer = jsonSerializer;
             _kernel = kernel;
             _applicationHost = applicationHost;
             _networkManager = networkManager;
@@ -203,7 +216,7 @@ namespace MediaBrowser.Common.Kernel
         /// <param name="e">The <see cref="WebSocketConnectEventArgs" /> instance containing the event data.</param>
         void HttpServer_WebSocketConnected(object sender, WebSocketConnectEventArgs e)
         {
-            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, ProcessWebSocketMessageReceived, _logger);
+            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, ProcessWebSocketMessageReceived, _jsonSerializer, _logger);
 
             _webSocketConnections.Add(connection);
         }
@@ -342,7 +355,7 @@ namespace MediaBrowser.Common.Kernel
                 _logger.Info("Sending web socket message {0}", messageType);
 
                 var message = new WebSocketMessage<T> { MessageType = messageType, Data = dataFunction() };
-                var bytes = JsonSerializer.SerializeToBytes(message);
+                var bytes = _jsonSerializer.SerializeToBytes(message);
 
                 var tasks = connections.Select(s => Task.Run(() =>
                 {

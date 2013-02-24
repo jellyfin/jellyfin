@@ -1,12 +1,10 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Serialization;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -23,7 +21,7 @@ namespace MediaBrowser.Controller.MediaInfo
     /// <summary>
     /// Class FFMpegManager
     /// </summary>
-    public class FFMpegManager : BaseManager<Kernel>
+    public class FFMpegManager : IDisposable
     {
         /// <summary>
         /// Gets or sets the video image cache.
@@ -47,30 +45,66 @@ namespace MediaBrowser.Controller.MediaInfo
         /// Gets or sets the zip client.
         /// </summary>
         /// <value>The zip client.</value>
-        private IZipClient ZipClient { get; set; }
+        private readonly IZipClient _zipClient;
 
+        /// <summary>
+        /// The _logger
+        /// </summary>
+        private readonly Kernel _kernel;
+        
         /// <summary>
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
 
         /// <summary>
+        /// Gets the json serializer.
+        /// </summary>
+        /// <value>The json serializer.</value>
+        private readonly IJsonSerializer _jsonSerializer;
+
+        /// <summary>
+        /// The _protobuf serializer
+        /// </summary>
+        private readonly IProtobufSerializer _protobufSerializer;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="FFMpegManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="zipClient">The zip client.</param>
+        /// <param name="jsonSerializer">The json serializer.</param>
+        /// <param name="protobufSerializer">The protobuf serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">zipClient</exception>
-        public FFMpegManager(Kernel kernel, IZipClient zipClient, ILogger logger)
-            : base(kernel)
+        public FFMpegManager(Kernel kernel, IZipClient zipClient, IJsonSerializer jsonSerializer, IProtobufSerializer protobufSerializer, ILogger logger)
         {
+            if (kernel == null)
+            {
+                throw new ArgumentNullException("kernel");
+            }
             if (zipClient == null)
             {
                 throw new ArgumentNullException("zipClient");
             }
+            if (jsonSerializer == null)
+            {
+                throw new ArgumentNullException("jsonSerializer");
+            }
+            if (protobufSerializer == null)
+            {
+                throw new ArgumentNullException("protobufSerializer");
+            }
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
 
+            _kernel = kernel;
+            _zipClient = zipClient;
+            _jsonSerializer = jsonSerializer;
+            _protobufSerializer = protobufSerializer;
             _logger = logger;
-            ZipClient = zipClient;
 
             // Not crazy about this but it's the only way to suppress ffmpeg crash dialog boxes
             SetErrorMode(ErrorModes.SEM_FAILCRITICALERRORS | ErrorModes.SEM_NOALIGNMENTFAULTEXCEPT | ErrorModes.SEM_NOGPFAULTERRORBOX | ErrorModes.SEM_NOOPENFILEERRORBOX);
@@ -82,11 +116,16 @@ namespace MediaBrowser.Controller.MediaInfo
             Task.Run(() => VersionedDirectoryPath = GetVersionedDirectoryPath());
         }
 
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected override void Dispose(bool dispose)
+        protected void Dispose(bool dispose)
         {
             if (dispose)
             {
@@ -95,8 +134,6 @@ namespace MediaBrowser.Controller.MediaInfo
                 AudioImageCache.Dispose();
                 VideoImageCache.Dispose();
             }
-
-            base.Dispose(dispose);
         }
 
         /// <summary>
@@ -186,7 +223,7 @@ namespace MediaBrowser.Controller.MediaInfo
             {
                 if (_videoImagesDataPath == null)
                 {
-                    _videoImagesDataPath = Path.Combine(Kernel.ApplicationPaths.DataPath, "ffmpeg-video-images");
+                    _videoImagesDataPath = Path.Combine(_kernel.ApplicationPaths.DataPath, "ffmpeg-video-images");
 
                     if (!Directory.Exists(_videoImagesDataPath))
                     {
@@ -212,7 +249,7 @@ namespace MediaBrowser.Controller.MediaInfo
             {
                 if (_audioImagesDataPath == null)
                 {
-                    _audioImagesDataPath = Path.Combine(Kernel.ApplicationPaths.DataPath, "ffmpeg-audio-images");
+                    _audioImagesDataPath = Path.Combine(_kernel.ApplicationPaths.DataPath, "ffmpeg-audio-images");
 
                     if (!Directory.Exists(_audioImagesDataPath))
                     {
@@ -238,7 +275,7 @@ namespace MediaBrowser.Controller.MediaInfo
             {
                 if (_subtitleCachePath == null)
                 {
-                    _subtitleCachePath = Path.Combine(Kernel.ApplicationPaths.CachePath, "ffmpeg-subtitles");
+                    _subtitleCachePath = Path.Combine(_kernel.ApplicationPaths.CachePath, "ffmpeg-subtitles");
 
                     if (!Directory.Exists(_subtitleCachePath))
                     {
@@ -265,7 +302,7 @@ namespace MediaBrowser.Controller.MediaInfo
 
             var filename = resource.Substring(resource.IndexOf(prefix, StringComparison.OrdinalIgnoreCase) + prefix.Length);
 
-            var versionedDirectoryPath = Path.Combine(Kernel.ApplicationPaths.MediaToolsPath, Path.GetFileNameWithoutExtension(filename));
+            var versionedDirectoryPath = Path.Combine(_kernel.ApplicationPaths.MediaToolsPath, Path.GetFileNameWithoutExtension(filename));
 
             if (!Directory.Exists(versionedDirectoryPath))
             {
@@ -287,7 +324,7 @@ namespace MediaBrowser.Controller.MediaInfo
         {
             using (var resourceStream = assembly.GetManifestResourceStream(zipFileResourcePath))
             {
-                ZipClient.ExtractAll(resourceStream, targetPath, false);
+                _zipClient.ExtractAll(resourceStream, targetPath, false);
             }
         }
 
@@ -353,7 +390,7 @@ namespace MediaBrowser.Controller.MediaInfo
             // Avoid File.Exists by just trying to deserialize
             try
             {
-                return Task.FromResult(Kernel.ProtobufSerializer.DeserializeFromFile<FFProbeResult>(cacheFilePath));
+                return Task.FromResult(_protobufSerializer.DeserializeFromFile<FFProbeResult>(cacheFilePath));
             }
             catch (FileNotFoundException)
             {
@@ -428,7 +465,7 @@ namespace MediaBrowser.Controller.MediaInfo
                     process.BeginErrorReadLine();
                 }
 
-                result = JsonSerializer.DeserializeFromStream<FFProbeResult>(process.StandardOutput.BaseStream);
+                result = _jsonSerializer.DeserializeFromStream<FFProbeResult>(process.StandardOutput.BaseStream);
 
                 if (extractChapters)
                 {
@@ -470,7 +507,7 @@ namespace MediaBrowser.Controller.MediaInfo
                 AddChapters(result, standardError);
             }
 
-            Kernel.ProtobufSerializer.SerializeToFile(result, cacheFile);
+            _protobufSerializer.SerializeToFile(result, cacheFile);
 
             return result;
         }
@@ -595,7 +632,7 @@ namespace MediaBrowser.Controller.MediaInfo
 
             if (saveItem && changesMade)
             {
-                await Kernel.ItemRepository.SaveItem(video, CancellationToken.None).ConfigureAwait(false);
+                await _kernel.ItemRepository.SaveItem(video, CancellationToken.None).ConfigureAwait(false);
             }
         }
 

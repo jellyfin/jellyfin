@@ -20,7 +20,8 @@ namespace MediaBrowser.Controller.ScheduledTasks
         /// Initializes a new instance of the <see cref="ImageCleanupTask" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        /// <param name="logger"></param>
+        /// <param name="taskManager">The task manager.</param>
+        /// <param name="logger">The logger.</param>
         public ImageCleanupTask(Kernel kernel, ITaskManager taskManager, ILogger logger)
             : base(kernel, taskManager, logger)
         {
@@ -30,9 +31,9 @@ namespace MediaBrowser.Controller.ScheduledTasks
         /// Creates the triggers that define when the task will run
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        protected override IEnumerable<BaseTaskTrigger> GetDefaultTriggers()
+        public override IEnumerable<ITaskTrigger> GetDefaultTriggers()
         {
-            return new BaseTaskTrigger[]
+            return new ITaskTrigger[]
                 {
                     new DailyTrigger { TimeOfDay = TimeSpan.FromHours(2) }
                 };

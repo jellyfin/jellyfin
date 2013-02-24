@@ -1,18 +1,17 @@
-﻿using System.Security.Cryptography;
-using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
-using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -32,8 +31,8 @@ namespace MediaBrowser.Controller.Updates
         /// <summary>
         /// The completed installations
         /// </summary>
-        public readonly ConcurrentBag<InstallationInfo> CompletedInstallations = new ConcurrentBag<InstallationInfo>(); 
-        
+        public readonly ConcurrentBag<InstallationInfo> CompletedInstallations = new ConcurrentBag<InstallationInfo>();
+
         #region PluginUninstalled Event
         /// <summary>
         /// Occurs when [plugin uninstalled].
@@ -68,7 +67,7 @@ namespace MediaBrowser.Controller.Updates
             _logger.Info("Plugin updated: {0} {1} {2}", newVersion.name, newVersion.version, newVersion.classification);
 
             EventHelper.QueueEventIfNotNull(PluginUpdated, this, new GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> { Argument = new Tuple<IPlugin, PackageVersionInfo>(plugin, newVersion) }, _logger);
-            
+
             Kernel.NotifyPendingRestart();
         }
         #endregion
@@ -109,14 +108,21 @@ namespace MediaBrowser.Controller.Updates
         private readonly INetworkManager _networkManager;
 
         /// <summary>
+        /// Gets the json serializer.
+        /// </summary>
+        /// <value>The json serializer.</value>
+        protected IJsonSerializer JsonSerializer { get; private set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="InstallationManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="zipClient">The zip client.</param>
         /// <param name="networkManager">The network manager.</param>
+        /// <param name="jsonSerializer"></param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">zipClient</exception>
-        public InstallationManager(Kernel kernel, IZipClient zipClient, INetworkManager networkManager, ILogger logger)
+        public InstallationManager(Kernel kernel, IZipClient zipClient, INetworkManager networkManager, IJsonSerializer jsonSerializer, ILogger logger)
             : base(kernel)
         {
             if (zipClient == null)
@@ -131,6 +137,12 @@ namespace MediaBrowser.Controller.Updates
             {
                 throw new ArgumentNullException("logger");
             }
+            if (jsonSerializer == null)
+            {
+                throw new ArgumentNullException("jsonSerializer");
+            }
+
+            JsonSerializer = jsonSerializer;
 
             _networkManager = networkManager;
             _logger = logger;
@@ -161,7 +173,7 @@ namespace MediaBrowser.Controller.Updates
                     package.versions = package.versions.Where(v => !string.IsNullOrWhiteSpace(v.sourceUrl))
                         .OrderByDescending(v => v.version).ToList();
                 }
-                
+
                 if (packageType.HasValue)
                 {
                     packages = packages.Where(p => p.type == packageType.Value).ToList();
@@ -178,7 +190,7 @@ namespace MediaBrowser.Controller.Updates
 
                 // Remove packages with no versions
                 packages = packages.Where(p => p.versions.Any()).ToList();
-                
+
                 return packages;
             }
         }
@@ -320,7 +332,7 @@ namespace MediaBrowser.Controller.Updates
             var innerCancellationTokenSource = new CancellationTokenSource();
 
             var tuple = new Tuple<InstallationInfo, CancellationTokenSource>(installationInfo, innerCancellationTokenSource);
-            
+
             // Add it to the in-progress list
             lock (CurrentInstallations)
             {
@@ -364,7 +376,7 @@ namespace MediaBrowser.Controller.Updates
                 _logger.Info("Package installation cancelled: {0} {1}", package.name, package.versionStr);
 
                 Kernel.TcpManager.SendWebSocketMessage("PackageInstallationCancelled", installationInfo);
-                
+
                 throw;
             }
             catch
@@ -373,7 +385,7 @@ namespace MediaBrowser.Controller.Updates
                 {
                     CurrentInstallations.Remove(tuple);
                 }
-                
+
                 Kernel.TcpManager.SendWebSocketMessage("PackageInstallationFailed", installationInfo);
 
                 throw;
@@ -421,7 +433,7 @@ namespace MediaBrowser.Controller.Updates
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             // Success - move it to the real target based on type
             if (isArchive)
             {
@@ -435,7 +447,7 @@ namespace MediaBrowser.Controller.Updates
                     throw;
                 }
 
-            } 
+            }
             else
             {
                 try
@@ -448,8 +460,8 @@ namespace MediaBrowser.Controller.Updates
                     _logger.ErrorException("Error attempting to move file from {0} to {1}", e, tempFile, target);
                     throw;
                 }
-            }            
-            
+            }
+
             // Set last update time if we were installed before
             var plugin = Kernel.Plugins.FirstOrDefault(p => p.Name.Equals(package.name, StringComparison.OrdinalIgnoreCase));
 

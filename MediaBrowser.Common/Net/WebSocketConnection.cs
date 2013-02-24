@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Common.Serialization;
+﻿using System.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using System;
-using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,13 +39,20 @@ namespace MediaBrowser.Common.Net
         private readonly ILogger _logger;
 
         /// <summary>
+        /// The _json serializer
+        /// </summary>
+        private readonly IJsonSerializer _jsonSerializer;
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketConnection" /> class.
         /// </summary>
         /// <param name="socket">The socket.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="receiveAction">The receive action.</param>
+        /// <param name="jsonSerializer">The json serializer.</param>
+        /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">socket</exception>
-        public WebSocketConnection(IWebSocket socket, string remoteEndPoint, Action<WebSocketMessageInfo> receiveAction, ILogger logger)
+        public WebSocketConnection(IWebSocket socket, string remoteEndPoint, Action<WebSocketMessageInfo> receiveAction, IJsonSerializer jsonSerializer, ILogger logger)
         {
             if (socket == null)
             {
@@ -59,11 +66,16 @@ namespace MediaBrowser.Common.Net
             {
                 throw new ArgumentNullException("receiveAction");
             }
+            if (jsonSerializer == null)
+            {
+                throw new ArgumentNullException("jsonSerializer");
+            }
             if (logger == null)
             {
                 throw new ArgumentNullException("logger");
             }
 
+            _jsonSerializer = jsonSerializer;
             _socket = socket;
             _socket.OnReceiveDelegate = info => OnReceive(info, receiveAction);
             RemoteEndPoint = remoteEndPoint;
@@ -73,12 +85,19 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Called when [receive].
         /// </summary>
-        /// <param name="info">The info.</param>
+        /// <param name="bytes">The bytes.</param>
         /// <param name="callback">The callback.</param>
-        private void OnReceive(WebSocketMessageInfo info, Action<WebSocketMessageInfo> callback)
+        private void OnReceive(byte[] bytes, Action<WebSocketMessageInfo> callback)
         {
             try
             {
+                WebSocketMessageInfo info;
+
+                using (var memoryStream = new MemoryStream(bytes))
+                {
+                    info = _jsonSerializer.DeserializeFromStream<WebSocketMessageInfo>(memoryStream);
+                }
+
                 info.Connection = this;
 
                 callback(info);
@@ -103,8 +122,8 @@ namespace MediaBrowser.Common.Net
             {
                 throw new ArgumentNullException("message");
             }
-            
-            var bytes = JsonSerializer.SerializeToBytes(message);
+
+            var bytes = _jsonSerializer.SerializeToBytes(message);
 
             return SendAsync(bytes, cancellationToken);
         }

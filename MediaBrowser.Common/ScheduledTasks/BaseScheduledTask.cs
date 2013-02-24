@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Serialization;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using System;
@@ -90,7 +89,7 @@ namespace MediaBrowser.Common.ScheduledTasks
                 {
                     try
                     {
-                        return JsonSerializer.DeserializeFromFile<TaskResult>(HistoryFilePath);
+                        return TaskManager.GetLastExecutionResult(this);
                     }
                     catch (IOException)
                     {
@@ -107,74 +106,6 @@ namespace MediaBrowser.Common.ScheduledTasks
 
                 _lastExecutionResultinitialized = value != null;
             }
-        }
-
-        /// <summary>
-        /// The _scheduled tasks data directory
-        /// </summary>
-        private string _scheduledTasksDataDirectory;
-        /// <summary>
-        /// Gets the scheduled tasks data directory.
-        /// </summary>
-        /// <value>The scheduled tasks data directory.</value>
-        private string ScheduledTasksDataDirectory
-        {
-            get
-            {
-                if (_scheduledTasksDataDirectory == null)
-                {
-                    _scheduledTasksDataDirectory = Path.Combine(Kernel.ApplicationPaths.DataPath, "ScheduledTasks");
-
-                    if (!Directory.Exists(_scheduledTasksDataDirectory))
-                    {
-                        Directory.CreateDirectory(_scheduledTasksDataDirectory);
-                    }
-                }
-                return _scheduledTasksDataDirectory;
-            }
-        }
-
-        /// <summary>
-        /// The _scheduled tasks configuration directory
-        /// </summary>
-        private string _scheduledTasksConfigurationDirectory;
-        /// <summary>
-        /// Gets the scheduled tasks configuration directory.
-        /// </summary>
-        /// <value>The scheduled tasks configuration directory.</value>
-        private string ScheduledTasksConfigurationDirectory
-        {
-            get
-            {
-                if (_scheduledTasksConfigurationDirectory == null)
-                {
-                    _scheduledTasksConfigurationDirectory = Path.Combine(Kernel.ApplicationPaths.ConfigurationDirectoryPath, "ScheduledTasks");
-
-                    if (!Directory.Exists(_scheduledTasksConfigurationDirectory))
-                    {
-                        Directory.CreateDirectory(_scheduledTasksConfigurationDirectory);
-                    }
-                }
-                return _scheduledTasksConfigurationDirectory;
-            }
-        }
-
-        /// <summary>
-        /// Gets the configuration file path.
-        /// </summary>
-        /// <value>The configuration file path.</value>
-        private string ConfigurationFilePath
-        {
-            get { return Path.Combine(ScheduledTasksConfigurationDirectory, Id + ".js"); }
-        }
-
-        /// <summary>
-        /// Gets the history file path.
-        /// </summary>
-        /// <value>The history file path.</value>
-        private string HistoryFilePath
-        {
-            get { return Path.Combine(ScheduledTasksDataDirectory, Id + ".js"); }
         }
 
         /// <summary>
@@ -217,7 +148,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// <summary>
         /// The _triggers
         /// </summary>
-        private IEnumerable<BaseTaskTrigger> _triggers;
+        private IEnumerable<ITaskTrigger> _triggers;
         /// <summary>
         /// The _triggers initialized
         /// </summary>
@@ -231,24 +162,11 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// </summary>
         /// <value>The triggers.</value>
         /// <exception cref="System.ArgumentNullException">value</exception>
-        public IEnumerable<BaseTaskTrigger> Triggers
+        public IEnumerable<ITaskTrigger> Triggers
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _triggers, ref _triggersInitialized, ref _triggersSyncLock, () =>
-                {
-                    try
-                    {
-                        return JsonSerializer.DeserializeFromFile<IEnumerable<TaskTriggerInfo>>(ConfigurationFilePath)
-                            .Select(ScheduledTaskHelpers.GetTrigger)
-                            .ToList();
-                    }
-                    catch (IOException)
-                    {
-                        // File doesn't exist. No biggie. Return defaults.
-                        return GetDefaultTriggers();
-                    }
-                });
+                LazyInitializer.EnsureInitialized(ref _triggers, ref _triggersInitialized, ref _triggersSyncLock, () => TaskManager.LoadTriggers(this));
 
                 return _triggers;
             }
@@ -271,7 +189,7 @@ namespace MediaBrowser.Common.ScheduledTasks
 
                 ReloadTriggerEvents(false);
 
-                JsonSerializer.SerializeToFile(_triggers.Select(ScheduledTaskHelpers.GetTriggerInfo), ConfigurationFilePath);
+                TaskManager.SaveTriggers(this, _triggers);
             }
         }
 
@@ -279,7 +197,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// Creates the triggers that define when the task will run
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        protected abstract IEnumerable<BaseTaskTrigger> GetDefaultTriggers();
+        public abstract IEnumerable<ITaskTrigger> GetDefaultTriggers();
 
         /// <summary>
         /// Returns the task to be executed
@@ -314,6 +232,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// The _id
         /// </summary>
         private Guid? _id;
+
         /// <summary>
         /// Gets the unique id.
         /// </summary>
@@ -352,13 +271,19 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void trigger_Triggered(object sender, EventArgs e)
+        async void trigger_Triggered(object sender, EventArgs e)
         {
-            var trigger = (BaseTaskTrigger)sender;
+            var trigger = (ITaskTrigger)sender;
 
             Logger.Info("{0} fired for task: {1}", trigger.GetType().Name, Name);
 
+            trigger.Stop();
+
             TaskManager.QueueScheduledTask(this);
+
+            await Task.Delay(1000).ConfigureAwait(false); 
+            
+            trigger.Start(false);
         }
 
         /// <summary>
@@ -404,9 +329,8 @@ namespace MediaBrowser.Common.ScheduledTasks
                 status = TaskCompletionStatus.Failed;
             }
 
+            var startTime = CurrentExecutionStartTime;
             var endTime = DateTime.UtcNow;
-
-            LogResult(endTime, status);
 
             Kernel.TcpManager.SendWebSocketMessage("ScheduledTaskEndExecute", LastExecutionResult);
 
@@ -415,33 +339,7 @@ namespace MediaBrowser.Common.ScheduledTasks
             CurrentCancellationTokenSource = null;
             CurrentProgress = null;
 
-            TaskManager.OnTaskCompleted(this);
-        }
-
-        /// <summary>
-        /// Logs the result.
-        /// </summary>
-        /// <param name="endTime">The end time.</param>
-        /// <param name="status">The status.</param>
-        private void LogResult(DateTime endTime, TaskCompletionStatus status)
-        {
-            var startTime = CurrentExecutionStartTime;
-            var elapsedTime = endTime - startTime;
-            
-            Logger.Info("{0} {1} after {2} minute(s) and {3} seconds", Name, status, Math.Truncate(elapsedTime.TotalMinutes), elapsedTime.Seconds);
-
-            var result = new TaskResult
-            {
-                StartTimeUtc = startTime,
-                EndTimeUtc = endTime,
-                Status = status,
-                Name = Name,
-                Id = Id
-            };
-
-            JsonSerializer.SerializeToFile(result, HistoryFilePath);
-
-            LastExecutionResult = result;
+            TaskManager.OnTaskCompleted(this, startTime, endTime, status);
         }
 
         /// <summary>
@@ -501,7 +399,7 @@ namespace MediaBrowser.Common.ScheduledTasks
 
                 if (State == TaskState.Running)
                 {
-                    LogResult(DateTime.UtcNow, TaskCompletionStatus.Aborted);
+                    TaskManager.OnTaskCompleted(this, CurrentExecutionStartTime, DateTime.UtcNow, TaskCompletionStatus.Aborted);
                 }
 
                 if (CurrentCancellationTokenSource != null)
@@ -519,7 +417,7 @@ namespace MediaBrowser.Common.ScheduledTasks
             foreach (var trigger in Triggers)
             {
                 trigger.Triggered -= trigger_Triggered;
-                trigger.Dispose();
+                trigger.Stop();
             }
         }
     }

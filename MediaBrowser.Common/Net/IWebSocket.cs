@@ -20,7 +20,7 @@ namespace MediaBrowser.Common.Net
         /// Gets or sets the receive action.
         /// </summary>
         /// <value>The receive action.</value>
-        Action<WebSocketMessageInfo> OnReceiveDelegate { get; set; }
+        Action<byte[]> OnReceiveDelegate { get; set; }
 
         /// <summary>
         /// Sends the async.

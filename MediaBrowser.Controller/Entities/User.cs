@@ -1,15 +1,13 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Serialization;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Tasks;
 using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -170,7 +168,7 @@ namespace MediaBrowser.Controller.Entities
             get
             {
                 // Lazy load
-                LazyInitializer.EnsureInitialized(ref _configuration, ref _configurationInitialized, ref _configurationSyncLock, () => XmlSerializer.GetXmlConfiguration<UserConfiguration>(ConfigurationFilePath, Logger));
+                LazyInitializer.EnsureInitialized(ref _configuration, ref _configurationInitialized, ref _configurationSyncLock, () => (UserConfiguration)Kernel.Instance.GetXmlConfiguration(typeof(UserConfiguration), ConfigurationFilePath));
                 return _configuration;
             }
             private set
@@ -338,9 +336,9 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Saves the current configuration to the file system
         /// </summary>
-        public void SaveConfiguration()
+        public void SaveConfiguration(IXmlSerializer serializer)
         {
-            XmlSerializer.SerializeToFile(Configuration, ConfigurationFilePath);
+            serializer.SerializeToFile(Configuration, ConfigurationFilePath);
         }
 
         /// <summary>
@@ -376,8 +374,9 @@ namespace MediaBrowser.Controller.Entities
         /// Updates the configuration.
         /// </summary>
         /// <param name="config">The config.</param>
+        /// <param name="serializer">The serializer.</param>
         /// <exception cref="System.ArgumentNullException">config</exception>
-        public void UpdateConfiguration(UserConfiguration config)
+        public void UpdateConfiguration(UserConfiguration config, IXmlSerializer serializer)
         {
             if (config == null)
             {
@@ -387,7 +386,7 @@ namespace MediaBrowser.Controller.Entities
             var customLibraryChanged = config.UseCustomLibrary != Configuration.UseCustomLibrary;
 
             Configuration = config;
-            SaveConfiguration();
+            SaveConfiguration(serializer);
 
             // Force these to be lazy loaded again
             if (customLibraryChanged)

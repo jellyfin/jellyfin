@@ -75,6 +75,9 @@
     <Compile Include="Net\HttpException.cs" />
     <Compile Include="Net\NetworkShare.cs" />
     <Compile Include="Net\NetworkShareType.cs" />
+    <Compile Include="Serialization\IJsonSerializer.cs" />
+    <Compile Include="Serialization\IProtobufSerializer.cs" />
+    <Compile Include="Serialization\IXmlSerializer.cs" />
     <Compile Include="Updates\CheckForUpdateResult.cs" />
     <Compile Include="Updates\InstallationInfo.cs" />
     <Compile Include="Updates\PackageType.cs" />

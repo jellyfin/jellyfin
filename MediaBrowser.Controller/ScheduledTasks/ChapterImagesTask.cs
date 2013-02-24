@@ -28,9 +28,9 @@ namespace MediaBrowser.Controller.ScheduledTasks
         /// Creates the triggers that define when the task will run
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        protected override IEnumerable<BaseTaskTrigger> GetDefaultTriggers()
+        public override IEnumerable<ITaskTrigger> GetDefaultTriggers()
         {
-            return new BaseTaskTrigger[]
+            return new ITaskTrigger[]
                 {
                     new DailyTrigger { TimeOfDay = TimeSpan.FromHours(4) }
                 };

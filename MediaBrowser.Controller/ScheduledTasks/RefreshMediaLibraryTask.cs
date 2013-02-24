@@ -27,9 +27,9 @@ namespace MediaBrowser.Controller.ScheduledTasks
         /// Gets the default triggers.
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        protected override IEnumerable<BaseTaskTrigger> GetDefaultTriggers()
+        public override IEnumerable<ITaskTrigger> GetDefaultTriggers()
         {
-            return new BaseTaskTrigger[] { 
+            return new ITaskTrigger[] { 
 
                 new StartupTrigger(),
 

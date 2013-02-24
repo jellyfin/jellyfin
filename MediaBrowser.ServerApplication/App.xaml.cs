@@ -1,26 +1,13 @@
-﻿using BDInfo;
-using MediaBrowser.ClickOnce;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.ClickOnce;
+using MediaBrowser.Common.Implementations.Serialization;
 using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
-using MediaBrowser.IsoMounter;
 using MediaBrowser.Logging.Nlog;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Updates;
-using MediaBrowser.Networking.Management;
-using MediaBrowser.Networking.Udp;
-using MediaBrowser.Networking.Web;
-using MediaBrowser.Networking.WebSocket;
 using MediaBrowser.Server.Uninstall;
-using MediaBrowser.ServerApplication.Implementations;
 using Microsoft.Win32;
-using SimpleInjector;
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net.Cache;
 using System.Threading;
@@ -35,7 +22,7 @@ namespace MediaBrowser.ServerApplication
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : Application, IApplicationHost
+    public partial class App : Application
     {
         /// <summary>
         /// Defines the entry point of the application.
@@ -78,16 +65,11 @@ namespace MediaBrowser.ServerApplication
         protected ILogger Logger { get; set; }
 
         /// <summary>
-        /// Gets or sets the log file path.
+        /// Gets or sets the composition root.
         /// </summary>
-        /// <value>The log file path.</value>
-        public string LogFilePath { get; private set; }
-
-        /// <summary>
-        /// The container
-        /// </summary>
-        private Container _container = new Container();
-
+        /// <value>The composition root.</value>
+        protected ApplicationHost CompositionRoot { get; set; }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="App" /> class.
         /// </summary>
@@ -134,12 +116,6 @@ namespace MediaBrowser.ServerApplication
         {
             get { return "MediaBrowser.Server.Uninstall.exe"; }
         }
-
-        /// <summary>
-        /// Gets or sets the iso manager.
-        /// </summary>
-        /// <value>The iso manager.</value>
-        private IIsoManager IsoManager { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [last run at startup value].
@@ -198,13 +174,13 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         protected async void LoadKernel()
         {
-            Kernel = new Kernel(this, Logger);
+            CompositionRoot = new ApplicationHost(Logger);
 
-            RegisterResources();
+            Kernel = CompositionRoot.Kernel;
 
             try
             {
-                new MainWindow(Logger).Show();
+                new MainWindow(new JsonSerializer(), Logger).Show();
 
                 var now = DateTime.UtcNow;
 
@@ -281,6 +257,7 @@ namespace MediaBrowser.ServerApplication
             base.OnExit(e);
 
             Kernel.Dispose();
+            CompositionRoot.Dispose();
         }
 
         /// <summary>
@@ -392,17 +369,6 @@ namespace MediaBrowser.ServerApplication
         }
 
         /// <summary>
-        /// Reloads the logger.
-        /// </summary>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public void ReloadLogger()
-        {
-            LogFilePath = Path.Combine(Kernel.ApplicationPaths.LogDirectoryPath, "Server-" + DateTime.Now.Ticks + ".log");
-
-            NlogManager.AddFileTarget(LogFilePath, Kernel.Configuration.EnableDebugLevelLogging);
-        }
-
-        /// <summary>
         /// Gets the image.
         /// </summary>
         /// <param name="uri">The URI.</param>
@@ -476,144 +442,6 @@ namespace MediaBrowser.ServerApplication
 
             RenderOptions.SetBitmapScalingMode(bitmap, BitmapScalingMode.Fant);
             return bitmap;
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance can self update.
-        /// </summary>
-        /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
-        public bool CanSelfUpdate
-        {
-            get { return ClickOnceHelper.IsNetworkDeployed; }
-        }
-
-        /// <summary>
-        /// Checks for update.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task{CheckForUpdateResult}.</returns>
-        public Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
-        {
-            return new ApplicationUpdateCheck().CheckForApplicationUpdate(cancellationToken, progress);
-        }
-
-        /// <summary>
-        /// Updates the application.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        public Task UpdateApplication(CancellationToken cancellationToken, IProgress<double> progress)
-        {
-            return new ApplicationUpdater().UpdateApplication(cancellationToken, progress);
-        }
-
-        /// <summary>
-        /// Registers resources that classes will depend on
-        /// </summary>
-        private void RegisterResources()
-        {
-            RegisterSingleInstance<IApplicationHost>(this);
-            RegisterSingleInstance(Logger);
-
-            IsoManager = new PismoIsoManager(Logger);
-
-            RegisterSingleInstance(IsoManager);
-            RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
-            RegisterSingleInstance<INetworkManager>(() => new NetworkManager());
-            RegisterSingleInstance<IZipClient>(() => new DotNetZipClient());
-            RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
-            Register(typeof(IUdpServer), typeof(UdpServer));
-            RegisterSingleInstance<IHttpServer>(() => new HttpServer(this, Kernel, Logger, "Media Browser", "index.html"));
-        }
-
-        /// <summary>
-        /// Creates an instance of type and resolves all constructor dependancies
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns>System.Object.</returns>
-        public object CreateInstance(Type type)
-        {
-            try
-            {
-                return _container.GetInstance(type);
-            }
-            catch
-            {
-                Logger.Error("Error creating {0}", type.Name);
-
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Registers the specified obj.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="obj">The obj.</param>
-        public void RegisterSingleInstance<T>(T obj)
-            where T : class
-        {
-            _container.RegisterSingle(obj);
-        }
-
-        /// <summary>
-        /// Registers the specified func.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="func">The func.</param>
-        public void Register<T>(Func<T> func)
-            where T : class
-        {
-            _container.Register(func);
-        }
-
-        /// <summary>
-        /// Registers the single instance.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="func">The func.</param>
-        public void RegisterSingleInstance<T>(Func<T> func)
-            where T : class
-        {
-            _container.RegisterSingle(func);
-        }
-
-        /// <summary>
-        /// Resolves this instance.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns>``0.</returns>
-        public T Resolve<T>()
-        {
-            return (T)_container.GetRegistration(typeof(T), true).GetInstance();
-        }
-
-        /// <summary>
-        /// Resolves this instance.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns>``0.</returns>
-        public T TryResolve<T>()
-        {
-            var result = _container.GetRegistration(typeof(T), false);
-
-            if (result == null)
-            {
-                return default(T);
-            }
-            return (T)result.GetInstance();
-        }
-
-        /// <summary>
-        /// Registers the specified service type.
-        /// </summary>
-        /// <param name="serviceType">Type of the service.</param>
-        /// <param name="implementation">Type of the concrete.</param>
-        public void Register(Type serviceType, Type implementation)
-        {
-            _container.Register(serviceType, implementation);
         }
     }
 }
