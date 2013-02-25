@@ -173,7 +173,7 @@ namespace MediaBrowser.Common.Net
             // Misc
             if (ext.Equals(".dll", StringComparison.OrdinalIgnoreCase))
             {
-                return "application/x-msdownload";
+                return "application/octet-stream";
             }
 
             // Web

@@ -312,8 +312,6 @@ namespace MediaBrowser.Common.Kernel
             // Set these to null so that they can be lazy loaded again
             Configuration = null;
 
-            ReloadLogger();
-
             Logger.Info("Version {0} initializing", ApplicationVersion);
 
             await OnConfigurationLoaded().ConfigureAwait(false);

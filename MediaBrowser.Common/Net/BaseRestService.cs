@@ -241,6 +241,10 @@ namespace MediaBrowser.Common.Net
             {
                 return false;
             }
+            if (contentType.StartsWith("application/", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
 
             return true;
         }
@@ -257,7 +261,10 @@ namespace MediaBrowser.Common.Net
             if (!compress || string.IsNullOrEmpty(RequestContext.CompressionType))
             {
                 Response.ContentType = contentType;
-                return await factoryFn().ConfigureAwait(false);
+
+                var stream = await factoryFn().ConfigureAwait(false);
+
+                return new StreamWriter(stream);
             }
 
             string content;

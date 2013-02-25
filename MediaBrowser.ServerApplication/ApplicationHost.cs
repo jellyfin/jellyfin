@@ -119,6 +119,7 @@ namespace MediaBrowser.ServerApplication
             _taskManager = new TaskManager(_applicationPaths, _jsonSerializer, Logger);
 
             Kernel = new Kernel(this, _applicationPaths, _xmlSerializer, _taskManager, Logger);
+            ReloadLogger();
 
             RegisterResources();
 
@@ -333,7 +334,7 @@ namespace MediaBrowser.ServerApplication
         /// <exception cref="System.NotImplementedException"></exception>
         public void ReloadLogger()
         {
-            LogFilePath = Path.Combine(Kernel.ApplicationPaths.LogDirectoryPath, "Server-" + DateTime.Now.Ticks + ".log");
+            LogFilePath = Path.Combine(_applicationPaths.LogDirectoryPath, "Server-" + DateTime.Now.Ticks + ".log");
 
             NlogManager.AddFileTarget(LogFilePath, Kernel.Configuration.EnableDebugLevelLogging);
         }

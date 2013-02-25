@@ -13,6 +13,20 @@ namespace MediaBrowser.Common.Implementations
     public abstract class BaseApplicationPaths : IApplicationPaths
     {
         /// <summary>
+        /// The _use debug path
+        /// </summary>
+        private bool _useDebugPath;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseApplicationPaths" /> class.
+        /// </summary>
+        /// <param name="useDebugPath">if set to <c>true</c> [use debug paths].</param>
+        protected BaseApplicationPaths(bool useDebugPath)
+        {
+            _useDebugPath = useDebugPath;
+        }
+
+        /// <summary>
         /// The _program data path
         /// </summary>
         private string _programDataPath;
@@ -272,14 +286,9 @@ namespace MediaBrowser.Common.Implementations
         /// Gets the path to the application's ProgramDataFolder
         /// </summary>
         /// <returns>System.String.</returns>
-        public static string GetProgramDataPath()
+       private string GetProgramDataPath()
         {
-#if DEBUG
-            string programDataPath = ConfigurationManager.AppSettings["DebugProgramDataPath"];
-
-#else
-            string programDataPath = Path.Combine(ConfigurationManager.AppSettings["ReleaseProgramDataPath"], ConfigurationManager.AppSettings["ProgramDataFolderName"]);
-#endif
+            var programDataPath = _useDebugPath ? ConfigurationManager.AppSettings["DebugProgramDataPath"] : Path.Combine(ConfigurationManager.AppSettings["ReleaseProgramDataPath"], ConfigurationManager.AppSettings["ProgramDataFolderName"]);
 
             programDataPath = programDataPath.Replace("%CommonApplicationData%", Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData));
 
