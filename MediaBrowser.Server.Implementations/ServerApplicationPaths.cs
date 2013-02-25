@@ -9,6 +9,20 @@ namespace MediaBrowser.Server.Implementations
     /// </summary>
     public class ServerApplicationPaths : BaseApplicationPaths, IServerApplicationPaths
     {
+#if (DEBUG)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ServerApplicationPaths" /> class.
+        /// </summary>
+        public ServerApplicationPaths()
+            : base(true)
+        {
+        }
+#elif (RELEASE)
+        public ServerApplicationPaths()
+            : base(false)
+        {
+        }
+#endif
         /// <summary>
         /// The _root folder path
         /// </summary>
