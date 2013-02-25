@@ -3,6 +3,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Connectivity;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
@@ -215,6 +216,66 @@ namespace MediaBrowser.Api.UserLibrary
         public string Id { get; set; }
     }
 
+    [Route("/Users/{UserId}/PlayingItems/{Id}", "POST")]
+    public class OnPlaybackStart : IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        public Guid UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        public string Id { get; set; }
+    }
+
+    [Route("/Users/{UserId}/PlayingItems/{Id}/Progress", "POST")]
+    public class OnPlaybackProgress : IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        public Guid UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        public string Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the position ticks.
+        /// </summary>
+        /// <value>The position ticks.</value>
+        public long? PositionTicks { get; set; }
+    }
+
+    [Route("/Users/{UserId}/PlayingItems/{Id}", "DELETE")]
+    public class OnPlaybackStopped : IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        public Guid UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        public string Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the position ticks.
+        /// </summary>
+        /// <value>The position ticks.</value>
+        public long? PositionTicks { get; set; }
+    }
+    
     /// <summary>
     /// Class GetLocalTrailers
     /// </summary>
@@ -511,6 +572,55 @@ namespace MediaBrowser.Api.UserLibrary
             var user = kernel.GetUserById(request.UserId);
 
             var task = UpdatePlayedStatus(user, request.Id, true);
+
+            Task.WaitAll(task);
+        }
+
+        /// <summary>
+        /// Posts the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        public void Post(OnPlaybackStart request)
+        {
+            var kernel = (Kernel)Kernel;
+
+            var user = kernel.GetUserById(request.UserId);
+
+            var item = DtoBuilder.GetItemByClientId(request.Id, user.Id);
+            
+            kernel.UserDataManager.OnPlaybackStart(user, item, ClientType.Other, string.Empty);
+        }
+
+        /// <summary>
+        /// Posts the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        public void Post(OnPlaybackProgress request)
+        {
+            var kernel = (Kernel)Kernel;
+
+            var user = kernel.GetUserById(request.UserId);
+
+            var item = DtoBuilder.GetItemByClientId(request.Id, user.Id);
+
+            var task = kernel.UserDataManager.OnPlaybackProgress(user, item, request.PositionTicks, ClientType.Other, string.Empty);
+
+            Task.WaitAll(task);
+        }
+
+        /// <summary>
+        /// Posts the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        public void Post(OnPlaybackStopped request)
+        {
+            var kernel = (Kernel)Kernel;
+
+            var user = kernel.GetUserById(request.UserId);
+
+            var item = DtoBuilder.GetItemByClientId(request.Id, user.Id);
+
+            var task = kernel.UserDataManager.OnPlaybackStopped(user, item, request.PositionTicks, ClientType.Other, string.Empty);
 
             Task.WaitAll(task);
         }
