@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Common.Kernel;
+using System;
 using System.Configuration;
 using System.IO;
 using System.Reflection;
@@ -9,7 +10,7 @@ namespace MediaBrowser.Common.Implementations
     /// Provides a base class to hold common application paths used by both the Ui and Server.
     /// This can be subclassed to add application-specific paths.
     /// </summary>
-    public abstract class BaseApplicationPaths
+    public abstract class BaseApplicationPaths : IApplicationPaths
     {
         /// <summary>
         /// The _program data path

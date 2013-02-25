@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using MediaBrowser.Model.Net;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Common.Net
 {

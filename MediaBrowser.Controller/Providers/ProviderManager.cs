@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Kernel;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -33,16 +33,23 @@ namespace MediaBrowser.Controller.Providers
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
-        
+
+        /// <summary>
+        /// The _HTTP client
+        /// </summary>
+        private readonly IHttpClient _httpClient;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
+        /// <param name="httpClient">The HTTP client.</param>
         /// <param name="logger">The logger.</param>
-        public ProviderManager(Kernel kernel, ILogger logger)
+        public ProviderManager(Kernel kernel, IHttpClient httpClient, ILogger logger)
             : base(kernel)
         {
             _logger = logger;
+            _httpClient = httpClient;
             _remoteImageCache = new FileSystemRepository(ImagesDataPath);
         }
 
@@ -287,7 +294,7 @@ namespace MediaBrowser.Controller.Providers
                 Path.Combine(item.MetaLocation, targetName) :
                 _remoteImageCache.GetResourcePath(item.GetType().FullName + item.Path.ToLower(), targetName);
 
-            var img = await Kernel.HttpManager.FetchToMemoryStream(source, resourcePool, cancellationToken).ConfigureAwait(false);
+            var img = await _httpClient.GetMemoryStream(source, resourcePool, cancellationToken).ConfigureAwait(false);
 
             if (Kernel.Configuration.SaveLocalMeta) // queue to media directories
             {

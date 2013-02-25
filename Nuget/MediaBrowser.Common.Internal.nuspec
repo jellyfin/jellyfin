@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>MediaBrowser.Common.Internal</id>
-        <version>3.0.1</version>
+        <version>3.0.4</version>
         <title />
         <authors>Luke</authors>
         <owners>Media Browser Team</owners>
@@ -15,10 +15,11 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="lib\net45\MediaBrowser.ClickOnce.dll" target="lib\net45\MediaBrowser.ClickOnce.dll" />
-        <file src="lib\net45\MediaBrowser.IsoMounter.dll" target="lib\net45\MediaBrowser.IsoMounter.dll" />
-        <file src="lib\net45\MediaBrowser.Logging.NLog.dll" target="lib\net45\MediaBrowser.Logging.NLog.dll" />
-        <file src="lib\net45\MediaBrowser.Networking.dll" target="lib\net45\MediaBrowser.Networking.dll" />
-        <file src="lib\net45\pfmclrapi.dll" target="lib\net45\pfmclrapi.dll" />
+        <file src="dlls\MediaBrowser.ClickOnce.dll" target="lib\net45\MediaBrowser.ClickOnce.dll" />
+        <file src="dlls\MediaBrowser.Common.Implementations.dll" target="lib\net45\MediaBrowser.Common.Implementations.dll" />
+        <file src="dlls\MediaBrowser.IsoMounter.dll" target="lib\net45\MediaBrowser.IsoMounter.dll" />
+        <file src="dlls\MediaBrowser.Logging.NLog.dll" target="lib\net45\MediaBrowser.Logging.NLog.dll" />
+        <file src="dlls\MediaBrowser.Networking.dll" target="lib\net45\MediaBrowser.Networking.dll" />
+        <file src="dlls\pfmclrapi.dll" target="lib\net45\pfmclrapi.dll" />
     </files>
 </package>

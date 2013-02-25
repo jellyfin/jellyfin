@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Net.WebSockets;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -39,7 +38,7 @@ namespace MediaBrowser.Common.Kernel
         /// Gets or sets the json serializer.
         /// </summary>
         /// <value>The json serializer.</value>
-        private IJsonSerializer _jsonSerializer;
+        private readonly IJsonSerializer _jsonSerializer;
         
         /// <summary>
         /// This subscribes to HttpListener requests and finds the appropriate BaseHandler to process it

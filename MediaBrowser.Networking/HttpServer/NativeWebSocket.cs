@@ -1,10 +1,13 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using WebSocketMessageType = MediaBrowser.Common.Net.WebSocketMessageType;
+using WebSocketState = MediaBrowser.Common.Net.WebSocketState;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Networking.HttpServer
 {
     /// <summary>
     /// Class NativeWebSocket
@@ -20,7 +23,7 @@ namespace MediaBrowser.Common.Net
         /// Gets or sets the web socket.
         /// </summary>
         /// <value>The web socket.</value>
-        private WebSocket WebSocket { get; set; }
+        private System.Net.WebSockets.WebSocket WebSocket { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NativeWebSocket" /> class.
@@ -28,7 +31,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="socket">The socket.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">socket</exception>
-        public NativeWebSocket(WebSocket socket, ILogger logger)
+        public NativeWebSocket(System.Net.WebSockets.WebSocket socket, ILogger logger)
         {
             if (socket == null)
             {
@@ -52,7 +55,17 @@ namespace MediaBrowser.Common.Net
         /// <value>The state.</value>
         public WebSocketState State
         {
-            get { return WebSocket.State; }
+            get
+            {
+                WebSocketState commonState;
+
+                if (!Enum.TryParse(WebSocket.State.ToString(), true, out commonState))
+                {
+                    _logger.Warn("Unrecognized WebSocketState: {0}", WebSocket.State.ToString());
+                }
+
+                return commonState;
+            }
         }
 
         /// <summary>
@@ -113,7 +126,14 @@ namespace MediaBrowser.Common.Net
         /// <returns>Task.</returns>
         public Task SendAsync(byte[] bytes, WebSocketMessageType type, bool endOfMessage, CancellationToken cancellationToken)
         {
-            return WebSocket.SendAsync(new ArraySegment<byte>(bytes), type, true, cancellationToken);
+            System.Net.WebSockets.WebSocketMessageType nativeType;
+
+            if (!Enum.TryParse(type.ToString(), true, out nativeType))
+            {
+                _logger.Warn("Unrecognized WebSocketMessageType: {0}", type.ToString());
+            }
+
+            return WebSocket.SendAsync(new ArraySegment<byte>(bytes), nativeType, true, cancellationToken);
         }
 
         /// <summary>

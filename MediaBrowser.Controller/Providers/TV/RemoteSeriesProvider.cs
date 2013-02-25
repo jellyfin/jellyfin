@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Extensions;
@@ -21,6 +22,21 @@ namespace MediaBrowser.Controller.Providers.TV
     /// </summary>
     class RemoteSeriesProvider : BaseMetadataProvider
     {
+        /// <summary>
+        /// Gets the HTTP client.
+        /// </summary>
+        /// <value>The HTTP client.</value>
+        protected IHttpClient HttpClient { get; private set; }
+
+        public RemoteSeriesProvider(IHttpClient httpClient)
+            : base()
+        {
+            if (httpClient == null)
+            {
+                throw new ArgumentNullException("httpClient");
+            }
+            HttpClient = httpClient;
+        }
 
         /// <summary>
         /// The root URL
@@ -153,7 +169,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                 try
                 {
-                    using (var xml = await Kernel.Instance.HttpManager.Get(url, Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false))
+                    using (var xml = await HttpClient.Get(url, Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false))
                     {
                         doc.Load(xml);
                     }
@@ -232,7 +248,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
             try
             {
-                using (var actors = await Kernel.Instance.HttpManager.Get(urlActors, Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false))
+                using (var actors = await HttpClient.Get(urlActors, Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false))
                 {
                     docActors.Load(actors);
                 }
@@ -299,7 +315,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                 try
                 {
-                    using (var imgs = await Kernel.Instance.HttpManager.Get(url, Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false))
+                    using (var imgs = await HttpClient.Get(url, Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false))
                     {
                         images.Load(imgs);
                     }
@@ -446,7 +462,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
             try
             {
-                using (var results = await Kernel.Instance.HttpManager.Get(url, Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false))
+                using (var results = await HttpClient.Get(url, Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false))
                 {
                     doc.Load(results);
                 }

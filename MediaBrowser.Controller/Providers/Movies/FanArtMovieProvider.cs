@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Model.Entities;
@@ -16,6 +17,22 @@ namespace MediaBrowser.Controller.Providers.Movies
     /// </summary>
     class FanArtMovieProvider : FanartBaseProvider
     {
+        /// <summary>
+        /// Gets the HTTP client.
+        /// </summary>
+        /// <value>The HTTP client.</value>
+        protected IHttpClient HttpClient { get; private set; }
+
+        public FanArtMovieProvider(IHttpClient httpClient)
+            : base()
+        {
+            if (httpClient == null)
+            {
+                throw new ArgumentNullException("httpClient");
+            }
+            HttpClient = httpClient;
+        }
+
         /// <summary>
         /// The fan art base URL
         /// </summary>
@@ -70,7 +87,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                 try
                 {
-                    using (var xml = await Kernel.Instance.HttpManager.Get(url, Kernel.Instance.ResourcePools.FanArt, cancellationToken).ConfigureAwait(false))
+                    using (var xml = await HttpClient.Get(url, Kernel.Instance.ResourcePools.FanArt, cancellationToken).ConfigureAwait(false))
                     {
                         doc.Load(xml);
                     }
@@ -113,7 +130,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                         }
                     }
                     cancellationToken.ThrowIfCancellationRequested();
-                    
+
                     if (Kernel.Instance.Configuration.DownloadMovieArt && !item.ResolveArgs.ContainsMetaFileByName(ART_FILE))
                     {
                         var node =
@@ -139,7 +156,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                         }
                     }
                     cancellationToken.ThrowIfCancellationRequested();
-                    
+
                     if (Kernel.Instance.Configuration.DownloadMovieDisc && !item.ResolveArgs.ContainsMetaFileByName(DISC_FILE))
                     {
                         var node = doc.SelectSingleNode("//fanart/movie/moviediscs/moviedisc[@lang = \"" + language + "\"]/@url") ??
@@ -163,7 +180,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                     }
 
                     cancellationToken.ThrowIfCancellationRequested();
-                    
+
                     if (Kernel.Instance.Configuration.DownloadMovieBanner && !item.ResolveArgs.ContainsMetaFileByName(BANNER_FILE))
                     {
                         var node = doc.SelectSingleNode("//fanart/movie/moviebanners/moviebanner[@lang = \"" + language + "\"]/@url") ??
@@ -187,7 +204,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                     }
 
                     cancellationToken.ThrowIfCancellationRequested();
-                    
+
                     if (Kernel.Instance.Configuration.DownloadMovieThumb && !item.ResolveArgs.ContainsMetaFileByName(THUMB_FILE))
                     {
                         var node = doc.SelectSingleNode("//fanart/movie/moviethumbs/moviethumb[@lang = \"" + language + "\"]/@url") ??

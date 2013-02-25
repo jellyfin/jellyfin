@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Resolvers.TV;
 using MediaBrowser.Model.Entities;
@@ -17,6 +18,21 @@ namespace MediaBrowser.Controller.Providers.TV
     /// </summary>
     class RemoteSeasonProvider : BaseMetadataProvider
     {
+        /// <summary>
+        /// Gets the HTTP client.
+        /// </summary>
+        /// <value>The HTTP client.</value>
+        protected IHttpClient HttpClient { get; private set; }
+
+        public RemoteSeasonProvider(IHttpClient httpClient)
+            : base()
+        {
+            if (httpClient == null)
+            {
+                throw new ArgumentNullException("httpClient");
+            }
+            HttpClient = httpClient;
+        }
 
         /// <summary>
         /// Supportses the specified item.
@@ -82,7 +98,7 @@ namespace MediaBrowser.Controller.Providers.TV
         protected override async Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             var season = (Season)item;
 
             if (!HasLocalMeta(item))
@@ -135,7 +151,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                     try
                     {
-                        using (var imgs = await Kernel.Instance.HttpManager.Get(url, Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false))
+                        using (var imgs = await HttpClient.Get(url, Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false))
                         {
                             images.Load(imgs);
                         }

@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Kernel;
-using MediaBrowser.Model.Tasks;
+﻿using MediaBrowser.Model.Tasks;
 using System;
 using System.Linq;
 

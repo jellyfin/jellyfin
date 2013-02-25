@@ -200,7 +200,7 @@ namespace MediaBrowser.Common.Net
                 return "image/svg+xml";
             }
 
-            throw new InvalidOperationException("Argument not supported: " + path);
+            throw new ArgumentException("Argument not supported: " + path);
         }
     }
 }
