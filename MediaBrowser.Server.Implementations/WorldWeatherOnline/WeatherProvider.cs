@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Weather;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -29,24 +30,33 @@ namespace MediaBrowser.Server.Implementations.WorldWeatherOnline
         protected IJsonSerializer JsonSerializer { get; private set; }
 
         /// <summary>
+        /// The _HTTP client
+        /// </summary>
+        private IHttpClient HttpClient { get; set; }
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="WeatherProvider" /> class.
         /// </summary>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">logger</exception>
-        public WeatherProvider(IJsonSerializer jsonSerializer, ILogger logger)
+        public WeatherProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogger logger)
         {
             if (logger == null)
             {
                 throw new ArgumentNullException("logger");
             }
-
+            if (httpClient == null)
+            {
+                throw new ArgumentNullException("httpClient");
+            }
             if (jsonSerializer == null)
             {
                 throw new ArgumentNullException("jsonSerializer");
             }
 
             JsonSerializer = jsonSerializer;
+            HttpClient = httpClient;
             Logger = logger;
         }
 
@@ -81,7 +91,7 @@ namespace MediaBrowser.Server.Implementations.WorldWeatherOnline
 
             Logger.Info("Accessing weather from " + url);
 
-            using (var stream = await Kernel.Instance.HttpManager.Get(url, _weatherSemaphore, cancellationToken).ConfigureAwait(false))
+            using (var stream = await HttpClient.Get(url, _weatherSemaphore, cancellationToken).ConfigureAwait(false))
             {
                 var data = JsonSerializer.DeserializeFromStream<WeatherResult>(stream).data;
 

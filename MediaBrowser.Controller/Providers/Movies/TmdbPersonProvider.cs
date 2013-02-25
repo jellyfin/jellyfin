@@ -1,6 +1,8 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,7 +11,6 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Providers.Movies
 {
@@ -30,17 +31,29 @@ namespace MediaBrowser.Controller.Providers.Movies
         protected IJsonSerializer JsonSerializer { get; private set; }
 
         /// <summary>
+        /// Gets the HTTP client.
+        /// </summary>
+        /// <value>The HTTP client.</value>
+        protected IHttpClient HttpClient { get; private set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="MovieDbProvider" /> class.
         /// </summary>
+        /// <param name="httpClient">The HTTP client.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
-        public TmdbPersonProvider(IJsonSerializer jsonSerializer)
+        public TmdbPersonProvider(IHttpClient httpClient, IJsonSerializer jsonSerializer)
             : base()
         {
             if (jsonSerializer == null)
             {
                 throw new ArgumentNullException("jsonSerializer");
             }
+            if (httpClient == null)
+            {
+                throw new ArgumentNullException("httpClient");
+            }
+            HttpClient = httpClient;
             JsonSerializer = jsonSerializer;
         }
 
@@ -151,7 +164,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             try
             {
-                using (Stream json = await Kernel.Instance.HttpManager.Get(url, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
+                using (Stream json = await HttpClient.Get(url, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
                 {
                     searchResult = JsonSerializer.DeserializeFromStream<PersonSearchResults>(json);
                 }
@@ -177,7 +190,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             try
             {
-                using (Stream json = await Kernel.Instance.HttpManager.Get(url, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
+                using (Stream json = await HttpClient.Get(url, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
                 {
                     if (json != null)
                     {
@@ -240,7 +253,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             try
             {
-                using (Stream json = await Kernel.Instance.HttpManager.Get(url, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
+                using (Stream json = await HttpClient.Get(url, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
                 {
                     if (json != null)
                     {
@@ -308,7 +321,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             var localPath = Path.Combine(item.MetaLocation, targetName);
             if (!item.ResolveArgs.ContainsMetaFileByName(targetName))
             {
-                using (var sourceStream = await Kernel.Instance.HttpManager.FetchToMemoryStream(source, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
+                using (var sourceStream = await HttpClient.GetMemoryStream(source, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
                 {
                     await Kernel.Instance.FileSystemManager.SaveToLibraryFilesystem(item, localPath, sourceStream, cancellationToken).ConfigureAwait(false);
 

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Resolvers.TV;
@@ -19,6 +20,21 @@ namespace MediaBrowser.Controller.Providers.TV
     /// </summary>
     class RemoteEpisodeProvider : BaseMetadataProvider
     {
+        /// <summary>
+        /// Gets the HTTP client.
+        /// </summary>
+        /// <value>The HTTP client.</value>
+        protected IHttpClient HttpClient { get; private set; }
+
+        public RemoteEpisodeProvider(IHttpClient httpClient)
+            : base()
+        {
+            if (httpClient == null)
+            {
+                throw new ArgumentNullException("httpClient");
+            }
+            HttpClient = httpClient;
+        }
 
         /// <summary>
         /// The episode query
@@ -171,7 +187,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                 try
                 {
-                    using (var result = await Kernel.Instance.HttpManager.Get(url, Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false))
+                    using (var result = await HttpClient.Get(url, Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false))
                     {
                         doc.Load(result);
                     }
@@ -189,7 +205,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                     try
                     {
-                        using (var result = await Kernel.Instance.HttpManager.Get(url, Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false))
+                        using (var result = await HttpClient.Get(url, Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false))
                         {
                             if (result != null) doc.Load(result);
                             usingAbsoluteData = true;

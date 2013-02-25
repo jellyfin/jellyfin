@@ -172,12 +172,6 @@ namespace MediaBrowser.Common.Kernel
         public IEnumerable<IWebSocketListener> WebSocketListeners { get; private set; }
 
         /// <summary>
-        /// The _HTTP manager
-        /// </summary>
-        /// <value>The HTTP manager.</value>
-        public HttpManager HttpManager { get; private set; }
-
-        /// <summary>
         /// Gets or sets the TCP manager.
         /// </summary>
         /// <value>The TCP manager.</value>
@@ -323,9 +317,6 @@ namespace MediaBrowser.Common.Kernel
 
             Logger.Info("Version {0} initializing", ApplicationVersion);
 
-            DisposeHttpManager();
-            HttpManager = new HttpManager(this, Logger);
-
             await OnConfigurationLoaded().ConfigureAwait(false);
 
             FindParts();
@@ -422,7 +413,6 @@ namespace MediaBrowser.Common.Kernel
             if (dispose)
             {
                 DisposeTcpManager();
-                DisposeHttpManager();
             }
         }
 
@@ -435,18 +425,6 @@ namespace MediaBrowser.Common.Kernel
             {
                 TcpManager.Dispose();
                 TcpManager = null;
-            }
-        }
-
-        /// <summary>
-        /// Disposes the HTTP manager.
-        /// </summary>
-        private void DisposeHttpManager()
-        {
-            if (HttpManager != null)
-            {
-                HttpManager.Dispose();
-                HttpManager = null;
             }
         }
 

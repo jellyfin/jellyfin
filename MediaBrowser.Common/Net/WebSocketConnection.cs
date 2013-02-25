@@ -1,8 +1,7 @@
-﻿using System.IO;
-using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
-using System.Net.WebSockets;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 

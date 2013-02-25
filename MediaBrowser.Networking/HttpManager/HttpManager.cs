@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
@@ -14,12 +15,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Networking.HttpManager
 {
     /// <summary>
     /// Class HttpManager
     /// </summary>
-    public class HttpManager : IDisposable
+    public class HttpManager : IHttpClient
     {
         /// <summary>
         /// The _logger
@@ -27,20 +28,20 @@ namespace MediaBrowser.Common.Net
         private readonly ILogger _logger;
 
         /// <summary>
-        /// The _kernel
+        /// The _app paths
         /// </summary>
-        private readonly IKernel _kernel;
+        private readonly IApplicationPaths _appPaths;
         
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpManager" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
+        /// <param name="appPaths">The kernel.</param>
         /// <param name="logger">The logger.</param>
-        public HttpManager(IKernel kernel, ILogger logger)
+        public HttpManager(IApplicationPaths appPaths, ILogger logger)
         {
-            if (kernel == null)
+            if (appPaths == null)
             {
-                throw new ArgumentNullException("kernel");
+                throw new ArgumentNullException("appPaths");
             }
             if (logger == null)
             {
@@ -48,7 +49,7 @@ namespace MediaBrowser.Common.Net
             }
             
             _logger = logger;
-            _kernel = kernel;
+            _appPaths = appPaths;
         }
 
         /// <summary>
@@ -199,7 +200,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>Task{System.String}.</returns>
         /// <exception cref="System.ArgumentNullException">progress</exception>
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public async Task<string> FetchToTempFile(string url, SemaphoreSlim resourcePool, CancellationToken cancellationToken, IProgress<double> progress, string userAgent = null)
+        public async Task<string> GetTempFile(string url, SemaphoreSlim resourcePool, CancellationToken cancellationToken, IProgress<double> progress, string userAgent = null)
         {
             ValidateParams(url, resourcePool, cancellationToken);
 
@@ -210,7 +211,7 @@ namespace MediaBrowser.Common.Net
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var tempFile = Path.Combine(_kernel.ApplicationPaths.TempDirectory, Guid.NewGuid() + ".tmp");
+            var tempFile = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".tmp");
 
             var message = new HttpRequestMessage(HttpMethod.Get, url);
 
@@ -221,7 +222,7 @@ namespace MediaBrowser.Common.Net
 
             await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            _logger.Info("HttpManager.FetchToTempFile url: {0}, temp file: {1}", url, tempFile);
+            _logger.Info("HttpManager.GetTempFile url: {0}, temp file: {1}", url, tempFile);
 
             try
             {
@@ -315,7 +316,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{MemoryStream}.</returns>
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public async Task<MemoryStream> FetchToMemoryStream(string url, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
+        public async Task<MemoryStream> GetMemoryStream(string url, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
         {
             ValidateParams(url, resourcePool, cancellationToken);
 
@@ -327,7 +328,7 @@ namespace MediaBrowser.Common.Net
 
             var ms = new MemoryStream();
 
-            _logger.Info("HttpManager.FetchToMemoryStream url: {0}", url);
+            _logger.Info("HttpManager.GetMemoryStream url: {0}", url);
 
             try
             {

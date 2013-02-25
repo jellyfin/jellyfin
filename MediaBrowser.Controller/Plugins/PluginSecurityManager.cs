@@ -44,7 +44,10 @@ namespace MediaBrowser.Controller.Plugins
         /// </summary>
         private INetworkManager _networkManager;
 
-        private IKernel _kernel;
+        /// <summary>
+        /// The _kernel
+        /// </summary>
+        private readonly IKernel _kernel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginSecurityManager" /> class.

@@ -15,9 +15,10 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Updates;
+using MediaBrowser.Networking.HttpManager;
+using MediaBrowser.Networking.HttpServer;
 using MediaBrowser.Networking.Management;
 using MediaBrowser.Networking.Udp;
-using MediaBrowser.Networking.Web;
 using MediaBrowser.Networking.WebSocket;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.ServerApplication.Implementations;
@@ -43,12 +44,6 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         /// <value>The logger.</value>
         private ILogger Logger { get; set; }
-
-        /// <summary>
-        /// Gets or sets the iso manager.
-        /// </summary>
-        /// <value>The iso manager.</value>
-        private IIsoManager IsoManager { get; set; }
 
         /// <summary>
         /// Gets or sets the log file path.
@@ -143,14 +138,12 @@ namespace MediaBrowser.ServerApplication
             RegisterSingleInstance<IApplicationHost>(this);
             RegisterSingleInstance(Logger);
 
-            IsoManager = new PismoIsoManager(Logger);
-
             RegisterSingleInstance(_applicationPaths);
             RegisterSingleInstance<IApplicationPaths>(_applicationPaths);
-
-            RegisterSingleInstance(IsoManager);
             RegisterSingleInstance(_taskManager);
+            RegisterSingleInstance<IIsoManager>(() => new PismoIsoManager(Logger));
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
+            RegisterSingleInstance<IHttpClient>(() => new HttpManager(_applicationPaths, Logger));
             RegisterSingleInstance<INetworkManager>(() => new NetworkManager());
             RegisterSingleInstance<IZipClient>(() => new DotNetZipClient());
             RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
@@ -477,22 +470,12 @@ namespace MediaBrowser.ServerApplication
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool dispose)
         {
-            IsoManager.Dispose();
-
             foreach (var part in _disposableParts)
             {
                 part.Dispose();
             }
 
             _disposableParts.Clear();
-        }
-    }
-
-    public class MyClass
-    {
-        public MyClass()
-        {
-            
         }
     }
 }

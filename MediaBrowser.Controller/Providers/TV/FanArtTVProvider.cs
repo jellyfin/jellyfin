@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Entities;
@@ -14,6 +15,22 @@ namespace MediaBrowser.Controller.Providers.TV
     class FanArtTVProvider : FanartBaseProvider
     {
         protected string FanArtBaseUrl = "http://api.fanart.tv/webservice/series/{0}/{1}/xml/all/1/1";
+
+        /// <summary>
+        /// Gets the HTTP client.
+        /// </summary>
+        /// <value>The HTTP client.</value>
+        protected IHttpClient HttpClient { get; private set; }
+
+        public FanArtTVProvider(IHttpClient httpClient)
+            : base()
+        {
+            if (httpClient == null)
+            {
+                throw new ArgumentNullException("httpClient");
+            }
+            HttpClient = httpClient;
+        }
 
         public override bool Supports(BaseItem item)
         {
@@ -36,7 +53,7 @@ namespace MediaBrowser.Controller.Providers.TV
         protected override async Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             var series = (Series)item;
             if (ShouldFetch(series, series.ProviderData.GetValueOrDefault(Id, new BaseProviderInfo { ProviderId = Id })))
             {
@@ -46,7 +63,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                 try
                 {
-                    using (var xml = await Kernel.Instance.HttpManager.Get(url, Kernel.Instance.ResourcePools.FanArt, cancellationToken).ConfigureAwait(false))
+                    using (var xml = await HttpClient.Get(url, Kernel.Instance.ResourcePools.FanArt, cancellationToken).ConfigureAwait(false))
                     {
                         doc.Load(xml);
                     }
@@ -56,7 +73,7 @@ namespace MediaBrowser.Controller.Providers.TV
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 if (doc.HasChildNodes)
                 {
                     string path;
@@ -83,7 +100,7 @@ namespace MediaBrowser.Controller.Providers.TV
                     }
 
                     cancellationToken.ThrowIfCancellationRequested();
-                    
+
                     if (Kernel.Instance.Configuration.DownloadTVArt && !series.ResolveArgs.ContainsMetaFileByName(ART_FILE))
                     {
                         var node = doc.SelectSingleNode("//fanart/series/cleararts/clearart[@lang = \"" + language + "\"]/@url") ??
@@ -107,7 +124,7 @@ namespace MediaBrowser.Controller.Providers.TV
                     }
 
                     cancellationToken.ThrowIfCancellationRequested();
-                    
+
                     if (Kernel.Instance.Configuration.DownloadTVThumb && !series.ResolveArgs.ContainsMetaFileByName(THUMB_FILE))
                     {
                         var node = doc.SelectSingleNode("//fanart/series/tvthumbs/tvthumb[@lang = \"" + language + "\"]/@url") ??

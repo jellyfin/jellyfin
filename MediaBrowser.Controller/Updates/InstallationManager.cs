@@ -114,15 +114,22 @@ namespace MediaBrowser.Controller.Updates
         protected IJsonSerializer JsonSerializer { get; private set; }
 
         /// <summary>
+        /// Gets the HTTP client.
+        /// </summary>
+        /// <value>The HTTP client.</value>
+        protected IHttpClient HttpClient { get; private set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="InstallationManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
+        /// <param name="httpClient">The HTTP client.</param>
         /// <param name="zipClient">The zip client.</param>
         /// <param name="networkManager">The network manager.</param>
-        /// <param name="jsonSerializer"></param>
+        /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">zipClient</exception>
-        public InstallationManager(Kernel kernel, IZipClient zipClient, INetworkManager networkManager, IJsonSerializer jsonSerializer, ILogger logger)
+        public InstallationManager(Kernel kernel, IHttpClient httpClient, IZipClient zipClient, INetworkManager networkManager, IJsonSerializer jsonSerializer, ILogger logger)
             : base(kernel)
         {
             if (zipClient == null)
@@ -141,9 +148,13 @@ namespace MediaBrowser.Controller.Updates
             {
                 throw new ArgumentNullException("jsonSerializer");
             }
+            if (httpClient == null)
+            {
+                throw new ArgumentNullException("httpClient");
+            }
 
             JsonSerializer = jsonSerializer;
-
+            HttpClient = httpClient;
             _networkManager = networkManager;
             _logger = logger;
             ZipClient = zipClient;
@@ -162,7 +173,7 @@ namespace MediaBrowser.Controller.Updates
         {
             var data = new Dictionary<string, string> { { "key", Kernel.PluginSecurityManager.SupporterKey }, { "mac", _networkManager.GetMacAddress() } };
 
-            using (var json = await Kernel.HttpManager.Post(Controller.Kernel.MBAdminUrl + "service/package/retrieveall", data, Kernel.ResourcePools.Mb, cancellationToken).ConfigureAwait(false))
+            using (var json = await HttpClient.Post(Controller.Kernel.MBAdminUrl + "service/package/retrieveall", data, Kernel.ResourcePools.Mb, cancellationToken).ConfigureAwait(false))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -276,7 +287,7 @@ namespace MediaBrowser.Controller.Updates
         /// <returns>Task{IEnumerable{PackageVersionInfo}}.</returns>
         public async Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdates(bool withAutoUpdateEnabled, CancellationToken cancellationToken)
         {
-            var catalog = await Kernel.InstallationManager.GetAvailablePackages(cancellationToken).ConfigureAwait(false);
+            var catalog = await GetAvailablePackages(cancellationToken).ConfigureAwait(false);
 
             var plugins = Kernel.Plugins;
 
@@ -288,7 +299,7 @@ namespace MediaBrowser.Controller.Updates
             // Figure out what needs to be installed
             return plugins.Select(p =>
             {
-                var latestPluginInfo = Kernel.InstallationManager.GetLatestCompatibleVersion(catalog, p.Name, p.Configuration.UpdateClass);
+                var latestPluginInfo = GetLatestCompatibleVersion(catalog, p.Name, p.Configuration.UpdateClass);
 
                 return latestPluginInfo != null && latestPluginInfo.version > p.Version ? latestPluginInfo : null;
 
@@ -414,7 +425,7 @@ namespace MediaBrowser.Controller.Updates
             var target = isArchive ? Kernel.ApplicationPaths.ProgramDataPath : Path.Combine(Kernel.ApplicationPaths.PluginsPath, package.targetFilename);
 
             // Download to temporary file so that, if interrupted, it won't destroy the existing installation
-            var tempFile = await Kernel.HttpManager.FetchToTempFile(package.sourceUrl, Kernel.ResourcePools.Mb, cancellationToken, progress).ConfigureAwait(false);
+            var tempFile = await HttpClient.GetTempFile(package.sourceUrl, Kernel.ResourcePools.Mb, cancellationToken, progress).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 
