@@ -80,7 +80,9 @@
     <Compile Include="Images\ImageWriter.cs" />
     <Compile Include="Images\UploadImageHandler.cs" />
     <Compile Include="Javascript\JavascriptApiClientService.cs" />
-    <Compile Include="LibraryService.cs" />
+    <Compile Include="Library\LibraryHelpers.cs" />
+    <Compile Include="Library\LibraryService.cs" />
+    <Compile Include="Library\LibraryStructureService.cs" />
     <Compile Include="LocalizationService.cs" />
     <Compile Include="PackageService.cs" />
     <Compile Include="PluginService.cs" />
@@ -102,7 +104,6 @@
     <Compile Include="Streaming\HlsAudioPlaylistHandler.cs" />
     <Compile Include="Streaming\HlsSegmentHandler.cs" />
     <Compile Include="Streaming\HlsVideoPlaylistHandler.cs" />
-    <Compile Include="HttpHandlers\UpdateMediaLibraryHandler.cs" />
     <Compile Include="Streaming\VideoHandler.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

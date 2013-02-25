@@ -84,19 +84,6 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class GetVirtualFolders
-    /// </summary>
-    [Route("/Users/{UserId}/VirtualFolders", "GET")]
-    public class GetVirtualFolders : IReturn<List<VirtualFolderInfo>>
-    {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        public Guid UserId { get; set; }
-    }
-
-    /// <summary>
     /// Class MarkFavoriteItem
     /// </summary>
     [Route("/Users/{UserId}/FavoriteItems/{Id}", "POST")]
@@ -408,22 +395,6 @@ namespace MediaBrowser.Api.UserLibrary
             var dtoBuilder = new DtoBuilder(Logger);
 
             var result = dtoBuilder.GetDtoBaseItem(item, user, fields).Result;
-
-            return ToOptimizedResult(result);
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetVirtualFolders request)
-        {
-            var kernel = (Kernel)Kernel;
-
-            var user = kernel.GetUserById(request.UserId);
-
-            var result = kernel.LibraryManager.GetVirtualFolders(user).ToList();
 
             return ToOptimizedResult(result);
         }
