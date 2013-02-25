@@ -13,12 +13,14 @@
             <group targetFramework=".NETFramework4.5">
                 <dependency id="ServiceStack.Text" version="3.9.37" />
                 <dependency id="protobuf-net" version="2.0.0.621" />
+                <dependency id="MediaBrowser.Common" version="3.0.6" />
             </group>
             <group targetFramework=".NETPortable0.0-net45+sl4+wp71+win8">
                 <dependency id="Newtonsoft.Json" version="4.5.11" />
                 <dependency id="Microsoft.Bcl.Async" version="1.0.14-rc" />
                 <dependency id="Microsoft.Net.Http" version="2.1.3-beta" />
                 <dependency id="protobuf-net" version="2.0.0.621" />
+                <dependency id="MediaBrowser.Common" version="3.0.6" />
             </group>
         </dependencies>
     </metadata>
