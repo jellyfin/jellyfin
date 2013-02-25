@@ -613,15 +613,15 @@ var ApiClient = {
 
             var data = window.btoa(e.target.result);
 
-            var params = {
-                userId: userId,
-                type: imageType,
-                filename: file.name
-            };
+            var url = ApiClient.getUrl("Users/" + userId + "/Images/" + imageType);
 
-            var url = ApiClient.getUrl("UploadImage", params);
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: data,
+                contentType: "image/" + file.name.substring(file.name.lastIndexOf('.') + 1)
 
-            $.post(url, data).done(function (result) {
+            }).done(function (result) {
 
                 deferred.resolveWith(null, [result]);
 
