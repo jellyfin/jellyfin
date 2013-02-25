@@ -61,7 +61,7 @@ namespace MediaBrowser.Common.Extensions
         /// <returns>Guid.</returns>
         public static Guid GetMD5(this string str)
         {
-            using (var provider = new MD5CryptoServiceProvider())
+            using (var provider = MD5.Create())
             {
                 return new Guid(provider.ComputeHash(Encoding.Unicode.GetBytes(str)));
             }

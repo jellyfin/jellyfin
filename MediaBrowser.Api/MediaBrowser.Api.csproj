@@ -75,7 +75,6 @@
     </Compile>
     <Compile Include="ApiService.cs" />
     <Compile Include="EnvironmentService.cs" />
-    <Compile Include="HttpHandlers\PlaybackCheckInHandler.cs" />
     <Compile Include="Images\ImageRequest.cs" />
     <Compile Include="Images\ImageService.cs" />
     <Compile Include="Images\ImageWriter.cs" />
