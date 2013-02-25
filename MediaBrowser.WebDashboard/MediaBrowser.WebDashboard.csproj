@@ -380,6 +380,7 @@
     <EmbeddedResource Include="Html\scripts\ItemDetailPage.js" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Html\Readme.txt" />
     <EmbeddedResource Include="Html\css\images\media\playCircle.png" />
     <EmbeddedResource Include="Html\css\images\media\nextTrack.png" />
     <EmbeddedResource Include="Html\css\images\media\pause.png" />
