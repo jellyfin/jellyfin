@@ -658,7 +658,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="userId">The user id.</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task<UserItemDataDto> ReportPlaybackStartAsync(string itemId, Guid userId)
+        public Task ReportPlaybackStartAsync(string itemId, Guid userId)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -670,14 +670,9 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("userId");
             }
 
-            var dict = new QueryStringDictionary();
-            dict.Add("id", itemId);
-            dict.Add("userId", userId);
-            dict.Add("type", "start");
+            var url = GetApiUrl("Users/" + userId + "/PlayingItems/" + itemId);
 
-            var url = GetApiUrl("playbackcheckin", dict);
-
-            return PostAsync<UserItemDataDto>(url, new Dictionary<string, string>());
+            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
         }
 
         /// <summary>
@@ -688,7 +683,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="positionTicks">The position ticks.</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task<UserItemDataDto> ReportPlaybackProgressAsync(string itemId, Guid userId, long? positionTicks)
+        public Task ReportPlaybackProgressAsync(string itemId, Guid userId, long? positionTicks)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -701,15 +696,11 @@ namespace MediaBrowser.ApiInteraction
             }
 
             var dict = new QueryStringDictionary();
-            dict.Add("id", itemId);
-            dict.Add("userId", userId);
-            dict.Add("type", "progress");
-
             dict.AddIfNotNull("positionTicks", positionTicks);
 
-            var url = GetApiUrl("playbackcheckin", dict);
+            var url = GetApiUrl("Users/" + userId + "/PlayingItems/" + itemId + "/Progress", dict);
 
-            return PostAsync<UserItemDataDto>(url, new Dictionary<string, string>());
+            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
         }
 
         /// <summary>
@@ -720,7 +711,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="positionTicks">The position ticks.</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task<UserItemDataDto> ReportPlaybackStoppedAsync(string itemId, Guid userId, long? positionTicks)
+        public Task ReportPlaybackStoppedAsync(string itemId, Guid userId, long? positionTicks)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -733,15 +724,11 @@ namespace MediaBrowser.ApiInteraction
             }
 
             var dict = new QueryStringDictionary();
-            dict.Add("id", itemId);
-            dict.Add("userId", userId);
-            dict.Add("type", "stopped");
-
             dict.AddIfNotNull("positionTicks", positionTicks);
 
-            var url = GetApiUrl("playbackcheckin", dict);
+            var url = GetApiUrl("Users/" + userId + "/PlayingItems/" + itemId, dict);
 
-            return PostAsync<UserItemDataDto>(url, new Dictionary<string, string>());
+            return HttpClient.DeleteAsync(url, Logger, CancellationToken.None);
         }
 
         /// <summary>
@@ -876,153 +863,6 @@ namespace MediaBrowser.ApiInteraction
             var url = GetApiUrl("ScheduledTasks/" + id + "/Triggers");
 
             return PostAsync<TaskTriggerInfo[], EmptyRequestResult>(url, triggers);
-        }
-
-        /// <summary>
-        /// Adds a virtual folder to either the default view or a user view
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="userId">The user id.</param>
-        /// <returns>Task{RequestResult}.</returns>
-        /// <exception cref="System.ArgumentNullException">name</exception>
-        public Task AddVirtualFolderAsync(string name, Guid? userId = null)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException("name");
-            }
-
-            var dict = new QueryStringDictionary();
-            dict.Add("name", name);
-            dict.Add("action", "AddVirtualFolder");
-
-            dict.AddIfNotNull("userId", userId);
-
-            var url = GetApiUrl("UpdateMediaLibrary", dict);
-
-            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
-        }
-
-        /// <summary>
-        /// Removes a virtual folder, within either the default view or a user view
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="userId">The user id.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">name</exception>
-        public Task RemoveVirtualFolderAsync(string name, Guid? userId = null)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException("name");
-            }
-
-            var dict = new QueryStringDictionary();
-            dict.Add("name", name);
-            dict.Add("action", "RemoveVirtualFolder");
-
-            dict.AddIfNotNull("userId", userId);
-
-            var url = GetApiUrl("UpdateMediaLibrary", dict);
-
-            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
-        }
-
-        /// <summary>
-        /// Renames a virtual folder, within either the default view or a user view
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="newName">The new name.</param>
-        /// <param name="userId">The user id.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">name</exception>
-        public Task RenameVirtualFolderAsync(string name, string newName, Guid? userId = null)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException("name");
-            }
-
-            if (string.IsNullOrEmpty(newName))
-            {
-                throw new ArgumentNullException("newName");
-            }
-
-            var dict = new QueryStringDictionary();
-            dict.Add("name", name);
-            dict.Add("newName", newName);
-            dict.Add("action", "RenameVirtualFolder");
-
-            dict.AddIfNotNull("userId", userId);
-
-            var url = GetApiUrl("UpdateMediaLibrary", dict);
-
-            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
-        }
-
-        /// <summary>
-        /// Adds a media path to a virtual folder, within either the default view or a user view
-        /// </summary>
-        /// <param name="virtualFolderName">Name of the virtual folder.</param>
-        /// <param name="mediaPath">The media path.</param>
-        /// <param name="userId">The user id.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">virtualFolderName</exception>
-        public Task AddMediaPathAsync(string virtualFolderName, string mediaPath, Guid? userId = null)
-        {
-            if (string.IsNullOrEmpty(virtualFolderName))
-            {
-                throw new ArgumentNullException("virtualFolderName");
-            }
-
-            if (string.IsNullOrEmpty(mediaPath))
-            {
-                throw new ArgumentNullException("mediaPath");
-            }
-
-            var dict = new QueryStringDictionary();
-            dict.Add("virtualFolderName", virtualFolderName);
-            dict.Add("mediaPath", mediaPath);
-            dict.Add("action", "AddMediaPath");
-
-            dict.AddIfNotNull("userId", userId);
-
-            var url = GetApiUrl("UpdateMediaLibrary", dict);
-
-            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
-        }
-
-        /// <summary>
-        /// Removes a media path from a virtual folder, within either the default view or a user view
-        /// </summary>
-        /// <param name="virtualFolderName">Name of the virtual folder.</param>
-        /// <param name="mediaPath">The media path.</param>
-        /// <param name="userId">The user id.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">virtualFolderName</exception>
-        public Task RemoveMediaPathAsync(string virtualFolderName, string mediaPath, Guid? userId = null)
-        {
-            if (string.IsNullOrEmpty(virtualFolderName))
-            {
-                throw new ArgumentNullException("virtualFolderName");
-            }
-
-            if (string.IsNullOrEmpty(mediaPath))
-            {
-                throw new ArgumentNullException("mediaPath");
-            }
-
-            var dict = new QueryStringDictionary();
-
-            dict.Add("virtualFolderName", virtualFolderName);
-            dict.Add("mediaPath", mediaPath);
-            dict.Add("action", "RemoveMediaPath");
-
-            dict.AddIfNotNull("userId", userId);
-
-            var url = GetApiUrl("UpdateMediaLibrary", dict);
-
-            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
         }
 
         /// <summary>

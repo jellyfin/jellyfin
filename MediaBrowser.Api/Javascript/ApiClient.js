@@ -297,7 +297,7 @@ var ApiClient = {
      */
     getVirtualFolders: function (userId) {
 
-        var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/DefaultVirtualFolders";
+        var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/VirtualFolders";
 
         url = ApiClient.getUrl(url);
 
@@ -434,18 +434,16 @@ var ApiClient = {
             throw new Error("null name");
         }
 
-        var params = {
-            name: name,
-            action: "RemoveVirtualFolder"
-        };
+        var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/VirtualFolders";
 
-        if (userId) {
-            params.userId = userId;
-        }
+        url += "/" + name;
+        url = ApiClient.getUrl(url);
 
-        var url = ApiClient.getUrl("UpdateMediaLibrary", params);
-
-        return $.post(url);
+        return $.ajax({
+            type: "DELETE",
+            url: url,
+            dataType: "json"
+        });
     },
 
     /**
@@ -458,16 +456,10 @@ var ApiClient = {
             throw new Error("null name");
         }
 
-        var params = {
-            name: name,
-            action: "addVirtualFolder"
-        };
+        var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/VirtualFolders";
 
-        if (userId) {
-            params.userId = userId;
-        }
-
-        var url = ApiClient.getUrl("UpdateMediaLibrary", params);
+        url += "/" + name;
+        url = ApiClient.getUrl(url);
 
         return $.post(url);
     },
@@ -482,21 +474,11 @@ var ApiClient = {
             throw new Error("null name");
         }
 
-        if (!newName) {
-            throw new Error("null newName");
-        }
+        var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/VirtualFolders";
 
-        var params = {
-            name: name,
-            newName: newName,
-            action: "RenameVirtualFolder"
-        };
+        url += "/" + name + "/Name";
 
-        if (userId) {
-            params.userId = userId;
-        }
-
-        var url = ApiClient.getUrl("UpdateMediaLibrary", params);
+        url = ApiClient.getUrl(url, { newName: newName });
 
         return $.post(url);
     },
@@ -515,17 +497,11 @@ var ApiClient = {
             throw new Error("null mediaPath");
         }
 
-        var params = {
-            virtualFolderName: virtualFolderName,
-            mediaPath: mediaPath,
-            action: "addMediaPath"
-        };
+        var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/VirtualFolders";
 
-        if (userId) {
-            params.userId = userId;
-        }
+        url += "/" + virtualFolderName + "/Paths";
 
-        var url = ApiClient.getUrl("UpdateMediaLibrary", params);
+        url = ApiClient.getUrl(url, { path: mediaPath });
 
         return $.post(url);
     },
@@ -544,19 +520,17 @@ var ApiClient = {
             throw new Error("null mediaPath");
         }
 
-        var params = {
-            virtualFolderName: virtualFolderName,
-            mediaPath: mediaPath,
-            action: "RemoveMediaPath"
-        };
+        var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/VirtualFolders";
 
-        if (userId) {
-            params.userId = userId;
-        }
+        url += "/" + virtualFolderName + "/Paths";
 
-        var url = ApiClient.getUrl("UpdateMediaLibrary", params);
+        url = ApiClient.getUrl(url, { path: mediaPath });
 
-        return $.post(url);
+        return $.ajax({
+            type: "DELETE",
+            url: url,
+            dataType: "json"
+        });
     },
 
     /**

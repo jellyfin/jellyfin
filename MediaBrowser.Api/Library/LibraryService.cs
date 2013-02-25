@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MediaBrowser.Api
+namespace MediaBrowser.Api.Library
 {
     /// <summary>
     /// Class GetPhyscialPaths
@@ -86,14 +86,6 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class GetDefaultVirtualFolders
-    /// </summary>
-    [Route("/Library/DefaultVirtualFolders", "GET")]
-    public class GetDefaultVirtualFolders : IReturn<List<VirtualFolderInfo>>
-    {
-    }
-
-    /// <summary>
     /// Class LibraryService
     /// </summary>
     public class LibraryService : BaseRestService
@@ -116,20 +108,6 @@ namespace MediaBrowser.Api
             }
 
             _appHost = appHost;
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetDefaultVirtualFolders request)
-        {
-            var kernel = (Kernel)Kernel;
-
-            var result = kernel.LibraryManager.GetDefaultVirtualFolders().ToList();
-
-            return ToOptimizedResult(result);
         }
 
         /// <summary>

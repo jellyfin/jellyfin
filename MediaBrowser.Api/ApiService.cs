@@ -1,10 +1,7 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Connectivity;
-using ServiceStack.Common.Web;
 using System;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
@@ -43,36 +40,5 @@ namespace MediaBrowser.Api
 
             return request.Url.LocalPath.EndsWith(url, StringComparison.OrdinalIgnoreCase);
         }
-
-        ///// <summary>
-        ///// Gets the current user.
-        ///// </summary>
-        ///// <param name="request">The request.</param>
-        ///// <returns>Task{User}.</returns>
-        //public static async Task<User> GetCurrentUser(AuthenticatedRequest request)
-        //{
-        //    var user = GetUserById(request.UserId);
-
-        //    if (user == null)
-        //    {
-        //        throw HttpError.Unauthorized("Invalid user or password entered.");
-        //    }
-
-        //    var clientType = ClientType.Other;
-
-        //    if (!string.IsNullOrEmpty(request.Client))
-        //    {
-        //        ClientType type;
-
-        //        if (Enum.TryParse(request.Client, true, out type))
-        //        {
-        //            clientType = type;
-        //        }
-        //    }
-
-        //    await Kernel.Instance.UserManager.LogUserActivity(user, clientType, request.Device).ConfigureAwait(false);
-
-        //    return user;
-        //}
     }
 }
