@@ -78,7 +78,6 @@
     <Compile Include="Images\ImageRequest.cs" />
     <Compile Include="Images\ImageService.cs" />
     <Compile Include="Images\ImageWriter.cs" />
-    <Compile Include="Images\UploadImageHandler.cs" />
     <Compile Include="Javascript\JavascriptApiClientService.cs" />
     <Compile Include="Library\LibraryHelpers.cs" />
     <Compile Include="Library\LibraryService.cs" />
