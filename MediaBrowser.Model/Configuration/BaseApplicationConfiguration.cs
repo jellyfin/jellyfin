@@ -1,4 +1,5 @@
-﻿using ProtoBuf;
+﻿using MediaBrowser.Model.Updates;
+using ProtoBuf;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -37,6 +38,12 @@ namespace MediaBrowser.Model.Configuration
         /// <value><c>true</c> if [enable auto update]; otherwise, <c>false</c>.</value>
         [ProtoMember(3)]
         public bool EnableAutoUpdate { get; set; }
+
+        /// <summary>
+        /// Gets of sets a value indicating the level of system updates (Release, Beta, Dev)
+        /// </summary>
+        [ProtoMember(60)]
+        public PackageVersionClass SystemUpdateLevel { get; set; }
 
         /// <summary>
         /// The number of days we should retain log files

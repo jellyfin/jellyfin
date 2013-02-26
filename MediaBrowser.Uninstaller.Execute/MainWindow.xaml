@@ -7,10 +7,14 @@
         <Label x:Name="lblHeading" Content="Uninstall " HorizontalAlignment="Left" Margin="51,169,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.478,-2.753" Height="29" Width="423" FontSize="14" FontWeight="Bold"/>
         <Button x:Name="btnUninstall" Content="Uninstall" HorizontalAlignment="Left" Margin="505,341,0,0" VerticalAlignment="Top" Width="75" IsDefault="True" RenderTransformOrigin="0.991,-1.041" Click="btnUninstall_Click"/>
         <Button x:Name="btnCancel" Content="Cancel" HorizontalAlignment="Left" Margin="412,341,0,0" VerticalAlignment="Top" Width="75" IsCancel="True" Click="btnCancel_Click"/>
-        <CheckBox x:Name="cbxRemoveAll" Content="Remove All Traces" HorizontalAlignment="Left" Margin="137,234,0,0" VerticalAlignment="Top" Checked="cbxRemoveAll_Checked" Unchecked="cbxRemoveAll_Checked"/>
-        <CheckBox x:Name="cbxRemoveCache" Content="Delete Cache Files" HorizontalAlignment="Left" Margin="152,255,0,0" VerticalAlignment="Top"/>
-        <CheckBox x:Name="cbxRemoveConfig" Content="Delete Configuration and Log Files" HorizontalAlignment="Left" Margin="152,276,0,0" VerticalAlignment="Top"/>
-        <CheckBox x:Name="cbxRemovePlugins" Content="Delete Plug-ins" HorizontalAlignment="Left" Margin="152,297,0,0" VerticalAlignment="Top"/>
+        <Grid x:Name="grdOptions" HorizontalAlignment="Left" Height="108" Margin="134,213,0,0" VerticalAlignment="Top" Width="261">
+            <CheckBox x:Name="cbxRemoveAll" Content="Remove All Traces" HorizontalAlignment="Left" Margin="0,3,0,0" VerticalAlignment="Top" Checked="cbxRemoveAll_Checked" Unchecked="cbxRemoveAll_Checked"/>
+            <CheckBox x:Name="cbxRemoveCache" Content="Delete Cache Files" HorizontalAlignment="Left" Margin="16,25,0,0" VerticalAlignment="Top"/>
+            <CheckBox x:Name="cbxRemoveConfig" Content="Delete Configuration and Log Files" HorizontalAlignment="Left" Margin="16,47,0,0" VerticalAlignment="Top"/>
+            <CheckBox x:Name="cbxRemovePlugins" Content="Delete Plug-ins" HorizontalAlignment="Left" Margin="16,68,0,0" VerticalAlignment="Top"/>
+            
+        </Grid>
+        <Button x:Name="btnFinished" Content="Finish" HorizontalAlignment="Left" Margin="505,341,0,0" VerticalAlignment="Top" Width="75" IsDefault="True" RenderTransformOrigin="0.991,-1.041" Click="BtnFinished_OnClick"  Visibility="Hidden"/>
 
     </Grid>
 </Window>
