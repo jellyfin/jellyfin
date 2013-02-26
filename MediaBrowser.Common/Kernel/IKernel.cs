@@ -123,5 +123,12 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <value>The resource pools.</value>
         ResourcePool ResourcePools { get; set; }
+
+        /// <summary>
+        /// Removes the plugin.
+        /// </summary>
+        /// <param name="plugin">The plugin.</param>
+        void RemovePlugin(IPlugin plugin);
+
     }
 }

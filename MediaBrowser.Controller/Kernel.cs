@@ -537,17 +537,6 @@ namespace MediaBrowser.Controller
         }
 
         /// <summary>
-        /// Removes the plugin.
-        /// </summary>
-        /// <param name="plugin">The plugin.</param>
-        internal void RemovePlugin(IPlugin plugin)
-        {
-            var list = Plugins.ToList();
-            list.Remove(plugin);
-            Plugins = list;
-        }
-
-        /// <summary>
         /// Gets the system info.
         /// </summary>
         /// <returns>SystemInfo.</returns>
