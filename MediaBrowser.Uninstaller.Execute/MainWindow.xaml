@@ -14,7 +14,7 @@
             <CheckBox x:Name="cbxRemovePlugins" Content="Delete Plug-ins" HorizontalAlignment="Left" Margin="16,68,0,0" VerticalAlignment="Top"/>
             
         </Grid>
-        <Button x:Name="btnFinished" Content="Uninstall" HorizontalAlignment="Left" Margin="505,341,0,0" VerticalAlignment="Top" Width="75" IsDefault="True" RenderTransformOrigin="0.991,-1.041" Click="BtnFinished_OnClick"  Visibility="Hidden"/>
+        <Button x:Name="btnFinished" Content="Finish" HorizontalAlignment="Left" Margin="505,341,0,0" VerticalAlignment="Top" Width="75" IsDefault="True" RenderTransformOrigin="0.991,-1.041" Click="BtnFinished_OnClick"  Visibility="Hidden"/>
 
     </Grid>
 </Window>
