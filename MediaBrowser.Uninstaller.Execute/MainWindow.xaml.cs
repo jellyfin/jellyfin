@@ -34,7 +34,7 @@ namespace MediaBrowser.Uninstaller.Execute
                     break;
 
                 default:
-                    Console.WriteLine("Please specify which application to un-install (server or mbt)");
+                    MessageBox.Show("Please specify which application to un-install (server or mbt)");
                     Close();
                     break;
 

@@ -385,6 +385,8 @@
 if $(ConfigurationName) == Release (
 mkdir "$(SolutionDir)..\Deploy\Server\System"
 xcopy "$(TargetDir)$(TargetFileName)" "$(SolutionDir)..\Deploy\Server\System\" /y
+xcopy "$(SolutionDir)Mediabrowser.Uninstaller\bin\Release\MediaBrowser.Uninstaller.exe.config" "$(SolutionDir)..\Deploy\Server\System\" /y
+xcopy "$(SolutionDir)Mediabrowser.Uninstaller.Execute\bin\Release\MediaBrowser.Uninstaller.Execute.exe.config" "$(SolutionDir)..\Deploy\Server\System\" /y
 xcopy "$(SolutionDir)Mediabrowser.Uninstaller\bin\Release\MediaBrowser.Uninstaller.exe" "$(SolutionDir)..\Deploy\Server\System\" /y
 xcopy "$(SolutionDir)Mediabrowser.Uninstaller.Execute\bin\Release\MediaBrowser.Uninstaller.Execute.exe" "$(SolutionDir)..\Deploy\Server\System\" /y
 

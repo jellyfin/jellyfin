@@ -31,12 +31,16 @@ namespace MediaBrowser.Uninstaller
             var args = Environment.GetCommandLineArgs();
             var product = args.Length > 1 ? args[1] : "server";
             //copy the real program to a temp location so we can delete everything here (including us)
-            var tempExe = Path.Combine(Path.GetTempPath(), "MBUninstall.exe");
+            var tempExe = Path.Combine(Path.GetTempPath(), "MediaBrowser.Uninstaller.Execute.exe");
+            var tempConfig = Path.Combine(Path.GetTempPath(), "MediaBrowser.Uninstaller.Execute.exe.config");
             using (var file = File.Create(tempExe, 4096, FileOptions.DeleteOnClose))
             {
                 //copy the real uninstaller to temp location
-                File.WriteAllBytes(tempExe, File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().GetName().CodeBase) ?? "","MediaBrowser.Uninstaller.Execute.exe")));
+                var sourceDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().GetName().CodeBase) ?? "";
+                File.WriteAllBytes(tempExe, File.ReadAllBytes(Path.Combine(sourceDir ,"MediaBrowser.Uninstaller.Execute.exe")));
+                File.Copy(tempConfig, Path.Combine(sourceDir ,"MediaBrowser.Uninstaller.Execute.exe.config"));
                 //kick off the copy
+                MessageBox.Show("About to start " + tempExe);
                 Process.Start(tempExe, product);
                 //wait for it to start up
                 Thread.Sleep(500);
