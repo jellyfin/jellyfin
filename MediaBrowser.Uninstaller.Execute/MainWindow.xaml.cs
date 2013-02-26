@@ -77,7 +77,7 @@ namespace MediaBrowser.Uninstaller.Execute
             RemoveShortcut(Path.Combine(startMenu, linkName));
             if (Product == "Server")
             {
-                RemoveShortcut(Path.Combine(startMenu, "Dashboard.lnk"));
+                RemoveShortcut(Path.Combine(startMenu, "MB Dashboard.lnk"));
             }
             // if the startmenu item is empty now - delete it too
             if (Directory.GetFiles(startMenu).Length == 0)
