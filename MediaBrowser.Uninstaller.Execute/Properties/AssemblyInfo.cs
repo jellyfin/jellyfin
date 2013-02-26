@@ -10,9 +10,9 @@ using System.Windows;
 [assembly: AssemblyTitle("MediaBrowser.Uninstaller")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
+[assembly: AssemblyCompany("Toshiba")]
 [assembly: AssemblyProduct("MediaBrowser.Uninstaller")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2013")]
+[assembly: AssemblyCopyright("Copyright © Toshiba 2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

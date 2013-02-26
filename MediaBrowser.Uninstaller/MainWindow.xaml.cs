@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,6 +15,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
+using System.Windows.Shapes;
+using Path = System.IO.Path;
 
 namespace MediaBrowser.Uninstaller
 {
@@ -20,68 +25,26 @@ namespace MediaBrowser.Uninstaller
     /// </summary>
     public partial class MainWindow : Window
     {
-        protected string Product = "Server";
-
         public MainWindow()
         {
-            InitializeComponent();
+            //All our work is behind the scenes
             var args = Environment.GetCommandLineArgs();
             var product = args.Length > 1 ? args[1] : "server";
-
-            switch (product)
+            //copy the real program to a temp location so we can delete everything here (including us)
+            var tempExe = Path.Combine(Path.GetTempPath(), "MBUninstall.exe");
+            using (var file = File.Create(tempExe, 4096, FileOptions.DeleteOnClose))
             {
-                case "server":
-                    Product = "Server";
-                    break;
-
-                case "mbt":
-                    Product = "Theater";
-                    break;
-
-                default:
-                    Console.WriteLine("Please specify which application to un-install (server or mbt)");
-                    Close();
-                    break;
-
+                //copy the real uninstaller to temp location
+                File.WriteAllBytes(tempExe, File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().GetName().CodeBase) ?? "","MediaBrowser.Uninstaller.Execute.exe")));
+                //kick off the copy
+                Process.Start(tempExe, product);
+                //wait for it to start up
+                Thread.Sleep(500);
+                //and shut down
+                Close();
             }
-
-            lblHeading.Content = this.Title = "Uninstall Media Browser " + Product;
-
-        }
-
-        private void btnCancel_Click(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
-
-        private void cbxRemoveAll_Checked(object sender, RoutedEventArgs e)
-        {
-            if (cbxRemoveAll.IsChecked == true)
-            {
-                cbxRemoveCache.IsChecked = cbxRemoveConfig.IsChecked = cbxRemovePlugins.IsChecked = true;
-            }
-
-            cbxRemoveCache.IsEnabled = cbxRemoveConfig.IsEnabled = cbxRemovePlugins.IsEnabled = !cbxRemoveAll.IsChecked.Value;
-        }
-
-        private void btnUninstall_Click(object sender, RoutedEventArgs e)
-        {
-            // First remove our shortcuts
-            var startMenu = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), "Media Browser");
-            var linkName = "Media Browser " + Product + ".lnk";
-            try 
-            {
-                File.Delete(Path.Combine(startMenu,linkName));
-            }
-            catch {} // oh well
-
-            linkName = "Uninstall " + linkName;
-            try 
-            {
-                File.Delete(Path.Combine(startMenu,linkName));
-            }
-            catch {} // oh well
-
+            
+            //InitializeComponent();
         }
     }
 }

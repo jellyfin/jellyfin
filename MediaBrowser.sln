@@ -45,11 +45,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.ClickOnce", "M
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Networking", "MediaBrowser.Networking\MediaBrowser.Networking.csproj", "{7C11010E-179A-49B7-BFB2-F1656F5E71AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Uninstaller", "MediaBrowser.Uninstaller\MediaBrowser.Uninstaller.csproj", "{FACAF749-3E28-46DD-B613-654FCD434959}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Common.Implementations", "MediaBrowser.Common.Implementations\MediaBrowser.Common.Implementations.csproj", "{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Server.Implementations", "MediaBrowser.Server.Implementations\MediaBrowser.Server.Implementations.csproj", "{2E781478-814D-4A48-9D80-BFF206441A65}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Uninstaller.Execute", "MediaBrowser.Uninstaller.Execute\MediaBrowser.Uninstaller.Execute.csproj", "{FACAF749-3E28-46DD-B613-654FCD434959}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Uninstaller", "MediaBrowser.Uninstaller\MediaBrowser.Uninstaller.csproj", "{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -291,20 +293,6 @@ Global
 		{7C11010E-179A-49B7-BFB2-F1656F5E71AD}.Release|Win32.ActiveCfg = Release|Any CPU
 		{7C11010E-179A-49B7-BFB2-F1656F5E71AD}.Release|x64.ActiveCfg = Release|Any CPU
 		{7C11010E-179A-49B7-BFB2-F1656F5E71AD}.Release|x86.ActiveCfg = Release|Any CPU
-		{FACAF749-3E28-46DD-B613-654FCD434959}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FACAF749-3E28-46DD-B613-654FCD434959}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FACAF749-3E28-46DD-B613-654FCD434959}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{FACAF749-3E28-46DD-B613-654FCD434959}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{FACAF749-3E28-46DD-B613-654FCD434959}.Debug|Win32.ActiveCfg = Debug|Any CPU
-		{FACAF749-3E28-46DD-B613-654FCD434959}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{FACAF749-3E28-46DD-B613-654FCD434959}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|Win32.ActiveCfg = Release|Any CPU
-		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|x64.ActiveCfg = Release|Any CPU
-		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|x86.ActiveCfg = Release|Any CPU
 		{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -333,6 +321,34 @@ Global
 		{2E781478-814D-4A48-9D80-BFF206441A65}.Release|Win32.ActiveCfg = Release|Any CPU
 		{2E781478-814D-4A48-9D80-BFF206441A65}.Release|x64.ActiveCfg = Release|Any CPU
 		{2E781478-814D-4A48-9D80-BFF206441A65}.Release|x86.ActiveCfg = Release|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|Win32.ActiveCfg = Release|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|x64.ActiveCfg = Release|Any CPU
+		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|x86.ActiveCfg = Release|Any CPU
+		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Release|Win32.ActiveCfg = Release|Any CPU
+		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Release|x64.ActiveCfg = Release|Any CPU
+		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
