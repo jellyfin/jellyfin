@@ -151,21 +151,22 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="obj">The obj.</param>
-        protected void RegisterSingleInstance<T>(T obj)
+        /// <param name="manageLifetime">if set to <c>true</c> [manage lifetime].</param>
+        protected void RegisterSingleInstance<T>(T obj, bool manageLifetime = true)
             where T : class
         {
             Container.RegisterSingle(obj);
-        }
 
-        /// <summary>
-        /// Registers the specified func.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="func">The func.</param>
-        protected void Register<T>(Func<T> func)
-            where T : class
-        {
-            Container.Register(func);
+            if (manageLifetime)
+            {
+                var disposable = obj as IDisposable;
+
+                if (disposable != null)
+                {
+                    Logger.Info("Registering " + disposable.GetType().Name);
+                    DisposableParts.Add(disposable);
+                }
+            }
         }
 
         /// <summary>
@@ -203,16 +204,6 @@ namespace MediaBrowser.Common.Implementations
                 return default(T);
             }
             return (T)result.GetInstance();
-        }
-
-        /// <summary>
-        /// Registers the specified service type.
-        /// </summary>
-        /// <param name="serviceType">Type of the service.</param>
-        /// <param name="implementation">Type of the concrete.</param>
-        protected void Register(Type serviceType, Type implementation)
-        {
-            Container.Register(serviceType, implementation);
         }
 
         /// <summary>
@@ -282,12 +273,16 @@ namespace MediaBrowser.Common.Implementations
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool dispose)
         {
-            foreach (var part in DisposableParts)
+            var type = GetType();
+
+            Logger.Info("Disposing " + type.Name);
+
+            foreach (var part in DisposableParts.Distinct().Where(i => i.GetType() != type).ToList())
             {
+                Logger.Info("Disposing " + part.GetType().Name);
+
                 part.Dispose();
             }
-
-            var b = Container.GetCurrentRegistrations();
 
             DisposableParts.Clear();
         }

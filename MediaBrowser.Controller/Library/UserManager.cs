@@ -73,7 +73,7 @@ namespace MediaBrowser.Controller.Library
             EventHelper.QueueEventIfNotNull(UserUpdated, this, new GenericEventArgs<User> { Argument = user }, _logger);
 
             // Notify connected ui's
-            Kernel.TcpManager.SendWebSocketMessage("UserUpdated", new DtoBuilder(_logger).GetDtoUser(user));
+            Kernel.ServerManager.SendWebSocketMessage("UserUpdated", new DtoBuilder(_logger).GetDtoUser(user));
         }
         #endregion
 
@@ -91,7 +91,7 @@ namespace MediaBrowser.Controller.Library
             EventHelper.QueueEventIfNotNull(UserDeleted, this, new GenericEventArgs<User> { Argument = user }, _logger);
 
             // Notify connected ui's
-            Kernel.TcpManager.SendWebSocketMessage("UserDeleted", user.Id.ToString());
+            Kernel.ServerManager.SendWebSocketMessage("UserDeleted", user.Id.ToString());
         }
         #endregion
 

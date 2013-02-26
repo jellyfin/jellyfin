@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
@@ -165,7 +164,7 @@ namespace MediaBrowser.Common.Kernel
         /// Gets or sets the TCP manager.
         /// </summary>
         /// <value>The TCP manager.</value>
-        public TcpManager TcpManager { get; private set; }
+        public IServerManager ServerManager { get; private set; }
 
         /// <summary>
         /// Gets the UDP server port number.
@@ -203,15 +202,6 @@ namespace MediaBrowser.Common.Kernel
         public abstract KernelContext KernelContext { get; }
 
         /// <summary>
-        /// Gets the log file path.
-        /// </summary>
-        /// <value>The log file path.</value>
-        public string LogFilePath
-        {
-            get { return ApplicationHost.LogFilePath; }
-        }
-
-        /// <summary>
         /// Gets the logger.
         /// </summary>
         /// <value>The logger.</value>
@@ -238,23 +228,6 @@ namespace MediaBrowser.Common.Kernel
         /// <exception cref="System.ArgumentNullException">isoManager</exception>
         protected BaseKernel(IApplicationHost appHost, TApplicationPathsType appPaths, IXmlSerializer xmlSerializer, ILogger logger)
         {
-            if (appHost == null)
-            {
-                throw new ArgumentNullException("appHost");
-            }
-            if (appPaths == null)
-            {
-                throw new ArgumentNullException("appPaths");
-            }
-            if (xmlSerializer == null)
-            {
-                throw new ArgumentNullException("xmlSerializer");
-            }
-            if (logger == null)
-            {
-                throw new ArgumentNullException("logger");
-            }
-
             ApplicationPaths = appPaths;
             ApplicationHost = appHost;
             _xmlSerializer = xmlSerializer;
@@ -291,8 +264,8 @@ namespace MediaBrowser.Common.Kernel
 
             await OnComposablePartsLoaded().ConfigureAwait(false);
 
-            DisposeTcpManager();
-            TcpManager = (TcpManager)ApplicationHost.CreateInstance(typeof(TcpManager));
+            ServerManager = ApplicationHost.Resolve<IServerManager>();
+            ServerManager.Start();
         }
 
         /// <summary>
@@ -357,7 +330,7 @@ namespace MediaBrowser.Common.Kernel
         {
             HasPendingRestart = true;
 
-            TcpManager.SendWebSocketMessage("HasPendingRestartChanged", GetSystemInfo());
+            ServerManager.SendWebSocketMessage("HasPendingRestartChanged", GetSystemInfo());
 
             EventHelper.QueueEventIfNotNull(HasPendingRestartChanged, this, EventArgs.Empty, Logger);
         }
@@ -377,22 +350,7 @@ namespace MediaBrowser.Common.Kernel
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool dispose)
         {
-            if (dispose)
-            {
-                DisposeTcpManager();
-            }
-        }
 
-        /// <summary>
-        /// Disposes the TCP manager.
-        /// </summary>
-        private void DisposeTcpManager()
-        {
-            if (TcpManager != null)
-            {
-                TcpManager.Dispose();
-                TcpManager = null;
-            }
         }
 
         /// <summary>
@@ -424,8 +382,8 @@ namespace MediaBrowser.Common.Kernel
                 HasPendingRestart = HasPendingRestart,
                 Version = ApplicationHost.ApplicationVersion.ToString(),
                 IsNetworkDeployed = ApplicationHost.CanSelfUpdate,
-                WebSocketPortNumber = TcpManager.WebSocketPortNumber,
-                SupportsNativeWebSocket = TcpManager.SupportsNativeWebSocket,
+                WebSocketPortNumber = ServerManager.WebSocketPortNumber,
+                SupportsNativeWebSocket = ServerManager.SupportsNativeWebSocket,
                 FailedPluginAssemblies = ApplicationHost.FailedAssemblies.ToArray()
             };
         }

@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Plugins;
+﻿using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.System;
 using System;
@@ -72,12 +71,6 @@ namespace MediaBrowser.Common.Kernel
         string WebApplicationName { get; }
 
         /// <summary>
-        /// Gets the log file path.
-        /// </summary>
-        /// <value>The log file path.</value>
-        string LogFilePath { get; }
-
-        /// <summary>
         /// Performs the pending restart.
         /// </summary>
         void PerformPendingRestart();
@@ -104,7 +97,7 @@ namespace MediaBrowser.Common.Kernel
         /// Gets the TCP manager.
         /// </summary>
         /// <value>The TCP manager.</value>
-        TcpManager TcpManager { get; }
+        IServerManager ServerManager { get; }
 
         /// <summary>
         /// Gets the web socket listeners.

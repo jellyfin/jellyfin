@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Model.Configuration;
+﻿using MediaBrowser.Common.Kernel;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -14,12 +14,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Kernel
+namespace MediaBrowser.Common.Implementations.Server
 {
     /// <summary>
     /// Manages the Http Server, Udp Server and WebSocket connections
     /// </summary>
-    public class TcpManager : IDisposable
+    public class ServerManager : IServerManager, IDisposable
     {
         /// <summary>
         /// This is the udp server used for server discovery by clients
@@ -49,7 +49,7 @@ namespace MediaBrowser.Common.Kernel
         /// <summary>
         /// The web socket connections
         /// </summary>
-        private readonly List<WebSocketConnection> _webSocketConnections = new List<WebSocketConnection>();
+        private readonly List<IWebSocketConnection> _webSocketConnections = new List<IWebSocketConnection>();
 
         /// <summary>
         /// Gets or sets the external web socket server.
@@ -81,7 +81,7 @@ namespace MediaBrowser.Common.Kernel
         /// Gets a value indicating whether [supports web socket].
         /// </summary>
         /// <value><c>true</c> if [supports web socket]; otherwise, <c>false</c>.</value>
-        internal bool SupportsNativeWebSocket
+        public bool SupportsNativeWebSocket
         {
             get { return HttpServer != null && HttpServer.SupportsWebSockets; }
         }
@@ -96,7 +96,7 @@ namespace MediaBrowser.Common.Kernel
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TcpManager" /> class.
+        /// Initializes a new instance of the <see cref="ServerManager" /> class.
         /// </summary>
         /// <param name="applicationHost">The application host.</param>
         /// <param name="kernel">The kernel.</param>
@@ -104,7 +104,7 @@ namespace MediaBrowser.Common.Kernel
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">applicationHost</exception>
-        public TcpManager(IApplicationHost applicationHost, IKernel kernel, INetworkManager networkManager, IJsonSerializer jsonSerializer, ILogger logger)
+        public ServerManager(IApplicationHost applicationHost, IKernel kernel, INetworkManager networkManager, IJsonSerializer jsonSerializer, ILogger logger)
         {
             if (applicationHost == null)
             {
@@ -132,8 +132,14 @@ namespace MediaBrowser.Common.Kernel
             _kernel = kernel;
             _applicationHost = applicationHost;
             _networkManager = networkManager;
+        }
 
-            if (applicationHost.IsFirstRun)
+        /// <summary>
+        /// Starts this instance.
+        /// </summary>
+        public void Start()
+        {
+            if (_applicationHost.IsFirstRun)
             {
                 RegisterServerWithAdministratorAccess();
             }
@@ -145,6 +151,8 @@ namespace MediaBrowser.Common.Kernel
             {
                 ReloadExternalWebSocketServer();
             }
+
+            _kernel.ConfigurationUpdated += _kernel_ConfigurationUpdated;
         }
 
         /// <summary>
@@ -170,7 +178,7 @@ namespace MediaBrowser.Common.Kernel
         /// Restarts the Http Server, or starts it if not currently running
         /// </summary>
         /// <param name="registerServerOnFailure">if set to <c>true</c> [register server on failure].</param>
-        public void ReloadHttpServer(bool registerServerOnFailure = true)
+        private void ReloadHttpServer(bool registerServerOnFailure = true)
         {
             // Only reload if the port has changed, so that we don't disconnect any active users
             if (HttpServer != null && HttpServer.UrlPrefix.Equals(_kernel.HttpServerUrlPrefix, StringComparison.OrdinalIgnoreCase))
@@ -426,7 +434,7 @@ namespace MediaBrowser.Common.Kernel
             var tmpFile = Path.Combine(_kernel.ApplicationPaths.TempDirectory, Guid.NewGuid() + ".bat");
 
             // Extract the bat file
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Common.Kernel.RegisterServer.bat"))
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Common.Implementations.Server.bat"))
             {
                 using (var fileStream = File.Create(tmpFile))
                 {
@@ -489,20 +497,21 @@ namespace MediaBrowser.Common.Kernel
         }
 
         /// <summary>
-        /// Called when [application configuration changed].
+        /// Handles the ConfigurationUpdated event of the _kernel control.
         /// </summary>
-        /// <param name="oldConfig">The old config.</param>
-        /// <param name="newConfig">The new config.</param>
-        public void OnApplicationConfigurationChanged(BaseApplicationConfiguration oldConfig, BaseApplicationConfiguration newConfig)
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        void _kernel_ConfigurationUpdated(object sender, EventArgs e)
         {
-            HttpServer.EnableHttpRequestLogging = newConfig.EnableHttpLevelLogging;
+            HttpServer.EnableHttpRequestLogging = _kernel.Configuration.EnableHttpLevelLogging;
 
-            if (oldConfig.HttpServerPortNumber != newConfig.HttpServerPortNumber)
+            if (!string.Equals(HttpServer.UrlPrefix, _kernel.HttpServerUrlPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 ReloadHttpServer();
             }
 
-            if (!SupportsNativeWebSocket && oldConfig.LegacyWebSocketPortNumber != newConfig.LegacyWebSocketPortNumber)
+            if (!SupportsNativeWebSocket && ExternalWebSocketServer != null && ExternalWebSocketServer.Port != _kernel.Configuration.LegacyWebSocketPortNumber)
             {
                 ReloadExternalWebSocketServer();
             }

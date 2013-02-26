@@ -12,7 +12,6 @@ using MediaBrowser.Controller.Playback;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Controller.ScheduledTasks;
 using MediaBrowser.Controller.Updates;
 using MediaBrowser.Controller.Weather;
 using MediaBrowser.Model.Configuration;
@@ -293,8 +292,6 @@ namespace MediaBrowser.Controller
             get { return 7359; }
         }
 
-        private readonly ITaskManager _taskManager;
-
         /// <summary>
         /// Creates a kernel based on a Data path, which is akin to our current programdata path
         /// </summary>
@@ -304,12 +301,10 @@ namespace MediaBrowser.Controller
         /// <param name="taskManager">The task manager.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">isoManager</exception>
-        public Kernel(IApplicationHost appHost, IServerApplicationPaths appPaths, IXmlSerializer xmlSerializer, ITaskManager taskManager, ILogger logger)
+        public Kernel(IApplicationHost appHost, IServerApplicationPaths appPaths, IXmlSerializer xmlSerializer, ILogger logger)
             : base(appHost, appPaths, xmlSerializer, logger)
         {
             Instance = this;
-
-            _taskManager = taskManager;
 
             // For now there's no real way to inject this properly
             BaseItem.Logger = logger;
@@ -469,7 +464,7 @@ namespace MediaBrowser.Controller
         {
             DisposeFileSystemManager();
 
-            FileSystemManager = new FileSystemManager(this, Logger, _taskManager);
+            FileSystemManager = new FileSystemManager(this, Logger, ApplicationHost.Resolve<ITaskManager>());
             FileSystemManager.StartWatchers();
         }
 
@@ -540,18 +535,6 @@ namespace MediaBrowser.Controller
 
             var reloadLogger = config.ShowLogWindow != oldConfiguration.ShowLogWindow;
 
-            // Figure out whether or not we should refresh people after the update is finished
-            var refreshPeopleAfterUpdate = !oldConfiguration.EnableInternetProviders && config.EnableInternetProviders;
-
-            // This is true if internet providers has just been turned on, or if People have just been removed from InternetProviderExcludeTypes
-            if (!refreshPeopleAfterUpdate)
-            {
-                var oldConfigurationFetchesPeopleImages = oldConfiguration.InternetProviderExcludeTypes == null || !oldConfiguration.InternetProviderExcludeTypes.Contains(typeof(Person).Name, StringComparer.OrdinalIgnoreCase);
-                var newConfigurationFetchesPeopleImages = config.InternetProviderExcludeTypes == null || !config.InternetProviderExcludeTypes.Contains(typeof(Person).Name, StringComparer.OrdinalIgnoreCase);
-
-                refreshPeopleAfterUpdate = newConfigurationFetchesPeopleImages && !oldConfigurationFetchesPeopleImages;
-            }
-
             Configuration = config;
             SaveConfiguration();
 
@@ -560,20 +543,10 @@ namespace MediaBrowser.Controller
                 ReloadLogger();
             }
 
-            TcpManager.OnApplicationConfigurationChanged(oldConfiguration, config);
-
             // Validate currently executing providers, in the background
             Task.Run(() =>
             {
                 ProviderManager.ValidateCurrentlyRunningProviders();
-
-                // Any number of configuration settings could change the way the library is refreshed, so do that now
-                _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
-
-                if (refreshPeopleAfterUpdate)
-                {
-                    _taskManager.CancelIfRunningAndQueue<PeopleValidationTask>();
-                }
             });
         }
 

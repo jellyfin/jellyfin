@@ -1,16 +1,17 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Common.Implementations.Server
 {
     /// <summary>
     /// Class WebSocketConnection
     /// </summary>
-    public class WebSocketConnection : IDisposable
+    public class WebSocketConnection : IWebSocketConnection
     {
         /// <summary>
         /// The _socket
@@ -20,7 +21,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// The _remote end point
         /// </summary>
-        public readonly string RemoteEndPoint;
+        public string RemoteEndPoint { get; private set; }
 
         /// <summary>
         /// The _cancellation token source
@@ -220,35 +221,5 @@ namespace MediaBrowser.Common.Net
                 _socket.Dispose();
             }
         }
-    }
-
-    /// <summary>
-    /// Class WebSocketMessage
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class WebSocketMessage<T>
-    {
-        /// <summary>
-        /// Gets or sets the type of the message.
-        /// </summary>
-        /// <value>The type of the message.</value>
-        public string MessageType { get; set; }
-        /// <summary>
-        /// Gets or sets the data.
-        /// </summary>
-        /// <value>The data.</value>
-        public T Data { get; set; }
-    }
-
-    /// <summary>
-    /// Class WebSocketMessageInfo
-    /// </summary>
-    public class WebSocketMessageInfo : WebSocketMessage<string>
-    {
-        /// <summary>
-        /// Gets or sets the connection.
-        /// </summary>
-        /// <value>The connection.</value>
-        public WebSocketConnection Connection { get; set; }
     }
 }

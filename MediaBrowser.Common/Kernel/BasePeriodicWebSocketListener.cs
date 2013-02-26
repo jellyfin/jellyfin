@@ -19,8 +19,8 @@ namespace MediaBrowser.Common.Kernel
         /// <summary>
         /// The _active connections
         /// </summary>
-        protected readonly List<Tuple<WebSocketConnection, CancellationTokenSource, Timer, TStateType, SemaphoreSlim>> ActiveConnections =
-            new List<Tuple<WebSocketConnection, CancellationTokenSource, Timer, TStateType, SemaphoreSlim>>();
+        protected readonly List<Tuple<IWebSocketConnection, CancellationTokenSource, Timer, TStateType, SemaphoreSlim>> ActiveConnections =
+            new List<Tuple<IWebSocketConnection, CancellationTokenSource, Timer, TStateType, SemaphoreSlim>>();
 
         /// <summary>
         /// Gets the name.
@@ -103,7 +103,7 @@ namespace MediaBrowser.Common.Kernel
 
             lock (ActiveConnections)
             {
-                ActiveConnections.Add(new Tuple<WebSocketConnection, CancellationTokenSource, Timer, TStateType, SemaphoreSlim>(message.Connection, cancellationTokenSource, timer, state, semaphore));
+                ActiveConnections.Add(new Tuple<IWebSocketConnection, CancellationTokenSource, Timer, TStateType, SemaphoreSlim>(message.Connection, cancellationTokenSource, timer, state, semaphore));
             }
 
             timer.Change(TimeSpan.FromMilliseconds(dueTimeMs), TimeSpan.FromMilliseconds(periodMs));
@@ -115,9 +115,9 @@ namespace MediaBrowser.Common.Kernel
         /// <param name="state">The state.</param>
         private async void TimerCallback(object state)
         {
-            var connection = (WebSocketConnection)state;
+            var connection = (IWebSocketConnection)state;
 
-            Tuple<WebSocketConnection, CancellationTokenSource, Timer, TStateType, SemaphoreSlim> tuple;
+            Tuple<IWebSocketConnection, CancellationTokenSource, Timer, TStateType, SemaphoreSlim> tuple;
 
             lock (ActiveConnections)
             {
@@ -187,7 +187,7 @@ namespace MediaBrowser.Common.Kernel
         /// Disposes the connection.
         /// </summary>
         /// <param name="connection">The connection.</param>
-        private void DisposeConnection(Tuple<WebSocketConnection, CancellationTokenSource, Timer, TStateType, SemaphoreSlim> connection)
+        private void DisposeConnection(Tuple<IWebSocketConnection, CancellationTokenSource, Timer, TStateType, SemaphoreSlim> connection)
         {
             Logger.Info("{1} stop transmitting over websocket to {0}", connection.Item1.RemoteEndPoint, GetType().Name);
 

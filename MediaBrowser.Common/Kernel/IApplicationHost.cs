@@ -97,5 +97,10 @@ namespace MediaBrowser.Common.Kernel
         /// <typeparam name="T"></typeparam>
         /// <returns>``0.</returns>
         T TryResolve<T>();
+
+        /// <summary>
+        /// Shuts down.
+        /// </summary>
+        void Shutdown();
     }
 }
