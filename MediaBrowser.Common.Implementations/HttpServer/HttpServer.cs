@@ -386,6 +386,7 @@ namespace MediaBrowser.Common.Implementations.HttpServer
             var httpRes = new HttpListenerResponseWrapper(context.Response);
             var handler = ServiceStackHttpHandlerFactory.GetHandler(httpReq);
 
+            var url = context.Request.Url.ToString();
             var endPoint = context.Request.RemoteEndPoint;
 
             var serviceStackHandler = handler as IServiceStackHttpHandler;
@@ -398,7 +399,7 @@ namespace MediaBrowser.Common.Implementations.HttpServer
                     httpReq.OperationName = operationName = restHandler.RestPath.RequestType.Name;
                 }
                 serviceStackHandler.ProcessRequest(httpReq, httpRes, operationName);
-                LogResponse(context, endPoint);
+                LogResponse(context, url, endPoint);
                 httpRes.Close();
                 return;
             }
@@ -410,7 +411,7 @@ namespace MediaBrowser.Common.Implementations.HttpServer
         /// Logs the response.
         /// </summary>
         /// <param name="ctx">The CTX.</param>
-        private void LogResponse(HttpListenerContext ctx, IPEndPoint endPoint)
+        private void LogResponse(HttpListenerContext ctx, string url, IPEndPoint endPoint)
         {
             if (!EnableHttpRequestLogging)
             {
@@ -421,7 +422,7 @@ namespace MediaBrowser.Common.Implementations.HttpServer
 
             var log = new StringBuilder();
 
-            log.AppendLine(string.Format("Url: {0}", ctx.Request.Url));
+            log.AppendLine(string.Format("Url: {0}", url));
 
             log.AppendLine("Headers: " + string.Join(",", ctx.Response.Headers.AllKeys.Select(k => k + "=" + ctx.Response.Headers[k])));
 
