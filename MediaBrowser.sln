@@ -51,7 +51,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Server.Impleme
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Uninstaller.Execute", "MediaBrowser.Uninstaller.Execute\MediaBrowser.Uninstaller.Execute.csproj", "{FACAF749-3E28-46DD-B613-654FCD434959}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Uninstaller", "MediaBrowser.Uninstaller\MediaBrowser.Uninstaller.csproj", "{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Uninstaller", "MediaBrowser.Uninstaller\MediaBrowser.Uninstaller.csproj", "{8B930005-D5B2-4A78-9377-46AC6EDAB688}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -335,20 +335,20 @@ Global
 		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|Win32.ActiveCfg = Release|Any CPU
 		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|x64.ActiveCfg = Release|Any CPU
 		{FACAF749-3E28-46DD-B613-654FCD434959}.Release|x86.ActiveCfg = Release|Any CPU
-		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Debug|Win32.ActiveCfg = Debug|Any CPU
-		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Release|Win32.ActiveCfg = Release|Any CPU
-		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Release|x64.ActiveCfg = Release|Any CPU
-		{21EC6FB8-F444-4B60-8BA5-9CA443901A0D}.Release|x86.ActiveCfg = Release|Any CPU
+		{8B930005-D5B2-4A78-9377-46AC6EDAB688}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B930005-D5B2-4A78-9377-46AC6EDAB688}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B930005-D5B2-4A78-9377-46AC6EDAB688}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{8B930005-D5B2-4A78-9377-46AC6EDAB688}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{8B930005-D5B2-4A78-9377-46AC6EDAB688}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{8B930005-D5B2-4A78-9377-46AC6EDAB688}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8B930005-D5B2-4A78-9377-46AC6EDAB688}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8B930005-D5B2-4A78-9377-46AC6EDAB688}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B930005-D5B2-4A78-9377-46AC6EDAB688}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B930005-D5B2-4A78-9377-46AC6EDAB688}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{8B930005-D5B2-4A78-9377-46AC6EDAB688}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{8B930005-D5B2-4A78-9377-46AC6EDAB688}.Release|Win32.ActiveCfg = Release|Any CPU
+		{8B930005-D5B2-4A78-9377-46AC6EDAB688}.Release|x64.ActiveCfg = Release|Any CPU
+		{8B930005-D5B2-4A78-9377-46AC6EDAB688}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
