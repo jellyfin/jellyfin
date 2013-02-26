@@ -1,6 +1,7 @@
 ﻿using BDInfo;
 using MediaBrowser.ClickOnce;
 using MediaBrowser.Common.Implementations;
+using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.Implementations.Serialization;
 using MediaBrowser.Common.IO;
@@ -10,7 +11,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
 using MediaBrowser.IsoMounter;
-using MediaBrowser.Logging.Nlog;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;

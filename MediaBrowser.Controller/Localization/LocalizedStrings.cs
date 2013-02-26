@@ -88,7 +88,7 @@ namespace MediaBrowser.Controller.Localization
             {
                 using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read))
                 {
-                    strings = (LocalizedStringData)xs.Deserialize(fs);
+                    strings = (BaseStrings)xs.Deserialize(fs);
                 }
             }
             else
@@ -100,7 +100,7 @@ namespace MediaBrowser.Controller.Localization
             {
                 //only re-save the english version as that is the one defined internally
                 strings = new BaseStrings {FileName = file};
-                strings.Save();
+                //strings.Save();
             }
             return strings;
             

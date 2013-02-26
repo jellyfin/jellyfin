@@ -2,7 +2,7 @@
 using System;
 using System.Text;
 
-namespace MediaBrowser.Logging.Nlog
+namespace MediaBrowser.Common.Implementations.Logging
 {
     /// <summary>
     /// Class NLogger
