@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Plugins;
+using MediaBrowser.Common.Security;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.System;
 using System;
@@ -88,6 +89,12 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <value>The TCP manager.</value>
         IServerManager ServerManager { get; }
+
+        /// <summary>
+        /// Gets the plug-in security manager.
+        /// </summary>
+        /// <value>The plug-in security manager.</value>
+        ISecurityManager SecurityManager { get; set; }
 
         /// <summary>
         /// Gets the web socket listeners.

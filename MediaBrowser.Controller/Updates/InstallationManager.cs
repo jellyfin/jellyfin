@@ -183,7 +183,7 @@ namespace MediaBrowser.Controller.Updates
             PackageType? packageType = null,
             Version applicationVersion = null)
         {
-            var data = new Dictionary<string, string> { { "key", Kernel.PluginSecurityManager.SupporterKey }, { "mac", _networkManager.GetMacAddress() } };
+            var data = new Dictionary<string, string> { { "key", Kernel.SecurityManager.SupporterKey }, { "mac", _networkManager.GetMacAddress() } };
 
             using (var json = await HttpClient.Post(Controller.Kernel.MBAdminUrl + "service/package/retrieveall", data, Kernel.ResourcePools.Mb, cancellationToken).ConfigureAwait(false))
             {

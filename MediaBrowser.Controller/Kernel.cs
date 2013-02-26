@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -90,12 +91,6 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The user data manager.</value>
         public UserDataManager UserDataManager { get; private set; }
-
-        /// <summary>
-        /// Gets the plug-in security manager.
-        /// </summary>
-        /// <value>The plug-in security manager.</value>
-        public PluginSecurityManager PluginSecurityManager { get; private set; }
 
         /// <summary>
         /// The _users
@@ -321,7 +316,7 @@ namespace MediaBrowser.Controller
             ImageManager = (ImageManager)ApplicationHost.CreateInstance(typeof(ImageManager));
             ProviderManager = (ProviderManager)ApplicationHost.CreateInstance(typeof(ProviderManager));
             UserDataManager = (UserDataManager)ApplicationHost.CreateInstance(typeof(UserDataManager));
-            PluginSecurityManager = (PluginSecurityManager)ApplicationHost.CreateInstance(typeof(PluginSecurityManager));
+            SecurityManager = (PluginSecurityManager)ApplicationHost.CreateInstance(typeof(PluginSecurityManager));
             
             base.FindParts();
 
