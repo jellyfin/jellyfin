@@ -17,7 +17,7 @@ namespace MediaBrowser.Server.Implementations
             : base(true)
         {
         }
-#elif (RELEASE)
+#else
         public ServerApplicationPaths()
             : base(false)
         {
