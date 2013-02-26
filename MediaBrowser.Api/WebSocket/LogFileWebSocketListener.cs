@@ -26,20 +26,18 @@ namespace MediaBrowser.Api.WebSocket
         /// <summary>
         /// The _kernel
         /// </summary>
-        private readonly IApplicationHost _appHost;
-        private readonly IKernel _kernel;
- 
+        private readonly ILogManager _logManager;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LogFileWebSocketListener" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        /// <param name="kernel">The kernel.</param>
-        public LogFileWebSocketListener(ILogger logger, IApplicationHost host, IKernel kernel)
+        /// <param name="logManager">The log manager.</param>
+        public LogFileWebSocketListener(ILogger logger, ILogManager logManager)
             : base(logger)
         {
-            _appHost = host;
-            _kernel = kernel;
-            kernel.LoggerLoaded += kernel_LoggerLoaded;
+            _logManager = logManager;
+            _logManager.LoggerLoaded += kernel_LoggerLoaded;
         }
 
         /// <summary>
@@ -49,9 +47,9 @@ namespace MediaBrowser.Api.WebSocket
         /// <returns>IEnumerable{System.String}.</returns>
         protected override async Task<IEnumerable<string>> GetDataToSend(LogFileWebSocketState state)
         {
-            if (!string.Equals(_appHost.LogFilePath, state.LastLogFilePath))
+            if (!string.Equals(_logManager.LogFilePath, state.LastLogFilePath))
             {
-                state.LastLogFilePath = _appHost.LogFilePath;
+                state.LastLogFilePath = _logManager.LogFilePath;
                 state.StartLine = 0;
             }
 
@@ -70,7 +68,7 @@ namespace MediaBrowser.Api.WebSocket
         {
             if (dispose)
             {
-                _kernel.LoggerLoaded -= kernel_LoggerLoaded;
+                _logManager.LoggerLoaded -= kernel_LoggerLoaded;
             }
             base.Dispose(dispose);
         }

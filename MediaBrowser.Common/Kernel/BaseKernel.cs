@@ -42,20 +42,6 @@ namespace MediaBrowser.Common.Kernel
         }
         #endregion
 
-        #region LoggerLoaded Event
-        /// <summary>
-        /// Fires whenever the logger is loaded
-        /// </summary>
-        public event EventHandler LoggerLoaded;
-        /// <summary>
-        /// Called when [logger loaded].
-        /// </summary>
-        private void OnLoggerLoaded()
-        {
-            EventHelper.QueueEventIfNotNull(LoggerLoaded, this, EventArgs.Empty, Logger);
-        }
-        #endregion
-
         #region ReloadBeginning Event
         /// <summary>
         /// Fires whenever the kernel begins reloading
@@ -275,16 +261,6 @@ namespace MediaBrowser.Common.Kernel
         protected virtual Task OnConfigurationLoaded()
         {
             return Task.FromResult<object>(null);
-        }
-
-        /// <summary>
-        /// Disposes and reloads all loggers
-        /// </summary>
-        public void ReloadLogger()
-        {
-            ApplicationHost.ReloadLogger();
-            
-            OnLoggerLoaded();
         }
 
         /// <summary>

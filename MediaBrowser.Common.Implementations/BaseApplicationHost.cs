@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Reflection;
+using MediaBrowser.Common.Kernel;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using SimpleInjector;
@@ -17,6 +18,18 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         /// <value>The logger.</value>
         public ILogger Logger { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets the log manager.
+        /// </summary>
+        /// <value>The log manager.</value>
+        public ILogManager LogManager { get; protected set; }
+
+        /// <summary>
+        /// Gets the application paths.
+        /// </summary>
+        /// <value>The application paths.</value>
+        protected IApplicationPaths ApplicationPaths { get; private set; }
 
         /// <summary>
         /// The container
@@ -44,6 +57,12 @@ namespace MediaBrowser.Common.Implementations
         /// The disposable parts
         /// </summary>
         protected readonly List<IDisposable> DisposableParts = new List<IDisposable>();
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is first run.
+        /// </summary>
+        /// <value><c>true</c> if this instance is first run; otherwise, <c>false</c>.</value>
+        public bool IsFirstRun { get; private set; }
 
         /// <summary>
         /// The _protobuf serializer initialized
@@ -82,6 +101,16 @@ namespace MediaBrowser.Common.Implementations
         protected BaseApplicationHost()
         {
             FailedAssemblies = new List<string>();
+
+            ApplicationPaths = GetApplicationPaths();
+
+            LogManager = GetLogManager();
+
+            Logger = LogManager.GetLogger("App");
+
+            IsFirstRun = !File.Exists(ApplicationPaths.SystemConfigurationFilePath);
+
+            DiscoverTypes();
         }
 
         /// <summary>
@@ -90,6 +119,18 @@ namespace MediaBrowser.Common.Implementations
         /// <returns>IEnumerable{Assembly}.</returns>
         protected abstract IEnumerable<Assembly> GetComposablePartAssemblies();
 
+        /// <summary>
+        /// Gets the log manager.
+        /// </summary>
+        /// <returns>ILogManager.</returns>
+        protected abstract ILogManager GetLogManager();
+
+        /// <summary>
+        /// Gets the application paths.
+        /// </summary>
+        /// <returns>IApplicationPaths.</returns>
+        protected abstract IApplicationPaths GetApplicationPaths();
+        
         /// <summary>
         /// Discovers the types.
         /// </summary>
