@@ -3,6 +3,7 @@ using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
+using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -21,18 +22,18 @@ namespace MediaBrowser.Controller.Updates
     /// <summary>
     /// Manages all install, uninstall and update operations (both plugins and system)
     /// </summary>
-    public class InstallationManager : BaseManager<Kernel>
+    public class InstallationManager : BaseManager<Kernel>, IInstallationManager
     {
         /// <summary>
         /// The current installations
         /// </summary>
-        public readonly List<Tuple<InstallationInfo, CancellationTokenSource>> CurrentInstallations =
-            new List<Tuple<InstallationInfo, CancellationTokenSource>>();
+        public List<Tuple<InstallationInfo, CancellationTokenSource>> CurrentInstallations { get; set; }
+            
 
         /// <summary>
         /// The completed installations
         /// </summary>
-        public readonly ConcurrentBag<InstallationInfo> CompletedInstallations = new ConcurrentBag<InstallationInfo>();
+        public ConcurrentBag<InstallationInfo> CompletedInstallations { get; set; }
 
         #region PluginUninstalled Event
         /// <summary>
@@ -161,6 +162,8 @@ namespace MediaBrowser.Controller.Updates
                 throw new ArgumentNullException("httpClient");
             }
 
+            CurrentInstallations = new List<Tuple<InstallationInfo, CancellationTokenSource>>();
+            CompletedInstallations = new ConcurrentBag<InstallationInfo>();
             JsonSerializer = jsonSerializer;
             HttpClient = httpClient;
             ApplicationHost = appHost;
