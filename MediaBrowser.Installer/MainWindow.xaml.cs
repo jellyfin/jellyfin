@@ -101,11 +101,11 @@ namespace MediaBrowser.Installer
             prgProgress.Visibility = Visibility.Visible;
 
             // Determine Package version
-            var version = await GetPackageVersion().ConfigureAwait(false);
+            var version = await GetPackageVersion();
             lblStatus.Content = string.Format("Downloading {0} (version {1})...", FriendlyName, version.versionStr);
 
             // Download
-            var archive = await DownloadPackage(version).ConfigureAwait(false);
+            var archive = await DownloadPackage(version);
             dlAnimation.StopAnimation();
             prgProgress.Visibility = btnCancel.Visibility = Visibility.Hidden;
 
@@ -152,7 +152,7 @@ namespace MediaBrowser.Installer
                 try
                 {
                     // get the package information for the server
-                    var json = await client.DownloadStringTaskAsync("http://www.mb3admin.com/admin/service/package/retrieveAll?name=" + PackageName).ConfigureAwait(false);
+                    var json = await client.DownloadStringTaskAsync("http://www.mb3admin.com/admin/service/package/retrieveAll?name=" + PackageName);
                     var packages = JsonSerializer.DeserializeFromString<List<PackageInfo>>(json);
 
                     var version = packages[0].versions.Where(v => v.classification == PackageClass).OrderByDescending(v => v.version).FirstOrDefault(v => v.version <= PackageVersion);
@@ -161,6 +161,7 @@ namespace MediaBrowser.Installer
                         SystemClose("Could not locate download package.  Aborting.");
                         return null;
                     }
+                    return version;
                 }
                 catch (Exception e)
                 {
@@ -185,7 +186,7 @@ namespace MediaBrowser.Installer
 
                     // setup download progress and download the package
                     client.DownloadProgressChanged += DownloadProgressChanged;
-                    await client.DownloadFileTaskAsync(version.sourceUrl, archiveFile).ConfigureAwait(false);
+                    await client.DownloadFileTaskAsync(version.sourceUrl, archiveFile);
                     return archiveFile;
                 }
                 catch (Exception e)
