@@ -1,8 +1,10 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Controller.ScheduledTasks;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MoreLinq;
@@ -20,7 +22,7 @@ namespace MediaBrowser.Controller.Library
     /// <summary>
     /// Class LibraryManager
     /// </summary>
-    public class LibraryManager : BaseManager<Kernel>
+    public class LibraryManager
     {
         #region LibraryChanged Event
         /// <summary>
@@ -48,7 +50,7 @@ namespace MediaBrowser.Controller.Library
         private void SendLibraryChangedWebSocketMessage(ChildrenChangedEventArgs args)
         {
             // Notify connected ui's
-            Kernel.TcpManager.SendWebSocketMessage("LibraryChanged", () => DtoBuilder.GetLibraryUpdateInfo(args));
+            Kernel.ServerManager.SendWebSocketMessage("LibraryChanged", () => DtoBuilder.GetLibraryUpdateInfo(args));
         }
         #endregion
 
@@ -58,14 +60,56 @@ namespace MediaBrowser.Controller.Library
         private readonly ILogger _logger;
 
         /// <summary>
+        /// The _task manager
+        /// </summary>
+        private readonly ITaskManager _taskManager;
+
+        /// <summary>
+        /// Gets or sets the kernel.
+        /// </summary>
+        /// <value>The kernel.</value>
+        private Kernel Kernel { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="LibraryManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
-        public LibraryManager(Kernel kernel, ILogger logger)
-            : base(kernel)
+        /// <param name="taskManager">The task manager.</param>
+        public LibraryManager(Kernel kernel, ILogger logger, ITaskManager taskManager)
         {
+            Kernel = kernel;
             _logger = logger;
+            _taskManager = taskManager;
+
+            kernel.ConfigurationUpdated += kernel_ConfigurationUpdated;
+        }
+
+        /// <summary>
+        /// Handles the ConfigurationUpdated event of the kernel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        void kernel_ConfigurationUpdated(object sender, EventArgs e)
+        {
+            //// Figure out whether or not we should refresh people after the update is finished
+            //var refreshPeopleAfterUpdate = !oldConfiguration.EnableInternetProviders && config.EnableInternetProviders;
+
+            //// This is true if internet providers has just been turned on, or if People have just been removed from InternetProviderExcludeTypes
+            //if (!refreshPeopleAfterUpdate)
+            //{
+            //    var oldConfigurationFetchesPeopleImages = oldConfiguration.InternetProviderExcludeTypes == null || !oldConfiguration.InternetProviderExcludeTypes.Contains(typeof(Person).Name, StringComparer.OrdinalIgnoreCase);
+            //    var newConfigurationFetchesPeopleImages = config.InternetProviderExcludeTypes == null || !config.InternetProviderExcludeTypes.Contains(typeof(Person).Name, StringComparer.OrdinalIgnoreCase);
+
+            //    refreshPeopleAfterUpdate = newConfigurationFetchesPeopleImages && !oldConfigurationFetchesPeopleImages;
+            //}
+
+            Task.Run(() =>
+            {
+                // Any number of configuration settings could change the way the library is refreshed, so do that now
+                _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
+                _taskManager.CancelIfRunningAndQueue<PeopleValidationTask>();
+            });
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Networking.Management;
 using System;
 using System.Net;
@@ -18,6 +19,21 @@ namespace MediaBrowser.Networking.Udp
         /// Occurs when [message received].
         /// </summary>
         public event EventHandler<UdpMessageReceivedEventArgs> MessageReceived;
+
+        /// <summary>
+        /// Gets or sets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
+        private ILogger Logger { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UdpServer" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        public UdpServer(ILogger logger)
+        {
+            Logger = logger;
+        }
 
         /// <summary>
         /// Raises the <see cref="E:MessageReceived" /> event.
@@ -54,8 +70,24 @@ namespace MediaBrowser.Networking.Udp
         private IObservable<UdpReceiveResult> CreateObservable()
         {
             return Observable.Create<UdpReceiveResult>(obs =>
-                                Observable.FromAsync(() => _udpClient.ReceiveAsync())
-                                          .Subscribe(obs))
+                                Observable.FromAsync(() =>
+                                {
+                                    try
+                                    {
+                                        return _udpClient.ReceiveAsync();
+                                    }
+                                    catch (ObjectDisposedException)
+                                    {
+                                        return Task.FromResult(new UdpReceiveResult(new byte[]{}, new IPEndPoint(IPAddress.Any, 0)));
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Logger.ErrorException("Error receiving udp message", ex);
+                                        return Task.FromResult(new UdpReceiveResult(new byte[] { }, new IPEndPoint(IPAddress.Any, 0)));
+                                    }
+                                })
+
+                             .Subscribe(obs))
                              .Repeat()
                              .Retry()
                              .Publish()
@@ -68,6 +100,10 @@ namespace MediaBrowser.Networking.Udp
         /// <param name="message">The message.</param>
         private void OnMessageReceived(UdpReceiveResult message)
         {
+            if (message.RemoteEndPoint.Port == 0)
+            {
+                return;
+            }
             var bytes = message.Buffer;
 
             OnMessageReceived(new UdpMessageReceivedEventArgs

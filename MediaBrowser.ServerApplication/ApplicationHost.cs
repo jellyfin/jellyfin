@@ -4,6 +4,7 @@ using MediaBrowser.Common.Implementations;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.Implementations.Serialization;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Implementations.Server;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.ScheduledTasks;
@@ -66,16 +67,6 @@ namespace MediaBrowser.ServerApplication
         private readonly IServerApplicationPaths _applicationPaths = new ServerApplicationPaths();
 
         /// <summary>
-        /// The _task manager
-        /// </summary>
-        private readonly ITaskManager _taskManager;
-
-        /// <summary>
-        /// The _task manager
-        /// </summary>
-        private readonly IHttpServer _httpServer;
-
-        /// <summary>
         /// Gets a value indicating whether this instance is first run.
         /// </summary>
         /// <value><c>true</c> if this instance is first run; otherwise, <c>false</c>.</value>
@@ -89,29 +80,34 @@ namespace MediaBrowser.ServerApplication
             : base()
         {
             IsFirstRun = !File.Exists(_applicationPaths.SystemConfigurationFilePath);
-            
+
             Logger = new NLogger("App");
 
             DiscoverTypes();
 
-            _taskManager = new TaskManager(_applicationPaths, _jsonSerializer, Logger);
+            Kernel = new Kernel(this, _applicationPaths, _xmlSerializer, Logger);
+            
+            var networkManager = new NetworkManager();
 
-            Kernel = new Kernel(this, _applicationPaths, _xmlSerializer, _taskManager, Logger);
+            var serverManager = new ServerManager(this, Kernel, networkManager, _jsonSerializer, Logger);
+
+            var taskManager = new TaskManager(_applicationPaths, _jsonSerializer, Logger, serverManager);
+
             ReloadLogger();
 
             Logger.Info("Version {0} initializing", ApplicationVersion);
 
-            _httpServer = ServerFactory.CreateServer(this, ProtobufSerializer, Logger, "Media Browser", "index.html");
+            var httpServer = ServerFactory.CreateServer(this, ProtobufSerializer, Logger, "Media Browser", "index.html");
 
-            RegisterResources();
+            RegisterResources(taskManager, httpServer, networkManager, serverManager);
 
-            FindParts();
+            FindParts(taskManager, httpServer);
         }
 
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
-        private void RegisterResources()
+        private void RegisterResources(ITaskManager taskManager, IHttpServer httpServer, INetworkManager networkManager, IServerManager serverManager)
         {
             RegisterSingleInstance<IKernel>(Kernel);
             RegisterSingleInstance(Kernel);
@@ -121,28 +117,31 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance(_applicationPaths);
             RegisterSingleInstance<IApplicationPaths>(_applicationPaths);
-            RegisterSingleInstance(_taskManager);
+            RegisterSingleInstance(taskManager);
             RegisterSingleInstance<IIsoManager>(new PismoIsoManager(Logger));
             RegisterSingleInstance<IBlurayExaminer>(new BdInfoExaminer());
             RegisterSingleInstance<IHttpClient>(new HttpManager(_applicationPaths, Logger));
-            RegisterSingleInstance<INetworkManager>(new NetworkManager());
             RegisterSingleInstance<IZipClient>(new DotNetZipClient());
             RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
             RegisterSingleInstance(_jsonSerializer);
             RegisterSingleInstance(_xmlSerializer);
             RegisterSingleInstance(ProtobufSerializer);
-            RegisterSingleInstance<IUdpServer>(new UdpServer());
-            RegisterSingleInstance(_httpServer);
+            RegisterSingleInstance<IUdpServer>(new UdpServer(Logger), false);
+            RegisterSingleInstance(httpServer, false);
+
+            RegisterSingleInstance(networkManager);
+
+            RegisterSingleInstance(serverManager);
         }
 
         /// <summary>
         /// Finds the parts.
         /// </summary>
-        private void FindParts()
+        private void FindParts(ITaskManager taskManager, IHttpServer httpServer)
         {
-            _taskManager.AddTasks(GetExports<IScheduledTask>(false));
+            taskManager.AddTasks(GetExports<IScheduledTask>(false));
 
-            _httpServer.Init(GetExports<IRestfulService>(false));
+            httpServer.Init(GetExports<IRestfulService>(false));
         }
 
         /// <summary>
@@ -239,6 +238,14 @@ namespace MediaBrowser.ServerApplication
 
             // Include composable parts in the running assembly
             yield return GetType().Assembly;
+        }
+
+        /// <summary>
+        /// Shuts down.
+        /// </summary>
+        public void Shutdown()
+        {
+            App.Instance.Shutdown();
         }
     }
 }

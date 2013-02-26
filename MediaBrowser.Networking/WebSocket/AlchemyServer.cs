@@ -43,6 +43,12 @@ namespace MediaBrowser.Networking.WebSocket
         }
 
         /// <summary>
+        /// Gets the port.
+        /// </summary>
+        /// <value>The port.</value>
+        public int Port { get; private set; }
+
+        /// <summary>
         /// Starts the specified port number.
         /// </summary>
         /// <param name="portNumber">The port number.</param>
@@ -55,6 +61,8 @@ namespace MediaBrowser.Networking.WebSocket
             };
 
             WebSocketServer.Start();
+
+            Port = portNumber;
 
             _logger.Info("Alchemy Web Socket Server started");
         }

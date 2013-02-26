@@ -49,6 +49,12 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         private ITaskManager TaskManager { get; set; }
 
         /// <summary>
+        /// Gets or sets the server manager.
+        /// </summary>
+        /// <value>The server manager.</value>
+        private IServerManager ServerManager { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledTaskWorker" /> class.
         /// </summary>
         /// <param name="scheduledTask">The scheduled task.</param>
@@ -56,13 +62,15 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <param name="taskManager">The task manager.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
-        public ScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, IJsonSerializer jsonSerializer, ILogger logger)
+        /// <param name="serverManager">The server manager.</param>
+        public ScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, IJsonSerializer jsonSerializer, ILogger logger, IServerManager serverManager)
         {
             ScheduledTask = scheduledTask;
             ApplicationPaths = applicationPaths;
             TaskManager = taskManager;
             JsonSerializer = jsonSerializer;
             Logger = logger;
+            ServerManager = serverManager;
         }
 
         /// <summary>
@@ -302,7 +310,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             TaskCompletionStatus status;
             CurrentExecutionStartTime = DateTime.UtcNow;
 
-            //Kernel.TcpManager.SendWebSocketMessage("ScheduledTaskBeginExecute", Name);
+            ServerManager.SendWebSocketMessage("ScheduledTaskBeginExecute", Name);
 
             try
             {
@@ -324,7 +332,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             var startTime = CurrentExecutionStartTime;
             var endTime = DateTime.UtcNow;
 
-            //Kernel.TcpManager.SendWebSocketMessage("ScheduledTaskEndExecute", LastExecutionResult);
+            ServerManager.SendWebSocketMessage("ScheduledTaskEndExecute", LastExecutionResult);
 
             progress.ProgressChanged -= progress_ProgressChanged;
             CurrentCancellationTokenSource.Dispose();

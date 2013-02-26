@@ -255,7 +255,6 @@ namespace MediaBrowser.ServerApplication
 
             base.OnExit(e);
 
-            Kernel.Dispose();
             CompositionRoot.Dispose();
         }
 
@@ -360,7 +359,7 @@ namespace MediaBrowser.ServerApplication
         {
             Dispatcher.Invoke(ReleaseMutex);
 
-            Kernel.Dispose();
+            CompositionRoot.Dispose();
 
             System.Windows.Forms.Application.Restart();
 

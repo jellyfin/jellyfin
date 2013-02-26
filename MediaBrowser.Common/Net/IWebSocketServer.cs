@@ -22,5 +22,11 @@ namespace MediaBrowser.Common.Net
         /// Occurs when [web socket connected].
         /// </summary>
         event EventHandler<WebSocketConnectEventArgs> WebSocketConnected;
+
+        /// <summary>
+        /// Gets the port.
+        /// </summary>
+        /// <value>The port.</value>
+        int Port { get; }
     }
 }

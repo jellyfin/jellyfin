@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
@@ -29,6 +30,11 @@ namespace MediaBrowser.Api
     {
     }
 
+    [Route("/System/Shutdown", "POST")]
+    public class ShutdownApplication
+    {
+    }
+    
     /// <summary>
     /// Class GetConfiguration
     /// </summary>
@@ -62,18 +68,29 @@ namespace MediaBrowser.Api
         private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
+        /// The _app host
+        /// </summary>
+        private readonly IApplicationHost _appHost;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SystemService" /> class.
         /// </summary>
         /// <param name="jsonSerializer">The json serializer.</param>
+        /// <param name="appHost">The app host.</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
-        public SystemService(IJsonSerializer jsonSerializer)
+        public SystemService(IJsonSerializer jsonSerializer, IApplicationHost appHost)
             : base()
         {
             if (jsonSerializer == null)
             {
                 throw new ArgumentNullException("jsonSerializer");
             }
+            if (appHost == null)
+            {
+                throw new ArgumentNullException("appHost");
+            }
 
+            _appHost = appHost;
             _jsonSerializer = jsonSerializer;
         }
 
@@ -115,6 +132,19 @@ namespace MediaBrowser.Api
             {
                 await Task.Delay(100);
                 Kernel.PerformPendingRestart();
+            });
+        }
+
+        /// <summary>
+        /// Posts the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        public void Post(ShutdownApplication request)
+        {
+            Task.Run(async () =>
+            {
+                await Task.Delay(100);
+                _appHost.Shutdown();
             });
         }
 

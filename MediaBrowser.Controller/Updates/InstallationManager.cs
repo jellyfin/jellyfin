@@ -49,7 +49,7 @@ namespace MediaBrowser.Controller.Updates
             EventHelper.QueueEventIfNotNull(PluginUninstalled, this, new GenericEventArgs<IPlugin> { Argument = plugin }, _logger);
 
             // Notify connected ui's
-            Kernel.TcpManager.SendWebSocketMessage("PluginUninstalled", plugin.GetPluginInfo());
+            Kernel.ServerManager.SendWebSocketMessage("PluginUninstalled", plugin.GetPluginInfo());
         }
         #endregion
 
@@ -371,7 +371,7 @@ namespace MediaBrowser.Controller.Updates
 
             var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, innerCancellationTokenSource.Token).Token;
 
-            Kernel.TcpManager.SendWebSocketMessage("PackageInstalling", installationInfo);
+            Kernel.ServerManager.SendWebSocketMessage("PackageInstalling", installationInfo);
 
             try
             {
@@ -384,7 +384,7 @@ namespace MediaBrowser.Controller.Updates
 
                 CompletedInstallations.Add(installationInfo);
 
-                Kernel.TcpManager.SendWebSocketMessage("PackageInstallationCompleted", installationInfo);
+                Kernel.ServerManager.SendWebSocketMessage("PackageInstallationCompleted", installationInfo);
             }
             catch (OperationCanceledException)
             {
@@ -395,7 +395,7 @@ namespace MediaBrowser.Controller.Updates
 
                 _logger.Info("Package installation cancelled: {0} {1}", package.name, package.versionStr);
 
-                Kernel.TcpManager.SendWebSocketMessage("PackageInstallationCancelled", installationInfo);
+                Kernel.ServerManager.SendWebSocketMessage("PackageInstallationCancelled", installationInfo);
 
                 throw;
             }
@@ -406,7 +406,7 @@ namespace MediaBrowser.Controller.Updates
                     CurrentInstallations.Remove(tuple);
                 }
 
-                Kernel.TcpManager.SendWebSocketMessage("PackageInstallationFailed", installationInfo);
+                Kernel.ServerManager.SendWebSocketMessage("PackageInstallationFailed", installationInfo);
 
                 throw;
             }

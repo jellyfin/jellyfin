@@ -44,17 +44,25 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         private ILogger Logger { get; set; }
 
         /// <summary>
+        /// Gets or sets the server manager.
+        /// </summary>
+        /// <value>The server manager.</value>
+        private IServerManager ServerManager { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="TaskManager" /> class.
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="serverManager">The server manager.</param>
         /// <exception cref="System.ArgumentException">kernel</exception>
-        public TaskManager(IApplicationPaths applicationPaths, IJsonSerializer jsonSerializer, ILogger logger)
+        public TaskManager(IApplicationPaths applicationPaths, IJsonSerializer jsonSerializer, ILogger logger, IServerManager serverManager)
         {
             ApplicationPaths = applicationPaths;
             JsonSerializer = jsonSerializer;
             Logger = logger;
+            ServerManager = serverManager;
 
             ScheduledTasks = new IScheduledTaskWorker[] { };
         }
@@ -155,7 +163,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         {
             var myTasks = ScheduledTasks.ToList();
 
-            myTasks.AddRange(tasks.Select(t => new ScheduledTaskWorker(t, ApplicationPaths, this, JsonSerializer, Logger)));
+            myTasks.AddRange(tasks.Select(t => new ScheduledTaskWorker(t, ApplicationPaths, this, JsonSerializer, Logger, ServerManager)));
 
             ScheduledTasks = myTasks.ToArray();
         }
