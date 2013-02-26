@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Weather;
+﻿using MediaBrowser.Model.Updates;
+using MediaBrowser.Model.Weather;
 using ProtoBuf;
 using System;
 
@@ -298,8 +299,14 @@ namespace MediaBrowser.Model.Configuration
         /// <value><c>true</c> if [enable developer tools]; otherwise, <c>false</c>.</value>
         [ProtoMember(57)]
         public bool EnableDeveloperTools { get; set; }
+
+        /// <summary>
+        /// Gets of sets a value indicating the level of system updates (Release, Beta, Dev)
+        /// </summary>
+        [ProtoMember(59)]
+        public PackageVersionClass SystemUpdateLevel { get; set; }
         
-        // Next Proto number ====> 59
+        // Next Proto number ====> 60
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
