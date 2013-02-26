@@ -154,7 +154,7 @@ namespace MediaBrowser.Installer
                     var json = await client.DownloadStringTaskAsync("http://www.mb3admin.com/admin/service/package/retrieveAll?name=" + PackageName);
                     var packages = JsonSerializer.DeserializeFromString<List<PackageInfo>>(json);
 
-                    var version = packages[0].versions.Where(v => v.classification == PackageClass).OrderByDescending(v => v.version).FirstOrDefault(v => v.version <= PackageVersion);
+                    var version = packages[0].versions.Where(v => v.classification <= PackageClass).OrderByDescending(v => v.version).FirstOrDefault(v => v.version <= PackageVersion);
                     if (version == null)
                     {
                         SystemClose("Could not locate download package.  Aborting.");
