@@ -62,21 +62,57 @@ namespace MediaBrowser.Uninstaller.Execute
         private void btnUninstall_Click(object sender, RoutedEventArgs e)
         {
             // First remove our shortcuts
-            var startMenu = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), "Media Browser");
+            lblHeading.Content = "Removing Shortcuts...";
+            btnCancel.IsEnabled = btnUninstall.IsEnabled = false;
+            grdOptions.Visibility = Visibility.Hidden;
+
+            var startMenu = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), "Media Browser 3");
             var linkName = "Media Browser " + Product + ".lnk";
-            try 
-            {
-                File.Delete(Path.Combine(startMenu,linkName));
-            }
-            catch {} // oh well
-
+            RemoveShortcut(Path.Combine(startMenu, linkName));
             linkName = "Uninstall " + linkName;
-            try 
+            RemoveShortcut(Path.Combine(startMenu, linkName));
+            if (Product == "Server")
             {
-                File.Delete(Path.Combine(startMenu,linkName));
+                RemoveShortcut(Path.Combine(startMenu, "Dashboard.lnk"));
             }
-            catch {} // oh well
+            // if the startmenu item is empty now - delete it too
+            if (Directory.GetFiles(startMenu).Length == 0)
+            {
+                try
+                {
+                    Directory.Delete(startMenu);
+                }
+                catch (DirectoryNotFoundException)
+                {
+                }
+                catch (Exception ex)
+                {
+                    {
+                        MessageBox.Show(string.Format("Error attempting to remove shortcut folder {0}\n\n {1}", startMenu, ex.Message), "Error");
+                    }
+                }
+            }
 
+
+            // and done
+            lblHeading.Content = string.Format("Media Browser {0} Uninstalled.", Product);
+            btnUninstall.Content = "Finish";
+        }
+
+        private static void RemoveShortcut(string path)
+        {
+            try
+            {
+                File.Delete(path);
+            }
+            catch (FileNotFoundException)
+            {
+            } // we're trying to get rid of it anyway
+            catch (Exception ex)
+            {
+                MessageBox.Show(string.Format("Error attempting to remove shortcut {0}\n\n {1}", path, ex.Message), "Error");
+            }
+            
         }
     }
 }
