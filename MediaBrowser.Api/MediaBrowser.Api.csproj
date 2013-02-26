@@ -84,6 +84,7 @@
     <Compile Include="Library\LibraryStructureService.cs" />
     <Compile Include="LocalizationService.cs" />
     <Compile Include="PackageService.cs" />
+    <Compile Include="Playback\StreamRequest.cs" />
     <Compile Include="PluginService.cs" />
     <Compile Include="ScheduledTasks\ScheduledTaskService.cs" />
     <Compile Include="ScheduledTasks\ScheduledTasksWebSocketListener.cs" />
