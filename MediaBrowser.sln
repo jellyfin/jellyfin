@@ -39,8 +39,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.IsoMounter", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Installer", "MediaBrowser.Installer\MediaBrowser.Installer.csproj", "{3879F78A-D6F6-45E5-B2A8-D8DCF2DABB74}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Logging.NLog", "MediaBrowser.Logging.NLog\MediaBrowser.Logging.NLog.csproj", "{67310740-0EC4-4DC2-9921-33DF38B20167}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.ClickOnce", "MediaBrowser.ClickOnce\MediaBrowser.ClickOnce.csproj", "{CC96BF3E-0BDA-4809-BC4B-BB6D418F4A84}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Networking", "MediaBrowser.Networking\MediaBrowser.Networking.csproj", "{7C11010E-179A-49B7-BFB2-F1656F5E71AD}"
@@ -251,20 +249,6 @@ Global
 		{3879F78A-D6F6-45E5-B2A8-D8DCF2DABB74}.Release|Win32.ActiveCfg = Release|Any CPU
 		{3879F78A-D6F6-45E5-B2A8-D8DCF2DABB74}.Release|x64.ActiveCfg = Release|Any CPU
 		{3879F78A-D6F6-45E5-B2A8-D8DCF2DABB74}.Release|x86.ActiveCfg = Release|Any CPU
-		{67310740-0EC4-4DC2-9921-33DF38B20167}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{67310740-0EC4-4DC2-9921-33DF38B20167}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{67310740-0EC4-4DC2-9921-33DF38B20167}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{67310740-0EC4-4DC2-9921-33DF38B20167}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{67310740-0EC4-4DC2-9921-33DF38B20167}.Debug|Win32.ActiveCfg = Debug|Any CPU
-		{67310740-0EC4-4DC2-9921-33DF38B20167}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{67310740-0EC4-4DC2-9921-33DF38B20167}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{67310740-0EC4-4DC2-9921-33DF38B20167}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{67310740-0EC4-4DC2-9921-33DF38B20167}.Release|Any CPU.Build.0 = Release|Any CPU
-		{67310740-0EC4-4DC2-9921-33DF38B20167}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{67310740-0EC4-4DC2-9921-33DF38B20167}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{67310740-0EC4-4DC2-9921-33DF38B20167}.Release|Win32.ActiveCfg = Release|Any CPU
-		{67310740-0EC4-4DC2-9921-33DF38B20167}.Release|x64.ActiveCfg = Release|Any CPU
-		{67310740-0EC4-4DC2-9921-33DF38B20167}.Release|x86.ActiveCfg = Release|Any CPU
 		{CC96BF3E-0BDA-4809-BC4B-BB6D418F4A84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CC96BF3E-0BDA-4809-BC4B-BB6D418F4A84}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC96BF3E-0BDA-4809-BC4B-BB6D418F4A84}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

@@ -22,7 +22,6 @@
         <file src="dlls\MediaBrowser.ClickOnce.dll" target="lib\net45\MediaBrowser.ClickOnce.dll" />
         <file src="dlls\MediaBrowser.Common.Implementations.dll" target="lib\net45\MediaBrowser.Common.Implementations.dll" />
         <file src="dlls\MediaBrowser.IsoMounter.dll" target="lib\net45\MediaBrowser.IsoMounter.dll" />
-        <file src="dlls\MediaBrowser.Logging.NLog.dll" target="lib\net45\MediaBrowser.Logging.NLog.dll" />
         <file src="dlls\MediaBrowser.Networking.dll" target="lib\net45\MediaBrowser.Networking.dll" />
         <file src="dlls\pfmclrapi.dll" target="lib\net45\pfmclrapi.dll" />
     </files>

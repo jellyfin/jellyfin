@@ -35,6 +35,9 @@
     <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="NLog">
+      <HintPath>..\packages\NLog.2.0.0.2000\lib\net40\NLog.dll</HintPath>
+    </Reference>
     <Reference Include="protobuf-net">
       <HintPath>..\packages\protobuf-net.2.0.0.621\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
@@ -56,6 +59,9 @@
     </Compile>
     <Compile Include="BaseApplicationHost.cs" />
     <Compile Include="BaseApplicationPaths.cs" />
+    <Compile Include="Logging\LogHelper.cs" />
+    <Compile Include="Logging\NLogger.cs" />
+    <Compile Include="Logging\NlogManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScheduledTasks\ScheduledTaskWorker.cs" />
     <Compile Include="ScheduledTasks\TaskManager.cs" />

@@ -6,7 +6,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Logging.Nlog
+namespace MediaBrowser.Common.Implementations.Logging
 {
     /// <summary>
     /// Class NlogManager

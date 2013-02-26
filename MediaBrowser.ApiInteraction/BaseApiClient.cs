@@ -26,13 +26,13 @@ namespace MediaBrowser.ApiInteraction
         /// Gets the protobuf serializer.
         /// </summary>
         /// <value>The protobuf serializer.</value>
-        public IProtobufSerializer ProtobufSerializer { get; private set; }
+        public IProtobufSerializer ProtobufSerializer { get; set; }
 
         /// <summary>
         /// Gets the json serializer.
         /// </summary>
         /// <value>The json serializer.</value>
-        public IJsonSerializer JsonSerializer { get; private set; }
+        public IJsonSerializer JsonSerializer { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApiClient" /> class.
