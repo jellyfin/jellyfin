@@ -177,7 +177,6 @@
     <Compile Include="Resolvers\TV\SeasonResolver.cs" />
     <Compile Include="Resolvers\TV\SeriesResolver.cs" />
     <Compile Include="Resolvers\TV\TVUtils.cs" />
-    <Compile Include="Library\ResourcePool.cs" />
     <Compile Include="ScheduledTasks\PeopleValidationTask.cs" />
     <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
     <Compile Include="Library\ItemResolveArgs.cs" />
