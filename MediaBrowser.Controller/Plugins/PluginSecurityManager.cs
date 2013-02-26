@@ -1,4 +1,5 @@
-﻿using Mediabrowser.Model.Entities;
+﻿using MediaBrowser.Model.Serialization;
+using Mediabrowser.Model.Entities;
 using Mediabrowser.PluginSecurity;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
@@ -39,10 +40,8 @@ namespace MediaBrowser.Controller.Plugins
             }
         }
 
-        /// <summary>
-        /// The _network manager
-        /// </summary>
-        private INetworkManager _networkManager;
+        private IHttpClient _httpClient;
+        private IJsonSerializer _jsonSerializer;
 
         /// <summary>
         /// The _kernel
@@ -53,21 +52,22 @@ namespace MediaBrowser.Controller.Plugins
         /// Initializes a new instance of the <see cref="PluginSecurityManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        /// <param name="networkManager">The network manager.</param>
-        public PluginSecurityManager(IKernel kernel, INetworkManager networkManager)
+        public PluginSecurityManager(IKernel kernel, IHttpClient httpClient, IJsonSerializer jsonSerializer, IApplicationPaths appPaths)
         {
             if (kernel == null)
             {
                 throw new ArgumentNullException("kernel");
             }
 
-            if (networkManager == null)
+            if (httpClient == null)
             {
-                throw new ArgumentNullException("networkManager");
+                throw new ArgumentNullException("httpClient");
             }
             
             _kernel = kernel;
-            _networkManager = networkManager;
+            _httpClient = httpClient;
+            _jsonSerializer = jsonSerializer;
+            MBRegistration.Init(appPaths);
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace MediaBrowser.Controller.Plugins
         /// <returns>Task{MBRegistrationRecord}.</returns>
         public async Task<MBRegistrationRecord> GetRegistrationStatus(string feature, string mb2Equivalent = null)
         {
-            return await MBRegistration.GetRegistrationStatus(feature, mb2Equivalent).ConfigureAwait(false);
+            return await MBRegistration.GetRegistrationStatus(_httpClient, _jsonSerializer, feature, mb2Equivalent).ConfigureAwait(false);
         }
 
         /// <summary>

@@ -11,24 +11,35 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
     /// <summary>
     /// Class ReloadLoggerFileTask
     /// </summary>
-    public class ReloadLoggerFileTask : BaseScheduledTask<IKernel>
+    public class ReloadLoggerFileTask : IScheduledTask
     {
+        /// <summary>
+        /// Gets or sets the kernel.
+        /// </summary>
+        /// <value>The kernel.</value>
+        private IKernel Kernel { get; set; }
+        /// <summary>
+        /// Gets or sets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
+        private ILogger Logger { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ReloadLoggerFileTask" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        /// <param name="taskManager">The task manager.</param>
         /// <param name="logger">The logger.</param>
-        public ReloadLoggerFileTask(IKernel kernel, ITaskManager taskManager, ILogger logger)
-            : base(kernel, taskManager, logger)
+        public ReloadLoggerFileTask(IKernel kernel, ILogger logger)
         {
+            Kernel = kernel;
+            Logger = logger;
         }
 
         /// <summary>
         /// Gets the default triggers.
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        public override IEnumerable<ITaskTrigger> GetDefaultTriggers()
+        public IEnumerable<ITaskTrigger> GetDefaultTriggers()
         {
             var trigger = new DailyTrigger { TimeOfDay = TimeSpan.FromHours(0) }; //12am
 
@@ -41,7 +52,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        protected override Task ExecuteInternal(CancellationToken cancellationToken, IProgress<double> progress)
+        public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -54,7 +65,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public override string Name
+        public string Name
         {
             get { return "Start new log file"; }
         }
@@ -63,9 +74,18 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// Gets the description.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public string Description
         {
             get { return "Moves logging to a new file to help reduce log file sizes."; }
+        }
+
+        /// <summary>
+        /// Gets the category.
+        /// </summary>
+        /// <value>The category.</value>
+        public string Category
+        {
+            get { return "Application"; }
         }
     }
 }

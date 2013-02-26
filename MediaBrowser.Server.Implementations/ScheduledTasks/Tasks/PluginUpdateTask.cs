@@ -13,23 +13,33 @@ namespace MediaBrowser.Controller.ScheduledTasks
     /// <summary>
     /// Plugin Update Task
     /// </summary>
-    public class PluginUpdateTask : BaseScheduledTask<Kernel>
+    public class PluginUpdateTask : IScheduledTask
     {
+        /// <summary>
+        /// The _kernel
+        /// </summary>
+        private readonly Kernel _kernel;
+        /// <summary>
+        /// The _logger
+        /// </summary>
+        private readonly ILogger _logger;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginUpdateTask" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        /// <param name="logger"></param>
-        public PluginUpdateTask(Kernel kernel, ITaskManager taskManager, ILogger logger)
-            : base(kernel, taskManager, logger)
+        /// <param name="logger">The logger.</param>
+        public PluginUpdateTask(Kernel kernel, ILogger logger)
         {
+            _kernel = kernel;
+            _logger = logger;
         }
 
         /// <summary>
         /// Creates the triggers that define when the task will run
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        public override IEnumerable<ITaskTrigger> GetDefaultTriggers()
+        public IEnumerable<ITaskTrigger> GetDefaultTriggers()
         {
             return new ITaskTrigger[] { 
             
@@ -46,11 +56,11 @@ namespace MediaBrowser.Controller.ScheduledTasks
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        protected override async Task ExecuteInternal(CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             progress.Report(0);
 
-            var packagesToInstall = (await Kernel.InstallationManager.GetAvailablePluginUpdates(true, cancellationToken).ConfigureAwait(false)).ToList();
+            var packagesToInstall = (await _kernel.InstallationManager.GetAvailablePluginUpdates(true, cancellationToken).ConfigureAwait(false)).ToList();
 
             progress.Report(10);
 
@@ -63,7 +73,7 @@ namespace MediaBrowser.Controller.ScheduledTasks
 
                 try
                 {
-                    await Kernel.InstallationManager.InstallPackage(i, new Progress<double> { }, cancellationToken).ConfigureAwait(false);
+                    await _kernel.InstallationManager.InstallPackage(i, new Progress<double> { }, cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -75,11 +85,11 @@ namespace MediaBrowser.Controller.ScheduledTasks
                 }
                 catch (HttpException ex)
                 {
-                    Logger.ErrorException("Error downloading {0}", ex, i.name);
+                    _logger.ErrorException("Error downloading {0}", ex, i.name);
                 }
                 catch (IOException ex)
                 {
-                    Logger.ErrorException("Error updating {0}", ex, i.name);
+                    _logger.ErrorException("Error updating {0}", ex, i.name);
                 }
 
                 // Update progress
@@ -104,7 +114,7 @@ namespace MediaBrowser.Controller.ScheduledTasks
         /// Gets the name of the task
         /// </summary>
         /// <value>The name.</value>
-        public override string Name
+        public string Name
         {
             get { return "Check for plugin updates"; }
         }
@@ -113,9 +123,14 @@ namespace MediaBrowser.Controller.ScheduledTasks
         /// Gets the description.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public string Description
         {
             get { return "Downloads and installs updates for plugins that are configured to update automatically."; }
+        }
+
+        public string Category
+        {
+            get { return "Application"; }
         }
     }
 }

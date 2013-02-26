@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.Net
 {
+    /// <summary>
+    /// Interface IHttpClient
+    /// </summary>
     public interface IHttpClient : IDisposable
     {
         /// <summary>
@@ -52,10 +55,5 @@ namespace MediaBrowser.Common.Net
         /// <returns>Task{MemoryStream}.</returns>
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
         Task<MemoryStream> GetMemoryStream(string url, SemaphoreSlim resourcePool, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        void Dispose();
     }
 }

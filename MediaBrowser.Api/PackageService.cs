@@ -1,8 +1,8 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Updates;
+using MediaBrowser.Networking.HttpServer;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
@@ -142,7 +142,7 @@ namespace MediaBrowser.Api
         {
             var kernel = (Kernel)Kernel;
 
-            var packages = kernel.InstallationManager.GetAvailablePackages(CancellationToken.None, applicationVersion: kernel.ApplicationVersion).Result;
+            var packages = kernel.InstallationManager.GetAvailablePackages(CancellationToken.None, applicationVersion: ApplicationHost.ApplicationVersion).Result;
 
             var result = packages.FirstOrDefault(p => p.name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
 
@@ -158,7 +158,7 @@ namespace MediaBrowser.Api
         {
             var kernel = (Kernel)Kernel;
 
-            var packages = kernel.InstallationManager.GetAvailablePackages(CancellationToken.None, request.PackageType, kernel.ApplicationVersion).Result;
+            var packages = kernel.InstallationManager.GetAvailablePackages(CancellationToken.None, request.PackageType, ApplicationHost.ApplicationVersion).Result;
 
             return ToOptimizedResult(packages.ToList());
         }

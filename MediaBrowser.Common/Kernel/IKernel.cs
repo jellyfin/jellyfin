@@ -38,12 +38,6 @@ namespace MediaBrowser.Common.Kernel
         Task Init();
 
         /// <summary>
-        /// Reloads this instance.
-        /// </summary>
-        /// <returns>Task.</returns>
-        Task Reload();
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance has pending kernel reload.
         /// </summary>
         /// <value><c>true</c> if this instance has pending kernel reload; otherwise, <c>false</c>.</value>
@@ -107,12 +101,6 @@ namespace MediaBrowser.Common.Kernel
         string HttpServerUrlPrefix { get; }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is first run.
-        /// </summary>
-        /// <value><c>true</c> if this instance is first run; otherwise, <c>false</c>.</value>
-        bool IsFirstRun { get; }
-
-        /// <summary>
         /// Gets the TCP manager.
         /// </summary>
         /// <value>The TCP manager.</value>
@@ -138,12 +126,6 @@ namespace MediaBrowser.Common.Kernel
         /// Occurs when [configuration updated].
         /// </summary>
         event EventHandler<EventArgs> ConfigurationUpdated;
-
-        /// <summary>
-        /// Gets the rest services.
-        /// </summary>
-        /// <value>The rest services.</value>
-        IEnumerable<IRestfulService> RestServices { get; }
 
         /// <summary>
         /// Notifies the pending restart.

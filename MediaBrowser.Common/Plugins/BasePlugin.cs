@@ -1,12 +1,12 @@
 ﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Plugins;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Common.Plugins
 {
@@ -393,9 +393,6 @@ namespace MediaBrowser.Common.Plugins
             {
                 XmlSerializer.SerializeToFile(Configuration, ConfigurationFilePath);
             }
-
-            // Notify connected UI's
-            Kernel.TcpManager.SendWebSocketMessage("PluginConfigurationUpdated-" + Name, Configuration);
         }
 
         /// <summary>

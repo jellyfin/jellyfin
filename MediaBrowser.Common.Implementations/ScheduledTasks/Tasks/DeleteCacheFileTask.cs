@@ -13,24 +13,35 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
     /// <summary>
     /// Deletes old cache files
     /// </summary>
-    public class DeleteCacheFileTask : BaseScheduledTask<IKernel>
+    public class DeleteCacheFileTask : IScheduledTask
     {
+        /// <summary>
+        /// Gets or sets the kernel.
+        /// </summary>
+        /// <value>The kernel.</value>
+        private IKernel Kernel { get; set; }
+        /// <summary>
+        /// Gets or sets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
+        private ILogger Logger { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DeleteCacheFileTask" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        /// <param name="taskManager">The task manager.</param>
         /// <param name="logger">The logger.</param>
-        public DeleteCacheFileTask(IKernel kernel, ITaskManager taskManager, ILogger logger)
-            : base(kernel, taskManager, logger)
+        public DeleteCacheFileTask(IKernel kernel, ILogger logger)
         {
+            Kernel = kernel;
+            Logger = logger;
         }
 
         /// <summary>
         /// Creates the triggers that define when the task will run
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        public override IEnumerable<ITaskTrigger> GetDefaultTriggers()
+        public IEnumerable<ITaskTrigger> GetDefaultTriggers()
         {
             var trigger = new DailyTrigger { TimeOfDay = TimeSpan.FromHours(2) }; //2am
 
@@ -43,7 +54,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        protected override Task ExecuteInternal(CancellationToken cancellationToken, IProgress<double> progress)
+        public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             return Task.Run(() =>
             {
@@ -90,7 +101,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// Gets the name of the task
         /// </summary>
         /// <value>The name.</value>
-        public override string Name
+        public string Name
         {
             get { return "Cache file cleanup"; }
         }
@@ -99,7 +110,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// Gets the description.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public string Description
         {
             get { return "Deletes cache files no longer needed by the system"; }
         }
@@ -108,7 +119,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// Gets the category.
         /// </summary>
         /// <value>The category.</value>
-        public override string Category
+        public string Category
         {
             get
             {

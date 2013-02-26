@@ -2,6 +2,7 @@
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Web;
 using System;
 using System.Collections.Generic;
@@ -22,9 +23,22 @@ namespace MediaBrowser.ApiInteraction
         protected ILogger Logger { get; private set; }
 
         /// <summary>
+        /// Gets the protobuf serializer.
+        /// </summary>
+        /// <value>The protobuf serializer.</value>
+        public IProtobufSerializer ProtobufSerializer { get; private set; }
+
+        /// <summary>
+        /// Gets the json serializer.
+        /// </summary>
+        /// <value>The json serializer.</value>
+        public IJsonSerializer JsonSerializer { get; private set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="BaseApiClient" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
+        /// <param name="jsonSerializer">The json serializer.</param>
         /// <exception cref="System.ArgumentNullException">logger</exception>
         protected BaseApiClient(ILogger logger)
         {
@@ -33,9 +47,9 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("logger");
             }
 
+            JsonSerializer = new NewtonsoftJsonSerializer();
             Logger = logger;
-
-            DataSerializer.Configure();
+            SerializationFormat = SerializationFormats.Json;
         }
 
         /// <summary>
@@ -90,22 +104,11 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        private SerializationFormats _serializationFormat = SerializationFormats.Protobuf;
         /// <summary>
         /// Gets the default data format to request from the server
         /// </summary>
         /// <value>The serialization format.</value>
-        public SerializationFormats SerializationFormat
-        {
-            get
-            {
-                return _serializationFormat;
-            }
-            set
-            {
-                _serializationFormat = value;
-            }
-        }
+        public SerializationFormats SerializationFormat { get; set; }
 
         /// <summary>
         /// Resets the authorization header.
@@ -790,7 +793,39 @@ namespace MediaBrowser.ApiInteraction
         protected T DeserializeFromStream<T>(Stream stream)
             where T : class
         {
-            return (T)DataSerializer.DeserializeFromStream(stream, SerializationFormat, typeof(T));
+            return (T)DeserializeFromStream(stream, typeof(T), SerializationFormat);
+        }
+
+        /// <summary>
+        /// Deserializes from stream.
+        /// </summary>
+        /// <param name="stream">The stream.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="format">The format.</param>
+        /// <returns>System.Object.</returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected object DeserializeFromStream(Stream stream, Type type, SerializationFormats format)
+        {
+            if (format == SerializationFormats.Protobuf)
+            {
+                return ProtobufSerializer.DeserializeFromStream(stream, type);
+            }
+            if (format == SerializationFormats.Json)
+            {
+                return JsonSerializer.DeserializeFromStream(stream, type);
+            }
+
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Serializers to json.
+        /// </summary>
+        /// <param name="obj">The obj.</param>
+        /// <returns>System.String.</returns>
+        protected string SerializeToJson(object obj)
+        {
+            return JsonSerializer.SerializeToString(obj);
         }
 
         /// <summary>

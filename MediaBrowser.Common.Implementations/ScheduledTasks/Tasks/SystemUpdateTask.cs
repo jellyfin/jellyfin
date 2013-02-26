@@ -11,7 +11,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
     /// <summary>
     /// Plugin Update Task
     /// </summary>
-    public class SystemUpdateTask : BaseScheduledTask<IKernel>
+    public class SystemUpdateTask : IScheduledTask
     {
         /// <summary>
         /// The _app host
@@ -19,23 +19,34 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         private readonly IApplicationHost _appHost;
 
         /// <summary>
+        /// Gets or sets the kernel.
+        /// </summary>
+        /// <value>The kernel.</value>
+        private IKernel Kernel { get; set; }
+        /// <summary>
+        /// Gets or sets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
+        private ILogger Logger { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SystemUpdateTask" /> class.
         /// </summary>
         /// <param name="appHost">The app host.</param>
-        /// <param name="taskManager">The task manager.</param>
         /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
-        public SystemUpdateTask(IApplicationHost appHost, ITaskManager taskManager, IKernel kernel, ILogger logger)
-            : base(kernel, taskManager, logger)
+        public SystemUpdateTask(IApplicationHost appHost, IKernel kernel, ILogger logger)
         {
             _appHost = appHost;
+            Kernel = kernel;
+            Logger = logger;
         }
 
         /// <summary>
         /// Creates the triggers that define when the task will run
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        public override IEnumerable<ITaskTrigger> GetDefaultTriggers()
+        public IEnumerable<ITaskTrigger> GetDefaultTriggers()
         {
             return new ITaskTrigger[] { 
             
@@ -52,7 +63,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        protected override async Task ExecuteInternal(CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             if (!_appHost.CanSelfUpdate) return;
 
@@ -105,7 +116,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// Gets the name of the task
         /// </summary>
         /// <value>The name.</value>
-        public override string Name
+        public string Name
         {
             get { return "Check for application updates"; }
         }
@@ -114,9 +125,18 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// Gets the description.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public string Description
         {
             get { return "Downloads and installs application updates."; }
+        }
+
+        /// <summary>
+        /// Gets the category.
+        /// </summary>
+        /// <value>The category.</value>
+        public string Category
+        {
+            get { return "Application"; }
         }
     }
 }

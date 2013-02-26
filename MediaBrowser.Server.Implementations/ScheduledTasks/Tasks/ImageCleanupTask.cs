@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Model.Logging;
@@ -9,29 +10,38 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.ScheduledTasks
+namespace MediaBrowser.Server.Implementations.ScheduledTasks.Tasks
 {
     /// <summary>
     /// Class ImageCleanupTask
     /// </summary>
-    public class ImageCleanupTask : BaseScheduledTask<Kernel>
+    public class ImageCleanupTask : IScheduledTask
     {
+        /// <summary>
+        /// The _kernel
+        /// </summary>
+        private readonly Kernel _kernel;
+        /// <summary>
+        /// The _logger
+        /// </summary>
+        private readonly ILogger _logger;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageCleanupTask" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        /// <param name="taskManager">The task manager.</param>
         /// <param name="logger">The logger.</param>
-        public ImageCleanupTask(Kernel kernel, ITaskManager taskManager, ILogger logger)
-            : base(kernel, taskManager, logger)
+        public ImageCleanupTask(Kernel kernel, ILogger logger)
         {
+            _kernel = kernel;
+            _logger = logger;
         }
 
         /// <summary>
         /// Creates the triggers that define when the task will run
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        public override IEnumerable<ITaskTrigger> GetDefaultTriggers()
+        public IEnumerable<ITaskTrigger> GetDefaultTriggers()
         {
             return new ITaskTrigger[]
                 {
@@ -45,19 +55,19 @@ namespace MediaBrowser.Controller.ScheduledTasks
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        protected override async Task ExecuteInternal(CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             await EnsureChapterImages(cancellationToken).ConfigureAwait(false);
 
             // First gather all image files
-            var files = GetFiles(Kernel.FFMpegManager.AudioImagesDataPath)
-                .Concat(GetFiles(Kernel.FFMpegManager.VideoImagesDataPath))
-                .Concat(GetFiles(Kernel.ProviderManager.ImagesDataPath))
+            var files = GetFiles(_kernel.FFMpegManager.AudioImagesDataPath)
+                .Concat(GetFiles(_kernel.FFMpegManager.VideoImagesDataPath))
+                .Concat(GetFiles(_kernel.ProviderManager.ImagesDataPath))
                 .ToList();
 
             // Now gather all items
-            var items = Kernel.RootFolder.RecursiveChildren.ToList();
-            items.Add(Kernel.RootFolder);
+            var items = _kernel.RootFolder.RecursiveChildren.ToList();
+            items.Add(_kernel.RootFolder);
 
             // Determine all possible image paths
             var pathsInUse = items.SelectMany(GetPathsInUse)
@@ -80,7 +90,7 @@ namespace MediaBrowser.Controller.ScheduledTasks
                     }
                     catch (IOException ex)
                     {
-                        Logger.ErrorException("Error deleting {0}", ex, file);
+                        _logger.ErrorException("Error deleting {0}", ex, file);
                     }
                 }
 
@@ -105,11 +115,11 @@ namespace MediaBrowser.Controller.ScheduledTasks
         /// <returns>Task.</returns>
         private Task EnsureChapterImages(CancellationToken cancellationToken)
         {
-            var videos = Kernel.RootFolder.RecursiveChildren.OfType<Video>().Where(v => v.Chapters != null).ToList();
+            var videos = _kernel.RootFolder.RecursiveChildren.OfType<Video>().Where(v => v.Chapters != null).ToList();
 
             var tasks = videos.Select(v => Task.Run(async () =>
             {
-                await Kernel.FFMpegManager.PopulateChapterImages(v, cancellationToken, false, true);
+                await _kernel.FFMpegManager.PopulateChapterImages(v, cancellationToken, false, true);
             }));
 
             return Task.WhenAll(tasks);
@@ -181,7 +191,7 @@ namespace MediaBrowser.Controller.ScheduledTasks
         /// Gets the name of the task
         /// </summary>
         /// <value>The name.</value>
-        public override string Name
+        public string Name
         {
             get { return "Images cleanup"; }
         }
@@ -190,7 +200,7 @@ namespace MediaBrowser.Controller.ScheduledTasks
         /// Gets the description.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public string Description
         {
             get { return "Deletes downloaded and extracted images that are no longer being used."; }
         }
@@ -199,7 +209,7 @@ namespace MediaBrowser.Controller.ScheduledTasks
         /// Gets the category.
         /// </summary>
         /// <value>The category.</value>
-        public override string Category
+        public string Category
         {
             get
             {

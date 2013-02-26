@@ -1,8 +1,6 @@
 ﻿using MediaBrowser.ClickOnce;
-using MediaBrowser.Common.Implementations.Serialization;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller;
-using MediaBrowser.Logging.Nlog;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Uninstall;
 using Microsoft.Win32;
@@ -30,7 +28,7 @@ namespace MediaBrowser.ServerApplication
         [STAThread]
         public static void Main()
         {
-            var application = new App(new NLogger("App"));
+            var application = new App();
 
             application.Run();
         }
@@ -74,10 +72,8 @@ namespace MediaBrowser.ServerApplication
         /// Initializes a new instance of the <see cref="App" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        public App(ILogger logger)
+        public App()
         {
-            Logger = logger;
-
             InitializeComponent();
         }
 
@@ -174,13 +170,16 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         protected async void LoadKernel()
         {
-            CompositionRoot = new ApplicationHost(Logger);
+            CompositionRoot = new ApplicationHost();
 
+            Logger = CompositionRoot.Logger;
             Kernel = CompositionRoot.Kernel;
 
             try
             {
-                new MainWindow(new JsonSerializer(), Logger).Show();
+                var win = (MainWindow)CompositionRoot.CreateInstance(typeof(MainWindow));
+
+                win.Show();
 
                 var now = DateTime.UtcNow;
 

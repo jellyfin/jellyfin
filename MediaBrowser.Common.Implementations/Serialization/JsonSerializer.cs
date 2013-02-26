@@ -17,12 +17,10 @@ namespace MediaBrowser.Common.Implementations.Serialization
         /// <summary>
         /// Serializes to stream.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="obj">The obj.</param>
         /// <param name="stream">The stream.</param>
         /// <exception cref="System.ArgumentNullException">obj</exception>
-        public void SerializeToStream<T>(T obj, Stream stream)
-            where T : class
+        public void SerializeToStream(object obj, Stream stream)
         {
             if (obj == null)
             {
@@ -40,12 +38,10 @@ namespace MediaBrowser.Common.Implementations.Serialization
         /// <summary>
         /// Serializes to file.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="obj">The obj.</param>
         /// <param name="file">The file.</param>
         /// <exception cref="System.ArgumentNullException">obj</exception>
-        public void SerializeToFile<T>(T obj, string file)
-            where T : class
+        public void SerializeToFile(object obj, string file)
         {
             if (obj == null)
             {
@@ -200,12 +196,10 @@ namespace MediaBrowser.Common.Implementations.Serialization
         /// <summary>
         /// Serializes to string.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="obj">The obj.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentNullException">obj</exception>
-        public string SerializeToString<T>(T obj)
-            where T : class
+        public string SerializeToString(object obj)
         {
             if (obj == null)
             {
@@ -218,12 +212,10 @@ namespace MediaBrowser.Common.Implementations.Serialization
         /// <summary>
         /// Serializes to bytes.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="obj">The obj.</param>
         /// <returns>System.Byte[][].</returns>
         /// <exception cref="System.ArgumentNullException">obj</exception>
-        public byte[] SerializeToBytes<T>(T obj)
-            where T : class
+        public byte[] SerializeToBytes(object obj)
         {
             if (obj == null)
             {

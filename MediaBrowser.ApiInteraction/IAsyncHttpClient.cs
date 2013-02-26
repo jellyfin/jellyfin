@@ -24,7 +24,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="logger">The logger.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
-        Task<Stream> GetStreamAsync(string url, ILogger logger, CancellationToken cancellationToken);
+        Task<Stream> GetAsync(string url, ILogger logger, CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes the async.

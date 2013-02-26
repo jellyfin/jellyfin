@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Common.Net
 {
@@ -40,5 +41,10 @@ namespace MediaBrowser.Common.Net
         /// Occurs when [web socket connected].
         /// </summary>
         event EventHandler<WebSocketConnectEventArgs> WebSocketConnected;
+
+        /// <summary>
+        /// Inits this instance.
+        /// </summary>
+        void Init(IEnumerable<IRestfulService> services);
     }
 }

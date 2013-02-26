@@ -14,7 +14,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// </summary>
         /// <param name="task">The task.</param>
         /// <returns>TaskInfo.</returns>
-        public static TaskInfo GetTaskInfo(IScheduledTask task)
+        public static TaskInfo GetTaskInfo(IScheduledTaskWorker task)
         {
             return new TaskInfo
             {

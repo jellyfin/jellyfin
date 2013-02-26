@@ -99,6 +99,10 @@
       <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
       <Name>MediaBrowser.Model</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Networking\MediaBrowser.Networking.csproj">
+      <Project>{7c11010e-179a-49b7-bfb2-f1656f5e71ad}</Project>
+      <Name>MediaBrowser.Networking</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Html\index.html" />

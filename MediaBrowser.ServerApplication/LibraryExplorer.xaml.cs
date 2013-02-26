@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Common.Kernel;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -38,13 +39,13 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryExplorer" /> class.
         /// </summary>
-        public LibraryExplorer(IJsonSerializer jsonSerializer, ILogger logger)
+        public LibraryExplorer(IJsonSerializer jsonSerializer, ILogger logger, IApplicationHost appHost)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
 
             InitializeComponent();
-            lblVersion.Content = "Version: " + Kernel.Instance.ApplicationVersion;
+            lblVersion.Content = "Version: " + appHost.ApplicationVersion;
             foreach (var user in Kernel.Instance.Users)
                 ddlProfile.Items.Add(user);
             ddlProfile.Items.Insert(0,new User {Name = "Physical"});

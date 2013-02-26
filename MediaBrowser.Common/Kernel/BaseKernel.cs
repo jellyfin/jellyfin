@@ -40,9 +40,6 @@ namespace MediaBrowser.Common.Kernel
         internal void OnConfigurationUpdated()
         {
             EventHelper.QueueEventIfNotNull(ConfigurationUpdated, this, EventArgs.Empty, Logger);
-
-            // Notify connected clients
-            TcpManager.SendWebSocketMessage("ConfigurationUpdated", Configuration);
         }
         #endregion
 
@@ -141,12 +138,6 @@ namespace MediaBrowser.Common.Kernel
         }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is first run.
-        /// </summary>
-        /// <value><c>true</c> if this instance is first run; otherwise, <c>false</c>.</value>
-        public bool IsFirstRun { get; private set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance has changes that require the entire application to restart.
         /// </summary>
         /// <value><c>true</c> if this instance has pending application restart; otherwise, <c>false</c>.</value>
@@ -175,12 +166,6 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <value>The TCP manager.</value>
         public TcpManager TcpManager { get; private set; }
-
-        /// <summary>
-        /// Gets the rest services.
-        /// </summary>
-        /// <value>The rest services.</value>
-        public IEnumerable<IRestfulService> RestServices { get; private set; }
 
         /// <summary>
         /// Gets the UDP server port number.
@@ -280,19 +265,7 @@ namespace MediaBrowser.Common.Kernel
         /// Initializes the Kernel
         /// </summary>
         /// <returns>Task.</returns>
-        public Task Init()
-        {
-            IsFirstRun = !File.Exists(ApplicationPaths.SystemConfigurationFilePath);
-
-            // Performs initializations that can be reloaded at anytime
-            return Reload();
-        }
-
-        /// <summary>
-        /// Performs initializations that can be reloaded at anytime
-        /// </summary>
-        /// <returns>Task.</returns>
-        public async Task Reload()
+        public async Task Init()
         {
             OnReloadBeginning();
 
@@ -311,8 +284,6 @@ namespace MediaBrowser.Common.Kernel
         {
             // Set these to null so that they can be lazy loaded again
             Configuration = null;
-
-            Logger.Info("Version {0} initializing", ApplicationVersion);
 
             await OnConfigurationLoaded().ConfigureAwait(false);
 
@@ -348,7 +319,6 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         protected virtual void FindParts()
         {
-            RestServices = ApplicationHost.GetExports<IRestfulService>();
             WebSocketListeners = ApplicationHost.GetExports<IWebSocketListener>();
             Plugins = ApplicationHost.GetExports<IPlugin>();
         }
@@ -426,18 +396,6 @@ namespace MediaBrowser.Common.Kernel
         }
 
         /// <summary>
-        /// Gets the current application version
-        /// </summary>
-        /// <value>The application version.</value>
-        public Version ApplicationVersion
-        {
-            get
-            {
-                return GetType().Assembly.GetName().Version;
-            }
-        }
-
-        /// <summary>
         /// Performs the pending restart.
         /// </summary>
         /// <returns>Task.</returns>
@@ -445,22 +403,14 @@ namespace MediaBrowser.Common.Kernel
         {
             if (HasPendingRestart)
             {
-                RestartApplication();
+                Logger.Info("Restarting the application");
+
+                ApplicationHost.Restart();
             }
             else
             {
                 Logger.Info("PerformPendingRestart - not needed");
             }
-        }
-
-        /// <summary>
-        /// Restarts the application.
-        /// </summary>
-        protected void RestartApplication()
-        {
-            Logger.Info("Restarting the application");
-
-            ApplicationHost.Restart();
         }
 
         /// <summary>
@@ -472,7 +422,7 @@ namespace MediaBrowser.Common.Kernel
             return new SystemInfo
             {
                 HasPendingRestart = HasPendingRestart,
-                Version = ApplicationVersion.ToString(),
+                Version = ApplicationHost.ApplicationVersion.ToString(),
                 IsNetworkDeployed = ApplicationHost.CanSelfUpdate,
                 WebSocketPortNumber = TcpManager.WebSocketPortNumber,
                 SupportsNativeWebSocket = TcpManager.SupportsNativeWebSocket,
