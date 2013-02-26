@@ -10,7 +10,6 @@ using System.Linq;
 using Ionic.Zip;
 using MediaBrowser.Installer.Code;
 using ServiceStack.Text;
-using IWshRuntimeLibrary;
 
 namespace MediaBrowser.Installer
 {
@@ -124,7 +123,7 @@ namespace MediaBrowser.Installer
             var fullPath = Path.Combine(RootPath, "System", TargetExe);
             try
             {
-                CreateShortcut(fullPath);
+                CreateShortcuts(fullPath);
             }
             catch (Exception e)
             {
@@ -225,21 +224,24 @@ namespace MediaBrowser.Installer
         ///  Only do current user to avoid need for admin elevation
         /// </summary>
         /// <param name="targetExe"></param>
-        protected void CreateShortcut(string targetExe)
+        protected void CreateShortcuts(string targetExe)
         {
             // get path to all users start menu
-            var shell = new WshShell();
-            var startMenu = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),"Media Browser");
+            var startMenu = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),"Media Browser 3");
             if (!Directory.Exists(startMenu)) Directory.CreateDirectory(startMenu);
-            var product = (IWshShortcut)shell.CreateShortcut(Path.Combine(startMenu, FriendlyName+".lnk"));
-            product.TargetPath = targetExe;
-            product.Description = "Run " + FriendlyName;
+            var product = new ShellShortcut(Path.Combine(startMenu, FriendlyName+".lnk")) {Path = targetExe, Description = "Run " + FriendlyName};
             product.Save();
 
-            var uninstall = (IWshShortcut)shell.CreateShortcut(Path.Combine(startMenu, "Uninstall " + FriendlyName + ".lnk"));
-            uninstall.TargetPath = Path.Combine(Path.GetDirectoryName(targetExe),"MediaBrowser.Uninstaller.exe");
-            uninstall.Arguments = (PackageName == "MBServer" ? "server" : "mbt");
-            uninstall.Description = "Uninstall " + FriendlyName;
+            if (PackageName == "MBServer")
+            {
+                var path = Path.Combine(startMenu, "MB Dashboard.lnk");
+                var dashboard = new ShellShortcut(path) 
+                {Path = @"http://localhost:8096/mediabrowser/dashboard/dashboard.html", Description = "Open the Media Browser Server Dashboard (configuration)"};
+                dashboard.Save();
+                
+            }
+            var uninstall = new ShellShortcut(Path.Combine(startMenu, "Uninstall " + FriendlyName + ".lnk")) 
+            {Path = Path.Combine(Path.GetDirectoryName(targetExe), "MediaBrowser.Uninstaller.exe"), Arguments = (PackageName == "MBServer" ? "server" : "mbt"), Description = "Uninstall " + FriendlyName};
             uninstall.Save();
 
         }
