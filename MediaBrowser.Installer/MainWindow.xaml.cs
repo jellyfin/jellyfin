@@ -5,7 +5,6 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Web;
 using System.Linq;
 using Ionic.Zip;
 using MediaBrowser.Installer.Code;
@@ -65,20 +64,29 @@ namespace MediaBrowser.Installer
 
         protected void GetArgs()
         {
-            var args = AppDomain.CurrentDomain.SetupInformation.ActivationArguments;
+            var args = Environment.GetCommandLineArgs();
 
-            if (args == null || args.ActivationData == null || args.ActivationData.Length <= 0) return;
-            var url = new Uri(args.ActivationData[0], UriKind.Absolute);
 
-            var parameters = HttpUtility.ParseQueryString(url.Query);
+            var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var arg in args)
+            {
+                var nameValue = arg.Split('=');
+                try
+                {
+                    parameters[nameValue[0]] = nameValue[1];
+                }
+                catch // let it default below
+                {
+                }
+            }
 
             // fill in our arguments if there
-            PackageName = parameters["package"] ?? "MBServer";
-            PackageClass = (PackageVersionClass)Enum.Parse(typeof(PackageVersionClass), parameters["class"] ?? "Release");
-            PackageVersion = new Version(parameters["version"].ValueOrDefault("10.0.0.0"));
-            RootSuffix = parameters["suffix"] ?? "-Server";
-            TargetExe = parameters["target"] ?? "MediaBrowser.ServerApplication.exe";
-            FriendlyName = parameters["name"] ?? PackageName;
+            PackageName = parameters.GetValueOrDefault("package","MBServer");
+            PackageClass = (PackageVersionClass)Enum.Parse(typeof(PackageVersionClass), parameters.GetValueOrDefault("class","Release"));
+            PackageVersion = new Version(parameters.GetValueOrDefault("version","10.0.0.0"));
+            RootSuffix = parameters.GetValueOrDefault("suffix", "-Server");
+            TargetExe = parameters.GetValueOrDefault("target", "MediaBrowser.ServerApplication.exe");
+            FriendlyName = parameters.GetValueOrDefault("name", PackageName);
             RootPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "MediaBrowser" + RootSuffix);
 
         }
@@ -210,7 +218,8 @@ namespace MediaBrowser.Installer
             product.Save();
 
             var uninstall = (IWshShortcut)shell.CreateShortcut(Path.Combine(startMenu, "Uninstall " + FriendlyName + ".lnk"));
-            uninstall.TargetPath = Path.Combine(Path.GetDirectoryName(targetExe),"MediaBrowser.Uninstall.exe "+(PackageName == "MBServer" ? "server" : "mbt"));
+            uninstall.TargetPath = Path.Combine(Path.GetDirectoryName(targetExe),"MediaBrowser.Uninstaller.exe");
+            uninstall.Arguments = (PackageName == "MBServer" ? "server" : "mbt");
             uninstall.Description = "Uninstall " + FriendlyName;
             uninstall.Save();
 
@@ -238,5 +247,6 @@ namespace MediaBrowser.Installer
                 Directory.Delete(location, true);
             }
         }
+
     }
 }

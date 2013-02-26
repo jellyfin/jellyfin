@@ -1,16 +1,8 @@
 ﻿<Window x:Class="MediaBrowser.Uninstaller.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Uninstall Media Browser" Height="412.686" Width="633.955">
+        Title="MainWindow" Height="350" Width="525">
     <Grid>
-        <Image x:Name="imgLogo" HorizontalAlignment="Center" Height="154" Margin="35,15,35,0" VerticalAlignment="Top" Width="541" Source="/MediaBrowser.Uninstaller;component/Code/Images/mb3logo800.png" Opacity="0.5"/>
-        <Label x:Name="lblHeading" Content="Uninstall " HorizontalAlignment="Left" Margin="51,169,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.478,-2.753" Height="29" Width="423" FontSize="14" FontWeight="Bold"/>
-        <Button x:Name="btnUninstall" Content="Uninstall" HorizontalAlignment="Left" Margin="505,341,0,0" VerticalAlignment="Top" Width="75" IsDefault="True" RenderTransformOrigin="0.991,-1.041" Click="btnUninstall_Click"/>
-        <Button x:Name="btnCancel" Content="Cancel" HorizontalAlignment="Left" Margin="412,341,0,0" VerticalAlignment="Top" Width="75" IsCancel="True" Click="btnCancel_Click"/>
-        <CheckBox x:Name="cbxRemoveAll" Content="Remove All Traces" HorizontalAlignment="Left" Margin="137,234,0,0" VerticalAlignment="Top" Checked="cbxRemoveAll_Checked" Unchecked="cbxRemoveAll_Checked"/>
-        <CheckBox x:Name="cbxRemoveCache" Content="Delete Cache Files" HorizontalAlignment="Left" Margin="152,255,0,0" VerticalAlignment="Top"/>
-        <CheckBox x:Name="cbxRemoveConfig" Content="Delete Configuration and Log Files" HorizontalAlignment="Left" Margin="152,276,0,0" VerticalAlignment="Top"/>
-        <CheckBox x:Name="cbxRemovePlugins" Content="Delete Plug-ins" HorizontalAlignment="Left" Margin="152,297,0,0" VerticalAlignment="Top"/>
-
+        
     </Grid>
 </Window>
