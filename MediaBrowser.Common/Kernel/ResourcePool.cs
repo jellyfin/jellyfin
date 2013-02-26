@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Threading;
 
-namespace MediaBrowser.Controller.Library
+namespace MediaBrowser.Common.Kernel
 {
     /// <summary>
     /// This is just a collection of semaphores to control the number of concurrent executions of various resources
