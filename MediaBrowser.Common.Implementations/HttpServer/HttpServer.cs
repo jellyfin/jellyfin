@@ -386,6 +386,8 @@ namespace MediaBrowser.Common.Implementations.HttpServer
             var httpRes = new HttpListenerResponseWrapper(context.Response);
             var handler = ServiceStackHttpHandlerFactory.GetHandler(httpReq);
 
+            var endPoint = context.Request.RemoteEndPoint;
+
             var serviceStackHandler = handler as IServiceStackHttpHandler;
 
             if (serviceStackHandler != null)
@@ -396,7 +398,7 @@ namespace MediaBrowser.Common.Implementations.HttpServer
                     httpReq.OperationName = operationName = restHandler.RestPath.RequestType.Name;
                 }
                 serviceStackHandler.ProcessRequest(httpReq, httpRes, operationName);
-                LogResponse(context);
+                LogResponse(context, endPoint);
                 httpRes.Close();
                 return;
             }
@@ -408,8 +410,13 @@ namespace MediaBrowser.Common.Implementations.HttpServer
         /// Logs the response.
         /// </summary>
         /// <param name="ctx">The CTX.</param>
-        private void LogResponse(HttpListenerContext ctx)
+        private void LogResponse(HttpListenerContext ctx, IPEndPoint endPoint)
         {
+            if (!EnableHttpRequestLogging)
+            {
+                return;
+            }
+            
             var statusode = ctx.Response.StatusCode;
 
             var log = new StringBuilder();
@@ -418,12 +425,9 @@ namespace MediaBrowser.Common.Implementations.HttpServer
 
             log.AppendLine("Headers: " + string.Join(",", ctx.Response.Headers.AllKeys.Select(k => k + "=" + ctx.Response.Headers[k])));
 
-            var msg = "Http Response Sent (" + statusode + ") to " + ctx.Request.RemoteEndPoint;
+            var msg = "Http Response Sent (" + statusode + ") to " + endPoint;
 
-            if (EnableHttpRequestLogging)
-            {
-                _logger.LogMultiline(msg, LogSeverity.Debug, log);
-            }
+            _logger.LogMultiline(msg, LogSeverity.Debug, log);
         }
 
         /// <summary>
