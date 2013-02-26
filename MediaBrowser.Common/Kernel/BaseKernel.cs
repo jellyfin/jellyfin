@@ -462,5 +462,16 @@ namespace MediaBrowser.Common.Kernel
         /// <value>The resource pools.</value>
         public ResourcePool ResourcePools { get; set; }
 
+        /// <summary>
+        /// Removes the plugin.
+        /// </summary>
+        /// <param name="plugin">The plugin.</param>
+        public void RemovePlugin(IPlugin plugin)
+        {
+            var list = Plugins.ToList();
+            list.Remove(plugin);
+            Plugins = list;
+        }
+
     }
 }
