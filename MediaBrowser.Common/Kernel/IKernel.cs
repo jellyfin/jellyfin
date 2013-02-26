@@ -117,5 +117,11 @@ namespace MediaBrowser.Common.Kernel
         /// <param name="path">The path.</param>
         /// <returns>System.Object.</returns>
         object GetXmlConfiguration(Type type, string path);
+
+        /// <summary>
+        /// Limits simultaneous access to various resources
+        /// </summary>
+        /// <value>The resource pools.</value>
+        ResourcePool ResourcePools { get; set; }
     }
 }
