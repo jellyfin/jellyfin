@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
@@ -70,7 +71,7 @@ namespace MediaBrowser.Controller
         /// Gets the installation manager.
         /// </summary>
         /// <value>The installation manager.</value>
-        public InstallationManager InstallationManager { get; private set; }
+        public IInstallationManager InstallationManager { get; private set; }
 
         /// <summary>
         /// Gets or sets the file system manager.

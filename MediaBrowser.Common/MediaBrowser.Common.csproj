@@ -135,6 +135,7 @@
     <Compile Include="ScheduledTasks\DailyTrigger.cs" />
     <Compile Include="ScheduledTasks\IntervalTrigger.cs" />
     <Compile Include="ScheduledTasks\WeeklyTrigger.cs" />
+    <Compile Include="Updates\IInstallationManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
