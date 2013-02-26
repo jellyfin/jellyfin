@@ -22,6 +22,12 @@ namespace MediaBrowser.Common.Kernel
         void ReloadLogger();
 
         /// <summary>
+        /// Gets the application version.
+        /// </summary>
+        /// <value>The application version.</value>
+        Version ApplicationVersion { get; }
+
+        /// <summary>
         /// Gets the log file path.
         /// </summary>
         /// <value>The log file path.</value>
@@ -34,10 +40,16 @@ namespace MediaBrowser.Common.Kernel
         bool CanSelfUpdate { get; }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is first run.
+        /// </summary>
+        /// <value><c>true</c> if this instance is first run; otherwise, <c>false</c>.</value>
+        bool IsFirstRun { get; }
+
+        /// <summary>
         /// Gets the failed assemblies.
         /// </summary>
         /// <value>The failed assemblies.</value>
-        IEnumerable<string> FailedAssemblies { get; }
+        List<string> FailedAssemblies { get; }
 
         /// <summary>
         /// Gets all concrete types.
@@ -71,34 +83,6 @@ namespace MediaBrowser.Common.Kernel
         /// <param name="type">The type.</param>
         /// <returns>System.Object.</returns>
         object CreateInstance(Type type);
-
-        /// <summary>
-        /// Registers a service that other classes can use as a dependancy.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="obj">The obj.</param>
-        void RegisterSingleInstance<T>(T obj) where T : class;
-
-        /// <summary>
-        /// Registers the single instance.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="func">The func.</param>
-        void RegisterSingleInstance<T>(Func<T> func) where T : class;
-        
-        /// <summary>
-        /// Registers the specified func.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="func">The func.</param>
-        void Register<T>(Func<T> func) where T : class;
-        
-        /// <summary>
-        /// Registers the specified service type.
-        /// </summary>
-        /// <param name="serviceType">Type of the service.</param>
-        /// <param name="implementation">Type of the implementation.</param>
-        void Register(Type serviceType, Type implementation);
 
         /// <summary>
         /// Resolves this instance.

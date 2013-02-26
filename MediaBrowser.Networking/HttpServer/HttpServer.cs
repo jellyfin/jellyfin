@@ -1,4 +1,3 @@
-using System.Net.WebSockets;
 using Funq;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Kernel;
@@ -16,10 +15,12 @@ using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.WebSockets;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Text;
@@ -44,10 +45,9 @@ namespace MediaBrowser.Networking.HttpServer
         public string UrlPrefix { get; private set; }
 
         /// <summary>
-        /// Gets or sets the kernel.
+        /// The _rest services
         /// </summary>
-        /// <value>The kernel.</value>
-        private IKernel Kernel { get; set; }
+        private readonly List<IRestfulService> _restServices = new List<IRestfulService>(); 
 
         /// <summary>
         /// Gets or sets the application host.
@@ -88,19 +88,14 @@ namespace MediaBrowser.Networking.HttpServer
         /// Initializes a new instance of the <see cref="HttpServer" /> class.
         /// </summary>
         /// <param name="applicationHost">The application host.</param>
-        /// <param name="kernel">The kernel.</param>
         /// <param name="protobufSerializer">The protobuf serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="serverName">Name of the server.</param>
         /// <param name="defaultRedirectpath">The default redirectpath.</param>
         /// <exception cref="System.ArgumentNullException">urlPrefix</exception>
-        public HttpServer(IApplicationHost applicationHost, IKernel kernel, IProtobufSerializer protobufSerializer, ILogger logger, string serverName, string defaultRedirectpath)
+        public HttpServer(IApplicationHost applicationHost, IProtobufSerializer protobufSerializer, ILogger logger, string serverName, string defaultRedirectpath)
             : base()
         {
-            if (kernel == null)
-            {
-                throw new ArgumentNullException("kernel");
-            }
             if (protobufSerializer == null)
             {
                 throw new ArgumentNullException("protobufSerializer");
@@ -130,13 +125,6 @@ namespace MediaBrowser.Networking.HttpServer
 
             EndpointHostConfig.Instance.ServiceStackHandlerFactoryPath = null;
             EndpointHostConfig.Instance.MetadataRedirectPath = "metadata";
-
-            Kernel = kernel;
-
-            EndpointHost.ConfigureHost(this, ServerName, CreateServiceManager());
-            ContentTypeFilters.Register(ContentType.ProtoBuf, (reqCtx, res, stream) => ProtobufSerializer.SerializeToStream(res, stream), (type, stream) => ProtobufSerializer.DeserializeFromStream(stream, type));
-
-            Init();
         }
 
         /// <summary>
@@ -160,11 +148,6 @@ namespace MediaBrowser.Networking.HttpServer
             });
 
             container.Adapter = new ContainerAdapter(ApplicationHost);
-
-            foreach (var service in Kernel.RestServices)
-            {
-                service.Configure(this);
-            }
 
             Plugins.Add(new SwaggerFeature());
             Plugins.Add(new CorsFeature());
@@ -450,7 +433,7 @@ namespace MediaBrowser.Networking.HttpServer
         /// <returns>ServiceManager.</returns>
         protected override ServiceManager CreateServiceManager(params Assembly[] assembliesWithServices)
         {
-            var types = Kernel.RestServices.Select(r => r.GetType()).ToArray();
+            var types = _restServices.Select(r => r.GetType()).ToArray();
 
             return new ServiceManager(new Container(), new ServiceController(() => types));
         }
@@ -511,6 +494,20 @@ namespace MediaBrowser.Networking.HttpServer
         /// </summary>
         /// <value><c>true</c> if [enable HTTP request logging]; otherwise, <c>false</c>.</value>
         public bool EnableHttpRequestLogging { get; set; }
+
+        /// <summary>
+        /// Adds the rest handlers.
+        /// </summary>
+        /// <param name="services">The services.</param>
+        public void Init(IEnumerable<IRestfulService> services)
+        {
+            _restServices.AddRange(services);
+
+            EndpointHost.ConfigureHost(this, ServerName, CreateServiceManager());
+            ContentTypeFilters.Register(ContentType.ProtoBuf, (reqCtx, res, stream) => ProtobufSerializer.SerializeToStream(res, stream), (type, stream) => ProtobufSerializer.DeserializeFromStream(stream, type));
+            
+            Init();
+        }
     }
 
     /// <summary>

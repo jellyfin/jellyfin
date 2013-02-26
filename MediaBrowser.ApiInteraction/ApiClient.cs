@@ -46,6 +46,15 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ApiClient" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        public ApiClient(ILogger logger)
+            : this(logger, new AsyncHttpClient())
+        {
+        }
+
+        /// <summary>
         /// Sets the authorization header.
         /// </summary>
         /// <param name="header">The header.</param>
@@ -67,7 +76,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("url");
             }
 
-            return HttpClient.GetStreamAsync(url, Logger, CancellationToken.None);
+            return HttpClient.GetAsync(url, Logger, CancellationToken.None);
         }
 
         /// <summary>
@@ -364,7 +373,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Plugins/" + plugin.Id + "/Assembly");
 
-            return HttpClient.GetStreamAsync(url, Logger, CancellationToken.None);
+            return HttpClient.GetAsync(url, Logger, CancellationToken.None);
         }
 
         /// <summary>
@@ -431,7 +440,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Plugins/" + pluginId + "/ConfigurationFile");
 
-            return await HttpClient.GetStreamAsync(url, Logger, CancellationToken.None).ConfigureAwait(false);
+            return await HttpClient.GetAsync(url, Logger, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -963,7 +972,7 @@ namespace MediaBrowser.ApiInteraction
 
             const string contentType = "application/x-www-form-urlencoded";
 
-            var postContent = DataSerializer.SerializeToJsonString(obj);
+            var postContent = SerializeToJson(obj);
 
             using (var stream = await HttpClient.PostAsync(url, contentType, postContent, Logger, CancellationToken.None).ConfigureAwait(false))
             {
@@ -991,7 +1000,7 @@ namespace MediaBrowser.ApiInteraction
         {
             url = AddDataFormat(url, serializationFormat);
 
-            return HttpClient.GetStreamAsync(url, Logger, CancellationToken.None);
+            return HttpClient.GetAsync(url, Logger, CancellationToken.None);
         }
 
 

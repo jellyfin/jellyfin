@@ -132,7 +132,6 @@
     <Compile Include="Persistence\IRepository.cs" />
     <Compile Include="Persistence\IUserDataRepository.cs" />
     <Compile Include="Persistence\IUserRepository.cs" />
-    <Compile Include="Persistence\TypeMapper.cs" />
     <Compile Include="Playback\IIntroProvider.cs" />
     <Compile Include="Plugins\IPluginConfigurationPage.cs" />
     <Compile Include="Plugins\PluginSecurityManager.cs" />
@@ -179,10 +178,7 @@
     <Compile Include="Resolvers\TV\SeriesResolver.cs" />
     <Compile Include="Resolvers\TV\TVUtils.cs" />
     <Compile Include="Library\ResourcePool.cs" />
-    <Compile Include="ScheduledTasks\ChapterImagesTask.cs" />
-    <Compile Include="ScheduledTasks\ImageCleanupTask.cs" />
     <Compile Include="ScheduledTasks\PeopleValidationTask.cs" />
-    <Compile Include="ScheduledTasks\PluginUpdateTask.cs" />
     <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
     <Compile Include="Library\ItemResolveArgs.cs" />
     <Compile Include="IO\DirectoryWatchers.cs" />

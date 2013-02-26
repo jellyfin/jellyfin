@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Common.Kernel;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
@@ -50,11 +51,18 @@ namespace MediaBrowser.ServerApplication
         private readonly ILogger _logger;
 
         /// <summary>
+        /// The _app host
+        /// </summary>
+        private readonly IApplicationHost _appHost;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow" /> class.
         /// </summary>
+        /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="appHost">The app host.</param>
         /// <exception cref="System.ArgumentNullException">logger</exception>
-        public MainWindow(IJsonSerializer jsonSerializer, ILogger logger)
+        public MainWindow(IJsonSerializer jsonSerializer, ILogger logger, IApplicationHost appHost)
         {
             if (jsonSerializer == null)
             {
@@ -67,6 +75,7 @@ namespace MediaBrowser.ServerApplication
 
             _jsonSerializer = jsonSerializer;
             _logger = logger;
+            _appHost = appHost;
 
             InitializeComponent();
 
@@ -236,7 +245,7 @@ namespace MediaBrowser.ServerApplication
             Kernel.Instance.LibraryManager.LibraryChanged -= Instance_LibraryChanged;
             Kernel.Instance.LibraryManager.LibraryChanged += Instance_LibraryChanged;
 
-            if (Kernel.Instance.IsFirstRun)
+            if (_appHost.IsFirstRun)
             {
                 LaunchStartupWizard();
             }
@@ -293,7 +302,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void cmOpenExplorer_click(object sender, RoutedEventArgs e)
         {
-            (new LibraryExplorer(_jsonSerializer, _logger)).Show();
+            (new LibraryExplorer(_jsonSerializer, _logger, _appHost)).Show();
         }
 
         /// <summary>

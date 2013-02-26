@@ -5,7 +5,6 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace MediaBrowser.Common.Implementations.ScheduledTasks
@@ -19,7 +18,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// Gets the list of Scheduled Tasks
         /// </summary>
         /// <value>The scheduled tasks.</value>
-        public IScheduledTask[] ScheduledTasks { get; private set; }
+        public IScheduledTaskWorker[] ScheduledTasks { get; private set; }
 
         /// <summary>
         /// The _task queue
@@ -27,19 +26,22 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         private readonly List<Type> _taskQueue = new List<Type>();
 
         /// <summary>
-        /// The _logger
+        /// Gets or sets the json serializer.
         /// </summary>
-        private readonly ILogger _logger;
+        /// <value>The json serializer.</value>
+        private IJsonSerializer JsonSerializer { get; set; }
 
         /// <summary>
-        /// The _application paths
+        /// Gets or sets the application paths.
         /// </summary>
-        private readonly IApplicationPaths _applicationPaths;
+        /// <value>The application paths.</value>
+        private IApplicationPaths ApplicationPaths { get; set; }
 
         /// <summary>
-        /// The _json serializer
+        /// Gets the logger.
         /// </summary>
-        private readonly IJsonSerializer _jsonSerializer;
+        /// <value>The logger.</value>
+        private ILogger Logger { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TaskManager" /> class.
@@ -50,24 +52,11 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <exception cref="System.ArgumentException">kernel</exception>
         public TaskManager(IApplicationPaths applicationPaths, IJsonSerializer jsonSerializer, ILogger logger)
         {
-            if (applicationPaths == null)
-            {
-                throw new ArgumentException("applicationPaths");
-            }
-            if (jsonSerializer == null)
-            {
-                throw new ArgumentException("jsonSerializer");
-            }
-            if (logger == null)
-            {
-                throw new ArgumentException("logger");
-            }
+            ApplicationPaths = applicationPaths;
+            JsonSerializer = jsonSerializer;
+            Logger = logger;
 
-            _applicationPaths = applicationPaths;
-            _jsonSerializer = jsonSerializer;
-            _logger = logger;
-
-            ScheduledTasks = new IScheduledTask[] {};
+            ScheduledTasks = new IScheduledTaskWorker[] { };
         }
 
         /// <summary>
@@ -77,7 +66,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         public void CancelIfRunningAndQueue<T>()
                  where T : IScheduledTask
         {
-            ScheduledTasks.OfType<T>().First().CancelIfRunning();
+            ScheduledTasks.First(t => t.ScheduledTask.GetType() == typeof(T)).CancelIfRunning();
             QueueScheduledTask<T>();
         }
 
@@ -88,7 +77,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         public void QueueScheduledTask<T>()
             where T : IScheduledTask
         {
-            var scheduledTask = ScheduledTasks.OfType<T>().First();
+            var scheduledTask = ScheduledTasks.First(t => t.ScheduledTask.GetType() == typeof(T));
 
             QueueScheduledTask(scheduledTask);
         }
@@ -99,27 +88,36 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <param name="task">The task.</param>
         public void QueueScheduledTask(IScheduledTask task)
         {
-            var type = task.GetType();
+            var scheduledTask = ScheduledTasks.First(t => t.ScheduledTask.GetType() == task.GetType());
 
-            var scheduledTask = ScheduledTasks.First(t => t.GetType() == type);
+            QueueScheduledTask(scheduledTask);
+        }
+
+        /// <summary>
+        /// Queues the scheduled task.
+        /// </summary>
+        /// <param name="task">The task.</param>
+        private void QueueScheduledTask(IScheduledTaskWorker task)
+        {
+            var type = task.GetType();
 
             lock (_taskQueue)
             {
                 // If it's idle just execute immediately
-                if (scheduledTask.State == TaskState.Idle)
+                if (task.State == TaskState.Idle)
                 {
-                    scheduledTask.Execute();
+                    task.Execute();
                     return;
                 }
 
                 if (!_taskQueue.Contains(type))
                 {
-                    _logger.Info("Queueing task {0}", type.Name);
+                    Logger.Info("Queueing task {0}", type.Name);
                     _taskQueue.Add(type);
                 }
                 else
                 {
-                    _logger.Info("Task already queued: {0}", type.Name);
+                    Logger.Info("Task already queued: {0}", type.Name);
                 }
             }
         }
@@ -157,145 +155,9 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         {
             var myTasks = ScheduledTasks.ToList();
 
-            myTasks.AddRange(tasks);
+            myTasks.AddRange(tasks.Select(t => new ScheduledTaskWorker(t, ApplicationPaths, this, JsonSerializer, Logger)));
 
             ScheduledTasks = myTasks.ToArray();
-        }
-
-        /// <summary>
-        /// The _scheduled tasks configuration directory
-        /// </summary>
-        private string _scheduledTasksConfigurationDirectory;
-        /// <summary>
-        /// Gets the scheduled tasks configuration directory.
-        /// </summary>
-        /// <value>The scheduled tasks configuration directory.</value>
-        private string ScheduledTasksConfigurationDirectory
-        {
-            get
-            {
-                if (_scheduledTasksConfigurationDirectory == null)
-                {
-                    _scheduledTasksConfigurationDirectory = Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "ScheduledTasks");
-
-                    if (!Directory.Exists(_scheduledTasksConfigurationDirectory))
-                    {
-                        Directory.CreateDirectory(_scheduledTasksConfigurationDirectory);
-                    }
-                }
-                return _scheduledTasksConfigurationDirectory;
-            }
-        }
-
-        /// <summary>
-        /// The _scheduled tasks data directory
-        /// </summary>
-        private string _scheduledTasksDataDirectory;
-        /// <summary>
-        /// Gets the scheduled tasks data directory.
-        /// </summary>
-        /// <value>The scheduled tasks data directory.</value>
-        private string ScheduledTasksDataDirectory
-        {
-            get
-            {
-                if (_scheduledTasksDataDirectory == null)
-                {
-                    _scheduledTasksDataDirectory = Path.Combine(_applicationPaths.DataPath, "ScheduledTasks");
-
-                    if (!Directory.Exists(_scheduledTasksDataDirectory))
-                    {
-                        Directory.CreateDirectory(_scheduledTasksDataDirectory);
-                    }
-                }
-                return _scheduledTasksDataDirectory;
-            }
-        }
-
-        /// <summary>
-        /// Gets the history file path.
-        /// </summary>
-        /// <value>The history file path.</value>
-        private string GetHistoryFilePath(IScheduledTask task)
-        {
-            return Path.Combine(ScheduledTasksDataDirectory, task.Id + ".js");
-        }
-
-        /// <summary>
-        /// Gets the configuration file path.
-        /// </summary>
-        /// <param name="task">The task.</param>
-        /// <returns>System.String.</returns>
-        private string GetConfigurationFilePath(IScheduledTask task)
-        {
-            return Path.Combine(ScheduledTasksConfigurationDirectory, task.Id + ".js");
-        }
-
-        /// <summary>
-        /// Called when [task completed].
-        /// </summary>
-        /// <param name="task">The task.</param>
-        /// <param name="startTime">The start time.</param>
-        /// <param name="endTime">The end time.</param>
-        /// <param name="status">The status.</param>
-        public void OnTaskCompleted(IScheduledTask task, DateTime startTime, DateTime endTime, TaskCompletionStatus status)
-        {
-            var elapsedTime = endTime - startTime;
-
-            _logger.Info("{0} {1} after {2} minute(s) and {3} seconds", task.Name, status, Math.Truncate(elapsedTime.TotalMinutes), elapsedTime.Seconds);
-
-            var result = new TaskResult
-            {
-                StartTimeUtc = startTime,
-                EndTimeUtc = endTime,
-                Status = status,
-                Name = task.Name,
-                Id = task.Id
-            };
-
-            _jsonSerializer.SerializeToFile(result, GetHistoryFilePath(task));
-
-            //task.LastExecutionResult = result;
-        }
-
-        /// <summary>
-        /// Gets the last execution result.
-        /// </summary>
-        /// <param name="task">The task.</param>
-        /// <returns>TaskResult.</returns>
-        public TaskResult GetLastExecutionResult(IScheduledTask task)
-        {
-            return _jsonSerializer.DeserializeFromFile<TaskResult>(GetHistoryFilePath(task));
-        }
-
-        /// <summary>
-        /// Loads the triggers.
-        /// </summary>
-        /// <param name="task">The task.</param>
-        /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        public IEnumerable<ITaskTrigger> LoadTriggers(IScheduledTask task)
-        {
-            try
-            {
-                return _jsonSerializer.DeserializeFromFile<IEnumerable<TaskTriggerInfo>>(GetConfigurationFilePath(task))
-                .Select(ScheduledTaskHelpers.GetTrigger)
-                .ToList();
-            }
-            catch (IOException)
-            {
-                // File doesn't exist. No biggie. Return defaults.
-                return task.GetDefaultTriggers();
-            }
-        }
-
-        /// <summary>
-        /// Saves the triggers.
-        /// </summary>
-        /// <param name="task">The task.</param>
-        /// <param name="triggers">The triggers.</param>
-        public void SaveTriggers(IScheduledTask task, IEnumerable<ITaskTrigger> triggers)
-        {
-            _jsonSerializer.SerializeToFile(triggers.Select(ScheduledTaskHelpers.GetTriggerInfo), GetConfigurationFilePath(task));
         }
 
         /// <summary>

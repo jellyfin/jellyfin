@@ -1,6 +1,8 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Kernel;
+using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
@@ -9,60 +11,58 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.ScheduledTasks
+namespace MediaBrowser.Common.Implementations.ScheduledTasks
 {
     /// <summary>
-    /// Represents a task that can be executed at a scheduled time
+    /// Class ScheduledTaskWorker
     /// </summary>
-    /// <typeparam name="TKernelType">The type of the T kernel type.</typeparam>
-    public abstract class BaseScheduledTask<TKernelType> : IScheduledTask
-        where TKernelType : class, IKernel
+    public class ScheduledTaskWorker : IScheduledTaskWorker
     {
         /// <summary>
-        /// Gets the kernel.
+        /// Gets or sets the scheduled task.
         /// </summary>
-        /// <value>The kernel.</value>
-        protected TKernelType Kernel { get; private set; }
+        /// <value>The scheduled task.</value>
+        public IScheduledTask ScheduledTask { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the json serializer.
+        /// </summary>
+        /// <value>The json serializer.</value>
+        private IJsonSerializer JsonSerializer { get; set; }
+
+        /// <summary>
+        /// Gets or sets the application paths.
+        /// </summary>
+        /// <value>The application paths.</value>
+        private IApplicationPaths ApplicationPaths { get; set; }
 
         /// <summary>
         /// Gets the logger.
         /// </summary>
         /// <value>The logger.</value>
-        protected ILogger Logger { get; private set; }
+        private ILogger Logger { get; set; }
 
         /// <summary>
         /// Gets the task manager.
         /// </summary>
         /// <value>The task manager.</value>
-        protected ITaskManager TaskManager { get; private set; }
+        private ITaskManager TaskManager { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BaseScheduledTask{TKernelType}" /> class.
+        /// Initializes a new instance of the <see cref="ScheduledTaskWorker" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
+        /// <param name="scheduledTask">The scheduled task.</param>
+        /// <param name="applicationPaths">The application paths.</param>
         /// <param name="taskManager">The task manager.</param>
+        /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
-        /// <exception cref="System.ArgumentNullException">kernel</exception>
-        protected BaseScheduledTask(TKernelType kernel, ITaskManager taskManager, ILogger logger)
+        public ScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, IJsonSerializer jsonSerializer, ILogger logger)
         {
-            if (kernel == null)
-            {
-                throw new ArgumentNullException("kernel");
-            }
-            if (taskManager == null)
-            {
-                throw new ArgumentNullException("taskManager");
-            }
-            if (logger == null)
-            {
-                throw new ArgumentNullException("logger");
-            }
-
-            Kernel = kernel;
+            ScheduledTask = scheduledTask;
+            ApplicationPaths = applicationPaths;
             TaskManager = taskManager;
+            JsonSerializer = jsonSerializer;
             Logger = logger;
-
-            ReloadTriggerEvents(true);
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace MediaBrowser.Common.ScheduledTasks
                 {
                     try
                     {
-                        return TaskManager.GetLastExecutionResult(this);
+                        return JsonSerializer.DeserializeFromFile<TaskResult>(GetHistoryFilePath());
                     }
                     catch (IOException)
                     {
@@ -106,6 +106,33 @@ namespace MediaBrowser.Common.ScheduledTasks
 
                 _lastExecutionResultinitialized = value != null;
             }
+        }
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name
+        {
+            get { return ScheduledTask.Name; }
+        }
+
+        /// <summary>
+        /// Gets the description.
+        /// </summary>
+        /// <value>The description.</value>
+        public string Description
+        {
+            get { return ScheduledTask.Description; }
+        }
+
+        /// <summary>
+        /// Gets the category.
+        /// </summary>
+        /// <value>The category.</value>
+        public string Category
+        {
+            get { return ScheduledTask.Category; }
         }
 
         /// <summary>
@@ -166,7 +193,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _triggers, ref _triggersInitialized, ref _triggersSyncLock, () => TaskManager.LoadTriggers(this));
+                LazyInitializer.EnsureInitialized(ref _triggers, ref _triggersInitialized, ref _triggersSyncLock, () => LoadTriggers());
 
                 return _triggers;
             }
@@ -189,43 +216,8 @@ namespace MediaBrowser.Common.ScheduledTasks
 
                 ReloadTriggerEvents(false);
 
-                TaskManager.SaveTriggers(this, _triggers);
+                SaveTriggers(_triggers);
             }
-        }
-
-        /// <summary>
-        /// Creates the triggers that define when the task will run
-        /// </summary>
-        /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        public abstract IEnumerable<ITaskTrigger> GetDefaultTriggers();
-
-        /// <summary>
-        /// Returns the task to be executed
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        protected abstract Task ExecuteInternal(CancellationToken cancellationToken, IProgress<double> progress);
-
-        /// <summary>
-        /// Gets the name of the task
-        /// </summary>
-        /// <value>The name.</value>
-        public abstract string Name { get; }
-
-        /// <summary>
-        /// Gets the description.
-        /// </summary>
-        /// <value>The description.</value>
-        public abstract string Description { get; }
-
-        /// <summary>
-        /// Gets the category.
-        /// </summary>
-        /// <value>The category.</value>
-        public virtual string Category
-        {
-            get { return "Application"; }
         }
 
         /// <summary>
@@ -243,7 +235,7 @@ namespace MediaBrowser.Common.ScheduledTasks
             {
                 if (!_id.HasValue)
                 {
-                    _id = GetType().FullName.GetMD5();
+                    _id = ScheduledTask.GetType().FullName.GetMD5();
                 }
 
                 return _id.Value;
@@ -279,10 +271,10 @@ namespace MediaBrowser.Common.ScheduledTasks
 
             trigger.Stop();
 
-            TaskManager.QueueScheduledTask(this);
+            TaskManager.QueueScheduledTask(ScheduledTask);
 
-            await Task.Delay(1000).ConfigureAwait(false); 
-            
+            await Task.Delay(1000).ConfigureAwait(false);
+
             trigger.Start(false);
         }
 
@@ -310,11 +302,11 @@ namespace MediaBrowser.Common.ScheduledTasks
             TaskCompletionStatus status;
             CurrentExecutionStartTime = DateTime.UtcNow;
 
-            Kernel.TcpManager.SendWebSocketMessage("ScheduledTaskBeginExecute", Name);
+            //Kernel.TcpManager.SendWebSocketMessage("ScheduledTaskBeginExecute", Name);
 
             try
             {
-                await Task.Run(async () => await ExecuteInternal(CurrentCancellationTokenSource.Token, progress).ConfigureAwait(false)).ConfigureAwait(false);
+                await System.Threading.Tasks.Task.Run(async () => await ScheduledTask.Execute(CurrentCancellationTokenSource.Token, progress).ConfigureAwait(false)).ConfigureAwait(false);
 
                 status = TaskCompletionStatus.Completed;
             }
@@ -332,14 +324,14 @@ namespace MediaBrowser.Common.ScheduledTasks
             var startTime = CurrentExecutionStartTime;
             var endTime = DateTime.UtcNow;
 
-            Kernel.TcpManager.SendWebSocketMessage("ScheduledTaskEndExecute", LastExecutionResult);
+            //Kernel.TcpManager.SendWebSocketMessage("ScheduledTaskEndExecute", LastExecutionResult);
 
             progress.ProgressChanged -= progress_ProgressChanged;
             CurrentCancellationTokenSource.Dispose();
             CurrentCancellationTokenSource = null;
             CurrentProgress = null;
 
-            TaskManager.OnTaskCompleted(this, startTime, endTime, status);
+            OnTaskCompleted(startTime, endTime, status);
         }
 
         /// <summary>
@@ -379,6 +371,128 @@ namespace MediaBrowser.Common.ScheduledTasks
         }
 
         /// <summary>
+        /// The _scheduled tasks configuration directory
+        /// </summary>
+        private string _scheduledTasksConfigurationDirectory;
+        /// <summary>
+        /// Gets the scheduled tasks configuration directory.
+        /// </summary>
+        /// <value>The scheduled tasks configuration directory.</value>
+        private string ScheduledTasksConfigurationDirectory
+        {
+            get
+            {
+                if (_scheduledTasksConfigurationDirectory == null)
+                {
+                    _scheduledTasksConfigurationDirectory = Path.Combine(ApplicationPaths.ConfigurationDirectoryPath, "ScheduledTasks");
+
+                    if (!Directory.Exists(_scheduledTasksConfigurationDirectory))
+                    {
+                        Directory.CreateDirectory(_scheduledTasksConfigurationDirectory);
+                    }
+                }
+                return _scheduledTasksConfigurationDirectory;
+            }
+        }
+
+        /// <summary>
+        /// The _scheduled tasks data directory
+        /// </summary>
+        private string _scheduledTasksDataDirectory;
+        /// <summary>
+        /// Gets the scheduled tasks data directory.
+        /// </summary>
+        /// <value>The scheduled tasks data directory.</value>
+        private string ScheduledTasksDataDirectory
+        {
+            get
+            {
+                if (_scheduledTasksDataDirectory == null)
+                {
+                    _scheduledTasksDataDirectory = Path.Combine(ApplicationPaths.DataPath, "ScheduledTasks");
+
+                    if (!Directory.Exists(_scheduledTasksDataDirectory))
+                    {
+                        Directory.CreateDirectory(_scheduledTasksDataDirectory);
+                    }
+                }
+                return _scheduledTasksDataDirectory;
+            }
+        }
+
+        /// <summary>
+        /// Gets the history file path.
+        /// </summary>
+        /// <value>The history file path.</value>
+        private string GetHistoryFilePath()
+        {
+            return Path.Combine(ScheduledTasksDataDirectory, Id + ".js");
+        }
+
+        /// <summary>
+        /// Gets the configuration file path.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        private string GetConfigurationFilePath()
+        {
+            return Path.Combine(ScheduledTasksConfigurationDirectory, Id + ".js");
+        }
+
+        /// <summary>
+        /// Loads the triggers.
+        /// </summary>
+        /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
+        private IEnumerable<ITaskTrigger> LoadTriggers()
+        {
+            try
+            {
+                return JsonSerializer.DeserializeFromFile<IEnumerable<TaskTriggerInfo>>(GetConfigurationFilePath())
+                .Select(ScheduledTaskHelpers.GetTrigger)
+                .ToList();
+            }
+            catch (IOException)
+            {
+                // File doesn't exist. No biggie. Return defaults.
+                return ScheduledTask.GetDefaultTriggers();
+            }
+        }
+
+        /// <summary>
+        /// Saves the triggers.
+        /// </summary>
+        /// <param name="triggers">The triggers.</param>
+        private void SaveTriggers(IEnumerable<ITaskTrigger> triggers)
+        {
+            JsonSerializer.SerializeToFile(triggers.Select(ScheduledTaskHelpers.GetTriggerInfo), GetConfigurationFilePath());
+        }
+
+        /// <summary>
+        /// Called when [task completed].
+        /// </summary>
+        /// <param name="startTime">The start time.</param>
+        /// <param name="endTime">The end time.</param>
+        /// <param name="status">The status.</param>
+        private void OnTaskCompleted(DateTime startTime, DateTime endTime, TaskCompletionStatus status)
+        {
+            var elapsedTime = endTime - startTime;
+
+            Logger.Info("{0} {1} after {2} minute(s) and {3} seconds", Name, status, Math.Truncate(elapsedTime.TotalMinutes), elapsedTime.Seconds);
+
+            var result = new TaskResult
+            {
+                StartTimeUtc = startTime,
+                EndTimeUtc = endTime,
+                Status = status,
+                Name = Name,
+                Id = Id
+            };
+
+            JsonSerializer.SerializeToFile(result, GetHistoryFilePath());
+
+            LastExecutionResult = result;
+        }
+
+        /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
         public void Dispose()
@@ -399,7 +513,7 @@ namespace MediaBrowser.Common.ScheduledTasks
 
                 if (State == TaskState.Running)
                 {
-                    TaskManager.OnTaskCompleted(this, CurrentExecutionStartTime, DateTime.UtcNow, TaskCompletionStatus.Aborted);
+                    OnTaskCompleted(CurrentExecutionStartTime, DateTime.UtcNow, TaskCompletionStatus.Aborted);
                 }
 
                 if (CurrentCancellationTokenSource != null)

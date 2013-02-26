@@ -45,7 +45,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public async Task<Stream> GetStreamAsync(string url, ILogger logger, CancellationToken cancellationToken)
+        public async Task<Stream> GetAsync(string url, ILogger logger, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 

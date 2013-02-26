@@ -107,6 +107,7 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="HttpManager\HttpManager.cs" />
+    <Compile Include="HttpServer\BaseRestService.cs" />
     <Compile Include="Udp\UdpServer.cs" />
     <Compile Include="WebSocket\AlchemyServer.cs" />
     <Compile Include="WebSocket\AlchemyWebSocket.cs" />

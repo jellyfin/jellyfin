@@ -1,9 +1,9 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Networking.HttpServer;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text.Controller;
 using System;
@@ -148,7 +148,7 @@ namespace MediaBrowser.Api
         public object Get(GetPlugins request)
         {
             var result = Kernel.Plugins.OrderBy(p => p.Name).Select(p => p.GetPluginInfo()).ToList();
-
+            
             return ToOptimizedResult(result);
         }
 

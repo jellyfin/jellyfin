@@ -8,22 +8,18 @@ namespace MediaBrowser.Model.Serialization
         /// <summary>
         /// Serializes to stream.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="obj">The obj.</param>
         /// <param name="stream">The stream.</param>
         /// <exception cref="System.ArgumentNullException">obj</exception>
-        void SerializeToStream<T>(T obj, Stream stream)
-            where T : class;
+        void SerializeToStream(object obj, Stream stream);
 
         /// <summary>
         /// Serializes to file.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="obj">The obj.</param>
         /// <param name="file">The file.</param>
         /// <exception cref="System.ArgumentNullException">obj</exception>
-        void SerializeToFile<T>(T obj, string file)
-            where T : class;
+        void SerializeToFile(object obj, string file);
 
         /// <summary>
         /// Deserializes from file.
@@ -83,21 +79,17 @@ namespace MediaBrowser.Model.Serialization
         /// <summary>
         /// Serializes to string.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="obj">The obj.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentNullException">obj</exception>
-        string SerializeToString<T>(T obj)
-            where T : class;
+        string SerializeToString(object obj);
 
         /// <summary>
         /// Serializes to bytes.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="obj">The obj.</param>
         /// <returns>System.Byte[][].</returns>
         /// <exception cref="System.ArgumentNullException">obj</exception>
-        byte[] SerializeToBytes<T>(T obj)
-            where T : class;
+        byte[] SerializeToBytes(object obj);
     }
 }

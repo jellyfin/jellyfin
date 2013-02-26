@@ -41,6 +41,9 @@
     <Reference Include="ServiceStack.Text">
       <HintPath>..\packages\ServiceStack.Text.3.9.37\lib\net35\ServiceStack.Text.dll</HintPath>
     </Reference>
+    <Reference Include="SimpleInjector">
+      <HintPath>..\packages\SimpleInjector.2.0.0-beta5\lib\net40-client\SimpleInjector.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -54,8 +57,10 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="BaseApplicationHost.cs" />
     <Compile Include="BaseApplicationPaths.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ScheduledTasks\ScheduledTaskWorker.cs" />
     <Compile Include="ScheduledTasks\TaskManager.cs" />
     <Compile Include="ScheduledTasks\Tasks\DeleteCacheFileTask.cs" />
     <Compile Include="ScheduledTasks\Tasks\DeleteLogFileTask.cs" />

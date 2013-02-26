@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
@@ -11,23 +10,27 @@ namespace MediaBrowser.Controller.ScheduledTasks
     /// <summary>
     /// Class RefreshMediaLibraryTask
     /// </summary>
-    public class RefreshMediaLibraryTask : BaseScheduledTask<Kernel>
+    public class RefreshMediaLibraryTask : IScheduledTask
     {
+        /// <summary>
+        /// The _kernel
+        /// </summary>
+        private readonly Kernel _kernel;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RefreshMediaLibraryTask" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        /// <param name="logger"></param>
-        public RefreshMediaLibraryTask(Kernel kernel, ITaskManager taskManager, ILogger logger)
-            : base(kernel, taskManager, logger)
+        public RefreshMediaLibraryTask(Kernel kernel)
         {
+            _kernel = kernel;
         }
 
         /// <summary>
         /// Gets the default triggers.
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        public override IEnumerable<ITaskTrigger> GetDefaultTriggers()
+        public IEnumerable<ITaskTrigger> GetDefaultTriggers()
         {
             return new ITaskTrigger[] { 
 
@@ -45,20 +48,20 @@ namespace MediaBrowser.Controller.ScheduledTasks
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        protected override Task ExecuteInternal(CancellationToken cancellationToken, IProgress<double> progress)
+        public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             progress.Report(0);
 
-            return Kernel.LibraryManager.ValidateMediaLibrary(progress, cancellationToken);
+            return _kernel.LibraryManager.ValidateMediaLibrary(progress, cancellationToken);
         }
 
         /// <summary>
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public override string Name
+        public string Name
         {
             get { return "Scan media library"; }
         }
@@ -67,7 +70,7 @@ namespace MediaBrowser.Controller.ScheduledTasks
         /// Gets the description.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public string Description
         {
             get { return "Scans your media library and refreshes metatata based on configuration."; }
         }
@@ -76,7 +79,7 @@ namespace MediaBrowser.Controller.ScheduledTasks
         /// Gets the category.
         /// </summary>
         /// <value>The category.</value>
-        public override string Category
+        public string Category
         {
             get
             {

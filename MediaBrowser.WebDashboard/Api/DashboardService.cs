@@ -6,8 +6,8 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Networking.HttpServer;
 using ServiceStack.ServiceHost;
-using ServiceStack.WebHost.Endpoints;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -49,6 +49,7 @@ namespace MediaBrowser.WebDashboard.Api
     /// <summary>
     /// Class GetDashboardResource
     /// </summary>
+    [Route("/dashboard/{name*}", "GET")]
     public class GetDashboardResource
     {
         /// <summary>
@@ -91,17 +92,6 @@ namespace MediaBrowser.WebDashboard.Api
         {
             _taskManager = taskManager;
         }
-        
-        /// <summary>
-        /// Adds the routes.
-        /// </summary>
-        /// <param name="appHost">The app host.</param>
-        public override void Configure(IAppHost appHost)
-        {
-            base.Configure(appHost);
-
-            appHost.Routes.Add<GetDashboardResource>("/dashboard/{name*}", "GET");
-        }
 
         /// <summary>
         /// Gets the specified request.
@@ -136,7 +126,7 @@ namespace MediaBrowser.WebDashboard.Api
                                      .Select(ScheduledTaskHelpers.GetTaskInfo)
                                      .ToArray(),
 
-                ApplicationUpdateTaskId = taskManager.ScheduledTasks.First(t => t.GetType().Name.Equals("SystemUpdateTask", StringComparison.OrdinalIgnoreCase)).Id,
+                ApplicationUpdateTaskId = taskManager.ScheduledTasks.First(t => t.ScheduledTask.GetType().Name.Equals("SystemUpdateTask", StringComparison.OrdinalIgnoreCase)).Id,
 
                 ActiveConnections = connections,
 
@@ -370,7 +360,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new[]
                             {
-                                "http://code.jquery.com/mobile/1.3.0-rc.1/jquery.mobile-1.3.0-rc.1.min.css",
+                                "http://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.css",
                                 "thirdparty/jqm-icon-pack-3.0/font-awesome/jqm-icon-pack-3.0.0-fa.css",
                                 "css/site.css" + versionString
                             };
@@ -391,7 +381,7 @@ namespace MediaBrowser.WebDashboard.Api
             var files = new[]
                             {
                                 "http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js", 
-                                "http://code.jquery.com/mobile/1.3.0-rc.1/jquery.mobile-1.3.0-rc.1.min.js",
+                                "http://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.js",
                                 "../jsapiclient.js" + versionString,
                                 "scripts/all.js" + versionString
             };

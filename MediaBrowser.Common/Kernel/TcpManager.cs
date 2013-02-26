@@ -39,7 +39,7 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <value>The json serializer.</value>
         private readonly IJsonSerializer _jsonSerializer;
-        
+
         /// <summary>
         /// This subscribes to HttpListener requests and finds the appropriate BaseHandler to process it
         /// </summary>
@@ -133,7 +133,7 @@ namespace MediaBrowser.Common.Kernel
             _applicationHost = applicationHost;
             _networkManager = networkManager;
 
-            if (kernel.IsFirstRun)
+            if (applicationHost.IsFirstRun)
             {
                 RegisterServerWithAdministratorAccess();
             }
@@ -215,7 +215,7 @@ namespace MediaBrowser.Common.Kernel
         /// <param name="e">The <see cref="WebSocketConnectEventArgs" /> instance containing the event data.</param>
         void HttpServer_WebSocketConnected(object sender, WebSocketConnectEventArgs e)
         {
-            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, ProcessWebSocketMessageReceived, _jsonSerializer, _logger);
+            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, _jsonSerializer, _logger) { OnReceive = ProcessWebSocketMessageReceived };
 
             _webSocketConnections.Add(connection);
         }

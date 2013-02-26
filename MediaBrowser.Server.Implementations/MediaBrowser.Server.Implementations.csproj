@@ -51,6 +51,10 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reflection\TypeMapper.cs" />
+    <Compile Include="ScheduledTasks\Tasks\ChapterImagesTask.cs" />
+    <Compile Include="ScheduledTasks\Tasks\ImageCleanupTask.cs" />
+    <Compile Include="ScheduledTasks\Tasks\PluginUpdateTask.cs" />
     <Compile Include="ServerApplicationPaths.cs" />
     <Compile Include="Sqlite\SQLiteDisplayPreferencesRepository.cs" />
     <Compile Include="Sqlite\SQLiteExtensions.cs" />

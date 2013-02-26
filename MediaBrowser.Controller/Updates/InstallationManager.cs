@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
@@ -120,6 +121,12 @@ namespace MediaBrowser.Controller.Updates
         protected IHttpClient HttpClient { get; private set; }
 
         /// <summary>
+        /// Gets the application host.
+        /// </summary>
+        /// <value>The application host.</value>
+        protected IApplicationHost ApplicationHost { get; private set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="InstallationManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
@@ -128,8 +135,9 @@ namespace MediaBrowser.Controller.Updates
         /// <param name="networkManager">The network manager.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="appHost">The app host.</param>
         /// <exception cref="System.ArgumentNullException">zipClient</exception>
-        public InstallationManager(Kernel kernel, IHttpClient httpClient, IZipClient zipClient, INetworkManager networkManager, IJsonSerializer jsonSerializer, ILogger logger)
+        public InstallationManager(Kernel kernel, IHttpClient httpClient, IZipClient zipClient, INetworkManager networkManager, IJsonSerializer jsonSerializer, ILogger logger, IApplicationHost appHost)
             : base(kernel)
         {
             if (zipClient == null)
@@ -155,6 +163,7 @@ namespace MediaBrowser.Controller.Updates
 
             JsonSerializer = jsonSerializer;
             HttpClient = httpClient;
+            ApplicationHost = appHost;
             _networkManager = networkManager;
             _logger = logger;
             ZipClient = zipClient;
@@ -276,7 +285,7 @@ namespace MediaBrowser.Controller.Updates
 
             return package.versions
                 .OrderByDescending(v => v.version)
-                .FirstOrDefault(v => v.classification <= classification && IsPackageVersionUpToDate(v, Kernel.ApplicationVersion));
+                .FirstOrDefault(v => v.classification <= classification && IsPackageVersionUpToDate(v, ApplicationHost.ApplicationVersion));
         }
 
         /// <summary>

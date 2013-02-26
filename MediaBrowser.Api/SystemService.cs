@@ -1,9 +1,9 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
+using MediaBrowser.Networking.HttpServer;
 using ServiceStack.ServiceHost;
 using System;
 using System.IO;

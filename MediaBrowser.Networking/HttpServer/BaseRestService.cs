@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
@@ -13,8 +14,10 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using MimeTypes = MediaBrowser.Common.Net.MimeTypes;
+using StreamWriter = MediaBrowser.Common.Net.StreamWriter;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Networking.HttpServer
 {
     /// <summary>
     /// Class BaseRestService
@@ -43,14 +46,6 @@ namespace MediaBrowser.Common.Net
             {
                 return Request.Headers.AllKeys.Contains("Range");
             }
-        }
-
-        /// <summary>
-        /// Adds the routes.
-        /// </summary>
-        /// <param name="appHost">The app host.</param>
-        public virtual void Configure(IAppHost appHost)
-        {
         }
 
         /// <summary>
