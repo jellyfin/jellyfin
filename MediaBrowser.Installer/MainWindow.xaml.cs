@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Web;
 using System.Linq;
 using Ionic.Zip;
 using MediaBrowser.Installer.Code;
@@ -20,7 +20,7 @@ namespace MediaBrowser.Installer
     public partial class MainWindow : Window
     {
         protected PackageVersionClass PackageClass = PackageVersionClass.Release;
-        protected Version PackageVersion = new Version(10,0,0,0);
+        protected Version PackageVersion = new Version(4,0,0,0);
         protected string PackageName = "MBServer";
         protected string RootSuffix = "-Server";
         protected string TargetExe = "MediaBrowser.ServerApplication.exe";
@@ -65,20 +65,26 @@ namespace MediaBrowser.Installer
 
         protected void GetArgs()
         {
-            var args = AppDomain.CurrentDomain.SetupInformation.ActivationArguments;
+            var product = ConfigurationManager.AppSettings["product"] ?? "server";
+            PackageClass = (PackageVersionClass) Enum.Parse(typeof (PackageVersionClass), ConfigurationManager.AppSettings["class"] ?? "Release");
 
-            if (args == null || args.ActivationData == null || args.ActivationData.Length <= 0) return;
-            var url = new Uri(args.ActivationData[0], UriKind.Absolute);
+            switch (product.ToLower())
+            {
+                case "mbt":
+                    PackageName = "MBTheater";
+                    RootSuffix = "-UI";
+                    TargetExe = "MediaBrowser.UI.exe";
+                    FriendlyName = "Media Browser Theater";
+                    break;
 
-            var parameters = HttpUtility.ParseQueryString(url.Query);
+                default:
+                    PackageName = "MBServer";
+                    RootSuffix = "-Server";
+                    TargetExe = "MediaBrowser.ServerApplication.exe";
+                    FriendlyName = "Media Browser Server";
+                    break;
+            }
 
-            // fill in our arguments if there
-            PackageName = parameters["package"] ?? "MBServer";
-            PackageClass = (PackageVersionClass)Enum.Parse(typeof(PackageVersionClass), parameters["class"] ?? "Release");
-            PackageVersion = new Version(parameters["version"].ValueOrDefault("10.0.0.0"));
-            RootSuffix = parameters["suffix"] ?? "-Server";
-            TargetExe = parameters["target"] ?? "MediaBrowser.ServerApplication.exe";
-            FriendlyName = parameters["name"] ?? PackageName;
             RootPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "MediaBrowser" + RootSuffix);
 
         }
@@ -89,13 +95,17 @@ namespace MediaBrowser.Installer
         /// <returns></returns>
         protected async Task DoInstall()
         {
-            lblStatus.Content = "Downloading "+FriendlyName+"...";
+            lblStatus.Content = string.Format("Downloading {0}...", FriendlyName);
             dlAnimation.StartAnimation();
             prgProgress.Value = 0;
             prgProgress.Visibility = Visibility.Visible;
 
+            // Determine Package version
+            var version = await GetPackageVersion();
+            lblStatus.Content = string.Format("Downloading {0} (version {1})...", FriendlyName, version.versionStr);
+
             // Download
-            var archive = await DownloadPackage();
+            var archive = await DownloadPackage(version);
             dlAnimation.StopAnimation();
             prgProgress.Visibility = btnCancel.Visibility = Visibility.Hidden;
 
@@ -135,18 +145,14 @@ namespace MediaBrowser.Installer
 
         }
 
-        /// <summary>
-        /// Download our specified package to an archive in a temp location
-        /// </summary>
-        /// <returns>The fully qualified name of the downloaded package</returns>
-        protected async Task<string> DownloadPackage()
+        protected async Task<PackageVersionInfo> GetPackageVersion()
         {
             using (var client = new WebClient())
             {
                 try
                 {
                     // get the package information for the server
-                    var json = await client.DownloadStringTaskAsync("http://www.mb3admin.com/admin/service/package/retrieveAll?name="+PackageName);
+                    var json = await client.DownloadStringTaskAsync("http://www.mb3admin.com/admin/service/package/retrieveAll?name=" + PackageName);
                     var packages = JsonSerializer.DeserializeFromString<List<PackageInfo>>(json);
 
                     var version = packages[0].versions.Where(v => v.classification == PackageClass).OrderByDescending(v => v.version).FirstOrDefault(v => v.version <= PackageVersion);
@@ -155,6 +161,27 @@ namespace MediaBrowser.Installer
                         SystemClose("Could not locate download package.  Aborting.");
                         return null;
                     }
+                    return version;
+                }
+                catch (Exception e)
+                {
+                    SystemClose(e.GetType().FullName + "\n\n" + e.Message);
+                }
+
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Download our specified package to an archive in a temp location
+        /// </summary>
+        /// <returns>The fully qualified name of the downloaded package</returns>
+        protected async Task<string> DownloadPackage(PackageVersionInfo version)
+        {
+            using (var client = new WebClient())
+            {
+                try
+                {
                     var archiveFile = Path.Combine(PrepareTempLocation(), version.targetFilename);
 
                     // setup download progress and download the package
@@ -210,7 +237,8 @@ namespace MediaBrowser.Installer
             product.Save();
 
             var uninstall = (IWshShortcut)shell.CreateShortcut(Path.Combine(startMenu, "Uninstall " + FriendlyName + ".lnk"));
-            uninstall.TargetPath = Path.Combine(Path.GetDirectoryName(targetExe),"MediaBrowser.Uninstall.exe "+(PackageName == "MBServer" ? "server" : "mbt"));
+            uninstall.TargetPath = Path.Combine(Path.GetDirectoryName(targetExe),"MediaBrowser.Uninstaller.exe");
+            uninstall.Arguments = (PackageName == "MBServer" ? "server" : "mbt");
             uninstall.Description = "Uninstall " + FriendlyName;
             uninstall.Save();
 
@@ -238,5 +266,6 @@ namespace MediaBrowser.Installer
                 Directory.Delete(location, true);
             }
         }
+
     }
 }
