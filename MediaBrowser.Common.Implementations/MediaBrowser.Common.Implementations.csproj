@@ -162,6 +162,9 @@
     <Content Include="swagger-ui\swagger-ui.js" />
     <Content Include="swagger-ui\swagger-ui.min.js" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Updates\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <PropertyGroup>

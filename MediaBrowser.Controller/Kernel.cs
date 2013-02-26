@@ -279,12 +279,6 @@ namespace MediaBrowser.Controller
         public IUserDataRepository UserDataRepository { get; private set; }
 
         /// <summary>
-        /// Limits simultaneous access to various resources
-        /// </summary>
-        /// <value>The resource pools.</value>
-        public ResourcePool ResourcePools { get; set; }
-
-        /// <summary>
         /// Gets the UDP server port number.
         /// </summary>
         /// <value>The UDP server port number.</value>
