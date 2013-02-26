@@ -56,26 +56,32 @@ namespace MediaBrowser.ServerApplication
         private readonly IApplicationHost _appHost;
 
         /// <summary>
+        /// The _log manager
+        /// </summary>
+        private readonly ILogManager _logManager;
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow" /> class.
         /// </summary>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="appHost">The app host.</param>
         /// <exception cref="System.ArgumentNullException">logger</exception>
-        public MainWindow(IJsonSerializer jsonSerializer, ILogger logger, IApplicationHost appHost)
+        public MainWindow(IJsonSerializer jsonSerializer, ILogManager logManager, IApplicationHost appHost)
         {
             if (jsonSerializer == null)
             {
                 throw new ArgumentNullException("jsonSerializer");
             }
-            if (logger == null)
+            if (logManager == null)
             {
-                throw new ArgumentNullException("logger");
+                throw new ArgumentNullException("logManager");
             }
 
             _jsonSerializer = jsonSerializer;
-            _logger = logger;
+            _logger = logManager.GetLogger("MainWindow");
             _appHost = appHost;
+            _logManager = logManager;
 
             InitializeComponent();
 
@@ -94,7 +100,7 @@ namespace MediaBrowser.ServerApplication
             Instance_ConfigurationUpdated(null, EventArgs.Empty);
 
             Kernel.Instance.ReloadCompleted += KernelReloadCompleted;
-            Kernel.Instance.LoggerLoaded += LoadLogWindow;
+            _logManager.LoggerLoaded += LoadLogWindow;
             Kernel.Instance.HasPendingRestartChanged += Instance_HasPendingRestartChanged;
             Kernel.Instance.ConfigurationUpdated += Instance_ConfigurationUpdated;
         }
@@ -115,6 +121,13 @@ namespace MediaBrowser.ServerApplication
                 separatorDeveloperTools.Visibility = developerToolsVisibility;
                 cmdReloadServer.Visibility = developerToolsVisibility;
                 cmOpenExplorer.Visibility = developerToolsVisibility;
+
+                var logWindow = App.Instance.Windows.OfType<LogWindow>().FirstOrDefault();
+
+                if ((logWindow == null && Kernel.Instance.Configuration.ShowLogWindow) || (logWindow != null && !Kernel.Instance.Configuration.ShowLogWindow))
+                {
+                    _logManager.ReloadLogger(Kernel.Instance.Configuration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info);
+                }
             });
         }
 

@@ -531,17 +531,8 @@ namespace MediaBrowser.Controller
         /// <param name="config">The config.</param>
         public void UpdateConfiguration(ServerConfiguration config)
         {
-            var oldConfiguration = Configuration;
-
-            var reloadLogger = config.ShowLogWindow != oldConfiguration.ShowLogWindow;
-
             Configuration = config;
             SaveConfiguration();
-
-            if (reloadLogger)
-            {
-                ReloadLogger();
-            }
 
             // Validate currently executing providers, in the background
             Task.Run(() =>

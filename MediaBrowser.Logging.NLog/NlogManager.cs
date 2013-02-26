@@ -1,27 +1,62 @@
-﻿using NLog;
+﻿using MediaBrowser.Model.Logging;
+using NLog;
 using NLog.Config;
 using NLog.Targets;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Logging.Nlog
 {
     /// <summary>
     /// Class NlogManager
     /// </summary>
-    public static class NlogManager
+    public class NlogManager : ILogManager
     {
+        /// <summary>
+        /// Occurs when [logger loaded].
+        /// </summary>
+        public event EventHandler LoggerLoaded;
+        /// <summary>
+        /// Gets or sets the log directory.
+        /// </summary>
+        /// <value>The log directory.</value>
+        private string LogDirectory { get; set; }
+        /// <summary>
+        /// Gets or sets the log file prefix.
+        /// </summary>
+        /// <value>The log file prefix.</value>
+        private string LogFilePrefix { get; set; }
+        /// <summary>
+        /// Gets the log file path.
+        /// </summary>
+        /// <value>The log file path.</value>
+        public string LogFilePath { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NlogManager" /> class.
+        /// </summary>
+        /// <param name="logDirectory">The log directory.</param>
+        /// <param name="logFileNamePrefix">The log file name prefix.</param>
+        public NlogManager(string logDirectory, string logFileNamePrefix)
+        {
+            LogDirectory = logDirectory;
+            LogFilePrefix = logFileNamePrefix;
+        }
+
         /// <summary>
         /// Adds the file target.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <param name="enableDebugLogging">if set to <c>true</c> [enable debug logging].</param>
-        public static void AddFileTarget(string path, bool enableDebugLogging)
+        /// <param name="level">The level.</param>
+        private void AddFileTarget(string path, LogSeverity level)
         {
             var logFile = new FileTarget();
 
             logFile.FileName = path;
             logFile.Layout = "${longdate}, ${level}, ${logger}, ${message}";
 
-            AddLogTarget(logFile, "ApplicationLogFile", enableDebugLogging);
+            AddLogTarget(logFile, "ApplicationLogFile", level);
         }
 
         /// <summary>
@@ -29,8 +64,8 @@ namespace MediaBrowser.Logging.Nlog
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="name">The name.</param>
-        /// <param name="enableDebugLogging">if set to <c>true</c> [enable debug logging].</param>
-        private static void AddLogTarget(Target target, string name, bool enableDebugLogging)
+        /// <param name="level">The level.</param>
+        private void AddLogTarget(Target target, string name, LogSeverity level)
         {
             var config = LogManager.Configuration;
 
@@ -39,12 +74,71 @@ namespace MediaBrowser.Logging.Nlog
             target.Name = name;
             config.AddTarget(name, target);
 
-            var level = enableDebugLogging ? LogLevel.Debug : LogLevel.Info;
-
-            var rule = new LoggingRule("*", level, target);
+            var rule = new LoggingRule("*", GetLogLevel(level), target);
             config.LoggingRules.Add(rule);
 
             LogManager.Configuration = config;
+        }
+
+        /// <summary>
+        /// Gets the logger.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns>ILogger.</returns>
+        public ILogger GetLogger(string name)
+        {
+            return new NLogger(name);
+        }
+
+        /// <summary>
+        /// Gets the log level.
+        /// </summary>
+        /// <param name="severity">The severity.</param>
+        /// <returns>LogLevel.</returns>
+        /// <exception cref="System.ArgumentException">Unrecognized LogSeverity</exception>
+        private LogLevel GetLogLevel(LogSeverity severity)
+        {
+            switch (severity)
+            {
+                case LogSeverity.Debug:
+                    return LogLevel.Debug;
+                case LogSeverity.Error:
+                    return LogLevel.Error;
+                case LogSeverity.Fatal:
+                    return LogLevel.Fatal;
+                case LogSeverity.Info:
+                    return LogLevel.Info;
+                case LogSeverity.Warn:
+                    return LogLevel.Warn;
+                default:
+                    throw new ArgumentException("Unrecognized LogSeverity");
+            }
+        }
+
+        /// <summary>
+        /// Reloads the logger.
+        /// </summary>
+        /// <param name="level">The level.</param>
+        public void ReloadLogger(LogSeverity level)
+        {
+            LogFilePath = Path.Combine(LogDirectory, LogFilePrefix + "-" + DateTime.Now.Ticks + ".log");
+
+            AddFileTarget(LogFilePath, level);
+
+            if (LoggerLoaded != null)
+            {
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        LoggerLoaded(this, EventArgs.Empty);
+                    }
+                    catch (Exception ex)
+                    {
+                        GetLogger("Logger").ErrorException("Error in LoggerLoaded event", ex);
+                    }
+                });
+            }
         }
     }
 }

@@ -17,21 +17,10 @@ namespace MediaBrowser.Common.Kernel
         void Restart();
 
         /// <summary>
-        /// Reloads the logger.
-        /// </summary>
-        void ReloadLogger();
-
-        /// <summary>
         /// Gets the application version.
         /// </summary>
         /// <value>The application version.</value>
         Version ApplicationVersion { get; }
-
-        /// <summary>
-        /// Gets the log file path.
-        /// </summary>
-        /// <value>The log file path.</value>
-        string LogFilePath { get; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance can self update.

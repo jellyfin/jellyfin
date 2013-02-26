@@ -54,11 +54,6 @@ namespace MediaBrowser.Common.Kernel
         SystemInfo GetSystemInfo();
 
         /// <summary>
-        /// Reloads the logger.
-        /// </summary>
-        void ReloadLogger();
-
-        /// <summary>
         /// Called when [application updated].
         /// </summary>
         /// <param name="newVersion">The new version.</param>
@@ -104,11 +99,6 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <value>The web socket listeners.</value>
         IEnumerable<IWebSocketListener> WebSocketListeners { get; }
-
-        /// <summary>
-        /// Occurs when [logger loaded].
-        /// </summary>
-        event EventHandler LoggerLoaded;
 
         /// <summary>
         /// Occurs when [reload completed].

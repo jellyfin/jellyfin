@@ -12,6 +12,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Logging.Nlog;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
@@ -40,12 +41,6 @@ namespace MediaBrowser.ServerApplication
     public class ApplicationHost : BaseApplicationHost, IApplicationHost
     {
         /// <summary>
-        /// Gets or sets the log file path.
-        /// </summary>
-        /// <value>The log file path.</value>
-        public string LogFilePath { get; private set; }
-
-        /// <summary>
         /// Gets or sets the kernel.
         /// </summary>
         /// <value>The kernel.</value>
@@ -62,15 +57,13 @@ namespace MediaBrowser.ServerApplication
         private readonly IXmlSerializer _xmlSerializer = new XmlSerializer();
 
         /// <summary>
-        /// The _application paths
+        /// Gets the server application paths.
         /// </summary>
-        private readonly IServerApplicationPaths _applicationPaths = new ServerApplicationPaths();
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is first run.
-        /// </summary>
-        /// <value><c>true</c> if this instance is first run; otherwise, <c>false</c>.</value>
-        public bool IsFirstRun { get; private set; }
+        /// <value>The server application paths.</value>
+        protected IServerApplicationPaths ServerApplicationPaths
+        {
+            get { return (IServerApplicationPaths) ApplicationPaths; }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
@@ -79,21 +72,15 @@ namespace MediaBrowser.ServerApplication
         public ApplicationHost()
             : base()
         {
-            IsFirstRun = !File.Exists(_applicationPaths.SystemConfigurationFilePath);
-
-            Logger = new NLogger("App");
-
-            DiscoverTypes();
-
-            Kernel = new Kernel(this, _applicationPaths, _xmlSerializer, Logger);
+            Kernel = new Kernel(this, ServerApplicationPaths, _xmlSerializer, Logger);
             
             var networkManager = new NetworkManager();
 
             var serverManager = new ServerManager(this, Kernel, networkManager, _jsonSerializer, Logger);
 
-            var taskManager = new TaskManager(_applicationPaths, _jsonSerializer, Logger, serverManager);
+            var taskManager = new TaskManager(ApplicationPaths, _jsonSerializer, Logger, serverManager);
 
-            ReloadLogger();
+            LogManager.ReloadLogger(Kernel.Configuration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info);
 
             Logger.Info("Version {0} initializing", ApplicationVersion);
 
@@ -105,6 +92,24 @@ namespace MediaBrowser.ServerApplication
         }
 
         /// <summary>
+        /// Gets the application paths.
+        /// </summary>
+        /// <returns>IApplicationPaths.</returns>
+        protected override IApplicationPaths GetApplicationPaths()
+        {
+            return new ServerApplicationPaths();
+        }
+
+        /// <summary>
+        /// Gets the log manager.
+        /// </summary>
+        /// <returns>ILogManager.</returns>
+        protected override ILogManager GetLogManager()
+        {
+            return new NlogManager(ApplicationPaths.LogDirectoryPath, "Server");
+        }
+
+        /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
         private void RegisterResources(ITaskManager taskManager, IHttpServer httpServer, INetworkManager networkManager, IServerManager serverManager)
@@ -113,14 +118,15 @@ namespace MediaBrowser.ServerApplication
             RegisterSingleInstance(Kernel);
 
             RegisterSingleInstance<IApplicationHost>(this);
+            RegisterSingleInstance(LogManager);
             RegisterSingleInstance(Logger);
 
-            RegisterSingleInstance(_applicationPaths);
-            RegisterSingleInstance<IApplicationPaths>(_applicationPaths);
+            RegisterSingleInstance(ApplicationPaths);
+            RegisterSingleInstance(ServerApplicationPaths);
             RegisterSingleInstance(taskManager);
             RegisterSingleInstance<IIsoManager>(new PismoIsoManager(Logger));
             RegisterSingleInstance<IBlurayExaminer>(new BdInfoExaminer());
-            RegisterSingleInstance<IHttpClient>(new HttpManager(_applicationPaths, Logger));
+            RegisterSingleInstance<IHttpClient>(new HttpManager(ApplicationPaths, Logger));
             RegisterSingleInstance<IZipClient>(new DotNetZipClient());
             RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
             RegisterSingleInstance(_jsonSerializer);
@@ -147,21 +153,9 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// Restarts this instance.
         /// </summary>
-        /// <exception cref="System.NotImplementedException"></exception>
         public void Restart()
         {
             App.Instance.Restart();
-        }
-
-        /// <summary>
-        /// Reloads the logger.
-        /// </summary>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public void ReloadLogger()
-        {
-            LogFilePath = Path.Combine(_applicationPaths.LogDirectoryPath, "Server-" + DateTime.Now.Ticks + ".log");
-
-            NlogManager.AddFileTarget(LogFilePath, Kernel.Configuration.EnableDebugLevelLogging);
         }
 
         /// <summary>
@@ -204,7 +198,7 @@ namespace MediaBrowser.ServerApplication
             // Gets all plugin assemblies by first reading all bytes of the .dll and calling Assembly.Load against that
             // This will prevent the .dll file from getting locked, and allow us to replace it when needed
             foreach (var pluginAssembly in Directory
-                .EnumerateFiles(_applicationPaths.PluginsPath, "*.dll", SearchOption.TopDirectoryOnly)
+                .EnumerateFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.TopDirectoryOnly)
                 .Select(LoadAssembly).Where(a => a != null))
             {
                 yield return pluginAssembly;
