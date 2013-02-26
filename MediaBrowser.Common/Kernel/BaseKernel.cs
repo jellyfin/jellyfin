@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Common.Security;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -151,6 +152,12 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <value>The TCP manager.</value>
         public IServerManager ServerManager { get; private set; }
+
+        /// <summary>
+        /// Gets the plug-in security manager.
+        /// </summary>
+        /// <value>The plug-in security manager.</value>
+        public ISecurityManager SecurityManager { get; set; }
 
         /// <summary>
         /// Gets the UDP server port number.
