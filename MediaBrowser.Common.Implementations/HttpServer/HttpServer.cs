@@ -26,7 +26,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Networking.HttpServer
+namespace MediaBrowser.Common.Implementations.HttpServer
 {
     /// <summary>
     /// Class HttpServer

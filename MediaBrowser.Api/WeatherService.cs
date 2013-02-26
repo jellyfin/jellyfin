@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Common.Implementations.HttpServer;
+using MediaBrowser.Controller;
 using MediaBrowser.Model.Weather;
-using MediaBrowser.Networking.HttpServer;
 using ServiceStack.ServiceHost;
 using System.Linq;
 using System.Threading;

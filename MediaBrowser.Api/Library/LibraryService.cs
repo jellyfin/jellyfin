@@ -1,9 +1,9 @@
-﻿using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.Implementations.HttpServer;
+using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Networking.HttpServer;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;

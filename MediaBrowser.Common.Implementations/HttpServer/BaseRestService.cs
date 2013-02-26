@@ -7,7 +7,6 @@ using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
-using ServiceStack.WebHost.Endpoints;
 using System;
 using System.Globalization;
 using System.IO;
@@ -17,7 +16,7 @@ using System.Threading.Tasks;
 using MimeTypes = MediaBrowser.Common.Net.MimeTypes;
 using StreamWriter = MediaBrowser.Common.Net.StreamWriter;
 
-namespace MediaBrowser.Networking.HttpServer
+namespace MediaBrowser.Common.Implementations.HttpServer
 {
     /// <summary>
     /// Class BaseRestService

@@ -5,7 +5,7 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Net;
 
-namespace MediaBrowser.Networking.WebSocket
+namespace MediaBrowser.Common.Implementations.WebSocket
 {
     /// <summary>
     /// Class AlchemyServer

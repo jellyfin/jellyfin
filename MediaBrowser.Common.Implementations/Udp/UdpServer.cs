@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Implementations.NetworkManagement;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Networking.Management;
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -8,7 +8,7 @@ using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Networking.Udp
+namespace MediaBrowser.Common.Implementations.Udp
 {
     /// <summary>
     /// Provides a Udp Server

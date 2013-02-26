@@ -1,8 +1,8 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Implementations.HttpServer;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Networking.HttpServer;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text.Controller;
 using System;

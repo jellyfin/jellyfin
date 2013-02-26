@@ -15,12 +15,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Networking.HttpManager
+namespace MediaBrowser.Common.Implementations.HttpClientManager
 {
     /// <summary>
-    /// Class HttpManager
+    /// Class HttpClientManager
     /// </summary>
-    public class HttpManager : IHttpClient
+    public class HttpClientManager : IHttpClient
     {
         /// <summary>
         /// The _logger
@@ -33,11 +33,11 @@ namespace MediaBrowser.Networking.HttpManager
         private readonly IApplicationPaths _appPaths;
         
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpManager" /> class.
+        /// Initializes a new instance of the <see cref="HttpClientManager" /> class.
         /// </summary>
         /// <param name="appPaths">The kernel.</param>
         /// <param name="logger">The logger.</param>
-        public HttpManager(IApplicationPaths appPaths, ILogger logger)
+        public HttpClientManager(IApplicationPaths appPaths, ILogger logger)
         {
             if (appPaths == null)
             {
@@ -106,7 +106,7 @@ namespace MediaBrowser.Networking.HttpManager
 
             await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            _logger.Info("HttpManager.Get url: {0}", url);
+            _logger.Info("HttpClientManager.Get url: {0}", url);
 
             try
             {
@@ -161,7 +161,7 @@ namespace MediaBrowser.Networking.HttpManager
 
             await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            _logger.Info("HttpManager.Post url: {0}", url);
+            _logger.Info("HttpClientManager.Post url: {0}", url);
 
             try
             {
@@ -222,7 +222,7 @@ namespace MediaBrowser.Networking.HttpManager
 
             await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            _logger.Info("HttpManager.GetTempFile url: {0}, temp file: {1}", url, tempFile);
+            _logger.Info("HttpClientManager.GetTempFile url: {0}, temp file: {1}", url, tempFile);
 
             try
             {
@@ -328,7 +328,7 @@ namespace MediaBrowser.Networking.HttpManager
 
             var ms = new MemoryStream();
 
-            _logger.Info("HttpManager.GetMemoryStream url: {0}", url);
+            _logger.Info("HttpClientManager.GetMemoryStream url: {0}", url);
 
             try
             {
