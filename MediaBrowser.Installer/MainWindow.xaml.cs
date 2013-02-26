@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -19,7 +20,7 @@ namespace MediaBrowser.Installer
     public partial class MainWindow : Window
     {
         protected PackageVersionClass PackageClass = PackageVersionClass.Release;
-        protected Version PackageVersion = new Version(10,0,0,0);
+        protected Version PackageVersion = new Version(4,0,0,0);
         protected string PackageName = "MBServer";
         protected string RootSuffix = "-Server";
         protected string TargetExe = "MediaBrowser.ServerApplication.exe";
@@ -64,29 +65,26 @@ namespace MediaBrowser.Installer
 
         protected void GetArgs()
         {
-            var args = Environment.GetCommandLineArgs();
+            var product = ConfigurationManager.AppSettings["product"] ?? "server";
+            PackageClass = (PackageVersionClass) Enum.Parse(typeof (PackageVersionClass), ConfigurationManager.AppSettings["class"] ?? "Release");
 
-
-            var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var arg in args)
+            switch (product.ToLower())
             {
-                var nameValue = arg.Split('=');
-                try
-                {
-                    parameters[nameValue[0]] = nameValue[1];
-                }
-                catch // let it default below
-                {
-                }
+                case "mbt":
+                    PackageName = "MBTheater";
+                    RootSuffix = "-UI";
+                    TargetExe = "MediaBrowser.UI.exe";
+                    FriendlyName = "Media Browser Theater";
+                    break;
+
+                default:
+                    PackageName = "MBServer";
+                    RootSuffix = "-Server";
+                    TargetExe = "MediaBrowser.ServerApplication.exe";
+                    FriendlyName = "Media Browser Server";
+                    break;
             }
 
-            // fill in our arguments if there
-            PackageName = parameters.GetValueOrDefault("package","MBServer");
-            PackageClass = (PackageVersionClass)Enum.Parse(typeof(PackageVersionClass), parameters.GetValueOrDefault("class","Release"));
-            PackageVersion = new Version(parameters.GetValueOrDefault("version","10.0.0.0"));
-            RootSuffix = parameters.GetValueOrDefault("suffix", "-Server");
-            TargetExe = parameters.GetValueOrDefault("target", "MediaBrowser.ServerApplication.exe");
-            FriendlyName = parameters.GetValueOrDefault("name", PackageName);
             RootPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "MediaBrowser" + RootSuffix);
 
         }
