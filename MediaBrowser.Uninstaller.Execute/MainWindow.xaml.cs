@@ -72,6 +72,7 @@ namespace MediaBrowser.Uninstaller.Execute
             var startMenu = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), "Media Browser 3");
             var linkName = "Media Browser " + Product + ".lnk";
             RemoveShortcut(Path.Combine(startMenu, linkName));
+            RemoveShortcut(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup),linkName));
             linkName = "Uninstall " + linkName;
             RemoveShortcut(Path.Combine(startMenu, linkName));
             if (Product == "Server")
@@ -108,6 +109,7 @@ namespace MediaBrowser.Uninstaller.Execute
                 // First remove the system
                 lblHeading.Content = "Removing System Files...";
                 RemovePath(Path.Combine(rootPath, "System"));
+                RemovePath(Path.Combine(rootPath, "MediaTools"));
 
                 // And then the others specified
                 if (cbxRemoveCache.IsChecked == true)
@@ -120,6 +122,7 @@ namespace MediaBrowser.Uninstaller.Execute
                 {
                     lblHeading.Content = "Removing Config Files...";
                     RemovePath(Path.Combine(rootPath, "config"));
+                    RemovePath(Path.Combine(rootPath, "logs"));
                 }
                 if (cbxRemovePlugins.IsChecked == true)
                 {
