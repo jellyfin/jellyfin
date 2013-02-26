@@ -6,7 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Implementations.Server
+namespace MediaBrowser.Common.Implementations.ServerManager
 {
     /// <summary>
     /// Class WebSocketConnection

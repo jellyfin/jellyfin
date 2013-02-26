@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Controller.Localization;
+﻿using MediaBrowser.Common.Implementations.HttpServer;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Networking.HttpServer;
 using MoreLinq;
 using ServiceStack.ServiceHost;
 using System.Collections.Generic;

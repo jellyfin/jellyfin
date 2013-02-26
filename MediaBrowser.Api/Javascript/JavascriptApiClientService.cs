@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Implementations.HttpServer;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Networking.HttpServer;
 using ServiceStack.ServiceHost;
 using System;
 using System.IO;

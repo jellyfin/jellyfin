@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Security;
 
-namespace MediaBrowser.Networking.Management
+namespace MediaBrowser.Common.Implementations.NetworkManagement
 {
     /// <summary>
     /// Class NativeMethods
@@ -25,7 +25,7 @@ namespace MediaBrowser.Networking.Management
         /// <param name="dwResumeHandle">The dw resume handle.</param>
         /// <returns>System.Int32.</returns>
         [DllImport("Netapi32", CharSet = CharSet.Auto, SetLastError = true),
-        SuppressUnmanagedCodeSecurityAttribute]
+        SuppressUnmanagedCodeSecurity]
 
         public static extern int NetServerEnum(
             string ServerName, // must be null
@@ -46,7 +46,7 @@ namespace MediaBrowser.Networking.Management
         /// <param name="pBuf">The p buf.</param>
         /// <returns>System.Int32.</returns>
         [DllImport("Netapi32", SetLastError = true),
-        SuppressUnmanagedCodeSecurityAttribute]
+        SuppressUnmanagedCodeSecurity]
 
         public static extern int NetApiBufferFree(
             IntPtr pBuf);

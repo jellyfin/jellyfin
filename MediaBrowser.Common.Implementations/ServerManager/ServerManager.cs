@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Implementations.Server
+namespace MediaBrowser.Common.Implementations.ServerManager
 {
     /// <summary>
     /// Manages the Http Server, Udp Server and WebSocket connections
@@ -434,7 +434,7 @@ namespace MediaBrowser.Common.Implementations.Server
             var tmpFile = Path.Combine(_kernel.ApplicationPaths.TempDirectory, Guid.NewGuid() + ".bat");
 
             // Extract the bat file
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Common.Implementations.Server.bat"))
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Common.Implementations.ServerManager.RegisterServer.bat"))
             {
                 using (var fileStream = File.Create(tmpFile))
                 {

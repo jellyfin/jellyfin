@@ -1,15 +1,15 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.Management;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Management;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 
-namespace MediaBrowser.Networking.Management
+namespace MediaBrowser.Common.Implementations.NetworkManagement
 {
     /// <summary>
     /// Class NetUtils

@@ -3,7 +3,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 
-namespace MediaBrowser.Networking.HttpServer
+namespace MediaBrowser.Common.Implementations.HttpServer
 {
     /// <summary>
     /// Class ServerFactory

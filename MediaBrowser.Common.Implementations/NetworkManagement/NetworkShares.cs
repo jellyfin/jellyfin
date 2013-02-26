@@ -3,7 +3,7 @@ using System.IO;
 using System.Collections;
 using System.Runtime.InteropServices;
 
-namespace MediaBrowser.Networking.Management
+namespace MediaBrowser.Common.Implementations.NetworkManagement
 {
     /// <summary>
     /// Type of share

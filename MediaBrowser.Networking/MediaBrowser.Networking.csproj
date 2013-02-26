@@ -106,18 +106,7 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
-    <Compile Include="HttpManager\HttpManager.cs" />
-    <Compile Include="HttpServer\BaseRestService.cs" />
-    <Compile Include="Udp\UdpServer.cs" />
-    <Compile Include="WebSocket\AlchemyServer.cs" />
-    <Compile Include="WebSocket\AlchemyWebSocket.cs" />
-    <Compile Include="HttpServer\HttpServer.cs" />
-    <Compile Include="Management\NativeMethods.cs" />
-    <Compile Include="Management\NetworkManager.cs" />
-    <Compile Include="Management\NetworkShares.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="HttpServer\ServerFactory.cs" />
-    <Compile Include="HttpServer\NativeWebSocket.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">

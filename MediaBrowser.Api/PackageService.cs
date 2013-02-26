@@ -1,8 +1,8 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Implementations.HttpServer;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Updates;
-using MediaBrowser.Networking.HttpServer;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
