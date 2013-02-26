@@ -455,5 +455,12 @@ namespace MediaBrowser.Common.Kernel
         {
             return GetXmlConfiguration(typeof(T), path) as T;
         }
+
+        /// <summary>
+        /// Limits simultaneous access to various resources
+        /// </summary>
+        /// <value>The resource pools.</value>
+        public ResourcePool ResourcePools { get; set; }
+
     }
 }
