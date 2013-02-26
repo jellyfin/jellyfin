@@ -95,13 +95,17 @@ namespace MediaBrowser.Installer
         /// <returns></returns>
         protected async Task DoInstall()
         {
-            lblStatus.Content = "Downloading "+FriendlyName+"...";
+            lblStatus.Content = string.Format("Downloading {0}...", FriendlyName);
             dlAnimation.StartAnimation();
             prgProgress.Value = 0;
             prgProgress.Visibility = Visibility.Visible;
 
+            // Determine Package version
+            var version = await GetPackageVersion().ConfigureAwait(false);
+            lblStatus.Content = string.Format("Downloading {0} (version {1})...", FriendlyName, version.versionStr);
+
             // Download
-            var archive = await DownloadPackage();
+            var archive = await DownloadPackage(version).ConfigureAwait(false);
             dlAnimation.StopAnimation();
             prgProgress.Visibility = btnCancel.Visibility = Visibility.Hidden;
 
@@ -141,18 +145,14 @@ namespace MediaBrowser.Installer
 
         }
 
-        /// <summary>
-        /// Download our specified package to an archive in a temp location
-        /// </summary>
-        /// <returns>The fully qualified name of the downloaded package</returns>
-        protected async Task<string> DownloadPackage()
+        protected async Task<PackageVersionInfo> GetPackageVersion()
         {
             using (var client = new WebClient())
             {
                 try
                 {
                     // get the package information for the server
-                    var json = await client.DownloadStringTaskAsync("http://www.mb3admin.com/admin/service/package/retrieveAll?name="+PackageName);
+                    var json = await client.DownloadStringTaskAsync("http://www.mb3admin.com/admin/service/package/retrieveAll?name=" + PackageName).ConfigureAwait(false);
                     var packages = JsonSerializer.DeserializeFromString<List<PackageInfo>>(json);
 
                     var version = packages[0].versions.Where(v => v.classification == PackageClass).OrderByDescending(v => v.version).FirstOrDefault(v => v.version <= PackageVersion);
@@ -161,11 +161,31 @@ namespace MediaBrowser.Installer
                         SystemClose("Could not locate download package.  Aborting.");
                         return null;
                     }
+                }
+                catch (Exception e)
+                {
+                    SystemClose(e.GetType().FullName + "\n\n" + e.Message);
+                }
+
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Download our specified package to an archive in a temp location
+        /// </summary>
+        /// <returns>The fully qualified name of the downloaded package</returns>
+        protected async Task<string> DownloadPackage(PackageVersionInfo version)
+        {
+            using (var client = new WebClient())
+            {
+                try
+                {
                     var archiveFile = Path.Combine(PrepareTempLocation(), version.targetFilename);
 
                     // setup download progress and download the package
                     client.DownloadProgressChanged += DownloadProgressChanged;
-                    await client.DownloadFileTaskAsync(version.sourceUrl, archiveFile);
+                    await client.DownloadFileTaskAsync(version.sourceUrl, archiveFile).ConfigureAwait(false);
                     return archiveFile;
                 }
                 catch (Exception e)
