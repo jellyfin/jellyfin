@@ -300,13 +300,7 @@ namespace MediaBrowser.Model.Configuration
         [ProtoMember(57)]
         public bool EnableDeveloperTools { get; set; }
 
-        /// <summary>
-        /// Gets of sets a value indicating the level of system updates (Release, Beta, Dev)
-        /// </summary>
-        [ProtoMember(59)]
-        public PackageVersionClass SystemUpdateLevel { get; set; }
-        
-        // Next Proto number ====> 60
+        // Next Proto number ====> 61
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
