@@ -10,7 +10,7 @@ namespace MediaBrowser.Common.Kernel
     /// <summary>
     /// Interface IKernel
     /// </summary>
-    public interface IKernel
+    public interface IKernel : IDisposable
     {
         /// <summary>
         /// Gets the application paths.
@@ -41,11 +41,6 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <value><c>true</c> if this instance has pending kernel reload; otherwise, <c>false</c>.</value>
         bool HasPendingRestart { get; }
-
-        /// <summary>
-        /// Disposes this instance.
-        /// </summary>
-        void Dispose();
 
         /// <summary>
         /// Gets the system status.
