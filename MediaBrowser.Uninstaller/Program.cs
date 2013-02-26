@@ -23,7 +23,7 @@ namespace MediaBrowser.Uninstaller
                 //copy the real uninstaller to temp location
                 var sourceDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "";
                 File.WriteAllBytes(tempExe, File.ReadAllBytes(Path.Combine(sourceDir, "MediaBrowser.Uninstaller.Execute.exe")));
-                File.Copy(Path.Combine(sourceDir, "MediaBrowser.Uninstaller.Execute.exe.config"), tempConfig);
+                File.Copy(Path.Combine(sourceDir, "MediaBrowser.Uninstaller.Execute.exe.config"), tempConfig, true);
                 //kick off the copy
                 Process.Start(tempExe, product);
                 //and shut down
