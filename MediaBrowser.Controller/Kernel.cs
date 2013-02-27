@@ -1,8 +1,5 @@
 ﻿using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Common.Security;
-using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
@@ -52,12 +49,6 @@ namespace MediaBrowser.Controller
         public ImageManager ImageManager { get; private set; }
 
         /// <summary>
-        /// Gets the user manager.
-        /// </summary>
-        /// <value>The user manager.</value>
-        public UserManager UserManager { get; private set; }
-
-        /// <summary>
         /// Gets the FFMPEG controller.
         /// </summary>
         /// <value>The FFMPEG controller.</value>
@@ -80,47 +71,6 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The provider manager.</value>
         public ProviderManager ProviderManager { get; private set; }
-
-        /// <summary>
-        /// Gets the user data manager.
-        /// </summary>
-        /// <value>The user data manager.</value>
-        public UserDataManager UserDataManager { get; private set; }
-
-        /// <summary>
-        /// The _users
-        /// </summary>
-        private IEnumerable<User> _users;
-        /// <summary>
-        /// The _user lock
-        /// </summary>
-        private object _usersSyncLock = new object();
-        /// <summary>
-        /// The _users initialized
-        /// </summary>
-        private bool _usersInitialized;
-        /// <summary>
-        /// Gets the users.
-        /// </summary>
-        /// <value>The users.</value>
-        public IEnumerable<User> Users
-        {
-            get
-            {
-                // Call ToList to exhaust the stream because we'll be iterating over this multiple times
-                LazyInitializer.EnsureInitialized(ref _users, ref _usersInitialized, ref _usersSyncLock, UserManager.LoadUsers);
-                return _users;
-            }
-            internal set
-            {
-                _users = value;
-
-                if (value == null)
-                {
-                    _usersInitialized = false;
-                }
-            }
-        }
 
         /// <summary>
         /// The _root folder
@@ -304,13 +254,14 @@ namespace MediaBrowser.Controller
         /// </summary>
         protected override void FindParts()
         {
+            // For now there's no real way to inject this properly
+            User.UserManager = ApplicationHost.Resolve<IUserManager>();
+
             InstallationManager = (InstallationManager)ApplicationHost.CreateInstance(typeof(InstallationManager));
             FFMpegManager = (FFMpegManager)ApplicationHost.CreateInstance(typeof(FFMpegManager));
             LibraryManager = (LibraryManager)ApplicationHost.CreateInstance(typeof(LibraryManager));
-            UserManager = (UserManager)ApplicationHost.CreateInstance(typeof(UserManager));
             ImageManager = (ImageManager)ApplicationHost.CreateInstance(typeof(ImageManager));
             ProviderManager = (ProviderManager)ApplicationHost.CreateInstance(typeof(ProviderManager));
-            UserDataManager = (UserDataManager)ApplicationHost.CreateInstance(typeof(UserDataManager));
             SecurityManager = (PluginSecurityManager)ApplicationHost.CreateInstance(typeof(PluginSecurityManager));
             
             base.FindParts();
@@ -337,7 +288,6 @@ namespace MediaBrowser.Controller
         protected override async Task ReloadInternal()
         {
             // Reset these so that they can be lazy loaded again
-            Users = null;
             RootFolder = null;
 
             await base.ReloadInternal().ConfigureAwait(false);
@@ -346,7 +296,7 @@ namespace MediaBrowser.Controller
 
             ReloadFileSystemManager();
 
-            await UserManager.RefreshUsersMetadata(CancellationToken.None).ConfigureAwait(false);
+            await ApplicationHost.Resolve<IUserManager>().RefreshUsersMetadata(CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -454,29 +404,14 @@ namespace MediaBrowser.Controller
         }
 
         /// <summary>
-        /// Gets a User by Id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns>User.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public User GetUserById(Guid id)
-        {
-            if (id == Guid.Empty)
-            {
-                throw new ArgumentNullException();
-            }
-
-            return Users.FirstOrDefault(u => u.Id == id);
-        }
-
-        /// <summary>
         /// Finds a library item by Id and UserId.
         /// </summary>
         /// <param name="id">The id.</param>
         /// <param name="userId">The user id.</param>
+        /// <param name="userManager">The user manager.</param>
         /// <returns>BaseItem.</returns>
         /// <exception cref="System.ArgumentNullException">id</exception>
-        public BaseItem GetItemById(Guid id, Guid userId)
+        public BaseItem GetItemById(Guid id, Guid userId, IUserManager userManager)
         {
             if (id == Guid.Empty)
             {
@@ -488,7 +423,7 @@ namespace MediaBrowser.Controller
                 throw new ArgumentNullException("userId");
             }
 
-            var user = GetUserById(userId);
+            var user = userManager.GetUserById(userId);
             var userRoot = user.RootFolder;
 
             return userRoot.FindItemById(id, user);

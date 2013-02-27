@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Implementations.HttpServer;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using ServiceStack.ServiceHost;
 using System;
@@ -136,17 +137,24 @@ namespace MediaBrowser.Api.Library
         private readonly IServerApplicationPaths _appPaths;
 
         /// <summary>
+        /// The _user manager
+        /// </summary>
+        private readonly IUserManager _userManager;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
+        /// <param name="userManager">The user manager.</param>
         /// <exception cref="System.ArgumentNullException">appHost</exception>
-        public LibraryStructureService(IServerApplicationPaths appPaths)
+        public LibraryStructureService(IServerApplicationPaths appPaths, IUserManager userManager)
         {
             if (appPaths == null)
             {
                 throw new ArgumentNullException("appPaths");
             }
 
+            _userManager = userManager;
             _appPaths = appPaths;
         }
 
@@ -167,7 +175,7 @@ namespace MediaBrowser.Api.Library
             }
             else
             {
-                var user = kernel.GetUserById(new Guid(request.UserId));
+                var user = _userManager.GetUserById(new Guid(request.UserId));
 
                 var result = kernel.LibraryManager.GetVirtualFolders(user).ToList();
 
@@ -181,15 +189,13 @@ namespace MediaBrowser.Api.Library
         /// <param name="request">The request.</param>
         public void Post(AddVirtualFolder request)
         {
-            var kernel = (Kernel)Kernel;
-            
             if (string.IsNullOrEmpty(request.UserId))
             {
                 LibraryHelpers.AddVirtualFolder(request.Name, null, _appPaths);
             }
             else
             {
-                var user = kernel.GetUserById(new Guid(request.UserId));
+                var user = _userManager.GetUserById(new Guid(request.UserId));
 
                 LibraryHelpers.AddVirtualFolder(request.Name, user, _appPaths);
             }
@@ -201,15 +207,13 @@ namespace MediaBrowser.Api.Library
         /// <param name="request">The request.</param>
         public void Post(RenameVirtualFolder request)
         {
-            var kernel = (Kernel)Kernel;
-
             if (string.IsNullOrEmpty(request.UserId))
             {
                 LibraryHelpers.RenameVirtualFolder(request.Name, request.NewName, null, _appPaths);
             }
             else
             {
-                var user = kernel.GetUserById(new Guid(request.UserId));
+                var user = _userManager.GetUserById(new Guid(request.UserId));
 
                 LibraryHelpers.RenameVirtualFolder(request.Name, request.NewName, user, _appPaths);
             }
@@ -221,15 +225,13 @@ namespace MediaBrowser.Api.Library
         /// <param name="request">The request.</param>
         public void Delete(RemoveVirtualFolder request)
         {
-            var kernel = (Kernel)Kernel;
-
             if (string.IsNullOrEmpty(request.UserId))
             {
                 LibraryHelpers.RemoveVirtualFolder(request.Name, null, _appPaths);
             }
             else
             {
-                var user = kernel.GetUserById(new Guid(request.UserId));
+                var user = _userManager.GetUserById(new Guid(request.UserId));
 
                 LibraryHelpers.RemoveVirtualFolder(request.Name, user, _appPaths);
             }
@@ -241,15 +243,13 @@ namespace MediaBrowser.Api.Library
         /// <param name="request">The request.</param>
         public void Post(AddMediaPath request)
         {
-            var kernel = (Kernel)Kernel;
-
             if (string.IsNullOrEmpty(request.UserId))
             {
                 LibraryHelpers.AddMediaPath(request.Name, request.Path, null, _appPaths);
             }
             else
             {
-                var user = kernel.GetUserById(new Guid(request.UserId));
+                var user = _userManager.GetUserById(new Guid(request.UserId));
 
                 LibraryHelpers.AddMediaPath(request.Name, request.Path, user, _appPaths);
             }
@@ -261,15 +261,13 @@ namespace MediaBrowser.Api.Library
         /// <param name="request">The request.</param>
         public void Delete(RemoveMediaPath request)
         {
-            var kernel = (Kernel)Kernel;
-
             if (string.IsNullOrEmpty(request.UserId))
             {
                 LibraryHelpers.RemoveMediaPath(request.Name, request.Path, null, _appPaths);
             }
             else
             {
-                var user = kernel.GetUserById(new Guid(request.UserId));
+                var user = _userManager.GetUserById(new Guid(request.UserId));
 
                 LibraryHelpers.RemoveMediaPath(request.Name, request.Path, user, _appPaths);
             }

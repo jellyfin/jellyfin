@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,10 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     public class GenresService : BaseItemsByNameService<Genre>
     {
+        public GenresService(IUserManager userManager) : base(userManager)
+        {
+        }
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>

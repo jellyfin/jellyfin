@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,10 @@ namespace MediaBrowser.Api.UserLibrary
         /// The us culture
         /// </summary>
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+
+        public YearsService(IUserManager userManager) : base(userManager)
+        {
+        }
 
         /// <summary>
         /// Gets the specified request.

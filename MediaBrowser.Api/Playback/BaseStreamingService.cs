@@ -30,6 +30,12 @@ namespace MediaBrowser.Api.Playback
         protected IServerApplicationPaths ApplicationPaths { get; set; }
 
         /// <summary>
+        /// Gets or sets the user manager.
+        /// </summary>
+        /// <value>The user manager.</value>
+        protected IUserManager UserManager { get; set; }
+        
+        /// <summary>
         /// Gets the server kernel.
         /// </summary>
         /// <value>The server kernel.</value>
@@ -42,9 +48,11 @@ namespace MediaBrowser.Api.Playback
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
-        protected BaseStreamingService(IServerApplicationPaths appPaths)
+        /// <param name="userManager">The user manager.</param>
+        protected BaseStreamingService(IServerApplicationPaths appPaths, IUserManager userManager)
         {
             ApplicationPaths = appPaths;
+            UserManager = userManager;
         }
 
         /// <summary>
@@ -606,7 +614,7 @@ namespace MediaBrowser.Api.Playback
         /// <returns>StreamState.</returns>
         protected StreamState GetState(StreamRequest request)
         {
-            var item = DtoBuilder.GetItemByClientId(request.Id);
+            var item = DtoBuilder.GetItemByClientId(request.Id, UserManager);
 
             var media = (IHasMediaStreams)item;
 

@@ -39,14 +39,14 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryExplorer" /> class.
         /// </summary>
-        public LibraryExplorer(IJsonSerializer jsonSerializer, ILogger logger, IApplicationHost appHost)
+        public LibraryExplorer(IJsonSerializer jsonSerializer, ILogger logger, IApplicationHost appHost, IUserManager userManager)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
 
             InitializeComponent();
             lblVersion.Content = "Version: " + appHost.ApplicationVersion;
-            foreach (var user in Kernel.Instance.Users)
+            foreach (var user in userManager.Users)
                 ddlProfile.Items.Add(user);
             ddlProfile.Items.Insert(0,new User {Name = "Physical"});
             ddlProfile.SelectedIndex = 0;

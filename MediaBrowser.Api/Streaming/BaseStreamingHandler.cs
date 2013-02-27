@@ -221,10 +221,7 @@ namespace MediaBrowser.Api.Streaming
         /// <value>The library item.</value>
         protected TBaseItemType LibraryItem
         {
-            get
-            {
-                return _libraryItem ?? (_libraryItem = (TBaseItemType)DtoBuilder.GetItemByClientId(QueryString["id"]));
-            }
+            get { return _libraryItem; }
         }
 
         /// <summary>

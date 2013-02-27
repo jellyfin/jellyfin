@@ -85,12 +85,19 @@ namespace MediaBrowser.WebDashboard.Api
         private readonly ITaskManager _taskManager;
 
         /// <summary>
+        /// The _user manager
+        /// </summary>
+        private readonly IUserManager _userManager;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="DashboardService" /> class.
         /// </summary>
         /// <param name="taskManager">The task manager.</param>
-        public DashboardService(ITaskManager taskManager)
+        /// <param name="userManager">The user manager.</param>
+        public DashboardService(ITaskManager taskManager, IUserManager userManager)
         {
             _taskManager = taskManager;
+            _userManager = userManager;
         }
 
         /// <summary>
@@ -102,7 +109,7 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var kernel = (Kernel)Kernel;
 
-            return GetDashboardInfo(kernel, Logger, _taskManager);
+            return GetDashboardInfo(kernel, Logger, _taskManager, _userManager);
         }
 
         /// <summary>
@@ -111,10 +118,11 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="taskManager">The task manager.</param>
+        /// <param name="userManager">The user manager.</param>
         /// <returns>DashboardInfo.</returns>
-        public static DashboardInfo GetDashboardInfo(Kernel kernel, ILogger logger, ITaskManager taskManager)
+        public static DashboardInfo GetDashboardInfo(Kernel kernel, ILogger logger, ITaskManager taskManager, IUserManager userManager)
         {
-            var connections = kernel.UserManager.ActiveConnections.ToArray();
+            var connections = userManager.ConnectedUsers.ToArray();
 
             var dtoBuilder = new DtoBuilder(logger);
 
@@ -130,7 +138,7 @@ namespace MediaBrowser.WebDashboard.Api
 
                 ActiveConnections = connections,
 
-                Users = kernel.Users.Where(u => connections.Any(c => c.UserId == u.Id)).Select(dtoBuilder.GetDtoUser).ToArray()
+                Users = userManager.Users.Where(u => connections.Any(c => c.UserId == u.Id)).Select(dtoBuilder.GetDtoUser).ToArray()
             };
         }
 
@@ -353,6 +361,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <summary>
         /// Gets the common CSS.
         /// </summary>
+        /// <param name="version">The version.</param>
         /// <returns>System.String.</returns>
         private static string GetCommonCss(Version version)
         {
@@ -373,6 +382,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <summary>
         /// Gets the common javascript.
         /// </summary>
+        /// <param name="version">The version.</param>
         /// <returns>System.String.</returns>
         private static string GetCommonJavascript(Version version)
         {

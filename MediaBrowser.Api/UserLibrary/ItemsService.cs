@@ -146,6 +146,20 @@ namespace MediaBrowser.Api.UserLibrary
     public class ItemsService : BaseRestService
     {
         /// <summary>
+        /// The _user manager
+        /// </summary>
+        private readonly IUserManager _userManager;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ItemsService" /> class.
+        /// </summary>
+        /// <param name="userManager">The user manager.</param>
+        public ItemsService(IUserManager userManager)
+        {
+            _userManager = userManager;
+        }
+
+        /// <summary>
         /// Gets the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -164,9 +178,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task{ItemsResult}.</returns>
         private async Task<ItemsResult> GetItems(GetItems request)
         {
-            var kernel = (Kernel)Kernel;
-
-            var user = kernel.GetUserById(request.UserId);
+            var user = _userManager.GetUserById(request.UserId);
 
             var items = GetItemsToSerialize(request, user);
 
@@ -209,7 +221,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <exception cref="System.InvalidOperationException"></exception>
         private IEnumerable<BaseItem> GetItemsToSerialize(GetItems request, User user)
         {
-            var item = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.ParentId, user.Id);
+            var item = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.ParentId, _userManager, user.Id);
 
             // Default list type = children
 

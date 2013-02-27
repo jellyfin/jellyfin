@@ -146,12 +146,17 @@ namespace MediaBrowser.Api
         private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
+        /// The _user manager
+        /// </summary>
+        private readonly IUserManager _userManager;
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="UserService" /> class.
         /// </summary>
         /// <param name="xmlSerializer">The XML serializer.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <exception cref="System.ArgumentNullException">xmlSerializer</exception>
-        public UserService(IXmlSerializer xmlSerializer, IJsonSerializer jsonSerializer)
+        public UserService(IXmlSerializer xmlSerializer, IJsonSerializer jsonSerializer, IUserManager userManager)
             : base()
         {
             if (jsonSerializer == null)
@@ -166,6 +171,7 @@ namespace MediaBrowser.Api
 
             _jsonSerializer = jsonSerializer;
             _xmlSerializer = xmlSerializer;
+            _userManager = userManager;
         }
 
         /// <summary>
@@ -179,7 +185,7 @@ namespace MediaBrowser.Api
 
             var dtoBuilder = new DtoBuilder(Logger);
 
-            var result = kernel.Users.OrderBy(u => u.Name).Select(dtoBuilder.GetDtoUser).ToList();
+            var result = _userManager.Users.OrderBy(u => u.Name).Select(dtoBuilder.GetDtoUser).ToList();
 
             return ToOptimizedResult(result);
         }
@@ -191,9 +197,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetUser request)
         {
-            var kernel = (Kernel)Kernel;
-
-            var user = kernel.GetUserById(request.Id);
+            var user = _userManager.GetUserById(request.Id);
 
             if (user == null)
             {
@@ -211,16 +215,14 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Delete(DeleteUser request)
         {
-            var kernel = (Kernel)Kernel;
-
-            var user = kernel.GetUserById(request.Id);
+            var user = _userManager.GetUserById(request.Id);
 
             if (user == null)
             {
                 throw new ResourceNotFoundException("User not found");
             }
 
-            var task = kernel.UserManager.DeleteUser(user);
+            var task = _userManager.DeleteUser(user);
 
             Task.WaitAll(task);
         }
@@ -231,16 +233,14 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Post(AuthenticateUser request)
         {
-            var kernel = (Kernel)Kernel;
-
-            var user = kernel.GetUserById(request.Id);
+            var user = _userManager.GetUserById(request.Id);
 
             if (user == null)
             {
                 throw new ResourceNotFoundException("User not found");
             }
 
-            var success = kernel.UserManager.AuthenticateUser(user, request.Password).Result;
+            var success = _userManager.AuthenticateUser(user, request.Password).Result;
 
             if (!success)
             {
@@ -255,9 +255,7 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Post(UpdateUserPassword request)
         {
-            var kernel = (Kernel)Kernel;
-
-            var user = kernel.GetUserById(request.Id);
+            var user = _userManager.GetUserById(request.Id);
 
             if (user == null)
             {
@@ -266,20 +264,20 @@ namespace MediaBrowser.Api
 
             if (request.ResetPassword)
             {
-                var task = user.ResetPassword();
+                var task = user.ResetPassword(_userManager);
 
                 Task.WaitAll(task);
             }
             else
             {
-                var success = kernel.UserManager.AuthenticateUser(user, request.CurrentPassword).Result;
+                var success = _userManager.AuthenticateUser(user, request.CurrentPassword).Result;
 
                 if (!success)
                 {
                     throw new ResourceNotFoundException("Invalid user or password entered.");
                 }
 
-                var task = user.ChangePassword(request.NewPassword);
+                var task = user.ChangePassword(request.NewPassword, _userManager);
 
                 Task.WaitAll(task);
             }
@@ -296,13 +294,11 @@ namespace MediaBrowser.Api
             var pathInfo = PathInfo.Parse(Request.PathInfo);
             var id = new Guid(pathInfo.GetArgumentValue<string>(1));
 
-            var kernel = (Kernel)Kernel;
-
             var dtoUser = _jsonSerializer.DeserializeFromStream<UserDto>(request.RequestStream);
 
-            var user = kernel.GetUserById(id);
+            var user = _userManager.GetUserById(id);
 
-            var task = user.Name.Equals(dtoUser.Name, StringComparison.Ordinal) ? kernel.UserManager.UpdateUser(user) : kernel.UserManager.RenameUser(user, dtoUser.Name);
+            var task = user.Name.Equals(dtoUser.Name, StringComparison.Ordinal) ? _userManager.UpdateUser(user) : _userManager.RenameUser(user, dtoUser.Name);
 
             Task.WaitAll(task);
 
@@ -320,7 +316,7 @@ namespace MediaBrowser.Api
 
             var dtoUser = _jsonSerializer.DeserializeFromStream<UserDto>(request.RequestStream);
 
-            var newUser = kernel.UserManager.CreateUser(dtoUser.Name).Result;
+            var newUser = _userManager.CreateUser(dtoUser.Name).Result;
 
             var result = new DtoBuilder(Logger).GetDtoUser(newUser);
 
