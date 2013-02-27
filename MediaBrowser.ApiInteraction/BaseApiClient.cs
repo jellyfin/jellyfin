@@ -660,7 +660,12 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("options");
             }
 
-            var handler = "audio." + options.OutputFileExtension.TrimStart('.');
+            var handler = "Audio/" + options.ItemId + "/stream";
+
+            if (!string.IsNullOrEmpty(options.OutputFileExtension))
+            {
+                handler += "." + options.OutputFileExtension.TrimStart('.');
+            }
 
             return GetMediaStreamUrl(handler, options, new QueryStringDictionary());
         }
@@ -678,7 +683,12 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("options");
             }
 
-            var handler = "video." + options.OutputFileExtension.TrimStart('.');
+            var handler = "Videos/" + options.ItemId + "/stream";
+
+            if (!string.IsNullOrEmpty(options.OutputFileExtension))
+            {
+                handler += "." + options.OutputFileExtension.TrimStart('.');
+            }
 
             return GetVideoStreamUrl(handler, options);
         }
@@ -767,8 +777,6 @@ namespace MediaBrowser.ApiInteraction
             {
                 throw new ArgumentNullException("queryParams");
             }
-
-            queryParams.Add("id", options.ItemId);
 
             if (options.AudioCodec.HasValue)
             {
