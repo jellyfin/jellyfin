@@ -145,8 +145,9 @@ namespace MediaBrowser.Common.Implementations
             Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
 
             Resolve<IHttpServer>().Init(GetExports<IRestfulService>(false));
+            Resolve<IServerManager>().AddWebSocketListeners(GetExports<IWebSocketListener>(false));
 
-            Resolve<IServerManager>().AddWebSocketListeners(GetExports<IWebSocketListener>());
+            Resolve<IServerManager>().Start();
         }
         
         /// <summary>

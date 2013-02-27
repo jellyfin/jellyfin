@@ -231,7 +231,6 @@ namespace MediaBrowser.Common.Kernel
             await OnComposablePartsLoaded().ConfigureAwait(false);
 
             ServerManager = ApplicationHost.Resolve<IServerManager>();
-            ServerManager.Start();
         }
 
         /// <summary>

@@ -128,17 +128,6 @@ namespace MediaBrowser.ServerApplication
         }
 
         /// <summary>
-        /// Finds the parts.
-        /// </summary>
-        protected override void FindParts()
-        {
-            Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
-
-            Resolve<IHttpServer>().Init(GetExports<IRestfulService>(false));
-            Resolve<IServerManager>().AddWebSocketListeners(GetExports<IWebSocketListener>(false));
-        }
-
-        /// <summary>
         /// Restarts this instance.
         /// </summary>
         public void Restart()
