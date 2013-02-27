@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Dto;
@@ -122,6 +123,8 @@ namespace MediaBrowser.Api.Playback.Progressive
         {
             // Use the command line args with a dummy playlist path
             var outputPath = GetOutputFilePath(state);
+
+            Response.ContentType = MimeTypes.GetMimeType(outputPath);
 
             if (!File.Exists(outputPath))
             {

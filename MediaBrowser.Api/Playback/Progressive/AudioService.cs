@@ -7,12 +7,12 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// <summary>
     /// Class GetAudioStream
     /// </summary>
-    [Route("/Audio/{Id}.mp3", "GET")]
-    [Route("/Audio/{Id}.wma", "GET")]
-    [Route("/Audio/{Id}.aac", "GET")]
-    [Route("/Audio/{Id}.flac", "GET")]
-    [Route("/Audio/{Id}.ogg", "GET")]
-    [Route("/Audio/{Id}", "GET")]
+    [Route("/Audio/{Id}/stream.mp3", "GET")]
+    [Route("/Audio/{Id}/stream.wma", "GET")]
+    [Route("/Audio/{Id}/stream.aac", "GET")]
+    [Route("/Audio/{Id}/stream.flac", "GET")]
+    [Route("/Audio/{Id}/stream.ogg", "GET")]
+    [Route("/Audio/{Id}/stream", "GET")]
     public class GetAudioStream : StreamRequest
     {
 

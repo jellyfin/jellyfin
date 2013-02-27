@@ -109,6 +109,7 @@
     <Compile Include="HttpServer\HttpServer.cs" />
     <Compile Include="HttpServer\NativeWebSocket.cs" />
     <Compile Include="HttpServer\ServerFactory.cs" />
+    <Compile Include="HttpServer\StreamWriter.cs" />
     <Compile Include="Logging\LogHelper.cs" />
     <Compile Include="Logging\NLogger.cs" />
     <Compile Include="Logging\NlogManager.cs" />

@@ -1,10 +1,29 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Logging;
 using System;
+using ServiceStack.ServiceHost;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
+    /// <summary>
+    /// Class GetAudioStream
+    /// </summary>
+    [Route("/Videos/{Id}/stream.ts", "GET")]
+    [Route("/Videos/{Id}/stream.webm", "GET")]
+    [Route("/Videos/{Id}/stream.asf", "GET")]
+    [Route("/Videos/{Id}/stream.wmv", "GET")]
+    [Route("/Videos/{Id}/stream.ogv", "GET")]
+    [Route("/Videos/{Id}/stream.mp4", "GET")]
+    [Route("/Videos/{Id}/stream.m4v", "GET")]
+    [Route("/Videos/{Id}/stream.mkv", "GET")]
+    [Route("/Videos/{Id}/stream.mpeg", "GET")]
+    [Route("/Videos/{Id}/stream.avi", "GET")]
+    [Route("/Videos/{Id}/stream", "GET")]
+    public class GetVideoStream : StreamRequest
+    {
+
+    }
+    
     /// <summary>
     /// Class VideoService
     /// </summary>
@@ -19,6 +38,16 @@ namespace MediaBrowser.Api.Playback.Progressive
         {
         }
 
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
+        public object Get(GetVideoStream request)
+        {
+            return ProcessRequest(request);
+        }
+        
         /// <summary>
         /// Gets the command line arguments.
         /// </summary>
