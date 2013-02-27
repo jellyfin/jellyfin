@@ -202,9 +202,9 @@ namespace MediaBrowser.Api
 
             var result = new PluginSecurityInfo
             {
-                IsMBSupporter = kernel.PluginSecurityManager.IsMBSupporter,
-                SupporterKey = kernel.PluginSecurityManager.SupporterKey,
-                LegacyKey = kernel.PluginSecurityManager.LegacyKey
+                IsMBSupporter = kernel.SecurityManager.IsMBSupporter,
+                SupporterKey = kernel.SecurityManager.SupporterKey,
+                LegacyKey = kernel.SecurityManager.LegacyKey
             };
 
             return ToOptimizedResult(result);
@@ -220,8 +220,8 @@ namespace MediaBrowser.Api
 
             var info = _jsonSerializer.DeserializeFromStream<PluginSecurityInfo>(request.RequestStream);
 
-            kernel.PluginSecurityManager.SupporterKey = info.SupporterKey;
-            kernel.PluginSecurityManager.LegacyKey = info.LegacyKey;
+            kernel.SecurityManager.SupporterKey = info.SupporterKey;
+            kernel.SecurityManager.LegacyKey = info.LegacyKey;
         }
 
         /// <summary>

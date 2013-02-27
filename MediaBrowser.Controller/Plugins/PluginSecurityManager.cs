@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Serialization;
+﻿using MediaBrowser.Common.Security;
+using MediaBrowser.Model.Serialization;
 using Mediabrowser.Model.Entities;
 using Mediabrowser.PluginSecurity;
 using MediaBrowser.Common.Kernel;
@@ -12,7 +13,7 @@ namespace MediaBrowser.Controller.Plugins
     /// <summary>
     /// Class PluginSecurityManager
     /// </summary>
-    public class PluginSecurityManager
+    public class PluginSecurityManager : ISecurityManager
     {
         /// <summary>
         /// The _is MB supporter
