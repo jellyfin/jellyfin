@@ -340,6 +340,15 @@ namespace MediaBrowser.Common.Implementations
         }
 
         /// <summary>
+        /// Configures the auto run at startup.
+        /// </summary>
+        /// <param name="autorun">if set to <c>true</c> [autorun].</param>
+        public void ConfigureAutoRunAtStartup(bool autorun)
+        {
+            
+        }
+
+        /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
         public void Dispose()
