@@ -175,6 +175,7 @@ namespace MediaBrowser.Common.Implementations
             RegisterSingleInstance(ProtobufSerializer);
             RegisterSingleInstance<IUdpServer>(new UdpServer(Logger), false);
             RegisterSingleInstance<IPackageManager>(new PackageManager());
+            RegisterSingleInstance<IHttpClient>(new HttpClientManager.HttpClientManager(ApplicationPaths, Logger));
 
             RegisterSingleInstance(networkManager);
             RegisterSingleInstance(serverManager);
