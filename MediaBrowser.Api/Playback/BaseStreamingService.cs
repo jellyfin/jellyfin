@@ -144,7 +144,7 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="state">The state.</param>
         /// <returns>System.String.</returns>
-        protected string GetMapArgs(StreamState state)
+        protected virtual string GetMapArgs(StreamState state)
         {
             var args = string.Empty;
 
