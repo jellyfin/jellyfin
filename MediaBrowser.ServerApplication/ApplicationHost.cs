@@ -7,15 +7,12 @@ using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Common.Implementations.NetworkManagement;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.Implementations.Serialization;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Implementations.ServerManager;
 using MediaBrowser.Common.Implementations.Udp;
-using MediaBrowser.Common.Implementations.Updates;
-using MediaBrowser.Common.Implementations.WebSocket;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;
@@ -88,13 +85,7 @@ namespace MediaBrowser.ServerApplication
 
             RegisterResources(taskManager, networkManager, serverManager);
 
-<<<<<<< HEAD
             FindParts();
-=======
-            RegisterResources(taskManager, httpServer, networkManager, serverManager, PackageManager);
-
-            FindParts(taskManager, httpServer);
->>>>>>> c9f48fe0d0d5cf4aec62df1d1e97f629967aff6f
         }
 
         /// <summary>
@@ -118,11 +109,7 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
-<<<<<<< HEAD
         protected override void RegisterResources(ITaskManager taskManager, INetworkManager networkManager, IServerManager serverManager)
-=======
-        private void RegisterResources(ITaskManager taskManager, IHttpServer httpServer, INetworkManager networkManager, IServerManager serverManager, IPackageManager packageManager)
->>>>>>> c9f48fe0d0d5cf4aec62df1d1e97f629967aff6f
         {
             base.RegisterResources(taskManager, networkManager, serverManager);
 
@@ -138,27 +125,23 @@ namespace MediaBrowser.ServerApplication
             RegisterSingleInstance<IZipClient>(new DotNetZipClient());
             RegisterSingleInstance(_jsonSerializer);
             RegisterSingleInstance(_xmlSerializer);
-<<<<<<< HEAD
             RegisterSingleInstance(ServerFactory.CreateServer(this, ProtobufSerializer, Logger, "Media Browser", "index.html"), false);
-=======
             RegisterSingleInstance(ProtobufSerializer);
             RegisterSingleInstance<IUdpServer>(new UdpServer(Logger), false);
-            RegisterSingleInstance(httpServer, false);
 
             RegisterSingleInstance(networkManager);
             RegisterSingleInstance(serverManager);
-            RegisterSingleInstance(packageManager);
         }
 
         /// <summary>
         /// Finds the parts.
         /// </summary>
-        private void FindParts(ITaskManager taskManager, IHttpServer httpServer)
+        protected override void FindParts()
         {
-            taskManager.AddTasks(GetExports<IScheduledTask>(false));
+            Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
 
-            httpServer.Init(GetExports<IRestfulService>(false));
->>>>>>> c9f48fe0d0d5cf4aec62df1d1e97f629967aff6f
+            Resolve<IHttpServer>().Init(GetExports<IRestfulService>(false));
+            Resolve<IServerManager>().AddWebSocketListeners(GetExports<IWebSocketListener>(false));
         }
 
         /// <summary>
@@ -186,6 +169,7 @@ namespace MediaBrowser.ServerApplication
         /// <returns>Task{CheckForUpdateResult}.</returns>
         public Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
+            // Get package manager using Resolve<IPackageManager>()
             return new ApplicationUpdateCheck().CheckForApplicationUpdate(cancellationToken, progress);
         }
 

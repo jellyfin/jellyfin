@@ -1,19 +1,11 @@
-<<<<<<< HEAD
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Implementations.HttpServer;
-using MediaBrowser.Common.Implementations.Udp;
+﻿using MediaBrowser.Common.Implementations.Udp;
+using MediaBrowser.Common.Implementations.Updates;
 using MediaBrowser.Common.Implementations.WebSocket;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Model.IO;
-=======
-﻿using MediaBrowser.Common.Implementations.Updates;
-using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Updates;
->>>>>>> c9f48fe0d0d5cf4aec62df1d1e97f629967aff6f
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using SimpleInjector;
 using System;
@@ -49,11 +41,6 @@ namespace MediaBrowser.Common.Implementations
         /// The container
         /// </summary>
         protected readonly Container Container = new Container();
-      
-        /// <summary>
-        /// The package manager
-        /// </summary>
-        protected readonly IPackageManager PackageManager = new PackageManager();
       
         /// <summary>
         /// Gets assemblies that failed to load
@@ -187,6 +174,7 @@ namespace MediaBrowser.Common.Implementations
             RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
             RegisterSingleInstance(ProtobufSerializer);
             RegisterSingleInstance<IUdpServer>(new UdpServer(Logger), false);
+            RegisterSingleInstance<IPackageManager>(new PackageManager());
 
             RegisterSingleInstance(networkManager);
             RegisterSingleInstance(serverManager);
