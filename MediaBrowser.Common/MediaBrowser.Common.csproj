@@ -47,6 +47,7 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Constants\Constants.cs" />
     <Compile Include="Events\EventHelper.cs" />
     <Compile Include="Extensions\BaseExtensions.cs" />
     <Compile Include="Events\GenericEventArgs.cs" />
@@ -104,7 +105,7 @@
     <Compile Include="ScheduledTasks\IntervalTrigger.cs" />
     <Compile Include="ScheduledTasks\WeeklyTrigger.cs" />
     <Compile Include="Security\ISecurityManager.cs" />
-    <Compile Include="Updates\IInstallationManager.cs" />
+    <Compile Include="Updates\IPackageManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

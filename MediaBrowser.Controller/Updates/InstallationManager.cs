@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Updates
     /// <summary>
     /// Manages all install, uninstall and update operations (both plugins and system)
     /// </summary>
-    public class InstallationManager : BaseManager<Kernel>, IInstallationManager
+    public class InstallationManager : BaseManager<Kernel>
     {
         /// <summary>
         /// The current installations
@@ -110,6 +110,11 @@ namespace MediaBrowser.Controller.Updates
         private readonly INetworkManager _networkManager;
 
         /// <summary>
+        /// The package manager
+        /// </summary>
+        private readonly IPackageManager _packageManager;
+
+        /// <summary>
         /// Gets the json serializer.
         /// </summary>
         /// <value>The json serializer.</value>
@@ -134,11 +139,12 @@ namespace MediaBrowser.Controller.Updates
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="zipClient">The zip client.</param>
         /// <param name="networkManager">The network manager.</param>
+        /// <param name="packageManager">The package manager.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="appHost">The app host.</param>
         /// <exception cref="System.ArgumentNullException">zipClient</exception>
-        public InstallationManager(Kernel kernel, IHttpClient httpClient, IZipClient zipClient, INetworkManager networkManager, IJsonSerializer jsonSerializer, ILogger logger, IApplicationHost appHost)
+        public InstallationManager(Kernel kernel, IHttpClient httpClient, IZipClient zipClient, INetworkManager networkManager, IPackageManager packageManager, IJsonSerializer jsonSerializer, ILogger logger, IApplicationHost appHost)
             : base(kernel)
         {
             if (zipClient == null)
@@ -148,6 +154,10 @@ namespace MediaBrowser.Controller.Updates
             if (networkManager == null)
             {
                 throw new ArgumentNullException("networkManager");
+            }
+            if (packageManager == null)
+            {
+                throw new ArgumentNullException("packageManager");
             }
             if (logger == null)
             {
@@ -168,6 +178,7 @@ namespace MediaBrowser.Controller.Updates
             HttpClient = httpClient;
             ApplicationHost = appHost;
             _networkManager = networkManager;
+            _packageManager = packageManager;
             _logger = logger;
             ZipClient = zipClient;
         }
@@ -183,39 +194,26 @@ namespace MediaBrowser.Controller.Updates
             PackageType? packageType = null,
             Version applicationVersion = null)
         {
-            var data = new Dictionary<string, string> { { "key", Kernel.SecurityManager.SupporterKey }, { "mac", _networkManager.GetMacAddress() } };
+            var packages = (await _packageManager.GetAvailablePackages(HttpClient, _networkManager, Kernel.SecurityManager, Kernel.ResourcePools, JsonSerializer, cancellationToken).ConfigureAwait(false)).ToList();
 
-            using (var json = await HttpClient.Post(Controller.Kernel.MBAdminUrl + "service/package/retrieveall", data, Kernel.ResourcePools.Mb, cancellationToken).ConfigureAwait(false))
+            if (packageType.HasValue)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                packages = packages.Where(p => p.type == packageType.Value).ToList();
+            }
 
-                var packages = JsonSerializer.DeserializeFromStream<List<PackageInfo>>(json).ToList();
-
+            // If an app version was supplied, filter the versions for each package to only include supported versions
+            if (applicationVersion != null)
+            {
                 foreach (var package in packages)
                 {
-                    package.versions = package.versions.Where(v => !string.IsNullOrWhiteSpace(v.sourceUrl))
-                        .OrderByDescending(v => v.version).ToList();
+                    package.versions = package.versions.Where(v => IsPackageVersionUpToDate(v, applicationVersion)).ToList();
                 }
-
-                if (packageType.HasValue)
-                {
-                    packages = packages.Where(p => p.type == packageType.Value).ToList();
-                }
-
-                // If an app version was supplied, filter the versions for each package to only include supported versions
-                if (applicationVersion != null)
-                {
-                    foreach (var package in packages)
-                    {
-                        package.versions = package.versions.Where(v => IsPackageVersionUpToDate(v, applicationVersion)).ToList();
-                    }
-                }
-
-                // Remove packages with no versions
-                packages = packages.Where(p => p.versions.Any()).ToList();
-
-                return packages;
             }
+
+            // Remove packages with no versions
+            packages = packages.Where(p => p.versions.Any()).ToList();
+
+            return packages;
         }
 
         /// <summary>
