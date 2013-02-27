@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Security;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
 
@@ -34,9 +36,22 @@ namespace MediaBrowser.Common.Updates
         /// <summary>
         /// Installs a package.
         /// </summary>
+        /// <param name="client"></param>
+        /// <param name="logger"></param>
+        /// <param name="resourcePool"></param>
+        /// <param name="progress"></param>
+        /// <param name="zipClient"></param>
+        /// <param name="appPaths"></param>
         /// <param name="package">The package.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task InstallPackage(PackageVersionInfo package, CancellationToken cancellationToken);
+        Task InstallPackage(IHttpClient client,
+                            ILogger logger,
+                            ResourcePool resourcePool,
+                            IProgress<double> progress,
+                            IZipClient zipClient,
+                            IApplicationPaths appPaths,
+                            PackageVersionInfo package,
+                            CancellationToken cancellationToken);
     }
 }

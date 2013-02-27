@@ -429,77 +429,31 @@ namespace MediaBrowser.Controller.Updates
         /// <returns>Task.</returns>
         private async Task InstallPackageInternal(PackageVersionInfo package, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            // Target based on if it is an archive or single assembly
-            //  zip archives are assumed to contain directory structures relative to our ProgramDataPath
-            var isArchive = string.Equals(Path.GetExtension(package.sourceUrl), ".zip", StringComparison.OrdinalIgnoreCase);
-            var target = isArchive ? Kernel.ApplicationPaths.ProgramDataPath : Path.Combine(Kernel.ApplicationPaths.PluginsPath, package.targetFilename);
+            // Do the install
+            await _packageManager.InstallPackage(HttpClient, _logger, Kernel.ResourcePools, progress, ZipClient, Kernel.ApplicationPaths, package, cancellationToken).ConfigureAwait(false);
 
-            // Download to temporary file so that, if interrupted, it won't destroy the existing installation
-            var tempFile = await HttpClient.GetTempFile(package.sourceUrl, Kernel.ResourcePools.Mb, cancellationToken, progress).ConfigureAwait(false);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // Validate with a checksum
-            if (package.checksum != Guid.Empty) // support for legacy uploads for now
+            // Do plugin-specific processing
+            if (!(Path.GetExtension(package.targetFilename) ?? "").Equals(".zip", StringComparison.OrdinalIgnoreCase))
             {
-                using (var crypto = new MD5CryptoServiceProvider())
-                using (var stream = new BufferedStream(File.OpenRead(tempFile), 100000))
+                // Set last update time if we were installed before
+                var plugin = Kernel.Plugins.FirstOrDefault(p => p.Name.Equals(package.name, StringComparison.OrdinalIgnoreCase));
+
+                if (plugin != null)
                 {
-                    var check = Guid.Parse(BitConverter.ToString(crypto.ComputeHash(stream)).Replace("-", String.Empty));
-                    if (check != package.checksum)
+                    // Synchronize the UpdateClass value
+                    if (plugin.Configuration.UpdateClass != package.classification)
                     {
-                        throw new ApplicationException(string.Format("Download validation failed for {0}.  Probably corrupted during transfer.", package.name));
+                        plugin.Configuration.UpdateClass = package.classification;
+                        plugin.SaveConfiguration();
                     }
+
+                    OnPluginUpdated(plugin, package);
                 }
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // Success - move it to the real target based on type
-            if (isArchive)
-            {
-                try
+                else
                 {
-                    ZipClient.ExtractAll(tempFile, target, true);
+                    OnPluginInstalled(package);
                 }
-                catch (IOException e)
-                {
-                    _logger.ErrorException("Error attempting to extract archive from {0} to {1}", e, tempFile, target);
-                    throw;
-                }
-
-            }
-            else
-            {
-                try
-                {
-                    File.Copy(tempFile, target, true);
-                    File.Delete(tempFile);
-                }
-                catch (IOException e)
-                {
-                    _logger.ErrorException("Error attempting to move file from {0} to {1}", e, tempFile, target);
-                    throw;
-                }
-            }
-
-            // Set last update time if we were installed before
-            var plugin = Kernel.Plugins.FirstOrDefault(p => p.Name.Equals(package.name, StringComparison.OrdinalIgnoreCase));
-
-            if (plugin != null)
-            {
-                // Synchronize the UpdateClass value
-                if (plugin.Configuration.UpdateClass != package.classification)
-                {
-                    plugin.Configuration.UpdateClass = package.classification;
-                    plugin.SaveConfiguration();
-                }
-
-                OnPluginUpdated(plugin, package);
-            }
-            else
-            {
-                OnPluginInstalled(package);
+                
             }
         }
 
