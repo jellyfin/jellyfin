@@ -30,6 +30,8 @@ namespace MediaBrowser.Installer
 
         protected string TempLocation = Path.Combine(Path.GetTempPath(), "MediaBrowser");
 
+        protected WebClient MainClient = new WebClient();
+
         public MainWindow()
         {
             GetArgs();
@@ -48,6 +50,15 @@ namespace MediaBrowser.Installer
             {
                 e.Cancel = true;
             }
+            if (MainClient.IsBusy)
+            {
+                MainClient.CancelAsync();
+                while (MainClient.IsBusy)
+                {
+                    // wait to finish
+                }
+            }
+            MainClient.Dispose();
             ClearTempLocation(TempLocation);
             base.OnClosing(e);
         }
@@ -129,6 +140,8 @@ namespace MediaBrowser.Installer
             dlAnimation.StopAnimation();
             prgProgress.Visibility = btnCancel.Visibility = Visibility.Hidden;
 
+            if (archive == null) return;  //we canceled or had an error that was already reported
+
             // Extract
             lblStatus.Content = "Extracting Package...";
             try 
@@ -167,28 +180,25 @@ namespace MediaBrowser.Installer
 
         protected async Task<PackageVersionInfo> GetPackageVersion()
         {
-            using (var client = new WebClient())
+            try
             {
-                try
-                {
-                    // get the package information for the server
-                    var json = await client.DownloadStringTaskAsync("http://www.mb3admin.com/admin/service/package/retrieveAll?name=" + PackageName);
-                    var packages = JsonSerializer.DeserializeFromString<List<PackageInfo>>(json);
+                // get the package information for the server
+                var json = await MainClient.DownloadStringTaskAsync("http://www.mb3admin.com/admin/service/package/retrieveAll?name=" + PackageName);
+                var packages = JsonSerializer.DeserializeFromString<List<PackageInfo>>(json);
 
-                    var version = packages[0].versions.Where(v => v.classification <= PackageClass).OrderByDescending(v => v.version).FirstOrDefault(v => v.version <= PackageVersion);
-                    if (version == null)
-                    {
-                        SystemClose("Could not locate download package.  Aborting.");
-                        return null;
-                    }
-                    return version;
-                }
-                catch (Exception e)
+                var version = packages[0].versions.Where(v => v.classification <= PackageClass).OrderByDescending(v => v.version).FirstOrDefault(v => v.version <= PackageVersion);
+                if (version == null)
                 {
-                    SystemClose(e.GetType().FullName + "\n\n" + e.Message);
+                    SystemClose("Could not locate download package.  Aborting.");
+                    return null;
                 }
-
+                return version;
             }
+            catch (Exception e)
+            {
+                SystemClose(e.GetType().FullName + "\n\n" + e.Message);
+            }
+
             return null;
         }
 
@@ -198,23 +208,32 @@ namespace MediaBrowser.Installer
         /// <returns>The fully qualified name of the downloaded package</returns>
         protected async Task<string> DownloadPackage(PackageVersionInfo version)
         {
-            using (var client = new WebClient())
+            try
             {
+                var archiveFile = Path.Combine(PrepareTempLocation(), version.targetFilename);
+
+                // setup download progress and download the package
+                MainClient.DownloadProgressChanged += DownloadProgressChanged;
                 try
                 {
-                    var archiveFile = Path.Combine(PrepareTempLocation(), version.targetFilename);
-
-                    // setup download progress and download the package
-                    client.DownloadProgressChanged += DownloadProgressChanged;
-                    await client.DownloadFileTaskAsync(version.sourceUrl, archiveFile);
-                    return archiveFile;
+                    await MainClient.DownloadFileTaskAsync(version.sourceUrl, archiveFile);
                 }
-                catch (Exception e)
+                catch (WebException e)
                 {
-                    SystemClose(e.GetType().FullName + "\n\n" + e.Message);
+                    if (e.Status == WebExceptionStatus.RequestCanceled)
+                    {
+                        return null;
+                    }
+                    throw;
                 }
+
+                return archiveFile;
             }
-        return "";
+            catch (Exception e)
+            {
+                SystemClose(e.GetType().FullName + "\n\n" + e.Message);
+            }
+            return "";
 
         }
 
