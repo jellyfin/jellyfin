@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>MediaBrowser.Common.Internal</id>
-        <version>3.0.10</version>
+        <version>3.0.12</version>
         <title />
         <authors>Luke</authors>
         <owners>Media Browser Team</owners>
@@ -10,7 +10,7 @@
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Contains common components shared by Media Browser Theatre and Media Browser Server. Not intended for plugin developer consumption.</description>
         <dependencies>
-            <dependency id="MediaBrowser.Common" version="3.0.10" />
+            <dependency id="MediaBrowser.Common" version="3.0.12" />
             <dependency id="NLog" version="2.0.0.2000" />
             <dependency id="ServiceStack" version="3.9.37" />
             <dependency id="ServiceStack.Api.Swagger" version="3.9.35" />

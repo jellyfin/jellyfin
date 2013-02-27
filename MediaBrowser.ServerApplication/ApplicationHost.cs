@@ -121,16 +121,10 @@ namespace MediaBrowser.ServerApplication
             RegisterSingleInstance(ServerApplicationPaths);
             RegisterSingleInstance<IIsoManager>(new PismoIsoManager(Logger));
             RegisterSingleInstance<IBlurayExaminer>(new BdInfoExaminer());
-            RegisterSingleInstance<IHttpClient>(new HttpClientManager(ApplicationPaths, Logger));
             RegisterSingleInstance<IZipClient>(new DotNetZipClient());
             RegisterSingleInstance(_jsonSerializer);
             RegisterSingleInstance(_xmlSerializer);
             RegisterSingleInstance(ServerFactory.CreateServer(this, ProtobufSerializer, Logger, "Media Browser", "index.html"), false);
-            RegisterSingleInstance(ProtobufSerializer);
-            RegisterSingleInstance<IUdpServer>(new UdpServer(Logger), false);
-
-            RegisterSingleInstance(networkManager);
-            RegisterSingleInstance(serverManager);
         }
 
         /// <summary>
