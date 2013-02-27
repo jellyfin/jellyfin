@@ -296,7 +296,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Loads the users from the repository
         /// </summary>
         /// <returns>IEnumerable{User}.</returns>
-        public IEnumerable<User> LoadUsers()
+        private IEnumerable<User> LoadUsers()
         {
             var users = Kernel.UserRepository.RetrieveAllUsers().ToList();
 

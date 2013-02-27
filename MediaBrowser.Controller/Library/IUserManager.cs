@@ -75,12 +75,6 @@ namespace MediaBrowser.Controller.Library
         Task LogUserActivity(User user, ClientType clientType, string deviceName);
 
         /// <summary>
-        /// Loads the users from the repository
-        /// </summary>
-        /// <returns>IEnumerable{User}.</returns>
-        IEnumerable<User> LoadUsers();
-
-        /// <summary>
         /// Refreshes metadata for each user
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>

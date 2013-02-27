@@ -3,11 +3,9 @@ using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Server.Uninstall;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Net.Cache;
 using System.Threading;
 using System.Threading.Tasks;
@@ -76,33 +74,6 @@ namespace MediaBrowser.ServerApplication
         public App()
         {
             InitializeComponent();
-        }
-
-        /// <summary>
-        /// Gets the name of the product.
-        /// </summary>
-        /// <value>The name of the product.</value>
-        protected string ProductName
-        {
-            get { return Globals.ProductName; }
-        }
-
-        /// <summary>
-        /// Gets the name of the publisher.
-        /// </summary>
-        /// <value>The name of the publisher.</value>
-        protected string PublisherName
-        {
-            get { return Globals.PublisherName; }
-        }
-
-        /// <summary>
-        /// Gets the name of the suite.
-        /// </summary>
-        /// <value>The name of the suite.</value>
-        protected string SuiteName
-        {
-            get { return Globals.SuiteName; }
         }
 
         /// <summary>
@@ -212,7 +183,7 @@ namespace MediaBrowser.ServerApplication
             {
                 Kernel.ConfigurationUpdated += Kernel_ConfigurationUpdated;
 
-                ConfigureClickOnceStartup();
+                ConfigureAutoRun();
             });
         }
 
@@ -225,25 +196,16 @@ namespace MediaBrowser.ServerApplication
         {
             if (!LastRunAtStartupValue.HasValue || LastRunAtStartupValue.Value != Kernel.Configuration.RunAtStartup)
             {
-                ConfigureClickOnceStartup();
+                ConfigureAutoRun();
             }
         }
 
         /// <summary>
         /// Configures the click once startup.
         /// </summary>
-        private void ConfigureClickOnceStartup()
+        private void ConfigureAutoRun()
         {
-            try
-            {
-                ClickOnceHelper.ConfigureClickOnceStartupIfInstalled(PublisherName, ProductName, SuiteName, Kernel.Configuration.RunAtStartup, UninstallerFileName);
-
-                LastRunAtStartupValue = Kernel.Configuration.RunAtStartup;
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error configuring ClickOnce", ex);
-            }
+            CompositionRoot.ConfigureAutoRunAtStartup(Kernel.Configuration.RunAtStartup);
         }
 
         /// <summary>

@@ -286,10 +286,6 @@
       <Project>{2e781478-814d-4a48-9d80-bff206441a65}</Project>
       <Name>MediaBrowser.Server.Implementations</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Server.Uninstall\MediaBrowser.Server.Uninstall.csproj">
-      <Project>{5443422f-9548-417a-90dd-2fc91f2b5999}</Project>
-      <Name>MediaBrowser.Server.Uninstall</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Images\icon.ico" />

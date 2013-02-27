@@ -24,8 +24,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.ApiInteraction
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.ApiInteraction.Portable", "MediaBrowser.ApiInteraction.Portable\MediaBrowser.ApiInteraction.Portable.csproj", "{52E0C440-85C0-4A99-ACFE-07C87B2600BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Server.Uninstall", "MediaBrowser.Server.Uninstall\MediaBrowser.Server.Uninstall.csproj", "{5443422F-9548-417A-90DD-2FC91F2B5999}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget (2)", ".nuget (2)", "{E60FB157-87E2-4A41-8B04-27EA49B63B4D}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\NuGet.Config = .nuget\NuGet.Config
@@ -189,21 +187,6 @@ Global
 		{52E0C440-85C0-4A99-ACFE-07C87B2600BE}.Release|Win32.ActiveCfg = Release|Any CPU
 		{52E0C440-85C0-4A99-ACFE-07C87B2600BE}.Release|x64.ActiveCfg = Release|Any CPU
 		{52E0C440-85C0-4A99-ACFE-07C87B2600BE}.Release|x86.ActiveCfg = Release|Any CPU
-		{5443422F-9548-417A-90DD-2FC91F2B5999}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5443422F-9548-417A-90DD-2FC91F2B5999}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5443422F-9548-417A-90DD-2FC91F2B5999}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{5443422F-9548-417A-90DD-2FC91F2B5999}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{5443422F-9548-417A-90DD-2FC91F2B5999}.Debug|Win32.ActiveCfg = Debug|Any CPU
-		{5443422F-9548-417A-90DD-2FC91F2B5999}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{5443422F-9548-417A-90DD-2FC91F2B5999}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{5443422F-9548-417A-90DD-2FC91F2B5999}.Debug|x86.Build.0 = Debug|Any CPU
-		{5443422F-9548-417A-90DD-2FC91F2B5999}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5443422F-9548-417A-90DD-2FC91F2B5999}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5443422F-9548-417A-90DD-2FC91F2B5999}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{5443422F-9548-417A-90DD-2FC91F2B5999}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{5443422F-9548-417A-90DD-2FC91F2B5999}.Release|Win32.ActiveCfg = Release|Any CPU
-		{5443422F-9548-417A-90DD-2FC91F2B5999}.Release|x64.ActiveCfg = Release|Any CPU
-		{5443422F-9548-417A-90DD-2FC91F2B5999}.Release|x86.ActiveCfg = Release|Any CPU
 		{07B509C0-0C28-4F3F-8963-5263281F7E3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{07B509C0-0C28-4F3F-8963-5263281F7E3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{07B509C0-0C28-4F3F-8963-5263281F7E3D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

@@ -17,6 +17,12 @@ namespace MediaBrowser.Common.Kernel
         void Restart();
 
         /// <summary>
+        /// Configures the auto run at startup.
+        /// </summary>
+        /// <param name="autorun">if set to <c>true</c> [autorun].</param>
+        void ConfigureAutoRunAtStartup(bool autorun);
+
+        /// <summary>
         /// Gets the application version.
         /// </summary>
         /// <value>The application version.</value>
