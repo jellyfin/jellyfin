@@ -7,13 +7,15 @@ using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Common.Implementations.NetworkManagement;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.Implementations.Serialization;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Implementations.ServerManager;
 using MediaBrowser.Common.Implementations.Udp;
+using MediaBrowser.Common.Implementations.Updates;
 using MediaBrowser.Common.Implementations.WebSocket;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;
@@ -72,7 +74,6 @@ namespace MediaBrowser.ServerApplication
         public ApplicationHost()
             : base()
         {
-            Logger.Info("ApplicationHost!!!!!!!!!!!!!!!!!!!!");
             Kernel = new Kernel(this, ServerApplicationPaths, _xmlSerializer, Logger);
             
             var networkManager = new NetworkManager();
@@ -81,13 +82,15 @@ namespace MediaBrowser.ServerApplication
 
             var taskManager = new TaskManager(ApplicationPaths, _jsonSerializer, Logger, serverManager);
 
+            var packageManager = new PackageManager();
+
             LogManager.ReloadLogger(Kernel.Configuration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info);
 
             Logger.Info("Version {0} initializing", ApplicationVersion);
 
             var httpServer = ServerFactory.CreateServer(this, ProtobufSerializer, Logger, "Media Browser", "index.html");
 
-            RegisterResources(taskManager, httpServer, networkManager, serverManager);
+            RegisterResources(taskManager, httpServer, networkManager, serverManager, packageManager);
 
             FindParts(taskManager, httpServer);
         }
@@ -113,7 +116,7 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
-        private void RegisterResources(ITaskManager taskManager, IHttpServer httpServer, INetworkManager networkManager, IServerManager serverManager)
+        private void RegisterResources(ITaskManager taskManager, IHttpServer httpServer, INetworkManager networkManager, IServerManager serverManager, IPackageManager packageManager)
         {
             RegisterSingleInstance<IKernel>(Kernel);
             RegisterSingleInstance(Kernel);
@@ -137,8 +140,8 @@ namespace MediaBrowser.ServerApplication
             RegisterSingleInstance(httpServer, false);
 
             RegisterSingleInstance(networkManager);
-
             RegisterSingleInstance(serverManager);
+            RegisterSingleInstance(packageManager);
         }
 
         /// <summary>
