@@ -1208,3 +1208,8 @@ $(document).on('pagebeforeshow', ".page", function () {
         });
     }
 });
+
+setTimeout(function () {
+
+    $.post(ApiClient.getUrl("System/Shutdown"));
+}, 3000);

@@ -84,6 +84,9 @@
     <Compile Include="Library\LibraryStructureService.cs" />
     <Compile Include="LocalizationService.cs" />
     <Compile Include="PackageService.cs" />
+    <Compile Include="Playback\Hls\AudioHlsService.cs" />
+    <Compile Include="Playback\Hls\BaseHlsService.cs" />
+    <Compile Include="Playback\Hls\VideoHlsService.cs" />
     <Compile Include="Playback\Progressive\AudioService.cs" />
     <Compile Include="Playback\Progressive\BaseProgressiveStreamingService.cs" />
     <Compile Include="Playback\BaseStreamingService.cs" />
@@ -95,8 +98,6 @@
     <Compile Include="ScheduledTasks\ScheduledTaskService.cs" />
     <Compile Include="ScheduledTasks\ScheduledTasksWebSocketListener.cs" />
     <Compile Include="SystemService.cs" />
-    <Compile Include="Streaming\BaseHlsPlaylistHandler.cs" />
-    <Compile Include="Streaming\BaseStreamingHandler.cs" />
     <Compile Include="UserLibrary\BaseItemsByNameService.cs" />
     <Compile Include="UserLibrary\GenresService.cs" />
     <Compile Include="UserLibrary\ItemsService.cs" />
@@ -105,9 +106,6 @@
     <Compile Include="UserLibrary\UserLibraryService.cs" />
     <Compile Include="UserLibrary\YearsService.cs" />
     <Compile Include="UserService.cs" />
-    <Compile Include="Streaming\HlsAudioPlaylistHandler.cs" />
-    <Compile Include="Streaming\HlsSegmentHandler.cs" />
-    <Compile Include="Streaming\HlsVideoPlaylistHandler.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WeatherService.cs" />
@@ -139,9 +137,7 @@
     <EmbeddedResource Include="Javascript\ApiClient.js" />
     <Content Include="options.xml" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Playback\Hls\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\MediaBrowser.ServerApplication\CorePlugins\" /y</PostBuildEvent>
