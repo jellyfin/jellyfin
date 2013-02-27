@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -50,5 +51,11 @@ namespace MediaBrowser.Common.Kernel
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">messageType</exception>
         Task SendWebSocketMessageAsync<T>(string messageType, Func<T> dataFunction, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Adds the web socket listeners.
+        /// </summary>
+        /// <param name="listeners">The listeners.</param>
+        void AddWebSocketListeners(IEnumerable<IWebSocketListener> listeners);
     }
 }

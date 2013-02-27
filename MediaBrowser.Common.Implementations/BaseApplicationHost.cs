@@ -1,5 +1,13 @@
-﻿using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Implementations.HttpServer;
+using MediaBrowser.Common.Implementations.Udp;
+using MediaBrowser.Common.Implementations.WebSocket;
+using MediaBrowser.Common.Kernel;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using SimpleInjector;
 using System;
@@ -130,6 +138,18 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         /// <returns>IApplicationPaths.</returns>
         protected abstract IApplicationPaths GetApplicationPaths();
+
+        /// <summary>
+        /// Finds the parts.
+        /// </summary>
+        protected virtual void FindParts()
+        {
+            Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
+
+            Resolve<IHttpServer>().Init(GetExports<IRestfulService>(false));
+
+            Resolve<IServerManager>().AddWebSocketListeners(GetExports<IWebSocketListener>());
+        }
         
         /// <summary>
         /// Discovers the types.
@@ -143,6 +163,24 @@ namespace MediaBrowser.Common.Implementations
             AllConcreteTypes = AllTypes.Where(t => t.IsClass && !t.IsAbstract && !t.IsInterface && !t.IsGenericType).ToArray();
         }
 
+        /// <summary>
+        /// Registers resources that classes will depend on
+        /// </summary>
+        protected virtual void RegisterResources(ITaskManager taskManager, INetworkManager networkManager, IServerManager serverManager)
+        {
+            RegisterSingleInstance(LogManager);
+            RegisterSingleInstance(Logger);
+
+            RegisterSingleInstance(ApplicationPaths);
+            RegisterSingleInstance(taskManager);
+            RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
+            RegisterSingleInstance(ProtobufSerializer);
+            RegisterSingleInstance<IUdpServer>(new UdpServer(Logger), false);
+
+            RegisterSingleInstance(networkManager);
+            RegisterSingleInstance(serverManager);
+        }
+        
         /// <summary>
         /// Gets a list of types within an assembly
         /// This will handle situations that would normally throw an exception - such as a type within the assembly that depends on some other non-existant reference

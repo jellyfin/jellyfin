@@ -156,7 +156,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                         // Don't dispose in the middle of a flush
                         while (IsFlushing)
                         {
-                            Thread.Sleep(50);
+                            Thread.Sleep(25);
                         }
                         
                         if (connection.IsOpen())

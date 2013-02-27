@@ -101,7 +101,6 @@ namespace MediaBrowser.ServerApplication
 
             Kernel.Instance.ReloadCompleted += KernelReloadCompleted;
             _logManager.LoggerLoaded += LoadLogWindow;
-            Kernel.Instance.HasPendingRestartChanged += Instance_HasPendingRestartChanged;
             Kernel.Instance.ConfigurationUpdated += Instance_ConfigurationUpdated;
         }
 
@@ -128,19 +127,6 @@ namespace MediaBrowser.ServerApplication
                 {
                     _logManager.ReloadLogger(Kernel.Instance.Configuration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info);
                 }
-            });
-        }
-
-        /// <summary>
-        /// Sets visibility of the restart message when the kernel value changes
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void Instance_HasPendingRestartChanged(object sender, EventArgs e)
-        {
-            Dispatcher.InvokeAsync(() =>
-            {
-                MbTaskbarIcon.ToolTipText = Kernel.Instance.HasPendingRestart ? "Media Browser Server - Please restart to finish updating." : "Media Browser Server";
             });
         }
 
