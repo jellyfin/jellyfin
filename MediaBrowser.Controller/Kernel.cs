@@ -34,11 +34,6 @@ namespace MediaBrowser.Controller
     public class Kernel : BaseKernel<ServerConfiguration, IServerApplicationPaths>
     {
         /// <summary>
-        /// The MB admin URL
-        /// </summary>
-        public const string MBAdminUrl = "http://mb3admin.com/admin/";
-
-        /// <summary>
         /// Gets the instance.
         /// </summary>
         /// <value>The instance.</value>
@@ -72,7 +67,7 @@ namespace MediaBrowser.Controller
         /// Gets the installation manager.
         /// </summary>
         /// <value>The installation manager.</value>
-        public IInstallationManager InstallationManager { get; private set; }
+        public InstallationManager InstallationManager { get; private set; }
 
         /// <summary>
         /// Gets or sets the file system manager.
