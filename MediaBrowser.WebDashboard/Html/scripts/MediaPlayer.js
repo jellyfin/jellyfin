@@ -37,7 +37,7 @@
         var item = items[0];
 
         var mediaElement;
-        
+
         if (item.MediaType === "Video") {
 
             mediaElement = MediaPlayer.playVideo(items);
@@ -47,7 +47,7 @@
 
             mediaElement = MediaPlayer.playAudio(items);
         }
-        
+
         if (!mediaElement) {
             return;
         }
@@ -69,24 +69,23 @@
         var item = items[0];
 
         var baseParams = {
-            id: item.Id,
             audioChannels: 2,
             audioBitrate: 128000
         };
 
-        var mp3Url = ApiClient.getUrl('audio.mp3', $.extend({}, baseParams, {
+        var mp3Url = ApiClient.getUrl('Audio/' + item.Id + '/stream.mp3', $.extend({}, baseParams, {
             audioCodec: 'mp3'
         }));
 
-        var aacUrl = ApiClient.getUrl('audio.aac', $.extend({}, baseParams, {
+        var aacUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.aac', $.extend({}, baseParams, {
             audioCodec: 'aac'
         }));
 
-        var webmUrl = ApiClient.getUrl('audio.webma', $.extend({}, baseParams, {
+        var webmUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.webma', $.extend({}, baseParams, {
             audioCodec: 'Vorbis'
         }));
 
-        var oggUrl = ApiClient.getUrl('audio.oga', $.extend({}, baseParams, {
+        var oggUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.oga', $.extend({}, baseParams, {
             audioCodec: 'Vorbis'
         }));
 
@@ -113,7 +112,6 @@
         var screenHeight = Math.min(screen.height, screen.width);
 
         var baseParams = {
-            id: item.Id,
             audioChannels: 2,
             audioBitrate: 128000,
             videoBitrate: 500000,
@@ -121,17 +119,17 @@
             maxHeight: screenHeight
         };
 
-        var tsVideoUrl = ApiClient.getUrl('video.ts', $.extend({}, baseParams, {
+        var tsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ts', $.extend({}, baseParams, {
             videoCodec: 'h264',
             audioCodec: 'aac'
         }));
 
-        var webmVideoUrl = ApiClient.getUrl('video.webm', $.extend({}, baseParams, {
+        var webmVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
             videoCodec: 'vpx',
             audioCodec: 'Vorbis'
         }));
 
-        var ogvVideoUrl = ApiClient.getUrl('video.ogv', $.extend({}, baseParams, {
+        var ogvVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ogv', $.extend({}, baseParams, {
             videoCodec: 'theora',
             audioCodec: 'Vorbis'
         }));
@@ -163,8 +161,8 @@
 
         MediaPlayer.mediaElement = null;
     },
-    
-    isPlaying: function() {
+
+    isPlaying: function () {
         return MediaPlayer.mediaElement;
     }
 };
