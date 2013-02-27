@@ -143,20 +143,28 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         {
             if (dispose)
             {
-                Logger.Info("Disposing " + GetType().Name);
-
                 try
                 {
-                    // If we're not already flushing, do it now
-                    if (!IsFlushing)
+                    if (connection != null)
                     {
-                        Flush(null);
-                    }
+                        // If we're not already flushing, do it now
+                        if (!IsFlushing)
+                        {
+                            Flush(null);
+                        }
 
-                    // Don't dispose in the middle of a flush
-                    while (IsFlushing)
-                    {
-                        Thread.Sleep(50);
+                        // Don't dispose in the middle of a flush
+                        while (IsFlushing)
+                        {
+                            Thread.Sleep(50);
+                        }
+                        
+                        if (connection.IsOpen())
+                        {
+                            connection.Close();
+                        }
+
+                        connection.Dispose();
                     }
 
                     if (FlushTimer != null)
@@ -165,12 +173,6 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                         FlushTimer = null;
                     }
 
-                    if (connection.IsOpen())
-                    {
-                        connection.Close();
-                    }
-
-                    connection.Dispose();
                 }
                 catch (Exception ex)
                 {

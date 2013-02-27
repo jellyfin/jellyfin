@@ -29,11 +29,6 @@ namespace MediaBrowser.Api.ScheduledTasks
         }
 
         /// <summary>
-        /// The _kernel
-        /// </summary>
-        private readonly IKernel _kernel;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledTasksWebSocketListener" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>

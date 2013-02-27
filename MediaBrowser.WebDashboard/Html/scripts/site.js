@@ -568,16 +568,16 @@ var Dashboard = {
         Dashboard.showLoadingMsg();
 
         var promise;
-                
+
         if (path === "Network") {
-                promise = ApiClient.getNetworkComputers();
-            }
+            promise = ApiClient.getNetworkComputers();
+        }
         else if (path) {
-                promise = ApiClient.getDirectoryContents(path, { includeDirectories: true });
-            } else {
+            promise = ApiClient.getDirectoryContents(path, { includeDirectories: true });
+        } else {
             promise = ApiClient.getDrives();
-                }
-        
+        }
+
         promise.done(function (folders) {
 
             $('#txtDirectoryPickerPath', page).val(path || "");
@@ -633,7 +633,30 @@ var Dashboard = {
     getPluginSecurityInfo: function () {
 
         if (!Dashboard.getPluginSecurityInfoPromise) {
-            Dashboard.getPluginSecurityInfoPromise = ApiClient.getPluginSecurityInfo();
+
+            var deferred = $.Deferred();
+
+            // Don't let this blow up the dashboard when it fails
+            $.ajax({
+                type: "GET",
+                url: ApiClient.getUrl("Plugins/SecurityInfo"),
+                dataType: 'json',
+
+                error: function () {
+                    // Don't show normal dashboard errors
+                }
+
+            }).done(function (result) {
+                deferred.resolveWith(null, [[result]]);
+            }).fail(function () {
+
+                console.log('Error getting plugin security info');
+
+                deferred.resolveWith(null, [[{ IsMBSupporter: false }]]);
+
+            });
+
+            Dashboard.getPluginSecurityInfoPromise = deferred;
         }
 
         return Dashboard.getPluginSecurityInfoPromise;

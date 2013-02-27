@@ -411,8 +411,6 @@ namespace MediaBrowser.Common.Implementations.ServerManager
 
             if (HttpServer != null)
             {
-                _logger.Info("Disposing Http Server");
-
                 HttpServer.WebSocketConnected -= HttpServer_WebSocketConnected;
                 HttpServer.Dispose();
             }

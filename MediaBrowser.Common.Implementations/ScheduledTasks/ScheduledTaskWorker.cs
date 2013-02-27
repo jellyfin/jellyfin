@@ -71,6 +71,8 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             JsonSerializer = jsonSerializer;
             Logger = logger;
             ServerManager = serverManager;
+
+            ReloadTriggerEvents(true);
         }
 
         /// <summary>

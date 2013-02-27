@@ -96,7 +96,6 @@ namespace MediaBrowser.Api
     /// Class GetPluginSecurityInfo
     /// </summary>
     [Route("/Plugins/SecurityInfo", "GET")]
-    [Restrict(VisibleLocalhostOnly = true)]
     public class GetPluginSecurityInfo : IReturn<PluginSecurityInfo>
     {
     }
