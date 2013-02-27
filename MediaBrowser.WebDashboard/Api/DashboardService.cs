@@ -49,14 +49,14 @@ namespace MediaBrowser.WebDashboard.Api
     /// <summary>
     /// Class GetDashboardResource
     /// </summary>
-    [Route("/dashboard/{name*}", "GET")]
+    [Route("/dashboard/{ResourceName*}", "GET")]
     public class GetDashboardResource
     {
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name { get; set; }
+        public string ResourceName { get; set; }
         /// <summary>
         /// Gets or sets the V.
         /// </summary>
@@ -174,7 +174,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.Object.</returns>
         public object Get(GetDashboardResource request)
         {
-            var path = request.Name;
+            var path = request.ResourceName;
 
             var contentType = MimeTypes.GetMimeType(path);
 

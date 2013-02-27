@@ -97,12 +97,6 @@ namespace MediaBrowser.Common.Kernel
         ISecurityManager SecurityManager { get; set; }
 
         /// <summary>
-        /// Gets the web socket listeners.
-        /// </summary>
-        /// <value>The web socket listeners.</value>
-        IEnumerable<IWebSocketListener> WebSocketListeners { get; }
-
-        /// <summary>
         /// Occurs when [reload completed].
         /// </summary>
         event EventHandler<EventArgs> ReloadCompleted;

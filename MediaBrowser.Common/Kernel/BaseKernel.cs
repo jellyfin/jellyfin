@@ -23,11 +23,6 @@ namespace MediaBrowser.Common.Kernel
         where TConfigurationType : BaseApplicationConfiguration, new()
         where TApplicationPathsType : IApplicationPaths
     {
-        /// <summary>
-        /// Occurs when [has pending restart changed].
-        /// </summary>
-        public event EventHandler HasPendingRestartChanged;
-
         #region ConfigurationUpdated Event
         /// <summary>
         /// Occurs when [configuration updated].
@@ -40,20 +35,6 @@ namespace MediaBrowser.Common.Kernel
         internal void OnConfigurationUpdated()
         {
             EventHelper.QueueEventIfNotNull(ConfigurationUpdated, this, EventArgs.Empty, Logger);
-        }
-        #endregion
-
-        #region ReloadBeginning Event
-        /// <summary>
-        /// Fires whenever the kernel begins reloading
-        /// </summary>
-        public event EventHandler<EventArgs> ReloadBeginning;
-        /// <summary>
-        /// Called when [reload beginning].
-        /// </summary>
-        private void OnReloadBeginning()
-        {
-            EventHelper.QueueEventIfNotNull(ReloadBeginning, this, EventArgs.Empty, Logger);
         }
         #endregion
 
@@ -142,12 +123,6 @@ namespace MediaBrowser.Common.Kernel
         public IEnumerable<IPlugin> Plugins { get; protected set; }
 
         /// <summary>
-        /// Gets the web socket listeners.
-        /// </summary>
-        /// <value>The web socket listeners.</value>
-        public IEnumerable<IWebSocketListener> WebSocketListeners { get; private set; }
-
-        /// <summary>
         /// Gets or sets the TCP manager.
         /// </summary>
         /// <value>The TCP manager.</value>
@@ -233,8 +208,6 @@ namespace MediaBrowser.Common.Kernel
         /// <returns>Task.</returns>
         public async Task Init()
         {
-            OnReloadBeginning();
-
             await ReloadInternal().ConfigureAwait(false);
 
             OnReloadCompleted();
@@ -275,7 +248,6 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         protected virtual void FindParts()
         {
-            WebSocketListeners = ApplicationHost.GetExports<IWebSocketListener>();
             Plugins = ApplicationHost.GetExports<IPlugin>();
         }
 
@@ -314,8 +286,6 @@ namespace MediaBrowser.Common.Kernel
             HasPendingRestart = true;
 
             ServerManager.SendWebSocketMessage("HasPendingRestartChanged", GetSystemInfo());
-
-            EventHelper.QueueEventIfNotNull(HasPendingRestartChanged, this, EventArgs.Empty, Logger);
         }
 
         /// <summary>

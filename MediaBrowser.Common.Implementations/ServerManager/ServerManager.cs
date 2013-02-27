@@ -96,6 +96,12 @@ namespace MediaBrowser.Common.Implementations.ServerManager
         }
 
         /// <summary>
+        /// Gets the web socket listeners.
+        /// </summary>
+        /// <value>The web socket listeners.</value>
+        private List<IWebSocketListener> WebSocketListeners = new List<IWebSocketListener>();
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ServerManager" /> class.
         /// </summary>
         /// <param name="applicationHost">The application host.</param>
@@ -234,7 +240,7 @@ namespace MediaBrowser.Common.Implementations.ServerManager
         /// <param name="result">The result.</param>
         private async void ProcessWebSocketMessageReceived(WebSocketMessageInfo result)
         {
-            var tasks = _kernel.WebSocketListeners.Select(i => Task.Run(async () =>
+            var tasks = WebSocketListeners.Select(i => Task.Run(async () =>
             {
                 try
                 {
@@ -513,6 +519,15 @@ namespace MediaBrowser.Common.Implementations.ServerManager
             {
                 ReloadExternalWebSocketServer();
             }
+        }
+
+        /// <summary>
+        /// Adds the web socket listeners.
+        /// </summary>
+        /// <param name="listeners">The listeners.</param>
+        public void AddWebSocketListeners(IEnumerable<IWebSocketListener> listeners)
+        {
+            WebSocketListeners.AddRange(listeners);
         }
     }
 }
