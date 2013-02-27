@@ -610,6 +610,17 @@ namespace MediaBrowser.Api.Playback
 
             var media = (IHasMediaStreams)item;
 
+            var url = Request.PathInfo;
+
+            if (!request.AudioCodec.HasValue)
+            {
+                request.AudioCodec = InferAudioCodec(url);
+            }
+            if (!request.VideoCodec.HasValue)
+            {
+                request.VideoCodec = InferVideoCodec(url);
+            }
+
             return new StreamState
             {
                 Item = item,
@@ -617,8 +628,58 @@ namespace MediaBrowser.Api.Playback
                 AudioStream = GetMediaStream(media.MediaStreams, request.AudioStreamIndex, MediaStreamType.Audio, true),
                 VideoStream = GetMediaStream(media.MediaStreams, request.VideoStreamIndex, MediaStreamType.Video, true),
                 SubtitleStream = GetMediaStream(media.MediaStreams, request.SubtitleStreamIndex, MediaStreamType.Subtitle, false),
-                Url = Request.PathInfo
+                Url = url
             };
+        }
+
+        /// <summary>
+        /// Infers the audio codec based on the url
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns>System.Nullable{AudioCodecs}.</returns>
+        private AudioCodecs? InferAudioCodec(string url)
+        {
+            var ext = Path.GetExtension(url);
+
+            if (string.Equals(ext, ".mp3", StringComparison.OrdinalIgnoreCase))
+            {
+                return AudioCodecs.Mp3;
+            }
+            if (string.Equals(ext, ".aac", StringComparison.OrdinalIgnoreCase))
+            {
+                return AudioCodecs.Aac;
+            }
+            if (string.Equals(ext, ".wam", StringComparison.OrdinalIgnoreCase))
+            {
+                return AudioCodecs.Wma;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Infers the video codec.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns>System.Nullable{VideoCodecs}.</returns>
+        private VideoCodecs? InferVideoCodec(string url)
+        {
+            var ext = Path.GetExtension(url);
+
+            if (string.Equals(ext, ".asf", StringComparison.OrdinalIgnoreCase))
+            {
+                return VideoCodecs.Wmv;
+            }
+            if (string.Equals(ext, ".webm", StringComparison.OrdinalIgnoreCase))
+            {
+                return VideoCodecs.Vpx;
+            }
+            if (string.Equals(ext, ".ogg", StringComparison.OrdinalIgnoreCase))
+            {
+                return VideoCodecs.Theora;
+            }
+
+            return null;
         }
     }
 }

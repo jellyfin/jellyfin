@@ -14,7 +14,6 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using MimeTypes = MediaBrowser.Common.Net.MimeTypes;
-using StreamWriter = MediaBrowser.Common.Net.StreamWriter;
 
 namespace MediaBrowser.Common.Implementations.HttpServer
 {

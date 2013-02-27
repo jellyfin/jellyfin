@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Common.Implementations.HttpServer
 {
     /// <summary>
     /// Class StreamWriter
