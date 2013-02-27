@@ -11,7 +11,6 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace MediaBrowser.Common.Net.Handlers
 {
@@ -108,7 +107,7 @@ namespace MediaBrowser.Common.Net.Handlers
             get
             {
                 // HttpListenerContext.Request.QueryString is not decoded properly
-                return _queryString ?? (_queryString = HttpUtility.ParseQueryString(HttpListenerContext.Request.Url.Query));
+                return _queryString;
             }
         }
 
