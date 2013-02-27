@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.Implementations.Updates;
+using MediaBrowser.Common.Kernel;
+using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using SimpleInjector;
@@ -35,6 +37,11 @@ namespace MediaBrowser.Common.Implementations
         /// The container
         /// </summary>
         protected readonly Container Container = new Container();
+      
+        /// <summary>
+        /// The package manager
+        /// </summary>
+        protected readonly IPackageManager PackageManager = new PackageManager();
       
         /// <summary>
         /// Gets assemblies that failed to load
