@@ -145,7 +145,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                     return jsonSerializer.DeserializeFromStream<TmdbSettingsResult>(json);
                 }
             }
-            catch (HttpException e)
+            catch (HttpException)
             {
                 return new TmdbSettingsResult
                 {
@@ -297,7 +297,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                     await FetchMovieData(item, cancellationToken).ConfigureAwait(false);
                     SetLastRefreshed(item, DateTime.UtcNow);
                 }
-                catch (MovieDbProviderException e)
+                catch (MovieDbProviderException)
                 {
                     SetLastRefreshed(item, DateTime.UtcNow, ProviderRefreshStatus.CompletedWithErrors);
                 }

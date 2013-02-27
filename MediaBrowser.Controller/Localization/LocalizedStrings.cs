@@ -80,30 +80,31 @@ namespace MediaBrowser.Controller.Localization
         /// <returns>LocalizedStringData.</returns>
         protected LocalizedStringData LoadFromFile(string file, Type t)
         {
-            var xs = new XmlSerializer(t);
-            var strings = (LocalizedStringData)Activator.CreateInstance(t);
-            strings.FileName = file;
-            Logger.Info("Using String Data from {0}", file);
-            if (File.Exists(file))
-            {
-                using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read))
-                {
-                    strings = (BaseStrings)xs.Deserialize(fs);
-                }
-            }
-            else
-            {
-                strings.Save(); //brand new - save it
-            }
+            return new BaseStrings {FileName = file};
+            //var xs = new XmlSerializer(t);
+            //var strings = (LocalizedStringData)Activator.CreateInstance(t);
+            //strings.FileName = file;
+            //Logger.Info("Using String Data from {0}", file);
+            //if (File.Exists(file))
+            //{
+            //    using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read))
+            //    {
+            //        strings = (LocalizedStringData)xs.Deserialize(fs);
+            //    }
+            //}
+            //else
+            //{
+            //    strings.Save(); //brand new - save it
+            //}
 
-            if (strings.ThisVersion != strings.Version && file.ToLower().Contains("-en.xml"))
-            {
-                //only re-save the english version as that is the one defined internally
-                strings = new BaseStrings {FileName = file};
-                //strings.Save();
-            }
-            return strings;
-            
+            //if (strings.ThisVersion != strings.Version && file.ToLower().Contains("-en.xml"))
+            //{
+            //    //only re-save the english version as that is the one defined internally
+            //    strings = new BaseStrings {FileName = file};
+            //    strings.Save();
+            //}
+            //return strings;
+
         }
 
         /// <summary>

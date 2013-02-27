@@ -7,10 +7,10 @@ using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Common.Implementations.NetworkManagement;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.Implementations.Serialization;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Implementations.ServerManager;
 using MediaBrowser.Common.Implementations.Udp;
 using MediaBrowser.Common.Implementations.WebSocket;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.ScheduledTasks;
@@ -72,6 +72,7 @@ namespace MediaBrowser.ServerApplication
         public ApplicationHost()
             : base()
         {
+            Logger.Info("ApplicationHost!!!!!!!!!!!!!!!!!!!!");
             Kernel = new Kernel(this, ServerApplicationPaths, _xmlSerializer, Logger);
             
             var networkManager = new NetworkManager();

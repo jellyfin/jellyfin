@@ -1,17 +1,17 @@
-﻿using System.IO;
-using System.Linq;
-using System.Reflection;
-using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.Kernel;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using SimpleInjector;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 
 namespace MediaBrowser.Common.Implementations
 {
-    public abstract class BaseApplicationHost : IDisposable
+    public abstract class BaseApplicationHost
     {
         /// <summary>
         /// Gets or sets the logger.
@@ -314,18 +314,22 @@ namespace MediaBrowser.Common.Implementations
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool dispose)
         {
-            var type = GetType();
-
-            Logger.Info("Disposing " + type.Name);
-
-            foreach (var part in DisposableParts.Distinct().Where(i => i.GetType() != type).ToList())
+            if (dispose)
             {
-                Logger.Info("Disposing " + part.GetType().Name);
+                var type = GetType();
 
-                part.Dispose();
+                Logger.Info("Disposing " + type.Name);
+
+                var parts = DisposableParts.Distinct().Where(i => i.GetType() != type).ToList();
+                DisposableParts.Clear();
+
+                foreach (var part in parts)
+                {
+                    Logger.Info("Disposing " + part.GetType().Name);
+
+                    part.Dispose();
+                }
             }
-
-            DisposableParts.Clear();
         }
     }
 }

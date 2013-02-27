@@ -518,7 +518,7 @@ namespace MediaBrowser.Common.Implementations.HttpServer
     /// <summary>
     /// Class ContainerAdapter
     /// </summary>
-    class ContainerAdapter : IContainerAdapter
+    class ContainerAdapter : IContainerAdapter, IRelease
     {
         /// <summary>
         /// The _app host
@@ -551,6 +551,15 @@ namespace MediaBrowser.Common.Implementations.HttpServer
         public T TryResolve<T>()
         {
             return _appHost.TryResolve<T>();
+        }
+
+        /// <summary>
+        /// Releases the specified instance.
+        /// </summary>
+        /// <param name="instance">The instance.</param>
+        public void Release(object instance)
+        {
+            // Leave this empty so SS doesn't try to dispose our objects
         }
     }
 }

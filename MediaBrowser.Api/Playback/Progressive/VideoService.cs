@@ -1,60 +1,59 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Model.Logging;
 using System;
-using System.Linq;
-using System.Net;
 
-namespace MediaBrowser.Api.Streaming
+namespace MediaBrowser.Api.Playback.Progressive
 {
     /// <summary>
-    /// Providers a progressive streaming video api
+    /// Class VideoService
     /// </summary>
-    class VideoHandler : BaseProgressiveStreamingHandler<Video>
+    public class VideoService : BaseProgressiveStreamingService
     {
         /// <summary>
-        /// Handleses the request.
+        /// Initializes a new instance of the <see cref="BaseProgressiveStreamingService" /> class.
         /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        public override bool HandlesRequest(HttpListenerRequest request)
+        /// <param name="appPaths">The app paths.</param>
+        public VideoService(IServerApplicationPaths appPaths)
+            : base(appPaths)
         {
-            return EntityResolutionHelper.VideoFileExtensions.Any(a => ApiService.IsApiUrlMatch("video" + a, request));
         }
 
         /// <summary>
-        /// Creates arguments to pass to ffmpeg
+        /// Gets the command line arguments.
         /// </summary>
         /// <param name="outputPath">The output path.</param>
-        /// <param name="isoMount">The iso mount.</param>
+        /// <param name="state">The state.</param>
         /// <returns>System.String.</returns>
-        protected override string GetCommandLineArguments(string outputPath, IIsoMount isoMount)
+        protected override string GetCommandLineArguments(string outputPath, StreamState state)
         {
-            var probeSize = Kernel.FFMpegManager.GetProbeSizeArgument(LibraryItem.VideoType, LibraryItem.IsoType);
+            var video = (Video)state.Item;
+
+            var probeSize = ServerKernel.FFMpegManager.GetProbeSizeArgument(video.VideoType, video.IsoType);
 
             // Get the output codec name
-            var videoCodec = GetVideoCodec();
+            var videoCodec = GetVideoCodec(state.Request);
 
             var graphicalSubtitleParam = string.Empty;
 
-            if (SubtitleStream != null)
+            if (state.SubtitleStream != null)
             {
                 // This is for internal graphical subs
-                if (!SubtitleStream.IsExternal && (SubtitleStream.Codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) != -1 || SubtitleStream.Codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) != -1))
+                if (!state.SubtitleStream.IsExternal && (state.SubtitleStream.Codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) != -1 || state.SubtitleStream.Codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) != -1))
                 {
-                    graphicalSubtitleParam = GetInternalGraphicalSubtitleParam(SubtitleStream, videoCodec);
+                    graphicalSubtitleParam = GetInternalGraphicalSubtitleParam(state, videoCodec);
                 }
             }
 
             return string.Format("{0} {1} -i {2}{3} -threads 0 {4} {5}{6} {7} \"{8}\"",
                 probeSize,
-                FastSeekCommandLineParameter,
-                GetInputArgument(isoMount),
-                SlowSeekCommandLineParameter,
-                MapArgs,
-                GetVideoArguments(videoCodec),
+                GetFastSeekCommandLineParameter(state.Request),
+                GetInputArgument(video, state.IsoMount),
+                GetSlowSeekCommandLineParameter(state.Request),
+                GetMapArgs(state),
+                GetVideoArguments(state, videoCodec),
                 graphicalSubtitleParam,
-                GetAudioArguments(),
+                GetAudioArguments(state),
                 outputPath
                 ).Trim();
         }
@@ -62,34 +61,38 @@ namespace MediaBrowser.Api.Streaming
         /// <summary>
         /// Gets video arguments to pass to ffmpeg
         /// </summary>
+        /// <param name="state">The state.</param>
+        /// <param name="videoCodec">The video codec.</param>
         /// <returns>System.String.</returns>
-        private string GetVideoArguments(string videoCodec)
+        private string GetVideoArguments(StreamState state, string videoCodec)
         {
             var args = "-vcodec " + videoCodec;
+
+            var request = state.Request;
 
             // If we're encoding video, add additional params
             if (!videoCodec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
                 // Add resolution params, if specified
-                if (Width.HasValue || Height.HasValue || MaxHeight.HasValue || MaxWidth.HasValue)
+                if (request.Width.HasValue || request.Height.HasValue || request.MaxHeight.HasValue || request.MaxWidth.HasValue)
                 {
-                    args += GetOutputSizeParam(videoCodec);
+                    args += GetOutputSizeParam(state, videoCodec);
                 }
 
-                if (FrameRate.HasValue)
+                if (request.Framerate.HasValue)
                 {
-                    args += string.Format(" -r {0}", FrameRate.Value);
+                    args += string.Format(" -r {0}", request.Framerate.Value);
                 }
 
                 // Add the audio bitrate
-                var qualityParam = GetVideoQualityParam(videoCodec);
+                var qualityParam = GetVideoQualityParam(request, videoCodec);
 
                 if (!string.IsNullOrEmpty(qualityParam))
                 {
                     args += " " + qualityParam;
                 }
             }
-            else if (IsH264(VideoStream))
+            else if (IsH264(state.VideoStream))
             {
                 args += " -bsf h264_mp4toannexb";
             }
@@ -100,17 +103,20 @@ namespace MediaBrowser.Api.Streaming
         /// <summary>
         /// Gets audio arguments to pass to ffmpeg
         /// </summary>
+        /// <param name="state">The state.</param>
         /// <returns>System.String.</returns>
-        private string GetAudioArguments()
+        private string GetAudioArguments(StreamState state)
         {
             // If the video doesn't have an audio stream, return a default.
-            if (AudioStream == null)
+            if (state.AudioStream == null)
             {
                 return string.Empty;
             }
 
+            var request = state.Request;
+
             // Get the output codec name
-            var codec = GetAudioCodec();
+            var codec = GetAudioCodec(request);
 
             var args = "-acodec " + codec;
 
@@ -118,24 +124,21 @@ namespace MediaBrowser.Api.Streaming
             if (!codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
                 // Add the number of audio channels
-                var channels = GetNumAudioChannelsParam();
+                var channels = GetNumAudioChannelsParam(request, state.AudioStream);
 
                 if (channels.HasValue)
                 {
                     args += " -ac " + channels.Value;
                 }
 
-                // Add the audio sample rate
-                var sampleRate = GetSampleRateParam();
-
-                if (sampleRate.HasValue)
+                if (request.AudioSampleRate.HasValue)
                 {
-                    args += " -ar " + sampleRate.Value;
+                    args += " -ar " + request.AudioSampleRate.Value;
                 }
 
-                if (AudioBitRate.HasValue)
+                if (request.AudioBitRate.HasValue)
                 {
-                    args += " -ab " + AudioBitRate.Value;
+                    args += " -ab " + request.AudioBitRate.Value;
                 }
             }
 
@@ -145,9 +148,10 @@ namespace MediaBrowser.Api.Streaming
         /// <summary>
         /// Gets the video bitrate to specify on the command line
         /// </summary>
+        /// <param name="request">The request.</param>
         /// <param name="videoCodec">The video codec.</param>
         /// <returns>System.String.</returns>
-        private string GetVideoQualityParam(string videoCodec)
+        private string GetVideoQualityParam(StreamRequest request, string videoCodec)
         {
             var args = string.Empty;
 
@@ -168,9 +172,9 @@ namespace MediaBrowser.Api.Streaming
                 args = "-preset superfast";
             }
 
-            if (VideoBitRate.HasValue)
+            if (request.VideoBitRate.HasValue)
             {
-                args += " -b:v " + VideoBitRate;
+                args += " -b:v " + request.VideoBitRate;
             }
 
             return args.Trim();
