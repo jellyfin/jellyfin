@@ -82,15 +82,13 @@ namespace MediaBrowser.ServerApplication
 
             var taskManager = new TaskManager(ApplicationPaths, _jsonSerializer, Logger, serverManager);
 
-            var packageManager = new PackageManager();
-
             LogManager.ReloadLogger(Kernel.Configuration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info);
 
             Logger.Info("Version {0} initializing", ApplicationVersion);
 
             var httpServer = ServerFactory.CreateServer(this, ProtobufSerializer, Logger, "Media Browser", "index.html");
 
-            RegisterResources(taskManager, httpServer, networkManager, serverManager, packageManager);
+            RegisterResources(taskManager, httpServer, networkManager, serverManager, PackageManager);
 
             FindParts(taskManager, httpServer);
         }
