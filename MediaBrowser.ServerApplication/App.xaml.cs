@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.ClickOnce;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Uninstall;
 using Microsoft.Win32;
@@ -277,21 +278,24 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// Opens the dashboard.
         /// </summary>
-        public static void OpenDashboard()
+        public static void OpenDashboard(User loggedInUser)
         {
-            OpenDashboardPage("dashboard.html");
+            OpenDashboardPage("dashboard.html", loggedInUser);
         }
 
         /// <summary>
         /// Opens the dashboard page.
         /// </summary>
         /// <param name="page">The page.</param>
-        public static void OpenDashboardPage(string page)
+        public static void OpenDashboardPage(string page, User loggedInUser)
         {
             var url = "http://localhost:" + Controller.Kernel.Instance.Configuration.HttpServerPortNumber + "/" +
                       Controller.Kernel.Instance.WebApplicationName + "/dashboard/" + page;
 
-            url = AddAutoLoginToDashboardUrl(url);
+            if (loggedInUser != null)
+            {
+                url = AddAutoLoginToDashboardUrl(url, loggedInUser);
+            }
 
             OpenUrl(url);
         }
@@ -300,21 +304,17 @@ namespace MediaBrowser.ServerApplication
         /// Adds the auto login to dashboard URL.
         /// </summary>
         /// <param name="url">The URL.</param>
+        /// <param name="user">The user.</param>
         /// <returns>System.String.</returns>
-        public static string AddAutoLoginToDashboardUrl(string url)
+        public static string AddAutoLoginToDashboardUrl(string url, User user)
         {
-            var user = Controller.Kernel.Instance.Users.FirstOrDefault(u => u.Configuration.IsAdministrator);
-
-            if (user != null)
+            if (url.IndexOf('?') == -1)
             {
-                if (url.IndexOf('?') == -1)
-                {
-                    url += "?u=" + user.Id;
-                }
-                else
-                {
-                    url += "&u=" + user.Id;
-                }
+                url += "?u=" + user.Id;
+            }
+            else
+            {
+                url += "&u=" + user.Id;
             }
 
             return url;

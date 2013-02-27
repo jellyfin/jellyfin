@@ -962,12 +962,12 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="user">The user.</param>
         /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
         /// <returns>Task.</returns>
-        public override async Task SetPlayedStatus(User user, bool wasPlayed)
+        public override async Task SetPlayedStatus(User user, bool wasPlayed, IUserManager userManager)
         {
-            await base.SetPlayedStatus(user, wasPlayed).ConfigureAwait(false);
+            await base.SetPlayedStatus(user, wasPlayed, userManager).ConfigureAwait(false);
 
             // Now sweep through recursively and update status
-            var tasks = GetChildren(user).Select(c => c.SetPlayedStatus(user, wasPlayed));
+            var tasks = GetChildren(user).Select(c => c.SetPlayedStatus(user, wasPlayed, userManager));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }

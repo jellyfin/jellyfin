@@ -41,11 +41,6 @@ namespace MediaBrowser.ServerApplication
         private Timer NewItemTimer { get; set; }
 
         /// <summary>
-        /// The _json serializer
-        /// </summary>
-        private readonly IJsonSerializer _jsonSerializer;
-        
-        /// <summary>
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
@@ -67,18 +62,13 @@ namespace MediaBrowser.ServerApplication
         /// <param name="logger">The logger.</param>
         /// <param name="appHost">The app host.</param>
         /// <exception cref="System.ArgumentNullException">logger</exception>
-        public MainWindow(IJsonSerializer jsonSerializer, ILogManager logManager, IApplicationHost appHost)
+        public MainWindow(ILogManager logManager, IApplicationHost appHost)
         {
-            if (jsonSerializer == null)
-            {
-                throw new ArgumentNullException("jsonSerializer");
-            }
             if (logManager == null)
             {
                 throw new ArgumentNullException("logManager");
             }
 
-            _jsonSerializer = jsonSerializer;
             _logger = logManager.GetLogger("MainWindow");
             _appHost = appHost;
             _logManager = logManager;
@@ -255,7 +245,9 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         private void LaunchStartupWizard()
         {
-            App.OpenDashboardPage("wizardStart.html");
+            var user = _appHost.Resolve<IUserManager>().Users.FirstOrDefault(u => u.Configuration.IsAdministrator);
+
+            App.OpenDashboardPage("wizardStart.html", user);
         }
 
         /// <summary>
@@ -265,8 +257,8 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         void cmdApiDocs_Click(object sender, EventArgs e)
         {
-            App.OpenUrl("http://localhost:" + Controller.Kernel.Instance.Configuration.HttpServerPortNumber + "/" +
-                      Controller.Kernel.Instance.WebApplicationName + "/metadata");
+            App.OpenUrl("http://localhost:" + Kernel.Instance.Configuration.HttpServerPortNumber + "/" +
+                      Kernel.Instance.WebApplicationName + "/metadata");
         }
 
         /// <summary>
@@ -301,7 +293,8 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void cmOpenExplorer_click(object sender, RoutedEventArgs e)
         {
-            (new LibraryExplorer(_jsonSerializer, _logger, _appHost)).Show();
+            var explorer = (LibraryExplorer)_appHost.CreateInstance(typeof(LibraryExplorer));
+            explorer.Show();
         }
 
         /// <summary>
@@ -311,7 +304,8 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void cmOpenDashboard_click(object sender, RoutedEventArgs e)
         {
-            App.OpenDashboard();
+            var user = _appHost.Resolve<IUserManager>().Users.FirstOrDefault(u => u.Configuration.IsAdministrator);
+            App.OpenDashboard(user);
         }
 
         /// <summary>
@@ -331,7 +325,8 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void cmdBrowseLibrary_click(object sender, RoutedEventArgs e)
         {
-            App.OpenDashboardPage("index.html");
+            var user = _appHost.Resolve<IUserManager>().Users.FirstOrDefault(u => u.Configuration.IsAdministrator);
+            App.OpenDashboardPage("index.html", user);
         }
 
         /// <summary>

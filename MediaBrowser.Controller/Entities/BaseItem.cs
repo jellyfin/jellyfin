@@ -1205,7 +1205,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public virtual Task SetPlayedStatus(User user, bool wasPlayed)
+        public virtual Task SetPlayedStatus(User user, bool wasPlayed, IUserManager userManager)
         {
             if (user == null)
             {
@@ -1235,7 +1235,7 @@ namespace MediaBrowser.Controller.Entities
 
             data.Played = wasPlayed;
 
-            return Kernel.Instance.UserDataManager.SaveUserDataForItem(user, this, data);
+            return userManager.SaveUserDataForItem(user, this, data);
         }
 
         /// <summary>

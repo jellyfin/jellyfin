@@ -823,7 +823,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="id">The id.</param>
         /// <param name="userId">The user id.</param>
         /// <returns>BaseItem.</returns>
-        public static BaseItem GetItemByClientId(string id, Guid? userId = null)
+        public static BaseItem GetItemByClientId(string id, IUserManager userManager, Guid? userId = null)
         {
             var isIdEmpty = string.IsNullOrEmpty(id);
 
@@ -835,7 +835,7 @@ namespace MediaBrowser.Controller.Library
             {
                 if (userId.HasValue)
                 {
-                    return GetIndexFolder(id, userId.Value);
+                    return GetIndexFolder(id, userId.Value, userManager);
                 }
             }
 
@@ -844,8 +844,8 @@ namespace MediaBrowser.Controller.Library
             if (userId.HasValue)
             {
                 item = isIdEmpty
-                           ? Kernel.Instance.GetUserById(userId.Value).RootFolder
-                           : Kernel.Instance.GetItemById(new Guid(id), userId.Value);
+                           ? userManager.GetUserById(userId.Value).RootFolder
+                           : Kernel.Instance.GetItemById(new Guid(id), userId.Value, userManager);
             }
             else if (!isIndexFolder)
             {
@@ -855,9 +855,9 @@ namespace MediaBrowser.Controller.Library
             // If we still don't find it, look within individual user views
             if (item == null && !userId.HasValue)
             {
-                foreach (var user in Kernel.Instance.Users)
+                foreach (var user in userManager.Users)
                 {
-                    item = GetItemByClientId(id, user.Id);
+                    item = GetItemByClientId(id, userManager, user.Id);
 
                     if (item != null)
                     {
@@ -875,9 +875,9 @@ namespace MediaBrowser.Controller.Library
         /// <param name="id">The id.</param>
         /// <param name="userId">The user id.</param>
         /// <returns>BaseItem.</returns>
-        private static BaseItem GetIndexFolder(string id, Guid userId)
+        private static BaseItem GetIndexFolder(string id, Guid userId, IUserManager userManager)
         {
-            var user = Kernel.Instance.GetUserById(userId);
+            var user = userManager.GetUserById(userId);
 
             var stringSeparators = new[] { IndexFolderDelimeter };
 
@@ -885,7 +885,7 @@ namespace MediaBrowser.Controller.Library
             var values = id.Split(stringSeparators, StringSplitOptions.None).ToList();
 
             // Get the top folder normally using the first id
-            var folder = GetItemByClientId(values[0], userId) as Folder;
+            var folder = GetItemByClientId(values[0], userManager, userId) as Folder;
 
             values.RemoveAt(0);
 

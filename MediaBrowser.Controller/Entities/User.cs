@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using System;
 using System.IO;
@@ -16,6 +17,8 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class User : BaseItem
     {
+        internal static IUserManager UserManager { get; set; }
+
         /// <summary>
         /// The _root folder path
         /// </summary>
@@ -236,7 +239,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="newName">The new name.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        internal Task Rename(string newName)
+        public Task Rename(string newName)
         {
             if (string.IsNullOrEmpty(newName))
             {
@@ -364,7 +367,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await Kernel.Instance.UserManager.UpdateUser(this).ConfigureAwait(false);
+                await UserManager.UpdateUser(this).ConfigureAwait(false);
             }
 
             return changed;
@@ -425,9 +428,9 @@ namespace MediaBrowser.Controller.Entities
         /// Resets the password by clearing it.
         /// </summary>
         /// <returns>Task.</returns>
-        public Task ResetPassword()
+        public Task ResetPassword(IUserManager userManager)
         {
-            return ChangePassword(string.Empty);
+            return ChangePassword(string.Empty, userManager);
         }
 
         /// <summary>
@@ -435,11 +438,11 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="newPassword">The new password.</param>
         /// <returns>Task.</returns>
-        public Task ChangePassword(string newPassword)
+        public Task ChangePassword(string newPassword, IUserManager userManager)
         {
             Password = string.IsNullOrEmpty(newPassword) ? string.Empty : newPassword.GetMD5().ToString();
 
-            return Kernel.Instance.UserManager.UpdateUser(this);
+            return userManager.UpdateUser(this);
         }
     }
 }

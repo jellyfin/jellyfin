@@ -21,17 +21,29 @@ namespace MediaBrowser.Api.UserLibrary
         where TItemType : BaseItem
     {
         /// <summary>
+        /// The _user manager
+        /// </summary>
+        protected readonly IUserManager UserManager;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseItemsByNameService{TItemType}" /> class.
+        /// </summary>
+        /// <param name="userManager">The user manager.</param>
+        protected BaseItemsByNameService(IUserManager userManager)
+        {
+            UserManager = userManager;
+        }
+
+        /// <summary>
         /// Gets the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task{ItemsResult}.</returns>
         protected async Task<ItemsResult> GetResult(GetItemsByName request)
         {
-            var kernel = (Kernel)Kernel;
+            var user = UserManager.GetUserById(request.UserId);
 
-            var user = kernel.GetUserById(request.UserId);
-
-            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, user.Id);
+            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, UserManager, user.Id);
 
             IEnumerable<BaseItem> items;
 

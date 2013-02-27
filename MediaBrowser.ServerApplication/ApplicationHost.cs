@@ -14,6 +14,7 @@ using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -22,6 +23,7 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Server.Implementations;
+using MediaBrowser.Server.Implementations.Library;
 using MediaBrowser.ServerApplication.Implementations;
 using System;
 using System.Collections.Generic;
@@ -117,6 +119,8 @@ namespace MediaBrowser.ServerApplication
             RegisterSingleInstance(Kernel);
 
             RegisterSingleInstance<IApplicationHost>(this);
+
+            RegisterSingleInstance<IUserManager>(new UserManager(Kernel, Logger));
 
             RegisterSingleInstance(ServerApplicationPaths);
             RegisterSingleInstance<IIsoManager>(new PismoIsoManager(Logger));

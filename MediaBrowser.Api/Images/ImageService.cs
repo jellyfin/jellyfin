@@ -137,13 +137,27 @@ namespace MediaBrowser.Api.Images
     public class ImageService : BaseRestService
     {
         /// <summary>
+        /// The _user manager
+        /// </summary>
+        private readonly IUserManager _userManager;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImageService" /> class.
+        /// </summary>
+        /// <param name="userManager">The user manager.</param>
+        public ImageService(IUserManager userManager)
+        {
+            _userManager = userManager;
+        }
+
+        /// <summary>
         /// Gets the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
         public object Get(GetItemImage request)
         {
-            var item = DtoBuilder.GetItemByClientId(request.Id);
+            var item = DtoBuilder.GetItemByClientId(request.Id, _userManager);
 
             return GetImage(request, item);
         }
@@ -155,9 +169,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetUserImage request)
         {
-            var kernel = (Kernel)Kernel;
-
-            var item = kernel.Users.First(i => i.Id == request.Id);
+            var item = _userManager.Users.First(i => i.Id == request.Id);
 
             return GetImage(request, item);
         }
@@ -224,14 +236,12 @@ namespace MediaBrowser.Api.Images
         /// <param name="request">The request.</param>
         public void Post(PostUserImage request)
         {
-            var kernel = (Kernel)Kernel;
-
             var pathInfo = PathInfo.Parse(Request.PathInfo);
             var id = new Guid(pathInfo.GetArgumentValue<string>(1));
 
             request.Type = (ImageType)Enum.Parse(typeof(ImageType), pathInfo.GetArgumentValue<string>(3), true);
 
-            var item = kernel.Users.First(i => i.Id == id);
+            var item = _userManager.Users.First(i => i.Id == id);
 
             var task = PostImage(item, request.RequestStream, request.Type, Request.ContentType);
 
@@ -244,9 +254,7 @@ namespace MediaBrowser.Api.Images
         /// <param name="request">The request.</param>
         public void Delete(DeleteUserImage request)
         {
-            var kernel = (Kernel)Kernel;
-
-            var item = kernel.Users.First(i => i.Id == request.Id);
+            var item = _userManager.Users.First(i => i.Id == request.Id);
 
             var task = item.DeleteImage(request.Type);
 

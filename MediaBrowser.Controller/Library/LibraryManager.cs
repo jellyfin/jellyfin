@@ -64,6 +64,8 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         private readonly ITaskManager _taskManager;
 
+        private readonly IUserManager _userManager;
+        
         /// <summary>
         /// Gets or sets the kernel.
         /// </summary>
@@ -76,11 +78,12 @@ namespace MediaBrowser.Controller.Library
         /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="taskManager">The task manager.</param>
-        public LibraryManager(Kernel kernel, ILogger logger, ITaskManager taskManager)
+        public LibraryManager(Kernel kernel, ILogger logger, ITaskManager taskManager, IUserManager userManager)
         {
             Kernel = kernel;
             _logger = logger;
             _taskManager = taskManager;
+            _userManager = userManager;
 
             kernel.ConfigurationUpdated += kernel_ConfigurationUpdated;
         }
@@ -490,13 +493,13 @@ namespace MediaBrowser.Controller.Library
             await Kernel.RootFolder.ValidateChildren(new Progress<double> { }, cancellationToken, recursive: false);
 
             // Validate only the collection folders for each user, just to make them available as quickly as possible
-            var userCollectionFolderTasks = Kernel.Users.AsParallel().Select(user => user.ValidateCollectionFolders(new Progress<double> { }, cancellationToken));
+            var userCollectionFolderTasks = _userManager.Users.AsParallel().Select(user => user.ValidateCollectionFolders(new Progress<double> { }, cancellationToken));
             await Task.WhenAll(userCollectionFolderTasks).ConfigureAwait(false);
 
             // Now validate the entire media library
             await Kernel.RootFolder.ValidateChildren(progress, cancellationToken, recursive: true).ConfigureAwait(false);
 
-            foreach (var user in Kernel.Users)
+            foreach (var user in _userManager.Users)
             {
                 await user.ValidateMediaLibrary(new Progress<double> { }, cancellationToken).ConfigureAwait(false);
             }
