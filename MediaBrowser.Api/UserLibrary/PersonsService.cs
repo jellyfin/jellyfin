@@ -29,7 +29,8 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     public class PersonsService : BaseItemsByNameService<Person>
     {
-        public PersonsService(IUserManager userManager) : base(userManager)
+        public PersonsService(IUserManager userManager, ILibraryManager libraryManager)
+            : base(userManager, libraryManager)
         {
         }
 
@@ -98,9 +99,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task{Genre}.</returns>
         protected override Task<Person> GetEntity(string name)
         {
-            var kernel = (Kernel)Kernel;
-
-            return kernel.LibraryManager.GetPerson(name);
+            return LibraryManager.GetPerson(name);
         }
     }
 }

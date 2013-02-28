@@ -2,6 +2,7 @@
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -25,16 +26,18 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks.Tasks
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
+        private readonly ILibraryManager _libraryManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageCleanupTask" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
-        public ImageCleanupTask(Kernel kernel, ILogger logger)
+        public ImageCleanupTask(Kernel kernel, ILogger logger, ILibraryManager libraryManager)
         {
             _kernel = kernel;
             _logger = logger;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -66,8 +69,8 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks.Tasks
                 .ToList();
 
             // Now gather all items
-            var items = _kernel.RootFolder.RecursiveChildren.ToList();
-            items.Add(_kernel.RootFolder);
+            var items = _libraryManager.RootFolder.RecursiveChildren.ToList();
+            items.Add(_libraryManager.RootFolder);
 
             // Determine all possible image paths
             var pathsInUse = items.SelectMany(GetPathsInUse)
@@ -115,7 +118,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks.Tasks
         /// <returns>Task.</returns>
         private Task EnsureChapterImages(CancellationToken cancellationToken)
         {
-            var videos = _kernel.RootFolder.RecursiveChildren.OfType<Video>().Where(v => v.Chapters != null).ToList();
+            var videos = _libraryManager.RootFolder.RecursiveChildren.OfType<Video>().Where(v => v.Chapters != null).ToList();
 
             var tasks = videos.Select(v => Task.Run(async () =>
             {

@@ -1099,7 +1099,8 @@ var Dashboard = {
             if (item.PrimaryImageTag) {
                 data.icon = ApiClient.getImageUrl(item.Id, {
                     width: 100,
-                    tag: item.PrimaryImageTag
+                    tag: item.PrimaryImageTag,
+                    type: "Primary"
                 });
             }
 

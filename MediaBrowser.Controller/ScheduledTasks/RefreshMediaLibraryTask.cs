@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
@@ -13,17 +14,17 @@ namespace MediaBrowser.Controller.ScheduledTasks
     public class RefreshMediaLibraryTask : IScheduledTask
     {
         /// <summary>
-        /// The _kernel
+        /// The _library manager
         /// </summary>
-        private readonly Kernel _kernel;
+        private readonly ILibraryManager _libraryManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RefreshMediaLibraryTask" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
-        public RefreshMediaLibraryTask(Kernel kernel)
+        /// <param name="libraryManager">The library manager.</param>
+        public RefreshMediaLibraryTask(ILibraryManager libraryManager)
         {
-            _kernel = kernel;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -54,7 +55,7 @@ namespace MediaBrowser.Controller.ScheduledTasks
 
             progress.Report(0);
 
-            return _kernel.LibraryManager.ValidateMediaLibrary(progress, cancellationToken);
+            return _libraryManager.ValidateMediaLibrary(progress, cancellationToken);
         }
 
         /// <summary>

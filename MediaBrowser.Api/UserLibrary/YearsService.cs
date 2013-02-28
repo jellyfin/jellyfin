@@ -1,6 +1,4 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using ServiceStack.ServiceHost;
 using System;
@@ -29,8 +27,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// The us culture
         /// </summary>
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
-        public YearsService(IUserManager userManager) : base(userManager)
+        
+        public YearsService(IUserManager userManager, ILibraryManager libraryManager)
+            : base(userManager, libraryManager)
         {
         }
 
@@ -70,9 +69,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task{Studio}.</returns>
         protected override Task<Year> GetEntity(string name)
         {
-            var kernel = (Kernel)Kernel;
-
-            return kernel.LibraryManager.GetYear(int.Parse(name, UsCulture));
+            return LibraryManager.GetYear(int.Parse(name, UsCulture));
         }
     }
 }

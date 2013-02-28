@@ -72,11 +72,13 @@ namespace MediaBrowser.Controller.IO
         /// </summary>
         /// <value>The task manager.</value>
         private ITaskManager TaskManager { get; set; }
-        
+
+        private ILibraryManager LibraryManager { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DirectoryWatchers" /> class.
         /// </summary>
-        public DirectoryWatchers(ILogger logger, ITaskManager taskManager)
+        public DirectoryWatchers(ILogger logger, ITaskManager taskManager, ILibraryManager libraryManager)
         {
             if (logger == null)
             {
@@ -87,6 +89,7 @@ namespace MediaBrowser.Controller.IO
                 throw new ArgumentNullException("taskManager");
             }
 
+            LibraryManager = libraryManager;
             TaskManager = taskManager;
             Logger = logger;
         }
@@ -96,11 +99,11 @@ namespace MediaBrowser.Controller.IO
         /// </summary>
         internal void Start()
         {
-            Kernel.Instance.LibraryManager.LibraryChanged += Instance_LibraryChanged;
-          
-            var pathsToWatch = new List<string> { Kernel.Instance.RootFolder.Path };
+            LibraryManager.LibraryChanged += Instance_LibraryChanged;
 
-            var paths = Kernel.Instance.RootFolder.Children.OfType<Folder>()
+            var pathsToWatch = new List<string> { LibraryManager.RootFolder.Path };
+
+            var paths = LibraryManager.RootFolder.Children.OfType<Folder>()
                 .SelectMany(f =>
                     {
                         try
@@ -467,7 +470,7 @@ namespace MediaBrowser.Controller.IO
 
             while (item == null && !string.IsNullOrEmpty(path))
             {
-                item = Kernel.Instance.RootFolder.FindByPath(path);
+                item = LibraryManager.RootFolder.FindByPath(path);
 
                 path = Path.GetDirectoryName(path);
             }
@@ -494,7 +497,7 @@ namespace MediaBrowser.Controller.IO
         /// </summary>
         private void Stop()
         {
-            Kernel.Instance.LibraryManager.LibraryChanged -= Instance_LibraryChanged;
+            LibraryManager.LibraryChanged -= Instance_LibraryChanged;
 
             FileSystemWatcher watcher;
 

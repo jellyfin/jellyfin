@@ -24,14 +24,16 @@ namespace MediaBrowser.Api.UserLibrary
         /// The _user manager
         /// </summary>
         protected readonly IUserManager UserManager;
+        protected readonly ILibraryManager LibraryManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseItemsByNameService{TItemType}" /> class.
         /// </summary>
         /// <param name="userManager">The user manager.</param>
-        protected BaseItemsByNameService(IUserManager userManager)
+        protected BaseItemsByNameService(IUserManager userManager, ILibraryManager libraryManager)
         {
             UserManager = userManager;
+            LibraryManager = libraryManager;
         }
 
         /// <summary>
@@ -43,7 +45,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = UserManager.GetUserById(request.UserId);
 
-            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, UserManager, user.Id);
+            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, UserManager, LibraryManager, user.Id);
 
             IEnumerable<BaseItem> items;
 
@@ -126,7 +128,7 @@ namespace MediaBrowser.Api.UserLibrary
                 return null;
             }
 
-            var dto = await new DtoBuilder(Logger).GetDtoBaseItem(item, user, fields).ConfigureAwait(false);
+            var dto = await new DtoBuilder(Logger).GetDtoBaseItem(item, user, fields, LibraryManager).ConfigureAwait(false);
 
             dto.ChildCount = stub.Item2();
 

@@ -124,7 +124,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _rootFolder, ref _userRootFolderInitialized, ref _userRootFolderSyncLock, () => (UserRootFolder)Kernel.Instance.LibraryManager.GetItem(RootFolderPath));
+                LazyInitializer.EnsureInitialized(ref _rootFolder, ref _userRootFolderInitialized, ref _userRootFolderSyncLock, () => (UserRootFolder)LibraryManager.ResolvePath(RootFolderPath));
                 return _rootFolder;
             }
             private set

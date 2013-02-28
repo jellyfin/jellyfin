@@ -15,7 +15,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected override IEnumerable<BaseItem> GetNonCachedChildren()
         {
-            return base.GetNonCachedChildren().Concat(Kernel.Instance.RootFolder.VirtualChildren);
+            return base.GetNonCachedChildren().Concat(LibraryManager.RootFolder.VirtualChildren);
         }
     }
 }

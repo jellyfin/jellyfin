@@ -93,13 +93,14 @@ namespace MediaBrowser.Api.Library
         /// The _app host
         /// </summary>
         private readonly IApplicationHost _appHost;
+        private readonly ILibraryManager _libraryManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         /// <param name="appHost">The app host.</param>
         /// <exception cref="System.ArgumentNullException">appHost</exception>
-        public LibraryService(IApplicationHost appHost)
+        public LibraryService(IApplicationHost appHost, ILibraryManager libraryManager)
         {
             if (appHost == null)
             {
@@ -107,6 +108,7 @@ namespace MediaBrowser.Api.Library
             }
 
             _appHost = appHost;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -116,14 +118,12 @@ namespace MediaBrowser.Api.Library
         /// <returns>System.Object.</returns>
         public object Get(GetPerson request)
         {
-            var kernel = (Kernel)Kernel;
-
-            var item = kernel.LibraryManager.GetPerson(request.Name).Result;
+            var item = _libraryManager.GetPerson(request.Name).Result;
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
-            
-            var result = new DtoBuilder(Logger).GetDtoBaseItem(item, fields.ToList()).Result;
+
+            var result = new DtoBuilder(Logger).GetDtoBaseItem(item, fields.ToList(), _libraryManager).Result;
 
             return ToOptimizedResult(result);
         }
@@ -135,14 +135,12 @@ namespace MediaBrowser.Api.Library
         /// <returns>System.Object.</returns>
         public object Get(GetGenre request)
         {
-            var kernel = (Kernel)Kernel;
-
-            var item = kernel.LibraryManager.GetGenre(request.Name).Result;
+            var item = _libraryManager.GetGenre(request.Name).Result;
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
 
-            var result = new DtoBuilder(Logger).GetDtoBaseItem(item, fields.ToList()).Result;
+            var result = new DtoBuilder(Logger).GetDtoBaseItem(item, fields.ToList(), _libraryManager).Result;
 
             return ToOptimizedResult(result);
         }
@@ -154,14 +152,12 @@ namespace MediaBrowser.Api.Library
         /// <returns>System.Object.</returns>
         public object Get(GetStudio request)
         {
-            var kernel = (Kernel)Kernel;
-
-            var item = kernel.LibraryManager.GetStudio(request.Name).Result;
+            var item = _libraryManager.GetStudio(request.Name).Result;
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
 
-            var result = new DtoBuilder(Logger).GetDtoBaseItem(item, fields.ToList()).Result;
+            var result = new DtoBuilder(Logger).GetDtoBaseItem(item, fields.ToList(), _libraryManager).Result;
 
             return ToOptimizedResult(result);
         }
@@ -173,14 +169,12 @@ namespace MediaBrowser.Api.Library
         /// <returns>System.Object.</returns>
         public object Get(GetYear request)
         {
-            var kernel = (Kernel)Kernel;
-
-            var item = kernel.LibraryManager.GetYear(request.Year).Result;
+            var item = _libraryManager.GetYear(request.Year).Result;
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
 
-            var result = new DtoBuilder(Logger).GetDtoBaseItem(item, fields.ToList()).Result;
+            var result = new DtoBuilder(Logger).GetDtoBaseItem(item, fields.ToList(), _libraryManager).Result;
 
             return ToOptimizedResult(result);
         }
@@ -192,9 +186,7 @@ namespace MediaBrowser.Api.Library
         /// <returns>System.Object.</returns>
         public object Get(GetPhyscialPaths request)
         {
-            var kernel = (Kernel)Kernel;
-
-            var result = kernel.RootFolder.Children.SelectMany(c => c.ResolveArgs.PhysicalLocations).ToList();
+            var result = _libraryManager.RootFolder.Children.SelectMany(c => c.ResolveArgs.PhysicalLocations).ToList();
 
             return ToOptimizedResult(result);
         }
@@ -206,8 +198,6 @@ namespace MediaBrowser.Api.Library
         /// <returns>System.Object.</returns>
         public object Get(GetItemTypes request)
         {
-            var kernel = (Kernel)Kernel;
-
             var allTypes = _appHost.AllConcreteTypes.Where(t => t.IsSubclassOf(typeof(BaseItem)));
 
             if (request.HasInternetProvider)

@@ -88,7 +88,7 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 var ourChildren =
-                    Kernel.Instance.RootFolder.Children.OfType<Folder>()
+                    LibraryManager.RootFolder.Children.OfType<Folder>()
                           .Where(i => folderIds.Contains(i.Id))
                           .SelectMany(c => c.Children);
 

@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using ServiceStack.ServiceHost;
 using System;
@@ -23,8 +22,8 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     public class StudiosService : BaseItemsByNameService<Studio>
     {
-        public StudiosService(IUserManager userManager)
-            : base(userManager)
+        public StudiosService(IUserManager userManager, ILibraryManager libraryManager)
+            : base(userManager, libraryManager)
         {
         }
 
@@ -64,9 +63,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task{Studio}.</returns>
         protected override Task<Studio> GetEntity(string name)
         {
-            var kernel = (Kernel)Kernel;
-
-            return kernel.LibraryManager.GetStudio(name);
+            return LibraryManager.GetStudio(name);
         }
     }
 }

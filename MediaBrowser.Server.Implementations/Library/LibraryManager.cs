@@ -1,8 +1,10 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.ScheduledTasks;
 using MediaBrowser.Model.Entities;
@@ -17,12 +19,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.Library
+namespace MediaBrowser.Server.Implementations.Library
 {
     /// <summary>
     /// Class LibraryManager
     /// </summary>
-    public class LibraryManager
+    public class LibraryManager : ILibraryManager
     {
         #region LibraryChanged Event
         /// <summary>
@@ -35,7 +37,7 @@ namespace MediaBrowser.Controller.Library
         /// Raises the <see cref="E:LibraryChanged" /> event.
         /// </summary>
         /// <param name="args">The <see cref="ChildrenChangedEventArgs" /> instance containing the event data.</param>
-        internal void OnLibraryChanged(ChildrenChangedEventArgs args)
+        public void ReportLibraryChanged(ChildrenChangedEventArgs args)
         {
             EventHelper.QueueEventIfNotNull(LibraryChanged, this, args, _logger);
 
@@ -64,8 +66,11 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         private readonly ITaskManager _taskManager;
 
+        /// <summary>
+        /// The _user manager
+        /// </summary>
         private readonly IUserManager _userManager;
-        
+
         /// <summary>
         /// Gets or sets the kernel.
         /// </summary>
@@ -78,6 +83,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="taskManager">The task manager.</param>
+        /// <param name="userManager">The user manager.</param>
         public LibraryManager(Kernel kernel, ILogger logger, ITaskManager taskManager, IUserManager userManager)
         {
             Kernel = kernel;
@@ -86,6 +92,40 @@ namespace MediaBrowser.Controller.Library
             _userManager = userManager;
 
             kernel.ConfigurationUpdated += kernel_ConfigurationUpdated;
+        }
+
+        /// <summary>
+        /// The _root folder
+        /// </summary>
+        private AggregateFolder _rootFolder;
+        /// <summary>
+        /// The _root folder sync lock
+        /// </summary>
+        private object _rootFolderSyncLock = new object();
+        /// <summary>
+        /// The _root folder initialized
+        /// </summary>
+        private bool _rootFolderInitialized;
+        /// <summary>
+        /// Gets the root folder.
+        /// </summary>
+        /// <value>The root folder.</value>
+        public AggregateFolder RootFolder
+        {
+            get
+            {
+                LazyInitializer.EnsureInitialized(ref _rootFolder, ref _rootFolderInitialized, ref _rootFolderSyncLock, CreateRootFolder);
+                return _rootFolder;
+            }
+            private set
+            {
+                _rootFolder = value;
+
+                if (value == null)
+                {
+                    _rootFolderInitialized = false;
+                }
+            }
         }
 
         /// <summary>
@@ -133,7 +173,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fileInfo">The file info.</param>
         /// <returns>BaseItem.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public BaseItem GetItem(string path, Folder parent = null, WIN32_FIND_DATA? fileInfo = null)
+        public BaseItem ResolvePath(string path, Folder parent = null, WIN32_FIND_DATA? fileInfo = null)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -185,7 +225,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="files">The files.</param>
         /// <param name="parent">The parent.</param>
         /// <returns>List{``0}.</returns>
-        public List<T> GetItems<T>(IEnumerable<WIN32_FIND_DATA> files, Folder parent)
+        public List<T> ResolvePaths<T>(IEnumerable<WIN32_FIND_DATA> files, Folder parent)
             where T : BaseItem
         {
             var list = new List<T>();
@@ -194,7 +234,7 @@ namespace MediaBrowser.Controller.Library
             {
                 try
                 {
-                    var item = GetItem(f.Path, parent, f) as T;
+                    var item = ResolvePath(f.Path, parent, f) as T;
 
                     if (item != null)
                     {
@@ -218,7 +258,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <returns>AggregateFolder.</returns>
         /// <exception cref="System.InvalidOperationException">Cannot create the root folder until plugins have loaded</exception>
-        internal AggregateFolder CreateRootFolder()
+        public AggregateFolder CreateRootFolder()
         {
             if (Kernel.Plugins == null)
             {
@@ -226,7 +266,7 @@ namespace MediaBrowser.Controller.Library
             }
 
             var rootFolderPath = Kernel.ApplicationPaths.RootFolderPath;
-            var rootFolder = Kernel.ItemRepository.RetrieveItem(rootFolderPath.GetMBId(typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)GetItem(rootFolderPath);
+            var rootFolder = Kernel.ItemRepository.RetrieveItem(rootFolderPath.GetMBId(typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(rootFolderPath);
 
             // Add in the plug-in folders
             foreach (var child in Kernel.PluginFolderCreators)
@@ -412,7 +452,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        internal async Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
         {
             // Clear the IBN cache
             ImagesByNameItemCache.Clear();
@@ -423,7 +463,7 @@ namespace MediaBrowser.Controller.Library
 
             var includedPersonTypes = new[] { PersonType.Actor, PersonType.Director };
 
-            var people = Kernel.RootFolder.RecursiveChildren
+            var people = RootFolder.RecursiveChildren
                 .Where(c => c.People != null)
                 .SelectMany(c => c.People.Where(p => includedPersonTypes.Contains(p.Type)))
                 .DistinctBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
@@ -483,21 +523,21 @@ namespace MediaBrowser.Controller.Library
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        internal async Task ValidateMediaLibrary(IProgress<double> progress, CancellationToken cancellationToken)
+        public async Task ValidateMediaLibrary(IProgress<double> progress, CancellationToken cancellationToken)
         {
             _logger.Info("Validating media library");
 
-            await Kernel.RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
             // Start by just validating the children of the root, but go no further
-            await Kernel.RootFolder.ValidateChildren(new Progress<double> { }, cancellationToken, recursive: false);
+            await RootFolder.ValidateChildren(new Progress<double> { }, cancellationToken, recursive: false);
 
             // Validate only the collection folders for each user, just to make them available as quickly as possible
             var userCollectionFolderTasks = _userManager.Users.AsParallel().Select(user => user.ValidateCollectionFolders(new Progress<double> { }, cancellationToken));
             await Task.WhenAll(userCollectionFolderTasks).ConfigureAwait(false);
 
             // Now validate the entire media library
-            await Kernel.RootFolder.ValidateChildren(progress, cancellationToken, recursive: true).ConfigureAwait(false);
+            await RootFolder.ValidateChildren(progress, cancellationToken, recursive: true).ConfigureAwait(false);
 
             foreach (var user in _userManager.Users)
             {
@@ -515,7 +555,7 @@ namespace MediaBrowser.Controller.Library
         public Task SaveDisplayPreferencesForFolder(User user, Folder folder, DisplayPreferences data)
         {
             // Need to update all items with the same DisplayPrefsId
-            foreach (var child in Kernel.RootFolder.GetRecursiveChildren(user)
+            foreach (var child in RootFolder.GetRecursiveChildren(user)
                 .OfType<Folder>()
                 .Where(i => i.DisplayPrefsId == folder.DisplayPrefsId))
             {
@@ -557,6 +597,48 @@ namespace MediaBrowser.Controller.Library
                     Name = Path.GetFileName(dir),
                     Locations = Directory.EnumerateFiles(dir, "*.lnk", SearchOption.TopDirectoryOnly).Select(FileSystem.ResolveShortcut).ToList()
                 });
+        }
+
+        /// <summary>
+        /// Finds a library item by Id and UserId.
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <param name="userId">The user id.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <returns>BaseItem.</returns>
+        /// <exception cref="System.ArgumentNullException">id</exception>
+        public BaseItem GetItemById(Guid id, Guid userId)
+        {
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            if (userId == Guid.Empty)
+            {
+                throw new ArgumentNullException("userId");
+            }
+
+            var user = _userManager.GetUserById(userId);
+            var userRoot = user.RootFolder;
+
+            return userRoot.FindItemById(id, user);
+        }
+
+        /// <summary>
+        /// Gets the item by id.
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns>BaseItem.</returns>
+        /// <exception cref="System.ArgumentNullException">id</exception>
+        public BaseItem GetItemById(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentNullException("id");
+            }
+            return null;
+            //return RootFolder.FindItemById(id, null);
         }
     }
 }

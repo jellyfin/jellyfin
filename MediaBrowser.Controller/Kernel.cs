@@ -37,12 +37,6 @@ namespace MediaBrowser.Controller
         public static Kernel Instance { get; private set; }
 
         /// <summary>
-        /// Gets the library manager.
-        /// </summary>
-        /// <value>The library manager.</value>
-        public LibraryManager LibraryManager { get; private set; }
-
-        /// <summary>
         /// Gets the image manager.
         /// </summary>
         /// <value>The image manager.</value>
@@ -71,40 +65,6 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The provider manager.</value>
         public ProviderManager ProviderManager { get; private set; }
-
-        /// <summary>
-        /// The _root folder
-        /// </summary>
-        private AggregateFolder _rootFolder;
-        /// <summary>
-        /// The _root folder sync lock
-        /// </summary>
-        private object _rootFolderSyncLock = new object();
-        /// <summary>
-        /// The _root folder initialized
-        /// </summary>
-        private bool _rootFolderInitialized;
-        /// <summary>
-        /// Gets the root folder.
-        /// </summary>
-        /// <value>The root folder.</value>
-        public AggregateFolder RootFolder
-        {
-            get
-            {
-                LazyInitializer.EnsureInitialized(ref _rootFolder, ref _rootFolderInitialized, ref _rootFolderSyncLock, LibraryManager.CreateRootFolder);
-                return _rootFolder;
-            }
-            private set
-            {
-                _rootFolder = value;
-
-                if (value == null)
-                {
-                    _rootFolderInitialized = false;
-                }
-            }
-        }
 
         /// <summary>
         /// Gets the kernel context.
@@ -156,13 +116,13 @@ namespace MediaBrowser.Controller
         /// Gets the list of currently registered entity resolvers
         /// </summary>
         /// <value>The entity resolvers enumerable.</value>
-        internal IEnumerable<IBaseItemResolver> EntityResolvers { get; private set; }
+        public IEnumerable<IBaseItemResolver> EntityResolvers { get; private set; }
 
         /// <summary>
         /// Gets the list of BasePluginFolders added by plugins
         /// </summary>
         /// <value>The plugin folders.</value>
-        internal IEnumerable<IVirtualFolderCreator> PluginFolderCreators { get; private set; }
+        public IEnumerable<IVirtualFolderCreator> PluginFolderCreators { get; private set; }
 
         /// <summary>
         /// Gets the list of available user repositories
@@ -210,7 +170,7 @@ namespace MediaBrowser.Controller
         /// Gets the list of entity resolution ignore rules
         /// </summary>
         /// <value>The entity resolution ignore rules.</value>
-        internal IEnumerable<IResolutionIgnoreRule> EntityResolutionIgnoreRules { get; private set; }
+        public IEnumerable<IResolutionIgnoreRule> EntityResolutionIgnoreRules { get; private set; }
 
         /// <summary>
         /// Gets the active user data repository
@@ -233,7 +193,6 @@ namespace MediaBrowser.Controller
         /// <param name="appHost">The app host.</param>
         /// <param name="appPaths">The app paths.</param>
         /// <param name="xmlSerializer">The XML serializer.</param>
-        /// <param name="taskManager">The task manager.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">isoManager</exception>
         public Kernel(IApplicationHost appHost, IServerApplicationPaths appPaths, IXmlSerializer xmlSerializer, ILogger logger)
@@ -255,11 +214,11 @@ namespace MediaBrowser.Controller
         protected override void FindParts()
         {
             // For now there's no real way to inject this properly
+            BaseItem.LibraryManager = ApplicationHost.Resolve<ILibraryManager>();
             User.UserManager = ApplicationHost.Resolve<IUserManager>();
 
             InstallationManager = (InstallationManager)ApplicationHost.CreateInstance(typeof(InstallationManager));
             FFMpegManager = (FFMpegManager)ApplicationHost.CreateInstance(typeof(FFMpegManager));
-            LibraryManager = (LibraryManager)ApplicationHost.CreateInstance(typeof(LibraryManager));
             ImageManager = (ImageManager)ApplicationHost.CreateInstance(typeof(ImageManager));
             ProviderManager = (ProviderManager)ApplicationHost.CreateInstance(typeof(ProviderManager));
             SecurityManager = (PluginSecurityManager)ApplicationHost.CreateInstance(typeof(PluginSecurityManager));
@@ -287,9 +246,6 @@ namespace MediaBrowser.Controller
         /// <returns>Task.</returns>
         protected override async Task ReloadInternal()
         {
-            // Reset these so that they can be lazy loaded again
-            RootFolder = null;
-
             await base.ReloadInternal().ConfigureAwait(false);
 
             ReloadResourcePools();
@@ -399,50 +355,8 @@ namespace MediaBrowser.Controller
         {
             DisposeFileSystemManager();
 
-            FileSystemManager = new FileSystemManager(this, Logger, ApplicationHost.Resolve<ITaskManager>());
+            FileSystemManager = new FileSystemManager(this, Logger, ApplicationHost.Resolve<ITaskManager>(), ApplicationHost.Resolve<ILibraryManager>());
             FileSystemManager.StartWatchers();
-        }
-
-        /// <summary>
-        /// Finds a library item by Id and UserId.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="userId">The user id.</param>
-        /// <param name="userManager">The user manager.</param>
-        /// <returns>BaseItem.</returns>
-        /// <exception cref="System.ArgumentNullException">id</exception>
-        public BaseItem GetItemById(Guid id, Guid userId, IUserManager userManager)
-        {
-            if (id == Guid.Empty)
-            {
-                throw new ArgumentNullException("id");
-            }
-
-            if (userId == Guid.Empty)
-            {
-                throw new ArgumentNullException("userId");
-            }
-
-            var user = userManager.GetUserById(userId);
-            var userRoot = user.RootFolder;
-
-            return userRoot.FindItemById(id, user);
-        }
-
-        /// <summary>
-        /// Gets the item by id.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns>BaseItem.</returns>
-        /// <exception cref="System.ArgumentNullException">id</exception>
-        public BaseItem GetItemById(Guid id)
-        {
-            if (id == Guid.Empty)
-            {
-                throw new ArgumentNullException("id");
-            }
-
-            return RootFolder.FindItemById(id, null);
         }
 
         /// <summary>

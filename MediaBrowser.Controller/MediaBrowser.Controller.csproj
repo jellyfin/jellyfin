@@ -113,6 +113,7 @@
     <Compile Include="IServerApplicationPaths.cs" />
     <Compile Include="Library\ChildrenChangedEventArgs.cs" />
     <Compile Include="Library\DtoBuilder.cs" />
+    <Compile Include="Library\ILibraryManager.cs" />
     <Compile Include="Library\IUserManager.cs" />
     <Compile Include="Library\Profiler.cs" />
     <Compile Include="Localization\AURatingsDictionary.cs" />
@@ -181,7 +182,6 @@
     <Compile Include="Library\ItemResolveArgs.cs" />
     <Compile Include="IO\DirectoryWatchers.cs" />
     <Compile Include="IO\FileData.cs" />
-    <Compile Include="Library\LibraryManager.cs" />
     <Compile Include="Kernel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\BaseMetadataProvider.cs" />

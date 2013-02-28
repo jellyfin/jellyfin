@@ -18,8 +18,8 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// Initializes a new instance of the <see cref="BaseProgressiveStreamingService" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
-        protected BaseProgressiveStreamingService(IServerApplicationPaths appPaths, IUserManager userManager)
-            : base(appPaths, userManager)
+        protected BaseProgressiveStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager)
+            : base(appPaths, userManager, libraryManager)
         {
         }
 

@@ -254,9 +254,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BDInfo\BDInfo.csproj">
-      <Project>{07b509c0-0c28-4f3f-8963-5263281f7e3d}</Project>
-      <Name>BDInfo</Name>
+    <ProjectReference Include="..\MediaBrowser.Api\MediaBrowser.Api.csproj">
+      <Project>{4fd51ac5-2c16-4308-a993-c3a84f3b4582}</Project>
+      <Name>MediaBrowser.Api</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.ClickOnce\MediaBrowser.ClickOnce.csproj">
       <Project>{cc96bf3e-0bda-4809-bc4b-bb6d418f4a84}</Project>
@@ -285,6 +285,10 @@
     <ProjectReference Include="..\MediaBrowser.Server.Implementations\MediaBrowser.Server.Implementations.csproj">
       <Project>{2e781478-814d-4a48-9d80-bff206441a65}</Project>
       <Name>MediaBrowser.Server.Implementations</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj">
+      <Project>{5624b7b5-b5a7-41d8-9f10-cc5611109619}</Project>
+      <Name>MediaBrowser.WebDashboard</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -364,12 +368,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="CorePlugins\MediaBrowser.Api.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="CorePlugins\MediaBrowser.WebDashboard.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="x64\SQLite.Interop.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

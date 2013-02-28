@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
@@ -34,11 +35,12 @@ namespace MediaBrowser.Controller.IO
         /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="taskManager">The task manager.</param>
-        public FileSystemManager(Kernel kernel, ILogger logger, ITaskManager taskManager)
+        /// <param name="libraryManager">The library manager.</param>
+        public FileSystemManager(Kernel kernel, ILogger logger, ITaskManager taskManager, ILibraryManager libraryManager)
             : base(kernel)
         {
             _logger = logger;
-            DirectoryWatchers = new DirectoryWatchers(logger, taskManager);
+            DirectoryWatchers = new DirectoryWatchers(logger, taskManager, libraryManager);
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -23,16 +24,19 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks.Tasks
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
+        private readonly ILibraryManager _libraryManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChapterImagesTask" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
-        public ChapterImagesTask(Kernel kernel, ILogger logger)
+        /// <param name="libraryManager">The library manager.</param>
+        public ChapterImagesTask(Kernel kernel, ILogger logger, ILibraryManager libraryManager)
         {
             _kernel = kernel;
             _logger = logger;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -55,7 +59,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks.Tasks
         /// <returns>Task.</returns>
         public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var videos = _kernel.RootFolder.RecursiveChildren.OfType<Video>().Where(v => v.Chapters != null).ToList();
+            var videos = _libraryManager.RootFolder.RecursiveChildren.OfType<Video>().Where(v => v.Chapters != null).ToList();
 
             var numComplete = 0;
 
