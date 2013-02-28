@@ -98,6 +98,22 @@ namespace MediaBrowser.Uninstaller.Execute
                     }
                 }
             }
+            else
+            {
+                // Installing MBT - shut it down if it is running
+                var processes = Process.GetProcessesByName("mediabrowser.ui");
+                if (processes.Length > 0)
+                {
+                    try
+                    {
+                        processes[0].CloseMainWindow();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Unable to shutdown Media Browser Theater.  Please ensure it is not running before hitting OK.\n\n" + ex.Message, "Error");
+                    }
+                }
+            }
             // if the startmenu item is empty now - delete it too
             if (Directory.GetFiles(startMenu).Length == 0)
             {
