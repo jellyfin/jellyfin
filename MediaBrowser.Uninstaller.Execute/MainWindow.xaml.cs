@@ -79,18 +79,21 @@ namespace MediaBrowser.Uninstaller.Execute
             if (Product == "Server")
             {
                 RemoveShortcut(Path.Combine(startMenu, "MB Dashboard.lnk"));
-                using (var client = new WebClient())
+                if (Process.GetProcessesByName("mediabrowser.serverapplication").Length != 0)
                 {
-                    lblHeading.Content = "Shutting Down Server...";
-                    try
+                    using (var client = new WebClient())
                     {
-                        client.UploadString("http://localhost:8096/mediabrowser/system/shutdown", "");
-                    }
-                    catch (WebException ex)
-                    {
-                        if (ex.Status != WebExceptionStatus.ConnectFailure && !ex.Message.StartsWith("Unable to connect", StringComparison.OrdinalIgnoreCase))
+                        lblHeading.Content = "Shutting Down Server...";
+                        try
                         {
-                            MessageBox.Show("Error shutting down server.  Please be sure it is not running before hitting OK.\n\n" + ex.Status + "\n\n" + ex.Message);
+                            client.UploadString("http://localhost:8096/mediabrowser/system/shutdown", "");
+                        }
+                        catch (WebException ex)
+                        {
+                            if (ex.Status != WebExceptionStatus.ConnectFailure && !ex.Message.StartsWith("Unable to connect", StringComparison.OrdinalIgnoreCase))
+                            {
+                                MessageBox.Show("Error shutting down server.  Please be sure it is not running before hitting OK.\n\n" + ex.Status + "\n\n" + ex.Message);
+                            }
                         }
                     }
                 }

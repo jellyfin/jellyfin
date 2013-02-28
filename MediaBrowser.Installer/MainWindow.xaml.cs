@@ -114,8 +114,8 @@ namespace MediaBrowser.Installer
             var version = await GetPackageVersion();
             lblStatus.Content = string.Format("Downloading {0} (version {1})...", FriendlyName, version.versionStr);
 
-            // Now try and shut down the server if that is what we are installing
-            if (PackageName == "MBServer")
+            // Now try and shut down the server if that is what we are installing and it is running
+            if (PackageName == "MBServer" && Process.GetProcessesByName("mediabrowser.serverapplication").Length != 0)
             {
                 using (var client = new WebClient())
                 {
