@@ -131,6 +131,26 @@ namespace MediaBrowser.Installer
                     }
                 }
             }
+            else
+            {
+                if (PackageName == "MBTheater")
+                {
+                    // Uninstalling MBT - shut it down if it is running
+                    var processes = Process.GetProcessesByName("mediabrowser.ui");
+                    if (processes.Length > 0)
+                    {
+                        try
+                        {
+                            processes[0].CloseMainWindow();
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Unable to shutdown Media Browser Theater.  Please ensure it is not running before hitting OK.\n\n" + ex.Message, "Error");
+                        }
+                    }
+                    
+                }
+            }
 
             // Download
             var archive = await DownloadPackage(version);
