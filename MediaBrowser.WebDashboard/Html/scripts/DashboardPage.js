@@ -306,7 +306,7 @@
 
             ApiClient.getAvailableApplicationUpdate().done(function (packageInfo) {
 
-                var version = packageInfo.versions[0];
+                var version = packageInfo[0];
 
                 if (!version) {
                     $('#pUpToDate', page).show();
