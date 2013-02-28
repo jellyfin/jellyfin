@@ -47,8 +47,8 @@ namespace MediaBrowser.Common.Implementations.Updates
         {
             // Target based on if it is an archive or single assembly
             //  zip archives are assumed to contain directory structures relative to our ProgramDataPath
-            var isArchive = string.Equals(Path.GetExtension(package.sourceUrl), ".zip", StringComparison.OrdinalIgnoreCase);
-            var target = isArchive ? appPaths.ProgramDataPath : Path.Combine(appPaths.PluginsPath, package.targetFilename);
+            var isArchive = string.Equals(Path.GetExtension(package.targetFilename), ".zip", StringComparison.OrdinalIgnoreCase);
+            var target = isArchive ? appPaths.TempUpdatePath : Path.Combine(appPaths.PluginsPath, package.targetFilename);
 
             // Download to temporary file so that, if interrupted, it won't destroy the existing installation
             var tempFile = await client.GetTempFile(package.sourceUrl, resourcePool.Mb, cancellationToken, progress).ConfigureAwait(false);
@@ -100,5 +100,6 @@ namespace MediaBrowser.Common.Implementations.Updates
             }
 
         }
+
     }
 }
