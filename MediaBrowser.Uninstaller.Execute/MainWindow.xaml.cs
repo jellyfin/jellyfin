@@ -83,7 +83,7 @@ namespace MediaBrowser.Uninstaller.Execute
                 {
                     using (var client = new WebClient())
                     {
-                        lblHeading.Content = "Shutting Down Server...";
+                        lblHeading.Content = "Shutting Down Media Browser Server...";
                         try
                         {
                             client.UploadString("http://localhost:8096/mediabrowser/system/shutdown", "");
@@ -104,9 +104,10 @@ namespace MediaBrowser.Uninstaller.Execute
                 var processes = Process.GetProcessesByName("mediabrowser.ui");
                 if (processes.Length > 0)
                 {
+                    lblHeading.Content = "Shutting Down Media Browser Theater...";
                     try
                     {
-                        processes[0].CloseMainWindow();
+                        processes[0].Kill();
                     }
                     catch (Exception ex)
                     {
