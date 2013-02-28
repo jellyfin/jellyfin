@@ -149,7 +149,7 @@ namespace MediaBrowser.ServerApplication
         /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
         public bool CanSelfUpdate
         {
-            get { return true; }
+            get { return Kernel.Configuration.EnableAutoUpdate; }
         }
 
         /// <summary>
@@ -171,12 +171,14 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// Updates the application.
         /// </summary>
+        /// <param name="package">The package that contains the update</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        public Task UpdateApplication(CancellationToken cancellationToken, IProgress<double> progress)
+        public Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress)
         {
-            return new ApplicationUpdater().UpdateApplication(cancellationToken, progress);
+            var pkgManager = Resolve<IPackageManager>();
+            return pkgManager.InstallPackage(Resolve<IHttpClient>(), Resolve<ILogger>(), Kernel.ResourcePools, progress, Resolve<IZipClient>(), Kernel.ApplicationPaths, package, cancellationToken);
         }
 
         /// <summary>

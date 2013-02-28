@@ -80,11 +80,12 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
 
             progress.Report(10);
 
-            if (!updateInfo.IsUpdateAvailable)
-            {
-                progress.Report(100);
-                return;
-            }
+            //>>> FOR TESTING
+            //if (!updateInfo.IsUpdateAvailable)
+            //{
+            //    progress.Report(100);
+            //    return;
+            //}
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -97,7 +98,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
                 innerProgress = new Progress<double>();
                 innerProgress.ProgressChanged += innerProgressHandler;
 
-                await _appHost.UpdateApplication(cancellationToken, innerProgress).ConfigureAwait(false);
+                await _appHost.UpdateApplication(updateInfo.Package, cancellationToken, innerProgress).ConfigureAwait(false);
 
                 // Release the event handler
                 innerProgress.ProgressChanged -= innerProgressHandler;
