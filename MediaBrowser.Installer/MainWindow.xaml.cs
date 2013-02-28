@@ -112,11 +112,11 @@ namespace MediaBrowser.Installer
 
             // Determine Package version
             var version = await GetPackageVersion();
-            lblStatus.Content = string.Format("Downloading {0} (version {1})...", FriendlyName, version.versionStr);
 
             // Now try and shut down the server if that is what we are installing and it is running
             if (PackageName == "MBServer" && Process.GetProcessesByName("mediabrowser.serverapplication").Length != 0)
             {
+                lblStatus.Content = "Shutting Down Media Browser Server...";
                 using (var client = new WebClient())
                 {
                     try
@@ -139,9 +139,10 @@ namespace MediaBrowser.Installer
                     var processes = Process.GetProcessesByName("mediabrowser.ui");
                     if (processes.Length > 0)
                     {
+                        lblStatus.Content = "Shutting Down Media Browser Theater...";
                         try
                         {
-                            processes[0].CloseMainWindow();
+                            processes[0].Kill();
                         }
                         catch (Exception ex)
                         {
@@ -153,6 +154,7 @@ namespace MediaBrowser.Installer
             }
 
             // Download
+            lblStatus.Content = string.Format("Downloading {0} (version {1})...", FriendlyName, version.versionStr);
             var archive = await DownloadPackage(version);
             dlAnimation.StopAnimation();
             prgProgress.Visibility = btnCancel.Visibility = Visibility.Hidden;
