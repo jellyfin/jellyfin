@@ -165,7 +165,7 @@ namespace MediaBrowser.ServerApplication
             var version = Kernel.InstallationManager.GetLatestCompatibleVersion(availablePackages, "MBServer", Kernel.Configuration.SystemUpdateLevel);
 
             return version != null ? new CheckForUpdateResult {AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version} :
-                       new CheckForUpdateResult();
+                       new CheckForUpdateResult {AvailableVersion = ApplicationVersion, IsUpdateAvailable = false};
         }
 
         /// <summary>
