@@ -11,6 +11,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.IsoMounter;
@@ -148,7 +149,7 @@ namespace MediaBrowser.ServerApplication
         /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
         public bool CanSelfUpdate
         {
-            get { return ClickOnceHelper.IsNetworkDeployed; }
+            get { return true; }
         }
 
         /// <summary>
@@ -157,10 +158,14 @@ namespace MediaBrowser.ServerApplication
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task{CheckForUpdateResult}.</returns>
-        public Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            // Get package manager using Resolve<IPackageManager>()
-            return new ApplicationUpdateCheck().CheckForApplicationUpdate(cancellationToken, progress);
+            var pkgManager = Resolve<IPackageManager>();
+            var availablePackages = await pkgManager.GetAvailablePackages(Resolve<IHttpClient>(), Resolve<INetworkManager>(), Kernel.SecurityManager, Kernel.ResourcePools, Resolve<IJsonSerializer>(), CancellationToken.None).ConfigureAwait(false);
+            var version = Kernel.InstallationManager.GetLatestCompatibleVersion(availablePackages, "MBServer", Kernel.Configuration.SystemUpdateLevel);
+
+            return version != null ? new CheckForUpdateResult {AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version} :
+                       new CheckForUpdateResult();
         }
 
         /// <summary>

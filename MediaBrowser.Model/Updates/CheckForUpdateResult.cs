@@ -17,6 +17,15 @@ namespace MediaBrowser.Model.Updates
         /// Gets or sets the available version.
         /// </summary>
         /// <value>The available version.</value>
-        public Version AvailableVersion { get; set; }
+        public Version AvailableVersion
+        {
+            get { return Package != null ? Package.version : new Version(0, 0); }
+            set { } // need this for the serializer
+        }
+
+        /// <summary>
+        /// Get or sets package information for an available update
+        /// </summary>
+        public PackageVersionInfo Package { get; set; }
     }
 }
