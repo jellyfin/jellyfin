@@ -70,7 +70,7 @@ namespace MediaBrowser.Common.Kernel
         /// Updates the application.
         /// </summary>
         /// <returns>Task.</returns>
-        Task UpdateApplication(CancellationToken cancellationToken, IProgress<double> progress);
+        Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress);
 
         /// <summary>
         /// Creates an instance of type and resolves all constructor dependancies
