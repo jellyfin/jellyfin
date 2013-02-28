@@ -31,8 +31,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget (2)", ".nuget (2)", 
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BDInfo", "BDInfo\BDInfo.csproj", "{07B509C0-0C28-4F3F-8963-5263281F7E3D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.IsoMounter", "MediaBrowser.IsoMounter\MediaBrowser.IsoMounter.csproj", "{5356AE30-6A6E-4A64-81E3-F76C50595E64}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Installer", "MediaBrowser.Installer\MediaBrowser.Installer.csproj", "{3879F78A-D6F6-45E5-B2A8-D8DCF2DABB74}"
@@ -187,21 +185,6 @@ Global
 		{52E0C440-85C0-4A99-ACFE-07C87B2600BE}.Release|Win32.ActiveCfg = Release|Any CPU
 		{52E0C440-85C0-4A99-ACFE-07C87B2600BE}.Release|x64.ActiveCfg = Release|Any CPU
 		{52E0C440-85C0-4A99-ACFE-07C87B2600BE}.Release|x86.ActiveCfg = Release|Any CPU
-		{07B509C0-0C28-4F3F-8963-5263281F7E3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{07B509C0-0C28-4F3F-8963-5263281F7E3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{07B509C0-0C28-4F3F-8963-5263281F7E3D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{07B509C0-0C28-4F3F-8963-5263281F7E3D}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{07B509C0-0C28-4F3F-8963-5263281F7E3D}.Debug|Win32.ActiveCfg = Debug|Any CPU
-		{07B509C0-0C28-4F3F-8963-5263281F7E3D}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{07B509C0-0C28-4F3F-8963-5263281F7E3D}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{07B509C0-0C28-4F3F-8963-5263281F7E3D}.Debug|x86.Build.0 = Debug|Any CPU
-		{07B509C0-0C28-4F3F-8963-5263281F7E3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{07B509C0-0C28-4F3F-8963-5263281F7E3D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{07B509C0-0C28-4F3F-8963-5263281F7E3D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{07B509C0-0C28-4F3F-8963-5263281F7E3D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{07B509C0-0C28-4F3F-8963-5263281F7E3D}.Release|Win32.ActiveCfg = Release|Any CPU
-		{07B509C0-0C28-4F3F-8963-5263281F7E3D}.Release|x64.ActiveCfg = Release|Any CPU
-		{07B509C0-0C28-4F3F-8963-5263281F7E3D}.Release|x86.ActiveCfg = Release|Any CPU
 		{5356AE30-6A6E-4A64-81E3-F76C50595E64}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{5356AE30-6A6E-4A64-81E3-F76C50595E64}.Debug|Any CPU.Build.0 = Debug|x86
 		{5356AE30-6A6E-4A64-81E3-F76C50595E64}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
