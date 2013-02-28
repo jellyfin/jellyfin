@@ -114,25 +114,22 @@ namespace MediaBrowser.Installer
             var version = await GetPackageVersion();
             lblStatus.Content = string.Format("Downloading {0} (version {1})...", FriendlyName, version.versionStr);
 
-            // Now in the background - try and shut down the server if that is what we are installing
+            // Now try and shut down the server if that is what we are installing
             if (PackageName == "MBServer")
             {
-                Task.Run(async () =>
-                             {
-                                 using (var client = new WebClient())
-                                 {
-                                     try
-                                     {
-                                         await client.UploadStringTaskAsync("http://localhost:8096/mediabrowser/system/shutdown", "").ConfigureAwait(false);
-                                     }
-                                     catch (WebException e)
-                                     {
-                                         if (e.GetStatus() == HttpStatusCode.NotFound || e.Message.StartsWith("Unable to connect",StringComparison.OrdinalIgnoreCase)) return; // just wasn't running
+                using (var client = new WebClient())
+                {
+                    try
+                    {
+                        client.UploadString("http://localhost:8096/mediabrowser/System/Shutdown", "");
+                    }
+                    catch (WebException e)
+                    {
+                        if (e.GetStatus() == HttpStatusCode.NotFound || e.Message.StartsWith("Unable to connect",StringComparison.OrdinalIgnoreCase)) return; // just wasn't running
 
-                                         MessageBox.Show("Error shutting down server.\n\n" + e.GetStatus() + "\n\n" + e.Message);
-                                     }
-                                 }
-                             });
+                        MessageBox.Show("Error shutting down server. Please be sure it is not running before hitting OK.\n\n" + e.GetStatus() + "\n\n" + e.Message);
+                    }
+                }
             }
 
             // Download
