@@ -123,10 +123,7 @@ namespace MediaBrowser.Api
 
                 if (updateCheckResult.IsUpdateAvailable)
                 {
-                    result.Add(new PackageVersionInfo
-                    {
-                        versionStr = updateCheckResult.AvailableVersion.ToString()
-                    });
+                    result.Add(updateCheckResult.Package);
                 }
             }
 

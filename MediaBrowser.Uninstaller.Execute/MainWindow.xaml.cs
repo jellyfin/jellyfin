@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Net;
 using System.Reflection;
 using System.IO;
 using System.Threading;
@@ -78,6 +79,41 @@ namespace MediaBrowser.Uninstaller.Execute
             if (Product == "Server")
             {
                 RemoveShortcut(Path.Combine(startMenu, "MB Dashboard.lnk"));
+                if (Process.GetProcessesByName("mediabrowser.serverapplication").Length != 0)
+                {
+                    using (var client = new WebClient())
+                    {
+                        lblHeading.Content = "Shutting Down Media Browser Server...";
+                        try
+                        {
+                            client.UploadString("http://localhost:8096/mediabrowser/system/shutdown", "");
+                        }
+                        catch (WebException ex)
+                        {
+                            if (ex.Status != WebExceptionStatus.ConnectFailure && !ex.Message.StartsWith("Unable to connect", StringComparison.OrdinalIgnoreCase))
+                            {
+                                MessageBox.Show("Error shutting down server.  Please be sure it is not running before hitting OK.\n\n" + ex.Status + "\n\n" + ex.Message);
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // Installing MBT - shut it down if it is running
+                var processes = Process.GetProcessesByName("mediabrowser.ui");
+                if (processes.Length > 0)
+                {
+                    lblHeading.Content = "Shutting Down Media Browser Theater...";
+                    try
+                    {
+                        processes[0].Kill();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Unable to shutdown Media Browser Theater.  Please ensure it is not running before hitting OK.\n\n" + ex.Message, "Error");
+                    }
+                }
             }
             // if the startmenu item is empty now - delete it too
             if (Directory.GetFiles(startMenu).Length == 0)
@@ -99,6 +135,7 @@ namespace MediaBrowser.Uninstaller.Execute
 
             var rootPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "MediaBrowser" + RootSuffix);
 
+            lblHeading.Content = "Removing System Files...";
             if (cbxRemoveAll.IsChecked == true)
             {
                 // Just remove our whole directory
@@ -107,7 +144,6 @@ namespace MediaBrowser.Uninstaller.Execute
             else
             {
                 // First remove the system
-                lblHeading.Content = "Removing System Files...";
                 RemovePath(Path.Combine(rootPath, "System"));
                 RemovePath(Path.Combine(rootPath, "MediaTools"));
 

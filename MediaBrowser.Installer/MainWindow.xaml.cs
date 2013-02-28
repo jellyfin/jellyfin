@@ -112,31 +112,59 @@ namespace MediaBrowser.Installer
 
             // Determine Package version
             var version = await GetPackageVersion();
-            lblStatus.Content = string.Format("Downloading {0} (version {1})...", FriendlyName, version.versionStr);
 
-            // Now in the background - try and shut down the server if that is what we are installing
-            if (PackageName == "MBServer")
+            // Now try and shut down the server if that is what we are installing and it is running
+            if (PackageName == "MBServer" && Process.GetProcessesByName("mediabrowser.serverapplication").Length != 0)
             {
-                Task.Run(async () =>
-                             {
-                                 using (var client = new WebClient())
-                                 {
-                                     try
-                                     {
-                                         await client.UploadStringTaskAsync("http://localhost:8096/mediabrowser/system/shutdown", "").ConfigureAwait(false);
-                                     }
-                                     catch (WebException e)
-                                     {
-                                         if (e.GetStatus() == HttpStatusCode.NotFound || e.Message.StartsWith("Unable to connect",StringComparison.OrdinalIgnoreCase)) return; // just wasn't running
+                lblStatus.Content = "Shutting Down Media Browser Server...";
+                using (var client = new WebClient())
+                {
+                    try
+                    {
+                        client.UploadString("http://localhost:8096/mediabrowser/System/Shutdown", "");
+                    }
+                    catch (WebException e)
+                    {
+                        if (e.GetStatus() == HttpStatusCode.NotFound || e.Message.StartsWith("Unable to connect",StringComparison.OrdinalIgnoreCase)) return; // just wasn't running
 
-                                         MessageBox.Show("Error shutting down server.\n\n" + e.GetStatus() + "\n\n" + e.Message);
-                                     }
-                                 }
-                             });
+                        MessageBox.Show("Error shutting down server. Please be sure it is not running before hitting OK.\n\n" + e.GetStatus() + "\n\n" + e.Message);
+                    }
+                }
+            }
+            else
+            {
+                if (PackageName == "MBTheater")
+                {
+                    // Uninstalling MBT - shut it down if it is running
+                    var processes = Process.GetProcessesByName("mediabrowser.ui");
+                    if (processes.Length > 0)
+                    {
+                        lblStatus.Content = "Shutting Down Media Browser Theater...";
+                        try
+                        {
+                            processes[0].Kill();
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Unable to shutdown Media Browser Theater.  Please ensure it is not running before hitting OK.\n\n" + ex.Message, "Error");
+                        }
+                    }
+                    
+                }
             }
 
             // Download
-            var archive = await DownloadPackage(version);
+            string archive = null;
+            lblStatus.Content = string.Format("Downloading {0} (version {1})...", FriendlyName, version.versionStr);
+            try
+            {
+                archive = await DownloadPackage(version);
+            }
+            catch (Exception e)
+            {
+                SystemClose("Error Downloading Package - " + e.GetType().FullName + "\n\n" + e.Message);
+            }
+
             dlAnimation.StopAnimation();
             prgProgress.Visibility = btnCancel.Visibility = Visibility.Hidden;
 
