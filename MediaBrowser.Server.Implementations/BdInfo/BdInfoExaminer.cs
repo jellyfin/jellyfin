@@ -1,10 +1,11 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using BDInfo;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace BDInfo
+namespace MediaBrowser.Server.Implementations.BdInfo
 {
     /// <summary>
     /// Class BdInfoExaminer

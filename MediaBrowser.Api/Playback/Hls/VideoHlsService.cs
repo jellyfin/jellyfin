@@ -11,8 +11,8 @@ namespace MediaBrowser.Api.Playback.Hls
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
         /// <param name="userManager">The user manager.</param>
-        public VideoHlsService(IServerApplicationPaths appPaths, IUserManager userManager)
-            : base(appPaths, userManager)
+        public VideoHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager)
+            : base(appPaths, userManager, libraryManager)
         {
         }
 

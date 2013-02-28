@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Controller.Library;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -11,15 +12,18 @@ namespace MediaBrowser.Controller.ScheduledTasks
     /// </summary>
     public class PeopleValidationTask : IScheduledTask
     {
-        private readonly Kernel _kernel;
+        /// <summary>
+        /// The _library manager
+        /// </summary>
+        private readonly ILibraryManager _libraryManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PeopleValidationTask" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
-        public PeopleValidationTask(Kernel kernel)
+        /// <param name="libraryManager">The library manager.</param>
+        public PeopleValidationTask(ILibraryManager libraryManager)
         {
-            _kernel = kernel;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -44,7 +48,7 @@ namespace MediaBrowser.Controller.ScheduledTasks
         /// <returns>Task.</returns>
         public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            return _kernel.LibraryManager.ValidatePeople(cancellationToken, progress);
+            return _libraryManager.ValidatePeople(cancellationToken, progress);
         }
 
         /// <summary>

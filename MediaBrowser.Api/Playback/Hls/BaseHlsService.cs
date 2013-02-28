@@ -16,9 +16,9 @@ namespace MediaBrowser.Api.Playback.Hls
         /// The segment file prefix
         /// </summary>
         public const string SegmentFilePrefix = "segment-";
-        
-        protected BaseHlsService(IServerApplicationPaths appPaths, IUserManager userManager)
-            : base(appPaths, userManager)
+
+        protected BaseHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager)
+            : base(appPaths, userManager, libraryManager)
         {
         }
 

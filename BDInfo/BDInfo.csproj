@@ -35,7 +35,6 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BdInfoExaminer.cs" />
     <Compile Include="BDInfoSettings.cs" />
     <Compile Include="BDROM.cs" />
     <Compile Include="LanguageCodes.cs" />

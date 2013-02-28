@@ -244,21 +244,27 @@ namespace MediaBrowser.Common.Implementations.NetworkManagement
         /// <exception cref="System.ArgumentException">Unknown share type</exception>
         private NetworkShareType ToNetworkShareType(ShareType shareType)
         {
-            switch (shareType)
+            if (shareType.HasFlag(ShareType.Special))
             {
-                case ShareType.Device:
-                    return NetworkShareType.Device;
-                case ShareType.Disk :
-                    return NetworkShareType.Disk;
-                case ShareType.IPC :
-                    return NetworkShareType.Ipc;
-                case ShareType.Printer :
-                    return NetworkShareType.Printer;
-                case ShareType.Special:
-                    return NetworkShareType.Special;
-                default:
-                    throw new ArgumentException("Unknown share type");
+                return NetworkShareType.Special;
             }
+            if (shareType.HasFlag(ShareType.Device))
+            {
+                return NetworkShareType.Device;
+            }
+            if (shareType.HasFlag(ShareType.Disk))
+            {
+                return NetworkShareType.Disk;
+            }
+            if (shareType.HasFlag(ShareType.IPC))
+            {
+                return NetworkShareType.Ipc;
+            }
+            if (shareType.HasFlag(ShareType.Printer))
+            {
+                return NetworkShareType.Printer;
+            }
+            throw new ArgumentException("Unknown share type");
         }
 
         /// <summary>

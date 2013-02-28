@@ -142,12 +142,18 @@ namespace MediaBrowser.Api.Images
         private readonly IUserManager _userManager;
 
         /// <summary>
+        /// The _library manager
+        /// </summary>
+        private readonly ILibraryManager _libraryManager;
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="ImageService" /> class.
         /// </summary>
         /// <param name="userManager">The user manager.</param>
-        public ImageService(IUserManager userManager)
+        public ImageService(IUserManager userManager, ILibraryManager libraryManager)
         {
             _userManager = userManager;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -157,7 +163,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetItemImage request)
         {
-            var item = DtoBuilder.GetItemByClientId(request.Id, _userManager);
+            var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager);
 
             return GetImage(request, item);
         }
@@ -181,9 +187,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetYearImage request)
         {
-            var kernel = (Kernel)Kernel;
-
-            var item = kernel.LibraryManager.GetYear(request.Year).Result;
+            var item = _libraryManager.GetYear(request.Year).Result;
 
             return GetImage(request, item);
         }
@@ -195,9 +199,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetStudioImage request)
         {
-            var kernel = (Kernel)Kernel;
-
-            var item = kernel.LibraryManager.GetStudio(request.Name).Result;
+            var item = _libraryManager.GetStudio(request.Name).Result;
 
             return GetImage(request, item);
         }
@@ -209,9 +211,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetPersonImage request)
         {
-            var kernel = (Kernel)Kernel;
-
-            var item = kernel.LibraryManager.GetPerson(request.Name).Result;
+            var item = _libraryManager.GetPerson(request.Name).Result;
 
             return GetImage(request, item);
         }
@@ -223,9 +223,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetGenreImage request)
         {
-            var kernel = (Kernel)Kernel;
-
-            var item = kernel.LibraryManager.GetGenre(request.Name).Result;
+            var item = _libraryManager.GetGenre(request.Name).Result;
 
             return GetImage(request, item);
         }

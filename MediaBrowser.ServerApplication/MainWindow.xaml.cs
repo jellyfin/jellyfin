@@ -54,6 +54,8 @@ namespace MediaBrowser.ServerApplication
         /// The _log manager
         /// </summary>
         private readonly ILogManager _logManager;
+
+        private readonly ILibraryManager _libraryManager;
         
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow" /> class.
@@ -62,7 +64,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="logger">The logger.</param>
         /// <param name="appHost">The app host.</param>
         /// <exception cref="System.ArgumentNullException">logger</exception>
-        public MainWindow(ILogManager logManager, IApplicationHost appHost)
+        public MainWindow(ILogManager logManager, IApplicationHost appHost, ILibraryManager libraryManager)
         {
             if (logManager == null)
             {
@@ -72,6 +74,7 @@ namespace MediaBrowser.ServerApplication
             _logger = logManager.GetLogger("MainWindow");
             _appHost = appHost;
             _logManager = logManager;
+            _libraryManager = libraryManager;
 
             InitializeComponent();
 
@@ -231,8 +234,8 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The e.</param>
         void KernelReloadCompleted(object sender, EventArgs e)
         {
-            Kernel.Instance.LibraryManager.LibraryChanged -= Instance_LibraryChanged;
-            Kernel.Instance.LibraryManager.LibraryChanged += Instance_LibraryChanged;
+            _libraryManager.LibraryChanged -= Instance_LibraryChanged;
+            _libraryManager.LibraryChanged += Instance_LibraryChanged;
 
             if (_appHost.IsFirstRun)
             {

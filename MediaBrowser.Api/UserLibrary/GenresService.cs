@@ -1,6 +1,4 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using ServiceStack.ServiceHost;
 using System;
@@ -24,7 +22,8 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     public class GenresService : BaseItemsByNameService<Genre>
     {
-        public GenresService(IUserManager userManager) : base(userManager)
+        public GenresService(IUserManager userManager, ILibraryManager libraryManager)
+            : base(userManager, libraryManager)
         {
         }
 
@@ -64,9 +63,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task{Genre}.</returns>
         protected override Task<Genre> GetEntity(string name)
         {
-            var kernel = (Kernel)Kernel;
-
-            return kernel.LibraryManager.GetGenre(name);
+            return LibraryManager.GetGenre(name);
         }
     }
 }

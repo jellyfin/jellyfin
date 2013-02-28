@@ -31,7 +31,8 @@ namespace MediaBrowser.ServerApplication
         private readonly ILogger _logger;
 
         private readonly IJsonSerializer _jsonSerializer;
-        
+        private readonly ILibraryManager _libraryManager;
+  
         /// <summary>
         /// The current user
         /// </summary>
@@ -39,7 +40,7 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryExplorer" /> class.
         /// </summary>
-        public LibraryExplorer(IJsonSerializer jsonSerializer, ILogger logger, IApplicationHost appHost, IUserManager userManager)
+        public LibraryExplorer(IJsonSerializer jsonSerializer, ILogger logger, IApplicationHost appHost, IUserManager userManager, ILibraryManager libraryManager)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
@@ -51,6 +52,8 @@ namespace MediaBrowser.ServerApplication
             ddlProfile.Items.Insert(0,new User {Name = "Physical"});
             ddlProfile.SelectedIndex = 0;
             ddlIndexBy.Visibility = ddlSortBy.Visibility = lblIndexBy.Visibility = lblSortBy.Visibility = Visibility.Hidden;
+
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -77,7 +80,7 @@ namespace MediaBrowser.ServerApplication
             await Task.Run(() =>
                                {
                                    IEnumerable<BaseItem> children;
-                                   children = CurrentUser.Name == "Physical" ? Kernel.Instance.RootFolder.Children.OrderBy(i => i.SortName) : Kernel.Instance.RootFolder.GetChildren(CurrentUser, sortBy: LocalizedStrings.Instance.GetString("NameDispPref"));
+                                   children = CurrentUser.Name == "Physical" ? _libraryManager.RootFolder.Children.OrderBy(i => i.SortName) : _libraryManager.RootFolder.GetChildren(CurrentUser, sortBy: LocalizedStrings.Instance.GetString("NameDispPref"));
 
                                    foreach (Folder folder in children)
                                    {

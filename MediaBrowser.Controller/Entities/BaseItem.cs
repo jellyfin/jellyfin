@@ -95,6 +95,7 @@ namespace MediaBrowser.Controller.Entities
         /// The logger
         /// </summary>
         protected static internal ILogger Logger { get; internal set; }
+        protected static internal ILibraryManager LibraryManager { get; internal set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -613,7 +614,7 @@ namespace MediaBrowser.Controller.Entities
                 return new List<Video> { };
             }
 
-            return Kernel.Instance.LibraryManager.GetItems<Video>(files, null).Select(video =>
+            return LibraryManager.ResolvePaths<Video>(files, null).Select(video =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
                 var dbItem = Kernel.Instance.ItemRepository.RetrieveItem(video.Id) as Video;

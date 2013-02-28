@@ -65,6 +65,31 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <param name="serverManager">The server manager.</param>
         public ScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, IJsonSerializer jsonSerializer, ILogger logger, IServerManager serverManager)
         {
+            if (scheduledTask == null)
+            {
+                throw new ArgumentNullException("scheduledTask");
+            }
+            if (applicationPaths == null)
+            {
+                throw new ArgumentNullException("applicationPaths");
+            }
+            if (taskManager == null)
+            {
+                throw new ArgumentNullException("taskManager");
+            }
+            if (jsonSerializer == null)
+            {
+                throw new ArgumentNullException("jsonSerializer");
+            }
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+            if (serverManager == null)
+            {
+                throw new ArgumentNullException("serverManager");
+            }
+
             ScheduledTask = scheduledTask;
             ApplicationPaths = applicationPaths;
             TaskManager = taskManager;
@@ -316,7 +341,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
 
             try
             {
-                await System.Threading.Tasks.Task.Run(async () => await ScheduledTask.Execute(CurrentCancellationTokenSource.Token, progress).ConfigureAwait(false)).ConfigureAwait(false);
+                await ExecuteTask(CurrentCancellationTokenSource.Token, progress).ConfigureAwait(false);
 
                 status = TaskCompletionStatus.Completed;
             }
@@ -334,14 +359,17 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             var startTime = CurrentExecutionStartTime;
             var endTime = DateTime.UtcNow;
 
-            ServerManager.SendWebSocketMessage("ScheduledTaskEndExecute", LastExecutionResult);
-
             progress.ProgressChanged -= progress_ProgressChanged;
             CurrentCancellationTokenSource.Dispose();
             CurrentCancellationTokenSource = null;
             CurrentProgress = null;
 
             OnTaskCompleted(startTime, endTime, status);
+        }
+
+        private Task ExecuteTask(CancellationToken cancellationToken, IProgress<double> progress)
+        {
+            return Task.Run(async () => await ScheduledTask.Execute(cancellationToken, progress).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -482,7 +510,8 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <param name="startTime">The start time.</param>
         /// <param name="endTime">The end time.</param>
         /// <param name="status">The status.</param>
-        private void OnTaskCompleted(DateTime startTime, DateTime endTime, TaskCompletionStatus status)
+        /// <param name="sendNotification">if set to <c>true</c> [send notification].</param>
+        private void OnTaskCompleted(DateTime startTime, DateTime endTime, TaskCompletionStatus status, bool sendNotification = true)
         {
             var elapsedTime = endTime - startTime;
 
@@ -500,6 +529,11 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             JsonSerializer.SerializeToFile(result, GetHistoryFilePath());
 
             LastExecutionResult = result;
+
+            if (sendNotification)
+            {
+                ServerManager.SendWebSocketMessage("ScheduledTaskEndExecute", result);
+            }
         }
 
         /// <summary>
@@ -523,7 +557,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
 
                 if (State == TaskState.Running)
                 {
-                    OnTaskCompleted(CurrentExecutionStartTime, DateTime.UtcNow, TaskCompletionStatus.Aborted);
+                    OnTaskCompleted(CurrentExecutionStartTime, DateTime.UtcNow, TaskCompletionStatus.Aborted, false);
                 }
 
                 if (CurrentCancellationTokenSource != null)

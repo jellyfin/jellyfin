@@ -38,7 +38,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fields">The fields.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public async Task<BaseItemDto> GetDtoBaseItem(BaseItem item, List<ItemFields> fields)
+        public async Task<BaseItemDto> GetDtoBaseItem(BaseItem item, List<ItemFields> fields, ILibraryManager libraryManager)
         {
             if (item == null)
             {
@@ -73,7 +73,7 @@ namespace MediaBrowser.Controller.Library
 
             if (fields.Contains(ItemFields.People))
             {
-                tasks.Add(AttachPeople(dto, item));
+                tasks.Add(AttachPeople(dto, item, libraryManager));
             }
 
             AttachBasicFields(dto, item, fields);
@@ -86,16 +86,17 @@ namespace MediaBrowser.Controller.Library
 
             return dto;
         }
-        
+
         /// <summary>
         /// Converts a BaseItem to a DTOBaseItem
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <param name="fields">The fields.</param>
+        /// <param name="libraryManager">The library manager.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public async Task<BaseItemDto> GetDtoBaseItem(BaseItem item, User user, List<ItemFields> fields)
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        public async Task<BaseItemDto> GetDtoBaseItem(BaseItem item, User user, List<ItemFields> fields, ILibraryManager libraryManager)
         {
             if (item == null)
             {
@@ -134,7 +135,7 @@ namespace MediaBrowser.Controller.Library
 
             if (fields.Contains(ItemFields.People))
             {
-                tasks.Add(AttachPeople(dto, item));
+                tasks.Add(AttachPeople(dto, item, libraryManager));
             }
 
             AttachBasicFields(dto, item, fields);
@@ -558,8 +559,9 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
+        /// <param name="libraryManager">The library manager.</param>
         /// <returns>Task.</returns>
-        private async Task AttachPeople(BaseItemDto dto, BaseItem item)
+        private async Task AttachPeople(BaseItemDto dto, BaseItem item, ILibraryManager libraryManager)
         {
             if (item.People == null)
             {
@@ -575,7 +577,7 @@ namespace MediaBrowser.Controller.Library
                     {
                         try
                         {
-                            return await Kernel.Instance.LibraryManager.GetPerson(c.Name).ConfigureAwait(false);
+                            return await libraryManager.GetPerson(c.Name).ConfigureAwait(false);
                         }
                         catch (IOException ex)
                         {
@@ -662,7 +664,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="changeEvent">The <see cref="ChildrenChangedEventArgs" /> instance containing the event data.</param>
         /// <returns>LibraryUpdateInfo.</returns>
-        internal static LibraryUpdateInfo GetLibraryUpdateInfo(ChildrenChangedEventArgs changeEvent)
+        public static LibraryUpdateInfo GetLibraryUpdateInfo(ChildrenChangedEventArgs changeEvent)
         {
             return new LibraryUpdateInfo
             {
@@ -823,7 +825,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="id">The id.</param>
         /// <param name="userId">The user id.</param>
         /// <returns>BaseItem.</returns>
-        public static BaseItem GetItemByClientId(string id, IUserManager userManager, Guid? userId = null)
+        public static BaseItem GetItemByClientId(string id, IUserManager userManager, ILibraryManager libraryManager, Guid? userId = null)
         {
             var isIdEmpty = string.IsNullOrEmpty(id);
 
@@ -835,7 +837,7 @@ namespace MediaBrowser.Controller.Library
             {
                 if (userId.HasValue)
                 {
-                    return GetIndexFolder(id, userId.Value, userManager);
+                    return GetIndexFolder(id, userId.Value, userManager, libraryManager);
                 }
             }
 
@@ -845,11 +847,11 @@ namespace MediaBrowser.Controller.Library
             {
                 item = isIdEmpty
                            ? userManager.GetUserById(userId.Value).RootFolder
-                           : Kernel.Instance.GetItemById(new Guid(id), userId.Value, userManager);
+                           : libraryManager.GetItemById(new Guid(id), userId.Value);
             }
             else if (!isIndexFolder)
             {
-                item = Kernel.Instance.GetItemById(new Guid(id));
+                item = libraryManager.GetItemById(new Guid(id));
             }
 
             // If we still don't find it, look within individual user views
@@ -857,7 +859,7 @@ namespace MediaBrowser.Controller.Library
             {
                 foreach (var user in userManager.Users)
                 {
-                    item = GetItemByClientId(id, userManager, user.Id);
+                    item = GetItemByClientId(id, userManager, libraryManager, user.Id);
 
                     if (item != null)
                     {
@@ -875,7 +877,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="id">The id.</param>
         /// <param name="userId">The user id.</param>
         /// <returns>BaseItem.</returns>
-        private static BaseItem GetIndexFolder(string id, Guid userId, IUserManager userManager)
+        private static BaseItem GetIndexFolder(string id, Guid userId, IUserManager userManager, ILibraryManager libraryManager)
         {
             var user = userManager.GetUserById(userId);
 
@@ -885,7 +887,7 @@ namespace MediaBrowser.Controller.Library
             var values = id.Split(stringSeparators, StringSplitOptions.None).ToList();
 
             // Get the top folder normally using the first id
-            var folder = GetItemByClientId(values[0], userManager, userId) as Folder;
+            var folder = GetItemByClientId(values[0], userManager, libraryManager, userId) as Folder;
 
             values.RemoveAt(0);
 

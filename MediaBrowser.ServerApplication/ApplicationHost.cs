@@ -1,14 +1,12 @@
-﻿using BDInfo;
+﻿using MediaBrowser.Api;
 using MediaBrowser.ClickOnce;
 using MediaBrowser.Common.Implementations;
-using MediaBrowser.Common.Implementations.HttpClientManager;
 using MediaBrowser.Common.Implementations.HttpServer;
 using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Common.Implementations.NetworkManagement;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.Implementations.Serialization;
 using MediaBrowser.Common.Implementations.ServerManager;
-using MediaBrowser.Common.Implementations.Udp;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
@@ -23,11 +21,12 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Server.Implementations;
+using MediaBrowser.Server.Implementations.BdInfo;
 using MediaBrowser.Server.Implementations.Library;
 using MediaBrowser.ServerApplication.Implementations;
+using MediaBrowser.WebDashboard.Api;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -120,7 +119,6 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<IApplicationHost>(this);
 
-            RegisterSingleInstance<IUserManager>(new UserManager(Kernel, Logger));
 
             RegisterSingleInstance(ServerApplicationPaths);
             RegisterSingleInstance<IIsoManager>(new PismoIsoManager(Logger));
@@ -129,6 +127,11 @@ namespace MediaBrowser.ServerApplication
             RegisterSingleInstance(_jsonSerializer);
             RegisterSingleInstance(_xmlSerializer);
             RegisterSingleInstance(ServerFactory.CreateServer(this, ProtobufSerializer, Logger, "Media Browser", "index.html"), false);
+
+            var userManager = new UserManager(Kernel, Logger);
+            RegisterSingleInstance<IUserManager>(userManager);
+
+            RegisterSingleInstance<ILibraryManager>(new LibraryManager(Kernel, Logger, taskManager, userManager));
         }
 
         /// <summary>
@@ -186,16 +189,11 @@ namespace MediaBrowser.ServerApplication
                 yield return pluginAssembly;
             }
 
-            var runningDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
-            var corePluginDirectory = Path.Combine(runningDirectory, "CorePlugins");
+            // Include composable parts in the Api assembly 
+            yield return typeof(ApiService).Assembly;
 
-            // This will prevent the .dll file from getting locked, and allow us to replace it when needed
-            foreach (var pluginAssembly in Directory
-                .EnumerateFiles(corePluginDirectory, "*.dll", SearchOption.TopDirectoryOnly)
-                .Select(LoadAssembly).Where(a => a != null))
-            {
-                yield return pluginAssembly;
-            }
+            // Include composable parts in the Dashboard assembly 
+            yield return typeof(DashboardInfo).Assembly;
 
             // Include composable parts in the Model assembly 
             yield return typeof(SystemInfo).Assembly;

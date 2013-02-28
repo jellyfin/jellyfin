@@ -317,7 +317,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         try
                         {
-                            return Kernel.Instance.LibraryManager.GetPerson(i).Result;
+                            return LibraryManager.GetPerson(i).Result;
                         }
                         catch (IOException ex)
                         {
@@ -359,7 +359,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         try
                         {
-                            return Kernel.Instance.LibraryManager.GetStudio(i).Result;
+                            return LibraryManager.GetStudio(i).Result;
                         }
                         catch (IOException ex)
                         {
@@ -399,7 +399,7 @@ namespace MediaBrowser.Controller.Entities
                         {
                             try
                             {
-                                return Kernel.Instance.LibraryManager.GetGenre(i).Result;
+                                return LibraryManager.GetGenre(i).Result;
                             }
                             catch (IOException ex)
                             {
@@ -440,7 +440,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         try
                         {
-                            return Kernel.Instance.LibraryManager.GetYear(i).Result;
+                            return LibraryManager.GetYear(i).Result;
                         }
                         catch (IOException ex)
                         {
@@ -768,7 +768,7 @@ namespace MediaBrowser.Controller.Entities
                 IndexCache.Clear();
 
                 //and fire event
-                Kernel.Instance.LibraryManager.OnLibraryChanged(changedArgs);
+                LibraryManager.ReportLibraryChanged(changedArgs);
             }
 
             progress.Report(15);
@@ -860,7 +860,7 @@ namespace MediaBrowser.Controller.Entities
                 return new List<BaseItem> { };
             }
 
-            return Kernel.Instance.LibraryManager.GetItems<BaseItem>(fileSystemChildren, this);
+            return LibraryManager.ResolvePaths<BaseItem>(fileSystemChildren, this);
         }
 
         /// <summary>

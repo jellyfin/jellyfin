@@ -142,12 +142,17 @@ namespace MediaBrowser.Api.Library
         private readonly IUserManager _userManager;
 
         /// <summary>
+        /// The _library manager
+        /// </summary>
+        private readonly ILibraryManager _libraryManager;
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
         /// <param name="userManager">The user manager.</param>
         /// <exception cref="System.ArgumentNullException">appHost</exception>
-        public LibraryStructureService(IServerApplicationPaths appPaths, IUserManager userManager)
+        public LibraryStructureService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager)
         {
             if (appPaths == null)
             {
@@ -156,6 +161,7 @@ namespace MediaBrowser.Api.Library
 
             _userManager = userManager;
             _appPaths = appPaths;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -165,11 +171,9 @@ namespace MediaBrowser.Api.Library
         /// <returns>System.Object.</returns>
         public object Get(GetVirtualFolders request)
         {
-            var kernel = (Kernel)Kernel;
-
             if (string.IsNullOrEmpty(request.UserId))
             {
-                var result = kernel.LibraryManager.GetDefaultVirtualFolders().ToList();
+                var result = _libraryManager.GetDefaultVirtualFolders().ToList();
 
                 return ToOptimizedResult(result);
             }
@@ -177,7 +181,7 @@ namespace MediaBrowser.Api.Library
             {
                 var user = _userManager.GetUserById(new Guid(request.UserId));
 
-                var result = kernel.LibraryManager.GetVirtualFolders(user).ToList();
+                var result = _libraryManager.GetVirtualFolders(user).ToList();
 
                 return ToOptimizedResult(result);
             }
