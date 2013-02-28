@@ -154,8 +154,17 @@ namespace MediaBrowser.Installer
             }
 
             // Download
+            string archive = null;
             lblStatus.Content = string.Format("Downloading {0} (version {1})...", FriendlyName, version.versionStr);
-            var archive = await DownloadPackage(version);
+            try
+            {
+                archive = await DownloadPackage(version);
+            }
+            catch (Exception e)
+            {
+                SystemClose("Error Downloading Package - " + e.GetType().FullName + "\n\n" + e.Message);
+            }
+
             dlAnimation.StopAnimation();
             prgProgress.Visibility = btnCancel.Visibility = Visibility.Hidden;
 
