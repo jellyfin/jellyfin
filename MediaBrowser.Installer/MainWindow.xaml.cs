@@ -261,7 +261,7 @@ namespace MediaBrowser.Installer
 
         void DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
-            rectProgress.Width = (660 * e.ProgressPercentage)/100f;
+            rectProgress.Width = (this.Width * e.ProgressPercentage)/100f;
         }
 
         /// <summary>

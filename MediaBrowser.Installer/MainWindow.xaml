@@ -4,11 +4,11 @@
         xmlns:Code="clr-namespace:MediaBrowser.Installer.Code" x:Class="MediaBrowser.Installer.MainWindow"
         Title="Install Media Browser Server" Height="383.481" Width="663.057" ResizeMode="NoResize" WindowStyle="None">
     <Border BorderBrush="DarkGray" BorderThickness="2" Margin="0,0,0,0">
-        <Grid Margin="-2,0,0,-14">
+        <Grid Margin="-2,0,0,0">
             <Image x:Name="imgLogo" HorizontalAlignment="Center" Height="172" Margin="10,10,57,0" VerticalAlignment="Top" Width="590" Source="Code/Images/mb3logo800.png" Opacity="0.5"/>
-            <Grid HorizontalAlignment="Left" Height="153" Margin="0,173,0,0" VerticalAlignment="Top" Width="659" Background="Gray">
+            <Grid HorizontalAlignment="Left" Height="153" Margin="0,173,0,0" VerticalAlignment="Top" Width="662" Background="Gray">
                 <TextBlock x:Name="lblStatus" HorizontalAlignment="Left" Margin="12,14,0,18" Width="637" FontSize="36" Foreground="#FFE6D7D7" Text="Status" TextWrapping="WrapWithOverflow"/>
-                <Rectangle Fill="#FF49494B" HorizontalAlignment="Left" Height="13" Stroke="Black" VerticalAlignment="Bottom" Width="659"/>
+                <Rectangle Fill="#FF49494B" HorizontalAlignment="Left" Height="13" Stroke="Black" VerticalAlignment="Bottom" Width="662"/>
                 <Rectangle x:Name="rectProgress" Fill="#FF0A0ABF" HorizontalAlignment="Left" Height="13" Stroke="Black" VerticalAlignment="Bottom" Width="0"/>
             </Grid>
                 <Button x:Name="btnCancel" Content="Cancel" HorizontalAlignment="Left" Margin="552,336,0,0" Width="97" FontSize="14" Click="btnCancel_Click" Height="31" VerticalAlignment="Top"/>
