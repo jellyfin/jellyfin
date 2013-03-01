@@ -7,6 +7,7 @@
         <authors>Luke</authors>
         <owners>Media Browser Team</owners>
         <projectUrl>https://github.com/MediaBrowser/MediaBrowser</projectUrl>
+		<iconUrl>http://www.mb3admin.com/images/mb3icons.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Contains common components shared by Media Browser Theatre and Media Browser Server. Not intended for plugin developer consumption.</description>
         <dependencies>
