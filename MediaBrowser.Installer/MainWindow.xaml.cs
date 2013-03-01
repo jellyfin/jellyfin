@@ -105,10 +105,7 @@ namespace MediaBrowser.Installer
         /// <returns></returns>
         protected async Task DoInstall()
         {
-            lblStatus.Content = string.Format("Downloading {0}...", FriendlyName);
-            dlAnimation.StartAnimation();
-            prgProgress.Value = 0;
-            prgProgress.Visibility = Visibility.Visible;
+            lblStatus.Text = string.Format("Downloading {0}...", FriendlyName);
 
             // Determine Package version
             var version = await GetPackageVersion();
@@ -116,7 +113,7 @@ namespace MediaBrowser.Installer
             // Now try and shut down the server if that is what we are installing and it is running
             if (PackageName == "MBServer" && Process.GetProcessesByName("mediabrowser.serverapplication").Length != 0)
             {
-                lblStatus.Content = "Shutting Down Media Browser Server...";
+                lblStatus.Text = "Shutting Down Media Browser Server...";
                 using (var client = new WebClient())
                 {
                     try
@@ -139,7 +136,7 @@ namespace MediaBrowser.Installer
                     var processes = Process.GetProcessesByName("mediabrowser.ui");
                     if (processes.Length > 0)
                     {
-                        lblStatus.Content = "Shutting Down Media Browser Theater...";
+                        lblStatus.Text = "Shutting Down Media Browser Theater...";
                         try
                         {
                             processes[0].Kill();
@@ -155,7 +152,7 @@ namespace MediaBrowser.Installer
 
             // Download
             string archive = null;
-            lblStatus.Content = string.Format("Downloading {0} (version {1})...", FriendlyName, version.versionStr);
+            lblStatus.Text = string.Format("Downloading {0} (version {1})...", FriendlyName, version.versionStr);
             try
             {
                 archive = await DownloadPackage(version);
@@ -165,13 +162,10 @@ namespace MediaBrowser.Installer
                 SystemClose("Error Downloading Package - " + e.GetType().FullName + "\n\n" + e.Message);
             }
 
-            dlAnimation.StopAnimation();
-            prgProgress.Visibility = btnCancel.Visibility = Visibility.Hidden;
-
             if (archive == null) return;  //we canceled or had an error that was already reported
 
             // Extract
-            lblStatus.Content = "Extracting Package...";
+            lblStatus.Text = "Extracting Package...";
             try 
             {
                 ExtractPackage(archive);
@@ -267,7 +261,7 @@ namespace MediaBrowser.Installer
 
         void DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
-            prgProgress.Value = e.ProgressPercentage;
+            rectProgress.Width = (660 * e.ProgressPercentage)/100f;
         }
 
         /// <summary>
@@ -277,6 +271,9 @@ namespace MediaBrowser.Installer
         /// <param name="archive"></param>
         protected void ExtractPackage(string archive)
         {
+            // Delete old content of system
+            var systemDir = Path.Combine(RootPath, "system");
+            if (Directory.Exists(systemDir)) Directory.Delete(systemDir, true);
             using (var fileStream = System.IO.File.OpenRead(archive))
             {
                 using (var zipFile = ZipFile.Read(fileStream))
