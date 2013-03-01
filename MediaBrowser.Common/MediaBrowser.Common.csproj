@@ -79,7 +79,6 @@
     <Compile Include="Net\WebSocketConnectEventArgs.cs" />
     <Compile Include="Net\WebSocketMessageType.cs" />
     <Compile Include="Net\WebSocketState.cs" />
-    <Compile Include="Plugins\BaseUiPlugin.cs" />
     <Compile Include="Plugins\IPlugin.cs" />
     <Compile Include="Plugins\IUIPlugin.cs" />
     <Compile Include="Progress\ActionableProgress.cs" />

@@ -367,6 +367,12 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             OnTaskCompleted(startTime, endTime, status);
         }
 
+        /// <summary>
+        /// Executes the task.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <returns>Task.</returns>
         private Task ExecuteTask(CancellationToken cancellationToken, IProgress<double> progress)
         {
             return Task.Run(async () => await ScheduledTask.Execute(cancellationToken, progress).ConfigureAwait(false));

@@ -14,6 +14,11 @@ namespace MediaBrowser.Common.Kernel
     public interface IKernel : IDisposable
     {
         /// <summary>
+        /// Occurs when [has pending restart changed].
+        /// </summary>
+        event EventHandler HasPendingRestartChanged;
+
+        /// <summary>
         /// Gets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
@@ -83,12 +88,6 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <value>The HTTP server URL prefix.</value>
         string HttpServerUrlPrefix { get; }
-
-        /// <summary>
-        /// Gets the TCP manager.
-        /// </summary>
-        /// <value>The TCP manager.</value>
-        IServerManager ServerManager { get; }
 
         /// <summary>
         /// Gets the plug-in security manager.

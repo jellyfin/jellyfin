@@ -10,7 +10,6 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playback;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Updates;
 using MediaBrowser.Controller.Weather;
 using MediaBrowser.Model.Configuration;
@@ -52,7 +51,7 @@ namespace MediaBrowser.Controller
         /// Gets the installation manager.
         /// </summary>
         /// <value>The installation manager.</value>
-        public InstallationManager InstallationManager { get; private set; }
+        public InstallationManager InstallationManager { get; set; }
 
         /// <summary>
         /// Gets or sets the file system manager.
@@ -113,18 +112,6 @@ namespace MediaBrowser.Controller
         public IEnumerable<IImageEnhancer> ImageEnhancers { get; private set; }
 
         /// <summary>
-        /// Gets the list of currently registered entity resolvers
-        /// </summary>
-        /// <value>The entity resolvers enumerable.</value>
-        public IEnumerable<IBaseItemResolver> EntityResolvers { get; private set; }
-
-        /// <summary>
-        /// Gets the list of BasePluginFolders added by plugins
-        /// </summary>
-        /// <value>The plugin folders.</value>
-        public IEnumerable<IVirtualFolderCreator> PluginFolderCreators { get; private set; }
-
-        /// <summary>
         /// Gets the list of available user repositories
         /// </summary>
         /// <value>The user repositories.</value>
@@ -155,22 +142,16 @@ namespace MediaBrowser.Controller
         public IItemRepository ItemRepository { get; private set; }
 
         /// <summary>
-        /// Gets the list of available item repositories
-        /// </summary>
-        /// <value>The user data repositories.</value>
-        private IEnumerable<IUserDataRepository> UserDataRepositories { get; set; }
-
-        /// <summary>
         /// Gets the list of available DisplayPreferencesRepositories
         /// </summary>
         /// <value>The display preferences repositories.</value>
         private IEnumerable<IDisplayPreferencesRepository> DisplayPreferencesRepositories { get; set; }
 
         /// <summary>
-        /// Gets the list of entity resolution ignore rules
+        /// Gets the list of available item repositories
         /// </summary>
-        /// <value>The entity resolution ignore rules.</value>
-        public IEnumerable<IResolutionIgnoreRule> EntityResolutionIgnoreRules { get; private set; }
+        /// <value>The user data repositories.</value>
+        private IEnumerable<IUserDataRepository> UserDataRepositories { get; set; }
 
         /// <summary>
         /// Gets the active user data repository
@@ -217,7 +198,6 @@ namespace MediaBrowser.Controller
             BaseItem.LibraryManager = ApplicationHost.Resolve<ILibraryManager>();
             User.UserManager = ApplicationHost.Resolve<IUserManager>();
 
-            InstallationManager = (InstallationManager)ApplicationHost.CreateInstance(typeof(InstallationManager));
             FFMpegManager = (FFMpegManager)ApplicationHost.CreateInstance(typeof(FFMpegManager));
             ImageManager = (ImageManager)ApplicationHost.CreateInstance(typeof(ImageManager));
             ProviderManager = (ProviderManager)ApplicationHost.CreateInstance(typeof(ProviderManager));
@@ -225,7 +205,6 @@ namespace MediaBrowser.Controller
             
             base.FindParts();
 
-            EntityResolutionIgnoreRules = ApplicationHost.GetExports<IResolutionIgnoreRule>();
             UserDataRepositories = ApplicationHost.GetExports<IUserDataRepository>();
             UserRepositories = ApplicationHost.GetExports<IUserRepository>();
             DisplayPreferencesRepositories = ApplicationHost.GetExports<IDisplayPreferencesRepository>();
@@ -234,9 +213,7 @@ namespace MediaBrowser.Controller
             IntroProviders = ApplicationHost.GetExports<IIntroProvider>();
             PluginConfigurationPages = ApplicationHost.GetExports<IPluginConfigurationPage>();
             ImageEnhancers = ApplicationHost.GetExports<IImageEnhancer>().OrderBy(e => e.Priority).ToArray();
-            PluginFolderCreators = ApplicationHost.GetExports<IVirtualFolderCreator>();
             StringFiles = ApplicationHost.GetExports<LocalizedStringData>();
-            EntityResolvers = ApplicationHost.GetExports<IBaseItemResolver>().OrderBy(e => e.Priority).ToArray();
             MetadataProviders = ApplicationHost.GetExports<BaseMetadataProvider>().OrderBy(e => e.Priority).ToArray();
         }
 

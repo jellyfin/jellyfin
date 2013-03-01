@@ -252,18 +252,6 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <summary>
-        /// Returns true or false indicating if the plugin should be downloaded and run within the Ui.
-        /// </summary>
-        /// <value><c>true</c> if [download to UI]; otherwise, <c>false</c>.</value>
-        public virtual bool DownloadToUi
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Gets the logger.
         /// </summary>
         /// <value>The logger.</value>
@@ -422,7 +410,7 @@ namespace MediaBrowser.Common.Plugins
             var info = new PluginInfo
             {
                 Name = Name,
-                DownloadToUI = DownloadToUi,
+                DownloadToUI = this is IUIPlugin,
                 Version = Version.ToString(),
                 AssemblyFileName = AssemblyFileName,
                 ConfigurationDateLastModified = ConfigurationDateLastModified,

@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Api;
-using MediaBrowser.ClickOnce;
 using MediaBrowser.Common.Implementations;
 using MediaBrowser.Common.Implementations.HttpServer;
 using MediaBrowser.Common.Implementations.Logging;
@@ -13,7 +12,10 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Controller.Updates;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -57,13 +59,15 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         private readonly IXmlSerializer _xmlSerializer = new XmlSerializer();
 
+        private WebSocketEvents _webSocketEvents;
+
         /// <summary>
         /// Gets the server application paths.
         /// </summary>
         /// <value>The server application paths.</value>
         protected IServerApplicationPaths ServerApplicationPaths
         {
-            get { return (IServerApplicationPaths) ApplicationPaths; }
+            get { return (IServerApplicationPaths)ApplicationPaths; }
         }
 
         /// <summary>
@@ -74,7 +78,7 @@ namespace MediaBrowser.ServerApplication
             : base()
         {
             Kernel = new Kernel(this, ServerApplicationPaths, _xmlSerializer, Logger);
-            
+
             var networkManager = new NetworkManager();
 
             var serverManager = new ServerManager(this, Kernel, networkManager, _jsonSerializer, Logger);
@@ -136,6 +140,20 @@ namespace MediaBrowser.ServerApplication
         }
 
         /// <summary>
+        /// Finds the parts.
+        /// </summary>
+        protected override void FindParts()
+        {
+            base.FindParts();
+
+            Resolve<ILibraryManager>().AddParts(GetExports<IResolutionIgnoreRule>(), GetExports<IVirtualFolderCreator>(), GetExports<IBaseItemResolver>());
+
+            Kernel.InstallationManager = (InstallationManager)CreateInstance(typeof(InstallationManager));
+
+            _webSocketEvents = new WebSocketEvents(Resolve<IServerManager>(), Resolve<IKernel>(), Resolve<ILogger>(), Resolve<IUserManager>(), Resolve<ILibraryManager>(), Kernel.InstallationManager);
+        }
+
+        /// <summary>
         /// Restarts this instance.
         /// </summary>
         public void Restart()
@@ -164,8 +182,8 @@ namespace MediaBrowser.ServerApplication
             var availablePackages = await pkgManager.GetAvailablePackages(Resolve<IHttpClient>(), Resolve<INetworkManager>(), Kernel.SecurityManager, Kernel.ResourcePools, Resolve<IJsonSerializer>(), CancellationToken.None).ConfigureAwait(false);
             var version = Kernel.InstallationManager.GetLatestCompatibleVersion(availablePackages, "MBServer", Kernel.Configuration.SystemUpdateLevel);
 
-            return version != null ? new CheckForUpdateResult {AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version} :
-                       new CheckForUpdateResult {AvailableVersion = ApplicationVersion, IsUpdateAvailable = false};
+            return version != null ? new CheckForUpdateResult { AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version } :
+                       new CheckForUpdateResult { AvailableVersion = ApplicationVersion, IsUpdateAvailable = false };
         }
 
         /// <summary>
@@ -227,6 +245,23 @@ namespace MediaBrowser.ServerApplication
         public void Shutdown()
         {
             App.Instance.Dispatcher.Invoke(App.Instance.Shutdown);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected override void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                if (_webSocketEvents != null)
+                {
+                    _webSocketEvents.Dispose();
+                }
+            }
+
+            base.Dispose(dispose);
         }
     }
 }

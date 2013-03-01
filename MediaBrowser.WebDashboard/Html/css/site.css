@@ -107,6 +107,7 @@ pre, textarea.pre {
 .imgLogoText {
     height: 45px;
     display: none;
+    margin-left: 5px;
 }
 
 
