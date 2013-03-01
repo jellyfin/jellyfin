@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Library
@@ -141,5 +142,14 @@ namespace MediaBrowser.Controller.Library
         /// <param name="userId">The user id.</param>
         /// <returns>BaseItem.</returns>
         BaseItem GetItemById(Guid id, Guid userId);
+
+        /// <summary>
+        /// Adds the parts.
+        /// </summary>
+        /// <param name="rules">The rules.</param>
+        /// <param name="pluginFolders">The plugin folders.</param>
+        /// <param name="resolvers">The resolvers.</param>
+        void AddParts(IEnumerable<IResolutionIgnoreRule> rules, IEnumerable<IVirtualFolderCreator> pluginFolders,
+                      IEnumerable<IBaseItemResolver> resolvers);
     }
 }

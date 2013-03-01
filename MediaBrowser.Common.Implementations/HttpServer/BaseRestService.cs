@@ -11,7 +11,6 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using MimeTypes = MediaBrowser.Common.Net.MimeTypes;
 
@@ -94,7 +93,8 @@ namespace MediaBrowser.Common.Implementations.HttpServer
 
             if (result != null)
             {
-                return result;
+                // Return null so that service stack won't do anything
+                return null;
             }
 
             return ToOptimizedResult(factoryFn());
@@ -129,7 +129,8 @@ namespace MediaBrowser.Common.Implementations.HttpServer
 
             if (result != null)
             {
-                return result;
+                // Return null so that service stack won't do anything
+                return null;
             }
 
             return factoryFn();
@@ -192,7 +193,8 @@ namespace MediaBrowser.Common.Implementations.HttpServer
 
             if (result != null)
             {
-                return result;
+                // Return null so that service stack won't do anything
+                return null;
             }
 
             var compress = ShouldCompressResponse(contentType);
@@ -299,7 +301,9 @@ namespace MediaBrowser.Common.Implementations.HttpServer
                     Response.ContentType = contentType;
                 }
 
-                return new HttpResult(new byte[] { }, HttpStatusCode.NotModified);
+                Response.StatusCode = 304;
+
+                return new byte[]{};
             }
 
             SetCachingHeaders(cacheKeyString, lastDateModified, cacheDuration);

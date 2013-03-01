@@ -24,11 +24,11 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         const string IndexFolderDelimeter = "-index-";
 
-        private ILogger Logger;
+        private readonly ILogger _logger;
 
         public DtoBuilder(ILogger logger)
         {
-            Logger = logger;
+            _logger = logger;
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace MediaBrowser.Controller.Library
                 catch (Exception ex)
                 {
                     // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
-                    Logger.ErrorException("Error generating PrimaryImageAspectRatio for {0}", ex, item.Name);
+                    _logger.ErrorException("Error generating PrimaryImageAspectRatio for {0}", ex, item.Name);
                 }
             }
 
@@ -124,7 +124,7 @@ namespace MediaBrowser.Controller.Library
                 catch (Exception ex)
                 {
                     // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
-                    Logger.ErrorException("Error generating PrimaryImageAspectRatio for {0}", ex, item.Name);
+                    _logger.ErrorException("Error generating PrimaryImageAspectRatio for {0}", ex, item.Name);
                 }
             }
 
@@ -219,7 +219,7 @@ namespace MediaBrowser.Controller.Library
             }
             catch (FileNotFoundException)
             {
-                Logger.Error("Image file does not exist: {0}", path);
+                _logger.Error("Image file does not exist: {0}", path);
                 return;
             }
 
@@ -581,7 +581,7 @@ namespace MediaBrowser.Controller.Library
                         }
                         catch (IOException ex)
                         {
-                            Logger.ErrorException("Error getting person {0}", ex, c.Name);
+                            _logger.ErrorException("Error getting person {0}", ex, c.Name);
                             return null;
                         }
                     })

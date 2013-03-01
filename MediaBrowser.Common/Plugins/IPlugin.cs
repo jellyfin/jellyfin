@@ -93,12 +93,6 @@ namespace MediaBrowser.Common.Plugins
         string DataFolderPath { get; }
 
         /// <summary>
-        /// Returns true or false indicating if the plugin should be downloaded and run within the Ui.
-        /// </summary>
-        /// <value><c>true</c> if [download to UI]; otherwise, <c>false</c>.</value>
-        bool DownloadToUi { get; }
-
-        /// <summary>
         /// Gets the logger.
         /// </summary>
         /// <value>The logger.</value>

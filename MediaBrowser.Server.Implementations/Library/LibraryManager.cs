@@ -26,6 +26,24 @@ namespace MediaBrowser.Server.Implementations.Library
     /// </summary>
     public class LibraryManager : ILibraryManager
     {
+        /// <summary>
+        /// Gets the list of entity resolution ignore rules
+        /// </summary>
+        /// <value>The entity resolution ignore rules.</value>
+        public IEnumerable<IResolutionIgnoreRule> EntityResolutionIgnoreRules { get; private set; }
+
+        /// <summary>
+        /// Gets the list of BasePluginFolders added by plugins
+        /// </summary>
+        /// <value>The plugin folders.</value>
+        public IEnumerable<IVirtualFolderCreator> PluginFolderCreators { get; set; }
+
+        /// <summary>
+        /// Gets the list of currently registered entity resolvers
+        /// </summary>
+        /// <value>The entity resolvers enumerable.</value>
+        public IEnumerable<IBaseItemResolver> EntityResolvers { get; private set; }
+
         #region LibraryChanged Event
         /// <summary>
         /// Fires whenever any validation routine adds or removes items.  The added and removed items are properties of the args.
@@ -40,19 +58,6 @@ namespace MediaBrowser.Server.Implementations.Library
         public void ReportLibraryChanged(ChildrenChangedEventArgs args)
         {
             EventHelper.QueueEventIfNotNull(LibraryChanged, this, args, _logger);
-
-            // Had to put this in a separate method to avoid an implicitly captured closure
-            SendLibraryChangedWebSocketMessage(args);
-        }
-
-        /// <summary>
-        /// Sends the library changed web socket message.
-        /// </summary>
-        /// <param name="args">The <see cref="ChildrenChangedEventArgs" /> instance containing the event data.</param>
-        private void SendLibraryChangedWebSocketMessage(ChildrenChangedEventArgs args)
-        {
-            // Notify connected ui's
-            Kernel.ServerManager.SendWebSocketMessage("LibraryChanged", () => DtoBuilder.GetLibraryUpdateInfo(args));
         }
         #endregion
 
@@ -92,6 +97,19 @@ namespace MediaBrowser.Server.Implementations.Library
             _userManager = userManager;
 
             kernel.ConfigurationUpdated += kernel_ConfigurationUpdated;
+        }
+
+        /// <summary>
+        /// Adds the parts.
+        /// </summary>
+        /// <param name="rules">The rules.</param>
+        /// <param name="pluginFolders">The plugin folders.</param>
+        /// <param name="resolvers">The resolvers.</param>
+        public void AddParts(IEnumerable<IResolutionIgnoreRule> rules, IEnumerable<IVirtualFolderCreator> pluginFolders, IEnumerable<IBaseItemResolver> resolvers)
+        {
+            EntityResolutionIgnoreRules = rules;
+            PluginFolderCreators = pluginFolders;
+            EntityResolvers = resolvers;
         }
 
         /// <summary>
@@ -162,7 +180,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>BaseItem.</returns>
         public BaseItem ResolveItem(ItemResolveArgs args)
         {
-            return Kernel.EntityResolvers.Select(r => r.ResolvePath(args)).FirstOrDefault(i => i != null);
+            return EntityResolvers.Select(r => r.ResolvePath(args)).FirstOrDefault(i => i != null);
         }
 
         /// <summary>
@@ -195,7 +213,7 @@ namespace MediaBrowser.Server.Implementations.Library
             };
 
             // Return null if ignore rules deem that we should do so
-            if (Kernel.EntityResolutionIgnoreRules.Any(r => r.ShouldIgnore(args)))
+            if (EntityResolutionIgnoreRules.Any(r => r.ShouldIgnore(args)))
             {
                 return null;
             }
@@ -269,7 +287,7 @@ namespace MediaBrowser.Server.Implementations.Library
             var rootFolder = Kernel.ItemRepository.RetrieveItem(rootFolderPath.GetMBId(typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(rootFolderPath);
 
             // Add in the plug-in folders
-            foreach (var child in Kernel.PluginFolderCreators)
+            foreach (var child in PluginFolderCreators)
             {
                 rootFolder.AddVirtualChild(child.GetFolder());
             }

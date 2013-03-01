@@ -13,7 +13,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,12 +23,16 @@ namespace MediaBrowser.Controller.Updates
     /// </summary>
     public class InstallationManager : BaseManager<Kernel>
     {
+        public event EventHandler<GenericEventArgs<InstallationInfo>> PackageInstalling;
+        public event EventHandler<GenericEventArgs<InstallationInfo>> PackageInstallationCompleted;
+        public event EventHandler<GenericEventArgs<InstallationInfo>> PackageInstallationFailed;
+        public event EventHandler<GenericEventArgs<InstallationInfo>> PackageInstallationCancelled;
+
         /// <summary>
         /// The current installations
         /// </summary>
         public List<Tuple<InstallationInfo, CancellationTokenSource>> CurrentInstallations { get; set; }
             
-
         /// <summary>
         /// The completed installations
         /// </summary>
@@ -48,9 +51,6 @@ namespace MediaBrowser.Controller.Updates
         private void OnPluginUninstalled(IPlugin plugin)
         {
             EventHelper.QueueEventIfNotNull(PluginUninstalled, this, new GenericEventArgs<IPlugin> { Argument = plugin }, _logger);
-
-            // Notify connected ui's
-            Kernel.ServerManager.SendWebSocketMessage("PluginUninstalled", plugin.GetPluginInfo());
         }
         #endregion
 
@@ -372,7 +372,7 @@ namespace MediaBrowser.Controller.Updates
 
             var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, innerCancellationTokenSource.Token).Token;
 
-            Kernel.ServerManager.SendWebSocketMessage("PackageInstalling", installationInfo);
+            EventHelper.QueueEventIfNotNull(PackageInstalling, this, new GenericEventArgs<InstallationInfo>() { Argument = installationInfo }, _logger);
 
             try
             {
@@ -385,7 +385,7 @@ namespace MediaBrowser.Controller.Updates
 
                 CompletedInstallations.Add(installationInfo);
 
-                Kernel.ServerManager.SendWebSocketMessage("PackageInstallationCompleted", installationInfo);
+                EventHelper.QueueEventIfNotNull(PackageInstallationCompleted, this, new GenericEventArgs<InstallationInfo>() { Argument = installationInfo }, _logger);
             }
             catch (OperationCanceledException)
             {
@@ -396,7 +396,7 @@ namespace MediaBrowser.Controller.Updates
 
                 _logger.Info("Package installation cancelled: {0} {1}", package.name, package.versionStr);
 
-                Kernel.ServerManager.SendWebSocketMessage("PackageInstallationCancelled", installationInfo);
+                EventHelper.QueueEventIfNotNull(PackageInstallationCancelled, this, new GenericEventArgs<InstallationInfo>() { Argument = installationInfo }, _logger);
 
                 throw;
             }
@@ -407,7 +407,7 @@ namespace MediaBrowser.Controller.Updates
                     CurrentInstallations.Remove(tuple);
                 }
 
-                Kernel.ServerManager.SendWebSocketMessage("PackageInstallationFailed", installationInfo);
+                EventHelper.QueueEventIfNotNull(PackageInstallationFailed, this, new GenericEventArgs<InstallationInfo>() { Argument = installationInfo }, _logger);
 
                 throw;
             }

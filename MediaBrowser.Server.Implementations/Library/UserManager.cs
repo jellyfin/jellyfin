@@ -83,6 +83,10 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         private readonly ILogger _logger;
 
+        /// <summary>
+        /// Gets or sets the kernel.
+        /// </summary>
+        /// <value>The kernel.</value>
         private Kernel Kernel { get; set; }
 
         /// <summary>
@@ -124,9 +128,6 @@ namespace MediaBrowser.Server.Implementations.Library
         private void OnUserUpdated(User user)
         {
             EventHelper.QueueEventIfNotNull(UserUpdated, this, new GenericEventArgs<User> { Argument = user }, _logger);
-
-            // Notify connected ui's
-            Kernel.ServerManager.SendWebSocketMessage("UserUpdated", new DtoBuilder(_logger).GetDtoUser(user));
         }
         #endregion
 
@@ -142,9 +143,6 @@ namespace MediaBrowser.Server.Implementations.Library
         private void OnUserDeleted(User user)
         {
             EventHelper.QueueEventIfNotNull(UserDeleted, this, new GenericEventArgs<User> { Argument = user }, _logger);
-
-            // Notify connected ui's
-            Kernel.ServerManager.SendWebSocketMessage("UserDeleted", user.Id.ToString());
         }
         #endregion
 

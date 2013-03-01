@@ -23,6 +23,11 @@ namespace MediaBrowser.Common.Kernel
         where TConfigurationType : BaseApplicationConfiguration, new()
         where TApplicationPathsType : IApplicationPaths
     {
+        /// <summary>
+        /// Occurs when [has pending restart changed].
+        /// </summary>
+        public event EventHandler HasPendingRestartChanged;
+
         #region ConfigurationUpdated Event
         /// <summary>
         /// Occurs when [configuration updated].
@@ -126,7 +131,7 @@ namespace MediaBrowser.Common.Kernel
         /// Gets or sets the TCP manager.
         /// </summary>
         /// <value>The TCP manager.</value>
-        public IServerManager ServerManager { get; private set; }
+        private IServerManager ServerManager { get; set; }
 
         /// <summary>
         /// Gets the plug-in security manager.
@@ -284,7 +289,7 @@ namespace MediaBrowser.Common.Kernel
         {
             HasPendingRestart = true;
 
-            ServerManager.SendWebSocketMessage("HasPendingRestartChanged", GetSystemInfo());
+            EventHelper.QueueEventIfNotNull(HasPendingRestartChanged, this, EventArgs.Empty, Logger);
         }
 
         /// <summary>
