@@ -3,14 +3,56 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:Code="clr-namespace:MediaBrowser.Installer.Code" x:Class="MediaBrowser.Installer.MainWindow"
         Title="Install Media Browser Server" Height="383.481" Width="663.057" ResizeMode="NoResize" WindowStyle="None">
-    <Border BorderBrush="DarkGray" BorderThickness="2">
-        <Grid Margin="0,0,0,2">
+    <Border BorderBrush="DarkGray" BorderThickness="2" Margin="0,0,0,0">
+        <Grid Margin="-2,0,0,0">
             <Image x:Name="imgLogo" HorizontalAlignment="Center" Height="172" Margin="10,10,57,0" VerticalAlignment="Top" Width="590" Source="Code/Images/mb3logo800.png" Opacity="0.5"/>
-            <ProgressBar x:Name="prgProgress" HorizontalAlignment="Left" Height="11" Margin="52,320,0,0" VerticalAlignment="Top" Width="460"/>
-            <Code:DownloadAnimation x:Name="dlAnimation" HorizontalAlignment="Left" Margin="26,97,0,0" VerticalAlignment="Top" Height="196" Width="574" RenderTransformOrigin="0.5,0.5"/>
-            <Button x:Name="btnCancel" Content="Cancel" HorizontalAlignment="Left" Margin="547,309,0,0" VerticalAlignment="Top" Width="79" FontSize="14" Click="btnCancel_Click"/>
-            <Label x:Name="lblStatus" Content="Status" HorizontalAlignment="Left" Margin="52,264,0,0" VerticalAlignment="Top" Width="574" FontSize="14" FontWeight="Bold"/>
+            <Grid HorizontalAlignment="Left" Height="153" Margin="0,173,0,0" VerticalAlignment="Top" Width="662" Background="Gray">
+                <TextBlock x:Name="lblStatus" HorizontalAlignment="Left" Margin="12,14,0,18" Width="637" FontSize="36" Foreground="#FFE6D7D7" Text="Status" TextWrapping="WrapWithOverflow"/>
+                <Rectangle Fill="#FF49494B" HorizontalAlignment="Left" Height="13" Stroke="Black" VerticalAlignment="Bottom" Width="662"/>
+                <Rectangle x:Name="rectProgress" Fill="#FF0A0ABF" HorizontalAlignment="Left" Height="13" Stroke="Black" VerticalAlignment="Bottom" Width="0"/>
+            </Grid>
+                <Button x:Name="btnCancel" Content="Cancel" HorizontalAlignment="Left" Margin="552,336,0,0" Width="97" FontSize="14" Click="btnCancel_Click" Height="31" VerticalAlignment="Top"/>
         </Grid>
         
     </Border>
+    <Window.Resources>
+        <!--Metro Button-->
+        <Style TargetType="{x:Type Button}" BasedOn="{x:Null}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#222222"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Padding" Value="10,5,10,5"/>
+            <Setter Property="BorderBrush" Value="#222222"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <!-- We use Grid as a root because it is easy to add more elements to customize the button -->
+                        <Grid x:Name="Grid">
+                            <Border x:Name="Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}"/>
+
+                            <!-- Content Presenter is where the text content etc is placed by the control -->
+                            <!-- The bindings are useful so that the control can be parameterized without editing the template -->
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" RecognizesAccessKey="True"/>
+                        </Grid>
+
+                        <!--Each state sets a brush on the Border in the template -->
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter Property="Background" Value="#222222" TargetName="Border"/>
+                                <Setter Property="BorderBrush" Value="#222222" TargetName="Border"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontSize" Value="16"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="true"/>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="BorderBrush" Value="#7f222222" TargetName="Border"/>
+                                <Setter Property="Foreground" Value="#7f222222"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
 </Window>
