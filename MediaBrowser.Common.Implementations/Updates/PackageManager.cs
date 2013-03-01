@@ -43,12 +43,12 @@ namespace MediaBrowser.Common.Implementations.Updates
 
         }
 
-        public async Task InstallPackage(IHttpClient client, ILogger logger, ResourcePool resourcePool, IProgress<double> progress, IZipClient zipClient, IApplicationPaths appPaths, PackageVersionInfo package, CancellationToken cancellationToken)
+        public async Task InstallPackage(IHttpClient client, ILogger logger, ResourcePool resourcePool, IProgress<double> progress, IApplicationPaths appPaths, PackageVersionInfo package, CancellationToken cancellationToken)
         {
             // Target based on if it is an archive or single assembly
             //  zip archives are assumed to contain directory structures relative to our ProgramDataPath
             var isArchive = string.Equals(Path.GetExtension(package.targetFilename), ".zip", StringComparison.OrdinalIgnoreCase);
-            var target = isArchive ? appPaths.TempUpdatePath : Path.Combine(appPaths.PluginsPath, package.targetFilename);
+            var target = Path.Combine(isArchive ? appPaths.TempUpdatePath : appPaths.PluginsPath, package.targetFilename);
 
             // Download to temporary file so that, if interrupted, it won't destroy the existing installation
             var tempFile = await client.GetTempFile(package.sourceUrl, resourcePool.Mb, cancellationToken, progress).ConfigureAwait(false);
@@ -71,32 +71,16 @@ namespace MediaBrowser.Common.Implementations.Updates
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Success - move it to the real target based on type
-            if (isArchive)
+            // Success - move it to the real target 
+            try
             {
-                try
-                {
-                    zipClient.ExtractAll(tempFile, target, true);
-                }
-                catch (IOException e)
-                {
-                    logger.ErrorException("Error attempting to extract archive from {0} to {1}", e, tempFile, target);
-                    throw;
-                }
-
+                File.Copy(tempFile, target, true);
+                File.Delete(tempFile);
             }
-            else
+            catch (IOException e)
             {
-                try
-                {
-                    File.Copy(tempFile, target, true);
-                    File.Delete(tempFile);
-                }
-                catch (IOException e)
-                {
-                    logger.ErrorException("Error attempting to move file from {0} to {1}", e, tempFile, target);
-                    throw;
-                }
+                logger.ErrorException("Error attempting to move file from {0} to {1}", e, tempFile, target);
+                throw;
             }
 
         }

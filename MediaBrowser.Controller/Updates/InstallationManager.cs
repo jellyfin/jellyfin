@@ -94,12 +94,6 @@ namespace MediaBrowser.Controller.Updates
         #endregion
 
         /// <summary>
-        /// Gets or sets the zip client.
-        /// </summary>
-        /// <value>The zip client.</value>
-        private IZipClient ZipClient { get; set; }
-
-        /// <summary>
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
@@ -137,20 +131,15 @@ namespace MediaBrowser.Controller.Updates
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="httpClient">The HTTP client.</param>
-        /// <param name="zipClient">The zip client.</param>
         /// <param name="networkManager">The network manager.</param>
         /// <param name="packageManager">The package manager.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="appHost">The app host.</param>
         /// <exception cref="System.ArgumentNullException">zipClient</exception>
-        public InstallationManager(Kernel kernel, IHttpClient httpClient, IZipClient zipClient, INetworkManager networkManager, IPackageManager packageManager, IJsonSerializer jsonSerializer, ILogger logger, IApplicationHost appHost)
+        public InstallationManager(Kernel kernel, IHttpClient httpClient, INetworkManager networkManager, IPackageManager packageManager, IJsonSerializer jsonSerializer, ILogger logger, IApplicationHost appHost)
             : base(kernel)
         {
-            if (zipClient == null)
-            {
-                throw new ArgumentNullException("zipClient");
-            }
             if (networkManager == null)
             {
                 throw new ArgumentNullException("networkManager");
@@ -180,7 +169,6 @@ namespace MediaBrowser.Controller.Updates
             _networkManager = networkManager;
             _packageManager = packageManager;
             _logger = logger;
-            ZipClient = zipClient;
         }
 
         /// <summary>
@@ -430,7 +418,7 @@ namespace MediaBrowser.Controller.Updates
         private async Task InstallPackageInternal(PackageVersionInfo package, IProgress<double> progress, CancellationToken cancellationToken)
         {
             // Do the install
-            await _packageManager.InstallPackage(HttpClient, _logger, Kernel.ResourcePools, progress, ZipClient, Kernel.ApplicationPaths, package, cancellationToken).ConfigureAwait(false);
+            await _packageManager.InstallPackage(HttpClient, _logger, Kernel.ResourcePools, progress, Kernel.ApplicationPaths, package, cancellationToken).ConfigureAwait(false);
 
             // Do plugin-specific processing
             if (!(Path.GetExtension(package.targetFilename) ?? "").Equals(".zip", StringComparison.OrdinalIgnoreCase))

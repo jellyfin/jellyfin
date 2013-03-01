@@ -40,7 +40,6 @@ namespace MediaBrowser.Common.Updates
         /// <param name="logger"></param>
         /// <param name="resourcePool"></param>
         /// <param name="progress"></param>
-        /// <param name="zipClient"></param>
         /// <param name="appPaths"></param>
         /// <param name="package">The package.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -49,7 +48,6 @@ namespace MediaBrowser.Common.Updates
                             ILogger logger,
                             ResourcePool resourcePool,
                             IProgress<double> progress,
-                            IZipClient zipClient,
                             IApplicationPaths appPaths,
                             PackageVersionInfo package,
                             CancellationToken cancellationToken);

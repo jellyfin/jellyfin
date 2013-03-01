@@ -196,7 +196,7 @@ namespace MediaBrowser.ServerApplication
         public Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress)
         {
             var pkgManager = Resolve<IPackageManager>();
-            return pkgManager.InstallPackage(Resolve<IHttpClient>(), Resolve<ILogger>(), Kernel.ResourcePools, progress, Resolve<IZipClient>(), Kernel.ApplicationPaths, package, cancellationToken);
+            return pkgManager.InstallPackage(Resolve<IHttpClient>(), Resolve<ILogger>(), Kernel.ResourcePools, progress, Kernel.ApplicationPaths, package, cancellationToken);
         }
 
         /// <summary>
