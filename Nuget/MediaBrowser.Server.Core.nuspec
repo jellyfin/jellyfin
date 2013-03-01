@@ -7,6 +7,7 @@
         <authors>Media Browser Team</authors>
         <owners />
         <projectUrl>https://github.com/MediaBrowser/MediaBrowser</projectUrl>
+		<iconUrl>http://www.mb3admin.com/images/mb3icons.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Contains core components required to build plugins for Media Browser Server.</description>
         <dependencies>
