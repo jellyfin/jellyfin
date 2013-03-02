@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Providers.MediaInfo
 {
@@ -16,6 +17,10 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     /// </summary>
     public class FFProbeAudioInfoProvider : BaseFFProbeProvider<Audio>
     {
+        public FFProbeAudioInfoProvider(ILogManager logManager) : base(logManager)
+        {
+        }
+
         /// <summary>
         /// Gets the name of the cache directory.
         /// </summary>

@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -48,8 +49,8 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// <param name="blurayExaminer">The bluray examiner.</param>
         /// <param name="protobufSerializer">The protobuf serializer.</param>
         /// <exception cref="System.ArgumentNullException">blurayExaminer</exception>
-        public FFProbeVideoInfoProvider(IIsoManager isoManager, IBlurayExaminer blurayExaminer, IProtobufSerializer protobufSerializer)
-            : base()
+        public FFProbeVideoInfoProvider(IIsoManager isoManager, IBlurayExaminer blurayExaminer, IProtobufSerializer protobufSerializer, ILogManager logManager)
+            : base(logManager)
         {
             if (isoManager == null)
             {

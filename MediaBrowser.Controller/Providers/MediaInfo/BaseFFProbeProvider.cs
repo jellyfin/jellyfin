@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Providers.MediaInfo
 {
@@ -18,6 +19,10 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     public abstract class BaseFFProbeProvider<T> : BaseFFMpegProvider<T>
         where T : BaseItem
     {
+        protected BaseFFProbeProvider(ILogManager logManager) : base(logManager)
+        {
+        }
+
         /// <summary>
         /// Gets or sets the FF probe cache.
         /// </summary>

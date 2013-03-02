@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Entities.TV;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -12,6 +13,10 @@ namespace MediaBrowser.Controller.Providers
     /// </summary>
     public class SortNameProvider : BaseMetadataProvider
     {
+        public SortNameProvider(ILogManager logManager) : base(logManager)
+        {
+        }
+
         /// <summary>
         /// Supportses the specified item.
         /// </summary>

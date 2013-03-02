@@ -4,6 +4,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -12,6 +13,10 @@ namespace MediaBrowser.Controller.Providers
     /// </summary>
     public class ImagesByNameProvider : ImageFromMediaLocationProvider
     {
+        public ImagesByNameProvider(ILogManager logManager) : base(logManager)
+        {
+        }
+
         /// <summary>
         /// Supportses the specified item.
         /// </summary>

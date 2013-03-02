@@ -3,6 +3,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
 using System.IO;
@@ -23,8 +24,8 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
 
-        public FanArtMovieProvider(IHttpClient httpClient)
-            : base()
+        public FanArtMovieProvider(IHttpClient httpClient, ILogManager logManager)
+            : base(logManager)
         {
             if (httpClient == null)
             {

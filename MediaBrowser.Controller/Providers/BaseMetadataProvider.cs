@@ -16,7 +16,8 @@ namespace MediaBrowser.Controller.Providers
         /// Gets the logger.
         /// </summary>
         /// <value>The logger.</value>
-        protected static internal ILogger Logger { get; internal set; }
+        protected ILogger Logger { get; set; }
+        protected ILogManager LogManager { get; set; }
 
         // Cache these since they will be used a lot
         /// <summary>
@@ -102,8 +103,11 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseMetadataProvider" /> class.
         /// </summary>
-        protected BaseMetadataProvider()
+        protected BaseMetadataProvider(ILogManager logManager)
         {
+            Logger = logManager.GetLogger(GetType().Name);
+            LogManager = logManager;
+
             Initialize();
         }
 

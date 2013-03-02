@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Providers.TV
 {
@@ -13,6 +14,10 @@ namespace MediaBrowser.Controller.Providers.TV
     /// </summary>
     public class EpisodeProviderFromXml : BaseMetadataProvider
     {
+        public EpisodeProviderFromXml(ILogManager logManager) : base(logManager)
+        {
+        }
+
         /// <summary>
         /// Supportses the specified item.
         /// </summary>

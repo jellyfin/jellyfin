@@ -178,8 +178,6 @@ namespace MediaBrowser.Controller
             BaseItem.Logger = logger;
             Ratings.Logger = logger;
             LocalizedStrings.Logger = logger;
-            // For now, until this can become an interface
-            BaseMetadataProvider.Logger = logger;
         }
 
         /// <summary>
