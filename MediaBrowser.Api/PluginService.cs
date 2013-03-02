@@ -103,7 +103,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class UpdatePluginSecurityInfo
     /// </summary>
-    [Route("/Plugins/SecurityInfo", "GET")]
+    [Route("/Plugins/SecurityInfo", "POST")]
     public class UpdatePluginSecurityInfo : IReturnVoid, IRequiresRequestStream
     {
         /// <summary>
