@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Providers.MediaInfo
 {
@@ -13,6 +14,10 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     public abstract class BaseFFMpegProvider<T> : BaseMetadataProvider
         where T : BaseItem
     {
+        protected BaseFFMpegProvider(ILogManager logManager) : base(logManager)
+        {
+        }
+
         /// <summary>
         /// Supportses the specified item.
         /// </summary>

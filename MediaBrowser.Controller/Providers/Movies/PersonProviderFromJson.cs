@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.IO;
@@ -13,8 +14,8 @@ namespace MediaBrowser.Controller.Providers.Movies
     /// </summary>
     class PersonProviderFromJson : TmdbPersonProvider
     {
-        public PersonProviderFromJson(IHttpClient httpClient, IJsonSerializer jsonSerializer)
-            : base(httpClient, jsonSerializer)
+        public PersonProviderFromJson(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogManager logManager)
+            : base(httpClient, jsonSerializer, logManager)
         {
         }
 

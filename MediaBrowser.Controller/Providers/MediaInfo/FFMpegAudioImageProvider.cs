@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Providers.MediaInfo
 {
@@ -13,7 +14,10 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     /// </summary>
     public class FFMpegAudioImageProvider : BaseFFMpegImageProvider<Audio>
     {
-        
+        public FFMpegAudioImageProvider(ILogManager logManager) : base(logManager)
+        {
+        }
+
         /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>

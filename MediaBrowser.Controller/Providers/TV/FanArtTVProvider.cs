@@ -3,6 +3,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
 using System.IO;
@@ -12,7 +13,7 @@ using System.Xml;
 
 namespace MediaBrowser.Controller.Providers.TV
 {
-    class FanArtTVProvider : FanartBaseProvider
+    class FanArtTvProvider : FanartBaseProvider
     {
         protected string FanArtBaseUrl = "http://api.fanart.tv/webservice/series/{0}/{1}/xml/all/1/1";
 
@@ -22,8 +23,8 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
 
-        public FanArtTVProvider(IHttpClient httpClient)
-            : base()
+        public FanArtTvProvider(IHttpClient httpClient, ILogManager logManager)
+            : base(logManager)
         {
             if (httpClient == null)
             {

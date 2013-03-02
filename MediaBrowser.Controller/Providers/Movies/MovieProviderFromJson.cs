@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.IO;
@@ -13,7 +14,8 @@ namespace MediaBrowser.Controller.Providers.Movies
     /// </summary>
     public class MovieProviderFromJson : MovieDbProvider
     {
-        public MovieProviderFromJson(IHttpClient httpClient, IJsonSerializer jsonSerializer) : base(jsonSerializer, httpClient)
+        public MovieProviderFromJson(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogManager logManager)
+            : base(jsonSerializer, httpClient, logManager)
         {
         }
 

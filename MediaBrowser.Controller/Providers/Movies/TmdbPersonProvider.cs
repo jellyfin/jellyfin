@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -42,8 +43,8 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
-        public TmdbPersonProvider(IHttpClient httpClient, IJsonSerializer jsonSerializer)
-            : base()
+        public TmdbPersonProvider(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogManager logManager)
+            : base(logManager)
         {
             if (jsonSerializer == null)
             {

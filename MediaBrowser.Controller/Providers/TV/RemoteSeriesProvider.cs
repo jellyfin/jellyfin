@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Resolvers.TV;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
@@ -28,8 +29,8 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
 
-        public RemoteSeriesProvider(IHttpClient httpClient)
-            : base()
+        public RemoteSeriesProvider(IHttpClient httpClient, ILogManager logManager)
+            : base(logManager)
         {
             if (httpClient == null)
             {

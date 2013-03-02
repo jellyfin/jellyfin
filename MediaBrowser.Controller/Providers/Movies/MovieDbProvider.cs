@@ -49,8 +49,8 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="httpClient">The HTTP client.</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
-        public MovieDbProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient)
-            : base()
+        public MovieDbProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager)
+            : base(logManager)
         {
             if (jsonSerializer == null)
             {
@@ -202,7 +202,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             {
                 //in addition to ours, we need to set the last refreshed time for the local data provider
                 //so it won't see the new files we download and process them all over again
-                if (JsonProvider == null) JsonProvider = new MovieProviderFromJson(HttpClient, JsonSerializer);
+                if (JsonProvider == null) JsonProvider = new MovieProviderFromJson(HttpClient, JsonSerializer, LogManager);
                 var data = item.ProviderData.GetValueOrDefault(JsonProvider.Id, new BaseProviderInfo { ProviderId = JsonProvider.Id });
                 data.LastRefreshed = value;
                 item.ProviderData[JsonProvider.Id] = data;

@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using System;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -33,6 +34,10 @@ namespace MediaBrowser.Controller.Providers
         /// The API key
         /// </summary>
         protected const string APIKey = "5c6b04c68e904cfed1e6cbc9a9e683d4";
+
+        protected FanartBaseProvider(ILogManager logManager) : base(logManager)
+        {
+        }
 
         /// <summary>
         /// Needses the refresh internal.

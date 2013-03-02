@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -15,6 +16,10 @@ namespace MediaBrowser.Controller.Providers
     /// </summary>
     public class ImageFromMediaLocationProvider : BaseMetadataProvider
     {
+        public ImageFromMediaLocationProvider(ILogManager logManager) : base(logManager)
+        {
+        }
+
         /// <summary>
         /// Supportses the specified item.
         /// </summary>
