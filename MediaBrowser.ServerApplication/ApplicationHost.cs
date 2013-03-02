@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Api;
+using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Implementations;
 using MediaBrowser.Common.Implementations.HttpServer;
 using MediaBrowser.Common.Implementations.Logging;
@@ -180,7 +181,7 @@ namespace MediaBrowser.ServerApplication
         {
             var pkgManager = Resolve<IPackageManager>();
             var availablePackages = await pkgManager.GetAvailablePackages(Resolve<IHttpClient>(), Resolve<INetworkManager>(), Kernel.SecurityManager, Kernel.ResourcePools, Resolve<IJsonSerializer>(), CancellationToken.None).ConfigureAwait(false);
-            var version = Kernel.InstallationManager.GetLatestCompatibleVersion(availablePackages, "MBServer", Kernel.Configuration.SystemUpdateLevel);
+            var version = Kernel.InstallationManager.GetLatestCompatibleVersion(availablePackages, Constants.MBServerPkgName, Kernel.Configuration.SystemUpdateLevel);
 
             return version != null ? new CheckForUpdateResult { AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version } :
                        new CheckForUpdateResult { AvailableVersion = ApplicationVersion, IsUpdateAvailable = false };
