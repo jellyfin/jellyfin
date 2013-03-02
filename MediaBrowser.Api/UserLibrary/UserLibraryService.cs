@@ -60,7 +60,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class UpdateDisplayPreferences
     /// </summary>
-    [Route("/Users/{UserId}/Items/{Id}/DisplayPreferences", "GET")]
+    [Route("/Users/{UserId}/Items/{Id}/DisplayPreferences", "POST")]
     [ServiceStack.ServiceHost.Api(("Updates a user's display preferences for an item"))]
     public class UpdateDisplayPreferences : IReturnVoid, IRequiresRequestStream
     {

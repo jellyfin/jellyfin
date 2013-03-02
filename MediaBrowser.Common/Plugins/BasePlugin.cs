@@ -295,10 +295,6 @@ namespace MediaBrowser.Common.Plugins
             {
                 InitializeOnServer(!File.Exists(ConfigurationFilePath));
             }
-            else if (kernel.KernelContext == KernelContext.Ui)
-            {
-                InitializeInUi();
-            }
         }
 
         /// <summary>
@@ -306,13 +302,6 @@ namespace MediaBrowser.Common.Plugins
         /// </summary>
         /// <param name="isFirstRun">if set to <c>true</c> [is first run].</param>
         protected virtual void InitializeOnServer(bool isFirstRun)
-        {
-        }
-
-        /// <summary>
-        /// Starts the plugin in the Ui
-        /// </summary>
-        protected virtual void InitializeInUi()
         {
         }
 
@@ -335,10 +324,6 @@ namespace MediaBrowser.Common.Plugins
             {
                 DisposeOnServer(dispose);
             }
-            else if (Kernel.KernelContext == KernelContext.Ui)
-            {
-                DisposeInUI(dispose);
-            }
         }
 
         /// <summary>
@@ -348,15 +333,6 @@ namespace MediaBrowser.Common.Plugins
         protected virtual void DisposeOnServer(bool dispose)
         {
             
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void DisposeInUI(bool dispose)
-        {
-
         }
 
         /// <summary>

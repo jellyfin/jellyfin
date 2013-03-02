@@ -404,7 +404,7 @@ namespace MediaBrowser.Common.Kernel
             }
             catch (FileNotFoundException)
             {
-                configuration = ApplicationHost.CreateInstance(type);
+                configuration = Activator.CreateInstance(type);
             }
 
             // Take the object we just got and serialize it back to bytes

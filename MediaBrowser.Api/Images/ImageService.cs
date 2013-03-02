@@ -359,7 +359,8 @@ namespace MediaBrowser.Api.Images
                         break;
                 }
 
-                var extension = mimeType.Substring(mimeType.IndexOf('/') + 1);
+
+                var extension = mimeType.Split(';').First().Split('/').Last();
 
                 var oldImagePath = entity.GetImage(imageType);
 

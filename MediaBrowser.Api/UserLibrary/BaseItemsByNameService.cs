@@ -82,13 +82,32 @@ namespace MediaBrowser.Api.UserLibrary
 
             }
 
-            var tasks = ibnItems.Select(i => GetDto(i, user, new List<ItemFields>()));
+            var fields = GetItemFields(request).ToList();
+
+            var tasks = ibnItems.Select(i => GetDto(i, user, fields));
 
             var resultItems = await Task.WhenAll(tasks).ConfigureAwait(false);
 
             result.Items = resultItems.Where(i => i != null).OrderByDescending(i => i.SortName ?? i.Name).ToArray();
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the item fields.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>IEnumerable{ItemFields}.</returns>
+        private IEnumerable<ItemFields> GetItemFields(GetItemsByName request)
+        {
+            var val = request.Fields;
+
+            if (string.IsNullOrEmpty(val))
+            {
+                return new ItemFields[] { };
+            }
+
+            return val.Split(',').Select(v => (ItemFields)Enum.Parse(typeof(ItemFields), v, true));
         }
 
         /// <summary>
@@ -171,5 +190,10 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The item id.</value>
         public string Id { get; set; }
+        /// <summary>
+        /// Fields to return within the items, in addition to basic information
+        /// </summary>
+        /// <value>The fields.</value>
+        public string Fields { get; set; }
     }
 }
