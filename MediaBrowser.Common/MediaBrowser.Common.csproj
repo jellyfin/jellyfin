@@ -104,6 +104,7 @@
     <Compile Include="ScheduledTasks\IntervalTrigger.cs" />
     <Compile Include="ScheduledTasks\WeeklyTrigger.cs" />
     <Compile Include="Security\ISecurityManager.cs" />
+    <Compile Include="Updates\ApplicationUpdater.cs" />
     <Compile Include="Updates\IPackageManager.cs" />
   </ItemGroup>
   <ItemGroup>

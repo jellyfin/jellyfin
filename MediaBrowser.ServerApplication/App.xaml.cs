@@ -1,8 +1,11 @@
-﻿using MediaBrowser.ClickOnce;
+﻿using System.IO;
+using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Kernel;
+using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Server.Implementations;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
@@ -27,6 +30,25 @@ namespace MediaBrowser.ServerApplication
         [STAThread]
         public static void Main()
         {
+            // Look for the existence of an update archive
+            var appPaths = new ServerApplicationPaths();
+            var updateArchive = Path.Combine(appPaths.TempUpdatePath, Constants.MBServerPkgName + ".zip");
+            if (File.Exists(updateArchive))
+            {
+                // Update is there - execute update
+                try
+                {
+                    new ApplicationUpdater().UpdateApplication(MBApplication.MBServer, appPaths, updateArchive);
+
+                    // And just let the app exit so it can update
+                    return;
+                }
+                catch (Exception e)
+                {
+                    MessageBox.Show(string.Format("Error attempting to update application.\n\n{0}\n\n{1}", e.GetType().Name, e.Message));
+                }
+            }
+
             var application = new App();
 
             application.Run();
