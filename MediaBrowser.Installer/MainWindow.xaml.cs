@@ -76,10 +76,38 @@ namespace MediaBrowser.Installer
 
         protected void GetArgs()
         {
-            var product = ConfigurationManager.AppSettings["product"] ?? "server";
-            PackageClass = (PackageVersionClass) Enum.Parse(typeof (PackageVersionClass), ConfigurationManager.AppSettings["class"] ?? "Release");
+            //cmd line args should be name/value pairs like: product=server archive="c:\.." caller=34552
             var cmdArgs = Environment.GetCommandLineArgs();
-            Archive = cmdArgs.Length > 1 ? cmdArgs[1] : null;
+            var args = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var pair in cmdArgs)
+            {
+                var nameValue = pair.Split('=');
+                if (nameValue.Length == 2)
+                {
+                    args[nameValue[0]] = nameValue[1];
+                }
+            }
+
+            Archive = args.GetValueOrDefault("archive", null);
+
+            var product = args.GetValueOrDefault("product", null) ?? ConfigurationManager.AppSettings["product"] ?? "server";
+            PackageClass = (PackageVersionClass) Enum.Parse(typeof (PackageVersionClass), args.GetValueOrDefault("class", null) ?? ConfigurationManager.AppSettings["class"] ?? "Release");
+            PackageVersion = new Version(args.GetValueOrDefault("version", "4.0"));
+
+            var callerId = args.GetValueOrDefault("caller", null);
+            if (callerId != null)
+            {
+                // Wait for our caller to exit
+                try
+                {
+                    var process = Process.GetProcessById(Convert.ToInt32(callerId));
+                    process.WaitForExit();
+                }
+                catch (ArgumentException)
+                {
+                    // wasn't running
+                }
+            }
 
             switch (product.ToLower())
             {
@@ -108,13 +136,15 @@ namespace MediaBrowser.Installer
         /// <returns></returns>
         protected async Task DoInstall(string archive)
         {
-            lblStatus.Text = string.Format("Downloading {0}...", FriendlyName);
+            lblStatus.Text = string.Format("Installing {0}...", FriendlyName);
 
             // Determine Package version
             var version = await GetPackageVersion();
 
             // Now try and shut down the server if that is what we are installing and it is running
-            if (PackageName == "MBServer" && Process.GetProcessesByName("mediabrowser.serverapplication").Length != 0)
+            var procs = Process.GetProcessesByName("mediabrowser.serverapplication");
+            var server = procs.Length > 0 ? procs[0] : null;
+            if (PackageName == "MBServer" && server != null)
             {
                 lblStatus.Text = "Shutting Down Media Browser Server...";
                 using (var client = new WebClient())
@@ -122,6 +152,14 @@ namespace MediaBrowser.Installer
                     try
                     {
                         client.UploadString("http://localhost:8096/mediabrowser/System/Shutdown", "");
+                        try
+                        {
+                            server.WaitForExit();
+                        }
+                        catch (ArgumentException)
+                        {
+                            // already gone
+                        }
                     }
                     catch (WebException e)
                     {
@@ -174,6 +212,19 @@ namespace MediaBrowser.Installer
             try 
             {
                 ExtractPackage(archive);
+                // We're done with it so delete it (this is necessary for update operations)
+                try
+                {
+                    File.Delete(archive);
+                }
+                catch (FileNotFoundException)
+                {
+                }
+                catch (Exception e)
+                {
+
+                    SystemClose("Error Removing Archive - " + e.GetType().FullName + "\n\n" + e.Message);
+                }
             }
             catch (Exception e)
             {
@@ -278,7 +329,17 @@ namespace MediaBrowser.Installer
         {
             // Delete old content of system
             var systemDir = Path.Combine(RootPath, "system");
-            if (Directory.Exists(systemDir)) Directory.Delete(systemDir, true);
+            if (Directory.Exists(systemDir))
+            {
+                try
+                {
+                    Directory.Delete(systemDir, true);
+                }
+                catch
+                {
+                    // we tried...
+                }
+            }
 
             // And extract
             using (var fileStream = File.OpenRead(archive))
