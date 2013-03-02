@@ -648,12 +648,6 @@ var Dashboard = {
 
             }).done(function (result) {
                 deferred.resolveWith(null, [[result]]);
-            }).fail(function () {
-
-                console.log('Error getting plugin security info');
-
-                deferred.resolveWith(null, [[{ IsMBSupporter: false }]]);
-
             });
 
             Dashboard.getPluginSecurityInfoPromise = deferred;
@@ -674,12 +668,8 @@ var Dashboard = {
 
             if (isLoggedIn) {
 
-                var promise1 = Dashboard.getCurrentUser();
-                var promise2 = Dashboard.getPluginSecurityInfo();
-
-                $.when(promise1, promise2).done(function (response1, response2) {
-
-                    Dashboard.renderHeader(page, response1[0], response2[0]);
+                Dashboard.getCurrentUser().done(function (user) {
+                    Dashboard.renderHeader(page, user);
                 });
 
             } else {
@@ -689,7 +679,7 @@ var Dashboard = {
         }
     },
 
-    renderHeader: function (page, user, pluginSecurityInfo) {
+    renderHeader: function (page, user) {
 
         var headerHtml = '';
         headerHtml += '<div class="header">';
@@ -728,11 +718,8 @@ var Dashboard = {
             }
             headerHtml += '</a>';
 
-            if (pluginSecurityInfo.IsMBSupporter) {
-                headerHtml += '<a class="imageLink" href="supporter.html"><img src="css/images/suppbadge.png" /></a>';
-            }
             if (user.Configuration.IsAdministrator) {
-                headerHtml += '<a class="imageLink" href="dashboard.html"><img src="css/images/tools' + imageColor + '.png" /></a>';
+                headerHtml += '<a class="imageLink btnTools" href="dashboard.html"><img src="css/images/tools' + imageColor + '.png" /></a>';
             }
 
             headerHtml += '</div>';
@@ -740,6 +727,12 @@ var Dashboard = {
 
         headerHtml += '</div>';
         page.prepend(headerHtml);
+
+        Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
+            if (pluginSecurityInfo.IsMBSupporter) {
+                $('<a class="imageLink" href="supporter.html"><img src="css/images/suppbadge.png" /></a>').insertBefore('.btnTools', page);
+            }
+        });
     },
 
     ensureToolsMenu: function (page) {
