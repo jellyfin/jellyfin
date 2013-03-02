@@ -13,6 +13,12 @@ namespace MediaBrowser.Common.Kernel
         string ProgramDataPath { get; }
 
         /// <summary>
+        /// Gets the path to the program system folder
+        /// </summary>
+        /// <value>The program data path.</value>
+        string ProgramSystemPath { get; }
+
+        /// <summary>
         /// Gets the folder path to the data directory
         /// </summary>
         /// <value>The data directory.</value>
