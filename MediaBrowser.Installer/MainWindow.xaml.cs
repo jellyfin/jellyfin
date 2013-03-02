@@ -212,6 +212,19 @@ namespace MediaBrowser.Installer
             try 
             {
                 ExtractPackage(archive);
+                // We're done with it so delete it (this is necessary for update operations)
+                try
+                {
+                    File.Delete(archive);
+                }
+                catch (FileNotFoundException)
+                {
+                }
+                catch (Exception e)
+                {
+
+                    SystemClose("Error Removing Archive - " + e.GetType().FullName + "\n\n" + e.Message);
+                }
             }
             catch (Exception e)
             {
