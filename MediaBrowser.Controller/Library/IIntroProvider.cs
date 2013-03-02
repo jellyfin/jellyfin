@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Controller.Playback
+namespace MediaBrowser.Controller.Library
 {
     /// <summary>
     /// Class BaseIntroProvider

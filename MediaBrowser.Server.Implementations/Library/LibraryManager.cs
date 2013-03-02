@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Events;
+﻿using System.Collections;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
@@ -27,22 +28,28 @@ namespace MediaBrowser.Server.Implementations.Library
     public class LibraryManager : ILibraryManager
     {
         /// <summary>
+        /// Gets the intro providers.
+        /// </summary>
+        /// <value>The intro providers.</value>
+        private IEnumerable<IIntroProvider> IntroProviders { get; set; }
+
+        /// <summary>
         /// Gets the list of entity resolution ignore rules
         /// </summary>
         /// <value>The entity resolution ignore rules.</value>
-        public IEnumerable<IResolutionIgnoreRule> EntityResolutionIgnoreRules { get; private set; }
+        private IEnumerable<IResolutionIgnoreRule> EntityResolutionIgnoreRules { get; set; }
 
         /// <summary>
         /// Gets the list of BasePluginFolders added by plugins
         /// </summary>
         /// <value>The plugin folders.</value>
-        public IEnumerable<IVirtualFolderCreator> PluginFolderCreators { get; set; }
+        private IEnumerable<IVirtualFolderCreator> PluginFolderCreators { get; set; }
 
         /// <summary>
         /// Gets the list of currently registered entity resolvers
         /// </summary>
         /// <value>The entity resolvers enumerable.</value>
-        public IEnumerable<IBaseItemResolver> EntityResolvers { get; private set; }
+        private IEnumerable<IBaseItemResolver> EntityResolvers { get; set; }
 
         #region LibraryChanged Event
         /// <summary>
@@ -105,11 +112,13 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="rules">The rules.</param>
         /// <param name="pluginFolders">The plugin folders.</param>
         /// <param name="resolvers">The resolvers.</param>
-        public void AddParts(IEnumerable<IResolutionIgnoreRule> rules, IEnumerable<IVirtualFolderCreator> pluginFolders, IEnumerable<IBaseItemResolver> resolvers)
+        /// <param name="introProviders">The intro providers.</param>
+        public void AddParts(IEnumerable<IResolutionIgnoreRule> rules, IEnumerable<IVirtualFolderCreator> pluginFolders, IEnumerable<IBaseItemResolver> resolvers, IEnumerable<IIntroProvider> introProviders)
         {
             EntityResolutionIgnoreRules = rules;
             PluginFolderCreators = pluginFolders;
             EntityResolvers = resolvers.OrderBy(i => i.Priority).ToArray();
+            IntroProviders = introProviders;
         }
 
         /// <summary>
@@ -655,8 +664,19 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 throw new ArgumentNullException("id");
             }
-            return null;
-            //return RootFolder.FindItemById(id, null);
+
+            return RootFolder.FindItemById(id, null);
+        }
+
+        /// <summary>
+        /// Gets the intros.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="user">The user.</param>
+        /// <returns>IEnumerable{System.String}.</returns>
+        public IEnumerable<string> GetIntros(BaseItem item, User user)
+        {
+            return IntroProviders.SelectMany(i => i.GetIntros(item, user));
         }
     }
 }

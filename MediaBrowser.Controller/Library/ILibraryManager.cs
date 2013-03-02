@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -144,12 +144,21 @@ namespace MediaBrowser.Controller.Library
         BaseItem GetItemById(Guid id, Guid userId);
 
         /// <summary>
+        /// Gets the intros.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="user">The user.</param>
+        /// <returns>IEnumerable{System.String}.</returns>
+        IEnumerable<string> GetIntros(BaseItem item, User user);
+
+        /// <summary>
         /// Adds the parts.
         /// </summary>
         /// <param name="rules">The rules.</param>
         /// <param name="pluginFolders">The plugin folders.</param>
         /// <param name="resolvers">The resolvers.</param>
+        /// <param name="introProviders">The intro providers.</param>
         void AddParts(IEnumerable<IResolutionIgnoreRule> rules, IEnumerable<IVirtualFolderCreator> pluginFolders,
-                      IEnumerable<IBaseItemResolver> resolvers);
+                      IEnumerable<IBaseItemResolver> resolvers, IEnumerable<IIntroProvider> introProviders);
     }
 }

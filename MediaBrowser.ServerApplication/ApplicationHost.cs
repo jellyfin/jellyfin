@@ -146,7 +146,7 @@ namespace MediaBrowser.ServerApplication
         {
             base.FindParts();
 
-            Resolve<ILibraryManager>().AddParts(GetExports<IResolutionIgnoreRule>(), GetExports<IVirtualFolderCreator>(), GetExports<IBaseItemResolver>());
+            Resolve<ILibraryManager>().AddParts(GetExports<IResolutionIgnoreRule>(), GetExports<IVirtualFolderCreator>(), GetExports<IBaseItemResolver>(), GetExports<IIntroProvider>());
 
             Kernel.InstallationManager = (InstallationManager)CreateInstance(typeof(InstallationManager));
 

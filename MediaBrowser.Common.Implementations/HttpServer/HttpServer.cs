@@ -511,6 +511,11 @@ namespace MediaBrowser.Common.Implementations.HttpServer
             EndpointHost.ConfigureHost(this, ServerName, CreateServiceManager());
             ContentTypeFilters.Register(ContentType.ProtoBuf, (reqCtx, res, stream) => ProtobufSerializer.SerializeToStream(res, stream), (type, stream) => ProtobufSerializer.DeserializeFromStream(stream, type));
             
+            foreach (var route in services.SelectMany(i => i.GetRoutes()))
+            {
+                Routes.Add(route.RequestType, route.Path, route.Verbs);
+            }
+
             Init();
         }
     }

@@ -409,13 +409,11 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetIntros request)
         {
-            var kernel = (Kernel)Kernel;
-
             var user = _userManager.GetUserById(request.UserId);
 
             var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
-            var result = kernel.IntroProviders.SelectMany(i => i.GetIntros(item, user));
+            var result = _libraryManager.GetIntros(item, user);
 
             return ToOptimizedResult(result);
         }

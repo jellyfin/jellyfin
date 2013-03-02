@@ -7,7 +7,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Playback;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Updates;
@@ -85,12 +84,6 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The configuration pages.</value>
         public IEnumerable<IPluginConfigurationPage> PluginConfigurationPages { get; private set; }
-
-        /// <summary>
-        /// Gets the intro providers.
-        /// </summary>
-        /// <value>The intro providers.</value>
-        public IEnumerable<IIntroProvider> IntroProviders { get; private set; }
 
         /// <summary>
         /// Gets the list of currently registered weather prvoiders
@@ -210,7 +203,6 @@ namespace MediaBrowser.Controller
             DisplayPreferencesRepositories = ApplicationHost.GetExports<IDisplayPreferencesRepository>();
             ItemRepositories = ApplicationHost.GetExports<IItemRepository>();
             WeatherProviders = ApplicationHost.GetExports<IWeatherProvider>();
-            IntroProviders = ApplicationHost.GetExports<IIntroProvider>();
             PluginConfigurationPages = ApplicationHost.GetExports<IPluginConfigurationPage>();
             ImageEnhancers = ApplicationHost.GetExports<IImageEnhancer>().OrderBy(e => e.Priority).ToArray();
             StringFiles = ApplicationHost.GetExports<LocalizedStringData>();
