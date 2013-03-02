@@ -109,7 +109,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             EntityResolutionIgnoreRules = rules;
             PluginFolderCreators = pluginFolders;
-            EntityResolvers = resolvers;
+            EntityResolvers = resolvers.OrderBy(i => i.Priority).ToArray();
         }
 
         /// <summary>
