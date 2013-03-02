@@ -76,11 +76,25 @@ namespace MediaBrowser.Installer
 
         protected void GetArgs()
         {
-            var product = ConfigurationManager.AppSettings["product"] ?? "server";
-            PackageClass = (PackageVersionClass) Enum.Parse(typeof (PackageVersionClass), ConfigurationManager.AppSettings["class"] ?? "Release");
+            //cmd line args should be name/value pairs like: product=server archive="c:\.." caller=34552
             var cmdArgs = Environment.GetCommandLineArgs();
-            Archive = cmdArgs.Length > 1 ? cmdArgs[1] : null;
-            var callerId = cmdArgs.Length > 2 ? cmdArgs[2] : null;
+            var args = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var pair in cmdArgs)
+            {
+                var nameValue = pair.Split('=');
+                if (nameValue.Length == 2)
+                {
+                    args[nameValue[0]] = nameValue[1];
+                }
+            }
+
+            Archive = args.GetValueOrDefault("archive", null);
+
+            var product = args.GetValueOrDefault("product", null) ?? ConfigurationManager.AppSettings["product"] ?? "server";
+            PackageClass = (PackageVersionClass) Enum.Parse(typeof (PackageVersionClass), args.GetValueOrDefault("class", null) ?? ConfigurationManager.AppSettings["class"] ?? "Release");
+            PackageVersion = new Version(args.GetValueOrDefault("version", "4.0"));
+
+            var callerId = args.GetValueOrDefault("caller", null);
             if (callerId != null)
             {
                 // Wait for our caller to exit
