@@ -17,6 +17,7 @@
         /// The dashboard
         /// </summary>
         Dashboard,
+        Dlna,
         /// <summary>
         /// The ios
         /// </summary>

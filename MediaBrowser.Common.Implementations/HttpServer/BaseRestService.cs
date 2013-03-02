@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
@@ -450,6 +451,15 @@ namespace MediaBrowser.Common.Implementations.HttpServer
             {
                 Response.AddHeader("Age", Convert.ToInt64((DateTime.UtcNow - lastDateModified.Value).TotalSeconds).ToString(CultureInfo.InvariantCulture));
             }
+        }
+
+        /// <summary>
+        /// Gets the routes.
+        /// </summary>
+        /// <returns>IEnumerable{RouteInfo}.</returns>
+        public IEnumerable<RouteInfo> GetRoutes()
+        {
+            return new RouteInfo[] {};
         }
     }
 }
