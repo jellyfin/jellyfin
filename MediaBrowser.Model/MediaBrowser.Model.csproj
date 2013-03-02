@@ -44,6 +44,7 @@
     <Compile Include="Configuration\ServerConfiguration.cs" />
     <Compile Include="Dto\BaseItemPerson.cs" />
     <Compile Include="Dto\ChapterInfoDto.cs" />
+    <Compile Include="Dto\ItemsByNameQuery.cs" />
     <Compile Include="Dto\MediaType.cs" />
     <Compile Include="Entities\BaseItemInfo.cs" />
     <Compile Include="Connectivity\ClientConnectionInfo.cs" />

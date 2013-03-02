@@ -631,6 +631,12 @@ namespace MediaBrowser.Model.Dto
             get { return string.Equals(MediaType, Entities.MediaType.Game, StringComparison.OrdinalIgnoreCase); }
         }
 
+        [IgnoreDataMember]
+        public bool IsPerson
+        {
+            get { return string.Equals(Type, "Person", StringComparison.OrdinalIgnoreCase); }
+        }
+
         /// <summary>
         /// Occurs when [property changed].
         /// </summary>

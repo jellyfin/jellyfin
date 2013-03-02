@@ -15,7 +15,7 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// The _use debug path
         /// </summary>
-        private bool _useDebugPath;
+        private readonly bool _useDebugPath;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationPaths" /> class.
