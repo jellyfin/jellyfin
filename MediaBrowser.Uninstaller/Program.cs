@@ -24,8 +24,11 @@ namespace MediaBrowser.Uninstaller
                 var sourceDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "";
                 File.WriteAllBytes(tempExe, File.ReadAllBytes(Path.Combine(sourceDir, "MediaBrowser.Uninstaller.Execute.exe")));
                 File.Copy(Path.Combine(sourceDir, "MediaBrowser.Uninstaller.Execute.exe.config"), tempConfig, true);
+
+                //get our pid to pass to the uninstaller so it can wait for us to exit
+                var pid = Process.GetCurrentProcess().Id;
                 //kick off the copy
-                Process.Start(tempExe, product);
+                Process.Start(tempExe, product + " " + pid);
                 //and shut down
             }
         }

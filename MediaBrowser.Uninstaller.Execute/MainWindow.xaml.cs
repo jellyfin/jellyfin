@@ -18,10 +18,28 @@ namespace MediaBrowser.Uninstaller.Execute
 
         public MainWindow()
         {
-            Thread.Sleep(800); // be sure our caller is shut down
 
             var args = Environment.GetCommandLineArgs();
             var product = args.Length > 1 ? args[1] : "server";
+            var callerId = args.Length > 2 ? args[2] : null;
+            if (callerId != null)
+            {
+                // Wait for our caller to exit
+                try
+                {
+                    var process = Process.GetProcessById(Convert.ToInt32(callerId));
+                    process.WaitForExit();
+                }
+                catch (ArgumentException)
+                {
+                    // wasn't running
+                }
+            }
+            else
+            {
+                Thread.Sleep(1000); // crude method
+            }
+
             InitializeComponent();
 
 
@@ -79,7 +97,9 @@ namespace MediaBrowser.Uninstaller.Execute
             if (Product == "Server")
             {
                 RemoveShortcut(Path.Combine(startMenu, "MB Dashboard.lnk"));
-                if (Process.GetProcessesByName("mediabrowser.serverapplication").Length != 0)
+                var procs = Process.GetProcessesByName("mediabrowser.serverapplication");
+                var server = procs.Length > 0 ? procs[0] : null;
+                if (server != null)
                 {
                     using (var client = new WebClient())
                     {
@@ -87,6 +107,14 @@ namespace MediaBrowser.Uninstaller.Execute
                         try
                         {
                             client.UploadString("http://localhost:8096/mediabrowser/system/shutdown", "");
+                            try
+                            {
+                                server.WaitForExit();
+                            }
+                            catch (ArgumentException)
+                            {
+                                // already gone
+                            }
                         }
                         catch (WebException ex)
                         {

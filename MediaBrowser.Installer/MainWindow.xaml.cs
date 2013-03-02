@@ -80,6 +80,20 @@ namespace MediaBrowser.Installer
             PackageClass = (PackageVersionClass) Enum.Parse(typeof (PackageVersionClass), ConfigurationManager.AppSettings["class"] ?? "Release");
             var cmdArgs = Environment.GetCommandLineArgs();
             Archive = cmdArgs.Length > 1 ? cmdArgs[1] : null;
+            var callerId = cmdArgs.Length > 2 ? cmdArgs[2] : null;
+            if (callerId != null)
+            {
+                // Wait for our caller to exit
+                try
+                {
+                    var process = Process.GetProcessById(Convert.ToInt32(callerId));
+                    process.WaitForExit();
+                }
+                catch (ArgumentException)
+                {
+                    // wasn't running
+                }
+            }
 
             switch (product.ToLower())
             {
@@ -108,13 +122,15 @@ namespace MediaBrowser.Installer
         /// <returns></returns>
         protected async Task DoInstall(string archive)
         {
-            lblStatus.Text = string.Format("Downloading {0}...", FriendlyName);
+            lblStatus.Text = string.Format("Installing {0}...", FriendlyName);
 
             // Determine Package version
             var version = await GetPackageVersion();
 
             // Now try and shut down the server if that is what we are installing and it is running
-            if (PackageName == "MBServer" && Process.GetProcessesByName("mediabrowser.serverapplication").Length != 0)
+            var procs = Process.GetProcessesByName("mediabrowser.serverapplication");
+            var server = procs.Length > 0 ? procs[0] : null;
+            if (PackageName == "MBServer" && server != null)
             {
                 lblStatus.Text = "Shutting Down Media Browser Server...";
                 using (var client = new WebClient())
@@ -122,6 +138,14 @@ namespace MediaBrowser.Installer
                     try
                     {
                         client.UploadString("http://localhost:8096/mediabrowser/System/Shutdown", "");
+                        try
+                        {
+                            server.WaitForExit();
+                        }
+                        catch (ArgumentException)
+                        {
+                            // already gone
+                        }
                     }
                     catch (WebException e)
                     {
@@ -278,7 +302,17 @@ namespace MediaBrowser.Installer
         {
             // Delete old content of system
             var systemDir = Path.Combine(RootPath, "system");
-            if (Directory.Exists(systemDir)) Directory.Delete(systemDir, true);
+            if (Directory.Exists(systemDir))
+            {
+                try
+                {
+                    Directory.Delete(systemDir, true);
+                }
+                catch
+                {
+                    // we tried...
+                }
+            }
 
             // And extract
             using (var fileStream = File.OpenRead(archive))
