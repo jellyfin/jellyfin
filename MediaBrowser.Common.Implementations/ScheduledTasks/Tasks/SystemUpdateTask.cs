@@ -80,12 +80,11 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
 
             progress.Report(10);
 
-            //>>> FOR TESTING
-            //if (!updateInfo.IsUpdateAvailable)
-            //{
-            //    progress.Report(100);
-            //    return;
-            //}
+            if (!updateInfo.IsUpdateAvailable)
+            {
+                progress.Report(100);
+                return;
+            }
 
             cancellationToken.ThrowIfCancellationRequested();
 
