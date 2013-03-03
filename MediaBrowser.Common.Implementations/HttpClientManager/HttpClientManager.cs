@@ -100,11 +100,14 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
         public async Task<Stream> Get(string url, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
         {
-            ValidateParams(url, resourcePool, cancellationToken);
+            ValidateParams(url, cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+            if (resourcePool != null)
+            {
+                await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+            }
 
             _logger.Info("HttpClientManager.Get url: {0}", url);
 
@@ -130,7 +133,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
             finally
             {
-                resourcePool.Release();
+                if (resourcePool != null)
+                {
+                    resourcePool.Release();
+                }
             }
         }
 
@@ -146,7 +152,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
         public async Task<Stream> Post(string url, Dictionary<string, string> postData, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
         {
-            ValidateParams(url, resourcePool, cancellationToken);
+            ValidateParams(url, cancellationToken);
 
             if (postData == null)
             {
@@ -159,7 +165,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             var postContent = string.Join("&", strings.ToArray());
             var content = new StringContent(postContent, Encoding.UTF8, "application/x-www-form-urlencoded");
 
-            await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+            if (resourcePool != null)
+            {
+                await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+            }
 
             _logger.Info("HttpClientManager.Post url: {0}", url);
 
@@ -185,7 +194,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
             finally
             {
-                resourcePool.Release();
+                if (resourcePool != null)
+                {
+                    resourcePool.Release();
+                }
             }
         }
 
@@ -202,7 +214,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
         public async Task<string> GetTempFile(string url, SemaphoreSlim resourcePool, CancellationToken cancellationToken, IProgress<double> progress, string userAgent = null)
         {
-            ValidateParams(url, resourcePool, cancellationToken);
+            ValidateParams(url, cancellationToken);
 
             if (progress == null)
             {
@@ -220,7 +232,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 message.Headers.Add("User-Agent", userAgent);
             }
 
-            await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+            if (resourcePool != null)
+            {
+                await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+            }
 
             _logger.Info("HttpClientManager.GetTempFile url: {0}, temp file: {1}", url, tempFile);
 
@@ -304,7 +319,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
             finally
             {
-                resourcePool.Release();
+                if (resourcePool != null)
+                {
+                    resourcePool.Release();
+                }
             }
         }
 
@@ -318,13 +336,16 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
         public async Task<MemoryStream> GetMemoryStream(string url, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
         {
-            ValidateParams(url, resourcePool, cancellationToken);
+            ValidateParams(url, cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
 
             var message = new HttpRequestMessage(HttpMethod.Get, url);
 
-            await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+            if (resourcePool != null)
+            {
+                await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+            }
 
             var ms = new MemoryStream();
 
@@ -376,7 +397,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
             finally
             {
-                resourcePool.Release();
+                if (resourcePool != null)
+                {
+                    resourcePool.Release();
+                }
             }
         }
 
@@ -384,19 +408,13 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// Validates the params.
         /// </summary>
         /// <param name="url">The URL.</param>
-        /// <param name="resourcePool">The resource pool.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="System.ArgumentNullException">url</exception>
-        private void ValidateParams(string url, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
+        private void ValidateParams(string url, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(url))
             {
                 throw new ArgumentNullException("url");
-            }
-
-            if (resourcePool == null)
-            {
-                throw new ArgumentNullException("resourcePool");
             }
 
             if (cancellationToken == null)
@@ -477,6 +495,53 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 throw new HttpException(response.ReasonPhrase) { StatusCode = response.StatusCode };
             }
+        }
+
+        /// <summary>
+        /// Gets the specified URL.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{Stream}.</returns>
+        public Task<Stream> Get(string url, CancellationToken cancellationToken)
+        {
+            return Get(url, null, cancellationToken);
+        }
+
+        /// <summary>
+        /// Posts the specified URL.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="postData">The post data.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{Stream}.</returns>
+        public Task<Stream> Post(string url, Dictionary<string, string> postData, CancellationToken cancellationToken)
+        {
+            return Post(url, postData, null, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets the temp file.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <param name="userAgent">The user agent.</param>
+        /// <returns>Task{System.String}.</returns>
+        public Task<string> GetTempFile(string url, CancellationToken cancellationToken, IProgress<double> progress, string userAgent = null)
+        {
+            return GetTempFile(url, null, cancellationToken, progress, userAgent);
+        }
+
+        /// <summary>
+        /// Gets the memory stream.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{MemoryStream}.</returns>
+        public Task<MemoryStream> GetMemoryStream(string url, CancellationToken cancellationToken)
+        {
+            return GetMemoryStream(url, null, cancellationToken);
         }
     }
 }
