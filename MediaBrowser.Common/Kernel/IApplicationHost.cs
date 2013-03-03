@@ -110,5 +110,11 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <param name="plugin">The plugin.</param>
         void RemovePlugin(IPlugin plugin);
+
+        /// <summary>
+        /// Inits this instance.
+        /// </summary>
+        /// <returns>Task.</returns>
+        Task Init();
     }
 }

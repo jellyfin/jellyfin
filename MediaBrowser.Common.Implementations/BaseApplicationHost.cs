@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Implementations.Udp;
+﻿using System.Threading.Tasks;
+using MediaBrowser.Common.Implementations.Udp;
 using MediaBrowser.Common.Implementations.Updates;
 using MediaBrowser.Common.Implementations.WebSocket;
 using MediaBrowser.Common.Kernel;
@@ -48,7 +49,7 @@ namespace MediaBrowser.Common.Implementations
         /// The container
         /// </summary>
         protected readonly Container Container = new Container();
-      
+
         /// <summary>
         /// Gets assemblies that failed to load
         /// </summary>
@@ -114,16 +115,26 @@ namespace MediaBrowser.Common.Implementations
         protected BaseApplicationHost()
         {
             FailedAssemblies = new List<string>();
+        }
 
-            ApplicationPaths = GetApplicationPaths();
+        /// <summary>
+        /// Inits this instance.
+        /// </summary>
+        /// <returns>Task.</returns>
+        public virtual Task Init()
+        {
+            return Task.Run(() =>
+            {
+                ApplicationPaths = GetApplicationPaths();
 
-            LogManager = GetLogManager();
+                LogManager = GetLogManager();
 
-            Logger = LogManager.GetLogger("App");
+                Logger = LogManager.GetLogger("App");
 
-            IsFirstRun = !File.Exists(ApplicationPaths.SystemConfigurationFilePath);
+                IsFirstRun = !File.Exists(ApplicationPaths.SystemConfigurationFilePath);
 
-            DiscoverTypes();
+                DiscoverTypes();
+            });
         }
 
         /// <summary>
@@ -157,7 +168,7 @@ namespace MediaBrowser.Common.Implementations
 
             Plugins = GetExports<IPlugin>();
         }
-        
+
         /// <summary>
         /// Discovers the types.
         /// </summary>
@@ -189,7 +200,7 @@ namespace MediaBrowser.Common.Implementations
             RegisterSingleInstance(networkManager);
             RegisterSingleInstance(serverManager);
         }
-        
+
         /// <summary>
         /// Gets a list of types within an assembly
         /// This will handle situations that would normally throw an exception - such as a type within the assembly that depends on some other non-existant reference
@@ -353,7 +364,7 @@ namespace MediaBrowser.Common.Implementations
         /// <param name="autorun">if set to <c>true</c> [autorun].</param>
         public void ConfigureAutoRunAtStartup(bool autorun)
         {
-            
+
         }
 
         /// <summary>

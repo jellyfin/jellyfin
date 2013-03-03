@@ -78,6 +78,16 @@ namespace MediaBrowser.ServerApplication
         public ApplicationHost()
             : base()
         {
+        }
+
+        /// <summary>
+        /// Inits this instance.
+        /// </summary>
+        /// <returns>Task.</returns>
+        public override async Task Init()
+        {
+            await base.Init().ConfigureAwait(false);
+
             Kernel = new Kernel(this, ServerApplicationPaths, _xmlSerializer, Logger);
 
             var networkManager = new NetworkManager();

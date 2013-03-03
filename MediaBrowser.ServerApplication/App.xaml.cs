@@ -165,6 +165,7 @@ namespace MediaBrowser.ServerApplication
         protected async void LoadKernel()
         {
             CompositionRoot = new ApplicationHost();
+            await CompositionRoot.Init();
 
             Logger = CompositionRoot.Logger;
             Kernel = CompositionRoot.Kernel;
