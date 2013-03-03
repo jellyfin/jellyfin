@@ -15,6 +15,7 @@ using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Updates;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;

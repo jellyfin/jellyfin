@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers.Movies;
+using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
     /// <summary>
     /// Class MovieResolver
     /// </summary>
-    public class MovieResolver : VideoResolver<Movie>
+    public class MovieResolver : BaseVideoResolver<Movie>
     {
         /// <summary>
         /// Gets the priority.

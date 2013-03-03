@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Library;
 using System;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Controller.Resolvers;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 {

@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.Controller.Library
+namespace MediaBrowser.Controller.Resolvers
 {
     /// <summary>
     /// Enum ResolverPriority
