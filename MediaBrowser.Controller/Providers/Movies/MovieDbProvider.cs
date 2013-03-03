@@ -48,6 +48,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// </summary>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="httpClient">The HTTP client.</param>
+        /// <param name="logManager">The Log manager</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
         public MovieDbProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager)
             : base(logManager)
@@ -188,6 +189,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// The json provider
         /// </summary>
         protected MovieProviderFromJson JsonProvider;
+
         /// <summary>
         /// Sets the persisted last refresh date on the item for this provider.
         /// </summary>
@@ -273,6 +275,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="force">if set to <c>true</c> [force].</param>
+        /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task{System.Boolean}.</returns>
         protected override async Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
         {
@@ -382,6 +385,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="productionYear">The production year.</param>
+        /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task{System.String}.</returns>
         public async Task<string> FindId(BaseItem item, int? productionYear, CancellationToken cancellationToken)
         {
@@ -465,6 +469,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <param name="name">The name.</param>
         /// <param name="year">The year.</param>
         /// <param name="language">The language.</param>
+        /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task{System.String}.</returns>
         public virtual async Task<string> AttemptFindId(string name, int? year, string language, CancellationToken cancellationToken)
         {
@@ -505,7 +510,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                 try
                 {
-                    using (Stream json = await HttpClient.Get(url3, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
+                    using (var json = await HttpClient.Get(url3, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
                     {
                         searchResult = JsonSerializer.DeserializeFromStream<TmdbMovieSearchResults>(json);
                     }
@@ -544,7 +549,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                         try
                         {
-                            using (Stream json = await HttpClient.Get(url3, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
+                            using (var json = await HttpClient.Get(url3, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
                             {
                                 var response = JsonSerializer.DeserializeFromStream<TmdbAltTitleResults>(json);
 
@@ -613,6 +618,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <param name="name">The name.</param>
         /// <param name="year">The year.</param>
         /// <param name="language">The language.</param>
+        /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task{System.String}.</returns>
         protected async Task<string> GetBoxsetIdFromMovie(string name, int? year, string language, CancellationToken cancellationToken)
         {
@@ -630,7 +636,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                         if (movieResult != null && movieResult.belongs_to_collection != null)
                         {
-                            id = movieResult.belongs_to_collection.id.ToString();
+                            id = movieResult.belongs_to_collection.id.ToString(CultureInfo.InvariantCulture);
                         }
                         else
                         {
@@ -650,6 +656,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="id">The id.</param>
+        /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task.</returns>
         protected async Task FetchMovieData(BaseItem item, string id, CancellationToken cancellationToken)
         {
@@ -712,12 +719,13 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="id">The id.</param>
+        /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task{CompleteMovieData}.</returns>
         protected async Task<CompleteMovieData> FetchMainResult(BaseItem item, string id, CancellationToken cancellationToken)
         {
             ItemType = item is BoxSet ? "collection" : "movie";
             string url = string.Format(GetInfo3, id, ApiKey, Kernel.Instance.Configuration.PreferredMetadataLanguage, ItemType);
-            CompleteMovieData mainResult = null;
+            CompleteMovieData mainResult;
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -779,11 +787,12 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="id">The id.</param>
+        /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task{TmdbCastResult}.</returns>
         protected async Task<TmdbCastResult> FetchCastInfo(BaseItem item, string id, CancellationToken cancellationToken)
         {
             //get cast and crew info
-            var url = string.Format(CastInfo, id, ApiKey, ItemType);
+            var url = string.Format(CastInfo, id, ApiKey);
             TmdbCastResult cast = null;
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -806,6 +815,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="id">The id.</param>
+        /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task{TmdbReleasesResult}.</returns>
         protected async Task<TmdbReleasesResult> FetchReleaseInfo(BaseItem item, string id, CancellationToken cancellationToken)
         {
@@ -833,6 +843,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="id">The id.</param>
+        /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task{TmdbImages}.</returns>
         protected async Task<TmdbImages> FetchImageInfo(BaseItem item, string id, CancellationToken cancellationToken)
         {
@@ -957,6 +968,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="images">The images.</param>
+        /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task.</returns>
         protected virtual async Task ProcessImages(BaseItem item, TmdbImages images, CancellationToken cancellationToken)
         {
@@ -1123,7 +1135,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             var sb = new StringBuilder();
             foreach (var c in name)
             {
-                if ((int)c >= 0x2B0 && (int)c <= 0x0333)
+                if (c >= 0x2B0 && c <= 0x0333)
                 {
                     // skip char modifier and diacritics 
                 }
