@@ -110,6 +110,8 @@
     <Compile Include="IServerApplicationPaths.cs" />
     <Compile Include="Library\ChildrenChangedEventArgs.cs" />
     <Compile Include="Library\DtoBuilder.cs" />
+    <Compile Include="Providers\Music\LastfmArtistProvider.cs" />
+    <Compile Include="Providers\Music\LastfmBaseArtistProvider.cs" />
     <Compile Include="Resolvers\BaseItemResolver.cs" />
     <Compile Include="Resolvers\BaseVideoResolver.cs" />
     <Compile Include="Resolvers\IItemResolver.cs" />
