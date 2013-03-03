@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations.HttpServer;
+using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Plugins;
@@ -124,11 +125,17 @@ namespace MediaBrowser.Api
         private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
+        /// The _app host
+        /// </summary>
+        private readonly IApplicationHost _appHost;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PluginService" /> class.
         /// </summary>
         /// <param name="jsonSerializer">The json serializer.</param>
+        /// <param name="appHost">The app host.</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
-        public PluginService(IJsonSerializer jsonSerializer)
+        public PluginService(IJsonSerializer jsonSerializer, IApplicationHost appHost)
             : base()
         {
             if (jsonSerializer == null)
@@ -136,6 +143,7 @@ namespace MediaBrowser.Api
                 throw new ArgumentNullException("jsonSerializer");
             }
 
+            _appHost = appHost;
             _jsonSerializer = jsonSerializer;
         }
 
@@ -146,7 +154,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetPlugins request)
         {
-            var result = Kernel.Plugins.OrderBy(p => p.Name).Select(p => p.GetPluginInfo()).ToList();
+            var result = _appHost.Plugins.OrderBy(p => p.Name).Select(p => p.GetPluginInfo()).ToList();
             
             return ToOptimizedResult(result);
         }
@@ -158,7 +166,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetPluginAssembly request)
         {
-            var plugin = Kernel.Plugins.First(p => p.Id == request.Id);
+            var plugin = _appHost.Plugins.First(p => p.Id == request.Id);
 
             return ToStaticFileResult(plugin.AssemblyFilePath);
         }
@@ -170,7 +178,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetPluginConfiguration request)
         {
-            var plugin = Kernel.Plugins.First(p => p.Id == request.Id);
+            var plugin = _appHost.Plugins.First(p => p.Id == request.Id);
 
             var dateModified = plugin.ConfigurationDateLastModified;
 
@@ -186,7 +194,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetPluginConfigurationFile request)
         {
-            var plugin = Kernel.Plugins.First(p => p.Id == request.Id);
+            var plugin = _appHost.Plugins.First(p => p.Id == request.Id);
 
             return ToStaticFileResult(plugin.ConfigurationFilePath);
         }
@@ -235,7 +243,7 @@ namespace MediaBrowser.Api
             var pathInfo = PathInfo.Parse(Request.PathInfo);
             var id = new Guid(pathInfo.GetArgumentValue<string>(1));
 
-            var plugin = Kernel.Plugins.First(p => p.Id == id);
+            var plugin = _appHost.Plugins.First(p => p.Id == id);
 
             var configuration = _jsonSerializer.DeserializeFromStream(request.RequestStream, plugin.ConfigurationType) as BasePluginConfiguration;
 
@@ -250,7 +258,7 @@ namespace MediaBrowser.Api
         {
             var kernel = (Kernel)Kernel;
 
-            var plugin = kernel.Plugins.First(p => p.Id == request.Id);
+            var plugin = _appHost.Plugins.First(p => p.Id == request.Id);
 
             kernel.InstallationManager.UninstallPlugin(plugin);
         }

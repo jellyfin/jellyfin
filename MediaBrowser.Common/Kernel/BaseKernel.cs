@@ -1,16 +1,13 @@
 ﻿using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.Kernel
 {
@@ -122,12 +119,6 @@ namespace MediaBrowser.Common.Kernel
         public TApplicationPathsType ApplicationPaths { get; private set; }
 
         /// <summary>
-        /// Gets the list of currently loaded plugins
-        /// </summary>
-        /// <value>The plugins.</value>
-        public IEnumerable<IPlugin> Plugins { get; protected set; }
-
-        /// <summary>
         /// Gets or sets the TCP manager.
         /// </summary>
         /// <value>The TCP manager.</value>
@@ -211,9 +202,9 @@ namespace MediaBrowser.Common.Kernel
         /// Initializes the Kernel
         /// </summary>
         /// <returns>Task.</returns>
-        public async Task Init()
+        public void Init()
         {
-            await ReloadInternal().ConfigureAwait(false);
+            ReloadInternal();
 
             OnReloadCompleted();
 
@@ -224,62 +215,9 @@ namespace MediaBrowser.Common.Kernel
         /// Performs initializations that can be reloaded at anytime
         /// </summary>
         /// <returns>Task.</returns>
-        protected virtual async Task ReloadInternal()
+        protected virtual void ReloadInternal()
         {
-            // Set these to null so that they can be lazy loaded again
-            Configuration = null;
-
-            await OnConfigurationLoaded().ConfigureAwait(false);
-
-            FindParts();
-
-            await OnComposablePartsLoaded().ConfigureAwait(false);
-
             ServerManager = ApplicationHost.Resolve<IServerManager>();
-        }
-
-        /// <summary>
-        /// Called when [configuration loaded].
-        /// </summary>
-        /// <returns>Task.</returns>
-        protected virtual Task OnConfigurationLoaded()
-        {
-            return Task.FromResult<object>(null);
-        }
-
-        /// <summary>
-        /// Composes the parts with ioc container.
-        /// </summary>
-        protected virtual void FindParts()
-        {
-            Plugins = ApplicationHost.GetExports<IPlugin>();
-        }
-
-        /// <summary>
-        /// Fires after MEF finishes finding composable parts within plugin assemblies
-        /// </summary>
-        /// <returns>Task.</returns>
-        protected virtual Task OnComposablePartsLoaded()
-        {
-            return Task.Run(() =>
-            {
-                // Start-up each plugin
-                Parallel.ForEach(Plugins, plugin =>
-                {
-                    Logger.Info("Initializing {0} {1}", plugin.Name, plugin.Version);
-
-                    try
-                    {
-                        plugin.Initialize(this, _xmlSerializer, Logger);
-
-                        Logger.Info("{0} {1} initialized.", plugin.Name, plugin.Version);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.ErrorException("Error initializing {0}", ex, plugin.Name);
-                    }
-                });
-            });
         }
 
         /// <summary>
@@ -442,17 +380,5 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <value>The resource pools.</value>
         public ResourcePool ResourcePools { get; set; }
-
-        /// <summary>
-        /// Removes the plugin.
-        /// </summary>
-        /// <param name="plugin">The plugin.</param>
-        public void RemovePlugin(IPlugin plugin)
-        {
-            var list = Plugins.ToList();
-            list.Remove(plugin);
-            Plugins = list;
-        }
-
     }
 }

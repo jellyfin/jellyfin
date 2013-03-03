@@ -16,7 +16,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         {
             if (isApplicationStartup)
             {
-                await Task.Delay(2000).ConfigureAwait(false);
+                await Task.Delay(3000).ConfigureAwait(false);
 
                 OnTriggered();
             }

@@ -107,7 +107,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var outputPath = GetOutputFilePath(state);
 
-            if (File.Exists(outputPath) && !Plugin.Instance.HasActiveTranscodingJob(outputPath, TranscodingJobType.Progressive))
+            if (File.Exists(outputPath) && !ServerEntryPoint.Instance.HasActiveTranscodingJob(outputPath, TranscodingJobType.Progressive))
             {
                 return ToStaticFileResult(outputPath);
             }
@@ -133,7 +133,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
             else
             {
-                Plugin.Instance.OnTranscodeBeginRequest(outputPath, TranscodingJobType.Progressive);
+                ServerEntryPoint.Instance.OnTranscodeBeginRequest(outputPath, TranscodingJobType.Progressive);
             }
 
             return new ProgressiveStreamWriter

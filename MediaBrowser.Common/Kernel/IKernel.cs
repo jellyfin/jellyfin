@@ -40,7 +40,7 @@ namespace MediaBrowser.Common.Kernel
         /// Inits this instance.
         /// </summary>
         /// <returns>Task.</returns>
-        Task Init();
+        void Init();
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has pending kernel reload.
@@ -70,12 +70,6 @@ namespace MediaBrowser.Common.Kernel
         /// Performs the pending restart.
         /// </summary>
         void PerformPendingRestart();
-
-        /// <summary>
-        /// Gets the plugins.
-        /// </summary>
-        /// <value>The plugins.</value>
-        IEnumerable<IPlugin> Plugins { get; }
 
         /// <summary>
         /// Gets the UDP server port number.
@@ -123,12 +117,5 @@ namespace MediaBrowser.Common.Kernel
         /// </summary>
         /// <value>The resource pools.</value>
         ResourcePool ResourcePools { get; set; }
-
-        /// <summary>
-        /// Removes the plugin.
-        /// </summary>
-        /// <param name="plugin">The plugin.</param>
-        void RemovePlugin(IPlugin plugin);
-
     }
 }

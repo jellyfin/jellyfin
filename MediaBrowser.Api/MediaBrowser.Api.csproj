@@ -97,6 +97,7 @@
     <Compile Include="PluginService.cs" />
     <Compile Include="ScheduledTasks\ScheduledTaskService.cs" />
     <Compile Include="ScheduledTasks\ScheduledTasksWebSocketListener.cs" />
+    <Compile Include="ServerEntryPoint.cs" />
     <Compile Include="SystemService.cs" />
     <Compile Include="UserLibrary\BaseItemsByNameService.cs" />
     <Compile Include="UserLibrary\GenresService.cs" />

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Updates;
+﻿using MediaBrowser.Common.Plugins;
+using MediaBrowser.Model.Updates;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -97,5 +98,17 @@ namespace MediaBrowser.Common.Kernel
         /// Shuts down.
         /// </summary>
         void Shutdown();
+
+        /// <summary>
+        /// Gets the plugins.
+        /// </summary>
+        /// <value>The plugins.</value>
+        IEnumerable<IPlugin> Plugins { get; }
+
+        /// <summary>
+        /// Removes the plugin.
+        /// </summary>
+        /// <param name="plugin">The plugin.</param>
+        void RemovePlugin(IPlugin plugin);
     }
 }

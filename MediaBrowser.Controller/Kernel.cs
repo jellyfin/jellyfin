@@ -183,7 +183,7 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Composes the parts with ioc container.
         /// </summary>
-        protected override void FindParts()
+        protected void FindParts()
         {
             // For now there's no real way to inject this properly
             BaseItem.LibraryManager = ApplicationHost.Resolve<ILibraryManager>();
@@ -194,8 +194,6 @@ namespace MediaBrowser.Controller
             ProviderManager = (ProviderManager)ApplicationHost.CreateInstance(typeof(ProviderManager));
             SecurityManager = (PluginSecurityManager)ApplicationHost.CreateInstance(typeof(PluginSecurityManager));
             
-            base.FindParts();
-
             UserDataRepositories = ApplicationHost.GetExports<IUserDataRepository>();
             UserRepositories = ApplicationHost.GetExports<IUserRepository>();
             DisplayPreferencesRepositories = ApplicationHost.GetExports<IDisplayPreferencesRepository>();
@@ -211,15 +209,24 @@ namespace MediaBrowser.Controller
         /// Performs initializations that can be reloaded at anytime
         /// </summary>
         /// <returns>Task.</returns>
-        protected override async Task ReloadInternal()
+        protected override async void ReloadInternal()
         {
-            await base.ReloadInternal().ConfigureAwait(false);
+            base.ReloadInternal();
+
+            FindParts();
+
+            await LoadRepositories().ConfigureAwait(false);
 
             ReloadResourcePools();
 
             ReloadFileSystemManager();
 
             await ApplicationHost.Resolve<IUserManager>().RefreshUsersMetadata(CancellationToken.None).ConfigureAwait(false);
+
+            foreach (var entryPoint in ApplicationHost.GetExports<IServerEntryPoint>())
+            {
+                entryPoint.Run();
+            }
         }
 
         /// <summary>
@@ -263,11 +270,8 @@ namespace MediaBrowser.Controller
         /// Called when [composable parts loaded].
         /// </summary>
         /// <returns>Task.</returns>
-        protected override async Task OnComposablePartsLoaded()
+        protected Task LoadRepositories()
         {
-            // The base class will start up all the plugins
-            await base.OnComposablePartsLoaded().ConfigureAwait(false);
-
             // Get the current item repository
             ItemRepository = GetRepository(ItemRepositories, Configuration.ItemRepository);
             var itemRepoTask = ItemRepository.Initialize();
@@ -284,7 +288,7 @@ namespace MediaBrowser.Controller
             DisplayPreferencesRepository = GetRepository(DisplayPreferencesRepositories, Configuration.DisplayPreferencesRepository);
             var displayPreferencesRepoTask = DisplayPreferencesRepository.Initialize();
 
-            await Task.WhenAll(itemRepoTask, userRepoTask, userDataRepoTask, displayPreferencesRepoTask).ConfigureAwait(false);
+            return Task.WhenAll(itemRepoTask, userRepoTask, userDataRepoTask, displayPreferencesRepoTask);
         }
 
         /// <summary>

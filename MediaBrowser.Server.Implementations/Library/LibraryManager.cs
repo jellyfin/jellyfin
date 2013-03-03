@@ -287,11 +287,6 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <exception cref="System.InvalidOperationException">Cannot create the root folder until plugins have loaded</exception>
         public AggregateFolder CreateRootFolder()
         {
-            if (Kernel.Plugins == null)
-            {
-                throw new InvalidOperationException("Cannot create the root folder until plugins have loaded");
-            }
-
             var rootFolderPath = Kernel.ApplicationPaths.RootFolderPath;
             var rootFolder = Kernel.ItemRepository.RetrieveItem(rootFolderPath.GetMBId(typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(rootFolderPath);
 

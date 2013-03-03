@@ -1,11 +1,11 @@
-﻿using MediaBrowser.Common.Kernel;
-using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Plugins;
-using MediaBrowser.Model.Serialization;
+﻿using MediaBrowser.Model.Plugins;
 using System;
 
 namespace MediaBrowser.Common.Plugins
 {
+    /// <summary>
+    /// Interface IPlugin
+    /// </summary>
     public interface IPlugin
     {
         /// <summary>
@@ -93,26 +93,6 @@ namespace MediaBrowser.Common.Plugins
         string DataFolderPath { get; }
 
         /// <summary>
-        /// Gets the logger.
-        /// </summary>
-        /// <value>The logger.</value>
-        ILogger Logger { get; }
-
-        /// <summary>
-        /// Starts the plugin.
-        /// </summary>
-        /// <param name="kernel">The kernel.</param>
-        /// <param name="xmlSerializer">The XML serializer.</param>
-        /// <param name="logger">The logger.</param>
-        /// <exception cref="System.ArgumentNullException">kernel</exception>
-        void Initialize(IKernel kernel, IXmlSerializer xmlSerializer, ILogger logger);
-
-        /// <summary>
-        /// Disposes the plugins. Undos all actions performed during Init.
-        /// </summary>
-        void Dispose();
-
-        /// <summary>
         /// Saves the current configuration to the file system
         /// </summary>
         /// <exception cref="System.InvalidOperationException">Cannot call Plugin.SaveConfiguration from the UI.</exception>
@@ -136,5 +116,11 @@ namespace MediaBrowser.Common.Plugins
         /// Called when just before the plugin is uninstalled from the server.
         /// </summary>
         void OnUninstalling();
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is first run.
+        /// </summary>
+        /// <value><c>true</c> if this instance is first run; otherwise, <c>false</c>.</value>
+        bool IsFirstRun { get; }
     }
 }

@@ -177,7 +177,7 @@ namespace MediaBrowser.ServerApplication
 
                 var now = DateTime.UtcNow;
 
-                await Kernel.Init();
+                Kernel.Init();
 
                 var done = (DateTime.UtcNow - now);
                 Logger.Info("Kernel.Init completed in {0}{1} minutes and {2} seconds.", done.Hours > 0 ? done.Hours + " Hours " : "", done.Minutes, done.Seconds);

@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Kernel;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -14,7 +13,7 @@ namespace MediaBrowser.Common.Plugins
     /// Provides a common base class for all plugins
     /// </summary>
     /// <typeparam name="TConfigurationType">The type of the T configuration type.</typeparam>
-    public abstract class BasePlugin<TConfigurationType> : IDisposable, IPlugin
+    public abstract class BasePlugin<TConfigurationType> : IPlugin
         where TConfigurationType : BasePluginConfiguration
     {
         /// <summary>
@@ -23,6 +22,12 @@ namespace MediaBrowser.Common.Plugins
         /// <value>The kernel.</value>
         protected IKernel Kernel { get; private set; }
 
+        /// <summary>
+        /// Gets the XML serializer.
+        /// </summary>
+        /// <value>The XML serializer.</value>
+        protected IXmlSerializer XmlSerializer { get; private set; }
+        
         /// <summary>
         /// Gets or sets the plugin's current context
         /// </summary>
@@ -55,6 +60,12 @@ namespace MediaBrowser.Common.Plugins
                 return false;
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is first run.
+        /// </summary>
+        /// <value><c>true</c> if this instance is first run; otherwise, <c>false</c>.</value>
+        public bool IsFirstRun { get; private set; }
 
         /// <summary>
         /// Gets the type of configuration this plugin uses
@@ -252,87 +263,14 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <summary>
-        /// Gets the logger.
-        /// </summary>
-        /// <value>The logger.</value>
-        public ILogger Logger { get; private set; }
-
-        /// <summary>
-        /// Gets the XML serializer.
-        /// </summary>
-        /// <value>The XML serializer.</value>
-        protected IXmlSerializer XmlSerializer { get; private set; }
-
-        /// <summary>
-        /// Starts the plugin.
+        /// Initializes a new instance of the <see cref="BasePlugin{TConfigurationType}" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="xmlSerializer">The XML serializer.</param>
-        /// <param name="logger">The logger.</param>
-        /// <exception cref="System.ArgumentNullException">kernel</exception>
-        public void Initialize(IKernel kernel, IXmlSerializer xmlSerializer, ILogger logger)
+        protected BasePlugin(IKernel kernel, IXmlSerializer xmlSerializer)
         {
-            if (kernel == null)
-            {
-                throw new ArgumentNullException("kernel");
-            }
-
-            if (xmlSerializer == null)
-            {
-                throw new ArgumentNullException("xmlSerializer");
-            }
-            
-            if (logger == null)
-            {
-                throw new ArgumentNullException("logger");
-            }
-
-            XmlSerializer = xmlSerializer;
-            Logger = logger;
             Kernel = kernel;
-
-            if (kernel.KernelContext == KernelContext.Server)
-            {
-                InitializeOnServer(!File.Exists(ConfigurationFilePath));
-            }
-        }
-
-        /// <summary>
-        /// Starts the plugin on the server
-        /// </summary>
-        /// <param name="isFirstRun">if set to <c>true</c> [is first run].</param>
-        protected virtual void InitializeOnServer(bool isFirstRun)
-        {
-        }
-
-        /// <summary>
-        /// Disposes the plugins. Undos all actions performed during Init.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected void Dispose(bool dispose)
-        {
-            if (Kernel.KernelContext == KernelContext.Server)
-            {
-                DisposeOnServer(dispose);
-            }
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void DisposeOnServer(bool dispose)
-        {
-            
+            XmlSerializer = xmlSerializer;
         }
 
         /// <summary>
@@ -350,8 +288,6 @@ namespace MediaBrowser.Common.Plugins
             {
                 throw new InvalidOperationException("Cannot call Plugin.SaveConfiguration from the UI.");
             }
-
-            Logger.Info("Saving configuration");
 
             lock (_configurationSaveLock)
             {

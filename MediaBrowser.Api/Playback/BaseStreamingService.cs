@@ -518,7 +518,7 @@ namespace MediaBrowser.Api.Playback
                 EnableRaisingEvents = true
             };
 
-            Plugin.Instance.OnTranscodeBeginning(outputPath, TranscodingJobType, process);
+            ServerEntryPoint.Instance.OnTranscodeBeginning(outputPath, TranscodingJobType, process);
 
             //Logger.Info(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
 
@@ -537,7 +537,7 @@ namespace MediaBrowser.Api.Playback
             {
                 Logger.ErrorException("Error starting ffmpeg", ex);
 
-                Plugin.Instance.OnTranscodeFailedToStart(outputPath, TranscodingJobType);
+                ServerEntryPoint.Instance.OnTranscodeFailedToStart(outputPath, TranscodingJobType);
 
                 state.LogFileStream.Dispose();
 
@@ -588,7 +588,7 @@ namespace MediaBrowser.Api.Playback
 
             process.Dispose();
 
-            Plugin.Instance.OnTranscodingFinished(outputFilePath, TranscodingJobType);
+            ServerEntryPoint.Instance.OnTranscodingFinished(outputFilePath, TranscodingJobType);
 
             if (!exitCode.HasValue || exitCode.Value != 0)
             {
