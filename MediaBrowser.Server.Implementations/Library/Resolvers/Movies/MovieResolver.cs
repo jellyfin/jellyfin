@@ -8,12 +8,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace MediaBrowser.Controller.Resolvers.Movies
+namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 {
     /// <summary>
     /// Class MovieResolver
     /// </summary>
-    public class MovieResolver : BaseVideoResolver<Movie>
+    public class MovieResolver : VideoResolver<Movie>
     {
         /// <summary>
         /// Gets the priority.
@@ -87,7 +87,7 @@ namespace MediaBrowser.Controller.Resolvers.Movies
         private void SetProviderIdFromPath(Movie item)
         {
             //we need to only look at the name of this actual item (not parents)
-            var justName = item.Path.Substring(item.Path.LastIndexOf(Path.DirectorySeparatorChar));
+            var justName = Path.GetFileName(item.Path);
 
             var id = justName.GetAttributeValue("tmdbid");
 

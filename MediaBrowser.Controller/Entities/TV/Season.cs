@@ -115,7 +115,7 @@ namespace MediaBrowser.Controller.Entities.TV
         /// Add files from the metadata folder to ResolveArgs
         /// </summary>
         /// <param name="args">The args.</param>
-        internal static void AddMetadataFiles(ItemResolveArgs args)
+        public static void AddMetadataFiles(ItemResolveArgs args)
         {
             var folder = args.GetFileSystemEntryByName("metadata");
 

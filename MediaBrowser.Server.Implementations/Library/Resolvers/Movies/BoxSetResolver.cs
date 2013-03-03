@@ -3,12 +3,12 @@ using MediaBrowser.Controller.Library;
 using System;
 using System.IO;
 
-namespace MediaBrowser.Controller.Resolvers.Movies
+namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 {
     /// <summary>
     /// Class BoxSetResolver
     /// </summary>
-    public class BoxSetResolver : BaseFolderResolver<BoxSet>
+    public class BoxSetResolver : FolderResolver<BoxSet>
     {
         /// <summary>
         /// Resolves the specified args.

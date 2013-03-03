@@ -5,12 +5,12 @@ using MediaBrowser.Model.Entities;
 using System;
 using System.IO;
 
-namespace MediaBrowser.Controller.Resolvers.TV
+namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 {
     /// <summary>
     /// Class SeriesResolver
     /// </summary>
-    public class SeriesResolver : BaseFolderResolver<Series>
+    public class SeriesResolver : FolderResolver<Series>
     {
         /// <summary>
         /// Gets the priority.
@@ -76,16 +76,16 @@ namespace MediaBrowser.Controller.Resolvers.TV
 
             Season.AddMetadataFiles(args);
 
-            SetProviderIdFromPath(item);
+            SetProviderIdFromPath(item, args.Path);
         }
 
         /// <summary>
         /// Sets the provider id from path.
         /// </summary>
         /// <param name="item">The item.</param>
-        private void SetProviderIdFromPath(Series item)
+        private void SetProviderIdFromPath(Series item, string path)
         {
-            var justName = item.Path.Substring(item.Path.LastIndexOf(Path.DirectorySeparatorChar));
+            var justName = Path.GetFileName(path);
 
             var id = justName.GetAttributeValue("tvdbid");
 

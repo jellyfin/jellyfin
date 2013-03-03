@@ -15,7 +15,6 @@ using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Updates;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;
@@ -27,6 +26,7 @@ using MediaBrowser.Model.Updates;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Implementations.BdInfo;
 using MediaBrowser.Server.Implementations.Library;
+using MediaBrowser.Server.Implementations.Library.Resolvers;
 using MediaBrowser.ServerApplication.Implementations;
 using MediaBrowser.WebDashboard.Api;
 using System;
@@ -147,7 +147,7 @@ namespace MediaBrowser.ServerApplication
         {
             base.FindParts();
 
-            Resolve<ILibraryManager>().AddParts(GetExports<IResolutionIgnoreRule>(), GetExports<IVirtualFolderCreator>(), GetExports<IBaseItemResolver>(), GetExports<IIntroProvider>());
+            Resolve<ILibraryManager>().AddParts(GetExports<IResolverIgnoreRule>(), GetExports<IVirtualFolderCreator>(), GetExports<IItemResolver>(), GetExports<IIntroProvider>());
 
             Kernel.InstallationManager = (InstallationManager)CreateInstance(typeof(InstallationManager));
 

@@ -1,12 +1,12 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 
-namespace MediaBrowser.Controller.Resolvers
+namespace MediaBrowser.Server.Implementations.Library.Resolvers
 {
     /// <summary>
     /// Class FolderResolver
     /// </summary>
-    public class FolderResolver : BaseFolderResolver<Folder>
+    public class FolderResolver : FolderResolver<Folder>
     {
         /// <summary>
         /// Gets the priority.
@@ -47,10 +47,10 @@ namespace MediaBrowser.Controller.Resolvers
     }
 
     /// <summary>
-    /// Class BaseFolderResolver
+    /// Class FolderResolver
     /// </summary>
     /// <typeparam name="TItemType">The type of the T item type.</typeparam>
-    public abstract class BaseFolderResolver<TItemType> : BaseItemResolver<TItemType>
+    public abstract class FolderResolver<TItemType> : ItemResolver<TItemType>
         where TItemType : Folder, new()
     {
         /// <summary>
