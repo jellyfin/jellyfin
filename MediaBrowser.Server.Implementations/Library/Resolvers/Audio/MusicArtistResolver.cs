@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using System.Linq;
+using MediaBrowser.Controller.Resolvers;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 {
