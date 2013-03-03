@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 
-namespace MediaBrowser.Controller.Library
+namespace MediaBrowser.Controller.Resolvers
 {
     /// <summary>
     /// Interface IItemResolver

@@ -4,8 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Controller.Library;
 
-namespace MediaBrowser.Controller.Library
+namespace MediaBrowser.Controller.Resolvers
 {
     /// <summary>
     /// Class EntityResolutionHelper

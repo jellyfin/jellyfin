@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;

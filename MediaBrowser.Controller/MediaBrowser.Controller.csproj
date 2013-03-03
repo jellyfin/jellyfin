@@ -110,7 +110,9 @@
     <Compile Include="IServerApplicationPaths.cs" />
     <Compile Include="Library\ChildrenChangedEventArgs.cs" />
     <Compile Include="Library\DtoBuilder.cs" />
-    <Compile Include="Library\IItemResolver.cs" />
+    <Compile Include="Resolvers\BaseItemResolver.cs" />
+    <Compile Include="Resolvers\BaseVideoResolver.cs" />
+    <Compile Include="Resolvers\IItemResolver.cs" />
     <Compile Include="Library\ILibraryManager.cs" />
     <Compile Include="Library\IUserManager.cs" />
     <Compile Include="Library\Profiler.cs" />
@@ -164,9 +166,9 @@
     <Compile Include="Providers\TV\SeriesProviderFromXml.cs" />
     <Compile Include="Providers\TV\SeriesXmlParser.cs" />
     <Compile Include="Providers\MediaInfo\FFMpegVideoImageProvider.cs" />
-    <Compile Include="Library\IResolverIgnoreRule.cs" />
-    <Compile Include="Library\EntityResolutionHelper.cs" />
-    <Compile Include="Library\ResolverPriority.cs" />
+    <Compile Include="Resolvers\IResolverIgnoreRule.cs" />
+    <Compile Include="Resolvers\EntityResolutionHelper.cs" />
+    <Compile Include="Resolvers\ResolverPriority.cs" />
     <Compile Include="Library\TVUtils.cs" />
     <Compile Include="ScheduledTasks\PeopleValidationTask.cs" />
     <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
