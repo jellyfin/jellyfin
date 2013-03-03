@@ -355,7 +355,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger);
 
-            var items = movie.SpecialFeatures.Select(i => dtoBuilder.GetDtoBaseItem(item, user, fields, _libraryManager)).AsParallel().Select(t => t.Result).ToList();
+            var items = movie.SpecialFeatures.Select(i => dtoBuilder.GetDtoBaseItem(i, user, fields, _libraryManager)).AsParallel().Select(t => t.Result).ToList();
 
             return ToOptimizedResult(items);
         }
@@ -376,7 +376,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger);
 
-            var items = item.LocalTrailers.Select(i => dtoBuilder.GetDtoBaseItem(item, user, fields, _libraryManager)).AsParallel().Select(t => t.Result).ToList();
+            var items = item.LocalTrailers.Select(i => dtoBuilder.GetDtoBaseItem(i, user, fields, _libraryManager)).AsParallel().Select(t => t.Result).ToList();
 
             return ToOptimizedResult(items);
         }
