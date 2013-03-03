@@ -3,6 +3,7 @@ using MediaBrowser.Common.Implementations.Updates;
 using MediaBrowser.Common.Implementations.WebSocket;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Logging;
@@ -24,6 +25,12 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         /// <value>The logger.</value>
         public ILogger Logger { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets the plugins.
+        /// </summary>
+        /// <value>The plugins.</value>
+        public IEnumerable<IPlugin> Plugins { get; protected set; }
 
         /// <summary>
         /// Gets or sets the log manager.
@@ -142,12 +149,13 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         protected virtual void FindParts()
         {
-            Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
-
             Resolve<IHttpServer>().Init(GetExports<IRestfulService>(false));
             Resolve<IServerManager>().AddWebSocketListeners(GetExports<IWebSocketListener>(false));
 
             Resolve<IServerManager>().Start();
+            Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
+
+            Plugins = GetExports<IPlugin>();
         }
         
         /// <summary>
@@ -346,6 +354,17 @@ namespace MediaBrowser.Common.Implementations
         public void ConfigureAutoRunAtStartup(bool autorun)
         {
             
+        }
+
+        /// <summary>
+        /// Removes the plugin.
+        /// </summary>
+        /// <param name="plugin">The plugin.</param>
+        public void RemovePlugin(IPlugin plugin)
+        {
+            var list = Plugins.ToList();
+            list.Remove(plugin);
+            Plugins = list;
         }
 
         /// <summary>

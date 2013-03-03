@@ -287,7 +287,7 @@ namespace MediaBrowser.Controller.Updates
         {
             var catalog = await GetAvailablePackages(cancellationToken).ConfigureAwait(false);
 
-            var plugins = Kernel.Plugins;
+            var plugins = ApplicationHost.Plugins;
 
             if (withAutoUpdateEnabled)
             {
@@ -424,7 +424,7 @@ namespace MediaBrowser.Controller.Updates
             if (!(Path.GetExtension(package.targetFilename) ?? "").Equals(".zip", StringComparison.OrdinalIgnoreCase))
             {
                 // Set last update time if we were installed before
-                var plugin = Kernel.Plugins.FirstOrDefault(p => p.Name.Equals(package.name, StringComparison.OrdinalIgnoreCase));
+                var plugin = ApplicationHost.Plugins.FirstOrDefault(p => p.Name.Equals(package.name, StringComparison.OrdinalIgnoreCase));
 
                 if (plugin != null)
                 {
@@ -460,7 +460,7 @@ namespace MediaBrowser.Controller.Updates
             plugin.OnUninstalling();
 
             // Remove it the quick way for now
-            Kernel.RemovePlugin(plugin);
+            ApplicationHost.RemovePlugin(plugin);
 
             File.Delete(plugin.AssemblyFilePath);
 
