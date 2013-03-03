@@ -219,14 +219,14 @@ namespace MediaBrowser.Controller
 
             ReloadResourcePools();
 
-            ReloadFileSystemManager();
-
             await ApplicationHost.Resolve<IUserManager>().RefreshUsersMetadata(CancellationToken.None).ConfigureAwait(false);
 
             foreach (var entryPoint in ApplicationHost.GetExports<IServerEntryPoint>())
             {
                 entryPoint.Run();
             }
+
+            ReloadFileSystemManager();
         }
 
         /// <summary>
