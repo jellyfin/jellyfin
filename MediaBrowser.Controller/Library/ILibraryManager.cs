@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
-using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -158,7 +157,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="pluginFolders">The plugin folders.</param>
         /// <param name="resolvers">The resolvers.</param>
         /// <param name="introProviders">The intro providers.</param>
-        void AddParts(IEnumerable<IResolutionIgnoreRule> rules, IEnumerable<IVirtualFolderCreator> pluginFolders,
-                      IEnumerable<IBaseItemResolver> resolvers, IEnumerable<IIntroProvider> introProviders);
+        void AddParts(IEnumerable<IResolverIgnoreRule> rules, IEnumerable<IVirtualFolderCreator> pluginFolders,
+                      IEnumerable<IItemResolver> resolvers, IEnumerable<IIntroProvider> introProviders);
     }
 }

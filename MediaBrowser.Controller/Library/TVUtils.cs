@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace MediaBrowser.Controller.Resolvers.TV
+namespace MediaBrowser.Controller.Library
 {
     /// <summary>
     /// Class TVUtils

@@ -3,12 +3,12 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using System;
 
-namespace MediaBrowser.Controller.Resolvers.TV
+namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 {
     /// <summary>
     /// Class EpisodeResolver
     /// </summary>
-    public class EpisodeResolver : BaseVideoResolver<Episode>
+    public class EpisodeResolver : VideoResolver<Episode>
     {
         /// <summary>
         /// Resolves the specified args.

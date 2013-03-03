@@ -6,10 +6,10 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.ScheduledTasks;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Server.Implementations.Library.Resolvers;
 using MoreLinq;
 using System;
 using System.Collections.Concurrent;
@@ -37,7 +37,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Gets the list of entity resolution ignore rules
         /// </summary>
         /// <value>The entity resolution ignore rules.</value>
-        private IEnumerable<IResolutionIgnoreRule> EntityResolutionIgnoreRules { get; set; }
+        private IEnumerable<IResolverIgnoreRule> EntityResolutionIgnoreRules { get; set; }
 
         /// <summary>
         /// Gets the list of BasePluginFolders added by plugins
@@ -49,7 +49,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Gets the list of currently registered entity resolvers
         /// </summary>
         /// <value>The entity resolvers enumerable.</value>
-        private IEnumerable<IBaseItemResolver> EntityResolvers { get; set; }
+        private IEnumerable<IItemResolver> EntityResolvers { get; set; }
 
         #region LibraryChanged Event
         /// <summary>
@@ -113,7 +113,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="pluginFolders">The plugin folders.</param>
         /// <param name="resolvers">The resolvers.</param>
         /// <param name="introProviders">The intro providers.</param>
-        public void AddParts(IEnumerable<IResolutionIgnoreRule> rules, IEnumerable<IVirtualFolderCreator> pluginFolders, IEnumerable<IBaseItemResolver> resolvers, IEnumerable<IIntroProvider> introProviders)
+        public void AddParts(IEnumerable<IResolverIgnoreRule> rules, IEnumerable<IVirtualFolderCreator> pluginFolders, IEnumerable<IItemResolver> resolvers, IEnumerable<IIntroProvider> introProviders)
         {
             EntityResolutionIgnoreRules = rules;
             PluginFolderCreators = pluginFolders;
@@ -189,7 +189,14 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>BaseItem.</returns>
         public BaseItem ResolveItem(ItemResolveArgs args)
         {
-            return EntityResolvers.Select(r => r.ResolvePath(args)).FirstOrDefault(i => i != null);
+            var item = EntityResolvers.Select(r => r.ResolvePath(args)).FirstOrDefault(i => i != null);
+
+            if (item != null)
+            {
+                ResolverHelper.SetInitialItemValues(item, args);
+            }
+
+            return item;
         }
 
         /// <summary>
@@ -237,12 +244,23 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             // Check to see if we should resolve based on our contents
-            if (args.IsDirectory && !EntityResolutionHelper.ShouldResolvePathContents(args))
+            if (args.IsDirectory && !ShouldResolvePathContents(args))
             {
                 return null;
             }
 
             return ResolveItem(args);
+        }
+
+        /// <summary>
+        /// Determines whether a path should be ignored based on its contents - called after the contents have been read
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        private static bool ShouldResolvePathContents(ItemResolveArgs args)
+        {
+            // Ignore any folders containing a file called .ignore
+            return !args.ContainsFileSystemEntryByName(".ignore");
         }
 
         /// <summary>

@@ -2,12 +2,12 @@
 using MediaBrowser.Controller.Library;
 using System.Linq;
 
-namespace MediaBrowser.Controller.Resolvers.Audio
+namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 {
     /// <summary>
     /// Class MusicArtistResolver
     /// </summary>
-    public class MusicArtistResolver : BaseItemResolver<MusicArtist>
+    public class MusicArtistResolver : ItemResolver<MusicArtist>
     {
         /// <summary>
         /// Gets the priority.
@@ -32,7 +32,7 @@ namespace MediaBrowser.Controller.Resolvers.Audio
             if (args.Parent.IsRoot) return null;
 
             // If we contain an album assume we are an artist folder
-            return args.FileSystemChildren.Any(EntityResolutionHelper.IsMusicAlbum) ? new MusicArtist() : null;
+            return args.FileSystemChildren.Any(MusicAlbumResolver.IsMusicAlbum) ? new MusicArtist() : null;
         }
 
     }

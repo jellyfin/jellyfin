@@ -3,12 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MediaBrowser.Controller.Resolvers
+namespace MediaBrowser.Server.Implementations.Library
 {
     /// <summary>
     /// Provides the core resolver ignore rules
     /// </summary>
-    public class CoreResolutionIgnoreRule : IResolutionIgnoreRule
+    public class CoreResolutionIgnoreRule : IResolverIgnoreRule
     {
         /// <summary>
         /// Any folder named in this list will be ignored - can be added to at runtime for extensibility

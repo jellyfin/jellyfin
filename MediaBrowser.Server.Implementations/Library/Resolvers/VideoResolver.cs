@@ -4,12 +4,12 @@ using MediaBrowser.Model.Entities;
 using System;
 using System.IO;
 
-namespace MediaBrowser.Controller.Resolvers
+namespace MediaBrowser.Server.Implementations.Library.Resolvers
 {
     /// <summary>
     /// Resolves a Path into a Video
     /// </summary>
-    public class VideoResolver : BaseVideoResolver<Video>
+    public class VideoResolver : VideoResolver<Video>
     {
         /// <summary>
         /// Gets the priority.
@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.Resolvers
     /// Resolves a Path into a Video or Video subclass
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class BaseVideoResolver<T> : BaseItemResolver<T>
+    public abstract class VideoResolver<T> : ItemResolver<T>
         where T : Video, new()
     {
         /// <summary>

@@ -3,12 +3,12 @@ using MediaBrowser.Controller.Library;
 using System;
 using System.IO;
 
-namespace MediaBrowser.Controller.Resolvers
+namespace MediaBrowser.Server.Implementations.Library.Resolvers
 {
     /// <summary>
     /// Class LocalTrailerResolver
     /// </summary>
-    public class LocalTrailerResolver : BaseVideoResolver<Trailer>
+    public class LocalTrailerResolver : VideoResolver<Trailer>
     {
         /// <summary>
         /// Resolves the specified args.

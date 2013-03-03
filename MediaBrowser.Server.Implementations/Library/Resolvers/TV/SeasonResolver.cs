@@ -2,12 +2,12 @@
 using MediaBrowser.Controller.Library;
 using System;
 
-namespace MediaBrowser.Controller.Resolvers.TV
+namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 {
     /// <summary>
     /// Class SeasonResolver
     /// </summary>
-    public class SeasonResolver : BaseFolderResolver<Season>
+    public class SeasonResolver : FolderResolver<Season>
     {
         /// <summary>
         /// Resolves the specified args.
