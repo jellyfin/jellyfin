@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.Windows;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
@@ -110,23 +111,29 @@ namespace MediaBrowser.ServerApplication
             // Show the notification
             if (newItems.Count == 1)
             {
-                var window = (MainWindow) App.Current.MainWindow;
-
-                window.Dispatcher.InvokeAsync(() => window.MbTaskbarIcon.ShowCustomBalloon(new ItemUpdateNotification(_logger)
+                Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    DataContext = newItems[0]
+                    var window = (MainWindow)Application.Current.MainWindow;
 
-                }, PopupAnimation.Slide, 6000));
+                    window.Dispatcher.InvokeAsync(() => window.MbTaskbarIcon.ShowCustomBalloon(new ItemUpdateNotification(_logger)
+                    {
+                        DataContext = newItems[0]
+
+                    }, PopupAnimation.Slide, 6000));
+                });
             }
             else if (newItems.Count > 1)
             {
-                var window = (MainWindow)App.Current.MainWindow;
-
-                window.Dispatcher.InvokeAsync(() => window.MbTaskbarIcon.ShowCustomBalloon(new MultiItemUpdateNotification(_logger)
+                Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    DataContext = newItems
+                    var window = (MainWindow)Application.Current.MainWindow;
 
-                }, PopupAnimation.Slide, 6000));
+                    window.Dispatcher.InvokeAsync(() => window.MbTaskbarIcon.ShowCustomBalloon(new MultiItemUpdateNotification(_logger)
+                    {
+                        DataContext = newItems
+
+                    }, PopupAnimation.Slide, 6000));
+                });
             }
         }
 
