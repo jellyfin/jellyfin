@@ -90,11 +90,6 @@ namespace MediaBrowser.Common.Kernel
         ISecurityManager SecurityManager { get; set; }
 
         /// <summary>
-        /// Occurs when [reload completed].
-        /// </summary>
-        event EventHandler<EventArgs> ReloadCompleted;
-
-        /// <summary>
         /// Occurs when [configuration updated].
         /// </summary>
         event EventHandler<EventArgs> ConfigurationUpdated;
