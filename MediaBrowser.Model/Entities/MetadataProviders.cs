@@ -21,6 +21,10 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The tvcom
         /// </summary>
-        Tvcom
+        Tvcom,
+        /// <summary>
+        /// MusicBrainz
+        /// </summary>
+        Musicbrainz
     }
 }
