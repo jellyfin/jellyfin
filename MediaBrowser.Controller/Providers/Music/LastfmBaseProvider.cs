@@ -1,13 +1,9 @@
 ﻿using System.Net;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Serialization;
@@ -76,16 +72,6 @@ namespace MediaBrowser.Controller.Providers.Music
         }
 
         /// <summary>
-        /// Supportses the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        public override bool Supports(BaseItem item)
-        {
-            return item is MusicArtist;
-        }
-
-        /// <summary>
         /// Gets a value indicating whether [requires internet].
         /// </summary>
         /// <value><c>true</c> if [requires internet]; otherwise, <c>false</c>.</value>
@@ -110,11 +96,6 @@ namespace MediaBrowser.Controller.Providers.Music
 
         protected const string RootUrl = @"http://ws.audioscrobbler.com/2.0/";
         protected static string ApiKey = "7b76553c3eb1d341d642755aecc40a33";
-
-        static readonly Regex[] NameMatches = new[] {
-            new Regex(@"(?<name>.*)\((?<year>\d{4})\)"), // matches "My Movie (2001)" and gives us the name and the year
-            new Regex(@"(?<name>.*)") // last resort matches the whole string as the name
-        };
 
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
@@ -208,30 +189,6 @@ namespace MediaBrowser.Controller.Providers.Music
         protected abstract Task FetchData(BaseItem item, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Parses the name.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="justName">Name of the just.</param>
-        /// <param name="year">The year.</param>
-        protected void ParseName(string name, out string justName, out int? year)
-        {
-            justName = null;
-            year = null;
-            foreach (var re in NameMatches)
-            {
-                Match m = re.Match(name);
-                if (m.Success)
-                {
-                    justName = m.Groups["name"].Value.Trim();
-                    string y = m.Groups["year"] != null ? m.Groups["year"].Value : null;
-                    int temp;
-                    year = Int32.TryParse(y, out temp) ? temp : (int?)null;
-                    break;
-                }
-            }
-        }
-
-        /// <summary>
         /// Encodes an URL.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -239,126 +196,6 @@ namespace MediaBrowser.Controller.Providers.Music
         protected static string UrlEncode(string name)
         {
             return WebUtility.UrlEncode(name);
-        }
-
-        /// <summary>
-        /// The remove
-        /// </summary>
-        const string remove = "\"'!`?";
-        // "Face/Off" support.
-        /// <summary>
-        /// The spacers
-        /// </summary>
-        const string spacers = "/,.:;\\(){}[]+-_=–*";  // (there are not actually two - in the they are different char codes)
-        /// <summary>
-        /// The replace start numbers
-        /// </summary>
-        static readonly Dictionary<string, string> ReplaceStartNumbers = new Dictionary<string, string> {
-            {"1 ","one "},
-            {"2 ","two "},
-            {"3 ","three "},
-            {"4 ","four "},
-            {"5 ","five "},
-            {"6 ","six "},
-            {"7 ","seven "},
-            {"8 ","eight "},
-            {"9 ","nine "},
-            {"10 ","ten "},
-            {"11 ","eleven "},
-            {"12 ","twelve "},
-            {"13 ","thirteen "},
-            {"100 ","one hundred "},
-            {"101 ","one hundred one "}
-        };
-
-        /// <summary>
-        /// The replace end numbers
-        /// </summary>
-        static readonly Dictionary<string, string> ReplaceEndNumbers = new Dictionary<string, string> {
-            {" 1"," i"},
-            {" 2"," ii"},
-            {" 3"," iii"},
-            {" 4"," iv"},
-            {" 5"," v"},
-            {" 6"," vi"},
-            {" 7"," vii"},
-            {" 8"," viii"},
-            {" 9"," ix"},
-            {" 10"," x"}
-        };
-
-        /// <summary>
-        /// Gets the name of the comparable.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="logger">The logger.</param>
-        /// <returns>System.String.</returns>
-        internal static string GetComparableName(string name, ILogger logger)
-        {
-            name = name.ToLower();
-            name = name.Replace("á", "a");
-            name = name.Replace("é", "e");
-            name = name.Replace("í", "i");
-            name = name.Replace("ó", "o");
-            name = name.Replace("ú", "u");
-            name = name.Replace("ü", "u");
-            name = name.Replace("ñ", "n");
-            foreach (var pair in ReplaceStartNumbers)
-            {
-                if (name.StartsWith(pair.Key))
-                {
-                    name = name.Remove(0, pair.Key.Length);
-                    name = pair.Value + name;
-                    logger.Info("MovieDbProvider - Replaced Start Numbers: " + name);
-                }
-            }
-            foreach (var pair in ReplaceEndNumbers)
-            {
-                if (name.EndsWith(pair.Key))
-                {
-                    name = name.Remove(name.IndexOf(pair.Key), pair.Key.Length);
-                    name = name + pair.Value;
-                    logger.Info("MovieDbProvider - Replaced End Numbers: " + name);
-                }
-            }
-            name = name.Normalize(NormalizationForm.FormKD);
-            var sb = new StringBuilder();
-            foreach (var c in name)
-            {
-                if (c >= 0x2B0 && c <= 0x0333)
-                {
-                    // skip char modifier and diacritics 
-                }
-                else if (remove.IndexOf(c) > -1)
-                {
-                    // skip chars we are removing
-                }
-                else if (spacers.IndexOf(c) > -1)
-                {
-                    sb.Append(" ");
-                }
-                else if (c == '&')
-                {
-                    sb.Append(" and ");
-                }
-                else
-                {
-                    sb.Append(c);
-                }
-            }
-            name = sb.ToString();
-            name = name.Replace(", the", "");
-            name = name.Replace(" the ", " ");
-            name = name.Replace("the ", "");
-
-            string prevName;
-            do
-            {
-                prevName = name;
-                name = name.Replace("  ", " ");
-            } while (name.Length != prevName.Length);
-
-            return name.Trim();
         }
 
     }
