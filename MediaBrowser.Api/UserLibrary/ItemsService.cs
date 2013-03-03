@@ -800,7 +800,7 @@ namespace MediaBrowser.Api.UserLibrary
                 return userdata.LastPlayedDate.Value;
             }
 
-            return DateTime.MaxValue;
+            return DateTime.MinValue;
         }
     }
 }

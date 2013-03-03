@@ -40,20 +40,6 @@ namespace MediaBrowser.Common.Kernel
         }
         #endregion
 
-        #region ReloadCompleted Event
-        /// <summary>
-        /// Fires whenever the kernel completes reloading
-        /// </summary>
-        public event EventHandler<EventArgs> ReloadCompleted;
-        /// <summary>
-        /// Called when [reload completed].
-        /// </summary>
-        private void OnReloadCompleted()
-        {
-            EventHelper.QueueEventIfNotNull(ReloadCompleted, this, EventArgs.Empty, Logger);
-        }
-        #endregion
-
         #region ApplicationUpdated Event
         /// <summary>
         /// Occurs when [application updated].
@@ -206,9 +192,7 @@ namespace MediaBrowser.Common.Kernel
         {
             ReloadInternal();
 
-            OnReloadCompleted();
-
-            Logger.Info("Kernel.Reload Complete");
+            Logger.Info("Kernel.Init Complete");
         }
 
         /// <summary>
