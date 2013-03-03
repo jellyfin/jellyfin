@@ -6,6 +6,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.ScheduledTasks;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
