@@ -18,7 +18,6 @@ namespace MediaBrowser.Controller.Providers.Music
 {
     public class LastfmArtistProvider : LastfmBaseArtistProvider
     {
-        internal readonly SemaphoreSlim LastfmResourcePool = new SemaphoreSlim(5, 5);
 
         public LastfmArtistProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager)
             : base(jsonSerializer, httpClient, logManager, configurationManager)
