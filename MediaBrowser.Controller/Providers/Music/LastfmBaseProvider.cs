@@ -24,6 +24,8 @@ namespace MediaBrowser.Controller.Providers.Music
     /// </summary>
     public abstract class LastfmBaseProvider : BaseMetadataProvider
     {
+        protected static readonly SemaphoreSlim LastfmResourcePool = new SemaphoreSlim(5, 5);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LastfmBaseProvider" /> class.
         /// </summary>
