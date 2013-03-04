@@ -186,7 +186,7 @@ namespace MediaBrowser.Controller.Providers.TV
                             }
                         }
 
-                        if (ConfigurationManager.Configuration.DownloadTVSeasonBanner && (ConfigurationManager.Configuration.RefreshItemImages || !season.HasLocalImage("banner")))
+                        if (ConfigurationManager.Configuration.DownloadSeasonImages.Banner && (ConfigurationManager.Configuration.RefreshItemImages || !season.HasLocalImage("banner")))
                         {
                             var n = images.SelectSingleNode("//Banner[BannerType='season'][BannerType2='seasonwide'][Season='" + seasonNumber + "']");
                             if (n != null)
@@ -218,7 +218,7 @@ namespace MediaBrowser.Controller.Providers.TV
                             }
                         }
 
-                        if (ConfigurationManager.Configuration.DownloadTVSeasonBackdrops && (ConfigurationManager.Configuration.RefreshItemImages || !season.HasLocalImage("backdrop")))
+                        if (ConfigurationManager.Configuration.DownloadSeasonImages.Backdrops && (ConfigurationManager.Configuration.RefreshItemImages || !season.HasLocalImage("backdrop")))
                         {
                             var n = images.SelectSingleNode("//Banner[BannerType='fanart'][Season='" + seasonNumber + "']");
                             if (n != null)
