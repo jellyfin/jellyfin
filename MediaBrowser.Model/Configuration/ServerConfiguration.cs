@@ -280,7 +280,7 @@ namespace MediaBrowser.Model.Configuration
             DownloadMovieImages = new ImageDownloadOptions {Backdrops = true, Primary = true};
             DownloadSeriesImages = new ImageDownloadOptions {Backdrops = true, Primary = true, Banner = true, Logo = true};
             DownloadSeasonImages = new ImageDownloadOptions {Backdrops = false, Primary = true, Banner = true};
-            DownloadMusicArtistImages = new ImageDownloadOptions {Backdrops = true, Primary = true, Banner = true};
+            DownloadMusicArtistImages = new ImageDownloadOptions {Backdrops = true, Primary = true, Banner = true, Thumb = true};
             DownloadMusicAlbumImages = new ImageDownloadOptions {Backdrops = true, Primary = false};
             DownloadHDFanArt = true;
             MaxBackdrops = 4;
