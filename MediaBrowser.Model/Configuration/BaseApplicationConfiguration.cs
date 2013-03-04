@@ -65,6 +65,13 @@ namespace MediaBrowser.Model.Configuration
         /// <value>The legacy web socket port number.</value>
         [ProtoMember(59)]
         public int LegacyWebSocketPortNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is first run.
+        /// </summary>
+        /// <value><c>true</c> if this instance is first run; otherwise, <c>false</c>.</value>
+        [ProtoMember(4)]
+        public bool IsStartupWizardCompleted { get; set; }
         
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationConfiguration" /> class.
