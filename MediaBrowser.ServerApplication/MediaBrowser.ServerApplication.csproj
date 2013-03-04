@@ -248,10 +248,6 @@
       <Project>{4fd51ac5-2c16-4308-a993-c3a84f3b4582}</Project>
       <Name>MediaBrowser.Api</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.ClickOnce\MediaBrowser.ClickOnce.csproj">
-      <Project>{cc96bf3e-0bda-4809-bc4b-bb6d418f4a84}</Project>
-      <Name>MediaBrowser.ClickOnce</Name>
-    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Common.Implementations\MediaBrowser.Common.Implementations.csproj">
       <Project>{c4d2573a-3fd3-441f-81af-174ac4cd4e1d}</Project>
       <Name>MediaBrowser.Common.Implementations</Name>

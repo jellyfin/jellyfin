@@ -1,5 +1,7 @@
-﻿using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common;
+using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
@@ -11,7 +13,6 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Updates;
 using MediaBrowser.Controller.Weather;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
@@ -26,7 +27,7 @@ namespace MediaBrowser.Controller
     /// <summary>
     /// Class Kernel
     /// </summary>
-    public class Kernel : BaseKernel<ServerConfiguration, IServerApplicationPaths>
+    public class Kernel : BaseKernel, IDisposable
     {
         /// <summary>
         /// Gets the instance.
@@ -161,23 +162,34 @@ namespace MediaBrowser.Controller
             get { return 7359; }
         }
 
+        private readonly IXmlSerializer _xmlSerializer;
+
+        private readonly IServerConfigurationManager _configurationManager;
+        private readonly ILogManager _logManager;
+
         /// <summary>
         /// Creates a kernel based on a Data path, which is akin to our current programdata path
         /// </summary>
         /// <param name="appHost">The app host.</param>
-        /// <param name="appPaths">The app paths.</param>
         /// <param name="xmlSerializer">The XML serializer.</param>
-        /// <param name="logger">The logger.</param>
+        /// <param name="logManager">The log manager.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
         /// <exception cref="System.ArgumentNullException">isoManager</exception>
-        public Kernel(IApplicationHost appHost, IServerApplicationPaths appPaths, IXmlSerializer xmlSerializer, ILogger logger)
-            : base(appHost, appPaths, xmlSerializer, logger)
+        public Kernel(IApplicationHost appHost, IXmlSerializer xmlSerializer, ILogManager logManager, IServerConfigurationManager configurationManager)
+            : base(appHost, logManager, configurationManager)
         {
             Instance = this;
 
-            // For now there's no real way to inject this properly
-            BaseItem.Logger = logger;
-            Ratings.Logger = logger;
-            LocalizedStrings.Logger = logger;
+            _configurationManager = configurationManager;
+            _xmlSerializer = xmlSerializer;
+            _logManager = logManager;
+            
+            // For now there's no real way to inject these properly
+            BaseItem.Logger = logManager.GetLogger("BaseItem");
+            User.XmlSerializer = _xmlSerializer;
+            Ratings.ConfigurationManager = _configurationManager;
+            LocalizedStrings.ApplicationPaths = _configurationManager.ApplicationPaths;
+            BaseItem.ConfigurationManager = configurationManager;
         }
 
         /// <summary>
@@ -185,14 +197,13 @@ namespace MediaBrowser.Controller
         /// </summary>
         protected void FindParts()
         {
-            // For now there's no real way to inject this properly
+            // For now there's no real way to inject these properly
             BaseItem.LibraryManager = ApplicationHost.Resolve<ILibraryManager>();
             User.UserManager = ApplicationHost.Resolve<IUserManager>();
 
             FFMpegManager = (FFMpegManager)ApplicationHost.CreateInstance(typeof(FFMpegManager));
             ImageManager = (ImageManager)ApplicationHost.CreateInstance(typeof(ImageManager));
             ProviderManager = (ProviderManager)ApplicationHost.CreateInstance(typeof(ProviderManager));
-            SecurityManager = (PluginSecurityManager)ApplicationHost.CreateInstance(typeof(PluginSecurityManager));
             
             UserDataRepositories = ApplicationHost.GetExports<IUserDataRepository>();
             UserRepositories = ApplicationHost.GetExports<IUserRepository>();
@@ -217,8 +228,6 @@ namespace MediaBrowser.Controller
 
             await LoadRepositories().ConfigureAwait(false);
 
-            ReloadResourcePools();
-
             await ApplicationHost.Resolve<IUserManager>().RefreshUsersMetadata(CancellationToken.None).ConfigureAwait(false);
 
             foreach (var entryPoint in ApplicationHost.GetExports<IServerEntryPoint>())
@@ -230,40 +239,24 @@ namespace MediaBrowser.Controller
         }
 
         /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected override void Dispose(bool dispose)
+        protected virtual void Dispose(bool dispose)
         {
             if (dispose)
             {
-                DisposeResourcePools();
-
                 DisposeFileSystemManager();
             }
-
-            base.Dispose(dispose);
-        }
-
-        /// <summary>
-        /// Disposes the resource pools.
-        /// </summary>
-        private void DisposeResourcePools()
-        {
-            if (ResourcePools != null)
-            {
-                ResourcePools.Dispose();
-                ResourcePools = null;
-            }
-        }
-
-        /// <summary>
-        /// Reloads the resource pools.
-        /// </summary>
-        private void ReloadResourcePools()
-        {
-            DisposeResourcePools();
-            ResourcePools = new ResourcePool();
         }
 
         /// <summary>
@@ -273,19 +266,19 @@ namespace MediaBrowser.Controller
         protected Task LoadRepositories()
         {
             // Get the current item repository
-            ItemRepository = GetRepository(ItemRepositories, Configuration.ItemRepository);
+            ItemRepository = GetRepository(ItemRepositories, _configurationManager.Configuration.ItemRepository);
             var itemRepoTask = ItemRepository.Initialize();
 
             // Get the current user repository
-            UserRepository = GetRepository(UserRepositories, Configuration.UserRepository);
+            UserRepository = GetRepository(UserRepositories, _configurationManager.Configuration.UserRepository);
             var userRepoTask = UserRepository.Initialize();
 
             // Get the current item repository
-            UserDataRepository = GetRepository(UserDataRepositories, Configuration.UserDataRepository);
+            UserDataRepository = GetRepository(UserDataRepositories, _configurationManager.Configuration.UserDataRepository);
             var userDataRepoTask = UserDataRepository.Initialize();
 
             // Get the current display preferences repository
-            DisplayPreferencesRepository = GetRepository(DisplayPreferencesRepositories, Configuration.DisplayPreferencesRepository);
+            DisplayPreferencesRepository = GetRepository(DisplayPreferencesRepositories, _configurationManager.Configuration.DisplayPreferencesRepository);
             var displayPreferencesRepoTask = DisplayPreferencesRepository.Initialize();
 
             return Task.WhenAll(itemRepoTask, userRepoTask, userDataRepoTask, displayPreferencesRepoTask);
@@ -326,24 +319,8 @@ namespace MediaBrowser.Controller
         {
             DisposeFileSystemManager();
 
-            FileSystemManager = new FileSystemManager(this, Logger, ApplicationHost.Resolve<ITaskManager>(), ApplicationHost.Resolve<ILibraryManager>());
+            FileSystemManager = new FileSystemManager(this, _logManager, ApplicationHost.Resolve<ITaskManager>(), ApplicationHost.Resolve<ILibraryManager>(), _configurationManager);
             FileSystemManager.StartWatchers();
-        }
-
-        /// <summary>
-        /// Completely overwrites the current configuration with a new copy
-        /// </summary>
-        /// <param name="config">The config.</param>
-        public void UpdateConfiguration(ServerConfiguration config)
-        {
-            Configuration = config;
-            SaveConfiguration();
-
-            // Validate currently executing providers, in the background
-            Task.Run(() =>
-            {
-                ProviderManager.ValidateCurrentlyRunningProviders();
-            });
         }
 
         /// <summary>

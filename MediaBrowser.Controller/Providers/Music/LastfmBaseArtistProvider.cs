@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
@@ -14,8 +15,8 @@ namespace MediaBrowser.Controller.Providers.Music
 {
     public abstract class LastfmBaseArtistProvider : LastfmBaseProvider
     {
-        protected LastfmBaseArtistProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager)
-            : base(jsonSerializer, httpClient, logManager)
+        protected LastfmBaseArtistProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager)
+            : base(jsonSerializer, httpClient, logManager, configurationManager)
         {
             LocalMetaFileName = "MBArtist.json";
         }

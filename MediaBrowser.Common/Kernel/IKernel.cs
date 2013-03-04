@@ -1,34 +1,17 @@
-﻿using MediaBrowser.Common.Plugins;
-using MediaBrowser.Common.Security;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.System;
+﻿using MediaBrowser.Model.System;
 using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.Kernel
 {
     /// <summary>
     /// Interface IKernel
     /// </summary>
-    public interface IKernel : IDisposable
+    public interface IKernel
     {
         /// <summary>
         /// Occurs when [has pending restart changed].
         /// </summary>
         event EventHandler HasPendingRestartChanged;
-
-        /// <summary>
-        /// Gets the application paths.
-        /// </summary>
-        /// <value>The application paths.</value>
-        IApplicationPaths ApplicationPaths { get; }
-
-        /// <summary>
-        /// Gets the configuration.
-        /// </summary>
-        /// <value>The configuration.</value>
-        BaseApplicationConfiguration Configuration { get; }
 
         /// <summary>
         /// Gets the kernel context.
@@ -84,33 +67,8 @@ namespace MediaBrowser.Common.Kernel
         string HttpServerUrlPrefix { get; }
 
         /// <summary>
-        /// Gets the plug-in security manager.
-        /// </summary>
-        /// <value>The plug-in security manager.</value>
-        ISecurityManager SecurityManager { get; set; }
-
-        /// <summary>
-        /// Occurs when [configuration updated].
-        /// </summary>
-        event EventHandler<EventArgs> ConfigurationUpdated;
-
-        /// <summary>
         /// Notifies the pending restart.
         /// </summary>
         void NotifyPendingRestart();
-
-        /// <summary>
-        /// Gets the XML configuration.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <param name="path">The path.</param>
-        /// <returns>System.Object.</returns>
-        object GetXmlConfiguration(Type type, string path);
-
-        /// <summary>
-        /// Limits simultaneous access to various resources
-        /// </summary>
-        /// <value>The resource pools.</value>
-        ResourcePool ResourcePools { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -24,6 +25,29 @@ namespace MediaBrowser.Controller.Providers.Music
     public abstract class LastfmBaseProvider : BaseMetadataProvider
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="LastfmBaseProvider" /> class.
+        /// </summary>
+        /// <param name="jsonSerializer">The json serializer.</param>
+        /// <param name="httpClient">The HTTP client.</param>
+        /// <param name="logManager">The log manager.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
+        /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
+        protected LastfmBaseProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager)
+            : base(logManager, configurationManager)
+        {
+            if (jsonSerializer == null)
+            {
+                throw new ArgumentNullException("jsonSerializer");
+            }
+            if (httpClient == null)
+            {
+                throw new ArgumentNullException("httpClient");
+            }
+            JsonSerializer = jsonSerializer;
+            HttpClient = httpClient;
+        }
+
+        /// <summary>
         /// Gets the json serializer.
         /// </summary>
         /// <value>The json serializer.</value>
@@ -39,28 +63,6 @@ namespace MediaBrowser.Controller.Providers.Music
         /// The name of the local json meta file for this item type
         /// </summary>
         protected string LocalMetaFileName { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LastfmBaseProvider" /> class.
-        /// </summary>
-        /// <param name="jsonSerializer">The json serializer.</param>
-        /// <param name="httpClient">The HTTP client.</param>
-        /// <param name="logManager">The Log manager</param>
-        /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
-        public LastfmBaseProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager)
-            : base(logManager)
-        {
-            if (jsonSerializer == null)
-            {
-                throw new ArgumentNullException("jsonSerializer");
-            }
-            if (httpClient == null)
-            {
-                throw new ArgumentNullException("httpClient");
-            }
-            JsonSerializer = jsonSerializer;
-            HttpClient = httpClient;
-        }
 
         /// <summary>
         /// Gets the priority.
@@ -90,7 +92,7 @@ namespace MediaBrowser.Controller.Providers.Music
         {
             get
             {
-                return Kernel.Instance.Configuration.SaveLocalMeta;
+                return ConfigurationManager.Configuration.SaveLocalMeta;
             }
         }
 
@@ -101,7 +103,7 @@ namespace MediaBrowser.Controller.Providers.Music
         {
             if (item.DontFetchMeta) return false;
 
-            if (Kernel.Instance.Configuration.SaveLocalMeta && HasFileSystemStampChanged(item, providerInfo))
+            if (ConfigurationManager.Configuration.SaveLocalMeta && HasFileSystemStampChanged(item, providerInfo))
             {
                 //If they deleted something from file system, chances are, this item was mis-identified the first time
                 item.SetProviderId(MetadataProviders.Musicbrainz, null);
@@ -118,7 +120,7 @@ namespace MediaBrowser.Controller.Providers.Music
 
             var downloadDate = providerInfo.LastRefreshed;
 
-            if (Kernel.Instance.Configuration.MetadataRefreshDays == -1 && downloadDate != DateTime.MinValue)
+            if (ConfigurationManager.Configuration.MetadataRefreshDays == -1 && downloadDate != DateTime.MinValue)
             {
                 return false;
             }
@@ -126,11 +128,11 @@ namespace MediaBrowser.Controller.Providers.Music
             if (DateTime.Today.Subtract(item.DateCreated).TotalDays > 180 && downloadDate != DateTime.MinValue)
                 return false; // don't trigger a refresh data for item that are more than 6 months old and have been refreshed before
 
-            if (DateTime.Today.Subtract(downloadDate).TotalDays < Kernel.Instance.Configuration.MetadataRefreshDays) // only refresh every n days
+            if (DateTime.Today.Subtract(downloadDate).TotalDays < ConfigurationManager.Configuration.MetadataRefreshDays) // only refresh every n days
                 return false;
 
 
-            Logger.Debug("LastfmProvider - " + item.Name + " needs refresh.  Download date: " + downloadDate + " item created date: " + item.DateCreated + " Check for Update age: " + Kernel.Instance.Configuration.MetadataRefreshDays);
+            Logger.Debug("LastfmProvider - " + item.Name + " needs refresh.  Download date: " + downloadDate + " item created date: " + item.DateCreated + " Check for Update age: " + ConfigurationManager.Configuration.MetadataRefreshDays);
             return true;
         }
 
@@ -151,7 +153,7 @@ namespace MediaBrowser.Controller.Providers.Music
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (!Kernel.Instance.Configuration.SaveLocalMeta || !HasLocalMeta(item) || (force && !HasLocalMeta(item)))
+            if (!ConfigurationManager.Configuration.SaveLocalMeta || !HasLocalMeta(item) || (force && !HasLocalMeta(item)))
             {
                 try
                 {

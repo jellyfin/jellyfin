@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.Common.Kernel
+namespace MediaBrowser.Common.Configuration
 {
     /// <summary>
     /// Interface IApplicationPaths

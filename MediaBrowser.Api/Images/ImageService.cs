@@ -268,7 +268,7 @@ namespace MediaBrowser.Api.Images
         /// <exception cref="ResourceNotFoundException"></exception>
         private object GetImage(ImageRequest request, BaseItem item)
         {
-            var kernel = (Kernel)Kernel;
+            var kernel = Kernel.Instance;
 
             var index = request.Index ?? 0;
 

@@ -181,8 +181,6 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetUsers request)
         {
-            var kernel = (Kernel)Kernel;
-
             var dtoBuilder = new DtoBuilder(Logger);
 
             var result = _userManager.Users.OrderBy(u => u.Name).Select(dtoBuilder.GetDtoUser).ToList();
@@ -312,8 +310,6 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Post(CreateUser request)
         {
-            var kernel = (Kernel)Kernel;
-
             var dtoUser = _jsonSerializer.DeserializeFromStream<UserDto>(request.RequestStream);
 
             var newUser = _userManager.CreateUser(dtoUser.Name).Result;

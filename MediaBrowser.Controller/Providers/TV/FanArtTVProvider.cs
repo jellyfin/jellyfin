@@ -1,7 +1,9 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Providers.Movies;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
@@ -23,8 +25,8 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
 
-        public FanArtTvProvider(IHttpClient httpClient, ILogManager logManager)
-            : base(logManager)
+        public FanArtTvProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager)
+            : base(logManager, configurationManager)
         {
             if (httpClient == null)
             {
@@ -46,9 +48,9 @@ namespace MediaBrowser.Controller.Providers.TV
             var thumbExists = item.ResolveArgs.ContainsMetaFileByName(THUMB_FILE);
 
 
-            return (!artExists && Kernel.Instance.Configuration.DownloadTVArt)
-                || (!logoExists && Kernel.Instance.Configuration.DownloadTVLogo)
-                || (!thumbExists && Kernel.Instance.Configuration.DownloadTVThumb);
+            return (!artExists && ConfigurationManager.Configuration.DownloadTVArt)
+                || (!logoExists && ConfigurationManager.Configuration.DownloadTVLogo)
+                || (!thumbExists && ConfigurationManager.Configuration.DownloadTVThumb);
         }
 
         protected override async Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
@@ -58,13 +60,13 @@ namespace MediaBrowser.Controller.Providers.TV
             var series = (Series)item;
             if (ShouldFetch(series, series.ProviderData.GetValueOrDefault(Id, new BaseProviderInfo { ProviderId = Id })))
             {
-                string language = Kernel.Instance.Configuration.PreferredMetadataLanguage.ToLower();
+                string language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
                 string url = string.Format(FanArtBaseUrl, APIKey, series.GetProviderId(MetadataProviders.Tvdb));
                 var doc = new XmlDocument();
 
                 try
                 {
-                    using (var xml = await HttpClient.Get(url, Kernel.Instance.ResourcePools.FanArt, cancellationToken).ConfigureAwait(false))
+                    using (var xml = await HttpClient.Get(url, FanArtMovieProvider.Current.FanArtResourcePool, cancellationToken).ConfigureAwait(false))
                     {
                         doc.Load(xml);
                     }
@@ -78,7 +80,7 @@ namespace MediaBrowser.Controller.Providers.TV
                 if (doc.HasChildNodes)
                 {
                     string path;
-                    if (Kernel.Instance.Configuration.DownloadTVLogo && !series.ResolveArgs.ContainsMetaFileByName(LOGO_FILE))
+                    if (ConfigurationManager.Configuration.DownloadTVLogo && !series.ResolveArgs.ContainsMetaFileByName(LOGO_FILE))
                     {
                         var node = doc.SelectSingleNode("//fanart/series/clearlogos/clearlogo[@lang = \"" + language + "\"]/@url") ??
                                    doc.SelectSingleNode("//fanart/series/clearlogos/clearlogo/@url");
@@ -88,7 +90,7 @@ namespace MediaBrowser.Controller.Providers.TV
                             Logger.Debug("FanArtProvider getting ClearLogo for " + series.Name);
                             try
                             {
-                                series.SetImage(ImageType.Logo, await Kernel.Instance.ProviderManager.DownloadAndSaveImage(series, path, LOGO_FILE, Kernel.Instance.ResourcePools.FanArt, cancellationToken).ConfigureAwait(false));
+                                series.SetImage(ImageType.Logo, await Kernel.Instance.ProviderManager.DownloadAndSaveImage(series, path, LOGO_FILE, FanArtMovieProvider.Current.FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {
@@ -102,7 +104,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    if (Kernel.Instance.Configuration.DownloadTVArt && !series.ResolveArgs.ContainsMetaFileByName(ART_FILE))
+                    if (ConfigurationManager.Configuration.DownloadTVArt && !series.ResolveArgs.ContainsMetaFileByName(ART_FILE))
                     {
                         var node = doc.SelectSingleNode("//fanart/series/cleararts/clearart[@lang = \"" + language + "\"]/@url") ??
                                    doc.SelectSingleNode("//fanart/series/cleararts/clearart/@url");
@@ -112,7 +114,7 @@ namespace MediaBrowser.Controller.Providers.TV
                             Logger.Debug("FanArtProvider getting ClearArt for " + series.Name);
                             try
                             {
-                                series.SetImage(ImageType.Art, await Kernel.Instance.ProviderManager.DownloadAndSaveImage(series, path, ART_FILE, Kernel.Instance.ResourcePools.FanArt, cancellationToken).ConfigureAwait(false));
+                                series.SetImage(ImageType.Art, await Kernel.Instance.ProviderManager.DownloadAndSaveImage(series, path, ART_FILE, FanArtMovieProvider.Current.FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {
@@ -126,7 +128,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    if (Kernel.Instance.Configuration.DownloadTVThumb && !series.ResolveArgs.ContainsMetaFileByName(THUMB_FILE))
+                    if (ConfigurationManager.Configuration.DownloadTVThumb && !series.ResolveArgs.ContainsMetaFileByName(THUMB_FILE))
                     {
                         var node = doc.SelectSingleNode("//fanart/series/tvthumbs/tvthumb[@lang = \"" + language + "\"]/@url") ??
                                    doc.SelectSingleNode("//fanart/series/tvthumbs/tvthumb/@url");
@@ -136,7 +138,7 @@ namespace MediaBrowser.Controller.Providers.TV
                             Logger.Debug("FanArtProvider getting ThumbArt for " + series.Name);
                             try
                             {
-                                series.SetImage(ImageType.Disc, await Kernel.Instance.ProviderManager.DownloadAndSaveImage(series, path, THUMB_FILE, Kernel.Instance.ResourcePools.FanArt, cancellationToken).ConfigureAwait(false));
+                                series.SetImage(ImageType.Disc, await Kernel.Instance.ProviderManager.DownloadAndSaveImage(series, path, THUMB_FILE, FanArtMovieProvider.Current.FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {

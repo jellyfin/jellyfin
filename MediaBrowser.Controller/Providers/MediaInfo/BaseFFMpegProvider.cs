@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using System;
@@ -14,7 +15,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     public abstract class BaseFFMpegProvider<T> : BaseMetadataProvider
         where T : BaseItem
     {
-        protected BaseFFMpegProvider(ILogManager logManager) : base(logManager)
+        protected BaseFFMpegProvider(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
         {
         }
 

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -78,6 +79,12 @@ namespace MediaBrowser.Common.Implementations.ServerManager
         private readonly IKernel _kernel;
 
         /// <summary>
+        /// Gets or sets the configuration manager.
+        /// </summary>
+        /// <value>The configuration manager.</value>
+        private IConfigurationManager ConfigurationManager { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether [supports web socket].
         /// </summary>
         /// <value><c>true</c> if [supports web socket]; otherwise, <c>false</c>.</value>
@@ -92,14 +99,14 @@ namespace MediaBrowser.Common.Implementations.ServerManager
         /// <value>The web socket port number.</value>
         public int WebSocketPortNumber
         {
-            get { return SupportsNativeWebSocket ? _kernel.Configuration.HttpServerPortNumber : _kernel.Configuration.LegacyWebSocketPortNumber; }
+            get { return SupportsNativeWebSocket ? ConfigurationManager.CommonConfiguration.HttpServerPortNumber : ConfigurationManager.CommonConfiguration.LegacyWebSocketPortNumber; }
         }
 
         /// <summary>
         /// Gets the web socket listeners.
         /// </summary>
         /// <value>The web socket listeners.</value>
-        private List<IWebSocketListener> WebSocketListeners = new List<IWebSocketListener>();
+        private readonly List<IWebSocketListener> _webSocketListeners = new List<IWebSocketListener>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerManager" /> class.
@@ -109,8 +116,9 @@ namespace MediaBrowser.Common.Implementations.ServerManager
         /// <param name="networkManager">The network manager.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
         /// <exception cref="System.ArgumentNullException">applicationHost</exception>
-        public ServerManager(IApplicationHost applicationHost, IKernel kernel, INetworkManager networkManager, IJsonSerializer jsonSerializer, ILogger logger)
+        public ServerManager(IApplicationHost applicationHost, IKernel kernel, INetworkManager networkManager, IJsonSerializer jsonSerializer, ILogger logger, IConfigurationManager configurationManager)
         {
             if (applicationHost == null)
             {
@@ -138,6 +146,7 @@ namespace MediaBrowser.Common.Implementations.ServerManager
             _kernel = kernel;
             _applicationHost = applicationHost;
             _networkManager = networkManager;
+            ConfigurationManager = configurationManager;
         }
 
         /// <summary>
@@ -158,7 +167,7 @@ namespace MediaBrowser.Common.Implementations.ServerManager
                 ReloadExternalWebSocketServer();
             }
 
-            _kernel.ConfigurationUpdated += _kernel_ConfigurationUpdated;
+            ConfigurationManager.ConfigurationUpdated += _kernel_ConfigurationUpdated;
         }
 
         /// <summary>
@@ -176,7 +185,7 @@ namespace MediaBrowser.Common.Implementations.ServerManager
 
             ExternalWebSocketServer = _applicationHost.Resolve<IWebSocketServer>();
 
-            ExternalWebSocketServer.Start(_kernel.Configuration.LegacyWebSocketPortNumber);
+            ExternalWebSocketServer.Start(ConfigurationManager.CommonConfiguration.LegacyWebSocketPortNumber);
             ExternalWebSocketServer.WebSocketConnected += HttpServer_WebSocketConnected;
         }
 
@@ -199,7 +208,7 @@ namespace MediaBrowser.Common.Implementations.ServerManager
             try
             {
                 HttpServer = _applicationHost.Resolve<IHttpServer>();
-                HttpServer.EnableHttpRequestLogging = _kernel.Configuration.EnableHttpLevelLogging;
+                HttpServer.EnableHttpRequestLogging = ConfigurationManager.CommonConfiguration.EnableHttpLevelLogging;
                 HttpServer.Start(_kernel.HttpServerUrlPrefix);
             }
             catch (HttpListenerException ex)
@@ -240,7 +249,7 @@ namespace MediaBrowser.Common.Implementations.ServerManager
         /// <param name="result">The result.</param>
         private async void ProcessWebSocketMessageReceived(WebSocketMessageInfo result)
         {
-            var tasks = WebSocketListeners.Select(i => Task.Run(async () =>
+            var tasks = _webSocketListeners.Select(i => Task.Run(async () =>
             {
                 try
                 {
@@ -435,7 +444,7 @@ namespace MediaBrowser.Common.Implementations.ServerManager
         private void RegisterServerWithAdministratorAccess()
         {
             // Create a temp file path to extract the bat file to
-            var tmpFile = Path.Combine(_kernel.ApplicationPaths.TempDirectory, Guid.NewGuid() + ".bat");
+            var tmpFile = Path.Combine(ConfigurationManager.CommonApplicationPaths.TempDirectory, Guid.NewGuid() + ".bat");
 
             // Extract the bat file
             using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Common.Implementations.ServerManager.RegisterServer.bat"))
@@ -450,10 +459,10 @@ namespace MediaBrowser.Common.Implementations.ServerManager
             {
                 FileName = tmpFile,
 
-                Arguments = string.Format("{0} {1} {2} {3}", _kernel.Configuration.HttpServerPortNumber,
+                Arguments = string.Format("{0} {1} {2} {3}", ConfigurationManager.CommonConfiguration.HttpServerPortNumber,
                 _kernel.HttpServerUrlPrefix,
                 _kernel.UdpServerPortNumber,
-                _kernel.Configuration.LegacyWebSocketPortNumber),
+                ConfigurationManager.CommonConfiguration.LegacyWebSocketPortNumber),
 
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden,
@@ -508,14 +517,14 @@ namespace MediaBrowser.Common.Implementations.ServerManager
         /// <exception cref="System.NotImplementedException"></exception>
         void _kernel_ConfigurationUpdated(object sender, EventArgs e)
         {
-            HttpServer.EnableHttpRequestLogging = _kernel.Configuration.EnableHttpLevelLogging;
+            HttpServer.EnableHttpRequestLogging = ConfigurationManager.CommonConfiguration.EnableHttpLevelLogging;
 
             if (!string.Equals(HttpServer.UrlPrefix, _kernel.HttpServerUrlPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 ReloadHttpServer();
             }
 
-            if (!SupportsNativeWebSocket && ExternalWebSocketServer != null && ExternalWebSocketServer.Port != _kernel.Configuration.LegacyWebSocketPortNumber)
+            if (!SupportsNativeWebSocket && ExternalWebSocketServer != null && ExternalWebSocketServer.Port != ConfigurationManager.CommonConfiguration.LegacyWebSocketPortNumber)
             {
                 ReloadExternalWebSocketServer();
             }
@@ -527,7 +536,7 @@ namespace MediaBrowser.Common.Implementations.ServerManager
         /// <param name="listeners">The listeners.</param>
         public void AddWebSocketListeners(IEnumerable<IWebSocketListener> listeners)
         {
-            WebSocketListeners.AddRange(listeners);
+            _webSocketListeners.AddRange(listeners);
         }
     }
 }

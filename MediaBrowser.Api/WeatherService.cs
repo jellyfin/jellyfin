@@ -32,11 +32,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetWeather request)
         {
-            var kernel = (Kernel) Kernel;
-
-            var location = string.IsNullOrWhiteSpace(request.Location) ? kernel.Configuration.WeatherLocation : request.Location;
-
-            var result = kernel.WeatherProviders.First().GetWeatherInfoAsync(location, CancellationToken.None).Result;
+            var result = Kernel.Instance.WeatherProviders.First().GetWeatherInfoAsync(request.Location, CancellationToken.None).Result;
 
             return ToOptimizedResult(result);
         }

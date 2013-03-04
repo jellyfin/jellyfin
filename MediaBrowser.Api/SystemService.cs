@@ -1,7 +1,8 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations.HttpServer;
-using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
@@ -73,12 +74,18 @@ namespace MediaBrowser.Api
         private readonly IApplicationHost _appHost;
 
         /// <summary>
+        /// The _configuration manager
+        /// </summary>
+        private readonly IServerConfigurationManager _configurationManager;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SystemService" /> class.
         /// </summary>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="appHost">The app host.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
-        public SystemService(IJsonSerializer jsonSerializer, IApplicationHost appHost)
+        public SystemService(IJsonSerializer jsonSerializer, IApplicationHost appHost, IServerConfigurationManager configurationManager)
             : base()
         {
             if (jsonSerializer == null)
@@ -91,6 +98,7 @@ namespace MediaBrowser.Api
             }
 
             _appHost = appHost;
+            _configurationManager = configurationManager;
             _jsonSerializer = jsonSerializer;
         }
 
@@ -101,7 +109,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetSystemInfo request)
         {
-            var result = Kernel.GetSystemInfo();
+            var result = Kernel.Instance.GetSystemInfo();
 
             return ToOptimizedResult(result);
         }
@@ -113,13 +121,11 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetConfiguration request)
         {
-            var kernel = (Kernel)Kernel;
+            var dateModified = File.GetLastWriteTimeUtc(_configurationManager.ApplicationPaths.SystemConfigurationFilePath);
 
-            var dateModified = File.GetLastWriteTimeUtc(Kernel.ApplicationPaths.SystemConfigurationFilePath);
+            var cacheKey = (_configurationManager.ApplicationPaths.SystemConfigurationFilePath + dateModified.Ticks).GetMD5();
 
-            var cacheKey = (Kernel.ApplicationPaths.SystemConfigurationFilePath + dateModified.Ticks).GetMD5();
-
-            return ToOptimizedResultUsingCache(cacheKey, dateModified, null, () => kernel.Configuration);
+            return ToOptimizedResultUsingCache(cacheKey, dateModified, null, () => _configurationManager.Configuration);
         }
 
         /// <summary>
@@ -131,7 +137,7 @@ namespace MediaBrowser.Api
             Task.Run(async () =>
             {
                 await Task.Delay(100);
-                Kernel.PerformPendingRestart();
+                Kernel.Instance.PerformPendingRestart();
             });
         }
 
@@ -156,9 +162,7 @@ namespace MediaBrowser.Api
         {
             var serverConfig = _jsonSerializer.DeserializeFromStream<ServerConfiguration>(request.RequestStream);
 
-            var kernel = (Kernel)Kernel;
-
-            kernel.UpdateConfiguration(serverConfig);
+            _configurationManager.ReplaceConfiguration(serverConfig);
         }
     }
 }

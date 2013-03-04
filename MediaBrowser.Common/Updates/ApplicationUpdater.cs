@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Kernel;
 
 namespace MediaBrowser.Common.Updates

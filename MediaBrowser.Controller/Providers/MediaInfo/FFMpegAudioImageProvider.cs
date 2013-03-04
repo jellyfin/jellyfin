@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Entities;
 using System;
@@ -14,7 +15,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     /// </summary>
     public class FFMpegAudioImageProvider : BaseFFMpegImageProvider<Audio>
     {
-        public FFMpegAudioImageProvider(ILogManager logManager) : base(logManager)
+        public FFMpegAudioImageProvider(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
         {
         }
 

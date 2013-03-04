@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Extensions;
@@ -27,13 +28,15 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
 
-        public RemoteEpisodeProvider(IHttpClient httpClient, ILogManager logManager)
-            : base(logManager)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RemoteEpisodeProvider" /> class.
+        /// </summary>
+        /// <param name="httpClient">The HTTP client.</param>
+        /// <param name="logManager">The log manager.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
+        public RemoteEpisodeProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager)
+            : base(logManager, configurationManager)
         {
-            if (httpClient == null)
-            {
-                throw new ArgumentNullException("httpClient");
-            }
             HttpClient = httpClient;
         }
 
@@ -94,15 +97,15 @@ namespace MediaBrowser.Controller.Providers.TV
             var episode = (Episode)item;
             var downloadDate = providerInfo.LastRefreshed;
 
-            if (Kernel.Instance.Configuration.MetadataRefreshDays == -1 && downloadDate != DateTime.MinValue)
+            if (ConfigurationManager.Configuration.MetadataRefreshDays == -1 && downloadDate != DateTime.MinValue)
             {
                 return false;
             }
 
             if (!item.DontFetchMeta && !HasLocalMeta(episode))
             {
-                fetch = Kernel.Instance.Configuration.MetadataRefreshDays != -1 &&
-                    DateTime.Today.Subtract(downloadDate).TotalDays > Kernel.Instance.Configuration.MetadataRefreshDays;
+                fetch = ConfigurationManager.Configuration.MetadataRefreshDays != -1 &&
+                    DateTime.Today.Subtract(downloadDate).TotalDays > ConfigurationManager.Configuration.MetadataRefreshDays;
             }
 
             return fetch;
@@ -183,12 +186,12 @@ namespace MediaBrowser.Controller.Providers.TV
                     seasonNumber = "0"; // Specials
                 }
 
-                var url = string.Format(episodeQuery, TVUtils.TVDBApiKey, seriesId, seasonNumber, episodeNumber, Kernel.Instance.Configuration.PreferredMetadataLanguage);
+                var url = string.Format(episodeQuery, TVUtils.TVDBApiKey, seriesId, seasonNumber, episodeNumber, ConfigurationManager.Configuration.PreferredMetadataLanguage);
                 var doc = new XmlDocument();
 
                 try
                 {
-                    using (var result = await HttpClient.Get(url, Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false))
+                    using (var result = await HttpClient.Get(url, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false))
                     {
                         doc.Load(result);
                     }
@@ -202,11 +205,11 @@ namespace MediaBrowser.Controller.Providers.TV
                 //this is basicly just for anime.
                 if (!doc.HasChildNodes && Int32.Parse(seasonNumber) == 1)
                 {
-                    url = string.Format(absEpisodeQuery, TVUtils.TVDBApiKey, seriesId, episodeNumber, Kernel.Instance.Configuration.PreferredMetadataLanguage);
+                    url = string.Format(absEpisodeQuery, TVUtils.TVDBApiKey, seriesId, episodeNumber, ConfigurationManager.Configuration.PreferredMetadataLanguage);
 
                     try
                     {
-                        using (var result = await HttpClient.Get(url, Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false))
+                        using (var result = await HttpClient.Get(url, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false))
                         {
                             if (result != null) doc.Load(result);
                             usingAbsoluteData = true;
@@ -226,7 +229,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                         try
                         {
-                            episode.PrimaryImagePath = await Kernel.Instance.ProviderManager.DownloadAndSaveImage(episode, TVUtils.BannerUrl + p, Path.GetFileName(p), Kernel.Instance.ResourcePools.TvDb, cancellationToken);
+                            episode.PrimaryImagePath = await Kernel.Instance.ProviderManager.DownloadAndSaveImage(episode, TVUtils.BannerUrl + p, Path.GetFileName(p), RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken);
                         }
                         catch (HttpException)
                         {
@@ -273,7 +276,7 @@ namespace MediaBrowser.Controller.Providers.TV
                         episode.AddPeople(writers.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = "Writer", Name = str }));
                     }
 
-                    if (Kernel.Instance.Configuration.SaveLocalMeta)
+                    if (ConfigurationManager.Configuration.SaveLocalMeta)
                     {
                         if (!Directory.Exists(episode.MetaLocation)) Directory.CreateDirectory(episode.MetaLocation);
                         var ms = new MemoryStream();

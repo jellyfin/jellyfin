@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
@@ -13,9 +14,10 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Initializes a new instance of the <see cref="Plugin" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
+        /// <param name="appPaths">The app paths.</param>
         /// <param name="xmlSerializer">The XML serializer.</param>
-        public Plugin(IKernel kernel, IXmlSerializer xmlSerializer) : base(kernel, xmlSerializer)
+        public Plugin(IApplicationPaths appPaths, IXmlSerializer xmlSerializer)
+            : base(appPaths, xmlSerializer)
         {
             Instance = this;
         }
