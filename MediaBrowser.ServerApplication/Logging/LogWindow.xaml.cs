@@ -1,4 +1,6 @@
-﻿using NLog;
+﻿using MediaBrowser.Common.Implementations.Logging;
+using MediaBrowser.Model.Logging;
+using NLog;
 using NLog.Config;
 using NLog.Targets;
 using System.ComponentModel;
@@ -18,14 +20,17 @@ namespace MediaBrowser.ServerApplication.Logging
         /// </summary>
         private readonly TaskScheduler _uiThread;
 
+        private readonly ILogManager _logManager;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LogWindow" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        public LogWindow()
+        public LogWindow(ILogManager logManager)
         {
             InitializeComponent();
             _uiThread = TaskScheduler.FromCurrentSynchronizationContext();
+            _logManager = logManager;
 
             Loaded += LogWindow_Loaded;
         }
@@ -42,6 +47,7 @@ namespace MediaBrowser.ServerApplication.Logging
                 Layout = "${longdate}, ${level}, ${logger}, ${message}"
             };
 
+            ((NlogManager)_logManager).RemoveTarget("LogWindowTraceTarget");
             AddLogTarget(target, "LogWindowTraceTarget");
         }
 
@@ -53,7 +59,7 @@ namespace MediaBrowser.ServerApplication.Logging
         {
             base.OnClosing(e);
 
-            RemoveLogTarget("LogWindowTraceTarget");
+            ((NlogManager) _logManager).RemoveTarget("LogWindowTraceTarget");
         }
 
         /// <summary>
@@ -83,8 +89,6 @@ namespace MediaBrowser.ServerApplication.Logging
         {
             var config = NLog.LogManager.Configuration;
 
-            config.RemoveTarget(name);
-
             target.Name = name;
             config.AddTarget(name, target);
 
@@ -92,19 +96,6 @@ namespace MediaBrowser.ServerApplication.Logging
 
             var rule = new LoggingRule("*", level, target);
             config.LoggingRules.Add(rule);
-
-            NLog.LogManager.Configuration = config;
-        }
-
-        /// <summary>
-        /// Removes the log target.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        private void RemoveLogTarget(string name)
-        {
-            var config = NLog.LogManager.Configuration;
-
-            config.RemoveTarget(name);
 
             NLog.LogManager.Configuration = config;
         }
