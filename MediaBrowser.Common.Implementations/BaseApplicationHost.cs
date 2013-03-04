@@ -154,30 +154,27 @@ namespace MediaBrowser.Common.Implementations
         /// Inits this instance.
         /// </summary>
         /// <returns>Task.</returns>
-        public virtual Task Init()
+        public virtual async Task Init()
         {
-            return Task.Run(() =>
-            {
-                IsFirstRun = !ConfigurationManager.CommonConfiguration.IsStartupWizardCompleted;
-                
-                Logger = LogManager.GetLogger("App");
+            IsFirstRun = !ConfigurationManager.CommonConfiguration.IsStartupWizardCompleted;
 
-                DiscoverTypes();
+            Logger = LogManager.GetLogger("App");
 
-                LogManager.ReloadLogger(ConfigurationManager.CommonConfiguration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info);
+            DiscoverTypes();
 
-                Logger.Info("Version {0} initializing", ApplicationVersion);
+            LogManager.ReloadLogger(ConfigurationManager.CommonConfiguration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info);
 
-                Kernel = GetKernel();
+            Logger.Info("Version {0} initializing", ApplicationVersion);
 
-                RegisterResources();
+            Kernel = GetKernel();
 
-                FindParts();
+            await RegisterResources().ConfigureAwait(false);
 
-                Task.Run(() => ConfigureAutoRunAtStartup());
+            FindParts();
 
-                Kernel.Init();
-            });
+            Task.Run(() => ConfigureAutoRunAtStartup());
+
+            Kernel.Init();
         }
 
         /// <summary>
@@ -224,44 +221,47 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
-        protected virtual void RegisterResources()
+        protected virtual Task RegisterResources()
         {
-            RegisterSingleInstance(ConfigurationManager);
-            RegisterSingleInstance<IApplicationHost>(this);
+            return Task.Run(() =>
+            {
+                RegisterSingleInstance(ConfigurationManager);
+                RegisterSingleInstance<IApplicationHost>(this);
 
-            RegisterSingleInstance<IApplicationPaths>(ApplicationPaths);
+                RegisterSingleInstance<IApplicationPaths>(ApplicationPaths);
 
-            var networkManager = new NetworkManager();
+                var networkManager = new NetworkManager();
 
-            var serverManager = new ServerManager.ServerManager(this, Kernel, networkManager, JsonSerializer, Logger, ConfigurationManager);
+                var serverManager = new ServerManager.ServerManager(this, Kernel, networkManager, JsonSerializer, Logger, ConfigurationManager);
 
-            TaskManager = new TaskManager(ApplicationPaths, JsonSerializer, Logger, serverManager);
+                TaskManager = new TaskManager(ApplicationPaths, JsonSerializer, Logger, serverManager);
 
-            RegisterSingleInstance(JsonSerializer);
-            RegisterSingleInstance(XmlSerializer);
+                RegisterSingleInstance(JsonSerializer);
+                RegisterSingleInstance(XmlSerializer);
 
-            RegisterSingleInstance(LogManager);
-            RegisterSingleInstance(Logger);
+                RegisterSingleInstance(LogManager);
+                RegisterSingleInstance(Logger);
 
-            RegisterSingleInstance(Kernel);
+                RegisterSingleInstance(Kernel);
 
-            RegisterSingleInstance(TaskManager);
-            RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
-            RegisterSingleInstance(ProtobufSerializer);
-            RegisterSingleInstance<IUdpServer>(new UdpServer(Logger), false);
+                RegisterSingleInstance(TaskManager);
+                RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
+                RegisterSingleInstance(ProtobufSerializer);
+                RegisterSingleInstance<IUdpServer>(new UdpServer(Logger), false);
 
-            var httpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger);
+                var httpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger);
 
-            RegisterSingleInstance<IHttpClient>(httpClient);
+                RegisterSingleInstance<IHttpClient>(httpClient);
 
-            RegisterSingleInstance<INetworkManager>(networkManager);
-            RegisterSingleInstance<IServerManager>(serverManager);
+                RegisterSingleInstance<INetworkManager>(networkManager);
+                RegisterSingleInstance<IServerManager>(serverManager);
 
-            SecurityManager = new PluginSecurityManager(Kernel, httpClient, JsonSerializer, ApplicationPaths);
+                SecurityManager = new PluginSecurityManager(Kernel, httpClient, JsonSerializer, ApplicationPaths);
 
-            RegisterSingleInstance(SecurityManager);
+                RegisterSingleInstance(SecurityManager);
 
-            RegisterSingleInstance<IPackageManager>(new PackageManager(SecurityManager, networkManager, httpClient, ApplicationPaths, JsonSerializer, Logger));
+                RegisterSingleInstance<IPackageManager>(new PackageManager(SecurityManager, networkManager, httpClient, ApplicationPaths, JsonSerializer, Logger));
+            });
         }
 
         /// <summary>

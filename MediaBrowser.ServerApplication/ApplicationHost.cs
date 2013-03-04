@@ -95,9 +95,9 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
-        protected override void RegisterResources()
+        protected override async Task RegisterResources()
         {
-            base.RegisterResources();
+            await base.RegisterResources().ConfigureAwait(false);
 
             RegisterSingleInstance<IServerApplicationPaths>(ApplicationPaths);
             
