@@ -158,9 +158,9 @@ namespace MediaBrowser.Common.Implementations
         {
             return Task.Run(() =>
             {
+                IsFirstRun = !ConfigurationManager.CommonConfiguration.IsStartupWizardCompleted;
+                
                 Logger = LogManager.GetLogger("App");
-
-                IsFirstRun = !File.Exists(ApplicationPaths.SystemConfigurationFilePath);
 
                 DiscoverTypes();
 

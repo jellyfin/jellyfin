@@ -430,6 +430,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "UpdatePasswordPage.js",
                                       "UserImagePage.js",
                                       "UserProfilesPage.js",
+                                      "WizardFinishPage.js",
                                       "WizardStartPage.js",
                                       "WizardUserPage.js",
                                       "SupporterKeyPage.js",
