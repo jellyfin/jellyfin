@@ -30,44 +30,92 @@
                         </li>
                         <li>
                             <label>Enable additional image downloading:</label>
-                            <div data-role="controlgroup">
+                                
+                                <div data-role="collapsible">
+                                    <h3>Movies</h3>
+                                    <div data-role="controlgroup">
+                                        <input type="checkbox" data-mini="true" id="chkDownloadMovieArt" name="chkDownloadMovieArt" />
+                                        <label for="chkDownloadMovieArt">Movie Art</label>
 
-                                <input type="checkbox" data-mini="true" id="chkDownloadMovieArt" name="chkDownloadMovieArt" />
-                                <label for="chkDownloadMovieArt">Movie Art</label>
+                                        <input type="checkbox" data-mini="true" id="chkDownloadMovieBanner" name="chkDownloadMovieBanner" />
+                                        <label for="chkDownloadMovieBanner">Movie Banner</label>
 
-                                <input type="checkbox" data-mini="true" id="chkDownloadMovieBanner" name="chkDownloadMovieBanner" />
-                                <label for="chkDownloadMovieBanner">Movie Banner</label>
+                                        <input type="checkbox" data-mini="true" id="chkDownloadMovieDisc" name="chkDownloadMovieDisc" />
+                                        <label for="chkDownloadMovieDisc">Movie Disc</label>
 
-                                <input type="checkbox" data-mini="true" id="chkDownloadMovieDisc" name="chkDownloadMovieDisc" />
-                                <label for="chkDownloadMovieDisc">Movie Disc</label>
+                                        <input type="checkbox" data-mini="true" id="chkDownloadMovieLogo" name="chkDownloadMovieLogo" />
+                                        <label for="chkDownloadMovieLogo">Movie Logo</label>
 
-                                <input type="checkbox" data-mini="true" id="chkDownloadMovieLogo" name="chkDownloadMovieLogo" />
-                                <label for="chkDownloadMovieLogo">Movie Logo</label>
+                                        <input type="checkbox" data-mini="true" id="chkDownloadMovieThumb" name="chkDownloadMovieThumb" />
+                                        <label for="chkDownloadMovieThumb">Movie Thumb</label>
 
-                                <input type="checkbox" data-mini="true" id="chkDownloadMovieThumb" name="chkDownloadMovieThumb" />
-                                <label for="chkDownloadMovieThumb">Movie Thumb</label>
+                                        
+                                    </div>
+                                </div>
 
-                                <input type="checkbox" data-mini="true" id="chKDownloadTVArt" name="chKDownloadTVArt" />
-                                <label for="chKDownloadTVArt">TV Series Art</label>
+                                <div data-role="collapsible">
+                                    <h3>TV Series</h3>
+                                    <div data-role="controlgroup">
+                                        <input type="checkbox" data-mini="true" id="chKDownloadTVArt" name="chKDownloadTVArt" />
+                                        <label for="chKDownloadTVArt">TV Series Art</label>
 
-                                <input type="checkbox" data-mini="true" id="chkDownloadTVBanner" name="chkDownloadTVBanner" />
-                                <label for="chkDownloadTVBanner">TV Series Banner</label>
+                                        <input type="checkbox" data-mini="true" id="chkDownloadTVBanner" name="chkDownloadTVBanner" />
+                                        <label for="chkDownloadTVBanner">TV Series Banner</label>
 
-                                <input type="checkbox" data-mini="true" id="chkDownloadTVLogo" name="chkDownloadTVLogo" />
-                                <label for="chkDownloadTVLogo">TV Series Logo</label>
+                                        <input type="checkbox" data-mini="true" id="chkDownloadTVLogo" name="chkDownloadTVLogo" />
+                                        <label for="chkDownloadTVLogo">TV Series Logo</label>
 
-                                <input type="checkbox" data-mini="true" id="chkDownloadTVThumb" name="chkDownloadTVThumb" />
-                                <label for="chkDownloadTVThumb">TV Series Thumb</label>
+                                        <input type="checkbox" data-mini="true" id="chkDownloadTVThumb" name="chkDownloadTVThumb" />
+                                        <label for="chkDownloadTVThumb">TV Series Thumb</label>
+                                    </div>
+                                </div>
 
-                                <input type="checkbox" data-mini="true" id="chkDownloadSeasonBackdrops" name="chkDownloadSeasonBackdrops" />
-                                <label for="chkDownloadSeasonBackdrops">TV Season Backdrops</label>
 
-                                <input type="checkbox" data-mini="true" id="chkDownloadSeasonBanner" name="chkDownloadSeasonBanner" />
-                                <label for="chkDownloadSeasonBanner">TV Season Banner</label>
+                                <div data-role="collapsible">
+                                    <h3>TV Seasons</h3>
+                                    <div data-role="controlgroup">
+                                        <input type="checkbox" data-mini="true" id="chkDownloadSeasonBackdrops" name="chkDownloadSeasonBackdrops" />
+                                        <label for="chkDownloadSeasonBackdrops">TV Season Backdrops</label>
 
-                                <input type="checkbox" data-mini="true" id="chkDownloadSeasonThumb" name="chkDownloadSeasonThumb" />
-                                <label for="chkDownloadSeasonThumb">TV Season Thumb</label>
-                            </div>
+                                        <input type="checkbox" data-mini="true" id="chkDownloadSeasonBanner" name="chkDownloadSeasonBanner" />
+                                        <label for="chkDownloadSeasonBanner">TV Season Banner</label>
+
+                                        <input type="checkbox" data-mini="true" id="chkDownloadSeasonThumb" name="chkDownloadSeasonThumb" />
+                                        <label for="chkDownloadSeasonThumb">TV Season Thumb</label>
+                                    </div>
+
+                                </div>
+
+                                <div data-role="collapsible">
+                                    <h3>Music Artists</h3>
+                                    <div data-role="controlgroup">
+                                        <input type="checkbox" data-mini="true" id="chkDownloadArtistThumb" name="chkDownloadArtistThumb" />
+                                        <label for="chkDownloadArtistThumb">Music Artist Thumb (primary image)</label>
+
+                                        <input type="checkbox" data-mini="true" id="chkDownloadArtistBackdrops" name="chkDownloadArtistBackdrops" />
+                                        <label for="chkDownloadArtistBackdrops">Music Artist Backdrops</label>
+
+                                        <input type="checkbox" data-mini="true" id="chkDownloadArtistLogo" name="chkDownloadArtistLogo" />
+                                        <label for="chkDownloadArtistLogo">Music Artist Logo</label>
+
+                                        <input type="checkbox" data-mini="true" id="chkDownloadArtistBanner" name="chkDownloadArtistBanner" />
+                                        <label for="chkDownloadArtistBanner">Music Artist Banner</label>
+                                    </div>
+
+                                </div>
+                                
+                                <div data-role="collapsible">
+                                    <h3>Music Albums</h3>
+                                    <div data-role="controlgroup">
+                                        <input type="checkbox" data-mini="true" id="chkDownloadAlbumPrimary" name="chkDownloadAlbumPrimary" />
+                                        <label for="chkDownloadAlbumPrimary">Music Album Cover</label>
+
+                                        <input type="checkbox" data-mini="true" id="chkDownloadAlbumBackdrops" name="chkDownloadAlbumBackdrops" />
+                                        <label for="chkDownloadAlbumBackdrops">Music Album Backdrops</label>
+                                    </div>
+
+                                </div>
+
                         </li>
                         <li>
                             <label for="selectTmdbPosterDownloadSize">Tmdb poster download size: </label>

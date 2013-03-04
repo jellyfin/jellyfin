@@ -379,7 +379,7 @@ namespace MediaBrowser.Controller.Providers.TV
                         }
                     }
 
-                    if (ConfigurationManager.Configuration.DownloadTVBanner && (ConfigurationManager.Configuration.RefreshItemImages || !series.HasLocalImage("banner")))
+                    if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && (ConfigurationManager.Configuration.RefreshItemImages || !series.HasLocalImage("banner")))
                     {
                         var n = images.SelectSingleNode("//Banner[BannerType='series']");
                         if (n != null)

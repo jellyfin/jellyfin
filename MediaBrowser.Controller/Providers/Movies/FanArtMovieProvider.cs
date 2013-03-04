@@ -91,9 +91,9 @@ namespace MediaBrowser.Controller.Providers.Movies
             var logoExists = item.ResolveArgs.ContainsMetaFileByName(LOGO_FILE);
             var discExists = item.ResolveArgs.ContainsMetaFileByName(DISC_FILE);
 
-            return (!artExists && ConfigurationManager.Configuration.DownloadMovieArt)
-                || (!logoExists && ConfigurationManager.Configuration.DownloadMovieLogo)
-                || (!discExists && ConfigurationManager.Configuration.DownloadMovieDisc);
+            return (!artExists && ConfigurationManager.Configuration.DownloadMovieImages.Art)
+                || (!logoExists && ConfigurationManager.Configuration.DownloadMovieImages.Logo)
+                || (!discExists && ConfigurationManager.Configuration.DownloadMovieImages.Disc);
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 {
                     string path;
                     var hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hd" : "";
-                    if (ConfigurationManager.Configuration.DownloadMovieLogo && !item.ResolveArgs.ContainsMetaFileByName(LOGO_FILE))
+                    if (ConfigurationManager.Configuration.DownloadMovieImages.Logo && !item.ResolveArgs.ContainsMetaFileByName(LOGO_FILE))
                     {
                         var node =
                             doc.SelectSingleNode("//fanart/movie/movielogos/" + hd + "movielogo[@lang = \"" + language + "\"]/@url") ??
@@ -160,7 +160,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                     }
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    if (ConfigurationManager.Configuration.DownloadMovieArt && !item.ResolveArgs.ContainsMetaFileByName(ART_FILE))
+                    if (ConfigurationManager.Configuration.DownloadMovieImages.Art && !item.ResolveArgs.ContainsMetaFileByName(ART_FILE))
                     {
                         var node =
                             doc.SelectSingleNode("//fanart/movie/moviearts/" + hd + "movieart[@lang = \"" + language + "\"]/@url") ??
@@ -186,7 +186,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                     }
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    if (ConfigurationManager.Configuration.DownloadMovieDisc && !item.ResolveArgs.ContainsMetaFileByName(DISC_FILE))
+                    if (ConfigurationManager.Configuration.DownloadMovieImages.Disc && !item.ResolveArgs.ContainsMetaFileByName(DISC_FILE))
                     {
                         var node = doc.SelectSingleNode("//fanart/movie/moviediscs/moviedisc[@lang = \"" + language + "\"]/@url") ??
                                    doc.SelectSingleNode("//fanart/movie/moviediscs/moviedisc/@url");
@@ -210,7 +210,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    if (ConfigurationManager.Configuration.DownloadMovieBanner && !item.ResolveArgs.ContainsMetaFileByName(BANNER_FILE))
+                    if (ConfigurationManager.Configuration.DownloadMovieImages.Banner && !item.ResolveArgs.ContainsMetaFileByName(BANNER_FILE))
                     {
                         var node = doc.SelectSingleNode("//fanart/movie/moviebanners/moviebanner[@lang = \"" + language + "\"]/@url") ??
                                    doc.SelectSingleNode("//fanart/movie/moviebanners/moviebanner/@url");
@@ -234,7 +234,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    if (ConfigurationManager.Configuration.DownloadMovieThumb && !item.ResolveArgs.ContainsMetaFileByName(THUMB_FILE))
+                    if (ConfigurationManager.Configuration.DownloadMovieImages.Thumb && !item.ResolveArgs.ContainsMetaFileByName(THUMB_FILE))
                     {
                         var node = doc.SelectSingleNode("//fanart/movie/moviethumbs/moviethumb[@lang = \"" + language + "\"]/@url") ??
                                    doc.SelectSingleNode("//fanart/movie/moviethumbs/moviethumb/@url");
