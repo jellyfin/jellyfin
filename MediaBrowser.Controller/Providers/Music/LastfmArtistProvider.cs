@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Logging;
@@ -17,7 +18,6 @@ namespace MediaBrowser.Controller.Providers.Music
 {
     public class LastfmArtistProvider : LastfmBaseArtistProvider
     {
-        internal readonly SemaphoreSlim LastfmResourcePool = new SemaphoreSlim(5, 5);
 
         public LastfmArtistProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager)
             : base(jsonSerializer, httpClient, logManager, configurationManager)
