@@ -384,6 +384,7 @@
     <EmbeddedResource Include="Html\scripts\ItemDetailPage.js" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\WizardFinishPage.js" />
     <EmbeddedResource Include="Html\Readme.txt" />
     <EmbeddedResource Include="Html\css\images\media\playCircle.png" />
     <EmbeddedResource Include="Html\css\images\media\nextTrack.png" />
