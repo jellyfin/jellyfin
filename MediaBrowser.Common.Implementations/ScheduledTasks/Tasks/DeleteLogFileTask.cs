@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Model.Logging;
 using System;
@@ -16,10 +16,10 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
     public class DeleteLogFileTask : IScheduledTask
     {
         /// <summary>
-        /// Gets or sets the kernel.
+        /// Gets or sets the configuration manager.
         /// </summary>
-        /// <value>The kernel.</value>
-        private IKernel Kernel { get; set; }
+        /// <value>The configuration manager.</value>
+        private IConfigurationManager ConfigurationManager { get; set; }
         /// <summary>
         /// Gets or sets the logger.
         /// </summary>
@@ -29,11 +29,11 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// <summary>
         /// Initializes a new instance of the <see cref="DeleteLogFileTask" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="logger">The logger.</param>
-        public DeleteLogFileTask(IKernel kernel, ILogger logger)
+        public DeleteLogFileTask(IConfigurationManager configurationManager, ILogger logger)
         {
-            Kernel = kernel;
+            ConfigurationManager = configurationManager;
             Logger = logger;
         }
 
@@ -59,9 +59,9 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
             return Task.Run(() =>
             {
                 // Delete log files more than n days old
-                var minDateModified = DateTime.UtcNow.AddDays(-(Kernel.Configuration.LogFileRetentionDays));
+                var minDateModified = DateTime.UtcNow.AddDays(-(ConfigurationManager.CommonConfiguration.LogFileRetentionDays));
 
-                var filesToDelete = new DirectoryInfo(Kernel.ApplicationPaths.LogDirectoryPath).EnumerateFileSystemInfos("*", SearchOption.AllDirectories)
+                var filesToDelete = new DirectoryInfo(ConfigurationManager.CommonApplicationPaths.LogDirectoryPath).EnumerateFileSystemInfos("*", SearchOption.AllDirectories)
                               .Where(f => f.LastWriteTimeUtc < minDateModified)
                               .ToList();
 
@@ -100,7 +100,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// <value>The description.</value>
         public string Description
         {
-            get { return string.Format("Deletes log files that are more than {0} days old.", Kernel.Configuration.LogFileRetentionDays); }
+            get { return string.Format("Deletes log files that are more than {0} days old.", ConfigurationManager.CommonConfiguration.LogFileRetentionDays); }
         }
 
         /// <summary>

@@ -1,10 +1,11 @@
 ﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Providers.MediaInfo
 {
@@ -22,8 +23,10 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// Initializes a new instance of the <see cref="FfMpegVideoImageProvider" /> class.
         /// </summary>
         /// <param name="isoManager">The iso manager.</param>
-        public FfMpegVideoImageProvider(IIsoManager isoManager, ILogManager logManager)
-            : base(logManager)
+        /// <param name="logManager">The log manager.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
+        public FfMpegVideoImageProvider(IIsoManager isoManager, ILogManager logManager, IServerConfigurationManager configurationManager)
+            : base(logManager, configurationManager)
         {
             _isoManager = isoManager;
         }

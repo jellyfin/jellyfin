@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using System;
@@ -10,13 +11,8 @@ namespace MediaBrowser.Api.Playback.Hls
     /// </summary>
     public class AudioHlsService : BaseHlsService
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AudioHlsService" /> class.
-        /// </summary>
-        /// <param name="appPaths">The app paths.</param>
-        /// <param name="userManager">The user manager.</param>
-        public AudioHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager)
-            : base(appPaths, userManager, libraryManager)
+        public AudioHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager)
+            : base(appPaths, userManager, libraryManager, isoManager)
         {
         }
 

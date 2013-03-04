@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.MediaInfo;
@@ -20,6 +21,29 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     /// </summary>
     public class FFProbeVideoInfoProvider : BaseFFProbeProvider<Video>
     {
+        public FFProbeVideoInfoProvider(IIsoManager isoManager, IBlurayExaminer blurayExaminer, IProtobufSerializer protobufSerializer, ILogManager logManager, IServerConfigurationManager configurationManager) 
+            : base(logManager, configurationManager)
+        {
+            if (isoManager == null)
+            {
+                throw new ArgumentNullException("isoManager");
+            }
+            if (blurayExaminer == null)
+            {
+                throw new ArgumentNullException("blurayExaminer");
+            }
+            if (protobufSerializer == null)
+            {
+                throw new ArgumentNullException("protobufSerializer");
+            }
+
+            _blurayExaminer = blurayExaminer;
+            _isoManager = isoManager;
+            _protobufSerializer = protobufSerializer;
+
+            BdInfoCache = new FileSystemRepository(Path.Combine(ConfigurationManager.ApplicationPaths.CachePath, "bdinfo"));
+        }
+
         /// <summary>
         /// Gets or sets the bd info cache.
         /// </summary>
@@ -41,36 +65,6 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// The _protobuf serializer
         /// </summary>
         private readonly IProtobufSerializer _protobufSerializer;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FFProbeVideoInfoProvider" /> class.
-        /// </summary>
-        /// <param name="isoManager">The iso manager.</param>
-        /// <param name="blurayExaminer">The bluray examiner.</param>
-        /// <param name="protobufSerializer">The protobuf serializer.</param>
-        /// <exception cref="System.ArgumentNullException">blurayExaminer</exception>
-        public FFProbeVideoInfoProvider(IIsoManager isoManager, IBlurayExaminer blurayExaminer, IProtobufSerializer protobufSerializer, ILogManager logManager)
-            : base(logManager)
-        {
-            if (isoManager == null)
-            {
-                throw new ArgumentNullException("isoManager");
-            }
-            if (blurayExaminer == null)
-            {
-                throw new ArgumentNullException("blurayExaminer");
-            }
-            if (protobufSerializer == null)
-            {
-                throw new ArgumentNullException("protobufSerializer");
-            }
-
-            _blurayExaminer = blurayExaminer;
-            _isoManager = isoManager;
-            _protobufSerializer = protobufSerializer;
-
-            BdInfoCache = new FileSystemRepository(Path.Combine(Kernel.Instance.ApplicationPaths.CachePath, "bdinfo"));
-        }
 
         /// <summary>
         /// Returns true or false indicating if the provider should refresh when the contents of it's directory changes

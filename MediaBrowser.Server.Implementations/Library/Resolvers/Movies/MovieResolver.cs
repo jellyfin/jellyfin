@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
@@ -16,6 +17,13 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
     /// </summary>
     public class MovieResolver : BaseVideoResolver<Movie>
     {
+        private IServerApplicationPaths ApplicationPaths { get; set; }
+        
+        public MovieResolver(IServerApplicationPaths appPaths)
+        {
+            ApplicationPaths = appPaths;
+        }
+
         /// <summary>
         /// Gets the priority.
         /// </summary>
@@ -149,7 +157,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     continue;
                 }
 
-                var childArgs = new ItemResolveArgs
+                var childArgs = new ItemResolveArgs(ApplicationPaths)
                 {
                     FileInfo = child,
                     Path = child.Path

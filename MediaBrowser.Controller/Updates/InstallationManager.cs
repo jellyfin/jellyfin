@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Events;
+﻿using MediaBrowser.Common;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
@@ -182,7 +183,7 @@ namespace MediaBrowser.Controller.Updates
             PackageType? packageType = null,
             Version applicationVersion = null)
         {
-            var packages = (await _packageManager.GetAvailablePackages(HttpClient, _networkManager, Kernel.SecurityManager, Kernel.ResourcePools, JsonSerializer, cancellationToken).ConfigureAwait(false)).ToList();
+            var packages = (await _packageManager.GetAvailablePackages(cancellationToken).ConfigureAwait(false)).ToList();
 
             if (packageType.HasValue)
             {
@@ -418,7 +419,7 @@ namespace MediaBrowser.Controller.Updates
         private async Task InstallPackageInternal(PackageVersionInfo package, IProgress<double> progress, CancellationToken cancellationToken)
         {
             // Do the install
-            await _packageManager.InstallPackage(HttpClient, _logger, Kernel.ResourcePools, progress, Kernel.ApplicationPaths, package, cancellationToken).ConfigureAwait(false);
+            await _packageManager.InstallPackage(progress, package, cancellationToken).ConfigureAwait(false);
 
             // Do plugin-specific processing
             if (!(Path.GetExtension(package.targetFilename) ?? "").Equals(".zip", StringComparison.OrdinalIgnoreCase))

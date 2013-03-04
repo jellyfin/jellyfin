@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.ScheduledTasks;
+﻿using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.ScheduledTasks;
@@ -74,16 +74,13 @@ namespace MediaBrowser.Controller.IO
         private ITaskManager TaskManager { get; set; }
 
         private ILibraryManager LibraryManager { get; set; }
+        private IServerConfigurationManager ConfigurationManager { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DirectoryWatchers" /> class.
         /// </summary>
-        public DirectoryWatchers(ILogger logger, ITaskManager taskManager, ILibraryManager libraryManager)
+        public DirectoryWatchers(ILogManager logManager, ITaskManager taskManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException("logger");
-            }
             if (taskManager == null)
             {
                 throw new ArgumentNullException("taskManager");
@@ -91,7 +88,8 @@ namespace MediaBrowser.Controller.IO
 
             LibraryManager = libraryManager;
             TaskManager = taskManager;
-            Logger = logger;
+            Logger = logManager.GetLogger("DirectoryWatchers");
+            ConfigurationManager = configurationManager;
         }
         
         /// <summary>
@@ -335,11 +333,11 @@ namespace MediaBrowser.Controller.IO
             {
                 if (updateTimer == null)
                 {
-                    updateTimer = new Timer(TimerStopped, null, TimeSpan.FromSeconds(Kernel.Instance.Configuration.FileWatcherDelay), TimeSpan.FromMilliseconds(-1));
+                    updateTimer = new Timer(TimerStopped, null, TimeSpan.FromSeconds(ConfigurationManager.Configuration.FileWatcherDelay), TimeSpan.FromMilliseconds(-1));
                 }
                 else
                 {
-                    updateTimer.Change(TimeSpan.FromSeconds(Kernel.Instance.Configuration.FileWatcherDelay), TimeSpan.FromMilliseconds(-1));
+                    updateTimer.Change(TimeSpan.FromSeconds(ConfigurationManager.Configuration.FileWatcherDelay), TimeSpan.FromMilliseconds(-1));
                 }
             }
         }
@@ -356,7 +354,7 @@ namespace MediaBrowser.Controller.IO
                 if (affectedPaths.Any(p => IsFileLocked(p.Key)))
                 {
                     Logger.Info("Timer extended.");
-                    updateTimer.Change(TimeSpan.FromSeconds(Kernel.Instance.Configuration.FileWatcherDelay), TimeSpan.FromMilliseconds(-1));
+                    updateTimer.Change(TimeSpan.FromSeconds(ConfigurationManager.Configuration.FileWatcherDelay), TimeSpan.FromMilliseconds(-1));
                     return;
                 }
 

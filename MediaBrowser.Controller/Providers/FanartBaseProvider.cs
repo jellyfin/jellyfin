@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using System;
 using MediaBrowser.Model.Logging;
 
@@ -35,7 +36,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         protected const string APIKey = "5c6b04c68e904cfed1e6cbc9a9e683d4";
 
-        protected FanartBaseProvider(ILogManager logManager) : base(logManager)
+        protected FanartBaseProvider(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
         {
         }
 
@@ -49,7 +50,7 @@ namespace MediaBrowser.Controller.Providers
         {
             if (item.DontFetchMeta) return false;
 
-            return DateTime.UtcNow > (providerInfo.LastRefreshed.AddDays(Kernel.Instance.Configuration.MetadataRefreshDays)) 
+            return DateTime.UtcNow > (providerInfo.LastRefreshed.AddDays(ConfigurationManager.Configuration.MetadataRefreshDays)) 
                 && ShouldFetch(item, providerInfo);
         }
 

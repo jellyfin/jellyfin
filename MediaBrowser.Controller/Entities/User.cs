@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
@@ -18,6 +19,7 @@ namespace MediaBrowser.Controller.Entities
     public class User : BaseItem
     {
         internal static IUserManager UserManager { get; set; }
+        internal static IXmlSerializer XmlSerializer { get; set; }
 
         /// <summary>
         /// The _root folder path
@@ -45,7 +47,7 @@ namespace MediaBrowser.Controller.Entities
                     }
                     else
                     {
-                        _rootFolderPath = Kernel.Instance.ApplicationPaths.DefaultUserViewsPath;
+                        _rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
                     }
                 }
                 return _rootFolderPath;
@@ -61,7 +63,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var safeFolderName = FileSystem.GetValidFilename(username);
 
-            return System.IO.Path.Combine(Kernel.Instance.ApplicationPaths.RootFolderPath, safeFolderName);
+            return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.RootFolderPath, safeFolderName);
         }
 
         /// <summary>
@@ -171,7 +173,7 @@ namespace MediaBrowser.Controller.Entities
             get
             {
                 // Lazy load
-                LazyInitializer.EnsureInitialized(ref _configuration, ref _configurationInitialized, ref _configurationSyncLock, () => (UserConfiguration)Kernel.Instance.GetXmlConfiguration(typeof(UserConfiguration), ConfigurationFilePath));
+                LazyInitializer.EnsureInitialized(ref _configuration, ref _configurationInitialized, ref _configurationSyncLock, () => (UserConfiguration)ConfigurationHelper.GetXmlConfiguration(typeof(UserConfiguration), ConfigurationFilePath, XmlSerializer));
                 return _configuration;
             }
             private set
@@ -321,7 +323,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var safeFolderName = FileSystem.GetValidFilename(username);
 
-            return System.IO.Path.Combine(Kernel.Instance.ApplicationPaths.UserConfigurationDirectoryPath, safeFolderName);
+            return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, safeFolderName);
         }
 
         /// <summary>
@@ -411,7 +413,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var userPath = RootFolderPath;
 
-            var defaultPath = Kernel.Instance.ApplicationPaths.DefaultUserViewsPath;
+            var defaultPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
 
             if (userPath.Equals(defaultPath, StringComparison.OrdinalIgnoreCase))
             {

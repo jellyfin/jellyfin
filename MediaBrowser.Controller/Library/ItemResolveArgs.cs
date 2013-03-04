@@ -1,9 +1,9 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.IO;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Controller.IO;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -13,6 +13,20 @@ namespace MediaBrowser.Controller.Library
     /// </summary>
     public class ItemResolveArgs : EventArgs
     {
+        /// <summary>
+        /// The _app paths
+        /// </summary>
+        private readonly IServerApplicationPaths _appPaths;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ItemResolveArgs" /> class.
+        /// </summary>
+        /// <param name="appPaths">The app paths.</param>
+        public ItemResolveArgs(IServerApplicationPaths appPaths)
+        {
+            _appPaths = appPaths;
+        }
+
         /// <summary>
         /// Gets the file system children.
         /// </summary>
@@ -99,9 +113,9 @@ namespace MediaBrowser.Controller.Library
                 }
 
                 var parentDir = FileInfo.Path != null ? System.IO.Path.GetDirectoryName(FileInfo.Path) ?? string.Empty : string.Empty;
-                
-                return (parentDir.Length > Kernel.Instance.ApplicationPaths.RootFolderPath.Length
-                    && parentDir.StartsWith(Kernel.Instance.ApplicationPaths.RootFolderPath, StringComparison.OrdinalIgnoreCase));
+
+                return (parentDir.Length > _appPaths.RootFolderPath.Length
+                    && parentDir.StartsWith(_appPaths.RootFolderPath, StringComparison.OrdinalIgnoreCase));
 
             }
         }
@@ -114,7 +128,7 @@ namespace MediaBrowser.Controller.Library
         {
             get
             {
-                return IsDirectory && Path.Equals(Kernel.Instance.ApplicationPaths.RootFolderPath, StringComparison.OrdinalIgnoreCase);
+                return IsDirectory && Path.Equals(_appPaths.RootFolderPath, StringComparison.OrdinalIgnoreCase);
             }
         }
 

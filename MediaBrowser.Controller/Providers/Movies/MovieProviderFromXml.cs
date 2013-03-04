@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using System;
 using System.IO;
@@ -13,7 +14,7 @@ namespace MediaBrowser.Controller.Providers.Movies
     /// </summary>
     public class MovieProviderFromXml : BaseMetadataProvider
     {
-        public MovieProviderFromXml(ILogManager logManager) : base(logManager)
+        public MovieProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
         {
         }
 

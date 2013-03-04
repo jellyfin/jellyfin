@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations.HttpServer;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Controller;
@@ -108,13 +109,11 @@ namespace MediaBrowser.Api
         /// <exception cref="System.ArgumentException">Unsupported PackageType</exception>
         public object Get(GetPackageVersionUpdates request)
         {
-            var kernel = (Kernel)Kernel;
-
             var result = new List<PackageVersionInfo>();
 
             if (request.PackageType == PackageType.UserInstalled || request.PackageType == PackageType.All)
             {
-                result.AddRange(kernel.InstallationManager.GetAvailablePluginUpdates(false, CancellationToken.None).Result.ToList());
+                result.AddRange(Kernel.Instance.InstallationManager.GetAvailablePluginUpdates(false, CancellationToken.None).Result.ToList());
             }
 
             else if (request.PackageType == PackageType.System || request.PackageType == PackageType.All)
@@ -137,9 +136,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetPackage request)
         {
-            var kernel = (Kernel)Kernel;
-
-            var packages = kernel.InstallationManager.GetAvailablePackages(CancellationToken.None, applicationVersion: ApplicationHost.ApplicationVersion).Result;
+            var packages = Kernel.Instance.InstallationManager.GetAvailablePackages(CancellationToken.None, applicationVersion: ApplicationHost.ApplicationVersion).Result;
 
             var result = packages.FirstOrDefault(p => p.name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
 
@@ -153,9 +150,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetPackages request)
         {
-            var kernel = (Kernel)Kernel;
-
-            var packages = kernel.InstallationManager.GetAvailablePackages(CancellationToken.None, request.PackageType, ApplicationHost.ApplicationVersion).Result;
+            var packages = Kernel.Instance.InstallationManager.GetAvailablePackages(CancellationToken.None, request.PackageType, ApplicationHost.ApplicationVersion).Result;
 
             return ToOptimizedResult(packages.ToList());
         }
@@ -167,18 +162,16 @@ namespace MediaBrowser.Api
         /// <exception cref="ResourceNotFoundException"></exception>
         public void Post(InstallPackage request)
         {
-            var kernel = (Kernel)Kernel;
-
             var package = string.IsNullOrEmpty(request.Version) ?
-                kernel.InstallationManager.GetLatestCompatibleVersion(request.Name, request.UpdateClass).Result :
-                kernel.InstallationManager.GetPackage(request.Name, request.UpdateClass, Version.Parse(request.Version)).Result;
+                Kernel.Instance.InstallationManager.GetLatestCompatibleVersion(request.Name, request.UpdateClass).Result :
+                Kernel.Instance.InstallationManager.GetPackage(request.Name, request.UpdateClass, Version.Parse(request.Version)).Result;
 
             if (package == null)
             {
                 throw new ResourceNotFoundException(string.Format("Package not found: {0}", request.Name));
             }
 
-            Task.Run(() => kernel.InstallationManager.InstallPackage(package, new Progress<double> { }, CancellationToken.None));
+            Task.Run(() => Kernel.Instance.InstallationManager.InstallPackage(package, new Progress<double> { }, CancellationToken.None));
         }
 
         /// <summary>
@@ -187,9 +180,7 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Delete(CancelPackageInstallation request)
         {
-            var kernel = (Kernel)Kernel;
-
-            var info = kernel.InstallationManager.CurrentInstallations.FirstOrDefault(i => i.Item1.Id == request.Id);
+            var info = Kernel.Instance.InstallationManager.CurrentInstallations.FirstOrDefault(i => i.Item1.Id == request.Id);
 
             if (info != null)
             {

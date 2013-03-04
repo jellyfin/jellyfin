@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using System;
 using System.IO;
@@ -13,7 +14,7 @@ namespace MediaBrowser.Controller.Providers
     /// </summary>
     public class FolderProviderFromXml : BaseMetadataProvider
     {
-        public FolderProviderFromXml(ILogManager logManager) : base(logManager)
+        public FolderProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
         {
         }
 

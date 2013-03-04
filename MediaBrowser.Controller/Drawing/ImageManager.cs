@@ -66,23 +66,23 @@ namespace MediaBrowser.Controller.Drawing
         /// The _kernel
         /// </summary>
         private readonly Kernel _kernel;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="protobufSerializer">The protobuf serializer.</param>
         /// <param name="logger">The logger.</param>
-        public ImageManager(Kernel kernel, IProtobufSerializer protobufSerializer, ILogger logger)
+        public ImageManager(Kernel kernel, IProtobufSerializer protobufSerializer, ILogger logger, IServerApplicationPaths appPaths)
         {
             _protobufSerializer = protobufSerializer;
             _logger = logger;
             _kernel = kernel;
 
-            ImageSizeCache = new FileSystemRepository(Path.Combine(_kernel.ApplicationPaths.ImageCachePath, "image-sizes"));
-            ResizedImageCache = new FileSystemRepository(Path.Combine(_kernel.ApplicationPaths.ImageCachePath, "resized-images"));
-            CroppedImageCache = new FileSystemRepository(Path.Combine(_kernel.ApplicationPaths.ImageCachePath, "cropped-images"));
-            EnhancedImageCache = new FileSystemRepository(Path.Combine(_kernel.ApplicationPaths.ImageCachePath, "enhanced-images"));
+            ImageSizeCache = new FileSystemRepository(Path.Combine(appPaths.ImageCachePath, "image-sizes"));
+            ResizedImageCache = new FileSystemRepository(Path.Combine(appPaths.ImageCachePath, "resized-images"));
+            CroppedImageCache = new FileSystemRepository(Path.Combine(appPaths.ImageCachePath, "cropped-images"));
+            EnhancedImageCache = new FileSystemRepository(Path.Combine(appPaths.ImageCachePath, "enhanced-images"));
         }
 
         /// <summary>

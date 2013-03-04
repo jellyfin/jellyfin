@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
@@ -19,7 +20,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     public abstract class BaseFFProbeProvider<T> : BaseFFMpegProvider<T>
         where T : BaseItem
     {
-        protected BaseFFProbeProvider(ILogManager logManager) : base(logManager)
+        protected BaseFFProbeProvider(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
         {
         }
 
@@ -35,7 +36,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         protected override void Initialize()
         {
             base.Initialize();
-            FFProbeCache = new FileSystemRepository(Path.Combine(Kernel.Instance.ApplicationPaths.CachePath, CacheDirectoryName));
+            FFProbeCache = new FileSystemRepository(Path.Combine(ConfigurationManager.ApplicationPaths.CachePath, CacheDirectoryName));
         }
 
         /// <summary>

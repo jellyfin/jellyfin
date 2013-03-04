@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -24,9 +25,9 @@ namespace MediaBrowser.Controller.Providers.TV
         /// </summary>
         /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
-
-        public RemoteSeasonProvider(IHttpClient httpClient, ILogManager logManager)
-            : base(logManager)
+        
+        public RemoteSeasonProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager)
+            : base(logManager, configurationManager)
         {
             if (httpClient == null)
             {
@@ -77,13 +78,13 @@ namespace MediaBrowser.Controller.Providers.TV
             bool fetch = false;
             var downloadDate = providerInfo.LastRefreshed;
 
-            if (Kernel.Instance.Configuration.MetadataRefreshDays == -1 && downloadDate != DateTime.MinValue)
+            if (ConfigurationManager.Configuration.MetadataRefreshDays == -1 && downloadDate != DateTime.MinValue)
                 return false;
 
             if (!HasLocalMeta(item))
             {
-                fetch = Kernel.Instance.Configuration.MetadataRefreshDays != -1 &&
-                    DateTime.UtcNow.Subtract(downloadDate).TotalDays > Kernel.Instance.Configuration.MetadataRefreshDays;
+                fetch = ConfigurationManager.Configuration.MetadataRefreshDays != -1 &&
+                    DateTime.UtcNow.Subtract(downloadDate).TotalDays > ConfigurationManager.Configuration.MetadataRefreshDays;
             }
 
             return fetch;
@@ -152,7 +153,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                     try
                     {
-                        using (var imgs = await HttpClient.Get(url, Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false))
+                        using (var imgs = await HttpClient.Get(url, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false))
                         {
                             images.Load(imgs);
                         }
@@ -163,7 +164,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                     if (images.HasChildNodes)
                     {
-                        if (Kernel.Instance.Configuration.RefreshItemImages || !season.HasLocalImage("folder"))
+                        if (ConfigurationManager.Configuration.RefreshItemImages || !season.HasLocalImage("folder"))
                         {
                             var n = images.SelectSingleNode("//Banner[BannerType='season'][BannerType2='season'][Season='" + seasonNumber + "']");
                             if (n != null)
@@ -173,7 +174,7 @@ namespace MediaBrowser.Controller.Providers.TV
                                 try
                                 {
                                     if (n != null)
-                                        season.PrimaryImagePath = await Kernel.Instance.ProviderManager.DownloadAndSaveImage(season, TVUtils.BannerUrl + n.InnerText, "folder" + Path.GetExtension(n.InnerText), Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false);
+                                        season.PrimaryImagePath = await Kernel.Instance.ProviderManager.DownloadAndSaveImage(season, TVUtils.BannerUrl + n.InnerText, "folder" + Path.GetExtension(n.InnerText), RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false);
                                 }
                                 catch (HttpException)
                                 {
@@ -185,7 +186,7 @@ namespace MediaBrowser.Controller.Providers.TV
                             }
                         }
 
-                        if (Kernel.Instance.Configuration.DownloadTVSeasonBanner && (Kernel.Instance.Configuration.RefreshItemImages || !season.HasLocalImage("banner")))
+                        if (ConfigurationManager.Configuration.DownloadTVSeasonBanner && (ConfigurationManager.Configuration.RefreshItemImages || !season.HasLocalImage("banner")))
                         {
                             var n = images.SelectSingleNode("//Banner[BannerType='season'][BannerType2='seasonwide'][Season='" + seasonNumber + "']");
                             if (n != null)
@@ -201,7 +202,7 @@ namespace MediaBrowser.Controller.Providers.TV
                                                                                              TVUtils.BannerUrl + n.InnerText,
                                                                                              "banner" +
                                                                                              Path.GetExtension(n.InnerText),
-                                                                                             Kernel.Instance.ResourcePools.TvDb, cancellationToken).
+                                                                                             RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).
                                                                ConfigureAwait(false);
 
                                         season.SetImage(ImageType.Banner, bannerImagePath);
@@ -217,7 +218,7 @@ namespace MediaBrowser.Controller.Providers.TV
                             }
                         }
 
-                        if (Kernel.Instance.Configuration.DownloadTVSeasonBackdrops && (Kernel.Instance.Configuration.RefreshItemImages || !season.HasLocalImage("backdrop")))
+                        if (ConfigurationManager.Configuration.DownloadTVSeasonBackdrops && (ConfigurationManager.Configuration.RefreshItemImages || !season.HasLocalImage("backdrop")))
                         {
                             var n = images.SelectSingleNode("//Banner[BannerType='fanart'][Season='" + seasonNumber + "']");
                             if (n != null)
@@ -228,7 +229,7 @@ namespace MediaBrowser.Controller.Providers.TV
                                     try
                                     {
                                         if (season.BackdropImagePaths == null) season.BackdropImagePaths = new List<string>();
-                                        season.BackdropImagePaths.Add(await Kernel.Instance.ProviderManager.DownloadAndSaveImage(season, TVUtils.BannerUrl + n.InnerText, "backdrop" + Path.GetExtension(n.InnerText), Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false));
+                                        season.BackdropImagePaths.Add(await Kernel.Instance.ProviderManager.DownloadAndSaveImage(season, TVUtils.BannerUrl + n.InnerText, "backdrop" + Path.GetExtension(n.InnerText), RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false));
                                     }
                                     catch (HttpException)
                                     {
@@ -239,7 +240,7 @@ namespace MediaBrowser.Controller.Providers.TV
                                     }
                                 }
                             }
-                            else if (!Kernel.Instance.Configuration.SaveLocalMeta) //if saving local - season will inherit from series
+                            else if (!ConfigurationManager.Configuration.SaveLocalMeta) //if saving local - season will inherit from series
                             {
                                 // not necessarily accurate but will give a different bit of art to each season
                                 var lst = images.SelectNodes("//Banner[BannerType='fanart']");
@@ -263,7 +264,7 @@ namespace MediaBrowser.Controller.Providers.TV
                                                                                                  "backdrop" +
                                                                                                  Path.GetExtension(
                                                                                                      n.InnerText),
-                                                                                                 Kernel.Instance.ResourcePools.TvDb, cancellationToken)
+                                                                                                 RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken)
                                                                   .ConfigureAwait(false));
                                         }
                                         catch (HttpException)

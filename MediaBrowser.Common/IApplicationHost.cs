@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Kernel
+namespace MediaBrowser.Common
 {
     /// <summary>
     /// An interface to be implemented by the applications hosting a kernel
@@ -16,12 +16,6 @@ namespace MediaBrowser.Common.Kernel
         /// Restarts this instance.
         /// </summary>
         void Restart();
-
-        /// <summary>
-        /// Configures the auto run at startup.
-        /// </summary>
-        /// <param name="autorun">if set to <c>true</c> [autorun].</param>
-        void ConfigureAutoRunAtStartup(bool autorun);
 
         /// <summary>
         /// Gets the application version.

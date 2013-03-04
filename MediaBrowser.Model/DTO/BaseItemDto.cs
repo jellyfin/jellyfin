@@ -246,20 +246,6 @@ namespace MediaBrowser.Model.Dto
         public int? RecentlyAddedItemCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the recently added un played item count.
-        /// </summary>
-        /// <value>The recently added un played item count.</value>
-        [ProtoMember(39)]
-        public int? RecentlyAddedUnPlayedItemCount { get; set; }
-
-        /// <summary>
-        /// Gets or sets the resumable item count.
-        /// </summary>
-        /// <value>The resumable item count.</value>
-        [ProtoMember(40)]
-        public int? ResumableItemCount { get; set; }
-
-        /// <summary>
         /// Gets or sets the played percentage.
         /// </summary>
         /// <value>The played percentage.</value>
@@ -272,13 +258,6 @@ namespace MediaBrowser.Model.Dto
         /// <value>The recursive item count.</value>
         [ProtoMember(42)]
         public int? RecursiveItemCount { get; set; }
-
-        /// <summary>
-        /// Gets or sets the favorite item count.
-        /// </summary>
-        /// <value>The favorite item count.</value>
-        [ProtoMember(43)]
-        public int? FavoriteItemCount { get; set; }
 
         /// <summary>
         /// Gets or sets the child count.
@@ -300,13 +279,6 @@ namespace MediaBrowser.Model.Dto
         /// <value>The series id.</value>
         [ProtoMember(46)]
         public string SeriesId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the recently played item count.
-        /// </summary>
-        /// <value>The recently played item count.</value>
-        [ProtoMember(47)]
-        public int? RecentlyPlayedItemCount { get; set; }
 
         /// <summary>
         /// Gets or sets the special feature count.

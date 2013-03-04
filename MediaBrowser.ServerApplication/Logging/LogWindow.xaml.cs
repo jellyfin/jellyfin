@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Kernel;
-using NLog;
+﻿using NLog;
 using NLog.Config;
 using NLog.Targets;
 using System.ComponentModel;
@@ -18,20 +17,15 @@ namespace MediaBrowser.ServerApplication.Logging
         /// The _ui thread
         /// </summary>
         private readonly TaskScheduler _uiThread;
-        /// <summary>
-        /// The _kernel
-        /// </summary>
-        private readonly IKernel _kernel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LogWindow" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        public LogWindow(IKernel kernel)
+        public LogWindow()
         {
             InitializeComponent();
             _uiThread = TaskScheduler.FromCurrentSynchronizationContext();
-            _kernel = kernel;
 
             Loaded += LogWindow_Loaded;
         }
@@ -94,7 +88,7 @@ namespace MediaBrowser.ServerApplication.Logging
             target.Name = name;
             config.AddTarget(name, target);
 
-            var level = _kernel.Configuration.EnableDebugLevelLogging ? LogLevel.Debug : LogLevel.Info;
+            var level = LogLevel.Debug;
 
             var rule = new LoggingRule("*", level, target);
             config.LoggingRules.Add(rule);

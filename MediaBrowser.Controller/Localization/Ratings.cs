@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
 using System.IO;
@@ -11,7 +12,8 @@ namespace MediaBrowser.Controller.Localization
     /// </summary>
     public static class Ratings
     {
-        static internal ILogger Logger { get; set; }
+        internal static IServerConfigurationManager ConfigurationManager;
+
         /// <summary>
         /// The ratings def
         /// </summary>
@@ -26,7 +28,7 @@ namespace MediaBrowser.Controller.Localization
         /// <value>The ratings dict.</value>
         public static Dictionary<string, int> RatingsDict
         {
-            get { return _ratingsDict ?? (_ratingsDict = Initialize(false)); }
+            get { return _ratingsDict ?? (_ratingsDict = Initialize(false, ConfigurationManager)); }
         }
         /// <summary>
         /// The ratings strings
@@ -38,17 +40,17 @@ namespace MediaBrowser.Controller.Localization
         /// </summary>
         /// <param name="blockUnrated">if set to <c>true</c> [block unrated].</param>
         /// <returns>Dictionary{System.StringSystem.Int32}.</returns>
-        public static Dictionary<string, int> Initialize(bool blockUnrated)
+        public static Dictionary<string, int> Initialize(bool blockUnrated, IServerConfigurationManager configurationManager)
         {
             //build our ratings dictionary from the combined local one and us one
-            ratingsDef = new RatingsDefinition(Path.Combine(Kernel.Instance.ApplicationPaths.LocalizationPath, "Ratings-" + Kernel.Instance.Configuration.MetadataCountryCode + ".txt"), Logger);
+            ratingsDef = new RatingsDefinition(Path.Combine(configurationManager.ApplicationPaths.LocalizationPath, "Ratings-" + configurationManager.Configuration.MetadataCountryCode + ".txt"), configurationManager);
             //global value of None
             var dict = new Dictionary<string, int> {{"None", -1}};
             foreach (var pair in ratingsDef.RatingsDict)
             {
                 dict.TryAdd(pair.Key, pair.Value);
             }
-            if (Kernel.Instance.Configuration.MetadataCountryCode.ToUpper() != "US")
+            if (configurationManager.Configuration.MetadataCountryCode.ToUpper() != "US")
             {
                 foreach (var pair in new USRatingsDictionary())
                 {

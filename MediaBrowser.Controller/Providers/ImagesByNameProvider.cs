@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using System;
 using System.Globalization;
@@ -13,7 +14,7 @@ namespace MediaBrowser.Controller.Providers
     /// </summary>
     public class ImagesByNameProvider : ImageFromMediaLocationProvider
     {
-        public ImagesByNameProvider(ILogManager logManager) : base(logManager)
+        public ImagesByNameProvider(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
         {
         }
 
@@ -82,7 +83,7 @@ namespace MediaBrowser.Controller.Providers
             var name = item.Name ?? string.Empty;
             name = invalid.Aggregate(name, (current, c) => current.Replace(c.ToString(UsCulture), string.Empty));
 
-            return Path.Combine(Kernel.Instance.ApplicationPaths.GeneralPath, name);
+            return Path.Combine(ConfigurationManager.ApplicationPaths.GeneralPath, name);
         }
 
         /// <summary>

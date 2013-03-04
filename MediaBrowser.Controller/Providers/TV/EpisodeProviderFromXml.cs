@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Entities;
 using System;
@@ -14,7 +15,7 @@ namespace MediaBrowser.Controller.Providers.TV
     /// </summary>
     public class EpisodeProviderFromXml : BaseMetadataProvider
     {
-        public EpisodeProviderFromXml(ILogManager logManager) : base(logManager)
+        public EpisodeProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
         {
         }
 

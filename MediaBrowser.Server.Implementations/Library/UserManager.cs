@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Connectivity;
@@ -90,14 +91,22 @@ namespace MediaBrowser.Server.Implementations.Library
         private Kernel Kernel { get; set; }
 
         /// <summary>
+        /// Gets or sets the configuration manager.
+        /// </summary>
+        /// <value>The configuration manager.</value>
+        private IServerConfigurationManager ConfigurationManager { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="UserManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
-        public UserManager(Kernel kernel, ILogger logger)
+        /// <param name="configurationManager">The configuration manager.</param>
+        public UserManager(Kernel kernel, ILogger logger, IServerConfigurationManager configurationManager)
         {
             _logger = logger;
             Kernel = kernel;
+            ConfigurationManager = configurationManager;
         }
 
         #region Events
@@ -596,14 +605,14 @@ namespace MediaBrowser.Server.Implementations.Library
                 var pctIn = Decimal.Divide(positionTicks, item.RunTimeTicks.Value) * 100;
 
                 // Don't track in very beginning
-                if (pctIn < Kernel.Configuration.MinResumePct)
+                if (pctIn < ConfigurationManager.Configuration.MinResumePct)
                 {
                     positionTicks = 0;
                     incrementPlayCount = false;
                 }
 
                 // If we're at the end, assume completed
-                else if (pctIn > Kernel.Configuration.MaxResumePct || positionTicks >= item.RunTimeTicks.Value)
+                else if (pctIn > ConfigurationManager.Configuration.MaxResumePct || positionTicks >= item.RunTimeTicks.Value)
                 {
                     positionTicks = 0;
                     data.Played = true;
@@ -614,7 +623,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     // Enforce MinResumeDuration
                     var durationSeconds = TimeSpan.FromTicks(item.RunTimeTicks.Value).TotalSeconds;
 
-                    if (durationSeconds < Kernel.Configuration.MinResumeDurationSeconds)
+                    if (durationSeconds < ConfigurationManager.Configuration.MinResumeDurationSeconds)
                     {
                         positionTicks = 0;
                         data.Played = true;

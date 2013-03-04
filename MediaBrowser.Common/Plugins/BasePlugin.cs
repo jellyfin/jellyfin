@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -17,22 +17,16 @@ namespace MediaBrowser.Common.Plugins
         where TConfigurationType : BasePluginConfiguration
     {
         /// <summary>
-        /// Gets the kernel.
+        /// Gets the application paths.
         /// </summary>
-        /// <value>The kernel.</value>
-        protected IKernel Kernel { get; private set; }
+        /// <value>The application paths.</value>
+        protected IApplicationPaths ApplicationPaths { get; private set; }
 
         /// <summary>
         /// Gets the XML serializer.
         /// </summary>
         /// <value>The XML serializer.</value>
         protected IXmlSerializer XmlSerializer { get; private set; }
-        
-        /// <summary>
-        /// Gets or sets the plugin's current context
-        /// </summary>
-        /// <value>The context.</value>
-        protected KernelContext Context { get { return Kernel.KernelContext; } }
 
         /// <summary>
         /// Gets the name of the plugin
@@ -174,7 +168,7 @@ namespace MediaBrowser.Common.Plugins
         {
             get
             {
-                return Path.Combine(Kernel.ApplicationPaths.PluginsPath, AssemblyFileName);
+                return Path.Combine(ApplicationPaths.PluginsPath, AssemblyFileName);
             }
         }
 
@@ -199,7 +193,7 @@ namespace MediaBrowser.Common.Plugins
             get
             {
                 // Lazy load
-                LazyInitializer.EnsureInitialized(ref _configuration, ref _configurationInitialized, ref _configurationSyncLock, () => Kernel.GetXmlConfiguration(ConfigurationType, ConfigurationFilePath) as TConfigurationType);
+                LazyInitializer.EnsureInitialized(ref _configuration, ref _configurationInitialized, ref _configurationSyncLock, () => ConfigurationHelper.GetXmlConfiguration(ConfigurationType, ConfigurationFilePath, XmlSerializer) as TConfigurationType);
                 return _configuration;
             }
             protected set
@@ -230,7 +224,7 @@ namespace MediaBrowser.Common.Plugins
         {
             get
             {
-                return Path.Combine(Kernel.ApplicationPaths.PluginConfigurationsPath, ConfigurationFileName);
+                return Path.Combine(ApplicationPaths.PluginConfigurationsPath, ConfigurationFileName);
             }
         }
 
@@ -250,7 +244,7 @@ namespace MediaBrowser.Common.Plugins
                 {
                     // Give the folder name the same name as the config file name
                     // We can always make this configurable if/when needed
-                    _dataFolderPath = Path.Combine(Kernel.ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(ConfigurationFileName));
+                    _dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(ConfigurationFileName));
 
                     if (!Directory.Exists(_dataFolderPath))
                     {
@@ -265,11 +259,11 @@ namespace MediaBrowser.Common.Plugins
         /// <summary>
         /// Initializes a new instance of the <see cref="BasePlugin{TConfigurationType}" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
+        /// <param name="applicationPaths">The application paths.</param>
         /// <param name="xmlSerializer">The XML serializer.</param>
-        protected BasePlugin(IKernel kernel, IXmlSerializer xmlSerializer)
+        protected BasePlugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
         {
-            Kernel = kernel;
+            ApplicationPaths = applicationPaths;
             XmlSerializer = xmlSerializer;
         }
 
@@ -284,11 +278,6 @@ namespace MediaBrowser.Common.Plugins
         /// <exception cref="System.InvalidOperationException">Cannot call Plugin.SaveConfiguration from the UI.</exception>
         public virtual void SaveConfiguration()
         {
-            if (Kernel.KernelContext != KernelContext.Server)
-            {
-                throw new InvalidOperationException("Cannot call Plugin.SaveConfiguration from the UI.");
-            }
-
             lock (_configurationSaveLock)
             {
                 XmlSerializer.SerializeToFile(Configuration, ConfigurationFilePath);

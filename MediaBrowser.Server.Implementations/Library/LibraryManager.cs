@@ -3,6 +3,7 @@ using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -91,20 +92,28 @@ namespace MediaBrowser.Server.Implementations.Library
         private Kernel Kernel { get; set; }
 
         /// <summary>
+        /// Gets or sets the configuration manager.
+        /// </summary>
+        /// <value>The configuration manager.</value>
+        private IServerConfigurationManager ConfigurationManager { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="LibraryManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="taskManager">The task manager.</param>
         /// <param name="userManager">The user manager.</param>
-        public LibraryManager(Kernel kernel, ILogger logger, ITaskManager taskManager, IUserManager userManager)
+        /// <param name="configurationManager">The configuration manager.</param>
+        public LibraryManager(Kernel kernel, ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager)
         {
             Kernel = kernel;
             _logger = logger;
             _taskManager = taskManager;
             _userManager = userManager;
+            ConfigurationManager = configurationManager;
 
-            kernel.ConfigurationUpdated += kernel_ConfigurationUpdated;
+            ConfigurationManager.ConfigurationUpdated += kernel_ConfigurationUpdated;
         }
 
         /// <summary>
@@ -222,7 +231,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 return null;
             }
 
-            var args = new ItemResolveArgs
+            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths)
             {
                 Parent = parent,
                 Path = path,
@@ -306,7 +315,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <exception cref="System.InvalidOperationException">Cannot create the root folder until plugins have loaded</exception>
         public AggregateFolder CreateRootFolder()
         {
-            var rootFolderPath = Kernel.ApplicationPaths.RootFolderPath;
+            var rootFolderPath = ConfigurationManager.ApplicationPaths.RootFolderPath;
             var rootFolder = Kernel.ItemRepository.RetrieveItem(rootFolderPath.GetMBId(typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(rootFolderPath);
 
             // Add in the plug-in folders
@@ -338,7 +347,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task{Person}.</returns>
         private Task<Person> GetPerson(string name, CancellationToken cancellationToken, bool allowSlowProviders = false)
         {
-            return GetImagesByNameItem<Person>(Kernel.ApplicationPaths.PeoplePath, name, cancellationToken, allowSlowProviders);
+            return GetImagesByNameItem<Person>(ConfigurationManager.ApplicationPaths.PeoplePath, name, cancellationToken, allowSlowProviders);
         }
 
         /// <summary>
@@ -349,7 +358,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task{Studio}.</returns>
         public Task<Studio> GetStudio(string name, bool allowSlowProviders = false)
         {
-            return GetImagesByNameItem<Studio>(Kernel.ApplicationPaths.StudioPath, name, CancellationToken.None, allowSlowProviders);
+            return GetImagesByNameItem<Studio>(ConfigurationManager.ApplicationPaths.StudioPath, name, CancellationToken.None, allowSlowProviders);
         }
 
         /// <summary>
@@ -360,7 +369,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task{Genre}.</returns>
         public Task<Genre> GetGenre(string name, bool allowSlowProviders = false)
         {
-            return GetImagesByNameItem<Genre>(Kernel.ApplicationPaths.GenrePath, name, CancellationToken.None, allowSlowProviders);
+            return GetImagesByNameItem<Genre>(ConfigurationManager.ApplicationPaths.GenrePath, name, CancellationToken.None, allowSlowProviders);
         }
 
         /// <summary>
@@ -382,7 +391,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentOutOfRangeException();
             }
 
-            return GetImagesByNameItem<Year>(Kernel.ApplicationPaths.YearPath, value.ToString(UsCulture), CancellationToken.None, allowSlowProviders);
+            return GetImagesByNameItem<Year>(ConfigurationManager.ApplicationPaths.YearPath, value.ToString(UsCulture), CancellationToken.None, allowSlowProviders);
         }
 
         /// <summary>
@@ -612,7 +621,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>IEnumerable{VirtualFolderInfo}.</returns>
         public IEnumerable<VirtualFolderInfo> GetDefaultVirtualFolders()
         {
-            return GetView(Kernel.ApplicationPaths.DefaultUserViewsPath);
+            return GetView(ConfigurationManager.ApplicationPaths.DefaultUserViewsPath);
         }
 
         /// <summary>

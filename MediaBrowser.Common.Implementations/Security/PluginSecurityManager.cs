@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Security;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Security;
 using MediaBrowser.Model.Serialization;
 using Mediabrowser.Model.Entities;
 using Mediabrowser.PluginSecurity;
@@ -8,7 +9,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.Plugins
+namespace MediaBrowser.Common.Implementations.Security
 {
     /// <summary>
     /// Class PluginSecurityManager
@@ -68,7 +69,7 @@ namespace MediaBrowser.Controller.Plugins
             _kernel = kernel;
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
-            MBRegistration.Init(appPaths);
+            //MBRegistration.Init(appPaths);
         }
 
         /// <summary>
