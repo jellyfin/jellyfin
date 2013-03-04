@@ -98,16 +98,15 @@ namespace MediaBrowser.Api.Library
 
             if (!Directory.Exists(path))
             {
-                throw new DirectoryNotFoundException("The media folder does not exist");
+                throw new DirectoryNotFoundException(string.Format("The media collection {0} does not exist", virtualFolderName));
             }
 
             var shortcut = Directory.EnumerateFiles(path, "*.lnk", SearchOption.AllDirectories).FirstOrDefault(f => FileSystem.ResolveShortcut(f).Equals(mediaPath, StringComparison.OrdinalIgnoreCase));
 
-            if (string.IsNullOrEmpty(shortcut))
+            if (!string.IsNullOrEmpty(shortcut))
             {
-                throw new DirectoryNotFoundException("The media folder does not exist");
+                File.Delete(shortcut);
             }
-            File.Delete(shortcut);
         }
 
         /// <summary>
