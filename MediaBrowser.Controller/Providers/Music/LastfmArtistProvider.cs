@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -16,12 +17,13 @@ using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Providers.Music
 {
-    public class LastfmArtistProvider : LastfmBaseArtistProvider
+    public class LastfmArtistProvider : LastfmBaseProvider
     {
 
         public LastfmArtistProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager)
             : base(jsonSerializer, httpClient, logManager, configurationManager)
         {
+            LocalMetaFileName = LastfmHelper.LocalArtistMetaFileName;
         }
 
         protected override async Task<string> FindId(Entities.BaseItem item, System.Threading.CancellationToken cancellationToken)
@@ -80,8 +82,24 @@ namespace MediaBrowser.Controller.Providers.Music
 
             if (result != null && result.artist != null)
             {
-                ProcessArtistData(item as MusicArtist, result.artist);
+                LastfmHelper.ProcessArtistData(item, result.artist);
+                //And save locally if indicated
+                if (ConfigurationManager.Configuration.SaveLocalMeta)
+                {
+                    var ms = new MemoryStream();
+                    JsonSerializer.SerializeToStream(result.artist, ms);
+
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    await Kernel.Instance.FileSystemManager.SaveToLibraryFilesystem(item, Path.Combine(item.MetaLocation, LocalMetaFileName), ms, cancellationToken).ConfigureAwait(false);
+                    
+                }
             }
+        }
+
+        public override bool Supports(Entities.BaseItem item)
+        {
+            return item is MusicArtist;
         }
     }
 }

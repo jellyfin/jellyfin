@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Collections.Generic;
+using System.Net;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -67,6 +68,17 @@ namespace MediaBrowser.Controller.Providers.Music
         protected string LocalMetaFileName { get; set; }
 
         /// <summary>
+        /// If we save locally, refresh if they delete something
+        /// </summary>
+        protected override bool RefreshOnFileSystemStampChange
+        {
+            get
+            {
+                return ConfigurationManager.Configuration.SaveLocalMeta;
+            }
+        }
+
+        /// <summary>
         /// Gets the priority.
         /// </summary>
         /// <value>The priority.</value>
@@ -87,19 +99,58 @@ namespace MediaBrowser.Controller.Providers.Music
             }
         }
 
-        /// <summary>
-        /// If we save locally, refresh if they delete something
-        /// </summary>
-        protected override bool RefreshOnFileSystemStampChange
-        {
-            get
-            {
-                return ConfigurationManager.Configuration.SaveLocalMeta;
-            }
-        }
-
         protected const string RootUrl = @"http://ws.audioscrobbler.com/2.0/?";
         protected static string ApiKey = "7b76553c3eb1d341d642755aecc40a33";
+
+        /// <summary>
+        /// Determines whether [has local meta] [the specified item].
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns><c>true</c> if [has local meta] [the specified item]; otherwise, <c>false</c>.</returns>
+        protected bool HasLocalMeta(BaseItem item)
+        {
+            return item.ResolveArgs.ContainsMetaFileByName(LocalMetaFileName);
+        }
+
+        /// <summary>
+        /// Fetches the items data.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>Task.</returns>
+        protected virtual async Task FetchData(BaseItem item, CancellationToken cancellationToken)
+        {
+            var id = item.GetProviderId(MetadataProviders.Musicbrainz) ?? await FindId(item, cancellationToken).ConfigureAwait(false);
+            if (id != null)
+            {
+                Logger.Debug("LastfmProvider - getting info with id: " + id);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                item.SetProviderId(MetadataProviders.Musicbrainz, id);
+
+                await FetchLastfmData(item, id, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                Logger.Info("LastfmProvider could not find " + item.Name + ". Check name on Last.fm.");
+            }
+            
+        }
+
+        protected abstract Task<string> FindId(BaseItem item, CancellationToken cancellationToken);
+
+        protected abstract Task FetchLastfmData(BaseItem item, string id, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Encodes an URL.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns>System.String.</returns>
+        protected static string UrlEncode(string name)
+        {
+            return WebUtility.UrlEncode(name);
+        }
 
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
@@ -173,56 +224,76 @@ namespace MediaBrowser.Controller.Providers.Music
             SetLastRefreshed(item, DateTime.UtcNow);
             return true;
         }
-
-        /// <summary>
-        /// Determines whether [has local meta] [the specified item].
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns><c>true</c> if [has local meta] [the specified item]; otherwise, <c>false</c>.</returns>
-        private bool HasLocalMeta(BaseItem item)
-        {
-            return item.ResolveArgs.ContainsMetaFileByName(LocalMetaFileName);
-        }
-
-        /// <summary>
-        /// Fetches the items data.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns>Task.</returns>
-        protected async Task FetchData(BaseItem item, CancellationToken cancellationToken)
-        {
-            var id = item.GetProviderId(MetadataProviders.Musicbrainz) ?? await FindId(item, cancellationToken).ConfigureAwait(false);
-            if (id != null)
-            {
-                Logger.Debug("LastfmProvider - getting info with id: " + id);
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                item.SetProviderId(MetadataProviders.Musicbrainz, id);
-
-                await FetchLastfmData(item, id, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                Logger.Info("LastfmProvider could not find " + item.Name + ". Check name on Last.fm.");
-            }
-            
-        }
-
-        protected abstract Task<string> FindId(BaseItem item, CancellationToken cancellationToken);
-
-        protected abstract Task FetchLastfmData(BaseItem item, string id, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Encodes an URL.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns>System.String.</returns>
-        protected static string UrlEncode(string name)
-        {
-            return WebUtility.UrlEncode(name);
-        }
-
     }
+
+    #region Result Objects
+
+    public class LastfmStats
+    {
+        public string listeners { get; set; }
+        public string playcount { get; set; }
+    }
+
+    public class LastfmTag
+    {
+        public string name { get; set; }
+        public string url { get; set; }
+    }
+
+
+    public class LastfmTags
+    {
+        public List<LastfmTag> tag { get; set; }
+    }
+
+    public class LastfmFormationInfo
+    {
+        public string yearfrom { get; set; }
+        public string yearto { get; set; }
+    }
+
+    public class LastFmBio
+    {
+        public string published { get; set; }
+        public string summary { get; set; }
+        public string content { get; set; }
+        public string placeformed { get; set; }
+        public string yearformed { get; set; }
+        public List<LastfmFormationInfo> formationlist { get; set; }
+    }
+
+    public class LastfmArtist
+    {
+        public string name { get; set; }
+        public string mbid { get; set; }
+        public string url { get; set; }
+        public string streamable { get; set; }
+        public string ontour { get; set; }
+        public LastfmStats stats { get; set; }
+        public List<LastfmArtist> similar { get; set; }
+        public LastfmTags tags { get; set; }
+        public LastFmBio bio { get; set; }
+    }
+
+    public class LastfmGetArtistResult
+    {
+        public LastfmArtist artist { get; set; }
+    }
+
+    public class Artistmatches
+    {
+        public List<LastfmArtist> artist { get; set; }
+    }
+
+    public class LastfmArtistSearchResult
+    {
+        public Artistmatches artistmatches { get; set; }
+    }
+
+    public class LastfmArtistSearchResults
+    {
+        public LastfmArtistSearchResult results { get; set; }
+    }
+
+    #endregion
 }

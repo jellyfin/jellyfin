@@ -1,4 +1,5 @@
-﻿using System.Collections.Specialized;
+﻿using System.Collections.Generic;
+using System.Collections.Specialized;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -143,6 +144,7 @@ namespace MediaBrowser.Controller.Providers.Music
                                     Logger.Debug("FanArtProvider getting Backdrop for " + artist.Name);
                                     try
                                     {
+                                        artist.BackdropImagePaths = new List<string>();
                                         artist.BackdropImagePaths.Add(await Kernel.Instance.ProviderManager.DownloadAndSaveImage(artist, path, ("Backdrop"+(numBackdrops > 0 ? numBackdrops.ToString() : "")+".jpg"), FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                                         numBackdrops++;
                                         if (numBackdrops >= ConfigurationManager.Configuration.MaxBackdrops) break;
