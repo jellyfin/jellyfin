@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Providers.Music
 {
     public abstract class LastfmBaseArtistProvider : LastfmBaseProvider
     {
-        protected LastfmBaseArtistProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager) 
+        protected LastfmBaseArtistProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager)
             : base(jsonSerializer, httpClient, logManager)
         {
             LocalMetaFileName = "MBArtist.json";
@@ -25,37 +25,16 @@ namespace MediaBrowser.Controller.Providers.Music
             return item is MusicArtist;
         }
 
-        protected override async Task<string> FindId(Entities.BaseItem item, System.Threading.CancellationToken cancellationToken)
+        protected void ProcessArtistData(MusicArtist artist, LastfmArtist data)
         {
-            //Execute the Artist search against our name and assume first one is the one we want
-            var url = RootUrl + string.Format("method=artist.search&artist={0}&api_key={1}&format=json", UrlEncode(item.Name), ApiKey);
-
-            LastfmArtistSearchResults searchResult = null;
-
-            try
+            artist.Overview = data.bio.summary;
+            foreach (var tag in data.tags.tag)
             {
-                using (var json = await HttpClient.Get(url, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
-                {
-                    searchResult = JsonSerializer.DeserializeFromStream<LastfmArtistSearchResults>(json);
-                }
+                artist.AddGenre(tag.name);
             }
-            catch (HttpException e)
-            {
-                if (e.StatusCode == HttpStatusCode.NotFound)
-                {
-                    return null;
-                }
-                throw;
-            }
-
-            if (searchResult != null && searchResult.results != null && searchResult.results.artistmatches != null && searchResult.results.artistmatches.artist.Any())
-            {
-                return searchResult.results.artistmatches.artist.First().mbid;
-            }
-
-            return null;
         }
     }
+
 
     #region Result Objects
 
@@ -69,6 +48,11 @@ namespace MediaBrowser.Controller.Providers.Music
     {
         public string name { get; set; }
         public string url { get; set; }
+    }
+
+    public class LastfmTags
+    {
+        public List<LastfmTag> tag  { get; set; }
     }
 
     public class LastfmFormationInfo
@@ -96,7 +80,7 @@ namespace MediaBrowser.Controller.Providers.Music
         public string ontour { get; set; }
         public LastfmStats stats { get; set; }
         public List<LastfmArtist> similar { get; set; }
-        public List<LastfmTag> tags { get; set; }
+        public LastfmTags tags { get; set; }
         public LastFmBio bio { get; set; }
     }
 
@@ -119,6 +103,5 @@ namespace MediaBrowser.Controller.Providers.Music
     {
         public LastfmArtistSearchResult results { get; set; }
     }
-
     #endregion
 }

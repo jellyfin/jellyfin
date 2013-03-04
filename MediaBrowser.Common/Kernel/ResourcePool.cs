@@ -39,6 +39,11 @@ namespace MediaBrowser.Common.Kernel
         public readonly SemaphoreSlim Mb = new SemaphoreSlim(5, 5);
 
         /// <summary>
+        /// The mb
+        /// </summary>
+        public readonly SemaphoreSlim Lastfm = new SemaphoreSlim(5, 5);
+
+        /// <summary>
         /// Apple doesn't seem to like too many simulataneous requests.
         /// </summary>
         public readonly SemaphoreSlim AppleTrailerVideos = new SemaphoreSlim(1, 1);
