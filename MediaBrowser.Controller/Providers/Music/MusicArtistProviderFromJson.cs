@@ -9,6 +9,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 
@@ -48,6 +49,8 @@ namespace MediaBrowser.Controller.Providers.Music
                     cancellationToken.ThrowIfCancellationRequested();
 
                     LastfmHelper.ProcessArtistData(item, data);
+
+                    item.SetProviderId(MetadataProviders.Musicbrainz, data.mbid);
 
                     SetLastRefreshed(item, DateTime.UtcNow);
                     return true;
