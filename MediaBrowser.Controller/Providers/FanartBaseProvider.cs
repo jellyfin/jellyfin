@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using System.Threading;
+using MediaBrowser.Controller.Configuration;
 using System.Collections.Generic;
 using MediaBrowser.Controller.Entities;
 using System;
@@ -11,6 +12,9 @@ namespace MediaBrowser.Controller.Providers
     /// </summary>
     public abstract class FanartBaseProvider : BaseMetadataProvider
     {
+
+        protected static readonly SemaphoreSlim FanArtResourcePool = new SemaphoreSlim(5,5);
+
         /// <summary>
         /// The LOG o_ FILE
         /// </summary>
