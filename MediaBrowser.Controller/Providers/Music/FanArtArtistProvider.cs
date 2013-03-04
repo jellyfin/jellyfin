@@ -66,9 +66,9 @@ namespace MediaBrowser.Controller.Providers.Music
             var logoExists = item.ResolveArgs.ContainsMetaFileByName(LOGO_FILE);
             var discExists = item.ResolveArgs.ContainsMetaFileByName(DISC_FILE);
 
-            return (!artExists && ConfigurationManager.Configuration.DownloadMovieArt)
-                || (!logoExists && ConfigurationManager.Configuration.DownloadMovieLogo)
-                || (!discExists && ConfigurationManager.Configuration.DownloadMovieDisc);
+            return (!artExists && ConfigurationManager.Configuration.DownloadMusicArtistImages.Art)
+                || (!logoExists && ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo)
+                || (!discExists && ConfigurationManager.Configuration.DownloadMusicArtistImages.Disc);
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace MediaBrowser.Controller.Providers.Music
                 {
                     string path;
                     var hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hd" : "";
-                    if (ConfigurationManager.Configuration.DownloadMovieLogo && !item.ResolveArgs.ContainsMetaFileByName(LOGO_FILE))
+                    if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo && !item.ResolveArgs.ContainsMetaFileByName(LOGO_FILE))
                     {
                         var node =
                             doc.SelectSingleNode("//fanart/music/musiclogos/" + hd + "musiclogo/@url") ??
@@ -129,7 +129,7 @@ namespace MediaBrowser.Controller.Providers.Music
                     }
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    if (!item.ResolveArgs.ContainsMetaFileByName(BACKDROP_FILE))
+                    if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Backdrops && !item.ResolveArgs.ContainsMetaFileByName(BACKDROP_FILE))
                     {
                         var nodes = doc.SelectNodes("//fanart/music/artistbackgrounds//@url");
                         if (nodes != null)
@@ -163,7 +163,7 @@ namespace MediaBrowser.Controller.Providers.Music
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    if (ConfigurationManager.Configuration.DownloadMovieArt && !item.ResolveArgs.ContainsMetaFileByName(ART_FILE))
+                    if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Art && !item.ResolveArgs.ContainsMetaFileByName(ART_FILE))
                     {
                         var node =
                             doc.SelectSingleNode("//fanart/music/musicarts/" + hd + "musicart/@url") ??
@@ -187,7 +187,7 @@ namespace MediaBrowser.Controller.Providers.Music
                     }
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    if (ConfigurationManager.Configuration.DownloadMovieBanner && !item.ResolveArgs.ContainsMetaFileByName(BANNER_FILE))
+                    if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Banner && !item.ResolveArgs.ContainsMetaFileByName(BANNER_FILE))
                     {
                         var node = doc.SelectSingleNode("//fanart/music/musicbanners/"+hd+"musicbanner/@url") ??
                                    doc.SelectSingleNode("//fanart/music/musicbanners/musicbanner/@url");
@@ -212,7 +212,7 @@ namespace MediaBrowser.Controller.Providers.Music
                     cancellationToken.ThrowIfCancellationRequested();
 
                     // Artist thumbs are actually primary images (they are square/portrait)
-                    if (!item.ResolveArgs.ContainsMetaFileByName(PRIMARY_FILE))
+                    if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Primary && !item.ResolveArgs.ContainsMetaFileByName(PRIMARY_FILE))
                     {
                         var node = doc.SelectSingleNode("//fanart/music/artistthumbs/artistthumb/@url");
                         path = node != null ? node.Value : null;
