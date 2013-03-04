@@ -24,5 +24,6 @@
         <file src="dlls\MediaBrowser.Common.Implementations.dll" target="lib\net45\MediaBrowser.Common.Implementations.dll" />
         <file src="dlls\MediaBrowser.IsoMounter.dll" target="lib\net45\MediaBrowser.IsoMounter.dll" />
         <file src="dlls\pfmclrapi.dll" target="lib\net45\pfmclrapi.dll" />
+        <file src="dlls\Mediabrowser.PluginSecurity.dll" target="lib\net45\Mediabrowser.PluginSecurity.dll" />
     </files>
 </package>
