@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
@@ -96,6 +98,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         protected static internal ILogger Logger { get; internal set; }
         protected static internal ILibraryManager LibraryManager { get; internal set; }
+        protected static internal IServerConfigurationManager ConfigurationManager { get; internal set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -311,7 +314,7 @@ namespace MediaBrowser.Controller.Entities
             // non file-system entries will not have a path
             if (string.IsNullOrEmpty(path))
             {
-                return new ItemResolveArgs
+                return new ItemResolveArgs(ConfigurationManager.ApplicationPaths)
                 {
                     FileInfo = new WIN32_FIND_DATA()
                 };
@@ -329,7 +332,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new IOException("Unable to retrieve file system info for " + path);
             }
 
-            var args = new ItemResolveArgs
+            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths)
             {
                 FileInfo = pathInfo.Value,
                 Path = path,
@@ -997,7 +1000,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException();
             }
 
-            return (DateTime.UtcNow - DateCreated).TotalDays < Kernel.Instance.Configuration.RecentItemDays;
+            return (DateTime.UtcNow - DateCreated).TotalDays < ConfigurationManager.Configuration.RecentItemDays;
         }
 
         /// <summary>
@@ -1020,7 +1023,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            return (DateTime.UtcNow - data.LastPlayedDate.Value).TotalDays < Kernel.Instance.Configuration.RecentlyPlayedDays;
+            return (DateTime.UtcNow - data.LastPlayedDate.Value).TotalDays < ConfigurationManager.Configuration.RecentlyPlayedDays;
         }
 
         /// <summary>

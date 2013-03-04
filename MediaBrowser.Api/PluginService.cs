@@ -1,6 +1,7 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations.HttpServer;
-using MediaBrowser.Common.Kernel;
+using MediaBrowser.Common.Security;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Plugins;
@@ -129,13 +130,16 @@ namespace MediaBrowser.Api
         /// </summary>
         private readonly IApplicationHost _appHost;
 
+        private readonly ISecurityManager _securityManager;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginService" /> class.
         /// </summary>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="appHost">The app host.</param>
+        /// <param name="securityManager">The security manager.</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
-        public PluginService(IJsonSerializer jsonSerializer, IApplicationHost appHost)
+        public PluginService(IJsonSerializer jsonSerializer, IApplicationHost appHost, ISecurityManager securityManager)
             : base()
         {
             if (jsonSerializer == null)
@@ -144,6 +148,7 @@ namespace MediaBrowser.Api
             }
 
             _appHost = appHost;
+            _securityManager = securityManager;
             _jsonSerializer = jsonSerializer;
         }
 
@@ -206,13 +211,11 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetPluginSecurityInfo request)
         {
-            var kernel = (Kernel)Kernel;
-
             var result = new PluginSecurityInfo
             {
-                IsMBSupporter = kernel.SecurityManager.IsMBSupporter,
-                SupporterKey = kernel.SecurityManager.SupporterKey,
-                LegacyKey = kernel.SecurityManager.LegacyKey
+                IsMBSupporter = _securityManager.IsMBSupporter,
+                SupporterKey = _securityManager.SupporterKey,
+                LegacyKey = _securityManager.LegacyKey
             };
 
             return ToOptimizedResult(result);
@@ -224,12 +227,10 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Post(UpdatePluginSecurityInfo request)
         {
-            var kernel = (Kernel)Kernel;
-
             var info = _jsonSerializer.DeserializeFromStream<PluginSecurityInfo>(request.RequestStream);
 
-            kernel.SecurityManager.SupporterKey = info.SupporterKey;
-            kernel.SecurityManager.LegacyKey = info.LegacyKey;
+            _securityManager.SupporterKey = info.SupporterKey;
+            _securityManager.LegacyKey = info.LegacyKey;
         }
 
         /// <summary>
@@ -256,11 +257,9 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Delete(UninstallPlugin request)
         {
-            var kernel = (Kernel)Kernel;
-
             var plugin = _appHost.Plugins.First(p => p.Id == request.Id);
 
-            kernel.InstallationManager.UninstallPlugin(plugin);
+            Kernel.Instance.InstallationManager.UninstallPlugin(plugin);
         }
     }
 }

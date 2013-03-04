@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -14,12 +15,8 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// </summary>
     public abstract class BaseProgressiveStreamingService : BaseStreamingService
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BaseProgressiveStreamingService" /> class.
-        /// </summary>
-        /// <param name="appPaths">The app paths.</param>
-        protected BaseProgressiveStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager)
-            : base(appPaths, userManager, libraryManager)
+        protected BaseProgressiveStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager) : 
+            base(appPaths, userManager, libraryManager, isoManager)
         {
         }
 

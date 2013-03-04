@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Globalization;
@@ -14,10 +15,8 @@ namespace MediaBrowser.Controller.Localization
     /// </summary>
     public class LocalizedStrings
     {
-        /// <summary>
-        /// The logger
-        /// </summary>
-        static internal ILogger Logger { get; set; }
+        internal static IServerApplicationPaths ApplicationPaths;
+        
         /// <summary>
         /// The base prefix
         /// </summary>
@@ -31,17 +30,21 @@ namespace MediaBrowser.Controller.Localization
         /// </summary>
         private static LocalizedStrings _instance;
 
+        private IServerApplicationPaths _appPaths;
+
         /// <summary>
         /// Gets the instance.
         /// </summary>
         /// <value>The instance.</value>
-        public static LocalizedStrings Instance { get { return _instance ?? (_instance = new LocalizedStrings()); } }
+        public static LocalizedStrings Instance { get { return _instance ?? (_instance = new LocalizedStrings(ApplicationPaths)); } }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalizedStrings" /> class.
         /// </summary>
-        public LocalizedStrings()
+        public LocalizedStrings(IServerApplicationPaths appPaths)
         {
+            _appPaths = appPaths;
+
             foreach (var stringObject in Kernel.Instance.StringFiles)
             {
                 AddStringData(LoadFromFile(GetFileName(stringObject),stringObject.GetType()));
@@ -55,7 +58,7 @@ namespace MediaBrowser.Controller.Localization
         /// <returns>System.String.</returns>
         protected string GetFileName(LocalizedStringData stringObject)
         {
-            var path = Kernel.Instance.ApplicationPaths.LocalizationPath;
+            var path = _appPaths.LocalizationPath;
             var name = Path.Combine(path, stringObject.Prefix + "strings-" + CultureInfo.CurrentCulture + ".xml");
             if (File.Exists(name))
             {
@@ -125,17 +128,17 @@ namespace MediaBrowser.Controller.Localization
                 }
                 catch (TargetException ex)
                 {
-                    Logger.ErrorException("Error getting value for field: {0}", ex, field.Name);
+                    //Logger.ErrorException("Error getting value for field: {0}", ex, field.Name);
                     continue;
                 }
                 catch (FieldAccessException ex)
                 {
-                    Logger.ErrorException("Error getting value for field: {0}", ex, field.Name);
+                    //Logger.ErrorException("Error getting value for field: {0}", ex, field.Name);
                     continue;
                 }
                 catch (NotSupportedException ex)
                 {
-                    Logger.ErrorException("Error getting value for field: {0}", ex, field.Name);
+                    //Logger.ErrorException("Error getting value for field: {0}", ex, field.Name);
                     continue;
                 }
 

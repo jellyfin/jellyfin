@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.MediaInfo;
@@ -17,7 +18,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     /// </summary>
     public class FFProbeAudioInfoProvider : BaseFFProbeProvider<Audio>
     {
-        public FFProbeAudioInfoProvider(ILogManager logManager) : base(logManager)
+        public FFProbeAudioInfoProvider(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
         {
         }
 

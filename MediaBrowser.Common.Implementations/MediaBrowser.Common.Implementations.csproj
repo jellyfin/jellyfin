@@ -38,6 +38,9 @@
     <Reference Include="Alchemy">
       <HintPath>..\packages\Alchemy.2.2.1\lib\net40\Alchemy.dll</HintPath>
     </Reference>
+    <Reference Include="Mediabrowser.PluginSecurity">
+      <HintPath>..\ThirdParty\PluginSecurity\Mediabrowser.PluginSecurity.dll</HintPath>
+    </Reference>
     <Reference Include="NLog">
       <HintPath>..\packages\NLog.2.0.0.2000\lib\net40\NLog.dll</HintPath>
     </Reference>
@@ -104,6 +107,7 @@
     </Compile>
     <Compile Include="BaseApplicationHost.cs" />
     <Compile Include="BaseApplicationPaths.cs" />
+    <Compile Include="Configuration\BaseConfigurationManager.cs" />
     <Compile Include="HttpClientManager\HttpClientManager.cs" />
     <Compile Include="HttpServer\BaseRestService.cs" />
     <Compile Include="HttpServer\HttpServer.cs" />
@@ -123,6 +127,7 @@
     <Compile Include="ScheduledTasks\Tasks\DeleteLogFileTask.cs" />
     <Compile Include="ScheduledTasks\Tasks\ReloadLoggerTask.cs" />
     <Compile Include="ScheduledTasks\Tasks\SystemUpdateTask.cs" />
+    <Compile Include="Security\PluginSecurityManager.cs" />
     <Compile Include="Serialization\JsonSerializer.cs" />
     <Compile Include="Serialization\ProtobufSerializer.cs" />
     <Compile Include="Serialization\XmlSerializer.cs" />

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using System;
 using MediaBrowser.Controller.Library;
@@ -30,12 +31,8 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// </summary>
     public class VideoService : BaseProgressiveStreamingService
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BaseProgressiveStreamingService" /> class.
-        /// </summary>
-        /// <param name="appPaths">The app paths.</param>
-        public VideoService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager)
-            : base(appPaths, userManager, libraryManager)
+        public VideoService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager) 
+            : base(appPaths, userManager, libraryManager, isoManager)
         {
         }
 
@@ -59,7 +56,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         {
             var video = (Video)state.Item;
 
-            var probeSize = ServerKernel.FFMpegManager.GetProbeSizeArgument(video.VideoType, video.IsoType);
+            var probeSize = Kernel.Instance.FFMpegManager.GetProbeSizeArgument(video.VideoType, video.IsoType);
 
             // Get the output codec name
             var videoCodec = GetVideoCodec(state.Request);

@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Kernel;
-using MediaBrowser.Controller;
+﻿using MediaBrowser.Common;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -78,11 +77,10 @@ namespace MediaBrowser.ServerApplication
             //this whole async thing doesn't really work in this instance since all my work pretty much needs to be on the UI thread...
             Cursor = Cursors.Wait;
             await Task.Run(() =>
-                               {
-                                   IEnumerable<BaseItem> children;
-                                   children = CurrentUser.Name == "Physical" ? _libraryManager.RootFolder.Children.OrderBy(i => i.SortName) : _libraryManager.RootFolder.GetChildren(CurrentUser, sortBy: LocalizedStrings.Instance.GetString("NameDispPref"));
+                {
+                    IEnumerable<BaseItem> children = CurrentUser.Name == "Physical" ? _libraryManager.RootFolder.Children.OrderBy(i => i.SortName) : _libraryManager.RootFolder.GetChildren(CurrentUser, sortBy: LocalizedStrings.Instance.GetString("NameDispPref"));
 
-                                   foreach (Folder folder in children)
+                    foreach (Folder folder in children)
                                    {
 
                                         var currentFolder = folder;
@@ -96,7 +94,7 @@ namespace MediaBrowser.ServerApplication
                                             tvwLibrary.Items.Add(node);
                                         }, CancellationToken.None, TaskCreationOptions.None, ui);
                                    }
-                               });
+                });
             lblLoading.Visibility = Visibility.Hidden;
             Cursor = Cursors.Arrow;
 

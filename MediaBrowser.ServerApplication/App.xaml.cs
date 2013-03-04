@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Updates;
@@ -72,12 +73,6 @@ namespace MediaBrowser.ServerApplication
         private Mutex SingleInstanceMutex;
 
         /// <summary>
-        /// Gets or sets the kernel.
-        /// </summary>
-        /// <value>The kernel.</value>
-        protected IKernel Kernel { get; set; }
-
-        /// <summary>
         /// Gets or sets the logger.
         /// </summary>
         /// <value>The logger.</value>
@@ -106,12 +101,6 @@ namespace MediaBrowser.ServerApplication
         {
             get { return "MediaBrowser.Server.Uninstall.exe"; }
         }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [last run at startup value].
-        /// </summary>
-        /// <value><c>null</c> if [last run at startup value] contains no value, <c>true</c> if [last run at startup value]; otherwise, <c>false</c>.</value>
-        private bool? LastRunAtStartupValue { get; set; }
 
         /// <summary>
         /// Raises the <see cref="E:System.Windows.Application.Startup" /> event.
@@ -164,26 +153,17 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         protected async void LoadKernel()
         {
-            CompositionRoot = new ApplicationHost();
-            await CompositionRoot.Init();
-
-            Logger = CompositionRoot.Logger;
-            Kernel = CompositionRoot.Kernel;
-
             try
             {
-                var win = (MainWindow)CompositionRoot.CreateInstance(typeof(MainWindow));
+                CompositionRoot = new ApplicationHost();
+
+                var win = new MainWindow(CompositionRoot.LogManager, CompositionRoot, CompositionRoot.ServerConfigurationManager);
+
+                Logger = CompositionRoot.LogManager.GetLogger("App");
 
                 win.Show();
 
-                var now = DateTime.UtcNow;
-
-                Kernel.Init();
-
-                var done = (DateTime.UtcNow - now);
-                Logger.Info("Kernel.Init completed in {0}{1} minutes and {2} seconds.", done.Hours > 0 ? done.Hours + " Hours " : "", done.Minutes, done.Seconds);
-
-                await OnKernelLoaded();
+                await CompositionRoot.Init();
             }
             catch (Exception ex)
             {
@@ -194,41 +174,6 @@ namespace MediaBrowser.ServerApplication
                 // Shutdown the app with an error code
                 Shutdown(1);
             }
-        }
-
-        /// <summary>
-        /// Called when [kernel loaded].
-        /// </summary>
-        /// <returns>Task.</returns>
-        protected Task OnKernelLoaded()
-        {
-            return Task.Run(() =>
-            {
-                Kernel.ConfigurationUpdated += Kernel_ConfigurationUpdated;
-
-                ConfigureAutoRun();
-            });
-        }
-
-        /// <summary>
-        /// Handles the ConfigurationUpdated event of the Kernel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void Kernel_ConfigurationUpdated(object sender, EventArgs e)
-        {
-            if (!LastRunAtStartupValue.HasValue || LastRunAtStartupValue.Value != Kernel.Configuration.RunAtStartup)
-            {
-                ConfigureAutoRun();
-            }
-        }
-
-        /// <summary>
-        /// Configures the click once startup.
-        /// </summary>
-        private void ConfigureAutoRun()
-        {
-            CompositionRoot.ConfigureAutoRunAtStartup(Kernel.Configuration.RunAtStartup);
         }
 
         /// <summary>
@@ -261,21 +206,13 @@ namespace MediaBrowser.ServerApplication
         }
 
         /// <summary>
-        /// Opens the dashboard.
-        /// </summary>
-        public static void OpenDashboard(User loggedInUser)
-        {
-            OpenDashboardPage("dashboard.html", loggedInUser);
-        }
-
-        /// <summary>
         /// Opens the dashboard page.
         /// </summary>
         /// <param name="page">The page.</param>
-        public static void OpenDashboardPage(string page, User loggedInUser)
+        public static void OpenDashboardPage(string page, User loggedInUser, IConfigurationManager configurationManager)
         {
-            var url = "http://localhost:" + Controller.Kernel.Instance.Configuration.HttpServerPortNumber + "/" +
-                      Controller.Kernel.Instance.WebApplicationName + "/dashboard/" + page;
+            var url = "http://localhost:" + configurationManager.CommonConfiguration.HttpServerPortNumber + "/" +
+                      Kernel.Instance.WebApplicationName + "/dashboard/" + page;
 
             if (loggedInUser != null)
             {

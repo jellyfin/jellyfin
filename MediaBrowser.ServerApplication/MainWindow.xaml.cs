@@ -1,5 +1,7 @@
-﻿using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.ServerApplication.Logging;
@@ -31,6 +33,11 @@ namespace MediaBrowser.ServerApplication
         /// The _log manager
         /// </summary>
         private readonly ILogManager _logManager;
+
+        /// <summary>
+        /// The _configuration manager
+        /// </summary>
+        private readonly IServerConfigurationManager _configurationManager;
         
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow" /> class.
@@ -39,16 +46,25 @@ namespace MediaBrowser.ServerApplication
         /// <param name="logger">The logger.</param>
         /// <param name="appHost">The app host.</param>
         /// <exception cref="System.ArgumentNullException">logger</exception>
-        public MainWindow(ILogManager logManager, IApplicationHost appHost)
+        public MainWindow(ILogManager logManager, IApplicationHost appHost, IServerConfigurationManager configurationManager)
         {
             if (logManager == null)
             {
                 throw new ArgumentNullException("logManager");
             }
+            if (appHost == null)
+            {
+                throw new ArgumentNullException("appHost");
+            }
+            if (configurationManager == null)
+            {
+                throw new ArgumentNullException("configurationManager");
+            }
 
             _logger = logManager.GetLogger("MainWindow");
             _appHost = appHost;
             _logManager = logManager;
+            _configurationManager = configurationManager;
 
             InitializeComponent();
 
@@ -67,7 +83,7 @@ namespace MediaBrowser.ServerApplication
             Instance_ConfigurationUpdated(null, EventArgs.Empty);
 
             _logManager.LoggerLoaded += LoadLogWindow;
-            Kernel.Instance.ConfigurationUpdated += Instance_ConfigurationUpdated;
+            _configurationManager.ConfigurationUpdated += Instance_ConfigurationUpdated;
         }
 
         /// <summary>
@@ -79,7 +95,7 @@ namespace MediaBrowser.ServerApplication
         {
             Dispatcher.InvokeAsync(() =>
             {
-                var developerToolsVisibility = Kernel.Instance.Configuration.EnableDeveloperTools
+                var developerToolsVisibility = _configurationManager.Configuration.EnableDeveloperTools
                                                    ? Visibility.Visible
                                                    : Visibility.Collapsed;
 
@@ -89,9 +105,9 @@ namespace MediaBrowser.ServerApplication
 
                 var logWindow = App.Instance.Windows.OfType<LogWindow>().FirstOrDefault();
 
-                if ((logWindow == null && Kernel.Instance.Configuration.ShowLogWindow) || (logWindow != null && !Kernel.Instance.Configuration.ShowLogWindow))
+                if ((logWindow == null && _configurationManager.Configuration.ShowLogWindow) || (logWindow != null && !_configurationManager.Configuration.ShowLogWindow))
                 {
-                    _logManager.ReloadLogger(Kernel.Instance.Configuration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info);
+                    _logManager.ReloadLogger(_configurationManager.Configuration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info);
                 }
             });
         }
@@ -107,16 +123,16 @@ namespace MediaBrowser.ServerApplication
             Dispatcher.InvokeAsync(() =>
             {
                 // Add our log window if specified
-                if (Kernel.Instance.Configuration.ShowLogWindow)
+                if (_configurationManager.Configuration.ShowLogWindow)
                 {
-                    Trace.Listeners.Add(new WindowTraceListener(new LogWindow(Kernel.Instance)));
+                    Trace.Listeners.Add(new WindowTraceListener(new LogWindow()));
                 }
                 else
                 {
                     Trace.Listeners.Remove("MBLogWindow");
                 }
                 // Set menu option indicator
-                cmShowLogWindow.IsChecked = Kernel.Instance.Configuration.ShowLogWindow;
+                cmShowLogWindow.IsChecked = _configurationManager.Configuration.ShowLogWindow;
 
             }, DispatcherPriority.Normal);
         }
@@ -142,7 +158,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         void cmdApiDocs_Click(object sender, EventArgs e)
         {
-            App.OpenUrl("http://localhost:" + Kernel.Instance.Configuration.HttpServerPortNumber + "/" +
+            App.OpenUrl("http://localhost:" + _configurationManager.Configuration.HttpServerPortNumber + "/" +
                       Kernel.Instance.WebApplicationName + "/metadata");
         }
 
@@ -190,9 +206,17 @@ namespace MediaBrowser.ServerApplication
         private void cmOpenDashboard_click(object sender, RoutedEventArgs e)
         {
             var user = _appHost.Resolve<IUserManager>().Users.FirstOrDefault(u => u.Configuration.IsAdministrator);
-            App.OpenDashboard(user);
+            OpenDashboard(user);
         }
 
+        /// <summary>
+        /// Opens the dashboard.
+        /// </summary>
+        private void OpenDashboard(User loggedInUser)
+        {
+            App.OpenDashboardPage("dashboard.html", loggedInUser, _configurationManager);
+        }
+        
         /// <summary>
         /// Handles the click event of the cmVisitCT control.
         /// </summary>
@@ -211,7 +235,7 @@ namespace MediaBrowser.ServerApplication
         private void cmdBrowseLibrary_click(object sender, RoutedEventArgs e)
         {
             var user = _appHost.Resolve<IUserManager>().Users.FirstOrDefault(u => u.Configuration.IsAdministrator);
-            App.OpenDashboardPage("index.html", user);
+            App.OpenDashboardPage("index.html", user, _configurationManager);
         }
 
         /// <summary>
@@ -241,8 +265,8 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void CmShowLogWindow_click(object sender, RoutedEventArgs e)
         {
-            Kernel.Instance.Configuration.ShowLogWindow = !Kernel.Instance.Configuration.ShowLogWindow;
-            Kernel.Instance.SaveConfiguration();
+            _configurationManager.Configuration.ShowLogWindow = !_configurationManager.Configuration.ShowLogWindow;
+            _configurationManager.SaveConfiguration();
             LoadLogWindow(sender, e);
         }
 

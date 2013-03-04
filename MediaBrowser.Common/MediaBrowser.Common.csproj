@@ -46,6 +46,8 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Configuration\ConfigurationHelper.cs" />
+    <Compile Include="Configuration\IConfigurationManager.cs" />
     <Compile Include="Constants\Constants.cs" />
     <Compile Include="Events\EventHelper.cs" />
     <Compile Include="Extensions\BaseExtensions.cs" />
@@ -58,14 +60,11 @@
     <Compile Include="IO\ProgressStream.cs" />
     <Compile Include="IO\StreamDefaults.cs" />
     <Compile Include="Kernel\BasePeriodicWebSocketListener.cs" />
-    <Compile Include="Kernel\IApplicationPaths.cs" />
+    <Compile Include="Configuration\IApplicationPaths.cs" />
     <Compile Include="Kernel\IServerManager.cs" />
     <Compile Include="Kernel\IWebSocketListener.cs" />
-    <Compile Include="Kernel\IApplicationHost.cs" />
+    <Compile Include="IApplicationHost.cs" />
     <Compile Include="Kernel\IKernel.cs" />
-    <Compile Include="Kernel\ResourcePool.cs" />
-    <Compile Include="Net\Handlers\IHttpServerHandler.cs" />
-    <Compile Include="Net\Handlers\StaticFileHandler.cs" />
     <Compile Include="Net\IHttpClient.cs" />
     <Compile Include="Net\IHttpServer.cs" />
     <Compile Include="Net\INetworkManager.cs" />
@@ -97,7 +96,6 @@
     <Compile Include="ScheduledTasks\SystemEventTrigger.cs" />
     <Compile Include="Kernel\BaseKernel.cs" />
     <Compile Include="Kernel\KernelContext.cs" />
-    <Compile Include="Net\Handlers\BaseHandler.cs" />
     <Compile Include="Plugins\BasePlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScheduledTasks\DailyTrigger.cs" />

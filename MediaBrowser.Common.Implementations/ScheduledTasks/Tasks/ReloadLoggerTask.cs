@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Model.Logging;
 using System;
@@ -24,22 +24,22 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// <value>The logger.</value>
         private ILogger Logger { get; set; }
         /// <summary>
-        /// Gets or sets the kernel.
+        /// Gets or sets the configuration manager.
         /// </summary>
-        /// <value>The kernel.</value>
-        private IKernel Kernel { get; set; }
+        /// <value>The configuration manager.</value>
+        private IConfigurationManager ConfigurationManager { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ReloadLoggerFileTask" /> class.
         /// </summary>
         /// <param name="logManager">The logManager.</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="kernel">The kernel.</param>
-        public ReloadLoggerFileTask(ILogManager logManager, ILogger logger, IKernel kernel)
+        /// <param name="configurationManager">The configuration manager.</param>
+        public ReloadLoggerFileTask(ILogManager logManager, ILogger logger, IConfigurationManager configurationManager)
         {
             LogManager = logManager;
             Logger = logger;
-            Kernel = kernel;
+            ConfigurationManager = configurationManager;
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
 
             progress.Report(0);
 
-            return Task.Run(() => LogManager.ReloadLogger(Kernel.Configuration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info));
+            return Task.Run(() => LogManager.ReloadLogger(ConfigurationManager.CommonConfiguration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info));
         }
 
         /// <summary>

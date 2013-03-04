@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -18,6 +20,12 @@ namespace MediaBrowser.Controller.Providers
         /// <value>The logger.</value>
         protected ILogger Logger { get; set; }
         protected ILogManager LogManager { get; set; }
+
+        /// <summary>
+        /// Gets the configuration manager.
+        /// </summary>
+        /// <value>The configuration manager.</value>
+        protected IServerConfigurationManager ConfigurationManager { get; private set; }
 
         // Cache these since they will be used a lot
         /// <summary>
@@ -103,10 +111,11 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseMetadataProvider" /> class.
         /// </summary>
-        protected BaseMetadataProvider(ILogManager logManager)
+        protected BaseMetadataProvider(ILogManager logManager, IServerConfigurationManager configurationManager)
         {
             Logger = logManager.GetLogger(GetType().Name);
             LogManager = logManager;
+            ConfigurationManager = configurationManager;
 
             Initialize();
         }

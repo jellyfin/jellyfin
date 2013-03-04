@@ -67,6 +67,7 @@ namespace MediaBrowser.Controller.MediaInfo
         /// The _protobuf serializer
         /// </summary>
         private readonly IProtobufSerializer _protobufSerializer;
+        private readonly IServerApplicationPaths _appPaths;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FFMpegManager" /> class.
@@ -77,7 +78,7 @@ namespace MediaBrowser.Controller.MediaInfo
         /// <param name="protobufSerializer">The protobuf serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">zipClient</exception>
-        public FFMpegManager(Kernel kernel, IZipClient zipClient, IJsonSerializer jsonSerializer, IProtobufSerializer protobufSerializer, ILogger logger)
+        public FFMpegManager(Kernel kernel, IZipClient zipClient, IJsonSerializer jsonSerializer, IProtobufSerializer protobufSerializer, ILogManager logManager, IServerApplicationPaths appPaths)
         {
             if (kernel == null)
             {
@@ -95,16 +96,13 @@ namespace MediaBrowser.Controller.MediaInfo
             {
                 throw new ArgumentNullException("protobufSerializer");
             }
-            if (logger == null)
-            {
-                throw new ArgumentNullException("logger");
-            }
 
             _kernel = kernel;
             _zipClient = zipClient;
             _jsonSerializer = jsonSerializer;
             _protobufSerializer = protobufSerializer;
-            _logger = logger;
+            _appPaths = appPaths;
+            _logger = logManager.GetLogger("FFMpegManager");
 
             // Not crazy about this but it's the only way to suppress ffmpeg crash dialog boxes
             SetErrorMode(ErrorModes.SEM_FAILCRITICALERRORS | ErrorModes.SEM_NOALIGNMENTFAULTEXCEPT | ErrorModes.SEM_NOGPFAULTERRORBOX | ErrorModes.SEM_NOOPENFILEERRORBOX);
@@ -223,7 +221,7 @@ namespace MediaBrowser.Controller.MediaInfo
             {
                 if (_videoImagesDataPath == null)
                 {
-                    _videoImagesDataPath = Path.Combine(_kernel.ApplicationPaths.DataPath, "ffmpeg-video-images");
+                    _videoImagesDataPath = Path.Combine(_appPaths.DataPath, "ffmpeg-video-images");
 
                     if (!Directory.Exists(_videoImagesDataPath))
                     {
@@ -249,7 +247,7 @@ namespace MediaBrowser.Controller.MediaInfo
             {
                 if (_audioImagesDataPath == null)
                 {
-                    _audioImagesDataPath = Path.Combine(_kernel.ApplicationPaths.DataPath, "ffmpeg-audio-images");
+                    _audioImagesDataPath = Path.Combine(_appPaths.DataPath, "ffmpeg-audio-images");
 
                     if (!Directory.Exists(_audioImagesDataPath))
                     {
@@ -275,7 +273,7 @@ namespace MediaBrowser.Controller.MediaInfo
             {
                 if (_subtitleCachePath == null)
                 {
-                    _subtitleCachePath = Path.Combine(_kernel.ApplicationPaths.CachePath, "ffmpeg-subtitles");
+                    _subtitleCachePath = Path.Combine(_appPaths.CachePath, "ffmpeg-subtitles");
 
                     if (!Directory.Exists(_subtitleCachePath))
                     {
@@ -302,7 +300,7 @@ namespace MediaBrowser.Controller.MediaInfo
 
             var filename = resource.Substring(resource.IndexOf(prefix, StringComparison.OrdinalIgnoreCase) + prefix.Length);
 
-            var versionedDirectoryPath = Path.Combine(_kernel.ApplicationPaths.MediaToolsPath, Path.GetFileNameWithoutExtension(filename));
+            var versionedDirectoryPath = Path.Combine(_appPaths.MediaToolsPath, Path.GetFileNameWithoutExtension(filename));
 
             if (!Directory.Exists(versionedDirectoryPath))
             {

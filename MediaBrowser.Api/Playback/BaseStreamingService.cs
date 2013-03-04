@@ -40,15 +40,12 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <value>The library manager.</value>
         protected ILibraryManager LibraryManager { get; set; }
-        
+
         /// <summary>
-        /// Gets the server kernel.
+        /// Gets or sets the iso manager.
         /// </summary>
-        /// <value>The server kernel.</value>
-        protected Kernel ServerKernel
-        {
-            get { return Kernel as Kernel; }
-        }
+        /// <value>The iso manager.</value>
+        protected IIsoManager IsoManager { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
@@ -56,11 +53,13 @@ namespace MediaBrowser.Api.Playback
         /// <param name="appPaths">The app paths.</param>
         /// <param name="userManager">The user manager.</param>
         /// <param name="libraryManager">The library manager.</param>
-        protected BaseStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager)
+        /// <param name="isoManager">The iso manager.</param>
+        protected BaseStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager)
         {
             ApplicationPaths = appPaths;
             UserManager = userManager;
             LibraryManager = libraryManager;
+            IsoManager = isoManager;
         }
 
         /// <summary>
@@ -307,11 +306,11 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         private string GetExtractedAssPath(Video video, MediaStream subtitleStream)
         {
-            var path = ServerKernel.FFMpegManager.GetSubtitleCachePath(video, subtitleStream.Index, ".ass");
+            var path = Kernel.Instance.FFMpegManager.GetSubtitleCachePath(video, subtitleStream.Index, ".ass");
 
             if (!File.Exists(path))
             {
-                var success = ServerKernel.FFMpegManager.ExtractTextSubtitle(video, subtitleStream.Index, path, CancellationToken.None).Result;
+                var success = Kernel.Instance.FFMpegManager.ExtractTextSubtitle(video, subtitleStream.Index, path, CancellationToken.None).Result;
 
                 if (!success)
                 {
@@ -330,11 +329,11 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         private string GetConvertedAssPath(Video video, MediaStream subtitleStream)
         {
-            var path = ServerKernel.FFMpegManager.GetSubtitleCachePath(video, subtitleStream.Index, ".ass");
+            var path = Kernel.Instance.FFMpegManager.GetSubtitleCachePath(video, subtitleStream.Index, ".ass");
 
             if (!File.Exists(path))
             {
-                var success = ServerKernel.FFMpegManager.ConvertTextSubtitle(subtitleStream, path, CancellationToken.None).Result;
+                var success = Kernel.Instance.FFMpegManager.ConvertTextSubtitle(subtitleStream, path, CancellationToken.None).Result;
 
                 if (!success)
                 {
@@ -476,8 +475,8 @@ namespace MediaBrowser.Api.Playback
         protected string GetInputArgument(BaseItem item, IIsoMount isoMount)
         {
             return isoMount == null ?
-                ServerKernel.FFMpegManager.GetInputArgument(item) :
-                ServerKernel.FFMpegManager.GetInputArgument(item as Video, isoMount);
+                Kernel.Instance.FFMpegManager.GetInputArgument(item) :
+                Kernel.Instance.FFMpegManager.GetInputArgument(item as Video, isoMount);
         }
 
         /// <summary>
@@ -490,11 +489,10 @@ namespace MediaBrowser.Api.Playback
         {
             var video = state.Item as Video;
 
-            //if (video != null && video.VideoType == VideoType.Iso &&
-            //    video.IsoType.HasValue && Kernel.IsoManager.CanMount(video.Path))
-            //{
-            //    IsoMount = await Kernel.IsoManager.Mount(video.Path, CancellationToken.None).ConfigureAwait(false);
-            //}
+            if (video != null && video.VideoType == VideoType.Iso && video.IsoType.HasValue && IsoManager.CanMount(video.Path))
+            {
+                state.IsoMount = await IsoManager.Mount(video.Path, CancellationToken.None).ConfigureAwait(false);
+            }
 
             var process = new Process
             {
@@ -507,8 +505,8 @@ namespace MediaBrowser.Api.Playback
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
 
-                    FileName = ServerKernel.FFMpegManager.FFMpegPath,
-                    WorkingDirectory = Path.GetDirectoryName(ServerKernel.FFMpegManager.FFMpegPath),
+                    FileName = Kernel.Instance.FFMpegManager.FFMpegPath,
+                    WorkingDirectory = Path.GetDirectoryName(Kernel.Instance.FFMpegManager.FFMpegPath),
                     Arguments = GetCommandLineArguments(outputPath, state),
 
                     WindowStyle = ProcessWindowStyle.Hidden,
@@ -522,7 +520,7 @@ namespace MediaBrowser.Api.Playback
 
             //Logger.Info(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
 
-            var logFilePath = Path.Combine(Kernel.ApplicationPaths.LogDirectoryPath, "ffmpeg-" + Guid.NewGuid() + ".txt");
+            var logFilePath = Path.Combine(ApplicationPaths.LogDirectoryPath, "ffmpeg-" + Guid.NewGuid() + ".txt");
 
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
             state.LogFileStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous);

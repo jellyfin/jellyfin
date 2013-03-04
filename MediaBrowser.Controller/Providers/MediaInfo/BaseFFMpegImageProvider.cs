@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Providers.MediaInfo
@@ -6,7 +7,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     public abstract class BaseFFMpegImageProvider<T> : BaseFFMpegProvider<T>
         where T : BaseItem
     {
-        protected BaseFFMpegImageProvider(ILogManager logManager) : base(logManager)
+        protected BaseFFMpegImageProvider(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
         {
         }
 
