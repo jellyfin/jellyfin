@@ -195,6 +195,8 @@ namespace MediaBrowser.Controller.Providers.Music
 
                 cancellationToken.ThrowIfCancellationRequested();
 
+                item.SetProviderId(MetadataProviders.Musicbrainz, id);
+
                 await FetchLastfmData(item, id, cancellationToken).ConfigureAwait(false);
             }
             else
