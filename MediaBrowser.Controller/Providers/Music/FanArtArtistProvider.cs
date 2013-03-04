@@ -61,15 +61,16 @@ namespace MediaBrowser.Controller.Providers.Music
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         protected override bool ShouldFetch(BaseItem item, BaseProviderInfo providerInfo)
         {
-            var baseItem = item;
-            if (item.Path == null || item.DontFetchMeta || string.IsNullOrEmpty(baseItem.GetProviderId(MetadataProviders.Musicbrainz))) return false; //nothing to do
+            var artist = (MusicArtist)item;
+            if (item.Path == null || item.DontFetchMeta || string.IsNullOrEmpty(artist.GetProviderId(MetadataProviders.Musicbrainz))) return false; //nothing to do
             var artExists = item.ResolveArgs.ContainsMetaFileByName(ART_FILE);
             var logoExists = item.ResolveArgs.ContainsMetaFileByName(LOGO_FILE);
             var discExists = item.ResolveArgs.ContainsMetaFileByName(DISC_FILE);
 
             return (!artExists && ConfigurationManager.Configuration.DownloadMusicArtistImages.Art)
                 || (!logoExists && ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo)
-                || (!discExists && ConfigurationManager.Configuration.DownloadMusicArtistImages.Disc);
+                || (!discExists && ConfigurationManager.Configuration.DownloadMusicArtistImages.Disc)
+                || ((artist.AlbumCovers == null || artist.AlbumCovers.Count == 0) && ConfigurationManager.Configuration.DownloadMusicAlbumImages.Primary);
         }
 
         /// <summary>
@@ -83,7 +84,7 @@ namespace MediaBrowser.Controller.Providers.Music
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var artist = item;
+            var artist = (MusicArtist)item;
             if (ShouldFetch(artist, artist.ProviderData.GetValueOrDefault(Id, new BaseProviderInfo { ProviderId = Id })))
             {
                 var url = string.Format(FanArtBaseUrl, APIKey, artist.GetProviderId(MetadataProviders.Musicbrainz));
@@ -136,6 +137,7 @@ namespace MediaBrowser.Controller.Providers.Music
                         if (nodes != null)
                         {
                             var numBackdrops = 0;
+                            artist.BackdropImagePaths = new List<string>();
                             foreach (XmlNode node in nodes)
                             {
                                 path = node.Value;
@@ -144,7 +146,6 @@ namespace MediaBrowser.Controller.Providers.Music
                                     Logger.Debug("FanArtProvider getting Backdrop for " + artist.Name);
                                     try
                                     {
-                                        artist.BackdropImagePaths = new List<string>();
                                         artist.BackdropImagePaths.Add(await Kernel.Instance.ProviderManager.DownloadAndSaveImage(artist, path, ("Backdrop"+(numBackdrops > 0 ? numBackdrops.ToString() : "")+".jpg"), FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                                         numBackdrops++;
                                         if (numBackdrops >= ConfigurationManager.Configuration.MaxBackdrops) break;
@@ -159,6 +160,32 @@ namespace MediaBrowser.Controller.Providers.Music
                                 }
                             }
                             
+                        }
+
+                    }
+
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Primary)
+                    {
+                        var nodes = doc.SelectNodes("//fanart/music/albums/*");
+                        if (nodes != null)
+                        {
+                            artist.AlbumCovers = new Dictionary<string, string>();
+                            foreach (XmlNode node in nodes)
+                            {
+
+                                var key = node.Attributes["id"] != null ? node.Attributes["id"].Value : null;
+                                var cover = node.SelectSingleNode("albumcover/@url");
+                                path = cover != null ? cover.Value : null;
+
+                                if (!string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(key))
+                                {
+                                    Logger.Debug("FanArtProvider getting Album Cover for " + artist.Name);
+                                    artist.AlbumCovers[key] = path;
+                                }
+                            }
+
                         }
 
                     }
