@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using System.Linq;
+using MediaBrowser.Model.Logging;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -56,28 +57,55 @@ namespace MediaBrowser.Common.Implementations.Logging
             logFile.FileName = path;
             logFile.Layout = "${longdate}, ${level}, ${logger}, ${message}";
 
-            AddLogTarget(logFile, "ApplicationLogFile", level);
+            RemoveTarget("ApplicationLogFile");
+            logFile.Name = "ApplicationLogFile";
+
+            AddLogTarget(logFile, level);
         }
 
         /// <summary>
         /// Adds the log target.
         /// </summary>
         /// <param name="target">The target.</param>
-        /// <param name="name">The name.</param>
         /// <param name="level">The level.</param>
-        private void AddLogTarget(Target target, string name, LogSeverity level)
+        private void AddLogTarget(Target target, LogSeverity level)
         {
             var config = LogManager.Configuration;
-
-            config.RemoveTarget(name);
-
-            target.Name = name;
-            config.AddTarget(name, target);
+            config.AddTarget(target.Name, target);
 
             var rule = new LoggingRule("*", GetLogLevel(level), target);
             config.LoggingRules.Add(rule);
 
             LogManager.Configuration = config;
+        }
+
+        /// <summary>
+        /// Removes the target.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public void RemoveTarget(string name)
+        {
+            var config = LogManager.Configuration;
+
+            var target = config.FindTargetByName(name);
+
+            if (target != null)
+            {
+                foreach (var rule in config.LoggingRules.ToList())
+                {
+                    var contains = rule.Targets.Contains(target);
+
+                    rule.Targets.Remove(target);
+
+                    if (contains)
+                    {
+                        config.LoggingRules.Remove(rule);
+                    }
+                }
+
+                config.RemoveTarget(name);
+                LogManager.Configuration = config;
+            }
         }
 
         /// <summary>
