@@ -49,6 +49,7 @@
     <Compile Include="Entities\BaseItemInfo.cs" />
     <Compile Include="Connectivity\ClientConnectionInfo.cs" />
     <Compile Include="Connectivity\ClientType.cs" />
+    <Compile Include="Entities\ImageDownloadOptions.cs" />
     <Compile Include="Logging\ILogManager.cs" />
     <Compile Include="MediaInfo\BlurayDiscInfo.cs" />
     <Compile Include="Entities\ChapterInfo.cs" />

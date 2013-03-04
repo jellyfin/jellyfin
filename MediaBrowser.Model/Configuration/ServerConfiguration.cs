@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Updates;
+﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Updates;
 using MediaBrowser.Model.Weather;
 using ProtoBuf;
 using System;
@@ -96,88 +97,34 @@ namespace MediaBrowser.Model.Configuration
         public int MaxBackdrops { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [download movie art].
+        /// Options for specific art to download for movies.
         /// </summary>
-        /// <value><c>true</c> if [download movie art]; otherwise, <c>false</c>.</value>
         [ProtoMember(40)]
-        public bool DownloadMovieArt { get; set; }
+        public ImageDownloadOptions DownloadMovieImages { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [download movie logo].
+        /// Options for specific art to download for Series.
         /// </summary>
-        /// <value><c>true</c> if [download movie logo]; otherwise, <c>false</c>.</value>
         [ProtoMember(41)]
-        public bool DownloadMovieLogo { get; set; }
+        public ImageDownloadOptions DownloadSeriesImages { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [download movie disc].
+        /// Options for specific art to download for Seasons.
         /// </summary>
-        /// <value><c>true</c> if [download movie disc]; otherwise, <c>false</c>.</value>
         [ProtoMember(42)]
-        public bool DownloadMovieDisc { get; set; }
+        public ImageDownloadOptions DownloadSeasonImages { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [download TV art].
+        /// Options for specific art to download for MusicArtists.
         /// </summary>
-        /// <value><c>true</c> if [download TV art]; otherwise, <c>false</c>.</value>
         [ProtoMember(43)]
-        public bool DownloadTVArt { get; set; }
+        public ImageDownloadOptions DownloadMusicArtistImages { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [download TV logo].
+        /// Options for specific art to download for MusicAlbums.
         /// </summary>
-        /// <value><c>true</c> if [download TV logo]; otherwise, <c>false</c>.</value>
         [ProtoMember(44)]
-        public bool DownloadTVLogo { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [download TV thumb].
-        /// </summary>
-        /// <value><c>true</c> if [download TV thumb]; otherwise, <c>false</c>.</value>
-        [ProtoMember(45)]
-        public bool DownloadTVThumb { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [download movie banner].
-        /// </summary>
-        /// <value><c>true</c> if [download movie banner]; otherwise, <c>false</c>.</value>
-        [ProtoMember(46)]
-        public bool DownloadMovieBanner { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [download movie thumb].
-        /// </summary>
-        /// <value><c>true</c> if [download movie thumb]; otherwise, <c>false</c>.</value>
-        [ProtoMember(47)]
-        public bool DownloadMovieThumb { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [download TV banner].
-        /// </summary>
-        /// <value><c>true</c> if [download TV banner]; otherwise, <c>false</c>.</value>
-        [ProtoMember(48)]
-        public bool DownloadTVBanner { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [download TV season banner].
-        /// </summary>
-        /// <value><c>true</c> if [download TV season banner]; otherwise, <c>false</c>.</value>
-        [ProtoMember(49)]
-        public bool DownloadTVSeasonBanner { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [download TV season thumb].
-        /// </summary>
-        /// <value><c>true</c> if [download TV season thumb]; otherwise, <c>false</c>.</value>
-        [ProtoMember(50)]
-        public bool DownloadTVSeasonThumb { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [download TV season backdrops].
-        /// </summary>
-        /// <value><c>true</c> if [download TV season banner]; otherwise, <c>false</c>.</value>
-        [ProtoMember(51)]
-        public bool DownloadTVSeasonBackdrops { get; set; }
+        public ImageDownloadOptions DownloadMusicAlbumImages { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [download TV season backdrops].
@@ -330,8 +277,11 @@ namespace MediaBrowser.Model.Configuration
             TmdbFetchedProfileSize = "w185"; //w185 w45 h632 or original
             TmdbFetchedPosterSize = "w500"; //w500, w342, w185 or original
             TmdbFetchedBackdropSize = "w1280"; //w1280, w780 or original
-            DownloadTVSeasonBanner = true;
-            DownloadTVBanner = true;
+            DownloadMovieImages = new ImageDownloadOptions {Backdrops = true, Primary = true};
+            DownloadSeriesImages = new ImageDownloadOptions {Backdrops = true, Primary = true, Banner = true, Logo = true};
+            DownloadSeasonImages = new ImageDownloadOptions {Backdrops = false, Primary = true, Banner = true};
+            DownloadMusicArtistImages = new ImageDownloadOptions {Backdrops = true, Primary = true, Banner = true, Thumb = true};
+            DownloadMusicAlbumImages = new ImageDownloadOptions {Backdrops = true, Primary = false};
             DownloadHDFanArt = true;
             MaxBackdrops = 4;
 

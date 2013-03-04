@@ -48,9 +48,9 @@ namespace MediaBrowser.Controller.Providers.TV
             var thumbExists = item.ResolveArgs.ContainsMetaFileByName(THUMB_FILE);
 
 
-            return (!artExists && ConfigurationManager.Configuration.DownloadTVArt)
-                || (!logoExists && ConfigurationManager.Configuration.DownloadTVLogo)
-                || (!thumbExists && ConfigurationManager.Configuration.DownloadTVThumb);
+            return (!artExists && ConfigurationManager.Configuration.DownloadSeriesImages.Art)
+                || (!logoExists && ConfigurationManager.Configuration.DownloadSeriesImages.Logo)
+                || (!thumbExists && ConfigurationManager.Configuration.DownloadSeriesImages.Thumb);
         }
 
         protected override async Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
@@ -80,7 +80,7 @@ namespace MediaBrowser.Controller.Providers.TV
                 if (doc.HasChildNodes)
                 {
                     string path;
-                    if (ConfigurationManager.Configuration.DownloadTVLogo && !series.ResolveArgs.ContainsMetaFileByName(LOGO_FILE))
+                    if (ConfigurationManager.Configuration.DownloadSeriesImages.Logo && !series.ResolveArgs.ContainsMetaFileByName(LOGO_FILE))
                     {
                         var node = doc.SelectSingleNode("//fanart/series/clearlogos/clearlogo[@lang = \"" + language + "\"]/@url") ??
                                    doc.SelectSingleNode("//fanart/series/clearlogos/clearlogo/@url");
@@ -104,7 +104,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    if (ConfigurationManager.Configuration.DownloadTVArt && !series.ResolveArgs.ContainsMetaFileByName(ART_FILE))
+                    if (ConfigurationManager.Configuration.DownloadSeriesImages.Art && !series.ResolveArgs.ContainsMetaFileByName(ART_FILE))
                     {
                         var node = doc.SelectSingleNode("//fanart/series/cleararts/clearart[@lang = \"" + language + "\"]/@url") ??
                                    doc.SelectSingleNode("//fanart/series/cleararts/clearart/@url");
@@ -128,7 +128,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    if (ConfigurationManager.Configuration.DownloadTVThumb && !series.ResolveArgs.ContainsMetaFileByName(THUMB_FILE))
+                    if (ConfigurationManager.Configuration.DownloadSeriesImages.Thumb && !series.ResolveArgs.ContainsMetaFileByName(THUMB_FILE))
                     {
                         var node = doc.SelectSingleNode("//fanart/series/tvthumbs/tvthumb[@lang = \"" + language + "\"]/@url") ??
                                    doc.SelectSingleNode("//fanart/series/tvthumbs/tvthumb/@url");
