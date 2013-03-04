@@ -314,6 +314,8 @@ namespace MediaBrowser.Api
 
             var newUser = _userManager.CreateUser(dtoUser.Name).Result;
 
+            newUser.UpdateConfiguration(dtoUser.Configuration, _xmlSerializer);
+            
             var result = new DtoBuilder(Logger).GetDtoUser(newUser);
 
             return ToOptimizedResult(result);
