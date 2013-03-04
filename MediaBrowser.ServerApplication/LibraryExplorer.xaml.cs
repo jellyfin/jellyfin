@@ -43,6 +43,7 @@ namespace MediaBrowser.ServerApplication
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
+            _libraryManager = libraryManager;
 
             InitializeComponent();
             lblVersion.Content = "Version: " + appHost.ApplicationVersion;
@@ -52,7 +53,6 @@ namespace MediaBrowser.ServerApplication
             ddlProfile.SelectedIndex = 0;
             ddlIndexBy.Visibility = ddlSortBy.Visibility = lblIndexBy.Visibility = lblSortBy.Visibility = Visibility.Hidden;
 
-            _libraryManager = libraryManager;
         }
 
         /// <summary>

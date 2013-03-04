@@ -96,7 +96,7 @@ namespace MediaBrowser.Controller.Providers.Music
             }
         }
 
-        protected const string RootUrl = @"http://ws.audioscrobbler.com/2.0/";
+        protected const string RootUrl = @"http://ws.audioscrobbler.com/2.0/?";
         protected static string ApiKey = "7b76553c3eb1d341d642755aecc40a33";
 
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
@@ -188,7 +188,27 @@ namespace MediaBrowser.Controller.Providers.Music
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken"></param>
         /// <returns>Task.</returns>
-        protected abstract Task FetchData(BaseItem item, CancellationToken cancellationToken);
+        protected async Task FetchData(BaseItem item, CancellationToken cancellationToken)
+        {
+            var id = item.GetProviderId(MetadataProviders.Musicbrainz) ?? await FindId(item, cancellationToken).ConfigureAwait(false);
+            if (id != null)
+            {
+                Logger.Debug("LastfmProvider - getting info with id: " + id);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                await FetchLastfmData(item, id, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                Logger.Info("LastfmProvider could not find " + item.Name + ". Check name on Last.fm.");
+            }
+            
+        }
+
+        protected abstract Task<string> FindId(BaseItem item, CancellationToken cancellationToken);
+
+        protected abstract Task FetchLastfmData(BaseItem item, string id, CancellationToken cancellationToken);
 
         /// <summary>
         /// Encodes an URL.
