@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Extensions;
@@ -24,19 +25,47 @@ namespace MediaBrowser.Controller.Providers.TV
     class RemoteSeriesProvider : BaseMetadataProvider
     {
         /// <summary>
+        /// The tv db
+        /// </summary>
+        internal readonly SemaphoreSlim TvDbResourcePool = new SemaphoreSlim(5, 5);
+
+        internal static RemoteSeriesProvider Current { get; private set; }
+
+        /// <summary>
         /// Gets the HTTP client.
         /// </summary>
         /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
 
-        public RemoteSeriesProvider(IHttpClient httpClient, ILogManager logManager)
-            : base(logManager)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RemoteSeriesProvider" /> class.
+        /// </summary>
+        /// <param name="httpClient">The HTTP client.</param>
+        /// <param name="logManager">The log manager.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
+        /// <exception cref="System.ArgumentNullException">httpClient</exception>
+        public RemoteSeriesProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager)
+            : base(logManager, configurationManager)
         {
             if (httpClient == null)
             {
                 throw new ArgumentNullException("httpClient");
             }
             HttpClient = httpClient;
+            Current = this;
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected override void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                TvDbResourcePool.Dispose();
+            }
+            base.Dispose(dispose);
         }
 
         /// <summary>
@@ -102,15 +131,15 @@ namespace MediaBrowser.Controller.Providers.TV
         {
             var downloadDate = providerInfo.LastRefreshed;
 
-            if (Kernel.Instance.Configuration.MetadataRefreshDays == -1 && downloadDate != DateTime.MinValue)
+            if (ConfigurationManager.Configuration.MetadataRefreshDays == -1 && downloadDate != DateTime.MinValue)
             {
                 return false;
             }
 
             if (item.DontFetchMeta) return false;
 
-            return !HasLocalMeta(item) && (Kernel.Instance.Configuration.MetadataRefreshDays != -1 &&
-                                       DateTime.UtcNow.Subtract(downloadDate).TotalDays > Kernel.Instance.Configuration.MetadataRefreshDays);
+            return !HasLocalMeta(item) && (ConfigurationManager.Configuration.MetadataRefreshDays != -1 &&
+                                       DateTime.UtcNow.Subtract(downloadDate).TotalDays > ConfigurationManager.Configuration.MetadataRefreshDays);
         }
 
         /// <summary>
@@ -165,12 +194,12 @@ namespace MediaBrowser.Controller.Providers.TV
             if (!string.IsNullOrEmpty(seriesId))
             {
 
-                string url = string.Format(seriesGet, TVUtils.TVDBApiKey, seriesId, Kernel.Instance.Configuration.PreferredMetadataLanguage);
+                string url = string.Format(seriesGet, TVUtils.TVDBApiKey, seriesId, ConfigurationManager.Configuration.PreferredMetadataLanguage);
                 var doc = new XmlDocument();
 
                 try
                 {
-                    using (var xml = await HttpClient.Get(url, Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false))
+                    using (var xml = await HttpClient.Get(url, TvDbResourcePool, cancellationToken).ConfigureAwait(false))
                     {
                         doc.Load(xml);
                     }
@@ -219,7 +248,7 @@ namespace MediaBrowser.Controller.Providers.TV
                     //wait for other tasks
                     await Task.WhenAll(actorTask, imageTask).ConfigureAwait(false);
 
-                    if (Kernel.Instance.Configuration.SaveLocalMeta)
+                    if (ConfigurationManager.Configuration.SaveLocalMeta)
                     {
                         var ms = new MemoryStream();
                         doc.Save(ms);
@@ -249,7 +278,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
             try
             {
-                using (var actors = await HttpClient.Get(urlActors, Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false))
+                using (var actors = await HttpClient.Get(urlActors, TvDbResourcePool, cancellationToken).ConfigureAwait(false))
                 {
                     docActors.Load(actors);
                 }
@@ -261,7 +290,7 @@ namespace MediaBrowser.Controller.Providers.TV
             if (docActors.HasChildNodes)
             {
                 XmlNode actorsNode = null;
-                if (Kernel.Instance.Configuration.SaveLocalMeta)
+                if (ConfigurationManager.Configuration.SaveLocalMeta)
                 {
                     //add to the main doc for saving
                     var seriesNode = doc.SelectSingleNode("//Series");
@@ -282,7 +311,7 @@ namespace MediaBrowser.Controller.Providers.TV
                         {
                             series.AddPerson(new PersonInfo { Type = PersonType.Actor, Name = actorName, Role = actorRole });
 
-                            if (Kernel.Instance.Configuration.SaveLocalMeta && actorsNode != null)
+                            if (ConfigurationManager.Configuration.SaveLocalMeta && actorsNode != null)
                             {
                                 //create in main doc
                                 var personNode = doc.CreateNode(XmlNodeType.Element, "Person", null);
@@ -316,7 +345,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                 try
                 {
-                    using (var imgs = await HttpClient.Get(url, Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false))
+                    using (var imgs = await HttpClient.Get(url, TvDbResourcePool, cancellationToken).ConfigureAwait(false))
                     {
                         images.Load(imgs);
                     }
@@ -327,7 +356,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                 if (images.HasChildNodes)
                 {
-                    if (Kernel.Instance.Configuration.RefreshItemImages || !series.HasLocalImage("folder"))
+                    if (ConfigurationManager.Configuration.RefreshItemImages || !series.HasLocalImage("folder"))
                     {
                         var n = images.SelectSingleNode("//Banner[BannerType='poster']");
                         if (n != null)
@@ -337,7 +366,7 @@ namespace MediaBrowser.Controller.Providers.TV
                             {
                                 try
                                 {
-                                    series.PrimaryImagePath = await Kernel.Instance.ProviderManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "folder" + Path.GetExtension(n.InnerText), Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false);
+                                    series.PrimaryImagePath = await Kernel.Instance.ProviderManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "folder" + Path.GetExtension(n.InnerText), TvDbResourcePool, cancellationToken).ConfigureAwait(false);
                                 }
                                 catch (HttpException)
                                 {
@@ -350,7 +379,7 @@ namespace MediaBrowser.Controller.Providers.TV
                         }
                     }
 
-                    if (Kernel.Instance.Configuration.DownloadTVBanner && (Kernel.Instance.Configuration.RefreshItemImages || !series.HasLocalImage("banner")))
+                    if (ConfigurationManager.Configuration.DownloadTVBanner && (ConfigurationManager.Configuration.RefreshItemImages || !series.HasLocalImage("banner")))
                     {
                         var n = images.SelectSingleNode("//Banner[BannerType='series']");
                         if (n != null)
@@ -360,7 +389,7 @@ namespace MediaBrowser.Controller.Providers.TV
                             {
                                 try
                                 {
-                                    var bannerImagePath = await Kernel.Instance.ProviderManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "banner" + Path.GetExtension(n.InnerText), Kernel.Instance.ResourcePools.TvDb, cancellationToken);
+                                    var bannerImagePath = await Kernel.Instance.ProviderManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "banner" + Path.GetExtension(n.InnerText), TvDbResourcePool, cancellationToken);
 
                                     series.SetImage(ImageType.Banner, bannerImagePath);
                                 }
@@ -385,11 +414,11 @@ namespace MediaBrowser.Controller.Providers.TV
                             if (p != null)
                             {
                                 var bdName = "backdrop" + (bdNo > 0 ? bdNo.ToString() : "");
-                                if (Kernel.Instance.Configuration.RefreshItemImages || !series.HasLocalImage(bdName))
+                                if (ConfigurationManager.Configuration.RefreshItemImages || !series.HasLocalImage(bdName))
                                 {
                                     try
                                     {
-                                        series.BackdropImagePaths.Add(await Kernel.Instance.ProviderManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + p.InnerText, bdName + Path.GetExtension(p.InnerText), Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false));
+                                        series.BackdropImagePaths.Add(await Kernel.Instance.ProviderManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + p.InnerText, bdName + Path.GetExtension(p.InnerText), TvDbResourcePool, cancellationToken).ConfigureAwait(false));
                                     }
                                     catch (HttpException)
                                     {
@@ -400,7 +429,7 @@ namespace MediaBrowser.Controller.Providers.TV
                                     }
                                 }
                                 bdNo++;
-                                if (bdNo >= Kernel.Instance.Configuration.MaxBackdrops) break;
+                                if (bdNo >= ConfigurationManager.Configuration.MaxBackdrops) break;
                             }
                         }
                 }
@@ -463,7 +492,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
             try
             {
-                using (var results = await HttpClient.Get(url, Kernel.Instance.ResourcePools.TvDb, cancellationToken).ConfigureAwait(false))
+                using (var results = await HttpClient.Get(url, TvDbResourcePool, cancellationToken).ConfigureAwait(false))
                 {
                     doc.Load(results);
                 }

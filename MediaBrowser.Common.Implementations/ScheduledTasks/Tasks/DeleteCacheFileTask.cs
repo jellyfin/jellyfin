@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Model.Logging;
 using System;
@@ -16,10 +16,10 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
     public class DeleteCacheFileTask : IScheduledTask
     {
         /// <summary>
-        /// Gets or sets the kernel.
+        /// Gets or sets the application paths.
         /// </summary>
-        /// <value>The kernel.</value>
-        private IKernel Kernel { get; set; }
+        /// <value>The application paths.</value>
+        private IApplicationPaths ApplicationPaths { get; set; }
         /// <summary>
         /// Gets or sets the logger.
         /// </summary>
@@ -29,11 +29,11 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// <summary>
         /// Initializes a new instance of the <see cref="DeleteCacheFileTask" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
+        /// <param name="appPaths">The app paths.</param>
         /// <param name="logger">The logger.</param>
-        public DeleteCacheFileTask(IKernel kernel, ILogger logger)
+        public DeleteCacheFileTask(IApplicationPaths appPaths, ILogger logger)
         {
-            Kernel = kernel;
+            ApplicationPaths = appPaths;
             Logger = logger;
         }
 
@@ -60,7 +60,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
             {
                 var minDateModified = DateTime.UtcNow.AddMonths(-2);
 
-                DeleteCacheFilesFromDirectory(cancellationToken, Kernel.ApplicationPaths.CachePath, minDateModified, progress);
+                DeleteCacheFilesFromDirectory(cancellationToken, ApplicationPaths.CachePath, minDateModified, progress);
             });
         }
 

@@ -1,21 +1,22 @@
-﻿using System.Net;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Providers.Movies
 {
@@ -32,6 +33,13 @@ namespace MediaBrowser.Controller.Providers.Movies
     public class MovieDbProvider : BaseMetadataProvider
     {
         /// <summary>
+        /// The movie db
+        /// </summary>
+        internal readonly SemaphoreSlim MovieDbResourcePool = new SemaphoreSlim(5, 5);
+
+        internal static MovieDbProvider Current { get; private set; }
+
+        /// <summary>
         /// Gets the json serializer.
         /// </summary>
         /// <value>The json serializer.</value>
@@ -46,23 +54,29 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <summary>
         /// Initializes a new instance of the <see cref="MovieDbProvider" /> class.
         /// </summary>
+        /// <param name="logManager">The log manager.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="httpClient">The HTTP client.</param>
-        /// <param name="logManager">The Log manager</param>
-        /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
-        public MovieDbProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager)
-            : base(logManager)
+        public MovieDbProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IHttpClient httpClient)
+            : base(logManager, configurationManager)
         {
-            if (jsonSerializer == null)
-            {
-                throw new ArgumentNullException("jsonSerializer");
-            }
-            if (httpClient == null)
-            {
-                throw new ArgumentNullException("httpClient");
-            }
             JsonSerializer = jsonSerializer;
             HttpClient = httpClient;
+            Current = this;
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected override void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                MovieDbResourcePool.Dispose();
+            }
+            base.Dispose(dispose);
         }
 
         /// <summary>
@@ -103,7 +117,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         {
             get
             {
-                return Kernel.Instance.Configuration.SaveLocalMeta;
+                return ConfigurationManager.Configuration.SaveLocalMeta;
             }
         }
 
@@ -141,7 +155,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         {
             try
             {
-                using (var json = await httpClient.Get(String.Format(TmdbConfigUrl, ApiKey), Kernel.Instance.ResourcePools.MovieDb, CancellationToken.None).ConfigureAwait(false))
+                using (var json = await httpClient.Get(String.Format(TmdbConfigUrl, ApiKey), MovieDbProvider.Current.MovieDbResourcePool, CancellationToken.None).ConfigureAwait(false))
                 {
                     return jsonSerializer.DeserializeFromStream<TmdbSettingsResult>(json);
                 }
@@ -200,11 +214,11 @@ namespace MediaBrowser.Controller.Providers.Movies
         {
             base.SetLastRefreshed(item, value, status);
 
-            if (Kernel.Instance.Configuration.SaveLocalMeta)
+            if (ConfigurationManager.Configuration.SaveLocalMeta)
             {
                 //in addition to ours, we need to set the last refreshed time for the local data provider
                 //so it won't see the new files we download and process them all over again
-                if (JsonProvider == null) JsonProvider = new MovieProviderFromJson(HttpClient, JsonSerializer, LogManager);
+                if (JsonProvider == null) JsonProvider = new MovieProviderFromJson(LogManager, ConfigurationManager, JsonSerializer, HttpClient);
                 var data = item.ProviderData.GetValueOrDefault(JsonProvider.Id, new BaseProviderInfo { ProviderId = JsonProvider.Id });
                 data.LastRefreshed = value;
                 item.ProviderData[JsonProvider.Id] = data;
@@ -233,7 +247,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         {
             if (item.DontFetchMeta) return false;
 
-            if (Kernel.Instance.Configuration.SaveLocalMeta && HasFileSystemStampChanged(item, providerInfo))
+            if (ConfigurationManager.Configuration.SaveLocalMeta && HasFileSystemStampChanged(item, providerInfo))
             {
                 //If they deleted something from file system, chances are, this item was mis-identified the first time
                 item.SetProviderId(MetadataProviders.Tmdb, null);
@@ -250,7 +264,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             var downloadDate = providerInfo.LastRefreshed;
 
-            if (Kernel.Instance.Configuration.MetadataRefreshDays == -1 && downloadDate != DateTime.MinValue)
+            if (ConfigurationManager.Configuration.MetadataRefreshDays == -1 && downloadDate != DateTime.MinValue)
             {
                 return false;
             }
@@ -258,7 +272,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             if (DateTime.Today.Subtract(item.DateCreated).TotalDays > 180 && downloadDate != DateTime.MinValue)
                 return false; // don't trigger a refresh data for item that are more than 6 months old and have been refreshed before
 
-            if (DateTime.Today.Subtract(downloadDate).TotalDays < Kernel.Instance.Configuration.MetadataRefreshDays) // only refresh every n days
+            if (DateTime.Today.Subtract(downloadDate).TotalDays < ConfigurationManager.Configuration.MetadataRefreshDays) // only refresh every n days
                 return false;
 
             if (HasAltMeta(item))
@@ -266,7 +280,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
 
 
-            Logger.Debug("MovieDbProvider - " + item.Name + " needs refresh.  Download date: " + downloadDate + " item created date: " + item.DateCreated + " Check for Update age: " + Kernel.Instance.Configuration.MetadataRefreshDays);
+            Logger.Debug("MovieDbProvider - " + item.Name + " needs refresh.  Download date: " + downloadDate + " item created date: " + item.DateCreated + " Check for Update age: " + ConfigurationManager.Configuration.MetadataRefreshDays);
             return true;
         }
 
@@ -293,7 +307,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (!Kernel.Instance.Configuration.SaveLocalMeta || !HasLocalMeta(item) || (force && !HasLocalMeta(item)))
+            if (!ConfigurationManager.Configuration.SaveLocalMeta || !HasLocalMeta(item) || (force && !HasLocalMeta(item)))
             {
                 try
                 {
@@ -407,7 +421,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             }
 
             Logger.Info("MovieDbProvider: Finding id for movie: " + name);
-            string language = Kernel.Instance.Configuration.PreferredMetadataLanguage.ToLower();
+            string language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
 
             //if we are a boxset - look at our first child
             var boxset = item as BoxSet;
@@ -478,7 +492,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             try
             {
-                using (Stream json = await HttpClient.Get(url3, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
+                using (Stream json = await HttpClient.Get(url3, MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
                 {
                     searchResult = JsonSerializer.DeserializeFromStream<TmdbMovieSearchResults>(json);
                 }
@@ -510,7 +524,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                 try
                 {
-                    using (var json = await HttpClient.Get(url3, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
+                    using (var json = await HttpClient.Get(url3, MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
                     {
                         searchResult = JsonSerializer.DeserializeFromStream<TmdbMovieSearchResults>(json);
                     }
@@ -545,11 +559,11 @@ namespace MediaBrowser.Controller.Providers.Movies
                     if (matchedName == null)
                     {
                         //that title didn't match - look for alternatives
-                        url3 = string.Format(AltTitleSearch, id, ApiKey, Kernel.Instance.Configuration.MetadataCountryCode);
+                        url3 = string.Format(AltTitleSearch, id, ApiKey, ConfigurationManager.Configuration.MetadataCountryCode);
 
                         try
                         {
-                            using (var json = await HttpClient.Get(url3, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
+                            using (var json = await HttpClient.Get(url3, MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
                             {
                                 var response = JsonSerializer.DeserializeFromStream<TmdbAltTitleResults>(json);
 
@@ -630,7 +644,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                 try
                 {
-                    using (Stream json = await HttpClient.Get(url, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
+                    using (Stream json = await HttpClient.Get(url, MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
                     {
                         var movieResult = JsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
 
@@ -703,7 +717,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             }
 
             //and save locally
-            if (Kernel.Instance.Configuration.SaveLocalMeta)
+            if (ConfigurationManager.Configuration.SaveLocalMeta)
             {
                 var ms = new MemoryStream();
                 JsonSerializer.SerializeToStream(mainResult, ms);
@@ -724,14 +738,14 @@ namespace MediaBrowser.Controller.Providers.Movies
         protected async Task<CompleteMovieData> FetchMainResult(BaseItem item, string id, CancellationToken cancellationToken)
         {
             ItemType = item is BoxSet ? "collection" : "movie";
-            string url = string.Format(GetInfo3, id, ApiKey, Kernel.Instance.Configuration.PreferredMetadataLanguage, ItemType);
+            string url = string.Format(GetInfo3, id, ApiKey, ConfigurationManager.Configuration.PreferredMetadataLanguage, ItemType);
             CompleteMovieData mainResult;
 
             cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                using (var json = await HttpClient.Get(url, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
+                using (var json = await HttpClient.Get(url, MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
                 {
                     mainResult = JsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
                 }
@@ -756,14 +770,14 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             if (mainResult != null && string.IsNullOrEmpty(mainResult.overview))
             {
-                if (Kernel.Instance.Configuration.PreferredMetadataLanguage.ToLower() != "en")
+                if (ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower() != "en")
                 {
-                    Logger.Info("MovieDbProvider couldn't find meta for language " + Kernel.Instance.Configuration.PreferredMetadataLanguage + ". Trying English...");
+                    Logger.Info("MovieDbProvider couldn't find meta for language " + ConfigurationManager.Configuration.PreferredMetadataLanguage + ". Trying English...");
                     url = string.Format(GetInfo3, id, ApiKey, "en", ItemType);
 
                     try
                     {
-                        using (Stream json = await HttpClient.Get(url, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
+                        using (Stream json = await HttpClient.Get(url, MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
                         {
                             mainResult = JsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
                         }
@@ -799,7 +813,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             try
             {
-                using (Stream json = await HttpClient.Get(url, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
+                using (Stream json = await HttpClient.Get(url, MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
                 {
                     cast = JsonSerializer.DeserializeFromStream<TmdbCastResult>(json);
                 }
@@ -826,7 +840,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             try
             {
-                using (Stream json = await HttpClient.Get(url, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
+                using (Stream json = await HttpClient.Get(url, MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
                 {
                     releases = JsonSerializer.DeserializeFromStream<TmdbReleasesResult>(json);
                 }
@@ -855,7 +869,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             try
             {
-                using (Stream json = await HttpClient.Get(url, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
+                using (Stream json = await HttpClient.Get(url, MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
                 {
                     images = JsonSerializer.DeserializeFromStream<TmdbImages>(json);
                 }
@@ -883,7 +897,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 movie.SetProviderId(MetadataProviders.Imdb, movieData.imdb_id);
                 float rating;
                 string voteAvg = movieData.vote_average.ToString();
-                string cultureStr = Kernel.Instance.Configuration.PreferredMetadataLanguage + "-" + Kernel.Instance.Configuration.MetadataCountryCode;
+                string cultureStr = ConfigurationManager.Configuration.PreferredMetadataLanguage + "-" + ConfigurationManager.Configuration.MetadataCountryCode;
                 CultureInfo culture;
                 try
                 {
@@ -900,7 +914,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 //release date and certification are retrieved based on configured country and we fall back on US if not there
                 if (movieData.countries != null)
                 {
-                    var ourRelease = movieData.countries.FirstOrDefault(c => c.iso_3166_1.Equals(Kernel.Instance.Configuration.MetadataCountryCode, StringComparison.OrdinalIgnoreCase)) ?? new Country();
+                    var ourRelease = movieData.countries.FirstOrDefault(c => c.iso_3166_1.Equals(ConfigurationManager.Configuration.MetadataCountryCode, StringComparison.OrdinalIgnoreCase)) ?? new Country();
                     var usRelease = movieData.countries.FirstOrDefault(c => c.iso_3166_1.Equals("US", StringComparison.OrdinalIgnoreCase)) ?? new Country();
 
                     movie.OfficialRating = ourRelease.certification ?? usRelease.certification;
@@ -975,17 +989,17 @@ namespace MediaBrowser.Controller.Providers.Movies
             cancellationToken.ThrowIfCancellationRequested();
 
             //        poster
-            if (images.posters != null && images.posters.Count > 0 && (Kernel.Instance.Configuration.RefreshItemImages || !item.HasLocalImage("folder")))
+            if (images.posters != null && images.posters.Count > 0 && (ConfigurationManager.Configuration.RefreshItemImages || !item.HasLocalImage("folder")))
             {
                 var tmdbSettings = await TmdbSettings.ConfigureAwait(false);
 
-                var tmdbImageUrl = tmdbSettings.images.base_url + Kernel.Instance.Configuration.TmdbFetchedPosterSize;
+                var tmdbImageUrl = tmdbSettings.images.base_url + ConfigurationManager.Configuration.TmdbFetchedPosterSize;
                 // get highest rated poster for our language
 
                 var postersSortedByVote = images.posters.OrderByDescending(i => i.vote_average);
 
-                var poster = postersSortedByVote.FirstOrDefault(p => p.iso_639_1 != null && p.iso_639_1.Equals(Kernel.Instance.Configuration.PreferredMetadataLanguage, StringComparison.OrdinalIgnoreCase));
-                if (poster == null && !Kernel.Instance.Configuration.PreferredMetadataLanguage.Equals("en"))
+                var poster = postersSortedByVote.FirstOrDefault(p => p.iso_639_1 != null && p.iso_639_1.Equals(ConfigurationManager.Configuration.PreferredMetadataLanguage, StringComparison.OrdinalIgnoreCase));
+                if (poster == null && !ConfigurationManager.Configuration.PreferredMetadataLanguage.Equals("en"))
                 {
                     // couldn't find our specific language, find english (if that wasn't our language)
                     poster = postersSortedByVote.FirstOrDefault(p => p.iso_639_1 != null && p.iso_639_1.Equals("en", StringComparison.OrdinalIgnoreCase));
@@ -1004,7 +1018,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 {
                     try
                     {
-                        item.PrimaryImagePath = await Kernel.Instance.ProviderManager.DownloadAndSaveImage(item, tmdbImageUrl + poster.file_path, "folder" + Path.GetExtension(poster.file_path), Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false);
+                        item.PrimaryImagePath = await Kernel.Instance.ProviderManager.DownloadAndSaveImage(item, tmdbImageUrl + poster.file_path, "folder" + Path.GetExtension(poster.file_path), MovieDbResourcePool, cancellationToken).ConfigureAwait(false);
                     }
                     catch (HttpException)
                     {
@@ -1025,18 +1039,18 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                 var tmdbSettings = await TmdbSettings.ConfigureAwait(false);
 
-                var tmdbImageUrl = tmdbSettings.images.base_url + Kernel.Instance.Configuration.TmdbFetchedBackdropSize;
+                var tmdbImageUrl = tmdbSettings.images.base_url + ConfigurationManager.Configuration.TmdbFetchedBackdropSize;
                 //backdrops should be in order of rating.  get first n ones
-                var numToFetch = Math.Min(Kernel.Instance.Configuration.MaxBackdrops, images.backdrops.Count);
+                var numToFetch = Math.Min(ConfigurationManager.Configuration.MaxBackdrops, images.backdrops.Count);
                 for (var i = 0; i < numToFetch; i++)
                 {
                     var bdName = "backdrop" + (i == 0 ? "" : i.ToString());
 
-                    if (Kernel.Instance.Configuration.RefreshItemImages || !item.HasLocalImage(bdName))
+                    if (ConfigurationManager.Configuration.RefreshItemImages || !item.HasLocalImage(bdName))
                     {
                         try
                         {
-                            item.BackdropImagePaths.Add(await Kernel.Instance.ProviderManager.DownloadAndSaveImage(item, tmdbImageUrl + images.backdrops[i].file_path, bdName + Path.GetExtension(images.backdrops[i].file_path), Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false));
+                            item.BackdropImagePaths.Add(await Kernel.Instance.ProviderManager.DownloadAndSaveImage(item, tmdbImageUrl + images.backdrops[i].file_path, bdName + Path.GetExtension(images.backdrops[i].file_path), MovieDbResourcePool, cancellationToken).ConfigureAwait(false));
                         }
                         catch (HttpException)
                         {

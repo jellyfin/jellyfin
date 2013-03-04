@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Entities;
 using System;
@@ -16,7 +17,7 @@ namespace MediaBrowser.Controller.Providers
     /// </summary>
     public class ImageFromMediaLocationProvider : BaseMetadataProvider
     {
-        public ImageFromMediaLocationProvider(ILogManager logManager) : base(logManager)
+        public ImageFromMediaLocationProvider(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
         {
         }
 

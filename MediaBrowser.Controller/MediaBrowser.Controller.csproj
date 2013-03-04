@@ -53,9 +53,6 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Mediabrowser.PluginSecurity">
-      <HintPath>Plugins\Mediabrowser.PluginSecurity.dll</HintPath>
-    </Reference>
     <Reference Include="protobuf-net, Version=2.0.0.621, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\protobuf-net.2.0.0.621\lib\net40\protobuf-net.dll</HintPath>
@@ -74,6 +71,7 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="BaseManager.cs" />
+    <Compile Include="Configuration\IServerConfigurationManager.cs" />
     <Compile Include="Drawing\ImageExtensions.cs" />
     <Compile Include="Drawing\ImageHeader.cs" />
     <Compile Include="Drawing\ImageManager.cs" />
@@ -138,7 +136,6 @@
     <Compile Include="Library\IIntroProvider.cs" />
     <Compile Include="Plugins\IPluginConfigurationPage.cs" />
     <Compile Include="Plugins\IServerEntryPoint.cs" />
-    <Compile Include="Plugins\PluginSecurityManager.cs" />
     <Compile Include="Providers\Music\LastfmBaseProvider.cs" />
     <Compile Include="Providers\FanartBaseProvider.cs" />
     <Compile Include="Providers\IImageEnhancer.cs" />

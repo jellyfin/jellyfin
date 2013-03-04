@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using System;
 
@@ -6,13 +7,8 @@ namespace MediaBrowser.Api.Playback.Hls
 {
     public class VideoHlsService : BaseHlsService
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="VideoHlsService" /> class.
-        /// </summary>
-        /// <param name="appPaths">The app paths.</param>
-        /// <param name="userManager">The user manager.</param>
-        public VideoHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager)
-            : base(appPaths, userManager, libraryManager)
+        public VideoHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager)
+            : base(appPaths, userManager, libraryManager, isoManager)
         {
         }
 

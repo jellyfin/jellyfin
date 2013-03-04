@@ -17,8 +17,8 @@ namespace MediaBrowser.Api.Playback.Hls
         /// </summary>
         public const string SegmentFilePrefix = "segment-";
 
-        protected BaseHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager)
-            : base(appPaths, userManager, libraryManager)
+        protected BaseHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager) 
+            : base(appPaths, userManager, libraryManager, isoManager)
         {
         }
 
@@ -174,9 +174,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             segmentOutputPath = Path.Combine(segmentOutputPath, segmentOutputName + "%03d." + GetSegmentFileExtension(state).TrimStart('.'));
 
-            var kernel = (Kernel)Kernel;
-
-            var probeSize = kernel.FFMpegManager.GetProbeSizeArgument(state.Item);
+            var probeSize = Kernel.Instance.FFMpegManager.GetProbeSizeArgument(state.Item);
 
             return string.Format("{0} {1} -i {2}{3} -threads 0 {4} {5} {6} -f ssegment -segment_list_flags +live -segment_time 9 -segment_list \"{7}\" \"{8}\"",
                 probeSize,

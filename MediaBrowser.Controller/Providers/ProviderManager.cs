@@ -1,6 +1,8 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -39,18 +41,37 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         private readonly IHttpClient _httpClient;
 
+        private IServerConfigurationManager ConfigurationManager { get; set; }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="logger">The logger.</param>
-        public ProviderManager(Kernel kernel, IHttpClient httpClient, ILogger logger)
+        public ProviderManager(Kernel kernel, IHttpClient httpClient, ILogger logger, IServerConfigurationManager configurationManager)
             : base(kernel)
         {
             _logger = logger;
             _httpClient = httpClient;
+            ConfigurationManager = configurationManager;
             _remoteImageCache = new FileSystemRepository(ImagesDataPath);
+
+            configurationManager.ConfigurationUpdated += configurationManager_ConfigurationUpdated;
+        }
+
+        /// <summary>
+        /// Handles the ConfigurationUpdated event of the configurationManager control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        void configurationManager_ConfigurationUpdated(object sender, EventArgs e)
+        {
+            // Validate currently executing providers, in the background
+            Task.Run(() =>
+            {
+                ValidateCurrentlyRunningProviders();
+            });
         }
 
         /// <summary>
@@ -67,7 +88,7 @@ namespace MediaBrowser.Controller.Providers
             {
                 if (_imagesDataPath == null)
                 {
-                    _imagesDataPath = Path.Combine(Kernel.ApplicationPaths.DataPath, "remote-images");
+                    _imagesDataPath = Path.Combine(ConfigurationManager.ApplicationPaths.DataPath, "remote-images");
 
                     if (!Directory.Exists(_imagesDataPath))
                     {
@@ -145,7 +166,7 @@ namespace MediaBrowser.Controller.Providers
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // Skip if internet providers are currently disabled
-                if (provider.RequiresInternet && !Kernel.Configuration.EnableInternetProviders)
+                if (provider.RequiresInternet && !ConfigurationManager.Configuration.EnableInternetProviders)
                 {
                     continue;
                 }
@@ -157,7 +178,7 @@ namespace MediaBrowser.Controller.Providers
                 }
 
                 // Skip if internet provider and this type is not allowed
-                if (provider.RequiresInternet && Kernel.Configuration.EnableInternetProviders && Kernel.Configuration.InternetProviderExcludeTypes.Contains(item.GetType().Name, StringComparer.OrdinalIgnoreCase))
+                if (provider.RequiresInternet && ConfigurationManager.Configuration.EnableInternetProviders && ConfigurationManager.Configuration.InternetProviderExcludeTypes.Contains(item.GetType().Name, StringComparer.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -249,8 +270,8 @@ namespace MediaBrowser.Controller.Providers
         {
             _logger.Info("Validing currently running providers");
 
-            var enableInternetProviders = Kernel.Configuration.EnableInternetProviders;
-            var internetProviderExcludeTypes = Kernel.Configuration.InternetProviderExcludeTypes;
+            var enableInternetProviders = ConfigurationManager.Configuration.EnableInternetProviders;
+            var internetProviderExcludeTypes = ConfigurationManager.Configuration.InternetProviderExcludeTypes;
 
             foreach (var tuple in _currentlyRunningProviders.Values
                 .Where(p => p.Item1.RequiresInternet && (!enableInternetProviders || internetProviderExcludeTypes.Contains(p.Item2.GetType().Name, StringComparer.OrdinalIgnoreCase)))
@@ -290,13 +311,13 @@ namespace MediaBrowser.Controller.Providers
             }
 
             //download and save locally
-            var localPath = Kernel.Configuration.SaveLocalMeta ?
+            var localPath = ConfigurationManager.Configuration.SaveLocalMeta ?
                 Path.Combine(item.MetaLocation, targetName) :
                 _remoteImageCache.GetResourcePath(item.GetType().FullName + item.Path.ToLower(), targetName);
 
             var img = await _httpClient.GetMemoryStream(source, resourcePool, cancellationToken).ConfigureAwait(false);
 
-            if (Kernel.Configuration.SaveLocalMeta) // queue to media directories
+            if (ConfigurationManager.Configuration.SaveLocalMeta) // queue to media directories
             {
                 await Kernel.FileSystemManager.SaveToLibraryFilesystem(item, localPath, img, cancellationToken).ConfigureAwait(false);
             }

@@ -1,10 +1,11 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Model.Logging;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -13,7 +14,8 @@ namespace MediaBrowser.Controller.Providers
     /// </summary>
     public class SortNameProvider : BaseMetadataProvider
     {
-        public SortNameProvider(ILogManager logManager) : base(logManager)
+        public SortNameProvider(ILogManager logManager, IServerConfigurationManager configurationManager)
+            : base(logManager, configurationManager)
         {
         }
 
@@ -99,14 +101,14 @@ namespace MediaBrowser.Controller.Providers
                 if (item.Name == null) return false; //some items may not have name filled in properly
 
                 var sortable = item.Name.Trim().ToLower();
-                sortable = Kernel.Instance.Configuration.SortRemoveCharacters.Aggregate(sortable, (current, search) => current.Replace(search.ToLower(), string.Empty));
+                sortable = ConfigurationManager.Configuration.SortRemoveCharacters.Aggregate(sortable, (current, search) => current.Replace(search.ToLower(), string.Empty));
 
-                sortable = Kernel.Instance.Configuration.SortReplaceCharacters.Aggregate(sortable, (current, search) => current.Replace(search.ToLower(), " "));
+                sortable = ConfigurationManager.Configuration.SortReplaceCharacters.Aggregate(sortable, (current, search) => current.Replace(search.ToLower(), " "));
 
-                foreach (var search in Kernel.Instance.Configuration.SortRemoveWords)
+                foreach (var search in ConfigurationManager.Configuration.SortRemoveWords)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-
+                    
                     var searchLower = search.ToLower();
                     // Remove from beginning if a space follows
                     if (sortable.StartsWith(searchLower + " "))

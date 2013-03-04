@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -25,26 +26,8 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// </summary>
         protected const string MetaFileName = "MBPerson.json";
 
-        /// <summary>
-        /// Gets the json serializer.
-        /// </summary>
-        /// <value>The json serializer.</value>
-        protected IJsonSerializer JsonSerializer { get; private set; }
-
-        /// <summary>
-        /// Gets the HTTP client.
-        /// </summary>
-        /// <value>The HTTP client.</value>
-        protected IHttpClient HttpClient { get; private set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MovieDbProvider" /> class.
-        /// </summary>
-        /// <param name="httpClient">The HTTP client.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
-        /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
-        public TmdbPersonProvider(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogManager logManager)
-            : base(logManager)
+        public TmdbPersonProvider(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogManager logManager, IServerConfigurationManager configurationManager)
+            : base(logManager, configurationManager)
         {
             if (jsonSerializer == null)
             {
@@ -57,6 +40,18 @@ namespace MediaBrowser.Controller.Providers.Movies
             HttpClient = httpClient;
             JsonSerializer = jsonSerializer;
         }
+
+        /// <summary>
+        /// Gets the json serializer.
+        /// </summary>
+        /// <value>The json serializer.</value>
+        protected IJsonSerializer JsonSerializer { get; private set; }
+
+        /// <summary>
+        /// Gets the HTTP client.
+        /// </summary>
+        /// <value>The HTTP client.</value>
+        protected IHttpClient HttpClient { get; private set; }
 
         /// <summary>
         /// Supportses the specified item.
@@ -78,7 +73,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         {
             //we fetch if either info or image needed and haven't already tried recently
             return (string.IsNullOrEmpty(item.PrimaryImagePath) || !item.ResolveArgs.ContainsMetaFileByName(MetaFileName))
-                && DateTime.Today.Subtract(providerInfo.LastRefreshed).TotalDays > Kernel.Instance.Configuration.MetadataRefreshDays;
+                && DateTime.Today.Subtract(providerInfo.LastRefreshed).TotalDays > ConfigurationManager.Configuration.MetadataRefreshDays;
         }
 
         /// <summary>
@@ -165,7 +160,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             try
             {
-                using (Stream json = await HttpClient.Get(url, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
+                using (Stream json = await HttpClient.Get(url, MovieDbProvider.Current.MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
                 {
                     searchResult = JsonSerializer.DeserializeFromStream<PersonSearchResults>(json);
                 }
@@ -191,7 +186,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             try
             {
-                using (Stream json = await HttpClient.Get(url, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
+                using (Stream json = await HttpClient.Get(url, MovieDbProvider.Current.MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
                 {
                     if (json != null)
                     {
@@ -254,7 +249,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             try
             {
-                using (Stream json = await HttpClient.Get(url, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
+                using (Stream json = await HttpClient.Get(url, MovieDbProvider.Current.MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
                 {
                     if (json != null)
                     {
@@ -273,7 +268,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                     searchResult.Profiles.FirstOrDefault(
                         p =>
                         !string.IsNullOrEmpty(p.Iso_639_1) &&
-                        p.Iso_639_1.Equals(Kernel.Instance.Configuration.PreferredMetadataLanguage,
+                        p.Iso_639_1.Equals(ConfigurationManager.Configuration.PreferredMetadataLanguage,
                                           StringComparison.OrdinalIgnoreCase));
                 if (profile == null)
                 {
@@ -282,7 +277,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                         searchResult.Profiles.FirstOrDefault(
                             p =>
                                 !string.IsNullOrEmpty(p.Iso_639_1) &&
-                            p.Iso_639_1.Equals(Kernel.Instance.Configuration.PreferredMetadataLanguage,
+                            p.Iso_639_1.Equals(ConfigurationManager.Configuration.PreferredMetadataLanguage,
                                               StringComparison.OrdinalIgnoreCase));
 
                 }
@@ -295,7 +290,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 {
                     var tmdbSettings = await Kernel.Instance.MetadataProviders.OfType<MovieDbProvider>().First().TmdbSettings.ConfigureAwait(false);
 
-                    var img = await DownloadAndSaveImage(person, tmdbSettings.images.base_url + Kernel.Instance.Configuration.TmdbFetchedProfileSize + profile.File_Path,
+                    var img = await DownloadAndSaveImage(person, tmdbSettings.images.base_url + ConfigurationManager.Configuration.TmdbFetchedProfileSize + profile.File_Path,
                                              "folder" + Path.GetExtension(profile.File_Path), cancellationToken).ConfigureAwait(false);
 
                     if (!string.IsNullOrEmpty(img))
@@ -322,7 +317,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             var localPath = Path.Combine(item.MetaLocation, targetName);
             if (!item.ResolveArgs.ContainsMetaFileByName(targetName))
             {
-                using (var sourceStream = await HttpClient.GetMemoryStream(source, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
+                using (var sourceStream = await HttpClient.GetMemoryStream(source, MovieDbProvider.Current.MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
                 {
                     await Kernel.Instance.FileSystemManager.SaveToLibraryFilesystem(item, localPath, sourceStream, cancellationToken).ConfigureAwait(false);
 

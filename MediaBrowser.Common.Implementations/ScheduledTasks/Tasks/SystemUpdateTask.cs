@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Model.Logging;
 using System;
@@ -19,10 +20,10 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         private readonly IApplicationHost _appHost;
 
         /// <summary>
-        /// Gets or sets the kernel.
+        /// Gets or sets the configuration manager.
         /// </summary>
-        /// <value>The kernel.</value>
-        private IKernel Kernel { get; set; }
+        /// <value>The configuration manager.</value>
+        private IConfigurationManager ConfigurationManager { get; set; }
         /// <summary>
         /// Gets or sets the logger.
         /// </summary>
@@ -30,16 +31,24 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         private ILogger Logger { get; set; }
 
         /// <summary>
+        /// Gets or sets the kernel.
+        /// </summary>
+        /// <value>The kernel.</value>
+        private IKernel Kernel { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SystemUpdateTask" /> class.
         /// </summary>
         /// <param name="appHost">The app host.</param>
-        /// <param name="kernel">The kernel.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="logger">The logger.</param>
-        public SystemUpdateTask(IApplicationHost appHost, IKernel kernel, ILogger logger)
+        /// <param name="kernel">The kernel.</param>
+        public SystemUpdateTask(IApplicationHost appHost, IConfigurationManager configurationManager, ILogger logger, IKernel kernel)
         {
             _appHost = appHost;
-            Kernel = kernel;
+            ConfigurationManager = configurationManager;
             Logger = logger;
+            Kernel = kernel;
         }
 
         /// <summary>
@@ -88,7 +97,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (Kernel.Configuration.EnableAutoUpdate)
+            if (ConfigurationManager.CommonConfiguration.EnableAutoUpdate)
             {
                 Logger.Info("Update Revision {0} available.  Updating...", updateInfo.AvailableVersion);
 

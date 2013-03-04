@@ -1,18 +1,16 @@
 ﻿using MediaBrowser.Api;
+using MediaBrowser.Common;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Implementations;
 using MediaBrowser.Common.Implementations.HttpServer;
 using MediaBrowser.Common.Implementations.Logging;
-using MediaBrowser.Common.Implementations.NetworkManagement;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
-using MediaBrowser.Common.Implementations.Serialization;
-using MediaBrowser.Common.Implementations.ServerManager;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
@@ -21,13 +19,12 @@ using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Implementations.BdInfo;
+using MediaBrowser.Server.Implementations.Configuration;
 using MediaBrowser.Server.Implementations.Library;
-using MediaBrowser.Server.Implementations.Library.Resolvers;
 using MediaBrowser.ServerApplication.Implementations;
 using MediaBrowser.WebDashboard.Api;
 using System;
@@ -43,112 +40,80 @@ namespace MediaBrowser.ServerApplication
     /// <summary>
     /// Class CompositionRoot
     /// </summary>
-    public class ApplicationHost : BaseApplicationHost, IApplicationHost
+    public class ApplicationHost : BaseApplicationHost<ServerApplicationPaths>
     {
         /// <summary>
-        /// Gets or sets the kernel.
+        /// The _web socket events
         /// </summary>
-        /// <value>The kernel.</value>
-        internal Kernel Kernel { get; private set; }
-
-        /// <summary>
-        /// The json serializer
-        /// </summary>
-        private readonly IJsonSerializer _jsonSerializer = new JsonSerializer();
-
-        /// <summary>
-        /// The _XML serializer
-        /// </summary>
-        private readonly IXmlSerializer _xmlSerializer = new XmlSerializer();
-
         private WebSocketEvents _webSocketEvents;
 
         /// <summary>
-        /// Gets the server application paths.
+        /// Gets the server kernel.
         /// </summary>
-        /// <value>The server application paths.</value>
-        protected IServerApplicationPaths ServerApplicationPaths
+        /// <value>The server kernel.</value>
+        protected Kernel ServerKernel
         {
-            get { return (IServerApplicationPaths)ApplicationPaths; }
+            get { return (Kernel)Kernel; }
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
+        /// Gets the server configuration manager.
         /// </summary>
-        /// <param name="logger">The logger.</param>
-        public ApplicationHost()
-            : base()
+        /// <value>The server configuration manager.</value>
+        public IServerConfigurationManager ServerConfigurationManager
         {
+            get { return (IServerConfigurationManager)ConfigurationManager; }
         }
 
         /// <summary>
-        /// Inits this instance.
+        /// Gets the kernel.
         /// </summary>
-        /// <returns>Task.</returns>
-        public override async Task Init()
+        /// <returns>IKernel.</returns>
+        protected override IKernel GetKernel()
         {
-            await base.Init().ConfigureAwait(false);
-
-            Kernel = new Kernel(this, ServerApplicationPaths, _xmlSerializer, Logger);
-
-            var networkManager = new NetworkManager();
-
-            var serverManager = new ServerManager(this, Kernel, networkManager, _jsonSerializer, Logger);
-
-            var taskManager = new TaskManager(ApplicationPaths, _jsonSerializer, Logger, serverManager);
-
-            LogManager.ReloadLogger(Kernel.Configuration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info);
-
-            Logger.Info("Version {0} initializing", ApplicationVersion);
-
-            RegisterResources(taskManager, networkManager, serverManager);
-
-            FindParts();
+            return new Kernel(this, XmlSerializer, LogManager, ServerConfigurationManager);
         }
 
         /// <summary>
-        /// Gets the application paths.
+        /// Gets the name of the log file prefix.
         /// </summary>
-        /// <returns>IApplicationPaths.</returns>
-        protected override IApplicationPaths GetApplicationPaths()
+        /// <value>The name of the log file prefix.</value>
+        protected override string LogFilePrefixName
         {
-            return new ServerApplicationPaths();
+            get { return "Server"; }
         }
 
         /// <summary>
-        /// Gets the log manager.
+        /// Gets the configuration manager.
         /// </summary>
-        /// <returns>ILogManager.</returns>
-        protected override ILogManager GetLogManager()
+        /// <returns>IConfigurationManager.</returns>
+        protected override IConfigurationManager GetConfigurationManager()
         {
-            return new NlogManager(ApplicationPaths.LogDirectoryPath, "Server");
+            return new ServerConfigurationManager(ApplicationPaths, LogManager, XmlSerializer);
         }
 
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
-        protected override void RegisterResources(ITaskManager taskManager, INetworkManager networkManager, IServerManager serverManager)
+        protected override void RegisterResources()
         {
-            base.RegisterResources(taskManager, networkManager, serverManager);
+            base.RegisterResources();
 
-            RegisterSingleInstance<IKernel>(Kernel);
-            RegisterSingleInstance(Kernel);
+            RegisterSingleInstance<IServerApplicationPaths>(ApplicationPaths);
+            
+            RegisterSingleInstance(ServerKernel);
+            RegisterSingleInstance(ServerConfigurationManager);
 
-            RegisterSingleInstance<IApplicationHost>(this);
-
-
-            RegisterSingleInstance(ServerApplicationPaths);
             RegisterSingleInstance<IIsoManager>(new PismoIsoManager(Logger));
             RegisterSingleInstance<IBlurayExaminer>(new BdInfoExaminer());
             RegisterSingleInstance<IZipClient>(new DotNetZipClient());
-            RegisterSingleInstance(_jsonSerializer);
-            RegisterSingleInstance(_xmlSerializer);
             RegisterSingleInstance(ServerFactory.CreateServer(this, ProtobufSerializer, Logger, "Media Browser", "index.html"), false);
 
-            var userManager = new UserManager(Kernel, Logger);
+            var userManager = new UserManager(ServerKernel, Logger, ServerConfigurationManager);
+
             RegisterSingleInstance<IUserManager>(userManager);
 
-            RegisterSingleInstance<ILibraryManager>(new LibraryManager(Kernel, Logger, taskManager, userManager));
+            RegisterSingleInstance<ILibraryManager>(new LibraryManager(ServerKernel, Logger, TaskManager, userManager, ServerConfigurationManager));
         }
 
         /// <summary>
@@ -160,15 +125,15 @@ namespace MediaBrowser.ServerApplication
 
             Resolve<ILibraryManager>().AddParts(GetExports<IResolverIgnoreRule>(), GetExports<IVirtualFolderCreator>(), GetExports<IItemResolver>(), GetExports<IIntroProvider>());
 
-            Kernel.InstallationManager = (InstallationManager)CreateInstance(typeof(InstallationManager));
+            ServerKernel.InstallationManager = (InstallationManager)CreateInstance(typeof(InstallationManager));
 
-            _webSocketEvents = new WebSocketEvents(Resolve<IServerManager>(), Resolve<IKernel>(), Resolve<ILogger>(), Resolve<IUserManager>(), Resolve<ILibraryManager>(), Kernel.InstallationManager);
+            _webSocketEvents = new WebSocketEvents(Resolve<IServerManager>(), Resolve<IKernel>(), Resolve<ILogger>(), Resolve<IUserManager>(), Resolve<ILibraryManager>(), ServerKernel.InstallationManager);
         }
 
         /// <summary>
         /// Restarts this instance.
         /// </summary>
-        public void Restart()
+        public override void Restart()
         {
             App.Instance.Restart();
         }
@@ -177,9 +142,9 @@ namespace MediaBrowser.ServerApplication
         /// Gets or sets a value indicating whether this instance can self update.
         /// </summary>
         /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
-        public bool CanSelfUpdate
+        public override bool CanSelfUpdate
         {
-            get { return Kernel.Configuration.EnableAutoUpdate; }
+            get { return ConfigurationManager.CommonConfiguration.EnableAutoUpdate; }
         }
 
         /// <summary>
@@ -188,11 +153,11 @@ namespace MediaBrowser.ServerApplication
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task{CheckForUpdateResult}.</returns>
-        public async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
+        public async override Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
             var pkgManager = Resolve<IPackageManager>();
-            var availablePackages = await pkgManager.GetAvailablePackages(Resolve<IHttpClient>(), Resolve<INetworkManager>(), Kernel.SecurityManager, Kernel.ResourcePools, Resolve<IJsonSerializer>(), CancellationToken.None).ConfigureAwait(false);
-            var version = Kernel.InstallationManager.GetLatestCompatibleVersion(availablePackages, Constants.MBServerPkgName, Kernel.Configuration.SystemUpdateLevel);
+            var availablePackages = await pkgManager.GetAvailablePackages(CancellationToken.None).ConfigureAwait(false);
+            var version = ServerKernel.InstallationManager.GetLatestCompatibleVersion(availablePackages, Constants.MBServerPkgName, ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
 
             return version != null ? new CheckForUpdateResult { AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version } :
                        new CheckForUpdateResult { AvailableVersion = ApplicationVersion, IsUpdateAvailable = false };
@@ -205,10 +170,10 @@ namespace MediaBrowser.ServerApplication
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        public Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress)
+        public override Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress)
         {
             var pkgManager = Resolve<IPackageManager>();
-            return pkgManager.InstallPackage(Resolve<IHttpClient>(), Resolve<ILogger>(), Kernel.ResourcePools, progress, Kernel.ApplicationPaths, package, cancellationToken);
+            return pkgManager.InstallPackage(progress, package, cancellationToken);
         }
 
         /// <summary>
@@ -254,7 +219,7 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// Shuts down.
         /// </summary>
-        public void Shutdown()
+        public override void Shutdown()
         {
             App.Instance.Dispatcher.Invoke(App.Instance.Shutdown);
         }

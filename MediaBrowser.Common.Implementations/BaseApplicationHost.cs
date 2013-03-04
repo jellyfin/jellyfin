@@ -1,4 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Implementations.Logging;
+using MediaBrowser.Common.Implementations.NetworkManagement;
+using MediaBrowser.Common.Implementations.ScheduledTasks;
+using MediaBrowser.Common.Implementations.Security;
+using MediaBrowser.Common.Implementations.Serialization;
 using MediaBrowser.Common.Implementations.Udp;
 using MediaBrowser.Common.Implementations.Updates;
 using MediaBrowser.Common.Implementations.WebSocket;
@@ -6,9 +11,11 @@ using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Updates;
 using SimpleInjector;
 using System;
 using System.Collections.Generic;
@@ -16,16 +23,18 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.Implementations
 {
-    public abstract class BaseApplicationHost
+    public abstract class BaseApplicationHost<TApplicationPathsType> : IApplicationHost
+        where TApplicationPathsType : class, IApplicationPaths, new()
     {
         /// <summary>
         /// Gets or sets the logger.
         /// </summary>
         /// <value>The logger.</value>
-        public ILogger Logger { get; protected set; }
+        protected ILogger Logger { get; private set; }
 
         /// <summary>
         /// Gets or sets the plugins.
@@ -43,12 +52,22 @@ namespace MediaBrowser.Common.Implementations
         /// Gets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
-        protected IApplicationPaths ApplicationPaths { get; private set; }
+        protected TApplicationPathsType ApplicationPaths = new TApplicationPathsType();
 
         /// <summary>
         /// The container
         /// </summary>
         protected readonly Container Container = new Container();
+
+        /// <summary>
+        /// The json serializer
+        /// </summary>
+        protected readonly IJsonSerializer JsonSerializer = new JsonSerializer();
+
+        /// <summary>
+        /// The _XML serializer
+        /// </summary>
+        protected readonly IXmlSerializer XmlSerializer = new XmlSerializer();
 
         /// <summary>
         /// Gets assemblies that failed to load
@@ -110,11 +129,25 @@ namespace MediaBrowser.Common.Implementations
         }
 
         /// <summary>
+        /// Gets the kernel.
+        /// </summary>
+        /// <value>The kernel.</value>
+        protected IKernel Kernel { get; private set; }
+        protected ITaskManager TaskManager { get; private set; }
+        protected ISecurityManager SecurityManager { get; private set; }
+
+        protected IConfigurationManager ConfigurationManager { get; private set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationHost" /> class.
         /// </summary>
         protected BaseApplicationHost()
         {
             FailedAssemblies = new List<string>();
+
+            LogManager = new NlogManager(ApplicationPaths.LogDirectoryPath, LogFilePrefixName);
+
+            ConfigurationManager = GetConfigurationManager();
         }
 
         /// <summary>
@@ -125,15 +158,25 @@ namespace MediaBrowser.Common.Implementations
         {
             return Task.Run(() =>
             {
-                ApplicationPaths = GetApplicationPaths();
-
-                LogManager = GetLogManager();
-
                 Logger = LogManager.GetLogger("App");
 
                 IsFirstRun = !File.Exists(ApplicationPaths.SystemConfigurationFilePath);
 
                 DiscoverTypes();
+
+                LogManager.ReloadLogger(ConfigurationManager.CommonConfiguration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info);
+
+                Logger.Info("Version {0} initializing", ApplicationVersion);
+
+                Kernel = GetKernel();
+
+                RegisterResources();
+
+                FindParts();
+
+                Task.Run(() => ConfigureAutoRunAtStartup());
+
+                Kernel.Init();
             });
         }
 
@@ -144,16 +187,13 @@ namespace MediaBrowser.Common.Implementations
         protected abstract IEnumerable<Assembly> GetComposablePartAssemblies();
 
         /// <summary>
-        /// Gets the log manager.
+        /// Gets the name of the log file prefix.
         /// </summary>
-        /// <returns>ILogManager.</returns>
-        protected abstract ILogManager GetLogManager();
+        /// <value>The name of the log file prefix.</value>
+        protected abstract string LogFilePrefixName { get; }
 
-        /// <summary>
-        /// Gets the application paths.
-        /// </summary>
-        /// <returns>IApplicationPaths.</returns>
-        protected abstract IApplicationPaths GetApplicationPaths();
+        protected abstract IKernel GetKernel();
+        protected abstract IConfigurationManager GetConfigurationManager();
 
         /// <summary>
         /// Finds the parts.
@@ -184,21 +224,44 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
-        protected virtual void RegisterResources(ITaskManager taskManager, INetworkManager networkManager, IServerManager serverManager)
+        protected virtual void RegisterResources()
         {
+            RegisterSingleInstance(ConfigurationManager);
+            RegisterSingleInstance<IApplicationHost>(this);
+
+            RegisterSingleInstance<IApplicationPaths>(ApplicationPaths);
+
+            var networkManager = new NetworkManager();
+
+            var serverManager = new ServerManager.ServerManager(this, Kernel, networkManager, JsonSerializer, Logger, ConfigurationManager);
+
+            TaskManager = new TaskManager(ApplicationPaths, JsonSerializer, Logger, serverManager);
+
+            RegisterSingleInstance(JsonSerializer);
+            RegisterSingleInstance(XmlSerializer);
+
             RegisterSingleInstance(LogManager);
             RegisterSingleInstance(Logger);
 
-            RegisterSingleInstance(ApplicationPaths);
-            RegisterSingleInstance(taskManager);
+            RegisterSingleInstance(Kernel);
+
+            RegisterSingleInstance(TaskManager);
             RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
             RegisterSingleInstance(ProtobufSerializer);
             RegisterSingleInstance<IUdpServer>(new UdpServer(Logger), false);
-            RegisterSingleInstance<IPackageManager>(new PackageManager());
-            RegisterSingleInstance<IHttpClient>(new HttpClientManager.HttpClientManager(ApplicationPaths, Logger));
 
-            RegisterSingleInstance(networkManager);
-            RegisterSingleInstance(serverManager);
+            var httpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger);
+
+            RegisterSingleInstance<IHttpClient>(httpClient);
+
+            RegisterSingleInstance<INetworkManager>(networkManager);
+            RegisterSingleInstance<IServerManager>(serverManager);
+
+            SecurityManager = new PluginSecurityManager(Kernel, httpClient, JsonSerializer, ApplicationPaths);
+
+            RegisterSingleInstance(SecurityManager);
+
+            RegisterSingleInstance<IPackageManager>(new PackageManager(SecurityManager, networkManager, httpClient, ApplicationPaths, JsonSerializer, Logger));
         }
 
         /// <summary>
@@ -336,7 +399,7 @@ namespace MediaBrowser.Common.Implementations
 
             Logger.Info("Composing instances of " + currentType.Name);
 
-            var parts = AllConcreteTypes.Where(currentType.IsAssignableFrom).Select(CreateInstance).Cast<T>().ToArray();
+            var parts = AllConcreteTypes.AsParallel().Where(currentType.IsAssignableFrom).Select(CreateInstance).Cast<T>().ToArray();
 
             if (manageLiftime)
             {
@@ -361,10 +424,8 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// Configures the auto run at startup.
         /// </summary>
-        /// <param name="autorun">if set to <c>true</c> [autorun].</param>
-        public void ConfigureAutoRunAtStartup(bool autorun)
+        private void ConfigureAutoRunAtStartup()
         {
-
         }
 
         /// <summary>
@@ -409,5 +470,15 @@ namespace MediaBrowser.Common.Implementations
                 }
             }
         }
+
+        public abstract void Restart();
+
+        public abstract bool CanSelfUpdate { get; }
+
+        public abstract Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress);
+
+        public abstract Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress);
+
+        public abstract void Shutdown();
     }
 }

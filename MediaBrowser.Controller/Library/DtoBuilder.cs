@@ -474,14 +474,8 @@ namespace MediaBrowser.Controller.Library
         /// <param name="dto">The dto.</param>
         private static void SetSpecialCounts(Folder folder, User user, BaseItemDto dto)
         {
-            var utcNow = DateTime.UtcNow;
-
             var rcentlyAddedItemCount = 0;
             var recursiveItemCount = 0;
-            var favoriteItemsCount = 0;
-            var recentlyAddedUnPlayedItemCount = 0;
-            var resumableItemCount = 0;
-            var recentlyPlayedItemCount = 0;
 
             double totalPercentPlayed = 0;
 
@@ -498,12 +492,6 @@ namespace MediaBrowser.Controller.Library
                     if (child.IsRecentlyAdded(user))
                     {
                         rcentlyAddedItemCount++;
-
-                        // Check recently added unplayed
-                        if (userdata == null || userdata.PlayCount == 0)
-                        {
-                            recentlyAddedUnPlayedItemCount++;
-                        }
                     }
 
                     // Incrememt totalPercentPlayed
@@ -521,32 +509,10 @@ namespace MediaBrowser.Controller.Library
                         }
                     }
                 }
-
-                if (userdata != null)
-                {
-                    if (userdata.IsFavorite)
-                    {
-                        favoriteItemsCount++;
-                    }
-
-                    if (userdata.PlaybackPositionTicks > 0)
-                    {
-                        resumableItemCount++;
-                    }
-
-                    if (userdata.LastPlayedDate.HasValue && (utcNow - userdata.LastPlayedDate.Value).TotalDays < Kernel.Instance.Configuration.RecentlyPlayedDays)
-                    {
-                        recentlyPlayedItemCount++;
-                    }
-                }
             }
 
             dto.RecursiveItemCount = recursiveItemCount;
             dto.RecentlyAddedItemCount = rcentlyAddedItemCount;
-            dto.RecentlyAddedUnPlayedItemCount = recentlyAddedUnPlayedItemCount;
-            dto.ResumableItemCount = resumableItemCount;
-            dto.FavoriteItemCount = favoriteItemsCount;
-            dto.RecentlyPlayedItemCount = recentlyPlayedItemCount;
 
             if (recursiveItemCount > 0)
             {

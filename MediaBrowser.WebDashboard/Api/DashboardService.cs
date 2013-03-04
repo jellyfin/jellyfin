@@ -107,9 +107,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.Object.</returns>
         public object Get(GetDashboardInfo request)
         {
-            var kernel = (Kernel)Kernel;
-
-            return GetDashboardInfo(kernel, Logger, _taskManager, _userManager);
+            return GetDashboardInfo(Kernel.Instance, Logger, _taskManager, _userManager);
         }
 
         /// <summary>
@@ -149,9 +147,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.Object.</returns>
         public object Get(GetDashboardConfigurationPage request)
         {
-            var kernel = (Kernel)Kernel;
-
-            var page = kernel.PluginConfigurationPages.First(p => p.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
+            var page = Kernel.Instance.PluginConfigurationPages.First(p => p.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
 
             return ToStaticResult(page.Version.GetMD5(), page.DateLastModified, null, MimeTypes.GetMimeType("page.html"), () => ModifyHtml(page.GetHtmlStream()));
         }
@@ -163,9 +159,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.Object.</returns>
         public object Get(GetDashboardConfigurationPages request)
         {
-            var kernel = (Kernel)Kernel;
-
-            var pages = kernel.PluginConfigurationPages;
+            var pages = Kernel.Instance.PluginConfigurationPages;
 
             if (request.PageType.HasValue)
             {
