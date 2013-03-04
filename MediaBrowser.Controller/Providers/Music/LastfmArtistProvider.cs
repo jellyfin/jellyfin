@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Logging;
@@ -16,8 +17,10 @@ namespace MediaBrowser.Controller.Providers.Music
 {
     public class LastfmArtistProvider : LastfmBaseArtistProvider
     {
-        public LastfmArtistProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager) 
-            : base(jsonSerializer, httpClient, logManager)
+        internal readonly SemaphoreSlim LastfmResourcePool = new SemaphoreSlim(5, 5);
+
+        public LastfmArtistProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager)
+            : base(jsonSerializer, httpClient, logManager, configurationManager)
         {
         }
 
@@ -30,7 +33,7 @@ namespace MediaBrowser.Controller.Providers.Music
 
             try
             {
-                using (var json = await HttpClient.Get(url, Kernel.Instance.ResourcePools.MovieDb, cancellationToken).ConfigureAwait(false))
+                using (var json = await HttpClient.Get(url, LastfmResourcePool, cancellationToken).ConfigureAwait(false))
                 {
                     searchResult = JsonSerializer.DeserializeFromStream<LastfmArtistSearchResults>(json);
                 }
@@ -61,7 +64,7 @@ namespace MediaBrowser.Controller.Providers.Music
 
             try
             {
-                using (var json = await HttpClient.Get(url, Kernel.Instance.ResourcePools.Lastfm, cancellationToken).ConfigureAwait(false))
+                using (var json = await HttpClient.Get(url, LastfmResourcePool, cancellationToken).ConfigureAwait(false))
                 {
                     result = JsonSerializer.DeserializeFromStream<LastfmGetArtistResult>(json);
                 }
