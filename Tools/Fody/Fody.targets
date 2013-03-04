@@ -37,6 +37,7 @@
   <PropertyGroup>
     <IntermediateDir>$(ProjectDir)$(IntermediateOutputPath)</IntermediateDir>
     <FodyMessageImportance Condition="$(FodyMessageImportance) == '' Or $(FodyMessageImportance) == '*Undefined*'">Low</FodyMessageImportance>
+    <FodySignAssembly Condition="$(FodySignAssembly) == '' Or $(FodySignAssembly) == '*Undefined*'">$(SignAssembly)</FodySignAssembly>
   </PropertyGroup>
   <UsingTask
       TaskName="Fody.WeavingTask"
@@ -45,6 +46,7 @@
       AfterTargets="AfterCompile"
       Name="WinFodyTarget"
       Condition=" '$(OS)' == 'Windows_NT'">
+
     <Fody.WeavingTask
           AssemblyPath="@(IntermediateAssembly)"
           IntermediateDir="$(IntermediateDir)"
@@ -53,8 +55,9 @@
           ProjectDirectory="$(ProjectDir)"
           SolutionDir="$(FodySolutionDir)"
           References="@(ReferencePath)"
-          SignAssembly="$(SignAssembly)"
+          SignAssembly="$(FodySignAssembly)"
           ReferenceCopyLocalPaths="@(ReferenceCopyLocalPaths)"
+          DefineConstants="$(DefineConstants)"
       />
   </Target>
 
@@ -65,13 +68,14 @@
     <Fody.WeavingTask
           AssemblyPath="$(TargetPath)"
           IntermediateDir="$(IntermediateDir)"
-          KeyFilePath="$(KeyOriginatorFile)"
+          KeyFilePath="$(FodyKeyFilePath)"
           MessageImportance="$(FodyMessageImportance)"
           ProjectDirectory="$(ProjectDir)"
           SolutionDir="$(FodySolutionDir)"
           References="@(ReferencePath)"
-          SignAssembly="$(SignAssembly)"
+          SignAssembly="$(FodySignAssembly)"
           ReferenceCopyLocalPaths="$(ReferenceCopyLocalPaths)"
+          DefineConstants="$(DefineConstants)"
       />
   </Target>
 
