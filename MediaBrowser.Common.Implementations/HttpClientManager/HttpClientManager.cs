@@ -77,7 +77,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 var handler = new WebRequestHandler
                 {
-                    AutomaticDecompression = DecompressionMethods.Deflate,
+                    //AutomaticDecompression = DecompressionMethods.Deflate,
                     CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate)
                 };
 
