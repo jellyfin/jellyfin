@@ -69,7 +69,7 @@ namespace MediaBrowser.Common.Implementations.Security
             _kernel = kernel;
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
-            //MBRegistration.Init(appPaths);
+            MBRegistration.Init(appPaths);
         }
 
         /// <summary>
