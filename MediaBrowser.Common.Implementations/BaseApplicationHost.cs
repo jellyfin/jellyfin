@@ -162,9 +162,9 @@ namespace MediaBrowser.Common.Implementations
 
             Logger = LogManager.GetLogger("App");
 
-            DiscoverTypes();
-
             LogManager.ReloadLogger(ConfigurationManager.CommonConfiguration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info);
+
+            DiscoverTypes();
 
             Logger.Info("Version {0} initializing", ApplicationVersion);
 
@@ -215,7 +215,14 @@ namespace MediaBrowser.Common.Implementations
         {
             FailedAssemblies.Clear();
 
-            AllTypes = GetComposablePartAssemblies().SelectMany(GetTypes).ToArray();
+            var assemblies = GetComposablePartAssemblies().ToArray();
+
+            foreach (var assembly in assemblies)
+            {
+                Logger.Info("Loading {0}", assembly.FullName);
+            }
+
+            AllTypes = assemblies.SelectMany(GetTypes).ToArray();
 
             AllConcreteTypes = AllTypes.Where(t => t.IsClass && !t.IsAbstract && !t.IsInterface && !t.IsGenericType).ToArray();
         }
