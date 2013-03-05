@@ -68,7 +68,7 @@ namespace MediaBrowser.Common.Implementations.Logging
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="level">The level.</param>
-        private void AddLogTarget(Target target, LogSeverity level)
+        public void AddLogTarget(Target target, LogSeverity level)
         {
             var config = LogManager.Configuration;
             config.AddTarget(target.Name, target);
