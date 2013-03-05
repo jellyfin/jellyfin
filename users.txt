@@ -1,8 +1,0 @@
-Eric <ebr>=ebr11 Eric Reed spam@reedsplace.com
-Mark@CAPRICA=RedShirtMB Mark Linton redshirt.linton@gmail.com
-Scott@Sheldon.redgumtech.com.au=ScottRapsey Scott Rapsey scott@redgum.com.au
-Scott@ferret=ScottIsAFool Scott Lovegrove ScottIsAFool@gmail.com
-ScottIsAFool=ScottIsAFool Scott Lovegrove ScottIsAFool@gmail.com
-luke.pulverenti@gmail.com=LukePulverenti Luke Pulverenti luke.pulverenti@gmail.com
-luke@luke-server=LukePulverenti Luke Pulverenti luke.pulverenti@gmail.com
-scott.rapsey=ScottRapsey Scott Rapsey scott@redgum.com.au
