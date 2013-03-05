@@ -149,7 +149,7 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var page = ServerEntryPoint.Instance.PluginConfigurationPages.First(p => p.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
 
-            return ToStaticResult(page.Version.GetMD5(), page.DateLastModified, null, MimeTypes.GetMimeType("page.html"), () => ModifyHtml(page.GetHtmlStream()));
+            return ToStaticResult(page.Plugin.Version.ToString().GetMD5(), page.Plugin.AssemblyDateLastModified, null, MimeTypes.GetMimeType("page.html"), () => ModifyHtml(page.GetHtmlStream()));
         }
 
         /// <summary>

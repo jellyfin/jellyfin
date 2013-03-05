@@ -1,4 +1,4 @@
-﻿using System;
+﻿using MediaBrowser.Common.Plugins;
 using System.IO;
 
 namespace MediaBrowser.Controller.Plugins
@@ -21,27 +21,16 @@ namespace MediaBrowser.Controller.Plugins
         ConfigurationPageType ConfigurationPageType { get; }
 
         /// <summary>
-        /// Gets the plugin id.
+        /// Gets the plugin.
         /// </summary>
-        /// <value>The plugin id.</value>
-        Guid? PluginId { get; }
+        /// <value>The plugin.</value>
+        IPlugin Plugin { get; }
 
         /// <summary>
         /// Gets the HTML stream.
         /// </summary>
         /// <returns>Stream.</returns>
         Stream GetHtmlStream();
-
-        /// <summary>
-        /// Gets the version. Typically taken from Plugin.Version
-        /// </summary>
-        /// <value>The version.</value>
-        string Version { get; }
-
-        /// <summary>
-        /// For http caching purposes. Typically taken from Plugin.AssemblyDateLastModified
-        /// </summary>
-        DateTime DateLastModified { get; }
     }
 
     /// <summary>
