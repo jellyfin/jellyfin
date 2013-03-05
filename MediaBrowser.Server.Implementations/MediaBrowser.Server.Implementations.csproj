@@ -88,6 +88,7 @@
     <Compile Include="Sqlite\SQLiteRepository.cs" />
     <Compile Include="Sqlite\SQLiteUserDataRepository.cs" />
     <Compile Include="Sqlite\SQLiteUserRepository.cs" />
+    <Compile Include="Updates\InstallationManager.cs" />
     <Compile Include="WorldWeatherOnline\WeatherProvider.cs" />
   </ItemGroup>
   <ItemGroup>

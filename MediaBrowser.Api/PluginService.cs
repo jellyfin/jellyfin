@@ -3,6 +3,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations.HttpServer;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Updates;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
@@ -127,6 +128,8 @@ namespace MediaBrowser.Api
 
         private readonly ISecurityManager _securityManager;
 
+        private readonly IInstallationManager _installationManager;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginService" /> class.
         /// </summary>
@@ -134,7 +137,7 @@ namespace MediaBrowser.Api
         /// <param name="appHost">The app host.</param>
         /// <param name="securityManager">The security manager.</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
-        public PluginService(IJsonSerializer jsonSerializer, IApplicationHost appHost, ISecurityManager securityManager)
+        public PluginService(IJsonSerializer jsonSerializer, IApplicationHost appHost, ISecurityManager securityManager, IInstallationManager installationManager)
             : base()
         {
             if (jsonSerializer == null)
@@ -144,6 +147,7 @@ namespace MediaBrowser.Api
 
             _appHost = appHost;
             _securityManager = securityManager;
+            _installationManager = installationManager;
             _jsonSerializer = jsonSerializer;
         }
 
@@ -254,7 +258,7 @@ namespace MediaBrowser.Api
         {
             var plugin = _appHost.Plugins.First(p => p.Id == request.Id);
 
-            Kernel.Instance.InstallationManager.UninstallPlugin(plugin);
+            _installationManager.UninstallPlugin(plugin);
         }
     }
 }

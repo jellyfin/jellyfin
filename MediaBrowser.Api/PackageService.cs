@@ -1,8 +1,7 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations.HttpServer;
-using MediaBrowser.Common.Kernel;
-using MediaBrowser.Controller;
+using MediaBrowser.Controller.Updates;
 using MediaBrowser.Model.Updates;
 using ServiceStack.ServiceHost;
 using System;
@@ -95,11 +94,14 @@ namespace MediaBrowser.Api
     /// </summary>
     public class PackageService : BaseRestService
     {
-        /// <summary>
-        /// Gets or sets the application host.
-        /// </summary>
-        /// <value>The application host.</value>
-        public IApplicationHost ApplicationHost { get; set; }
+        private readonly IInstallationManager _installationManager;
+        private readonly IApplicationHost _appHost;
+
+        public PackageService(IInstallationManager installationManager, IApplicationHost appHost)
+        {
+            _installationManager = installationManager;
+            _appHost = appHost;
+        }
 
         /// <summary>
         /// Gets the specified request.
@@ -113,12 +115,12 @@ namespace MediaBrowser.Api
 
             if (request.PackageType == PackageType.UserInstalled || request.PackageType == PackageType.All)
             {
-                result.AddRange(Kernel.Instance.InstallationManager.GetAvailablePluginUpdates(false, CancellationToken.None).Result.ToList());
+                result.AddRange(_installationManager.GetAvailablePluginUpdates(false, CancellationToken.None).Result.ToList());
             }
 
             else if (request.PackageType == PackageType.System || request.PackageType == PackageType.All)
             {
-                var updateCheckResult = ApplicationHost.CheckForApplicationUpdate(CancellationToken.None, new Progress<double> { }).Result;
+                var updateCheckResult = _appHost.CheckForApplicationUpdate(CancellationToken.None, new Progress<double> { }).Result;
 
                 if (updateCheckResult.IsUpdateAvailable)
                 {
@@ -136,7 +138,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetPackage request)
         {
-            var packages = Kernel.Instance.InstallationManager.GetAvailablePackages(CancellationToken.None, applicationVersion: ApplicationHost.ApplicationVersion).Result;
+            var packages = _installationManager.GetAvailablePackages(CancellationToken.None, applicationVersion: _appHost.ApplicationVersion).Result;
 
             var result = packages.FirstOrDefault(p => p.name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
 
@@ -150,7 +152,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetPackages request)
         {
-            var packages = Kernel.Instance.InstallationManager.GetAvailablePackages(CancellationToken.None, request.PackageType, ApplicationHost.ApplicationVersion).Result;
+            var packages = _installationManager.GetAvailablePackages(CancellationToken.None, request.PackageType, _appHost.ApplicationVersion).Result;
 
             return ToOptimizedResult(packages.ToList());
         }
@@ -163,15 +165,15 @@ namespace MediaBrowser.Api
         public void Post(InstallPackage request)
         {
             var package = string.IsNullOrEmpty(request.Version) ?
-                Kernel.Instance.InstallationManager.GetLatestCompatibleVersion(request.Name, request.UpdateClass).Result :
-                Kernel.Instance.InstallationManager.GetPackage(request.Name, request.UpdateClass, Version.Parse(request.Version)).Result;
+                _installationManager.GetLatestCompatibleVersion(request.Name, request.UpdateClass).Result :
+                _installationManager.GetPackage(request.Name, request.UpdateClass, Version.Parse(request.Version)).Result;
 
             if (package == null)
             {
                 throw new ResourceNotFoundException(string.Format("Package not found: {0}", request.Name));
             }
 
-            Task.Run(() => Kernel.Instance.InstallationManager.InstallPackage(package, new Progress<double> { }, CancellationToken.None));
+            Task.Run(() => _installationManager.InstallPackage(package, new Progress<double> { }, CancellationToken.None));
         }
 
         /// <summary>
@@ -180,7 +182,7 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Delete(CancelPackageInstallation request)
         {
-            var info = Kernel.Instance.InstallationManager.CurrentInstallations.FirstOrDefault(i => i.Item1.Id == request.Id);
+            var info = _installationManager.CurrentInstallations.FirstOrDefault(i => i.Item1.Id == request.Id);
 
             if (info != null)
             {

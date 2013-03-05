@@ -135,6 +135,8 @@ namespace MediaBrowser.Common.Implementations
         protected IKernel Kernel { get; private set; }
         protected ITaskManager TaskManager { get; private set; }
         protected ISecurityManager SecurityManager { get; private set; }
+        protected IPackageManager PackageManager { get; private set; }
+        protected IHttpClient HttpClient { get; private set; }
 
         protected IConfigurationManager ConfigurationManager { get; private set; }
 
@@ -249,18 +251,20 @@ namespace MediaBrowser.Common.Implementations
                 RegisterSingleInstance(ProtobufSerializer);
                 RegisterSingleInstance<IUdpServer>(new UdpServer(Logger), false);
 
-                var httpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger);
+                HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger);
 
-                RegisterSingleInstance<IHttpClient>(httpClient);
+                RegisterSingleInstance(HttpClient);
 
                 RegisterSingleInstance<INetworkManager>(networkManager);
                 RegisterSingleInstance<IServerManager>(serverManager);
 
-                SecurityManager = new PluginSecurityManager(Kernel, httpClient, JsonSerializer, ApplicationPaths);
+                SecurityManager = new PluginSecurityManager(Kernel, HttpClient, JsonSerializer, ApplicationPaths);
 
                 RegisterSingleInstance(SecurityManager);
 
-                RegisterSingleInstance<IPackageManager>(new PackageManager(SecurityManager, networkManager, httpClient, ApplicationPaths, JsonSerializer, Logger));
+                PackageManager = new PackageManager(SecurityManager, networkManager, HttpClient, ApplicationPaths, JsonSerializer, Logger);
+
+                RegisterSingleInstance(PackageManager);
             });
         }
 

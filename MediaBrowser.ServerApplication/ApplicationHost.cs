@@ -25,6 +25,7 @@ using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Implementations.BdInfo;
 using MediaBrowser.Server.Implementations.Configuration;
 using MediaBrowser.Server.Implementations.Library;
+using MediaBrowser.Server.Implementations.Updates;
 using MediaBrowser.ServerApplication.Implementations;
 using MediaBrowser.WebDashboard.Api;
 using System;
@@ -42,11 +43,6 @@ namespace MediaBrowser.ServerApplication
     /// </summary>
     public class ApplicationHost : BaseApplicationHost<ServerApplicationPaths>
     {
-        /// <summary>
-        /// The _web socket events
-        /// </summary>
-        private WebSocketEvents _webSocketEvents;
-
         /// <summary>
         /// Gets the server kernel.
         /// </summary>
@@ -114,6 +110,8 @@ namespace MediaBrowser.ServerApplication
             RegisterSingleInstance<IUserManager>(userManager);
 
             RegisterSingleInstance<ILibraryManager>(new LibraryManager(ServerKernel, Logger, TaskManager, userManager, ServerConfigurationManager));
+
+            RegisterSingleInstance<IInstallationManager>(new InstallationManager(Kernel, HttpClient, PackageManager, JsonSerializer, Logger, this));
         }
 
         /// <summary>
@@ -124,10 +122,6 @@ namespace MediaBrowser.ServerApplication
             base.FindParts();
 
             Resolve<ILibraryManager>().AddParts(GetExports<IResolverIgnoreRule>(), GetExports<IVirtualFolderCreator>(), GetExports<IItemResolver>(), GetExports<IIntroProvider>());
-
-            ServerKernel.InstallationManager = (InstallationManager)CreateInstance(typeof(InstallationManager));
-
-            _webSocketEvents = new WebSocketEvents(Resolve<IServerManager>(), Resolve<IKernel>(), Resolve<ILogger>(), Resolve<IUserManager>(), Resolve<ILibraryManager>(), ServerKernel.InstallationManager);
         }
 
         /// <summary>
@@ -157,7 +151,7 @@ namespace MediaBrowser.ServerApplication
         {
             var pkgManager = Resolve<IPackageManager>();
             var availablePackages = await pkgManager.GetAvailablePackages(CancellationToken.None).ConfigureAwait(false);
-            var version = ServerKernel.InstallationManager.GetLatestCompatibleVersion(availablePackages, Constants.MBServerPkgName, ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
+            var version = Resolve<IInstallationManager>().GetLatestCompatibleVersion(availablePackages, Constants.MBServerPkgName, ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
 
             return version != null ? new CheckForUpdateResult { AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version } :
                        new CheckForUpdateResult { AvailableVersion = ApplicationVersion, IsUpdateAvailable = false };
@@ -222,23 +216,6 @@ namespace MediaBrowser.ServerApplication
         public override void Shutdown()
         {
             App.Instance.Dispatcher.Invoke(App.Instance.Shutdown);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected override void Dispose(bool dispose)
-        {
-            if (dispose)
-            {
-                if (_webSocketEvents != null)
-                {
-                    _webSocketEvents.Dispose();
-                }
-            }
-
-            base.Dispose(dispose);
         }
     }
 }
