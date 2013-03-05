@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations.HttpServer;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Serialization;
@@ -8,7 +7,6 @@ using ServiceStack.ServiceHost;
 using ServiceStack.Text.Controller;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -32,6 +30,7 @@ namespace MediaBrowser.Api
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public Guid Id { get; set; }
     }
 
@@ -45,6 +44,7 @@ namespace MediaBrowser.Api
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public Guid Id { get; set; }
     }
 
@@ -58,12 +58,14 @@ namespace MediaBrowser.Api
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public Guid Id { get; set; }
 
         /// <summary>
         /// Gets or sets the password.
         /// </summary>
         /// <value>The password.</value>
+        [ApiMember(Name = "Password", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "GET")]
         public string Password { get; set; }
     }
 

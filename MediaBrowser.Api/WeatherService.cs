@@ -11,12 +11,14 @@ namespace MediaBrowser.Api
     /// Class Weather
     /// </summary>
     [Route("/Weather", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets weather information for a given location")]
     public class GetWeather : IReturn<WeatherInfo>
     {
         /// <summary>
         /// Gets or sets the location.
         /// </summary>
         /// <value>The location.</value>
+        [ApiMember(Name = "Location", Description = "Us zip / City, State, Country / City, Country", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Location { get; set; }
     }
 

@@ -2,7 +2,6 @@
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations.HttpServer;
 using MediaBrowser.Common.Security;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Updates;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Plugins;
