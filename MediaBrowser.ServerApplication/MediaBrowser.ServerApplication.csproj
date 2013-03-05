@@ -402,4 +402,10 @@ del "$(SolutionDir)..\Deploy\MBServer.zip"
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="AfterBuild">
+      <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
+         <Output TaskParameter="Assemblies" ItemName="CurrentAssembly" />
+      </GetAssemblyIdentity>
+      <Exec Command="ren $(SolutionDir)..\Deploy\MBServer.zip  MBServer_%(CurrentAssembly.Version).zip" Condition="'$(ConfigurationName)' == 'Release'"/>
+  </Target>
 </Project>
