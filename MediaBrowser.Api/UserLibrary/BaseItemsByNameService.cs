@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Implementations.HttpServer;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
@@ -88,7 +87,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var resultItems = await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            result.Items = resultItems.Where(i => i != null).OrderByDescending(i => i.SortName ?? i.Name).ToArray();
+            result.Items = resultItems.Where(i => i != null).ToArray();
 
             return result;
         }
