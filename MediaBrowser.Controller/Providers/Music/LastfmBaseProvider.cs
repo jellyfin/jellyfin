@@ -123,7 +123,7 @@ namespace MediaBrowser.Controller.Providers.Music
             var id = item.GetProviderId(MetadataProviders.Musicbrainz) ?? await FindId(item, cancellationToken).ConfigureAwait(false);
             if (id != null)
             {
-                Logger.Debug("LastfmProvider - getting info with id: " + id);
+                Logger.Debug("LastfmProvider - getting info for {0}", item.Name);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -273,6 +273,25 @@ namespace MediaBrowser.Controller.Providers.Music
         public List<LastfmArtist> similar { get; set; }
         public LastfmTags tags { get; set; }
         public LastFmBio bio { get; set; }
+    }
+
+
+    public class LastfmAlbum
+    {
+        public string name { get; set; }
+        public string artist { get; set; }
+        public string id { get; set; }
+        public string mbid { get; set; }
+        public string releasedate { get; set; }
+        public int listeners { get; set; }
+        public int playcount { get; set; }
+        public LastfmTags toptags { get; set; }
+        public LastFmBio wiki { get; set; }
+    }
+
+    public class LastfmGetAlbumResult
+    {
+        public LastfmAlbum album { get; set; }
     }
 
     public class LastfmGetArtistResult
