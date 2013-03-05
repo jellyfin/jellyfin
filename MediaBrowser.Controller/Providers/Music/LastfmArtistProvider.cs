@@ -75,7 +75,7 @@ namespace MediaBrowser.Controller.Providers.Music
             {
                 if (e.StatusCode == HttpStatusCode.NotFound)
                 {
-                    throw new LastfmProviderException(string.Format("Unable to retrieve artist info for {0} with id {0}", item.Name, id));
+                    throw new LastfmProviderException(string.Format("Unable to retrieve artist info for {0} with id {1}", item.Name, id));
                 }
                 throw;
             }
