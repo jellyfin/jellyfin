@@ -44,18 +44,6 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is a core plugin.
-        /// </summary>
-        /// <value><c>true</c> if this instance is a core plugin; otherwise, <c>false</c>.</value>
-        public virtual bool IsCorePlugin
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Gets a value indicating whether this instance is first run.
         /// </summary>
         /// <value><c>true</c> if this instance is first run; otherwise, <c>false</c>.</value>
@@ -316,7 +304,6 @@ namespace MediaBrowser.Common.Plugins
                 AssemblyFileName = AssemblyFileName,
                 ConfigurationDateLastModified = ConfigurationDateLastModified,
                 Description = Description,
-                IsCorePlugin = IsCorePlugin,
                 Id = Id,
                 EnableAutoUpdate = Configuration.EnableAutoUpdate,
                 UpdateClass = Configuration.UpdateClass,

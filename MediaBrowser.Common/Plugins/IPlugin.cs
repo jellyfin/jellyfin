@@ -21,12 +21,6 @@ namespace MediaBrowser.Common.Plugins
         string Description { get; }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is a core plugin.
-        /// </summary>
-        /// <value><c>true</c> if this instance is a core plugin; otherwise, <c>false</c>.</value>
-        bool IsCorePlugin { get; }
-
-        /// <summary>
         /// Gets the type of configuration this plugin uses
         /// </summary>
         /// <value>The type of the configuration.</value>

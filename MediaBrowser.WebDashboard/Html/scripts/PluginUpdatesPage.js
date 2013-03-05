@@ -12,11 +12,6 @@
 
     loadPlugins: function (plugins) {
 
-        plugins = plugins.filter(function (p) {
-
-            return !p.IsCorePlugin;
-        });
-
         var elem = $('#tbodyPluginUpdates', $.mobile.activePage).html('');
 
         for (var i = 0, length = plugins.length; i < length; i++) {
