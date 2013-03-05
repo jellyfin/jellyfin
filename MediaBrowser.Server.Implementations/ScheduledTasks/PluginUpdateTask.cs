@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Controller;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
@@ -8,7 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.ScheduledTasks
+namespace MediaBrowser.Server.Implementations.ScheduledTasks
 {
     /// <summary>
     /// Plugin Update Task

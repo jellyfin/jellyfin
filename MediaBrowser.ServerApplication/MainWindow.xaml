@@ -13,7 +13,12 @@
                     <Separator x:Name="separatorDeveloperTools"/>
                     <MenuItem x:Name="cmOpenExplorer" Header="Open Library Explorer" Click="cmOpenExplorer_click" />
                     <MenuItem x:Name="cmdReloadServer" Header="Restart Server" Click="cmdReloadServer_click" />
-                    <MenuItem x:Name="cmdApiDocs" Header="View Api Documentation" Click="cmdApiDocs_Click" />
+                    <MenuItem x:Name="cmdApiDocs" Header="View Api Documentation">
+                        <MenuItem x:Name="cmdStandardApiDocs" Header="Standard" Click="cmdApiDocs_Click">
+                        </MenuItem>
+                        <MenuItem x:Name="cmdSwaggerApiDocs" Header="Swagger" Click="cmdSwaggerApiDocs_Click">
+                        </MenuItem>
+                    </MenuItem>
                     <Separator/>
                     <MenuItem x:Name="cmShowLogWindow" Header="Show Log Window" IsCheckable="True" Click="CmShowLogWindow_click"/>
                     <MenuItem x:Name="cmVisitCT" Header="Visit Community" Click="cmVisitCT_click"/>
