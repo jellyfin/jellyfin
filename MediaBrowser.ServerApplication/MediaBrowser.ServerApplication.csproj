@@ -391,7 +391,7 @@ mkdir "$(SolutionDir)..\Deploy\Server\System\CorePlugins"
 xcopy "$(TargetDir)CorePlugins" "$(SolutionDir)..\Deploy\Server\System\CorePlugins" /y
 
 del "$(SolutionDir)..\Deploy\MBServer.zip"
-"$(SolutionDir)7za" a -tzip "$(SolutionDir)..\Deploy\MBServer.zip" "$(SolutionDir)..\Deploy\Server\*"
+"$(SolutionDir)ThirdParty\7zip\7za" a -tzip "$(SolutionDir)..\Deploy\MBServer.zip" "$(SolutionDir)..\Deploy\Server\*"
 )</PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
