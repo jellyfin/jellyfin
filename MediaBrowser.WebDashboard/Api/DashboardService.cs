@@ -147,7 +147,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.Object.</returns>
         public object Get(GetDashboardConfigurationPage request)
         {
-            var page = Kernel.Instance.PluginConfigurationPages.First(p => p.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
+            var page = ServerEntryPoint.Instance.PluginConfigurationPages.First(p => p.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
 
             return ToStaticResult(page.Version.GetMD5(), page.DateLastModified, null, MimeTypes.GetMimeType("page.html"), () => ModifyHtml(page.GetHtmlStream()));
         }
@@ -159,7 +159,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.Object.</returns>
         public object Get(GetDashboardConfigurationPages request)
         {
-            var pages = Kernel.Instance.PluginConfigurationPages;
+            var pages = ServerEntryPoint.Instance.PluginConfigurationPages;
 
             if (request.PageType.HasValue)
             {
