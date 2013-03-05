@@ -106,13 +106,8 @@ namespace MediaBrowser.Api
     /// Class UpdatePluginSecurityInfo
     /// </summary>
     [Route("/Plugins/SecurityInfo", "POST")]
-    public class UpdatePluginSecurityInfo : IReturnVoid, IRequiresRequestStream
+    public class UpdatePluginSecurityInfo : PluginSecurityInfo, IReturnVoid
     {
-        /// <summary>
-        /// The raw Http Request Input Stream
-        /// </summary>
-        /// <value>The request stream.</value>
-        public Stream RequestStream { get; set; }
     }
 
     /// <summary>
@@ -227,7 +222,7 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Post(UpdatePluginSecurityInfo request)
         {
-            var info = _jsonSerializer.DeserializeFromStream<PluginSecurityInfo>(request.RequestStream);
+            var info = request;
 
             _securityManager.SupporterKey = info.SupporterKey;
             _securityManager.LegacyKey = info.LegacyKey;

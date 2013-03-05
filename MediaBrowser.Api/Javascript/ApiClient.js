@@ -1126,7 +1126,29 @@ var ApiClient = {
 
         var url = ApiClient.getUrl("System/Configuration");
 
-        return $.post(url, JSON.stringify(configuration));
+        return $.ajax({
+            type: "POST",
+            url: url,
+            data: JSON.stringify(configuration),
+            dataType: "json",
+            contentType: "application/json"
+        });
+    },
+
+    /**
+     * Updates plugin security info
+     */
+    updatePluginSecurityInfo: function (info) {
+
+        var url = ApiClient.getUrl("Plugins/SecurityInfo");
+
+        return $.ajax({
+            type: "POST",
+            url: url,
+            data: JSON.stringify(info),
+            dataType: "json",
+            contentType: "application/json"
+        });
     },
 
     /**
@@ -1141,7 +1163,13 @@ var ApiClient = {
 
         var url = ApiClient.getUrl("Users");
 
-        return $.post(url, JSON.stringify(user));
+        return $.ajax({
+            type: "POST",
+            url: url,
+            data: JSON.stringify(user),
+            dataType: "json",
+            contentType: "application/json"
+        });
     },
 
     /**
@@ -1156,7 +1184,13 @@ var ApiClient = {
 
         var url = ApiClient.getUrl("Users/" + user.Id);
 
-        return $.post(url, JSON.stringify(user));
+        return $.ajax({
+            type: "POST",
+            url: url,
+            data: JSON.stringify(user),
+            dataType: "json",
+            contentType: "application/json"
+        });
     },
 
     /**
@@ -1176,7 +1210,13 @@ var ApiClient = {
 
         var url = ApiClient.getUrl("ScheduledTasks/" + id + "/Triggers");
 
-        return $.post(url, JSON.stringify(triggers));
+        return $.ajax({
+            type: "POST",
+            url: url,
+            data: JSON.stringify(triggers),
+            dataType: "json",
+            contentType: "application/json"
+        });
     },
 
     /**
@@ -1196,7 +1236,13 @@ var ApiClient = {
 
         var url = ApiClient.getUrl("Plugins/" + id + "/Configuration");
 
-        return $.post(url, JSON.stringify(configuration));
+        return $.ajax({
+            type: "POST",
+            url: url,
+            data: JSON.stringify(configuration),
+            dataType: "json",
+            contentType: "application/json"
+        });
     },
 
     /**

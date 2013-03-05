@@ -64,19 +64,13 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// Class UpdateScheduledTaskTriggers
     /// </summary>
     [Route("/ScheduledTasks/{Id}/Triggers", "POST")]
-    public class UpdateScheduledTaskTriggers : IRequiresRequestStream
+    public class UpdateScheduledTaskTriggers : List<TaskTriggerInfo>, IReturnVoid
     {
         /// <summary>
         /// Gets or sets the task id.
         /// </summary>
         /// <value>The task id.</value>
         public Guid Id { get; set; }
-
-        /// <summary>
-        /// The raw Http Request Input Stream
-        /// </summary>
-        /// <value>The request stream.</value>
-        public Stream RequestStream { get; set; }
     }
 
     /// <summary>
@@ -202,7 +196,7 @@ namespace MediaBrowser.Api.ScheduledTasks
                 throw new ResourceNotFoundException("Task not found");
             }
 
-            var triggerInfos = _jsonSerializer.DeserializeFromStream<TaskTriggerInfo[]>(request.RequestStream);
+            var triggerInfos = request;
 
             task.Triggers = triggerInfos.Select(ScheduledTaskHelpers.GetTrigger);
         }

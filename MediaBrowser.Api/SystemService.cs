@@ -49,13 +49,8 @@ namespace MediaBrowser.Api
     /// Class UpdateConfiguration
     /// </summary>
     [Route("/System/Configuration", "POST")]
-    public class UpdateConfiguration : IRequiresRequestStream
+    public class UpdateConfiguration : ServerConfiguration, IReturnVoid
     {
-        /// <summary>
-        /// The raw Http Request Input Stream
-        /// </summary>
-        /// <value>The request stream.</value>
-        public Stream RequestStream { get; set; }
     }
 
     /// <summary>
@@ -160,9 +155,13 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Post(UpdateConfiguration request)
         {
-            var serverConfig = _jsonSerializer.DeserializeFromStream<ServerConfiguration>(request.RequestStream);
+            // Silly, but we need to serialize and deserialize or the XmlSerializer will write the xml with an element name of UpdateConfiguration
 
-            _configurationManager.ReplaceConfiguration(serverConfig);
+            var json = _jsonSerializer.SerializeToString(request);
+
+            var config = _jsonSerializer.DeserializeFromString<ServerConfiguration>(json);
+
+            _configurationManager.ReplaceConfiguration(config);
         }
     }
 }

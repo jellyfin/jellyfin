@@ -25,22 +25,6 @@ namespace MediaBrowser.Common.Implementations.Serialization
         /// <summary>
         /// Deserializes from stream.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="stream">The stream.</param>
-        /// <returns>``0.</returns>
-        public T DeserializeFromStream<T>(Stream stream)
-        {
-            using (var reader = new XmlTextReader(stream))
-            {
-                var netSerializer = new System.Xml.Serialization.XmlSerializer(typeof(T));
-
-                return (T)netSerializer.Deserialize(reader);
-            }
-        }
-
-        /// <summary>
-        /// Deserializes from stream.
-        /// </summary>
         /// <param name="type">The type.</param>
         /// <param name="stream">The stream.</param>
         /// <returns>System.Object.</returns>
@@ -64,20 +48,6 @@ namespace MediaBrowser.Common.Implementations.Serialization
             using (var writer = new XmlTextWriter(stream, null))
             {
                 SerializeToWriter(obj, writer);
-            }
-        }
-
-        /// <summary>
-        /// Deserializes from file.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="file">The file.</param>
-        /// <returns>``0.</returns>
-        public T DeserializeFromFile<T>(string file)
-        {
-            using (var stream = File.OpenRead(file))
-            {
-                return DeserializeFromStream<T>(stream);
             }
         }
 

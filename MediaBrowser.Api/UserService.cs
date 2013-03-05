@@ -102,32 +102,16 @@ namespace MediaBrowser.Api
     /// Class UpdateUser
     /// </summary>
     [Route("/Users/{Id}", "POST")]
-    public class UpdateUser : IRequiresRequestStream, IReturnVoid
+    public class UpdateUser : UserDto, IReturnVoid
     {
-        /// <summary>
-        /// The raw Http Request Input Stream
-        /// </summary>
-        /// <value>The request stream.</value>
-        public Stream RequestStream { get; set; }
-
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        public Guid Id { get; set; }
     }
 
     /// <summary>
     /// Class CreateUser
     /// </summary>
     [Route("/Users", "POST")]
-    public class CreateUser : IRequiresRequestStream, IReturn<UserDto>
+    public class CreateUser : UserDto, IReturn<UserDto>
     {
-        /// <summary>
-        /// The raw Http Request Input Stream
-        /// </summary>
-        /// <value>The request stream.</value>
-        public Stream RequestStream { get; set; }
     }
 
     /// <summary>
@@ -292,7 +276,7 @@ namespace MediaBrowser.Api
             var pathInfo = PathInfo.Parse(Request.PathInfo);
             var id = new Guid(pathInfo.GetArgumentValue<string>(1));
 
-            var dtoUser = _jsonSerializer.DeserializeFromStream<UserDto>(request.RequestStream);
+            var dtoUser = request;
 
             var user = _userManager.GetUserById(id);
 
@@ -310,7 +294,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Post(CreateUser request)
         {
-            var dtoUser = _jsonSerializer.DeserializeFromStream<UserDto>(request.RequestStream);
+            var dtoUser = request;
 
             var newUser = _userManager.CreateUser(dtoUser.Name).Result;
 

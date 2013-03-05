@@ -8,14 +8,6 @@ namespace MediaBrowser.Model.Serialization
         /// <summary>
         /// Deserializes from stream.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="stream">The stream.</param>
-        /// <returns>``0.</returns>
-        T DeserializeFromStream<T>(Stream stream);
-
-        /// <summary>
-        /// Deserializes from stream.
-        /// </summary>
         /// <param name="type">The type.</param>
         /// <param name="stream">The stream.</param>
         /// <returns>System.Object.</returns>
@@ -27,14 +19,6 @@ namespace MediaBrowser.Model.Serialization
         /// <param name="obj">The obj.</param>
         /// <param name="stream">The stream.</param>
         void SerializeToStream(object obj, Stream stream);
-
-        /// <summary>
-        /// Deserializes from file.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="file">The file.</param>
-        /// <returns>``0.</returns>
-        T DeserializeFromFile<T>(string file);
 
         /// <summary>
         /// Serializes to file.

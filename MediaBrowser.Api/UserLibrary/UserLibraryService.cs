@@ -62,25 +62,13 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/DisplayPreferences", "POST")]
     [ServiceStack.ServiceHost.Api(("Updates a user's display preferences for an item"))]
-    public class UpdateDisplayPreferences : IReturnVoid, IRequiresRequestStream
+    public class UpdateDisplayPreferences : DisplayPreferences, IReturnVoid
     {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        public Guid UserId { get; set; }
-
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
         public string Id { get; set; }
-
-        /// <summary>
-        /// The raw Http Request Input Stream
-        /// </summary>
-        /// <value>The request stream.</value>
-        public Stream RequestStream { get; set; }
     }
 
     /// <summary>
@@ -434,7 +422,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = (Folder)DtoBuilder.GetItemByClientId(itemId, _userManager, _libraryManager, user.Id);
 
-            var displayPreferences = _jsonSerializer.DeserializeFromStream<DisplayPreferences>(request.RequestStream);
+            var displayPreferences = request;
 
             var task = _libraryManager.SaveDisplayPreferencesForFolder(user, item, displayPreferences);
 
