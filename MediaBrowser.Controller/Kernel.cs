@@ -75,12 +75,6 @@ namespace MediaBrowser.Controller
         public IEnumerable<LocalizedStringData> StringFiles { get; private set; }
 
         /// <summary>
-        /// Gets the list of plugin configuration pages
-        /// </summary>
-        /// <value>The configuration pages.</value>
-        public IEnumerable<IPluginConfigurationPage> PluginConfigurationPages { get; private set; }
-
-        /// <summary>
         /// Gets the list of currently registered weather prvoiders
         /// </summary>
         /// <value>The weather providers.</value>
@@ -204,7 +198,6 @@ namespace MediaBrowser.Controller
             DisplayPreferencesRepositories = ApplicationHost.GetExports<IDisplayPreferencesRepository>();
             ItemRepositories = ApplicationHost.GetExports<IItemRepository>();
             WeatherProviders = ApplicationHost.GetExports<IWeatherProvider>();
-            PluginConfigurationPages = ApplicationHost.GetExports<IPluginConfigurationPage>();
             ImageEnhancers = ApplicationHost.GetExports<IImageEnhancer>().OrderBy(e => e.Priority).ToArray();
             StringFiles = ApplicationHost.GetExports<LocalizedStringData>();
             MetadataProviders = ApplicationHost.GetExports<BaseMetadataProvider>().OrderBy(e => e.Priority).ToArray();

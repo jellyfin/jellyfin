@@ -14,7 +14,7 @@ namespace MediaBrowser.ServerApplication
     /// <summary>
     /// Class WebSocketEvents
     /// </summary>
-    public class WebSocketEvents : IServerEntryPoint, IDisposable
+    public class WebSocketEvents : IServerEntryPoint
     {
         /// <summary>
         /// The _server manager
