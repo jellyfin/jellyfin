@@ -14,6 +14,21 @@ namespace MediaBrowser.Controller.Providers.Music
         public static void ProcessArtistData(BaseItem artist, LastfmArtist data)
         {
             artist.Overview = data.bio != null ? data.bio.content : null;
+            var yearFormed = 0;
+            try
+            {
+                yearFormed = Convert.ToInt32(data.bio.yearformed);
+            }
+            catch (FormatException)
+            {
+            }
+            catch (NullReferenceException)
+            {
+            }
+            catch (OverflowException)
+            {
+            }
+            artist.PremiereDate = new DateTime(yearFormed, 1,1);
             if (data.tags != null)
             {
                 foreach (var tag in data.tags.tag)
