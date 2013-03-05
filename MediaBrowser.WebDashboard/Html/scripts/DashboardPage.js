@@ -138,6 +138,10 @@
 
             return "<img src='css/images/clients/windowsphone.png' alt='Windows Phone' title='Windows Phone' />";
         }
+        if (connection.ClientType == "Dlna") {
+
+            return "<img src='css/images/clients/dlna.png' alt='Dlna' title='Dlna' />";
+        }
 
         return connection.ClientType;
     },
