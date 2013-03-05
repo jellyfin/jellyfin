@@ -37,9 +37,7 @@
                 LegacyKey: legacyKey
             };
 
-            var url = ApiClient.getUrl("Plugins/SecurityInfo");
-            console.log(url);
-            $.post(url, JSON.stringify(info)).done(function () {
+            ApiClient.updateSecurityInfo(info).done(function () {
                 Dashboard.resetPluginSecurityInfo();
                 Dashboard.hideLoadingMsg();
                 SupporterPage.load();
