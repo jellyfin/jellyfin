@@ -398,6 +398,7 @@
     <EmbeddedResource Include="Html\css\images\mblogoicon.png" />
     <EmbeddedResource Include="Html\css\images\mblogotextblack.png" />
     <EmbeddedResource Include="Html\css\images\mblogotextwhite.png" />
+    <EmbeddedResource Include="Html\css\images\clients\dlna.png" />
     <Content Include="Html\css\images\stars.png" />
     <EmbeddedResource Include="Html\scripts\MediaPlayer.js" />
   </ItemGroup>

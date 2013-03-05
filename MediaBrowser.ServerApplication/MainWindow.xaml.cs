@@ -162,6 +162,12 @@ namespace MediaBrowser.ServerApplication
                       Kernel.Instance.WebApplicationName + "/metadata");
         }
 
+        void cmdSwaggerApiDocs_Click(object sender, EventArgs e)
+        {
+            App.OpenUrl("http://localhost:" + _configurationManager.Configuration.HttpServerPortNumber + "/" +
+                      Kernel.Instance.WebApplicationName + "/swagger-ui/index.html");
+        }
+        
         /// <summary>
         /// Occurs when [property changed].
         /// </summary>

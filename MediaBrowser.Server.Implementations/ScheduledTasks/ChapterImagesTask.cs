@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.ScheduledTasks.Tasks
+namespace MediaBrowser.Server.Implementations.ScheduledTasks
 {
     /// <summary>
     /// Class ChapterImagesTask

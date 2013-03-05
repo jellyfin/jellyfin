@@ -375,6 +375,9 @@ xcopy "$(SolutionDir)Mediabrowser.Uninstaller\bin\Release\MediaBrowser.Uninstall
 xcopy "$(SolutionDir)Mediabrowser.Uninstaller.Execute\bin\Release\MediaBrowser.Uninstaller.Execute.exe" "$(SolutionDir)..\Deploy\Server\System\" /y
 xcopy "$(SolutionDir)Mediabrowser.Installer\bin\Release\MediaBrowser.Installer.exe" "$(SolutionDir)..\Deploy\Server\System\" /y
 
+mkdir "$(SolutionDir)..\Deploy\Server\System\swagger-ui"
+xcopy "$(TargetDir)swagger-ui" "$(SolutionDir)..\Deploy\Server\System\swagger-ui" /y /s
+
 xcopy "$(TargetDir)$(TargetFileName).config" "$(SolutionDir)..\Deploy\Server\System\" /y
 
 xcopy "$(TargetDir)*.dll" "$(SolutionDir)..\Deploy\Server\System" /y

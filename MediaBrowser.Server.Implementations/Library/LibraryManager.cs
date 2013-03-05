@@ -12,6 +12,7 @@ using MediaBrowser.Controller.ScheduledTasks;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.Library.Resolvers;
+using MediaBrowser.Server.Implementations.ScheduledTasks;
 using MoreLinq;
 using System;
 using System.Collections.Concurrent;
