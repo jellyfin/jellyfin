@@ -80,7 +80,7 @@ namespace MediaBrowser.ServerApplication
         {
             DataContext = this;
 
-            Instance_ConfigurationUpdated(null, EventArgs.Empty);
+            UpdateButtons();
 
             _logManager.LoggerLoaded += LoadLogWindow;
             _configurationManager.ConfigurationUpdated += Instance_ConfigurationUpdated;
@@ -93,6 +93,21 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         void Instance_ConfigurationUpdated(object sender, EventArgs e)
         {
+            UpdateButtons();
+
+            Dispatcher.InvokeAsync(() =>
+            {
+                var logWindow = App.Instance.Windows.OfType<LogWindow>().FirstOrDefault();
+
+                if ((logWindow == null && _configurationManager.Configuration.ShowLogWindow) || (logWindow != null && !_configurationManager.Configuration.ShowLogWindow))
+                {
+                    _logManager.ReloadLogger(_configurationManager.Configuration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info);
+                }
+            });
+        }
+
+        private void UpdateButtons()
+        {
             Dispatcher.InvokeAsync(() =>
             {
                 var developerToolsVisibility = _configurationManager.Configuration.EnableDeveloperTools
@@ -102,13 +117,6 @@ namespace MediaBrowser.ServerApplication
                 separatorDeveloperTools.Visibility = developerToolsVisibility;
                 cmdReloadServer.Visibility = developerToolsVisibility;
                 cmOpenExplorer.Visibility = developerToolsVisibility;
-
-                var logWindow = App.Instance.Windows.OfType<LogWindow>().FirstOrDefault();
-
-                if ((logWindow == null && _configurationManager.Configuration.ShowLogWindow) || (logWindow != null && !_configurationManager.Configuration.ShowLogWindow))
-                {
-                    _logManager.ReloadLogger(_configurationManager.Configuration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info);
-                }
             });
         }
 
@@ -120,6 +128,7 @@ namespace MediaBrowser.ServerApplication
         void LoadLogWindow(object sender, EventArgs args)
         {
             CloseLogWindow();
+
             Dispatcher.InvokeAsync(() =>
             {
                 // Add our log window if specified

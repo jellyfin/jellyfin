@@ -42,13 +42,14 @@ namespace MediaBrowser.ServerApplication.Logging
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         void LogWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            var target = new TraceTarget
-            {
-                Layout = "${longdate}, ${level}, ${logger}, ${message}"
-            };
-
             ((NlogManager)_logManager).RemoveTarget("LogWindowTraceTarget");
-            AddLogTarget(target, "LogWindowTraceTarget");
+
+            ((NlogManager)_logManager).AddLogTarget(new TraceTarget
+            {
+                Layout = "${longdate}, ${level}, ${logger}, ${message}",
+                Name = "LogWindowTraceTarget"
+
+            }, LogSeverity.Debug);
         }
 
         /// <summary>
