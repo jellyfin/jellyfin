@@ -3,6 +3,7 @@ using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Updates;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Updates;
@@ -13,7 +14,7 @@ namespace MediaBrowser.ServerApplication
     /// <summary>
     /// Class WebSocketEvents
     /// </summary>
-    public class WebSocketEvents : IDisposable
+    public class WebSocketEvents : IServerEntryPoint, IDisposable
     {
         /// <summary>
         /// The _server manager
@@ -37,7 +38,7 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// The _installation manager
         /// </summary>
-        private readonly InstallationManager _installationManager;
+        private readonly IInstallationManager _installationManager;
 
         /// <summary>
         /// The _kernel
@@ -50,7 +51,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="serverManager">The server manager.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="userManager">The user manager.</param>
-        public WebSocketEvents(IServerManager serverManager, IKernel kernel, ILogger logger, IUserManager userManager, ILibraryManager libraryManager, InstallationManager installationManager)
+        public WebSocketEvents(IServerManager serverManager, IKernel kernel, ILogger logger, IUserManager userManager, ILibraryManager libraryManager, IInstallationManager installationManager)
         {
             _serverManager = serverManager;
             _logger = logger;
@@ -58,19 +59,22 @@ namespace MediaBrowser.ServerApplication
             _libraryManager = libraryManager;
             _installationManager = installationManager;
             _kernel = kernel;
+        }
 
+        public void Run()
+        {
             _userManager.UserDeleted += userManager_UserDeleted;
             _userManager.UserUpdated += userManager_UserUpdated;
 
             _libraryManager.LibraryChanged += libraryManager_LibraryChanged;
 
-            kernel.HasPendingRestartChanged += kernel_HasPendingRestartChanged;
+            _kernel.HasPendingRestartChanged += kernel_HasPendingRestartChanged;
 
-            installationManager.PluginUninstalled += InstallationManager_PluginUninstalled;
-            installationManager.PackageInstalling += installationManager_PackageInstalling;
-            installationManager.PackageInstallationCancelled += installationManager_PackageInstallationCancelled;
-            installationManager.PackageInstallationCompleted += installationManager_PackageInstallationCompleted;
-            installationManager.PackageInstallationFailed += installationManager_PackageInstallationFailed;
+            _installationManager.PluginUninstalled += InstallationManager_PluginUninstalled;
+            _installationManager.PackageInstalling += installationManager_PackageInstalling;
+            _installationManager.PackageInstallationCancelled += installationManager_PackageInstallationCancelled;
+            _installationManager.PackageInstallationCompleted += installationManager_PackageInstallationCompleted;
+            _installationManager.PackageInstallationFailed += installationManager_PackageInstallationFailed;
         }
 
         /// <summary>

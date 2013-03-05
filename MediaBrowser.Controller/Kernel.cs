@@ -48,12 +48,6 @@ namespace MediaBrowser.Controller
         public FFMpegManager FFMpegManager { get; private set; }
 
         /// <summary>
-        /// Gets the installation manager.
-        /// </summary>
-        /// <value>The installation manager.</value>
-        public InstallationManager InstallationManager { get; set; }
-
-        /// <summary>
         /// Gets or sets the file system manager.
         /// </summary>
         /// <value>The file system manager.</value>
@@ -331,10 +325,12 @@ namespace MediaBrowser.Controller
         {
             var info = base.GetSystemInfo();
 
-            if (InstallationManager != null)
+            var installationManager = ApplicationHost.Resolve<IInstallationManager>();
+
+            if (installationManager != null)
             {
-                info.InProgressInstallations = InstallationManager.CurrentInstallations.Select(i => i.Item1).ToArray();
-                info.CompletedInstallations = InstallationManager.CompletedInstallations.ToArray();
+                info.InProgressInstallations = installationManager.CurrentInstallations.Select(i => i.Item1).ToArray();
+                info.CompletedInstallations = installationManager.CompletedInstallations.ToArray();
             }
 
             return info;

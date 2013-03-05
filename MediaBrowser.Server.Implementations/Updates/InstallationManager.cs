@@ -5,7 +5,8 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Model.IO;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Updates;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
@@ -17,12 +18,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.Updates
+namespace MediaBrowser.Server.Implementations.Updates
 {
     /// <summary>
     /// Manages all install, uninstall and update operations (both plugins and system)
     /// </summary>
-    public class InstallationManager : BaseManager<Kernel>
+    public class InstallationManager : IInstallationManager
     {
         public event EventHandler<GenericEventArgs<InstallationInfo>> PackageInstalling;
         public event EventHandler<GenericEventArgs<InstallationInfo>> PackageInstallationCompleted;
@@ -65,7 +66,7 @@ namespace MediaBrowser.Controller.Updates
         /// </summary>
         /// <param name="plugin">The plugin.</param>
         /// <param name="newVersion">The new version.</param>
-        public void OnPluginUpdated(IPlugin plugin, PackageVersionInfo newVersion)
+        private void OnPluginUpdated(IPlugin plugin, PackageVersionInfo newVersion)
         {
             _logger.Info("Plugin updated: {0} {1} {2}", newVersion.name, newVersion.version, newVersion.classification);
 
@@ -84,7 +85,7 @@ namespace MediaBrowser.Controller.Updates
         /// Called when [plugin installed].
         /// </summary>
         /// <param name="package">The package.</param>
-        public void OnPluginInstalled(PackageVersionInfo package)
+        private void OnPluginInstalled(PackageVersionInfo package)
         {
             _logger.Info("New plugin installed: {0} {1} {2}", package.name, package.version, package.classification);
 
@@ -98,11 +99,6 @@ namespace MediaBrowser.Controller.Updates
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// The _network manager
-        /// </summary>
-        private readonly INetworkManager _networkManager;
 
         /// <summary>
         /// The package manager
@@ -127,24 +123,20 @@ namespace MediaBrowser.Controller.Updates
         /// <value>The application host.</value>
         protected IApplicationHost ApplicationHost { get; private set; }
 
+        private IKernel Kernel { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="InstallationManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="httpClient">The HTTP client.</param>
-        /// <param name="networkManager">The network manager.</param>
         /// <param name="packageManager">The package manager.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="appHost">The app host.</param>
         /// <exception cref="System.ArgumentNullException">zipClient</exception>
-        public InstallationManager(Kernel kernel, IHttpClient httpClient, INetworkManager networkManager, IPackageManager packageManager, IJsonSerializer jsonSerializer, ILogger logger, IApplicationHost appHost)
-            : base(kernel)
+        public InstallationManager(IKernel kernel, IHttpClient httpClient, IPackageManager packageManager, IJsonSerializer jsonSerializer, ILogger logger, IApplicationHost appHost)
         {
-            if (networkManager == null)
-            {
-                throw new ArgumentNullException("networkManager");
-            }
             if (packageManager == null)
             {
                 throw new ArgumentNullException("packageManager");
@@ -167,9 +159,9 @@ namespace MediaBrowser.Controller.Updates
             JsonSerializer = jsonSerializer;
             HttpClient = httpClient;
             ApplicationHost = appHost;
-            _networkManager = networkManager;
             _packageManager = packageManager;
             _logger = logger;
+            Kernel = kernel;
         }
 
         /// <summary>
@@ -474,7 +466,7 @@ namespace MediaBrowser.Controller.Updates
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected override void Dispose(bool dispose)
+        protected virtual void Dispose(bool dispose)
         {
             if (dispose)
             {
@@ -488,7 +480,11 @@ namespace MediaBrowser.Controller.Updates
                     CurrentInstallations.Clear();
                 }
             }
-            base.Dispose(dispose);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

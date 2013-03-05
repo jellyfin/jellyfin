@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Updates;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
@@ -25,15 +26,18 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// </summary>
         private readonly ILogger _logger;
 
+        private IInstallationManager _installationManager;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginUpdateTask" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
-        public PluginUpdateTask(Kernel kernel, ILogger logger)
+        public PluginUpdateTask(Kernel kernel, ILogger logger, IInstallationManager installationManager)
         {
             _kernel = kernel;
             _logger = logger;
+            _installationManager = installationManager;
         }
 
         /// <summary>
@@ -61,7 +65,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         {
             progress.Report(0);
 
-            var packagesToInstall = (await _kernel.InstallationManager.GetAvailablePluginUpdates(true, cancellationToken).ConfigureAwait(false)).ToList();
+            var packagesToInstall = (await _installationManager.GetAvailablePluginUpdates(true, cancellationToken).ConfigureAwait(false)).ToList();
 
             progress.Report(10);
 
@@ -74,7 +78,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
                 try
                 {
-                    await _kernel.InstallationManager.InstallPackage(i, new Progress<double> { }, cancellationToken).ConfigureAwait(false);
+                    await _installationManager.InstallPackage(i, new Progress<double> { }, cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {

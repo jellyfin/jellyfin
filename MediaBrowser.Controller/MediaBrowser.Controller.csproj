@@ -185,7 +185,7 @@
     <Compile Include="Providers\MediaInfo\FFProbeVideoInfoProvider.cs" />
     <Compile Include="Sorting\BaseItemComparer.cs" />
     <Compile Include="Sorting\SortOrder.cs" />
-    <Compile Include="Updates\InstallationManager.cs" />
+    <Compile Include="Updates\IInstallationManager.cs" />
     <Compile Include="Weather\IWeatherProvider.cs" />
     <Compile Include="Providers\BaseItemXmlParser.cs" />
   </ItemGroup>
