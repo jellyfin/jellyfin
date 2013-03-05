@@ -25,7 +25,7 @@
 
         plugins = plugins.sort(function (plugin1, plugin2) {
 
-            return (plugin1.IsCorePlugin.toString() + plugin1.Name) > (plugin2.IsCorePlugin.toString() + plugin2.Name) ? 1 : -1;
+            return (plugin1.Name) > (plugin2.Name) ? 1 : -1;
 
         });
 
@@ -34,10 +34,6 @@
         for (var i = 0, length = plugins.length; i < length; i++) {
 
             var plugin = plugins[i];
-            
-            if (plugin.IsCorePlugin) {
-                continue;
-            }
             
             var configPage = $.grep(pluginConfigurationPages, function (pluginConfigurationPage) {
                 return pluginConfigurationPage.PluginId == plugin.Id;
@@ -55,9 +51,7 @@
 
             html += "</a>";
 
-            if (!plugin.IsCorePlugin) {
-                html += "<a data-id='" + plugin.Id + "' data-pluginname='" + plugin.Name + "' onclick='PluginsPage.deletePlugin(this);' href='#'>Delete</a>";
-            }
+            html += "<a data-id='" + plugin.Id + "' data-pluginname='" + plugin.Name + "' onclick='PluginsPage.deletePlugin(this);' href='#'>Delete</a>";
 
             html += "</li>";
         }

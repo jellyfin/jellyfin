@@ -60,13 +60,6 @@ namespace MediaBrowser.Model.Plugins
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is core plugin.
-        /// </summary>
-        /// <value><c>true</c> if this instance is core plugin; otherwise, <c>false</c>.</value>
-        [ProtoMember(8)]
-        public bool IsCorePlugin { get; set; }
-
-        /// <summary>
         /// Gets or sets the unique id.
         /// </summary>
         /// <value>The unique id.</value>

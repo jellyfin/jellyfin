@@ -115,7 +115,6 @@
     <Compile Include="UserLibrary\UserLibraryService.cs" />
     <Compile Include="UserLibrary\YearsService.cs" />
     <Compile Include="UserService.cs" />
-    <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WeatherService.cs" />
     <Compile Include="WebSocket\LogFileWebSocketListener.cs" />

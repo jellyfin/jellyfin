@@ -445,11 +445,6 @@ namespace MediaBrowser.Server.Implementations.Updates
         /// <exception cref="System.ArgumentException"></exception>
         public void UninstallPlugin(IPlugin plugin)
         {
-            if (plugin.IsCorePlugin)
-            {
-                throw new ArgumentException(string.Format("{0} cannot be uninstalled because it is a core plugin.", plugin.Name));
-            }
-
             plugin.OnUninstalling();
 
             // Remove it the quick way for now
