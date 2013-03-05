@@ -7,6 +7,14 @@ using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Providers
 {
+    class FanArtProviderException : ApplicationException
+    {
+        public FanArtProviderException(string msg)
+            : base(msg)
+        {
+        }
+
+    }
     /// <summary>
     /// Class FanartBaseProvider
     /// </summary>
