@@ -14,9 +14,9 @@
                     <MenuItem x:Name="cmOpenExplorer" Header="Open Library Explorer" Click="cmOpenExplorer_click" />
                     <MenuItem x:Name="cmdReloadServer" Header="Restart Server" Click="cmdReloadServer_click" />
                     <MenuItem x:Name="cmdApiDocs" Header="View Api Documentation">
-                        <MenuItem x:Name="cmdStandardApiDocs" Header="Standard" Click="cmdApiDocs_Click">
+                        <MenuItem x:Name="cmdStandardApiDocs" Header="Standard" Click="cmdApiDocs_Click" Background="White">
                         </MenuItem>
-                        <MenuItem x:Name="cmdSwaggerApiDocs" Header="Swagger" Click="cmdSwaggerApiDocs_Click">
+                        <MenuItem x:Name="cmdSwaggerApiDocs" Header="Swagger" Click="cmdSwaggerApiDocs_Click" Background="White">
                         </MenuItem>
                     </MenuItem>
                     <Separator/>

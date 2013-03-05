@@ -12,7 +12,7 @@ We also have full .net and javascript wrappers around the api.
 
 ## Related Reading ##
 
-[How to build a server plugin](https://github.com/MediaBrowser/MediaBrowser/wiki/How-to-build-a-Server-Plugin "How to build a server plugin")
+[How to Build a Server Plugin](https://github.com/MediaBrowser/MediaBrowser/wiki/How-to-build-a-Server-Plugin "How to build a server plugin")
 
 [Automatic Type Discovery](https://github.com/MediaBrowser/MediaBrowser/wiki/Automatic-Type-Discovery "Automatic Type Discovery")
 
