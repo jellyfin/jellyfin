@@ -2,12 +2,15 @@
 
     onPageShow: function () {
 
+        ItemDetailPage.reload();
+    },
+    
+    reload: function() {
         var id = getParameterByName('id');
 
         Dashboard.showLoadingMsg();
 
         ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(ItemDetailPage.renderItem);
-
     },
 
     renderItem: function (item) {

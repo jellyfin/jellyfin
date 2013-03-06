@@ -414,9 +414,13 @@ var Dashboard = {
 
             var hasPrimaryImage = item.ImageTags && item.ImageTags.Primary;
 
-            var href = item.IsFolder ? "#" : "itemDetails.html?id=" + item.Id;
+            var href = item.IsFolder ? (item.Id ? "itemList.html?parentId=" + item.Id : "#") : "itemDetails.html?id=" + item.Id;
 
-            html += "<div class='posterViewItem'><a href='" + href + "'>";
+            var showText = options.showTitle || !hasPrimaryImage || (item.Type !== 'Movie' && item.Type !== 'Series' && item.Type !== 'Season' && item.Type !== 'Trailer');
+
+            var cssClass = showText ? "posterViewItem" : "posterViewItem posterViewItemWithNoText";
+
+            html += "<div class='" + cssClass + "'><a href='" + href + "'>";
 
             if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
                 html += "<img src='" + ApiClient.getImageUrl(item.Id, {
@@ -443,10 +447,10 @@ var Dashboard = {
                 html += "<img style='background:" + Dashboard.getRandomMetroColor() + ";' src='css/images/defaultCollectionImage.png' />";
             }
 
-            if (options.showTitle || !hasPrimaryImage || (item.Type !== 'Movie' && item.Type !== 'Series' && item.Type !== 'Season')) {
+            if (showText) {
                 html += "<div class='posterViewItemText'>";
-                html += "<div>" + item.Name + "</div>";
-                html += "</div>"
+                html += item.Name;
+                html += "</div>";
             }
 
             html += "</a></div>";
