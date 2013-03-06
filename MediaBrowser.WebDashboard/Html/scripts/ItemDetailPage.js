@@ -3,9 +3,18 @@
     onPageShow: function () {
 
         ItemDetailPage.reload();
+
+        $('#galleryCollapsible', this).on('expand', ItemDetailPage.onGalleryExpand);
     },
     
-    reload: function() {
+    onPageHide: function () {
+
+        $('#galleryCollapsible', this).off('expand', ItemDetailPage.onGalleryExpand);
+
+        ItemDetailPage.item = null;
+    },
+
+    reload: function () {
         var id = getParameterByName('id');
 
         Dashboard.showLoadingMsg();
@@ -14,6 +23,8 @@
     },
 
     renderItem: function (item) {
+
+        ItemDetailPage.item = item;
 
         var page = $.mobile.activePage;
 
@@ -30,7 +41,6 @@
         ItemDetailPage.renderImage(item);
         ItemDetailPage.renderOverviewBlock(item);
         ItemDetailPage.renderScenes(item);
-        ItemDetailPage.renderGallery(item);
         ItemDetailPage.renderMediaInfo(item);
 
         $('#itemName', page).html(name);
@@ -265,6 +275,16 @@
         MediaPlayer.play([ItemDetailPage.item]);
     },
 
+    onGalleryExpand: function() {
+
+        if (ItemDetailPage.item) {
+
+            ItemDetailPage.renderGallery(ItemDetailPage.item);
+
+            $(this).off('expand', ItemDetailPage.onGalleryExpand);
+        }
+    },
+
     renderGallery: function (item) {
 
         var page = $.mobile.activePage;
@@ -353,4 +373,4 @@
     }
 };
 
-$(document).on('pageshow', "#itemDetailPage", ItemDetailPage.onPageShow);
+$(document).on('pageshow', "#itemDetailPage", ItemDetailPage.onPageShow).on('pagehide', "#itemDetailPage", ItemDetailPage.onPageHide);
