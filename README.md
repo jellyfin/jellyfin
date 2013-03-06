@@ -1,11 +1,9 @@
 Media Browser
 ============
 
-This is the source code for Media Browser Server.
-
 Media Browser Server is a media cataloging and transcoding server built on top of other popular open source technologies such as service stack.
 
-In order to facilitate api consumption, the server features built-in api documentation courtesy of service stack and swagger.
+It features a REST-based api with built-in documention to facilitate plugin development.
 
 We also have full .net and javascript wrappers around the api.
 
