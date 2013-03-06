@@ -82,8 +82,7 @@ pre, textarea.pre {
     background-attachment: fixed;
 }
 
-.libraryPage {
-    background: #1d1d1d url(images/bg.png) top left repeat-x;
+.libraryPage, .libraryPage .ui-content {
     background: #262626!important;
     background-attachment: fixed!important;
 }
@@ -163,7 +162,7 @@ h1 .imageLink {
     opacity: .5;
 }
 
-.type-home h1 {
+.type-home h1, .listHeader {
     margin-top: 1.25em;
     margin-bottom: 10px;
     padding-bottom: 5px;
@@ -275,17 +274,17 @@ form, .readOnlyContent {
 @media all and (min-width: 650px) {
 
     .imgLogoIcon {
-        height: 60px;
+        height: 50px;
     }
 
     .imgLogoText {
-        height: 60px;
+        height: 50px;
         display: inline;
     }
 
     .header {
         padding-left: 30px;
-        padding-top: 20px;
+        padding-top: 15px;
         padding-bottom: 15px;
     }
 
@@ -432,19 +431,28 @@ form, .readOnlyContent {
     font-size: 15px;
     padding: 0;
     position: relative;
+    padding-bottom: 28px;
 }
 
-    .posterViewItem a {
-        color: white!important;
-        font-weight: normal!important;
-        text-decoration: none;
-    }
+.posterViewItemWithDualText {
+    padding-bottom: 56px;
+}
 
-    .posterViewItem img {
-        max-width: 155px;
-        max-height: 155px;
-        vertical-align: bottom;
-    }
+.posterViewItemWithNoText {
+    padding-bottom: 0!important;
+}
+
+.posterViewItem a {
+    color: white!important;
+    font-weight: normal!important;
+    text-decoration: none;
+}
+
+.posterViewItem img {
+    max-width: 155px;
+    max-height: 148px;
+    vertical-align: bottom;
+}
 
 .premiumBanner img {
     position: absolute;
@@ -460,24 +468,22 @@ form, .readOnlyContent {
 .posterViewItemText {
     text-overflow: ellipsis;
     overflow: hidden;
+    text-wrap: none;
     white-space: nowrap;
     margin: 0;
-    padding: 4px 0px 0;
+    padding: 4px 2px 0;
+    position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
+    height: 24px;
     background: #181818;
     text-shadow: none;
-    max-width: 155px;
 }
 
-    .posterViewItemText div{
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
-        margin: 0px 4px;
-        height: 24px;
-    }
+.posterViewItemPrimaryText {
+    bottom: 28px;
+}
 
 .posterViewItem:hover, .userItem:hover {
     -moz-box-shadow: 0 0 20px 3px #2572EB;
@@ -489,11 +495,19 @@ form, .readOnlyContent {
 
     .posterViewItem {
         font-size: 16px;
+        padding-bottom: 29px;
+    }
+
+    .posterViewItemWithDualText {
+        padding-bottom: 58px;
     }
 
     .posterViewItemText {
         padding-top: 5px;
-        max-width: 190px;
+    }
+
+    .posterViewItemPrimaryText {
+        bottom: 29px;
     }
 
     .posterViewItem img {
@@ -508,33 +522,34 @@ form, .readOnlyContent {
         font-size: 17px;
     }
 
-    .posterViewItem img {
-        max-width: 280px;
-        max-height: 280px;
-    }
-
-    .posterViewItemText {
-        max-width: 280px;
-    }
+        .posterViewItem img {
+            max-width: 280px;
+            max-height: 250px;
+        }
 }
 
 @media all and (min-width: 1920px) {
 
     .posterViewItem {
         font-size: 19px;
+        padding-bottom: 33px;
     }
 
-    .posterViewItemText div{
+    .posterViewItemWithDualText {
+        padding-bottom: 66px;
+    }
+
+    .posterViewItemPrimaryText {
+        bottom: 33px;
+    }
+
+    .posterViewItemText {
         height: 28px;
     }
 
     .posterViewItem img {
         max-width: 352px;
-        max-height: 352px;
-    }
-
-    .posterViewItemText {
-        max-width: 352px;
+        max-height: 300px;
     }
 }
 

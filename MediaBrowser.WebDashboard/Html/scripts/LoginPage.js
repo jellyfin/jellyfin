@@ -62,7 +62,7 @@
 
             var background = Dashboard.getRandomMetroColor();
 
-            html += '<div class="posterViewItem">';
+            html += '<div class="posterViewItem posterViewItemWithDualText">';
 
             if (user.HasPassword) {
                 html += "<a id='" + linkId + "' data-userid='" + user.Id + "' data-username='" + user.Name + "' href='#popupLogin' data-rel='popup' onclick='LoginPage.authenticatingLinkId=this.id;' \">";
@@ -83,10 +83,8 @@
                 html += '<img style="background:' + background + ';" src="css/images/logindefault.png"/>';
             }
 
+            html += '<div class="posterViewItemText posterViewItemPrimaryText">' + user.Name + '</div>';
             html += '<div class="posterViewItemText">';
-
-            html += '<div>' + user.Name + '</div>';
-            html += '<div>';
             var lastSeen = LoginPage.getLastSeenText(user.LastActivityDate);
             if (lastSeen != "") {
                 html += lastSeen;
@@ -96,7 +94,6 @@
             }
             html += '</div>';
 
-            html += '</div>';
             html += '</a>';
 
             html += '</div>';
