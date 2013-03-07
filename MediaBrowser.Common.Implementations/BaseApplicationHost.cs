@@ -1,13 +1,11 @@
 ﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Common.Implementations.NetworkManagement;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.Implementations.Security;
 using MediaBrowser.Common.Implementations.Serialization;
-using MediaBrowser.Common.Implementations.Udp;
 using MediaBrowser.Common.Implementations.Updates;
-using MediaBrowser.Common.Implementations.WebSocket;
-using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
@@ -15,6 +13,7 @@ using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.System;
 using MediaBrowser.Model.Updates;
 using SimpleInjector;
 using System;
@@ -30,6 +29,22 @@ namespace MediaBrowser.Common.Implementations
     public abstract class BaseApplicationHost<TApplicationPathsType> : IApplicationHost
         where TApplicationPathsType : class, IApplicationPaths, new()
     {
+        /// <summary>
+        /// Occurs when [has pending restart changed].
+        /// </summary>
+        public event EventHandler HasPendingRestartChanged;
+
+        /// <summary>
+        /// Occurs when [application updated].
+        /// </summary>
+        public event EventHandler<GenericEventArgs<Version>> ApplicationUpdated;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has changes that require the entire application to restart.
+        /// </summary>
+        /// <value><c>true</c> if this instance has pending application restart; otherwise, <c>false</c>.</value>
+        public bool HasPendingRestart { get; private set; }
+
         /// <summary>
         /// Gets or sets the logger.
         /// </summary>
@@ -132,11 +147,11 @@ namespace MediaBrowser.Common.Implementations
         /// Gets the kernel.
         /// </summary>
         /// <value>The kernel.</value>
-        protected IKernel Kernel { get; private set; }
         protected ITaskManager TaskManager { get; private set; }
         protected ISecurityManager SecurityManager { get; private set; }
         protected IPackageManager PackageManager { get; private set; }
         protected IHttpClient HttpClient { get; private set; }
+        protected INetworkManager NetworkManager { get; private set; }
 
         protected IConfigurationManager ConfigurationManager { get; private set; }
 
@@ -168,15 +183,11 @@ namespace MediaBrowser.Common.Implementations
 
             Logger.Info("Version {0} initializing", ApplicationVersion);
 
-            Kernel = GetKernel();
-
             await RegisterResources().ConfigureAwait(false);
 
             FindParts();
 
             Task.Run(() => ConfigureAutoRunAtStartup());
-
-            Kernel.Init();
         }
 
         /// <summary>
@@ -191,7 +202,6 @@ namespace MediaBrowser.Common.Implementations
         /// <value>The name of the log file prefix.</value>
         protected abstract string LogFilePrefixName { get; }
 
-        protected abstract IKernel GetKernel();
         protected abstract IConfigurationManager GetConfigurationManager();
 
         /// <summary>
@@ -199,10 +209,6 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         protected virtual void FindParts()
         {
-            Resolve<IHttpServer>().Init(GetExports<IRestfulService>(false));
-            Resolve<IServerManager>().AddWebSocketListeners(GetExports<IWebSocketListener>(false));
-
-            Resolve<IServerManager>().Start();
             Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
 
             Plugins = GetExports<IPlugin>();
@@ -239,11 +245,7 @@ namespace MediaBrowser.Common.Implementations
 
                 RegisterSingleInstance<IApplicationPaths>(ApplicationPaths);
 
-                var networkManager = new NetworkManager();
-
-                var serverManager = new ServerManager.ServerManager(this, Kernel, networkManager, JsonSerializer, Logger, ConfigurationManager);
-
-                TaskManager = new TaskManager(ApplicationPaths, JsonSerializer, Logger, serverManager);
+                TaskManager = new TaskManager(ApplicationPaths, JsonSerializer, Logger);
 
                 RegisterSingleInstance(JsonSerializer);
                 RegisterSingleInstance(XmlSerializer);
@@ -251,25 +253,22 @@ namespace MediaBrowser.Common.Implementations
                 RegisterSingleInstance(LogManager);
                 RegisterSingleInstance(Logger);
 
-                RegisterSingleInstance(Kernel);
-
                 RegisterSingleInstance(TaskManager);
-                RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
                 RegisterSingleInstance(ProtobufSerializer);
-                RegisterSingleInstance<IUdpServer>(new UdpServer(Logger), false);
 
                 HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger);
 
                 RegisterSingleInstance(HttpClient);
 
-                RegisterSingleInstance<INetworkManager>(networkManager);
-                RegisterSingleInstance<IServerManager>(serverManager);
+                NetworkManager = new NetworkManager();
 
-                SecurityManager = new PluginSecurityManager(Kernel, HttpClient, JsonSerializer, ApplicationPaths);
+                RegisterSingleInstance(NetworkManager);
+
+                SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths);
 
                 RegisterSingleInstance(SecurityManager);
 
-                PackageManager = new PackageManager(SecurityManager, networkManager, HttpClient, ApplicationPaths, JsonSerializer, Logger);
+                PackageManager = new PackageManager(SecurityManager, NetworkManager, HttpClient, ApplicationPaths, JsonSerializer, Logger);
 
                 RegisterSingleInstance(PackageManager);
             });
@@ -451,6 +450,34 @@ namespace MediaBrowser.Common.Implementations
         }
 
         /// <summary>
+        /// Performs the pending restart.
+        /// </summary>
+        /// <returns>Task.</returns>
+        public void PerformPendingRestart()
+        {
+            if (HasPendingRestart)
+            {
+                Logger.Info("Restarting the application");
+
+                Restart();
+            }
+            else
+            {
+                Logger.Info("PerformPendingRestart - not needed");
+            }
+        }
+
+        /// <summary>
+        /// Notifies that the kernel that a change has been made that requires a restart
+        /// </summary>
+        public void NotifyPendingRestart()
+        {
+            HasPendingRestart = true;
+
+            EventHelper.QueueEventIfNotNull(HasPendingRestartChanged, this, EventArgs.Empty, Logger);
+        }
+
+        /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
         public void Dispose()
@@ -488,7 +515,20 @@ namespace MediaBrowser.Common.Implementations
 
         public abstract Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress);
 
-        public abstract Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress);
+        /// <summary>
+        /// Updates the application.
+        /// </summary>
+        /// <param name="package">The package that contains the update</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <returns>Task.</returns>
+        public async Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress)
+        {
+            var pkgManager = Resolve<IPackageManager>();
+            await pkgManager.InstallPackage(progress, package, cancellationToken).ConfigureAwait(false);
+
+            EventHelper.QueueEventIfNotNull(ApplicationUpdated, this, new GenericEventArgs<Version> { Argument = package.version }, Logger);
+        }
 
         public abstract void Shutdown();
     }

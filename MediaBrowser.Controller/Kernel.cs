@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common;
-using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
@@ -11,11 +10,9 @@ using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Controller.Updates;
 using MediaBrowser.Controller.Weather;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +24,7 @@ namespace MediaBrowser.Controller
     /// <summary>
     /// Class Kernel
     /// </summary>
-    public class Kernel : BaseKernel, IDisposable
+    public class Kernel : IDisposable
     {
         /// <summary>
         /// Gets the instance.
@@ -60,12 +57,25 @@ namespace MediaBrowser.Controller
         public ProviderManager ProviderManager { get; private set; }
 
         /// <summary>
-        /// Gets the kernel context.
+        /// Gets the name of the web application that can be used for url building.
+        /// All api urls will be of the form {protocol}://{host}:{port}/{appname}/...
         /// </summary>
-        /// <value>The kernel context.</value>
-        public override KernelContext KernelContext
+        /// <value>The name of the web application.</value>
+        public string WebApplicationName
         {
-            get { return KernelContext.Server; }
+            get { return "mediabrowser"; }
+        }
+
+        /// <summary>
+        /// Gets the HTTP server URL prefix.
+        /// </summary>
+        /// <value>The HTTP server URL prefix.</value>
+        public virtual string HttpServerUrlPrefix
+        {
+            get
+            {
+                return "http://+:" + _configurationManager.Configuration.HttpServerPortNumber + "/" + WebApplicationName + "/";
+            }
         }
 
         /// <summary>
@@ -145,7 +155,7 @@ namespace MediaBrowser.Controller
         /// Gets the UDP server port number.
         /// </summary>
         /// <value>The UDP server port number.</value>
-        public override int UdpServerPortNumber
+        public int UdpServerPortNumber
         {
             get { return 7359; }
         }
@@ -154,6 +164,7 @@ namespace MediaBrowser.Controller
 
         private readonly IServerConfigurationManager _configurationManager;
         private readonly ILogManager _logManager;
+        private IApplicationHost ApplicationHost { get; set; }
 
         /// <summary>
         /// Creates a kernel based on a Data path, which is akin to our current programdata path
@@ -164,10 +175,10 @@ namespace MediaBrowser.Controller
         /// <param name="configurationManager">The configuration manager.</param>
         /// <exception cref="System.ArgumentNullException">isoManager</exception>
         public Kernel(IApplicationHost appHost, IXmlSerializer xmlSerializer, ILogManager logManager, IServerConfigurationManager configurationManager)
-            : base(appHost, logManager, configurationManager)
         {
             Instance = this;
 
+            ApplicationHost = appHost;
             _configurationManager = configurationManager;
             _xmlSerializer = xmlSerializer;
             _logManager = logManager;
@@ -207,10 +218,8 @@ namespace MediaBrowser.Controller
         /// Performs initializations that can be reloaded at anytime
         /// </summary>
         /// <returns>Task.</returns>
-        protected override async void ReloadInternal()
+        public async Task Init()
         {
-            base.ReloadInternal();
-
             FindParts();
 
             await LoadRepositories().ConfigureAwait(false);
@@ -306,27 +315,8 @@ namespace MediaBrowser.Controller
         {
             DisposeFileSystemManager();
 
-            FileSystemManager = new FileSystemManager(this, _logManager, ApplicationHost.Resolve<ITaskManager>(), ApplicationHost.Resolve<ILibraryManager>(), _configurationManager);
+            FileSystemManager = new FileSystemManager(_logManager, ApplicationHost.Resolve<ITaskManager>(), ApplicationHost.Resolve<ILibraryManager>(), _configurationManager);
             FileSystemManager.StartWatchers();
-        }
-
-        /// <summary>
-        /// Gets the system info.
-        /// </summary>
-        /// <returns>SystemInfo.</returns>
-        public override SystemInfo GetSystemInfo()
-        {
-            var info = base.GetSystemInfo();
-
-            var installationManager = ApplicationHost.Resolve<IInstallationManager>();
-
-            if (installationManager != null)
-            {
-                info.InProgressInstallations = installationManager.CurrentInstallations.Select(i => i.Item1).ToArray();
-                info.CompletedInstallations = installationManager.CompletedInstallations.ToArray();
-            }
-
-            return info;
         }
     }
 }

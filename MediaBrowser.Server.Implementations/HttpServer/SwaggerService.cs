@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 
-namespace MediaBrowser.Common.Implementations.HttpServer
+namespace MediaBrowser.Server.Implementations.HttpServer
 {
     /// <summary>
     /// Class GetDashboardResource

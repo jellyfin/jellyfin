@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Kernel;
 
 namespace MediaBrowser.Controller
 {

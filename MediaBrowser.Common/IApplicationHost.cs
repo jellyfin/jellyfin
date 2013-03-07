@@ -13,6 +13,27 @@ namespace MediaBrowser.Common
     public interface IApplicationHost
     {
         /// <summary>
+        /// Performs the pending restart.
+        /// </summary>
+        void PerformPendingRestart();
+        
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has pending kernel reload.
+        /// </summary>
+        /// <value><c>true</c> if this instance has pending kernel reload; otherwise, <c>false</c>.</value>
+        bool HasPendingRestart { get; }
+
+        /// <summary>
+        /// Occurs when [has pending restart changed].
+        /// </summary>
+        event EventHandler HasPendingRestartChanged;
+
+        /// <summary>
+        /// Notifies the pending restart.
+        /// </summary>
+        void NotifyPendingRestart();
+        
+        /// <summary>
         /// Restarts this instance.
         /// </summary>
         void Restart();

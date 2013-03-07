@@ -18,7 +18,7 @@ namespace MediaBrowser.Controller.Providers
     /// <summary>
     /// Class ProviderManager
     /// </summary>
-    public class ProviderManager : BaseManager<Kernel>
+    public class ProviderManager : IDisposable
     {
         /// <summary>
         /// The remote image cache
@@ -42,7 +42,9 @@ namespace MediaBrowser.Controller.Providers
         private readonly IHttpClient _httpClient;
 
         private IServerConfigurationManager ConfigurationManager { get; set; }
-        
+
+        private Kernel Kernel { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager" /> class.
         /// </summary>
@@ -50,9 +52,9 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="logger">The logger.</param>
         public ProviderManager(Kernel kernel, IHttpClient httpClient, ILogger logger, IServerConfigurationManager configurationManager)
-            : base(kernel)
         {
             _logger = logger;
+            Kernel = kernel;
             _httpClient = httpClient;
             ConfigurationManager = configurationManager;
             _remoteImageCache = new FileSystemRepository(ImagesDataPath);
@@ -354,14 +356,17 @@ namespace MediaBrowser.Controller.Providers
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected override void Dispose(bool dispose)
+        protected virtual void Dispose(bool dispose)
         {
             if (dispose)
             {
                 _remoteImageCache.Dispose();
             }
+        }
 
-            base.Dispose(dispose);
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

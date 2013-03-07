@@ -1,5 +1,8 @@
-﻿using System;
+﻿using MediaBrowser.Common.Events;
+using MediaBrowser.Model.Tasks;
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.ScheduledTasks
 {
@@ -36,5 +39,11 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// </summary>
         /// <param name="tasks">The tasks.</param>
         void AddTasks(IEnumerable<IScheduledTask> tasks);
+
+        void Cancel(IScheduledTaskWorker task);
+        Task Execute(IScheduledTaskWorker task);
+
+        event EventHandler<EventArgs> TaskExecuting;
+        event EventHandler<GenericEventArgs<TaskResult>> TaskCompleted;
     }
 }

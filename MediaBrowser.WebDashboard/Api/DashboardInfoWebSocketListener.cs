@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
@@ -23,10 +23,7 @@ namespace MediaBrowser.WebDashboard.Api
             get { return "DashboardInfo"; }
         }
 
-        /// <summary>
-        /// The _kernel
-        /// </summary>
-        private readonly Kernel _kernel;
+        private readonly IServerApplicationHost _appHost;
 
         /// <summary>
         /// Gets or sets the task manager.
@@ -42,14 +39,13 @@ namespace MediaBrowser.WebDashboard.Api
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardInfoWebSocketListener" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="taskManager">The task manager.</param>
         /// <param name="userManager">The user manager.</param>
-        public DashboardInfoWebSocketListener(Kernel kernel, ILogger logger, ITaskManager taskManager, IUserManager userManager)
+        public DashboardInfoWebSocketListener(IServerApplicationHost appHost, ILogger logger, ITaskManager taskManager, IUserManager userManager)
             : base(logger)
         {
-            _kernel = kernel;
+            _appHost = appHost;
             _taskManager = taskManager;
             _userManager = userManager;
         }
@@ -61,7 +57,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>Task{IEnumerable{TaskInfo}}.</returns>
         protected override Task<DashboardInfo> GetDataToSend(object state)
         {
-            return Task.FromResult(DashboardService.GetDashboardInfo(_kernel, Logger, _taskManager, _userManager));
+            return Task.FromResult(DashboardService.GetDashboardInfo(_appHost, Logger, _taskManager, _userManager));
         }
     }
 }

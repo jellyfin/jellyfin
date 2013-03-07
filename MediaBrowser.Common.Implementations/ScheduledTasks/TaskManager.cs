@@ -1,5 +1,6 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Kernel;
+﻿using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -15,6 +16,9 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
     /// </summary>
     public class TaskManager : ITaskManager
     {
+        public event EventHandler<EventArgs> TaskExecuting;
+        public event EventHandler<GenericEventArgs<TaskResult>> TaskCompleted;
+
         /// <summary>
         /// Gets the list of Scheduled Tasks
         /// </summary>
@@ -45,25 +49,17 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         private ILogger Logger { get; set; }
 
         /// <summary>
-        /// Gets or sets the server manager.
-        /// </summary>
-        /// <value>The server manager.</value>
-        private IServerManager ServerManager { get; set; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="TaskManager" /> class.
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="serverManager">The server manager.</param>
         /// <exception cref="System.ArgumentException">kernel</exception>
-        public TaskManager(IApplicationPaths applicationPaths, IJsonSerializer jsonSerializer, ILogger logger, IServerManager serverManager)
+        public TaskManager(IApplicationPaths applicationPaths, IJsonSerializer jsonSerializer, ILogger logger)
         {
             ApplicationPaths = applicationPaths;
             JsonSerializer = jsonSerializer;
             Logger = logger;
-            ServerManager = serverManager;
 
             ScheduledTasks = new IScheduledTaskWorker[] { };
         }
@@ -75,7 +71,9 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         public void CancelIfRunningAndQueue<T>()
                  where T : IScheduledTask
         {
-            ScheduledTasks.First(t => t.ScheduledTask.GetType() == typeof(T)).CancelIfRunning();
+            var task = ScheduledTasks.First(t => t.ScheduledTask.GetType() == typeof(T));
+            ((ScheduledTaskWorker)task).CancelIfRunning();
+
             QueueScheduledTask<T>();
         }
 
@@ -101,7 +99,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
 
             QueueScheduledTask(scheduledTask);
         }
-        
+
         /// <summary>
         /// Queues the scheduled task.
         /// </summary>
@@ -115,7 +113,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                 // If it's idle just execute immediately
                 if (task.State == TaskState.Idle)
                 {
-                    task.Execute();
+                    ((ScheduledTaskWorker)task).Execute();
                     return;
                 }
 
@@ -132,31 +130,6 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Called when [task completed].
-        /// </summary>
-        /// <param name="task">The task.</param>
-        public void OnTaskCompleted(IScheduledTask task)
-        {
-            // Execute queued tasks
-            lock (_taskQueue)
-            {
-                var copy = _taskQueue.ToList();
-
-                foreach (var type in copy)
-                {
-                    var scheduledTask = ScheduledTasks.First(t => t.GetType() == type);
-
-                    if (scheduledTask.State == TaskState.Idle)
-                    {
-                        scheduledTask.Execute();
-
-                        _taskQueue.Remove(type);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// Adds the tasks.
         /// </summary>
         /// <param name="tasks">The tasks.</param>
@@ -164,7 +137,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         {
             var myTasks = ScheduledTasks.ToList();
 
-            myTasks.AddRange(tasks.Select(t => new ScheduledTaskWorker(t, ApplicationPaths, this, JsonSerializer, Logger, ServerManager)));
+            myTasks.AddRange(tasks.Select(t => new ScheduledTaskWorker(t, ApplicationPaths, this, JsonSerializer, Logger)));
 
             ScheduledTasks = myTasks.ToArray();
         }
@@ -188,6 +161,26 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             {
                 task.Dispose();
             }
+        }
+
+        public void Cancel(IScheduledTaskWorker task)
+        {
+            ((ScheduledTaskWorker)task).Cancel();
+        }
+
+        public Task Execute(IScheduledTaskWorker task)
+        {
+            return ((ScheduledTaskWorker)task).Execute();
+        }
+
+        internal void OnTaskExecuting(IScheduledTask task)
+        {
+            EventHelper.QueueEventIfNotNull(TaskExecuting, task, EventArgs.Empty, Logger);
+        }
+
+        internal void OnTaskCompleted(IScheduledTask task, TaskResult result)
+        {
+            EventHelper.QueueEventIfNotNull(TaskExecuting, task, new GenericEventArgs<TaskResult> { Argument = result }, Logger);
         }
     }
 }

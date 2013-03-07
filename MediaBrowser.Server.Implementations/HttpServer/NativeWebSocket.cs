@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using WebSocketMessageType = MediaBrowser.Common.Net.WebSocketMessageType;
 using WebSocketState = MediaBrowser.Common.Net.WebSocketState;
 
-namespace MediaBrowser.Common.Implementations.HttpServer
+namespace MediaBrowser.Server.Implementations.HttpServer
 {
     /// <summary>
     /// Class NativeWebSocket

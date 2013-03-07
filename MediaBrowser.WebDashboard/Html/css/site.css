@@ -82,7 +82,7 @@ pre, textarea.pre {
     background-attachment: fixed;
 }
 
-.libraryPage, .libraryPage .ui-content {
+.libraryPage, .itemListContent {
     background: #262626!important;
     background-attachment: fixed!important;
 }

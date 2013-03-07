@@ -59,12 +59,11 @@
     <Compile Include="IO\IIsoMount.cs" />
     <Compile Include="IO\ProgressStream.cs" />
     <Compile Include="IO\StreamDefaults.cs" />
-    <Compile Include="Kernel\BasePeriodicWebSocketListener.cs" />
+    <Compile Include="Net\BasePeriodicWebSocketListener.cs" />
     <Compile Include="Configuration\IApplicationPaths.cs" />
-    <Compile Include="Kernel\IServerManager.cs" />
-    <Compile Include="Kernel\IWebSocketListener.cs" />
+    <Compile Include="Net\IServerManager.cs" />
+    <Compile Include="Net\IWebSocketListener.cs" />
     <Compile Include="IApplicationHost.cs" />
-    <Compile Include="Kernel\IKernel.cs" />
     <Compile Include="Net\IHttpClient.cs" />
     <Compile Include="Net\IHttpServer.cs" />
     <Compile Include="Net\INetworkManager.cs" />
@@ -94,15 +93,13 @@
     <Compile Include="ScheduledTasks\ScheduledTaskHelpers.cs" />
     <Compile Include="ScheduledTasks\StartupTrigger.cs" />
     <Compile Include="ScheduledTasks\SystemEventTrigger.cs" />
-    <Compile Include="Kernel\BaseKernel.cs" />
-    <Compile Include="Kernel\KernelContext.cs" />
     <Compile Include="Plugins\BasePlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScheduledTasks\DailyTrigger.cs" />
     <Compile Include="ScheduledTasks\IntervalTrigger.cs" />
+    <Compile Include="ScheduledTasks\TaskCompletionEventArgs.cs" />
     <Compile Include="ScheduledTasks\WeeklyTrigger.cs" />
     <Compile Include="Security\ISecurityManager.cs" />
-    <Compile Include="Updates\ApplicationUpdater.cs" />
     <Compile Include="Updates\IPackageManager.cs" />
   </ItemGroup>
   <ItemGroup>

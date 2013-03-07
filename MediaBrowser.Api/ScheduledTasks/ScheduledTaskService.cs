@@ -1,8 +1,8 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Implementations.HttpServer;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Server.Implementations.HttpServer;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text.Controller;
 using System;
@@ -85,29 +85,18 @@ namespace MediaBrowser.Api.ScheduledTasks
         private ITaskManager TaskManager { get; set; }
 
         /// <summary>
-        /// The _json serializer
-        /// </summary>
-        private readonly IJsonSerializer _jsonSerializer;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledTaskService" /> class.
         /// </summary>
         /// <param name="taskManager">The task manager.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
         /// <exception cref="System.ArgumentNullException">taskManager</exception>
-        public ScheduledTaskService(ITaskManager taskManager, IJsonSerializer jsonSerializer)
+        public ScheduledTaskService(ITaskManager taskManager)
         {
             if (taskManager == null)
             {
                 throw new ArgumentNullException("taskManager");
             }
-            if (jsonSerializer == null)
-            {
-                throw new ArgumentNullException("jsonSerializer");
-            }
 
             TaskManager = taskManager;
-            _jsonSerializer = jsonSerializer;
         }
 
         /// <summary>
@@ -157,7 +146,7 @@ namespace MediaBrowser.Api.ScheduledTasks
                 throw new ResourceNotFoundException("Task not found");
             }
 
-            task.Execute();
+            TaskManager.Execute(task);
         }
 
         /// <summary>
@@ -174,7 +163,7 @@ namespace MediaBrowser.Api.ScheduledTasks
                 throw new ResourceNotFoundException("Task not found");
             }
 
-            task.Cancel();
+            TaskManager.Cancel(task);
         }
 
         /// <summary>

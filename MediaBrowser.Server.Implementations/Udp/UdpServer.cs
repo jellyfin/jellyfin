@@ -8,7 +8,7 @@ using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Implementations.Udp
+namespace MediaBrowser.Server.Implementations.Udp
 {
     /// <summary>
     /// Provides a Udp Server

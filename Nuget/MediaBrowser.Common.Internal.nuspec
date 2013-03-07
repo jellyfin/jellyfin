@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>MediaBrowser.Common.Internal</id>
         <version>3.0.33</version>
@@ -7,23 +7,21 @@
         <authors>Luke</authors>
         <owners>ebr,Luke,scottisafool</owners>
         <projectUrl>https://github.com/MediaBrowser/MediaBrowser</projectUrl>
-		<iconUrl>http://www.mb3admin.com/images/mb3icons1-1.png</iconUrl>
+        <iconUrl>http://www.mb3admin.com/images/mb3icons1-1.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Contains common components shared by Media Browser Theatre and Media Browser Server. Not intended for plugin developer consumption.</description>
         <copyright>Copyright © Media Browser 2013</copyright>
         <dependencies>
             <dependency id="MediaBrowser.Common" version="3.0.33" />
             <dependency id="NLog" version="2.0.0.2000" />
-            <dependency id="ServiceStack" version="3.9.38" />
-            <dependency id="ServiceStack.Api.Swagger" version="3.9.38" />
-            <dependency id="ServiceStack.Logging.NLog" version="1.0.6.0" />
-            <dependency id="Rx-Main" version="2.1.30214.0" />
+            <dependency id="ServiceStack.Text" version="3.9.38" />
+            <dependency id="protobuf-net" version="2.0.0.621" />
         </dependencies>
     </metadata>
     <files>
         <file src="dlls\MediaBrowser.Common.Implementations.dll" target="lib\net45\MediaBrowser.Common.Implementations.dll" />
         <file src="dlls\MediaBrowser.IsoMounter.dll" target="lib\net45\MediaBrowser.IsoMounter.dll" />
-        <file src="dlls\pfmclrapi.dll" target="lib\net45\pfmclrapi.dll" />
         <file src="dlls\Mediabrowser.PluginSecurity.dll" target="lib\net45\Mediabrowser.PluginSecurity.dll" />
+        <file src="dlls\pfmclrapi.dll" target="lib\net45\pfmclrapi.dll" />
     </files>
 </package>

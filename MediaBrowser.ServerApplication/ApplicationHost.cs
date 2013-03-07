@@ -2,12 +2,11 @@
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Constants;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Implementations;
-using MediaBrowser.Common.Implementations.HttpServer;
-using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Kernel;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -17,15 +16,18 @@ using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Updates;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Implementations.BdInfo;
 using MediaBrowser.Server.Implementations.Configuration;
+using MediaBrowser.Server.Implementations.HttpServer;
 using MediaBrowser.Server.Implementations.Library;
+using MediaBrowser.Server.Implementations.ServerManager;
+using MediaBrowser.Server.Implementations.Udp;
 using MediaBrowser.Server.Implementations.Updates;
+using MediaBrowser.Server.Implementations.WebSocket;
 using MediaBrowser.ServerApplication.Implementations;
 using MediaBrowser.WebDashboard.Api;
 using System;
@@ -41,16 +43,13 @@ namespace MediaBrowser.ServerApplication
     /// <summary>
     /// Class CompositionRoot
     /// </summary>
-    public class ApplicationHost : BaseApplicationHost<ServerApplicationPaths>
+    public class ApplicationHost : BaseApplicationHost<ServerApplicationPaths>, IServerApplicationHost
     {
         /// <summary>
         /// Gets the server kernel.
         /// </summary>
         /// <value>The server kernel.</value>
-        protected Kernel ServerKernel
-        {
-            get { return (Kernel)Kernel; }
-        }
+        protected Kernel ServerKernel { get; set; }
 
         /// <summary>
         /// Gets the server configuration manager.
@@ -59,15 +58,6 @@ namespace MediaBrowser.ServerApplication
         public IServerConfigurationManager ServerConfigurationManager
         {
             get { return (IServerConfigurationManager)ConfigurationManager; }
-        }
-
-        /// <summary>
-        /// Gets the kernel.
-        /// </summary>
-        /// <returns>IKernel.</returns>
-        protected override IKernel GetKernel()
-        {
-            return new Kernel(this, XmlSerializer, LogManager, ServerConfigurationManager);
         }
 
         /// <summary>
@@ -88,22 +78,41 @@ namespace MediaBrowser.ServerApplication
             return new ServerConfigurationManager(ApplicationPaths, LogManager, XmlSerializer);
         }
 
+        private IInstallationManager InstallationManager { get; set; }
+        private IServerManager ServerManager { get; set; }
+
+        public override async Task Init()
+        {
+            await base.Init().ConfigureAwait(false);
+
+            await ServerKernel.Init().ConfigureAwait(false);
+        }
+
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
         protected override async Task RegisterResources()
         {
+            ServerKernel = new Kernel(this, XmlSerializer, LogManager, ServerConfigurationManager);
+            
             await base.RegisterResources().ConfigureAwait(false);
 
+            RegisterSingleInstance<IServerApplicationHost>(this);
             RegisterSingleInstance<IServerApplicationPaths>(ApplicationPaths);
-            
+
             RegisterSingleInstance(ServerKernel);
             RegisterSingleInstance(ServerConfigurationManager);
+
+            RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
+            RegisterSingleInstance<IUdpServer>(new UdpServer(Logger), false);
 
             RegisterSingleInstance<IIsoManager>(new PismoIsoManager(Logger));
             RegisterSingleInstance<IBlurayExaminer>(new BdInfoExaminer());
             RegisterSingleInstance<IZipClient>(new DotNetZipClient());
             RegisterSingleInstance(ServerFactory.CreateServer(this, ProtobufSerializer, Logger, "Media Browser", "index.html"), false);
+
+            ServerManager = new ServerManager(this, NetworkManager, JsonSerializer, Logger, ServerConfigurationManager, ServerKernel);
+            RegisterSingleInstance(ServerManager);
 
             var userManager = new UserManager(ServerKernel, Logger, ServerConfigurationManager);
 
@@ -111,7 +120,8 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<ILibraryManager>(new LibraryManager(ServerKernel, Logger, TaskManager, userManager, ServerConfigurationManager));
 
-            RegisterSingleInstance<IInstallationManager>(new InstallationManager(Kernel, HttpClient, PackageManager, JsonSerializer, Logger, this));
+            InstallationManager = new InstallationManager(HttpClient, PackageManager, JsonSerializer, Logger, this);
+            RegisterSingleInstance(InstallationManager);
         }
 
         /// <summary>
@@ -120,6 +130,11 @@ namespace MediaBrowser.ServerApplication
         protected override void FindParts()
         {
             base.FindParts();
+
+            Resolve<IHttpServer>().Init(GetExports<IRestfulService>(false));
+            Resolve<IServerManager>().AddWebSocketListeners(GetExports<IWebSocketListener>(false));
+
+            Resolve<IServerManager>().Start();
 
             Resolve<ILibraryManager>().AddParts(GetExports<IResolverIgnoreRule>(), GetExports<IVirtualFolderCreator>(), GetExports<IItemResolver>(), GetExports<IIntroProvider>());
         }
@@ -158,19 +173,6 @@ namespace MediaBrowser.ServerApplication
         }
 
         /// <summary>
-        /// Updates the application.
-        /// </summary>
-        /// <param name="package">The package that contains the update</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        public override Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress)
-        {
-            var pkgManager = Resolve<IPackageManager>();
-            return pkgManager.InstallPackage(progress, package, cancellationToken);
-        }
-
-        /// <summary>
         /// Gets the composable part assemblies.
         /// </summary>
         /// <returns>IEnumerable{Assembly}.</returns>
@@ -195,7 +197,7 @@ namespace MediaBrowser.ServerApplication
             yield return typeof(SystemInfo).Assembly;
 
             // Include composable parts in the Common assembly 
-            yield return typeof(IKernel).Assembly;
+            yield return typeof(IApplicationHost).Assembly;
 
             // Include composable parts in the Controller assembly 
             yield return typeof(Kernel).Assembly;
@@ -208,6 +210,25 @@ namespace MediaBrowser.ServerApplication
 
             // Include composable parts in the running assembly
             yield return GetType().Assembly;
+        }
+
+        /// <summary>
+        /// Gets the system status.
+        /// </summary>
+        /// <returns>SystemInfo.</returns>
+        public virtual SystemInfo GetSystemInfo()
+        {
+            return new SystemInfo
+            {
+                HasPendingRestart = HasPendingRestart,
+                Version = ApplicationVersion.ToString(),
+                IsNetworkDeployed = CanSelfUpdate,
+                WebSocketPortNumber = ServerManager.WebSocketPortNumber,
+                SupportsNativeWebSocket = ServerManager.SupportsNativeWebSocket,
+                FailedPluginAssemblies = FailedAssemblies.ToArray(),
+                InProgressInstallations = InstallationManager.CurrentInstallations.Select(i => i.Item1).ToArray(),
+                CompletedInstallations = InstallationManager.CompletedInstallations.ToArray()
+            };
         }
 
         /// <summary>

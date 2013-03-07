@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Model.Logging;
 using System;
@@ -31,24 +30,16 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         private ILogger Logger { get; set; }
 
         /// <summary>
-        /// Gets or sets the kernel.
-        /// </summary>
-        /// <value>The kernel.</value>
-        private IKernel Kernel { get; set; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="SystemUpdateTask" /> class.
         /// </summary>
         /// <param name="appHost">The app host.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="kernel">The kernel.</param>
-        public SystemUpdateTask(IApplicationHost appHost, IConfigurationManager configurationManager, ILogger logger, IKernel kernel)
+        public SystemUpdateTask(IApplicationHost appHost, IConfigurationManager configurationManager, ILogger logger)
         {
             _appHost = appHost;
             ConfigurationManager = configurationManager;
             Logger = logger;
-            Kernel = kernel;
         }
 
         /// <summary>
@@ -110,8 +101,6 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
 
                 // Release the event handler
                 innerProgress.ProgressChanged -= innerProgressHandler;
-                
-                Kernel.OnApplicationUpdated(updateInfo.AvailableVersion);
             }
             else
             {
