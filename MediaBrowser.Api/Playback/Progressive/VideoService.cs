@@ -25,13 +25,13 @@ namespace MediaBrowser.Api.Playback.Progressive
     {
 
     }
-    
+
     /// <summary>
     /// Class VideoService
     /// </summary>
     public class VideoService : BaseProgressiveStreamingService
     {
-        public VideoService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager) 
+        public VideoService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager)
             : base(appPaths, userManager, libraryManager, isoManager)
         {
         }
@@ -45,7 +45,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         {
             return ProcessRequest(request);
         }
-        
+
         /// <summary>
         /// Gets the command line arguments.
         /// </summary>
@@ -72,7 +72,14 @@ namespace MediaBrowser.Api.Playback.Progressive
                 }
             }
 
-            return string.Format("{0} {1} -i {2}{3} -threads 0 {4} {5}{6} {7} \"{8}\"",
+            var format = string.Empty;
+
+            if (string.Equals("wmv2", videoCodec, StringComparison.OrdinalIgnoreCase))
+            {
+                format = " -f asf ";
+            }
+
+            return string.Format("{0} {1} -i {2}{3} -threads 0 {4} {5}{6} {7}{8} \"{9}\"",
                 probeSize,
                 GetFastSeekCommandLineParameter(state.Request),
                 GetInputArgument(video, state.IsoMount),
@@ -81,6 +88,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 GetVideoArguments(state, videoCodec),
                 graphicalSubtitleParam,
                 GetAudioArguments(state),
+                format,
                 outputPath
                 ).Trim();
         }
@@ -122,11 +130,6 @@ namespace MediaBrowser.Api.Playback.Progressive
             else if (IsH264(state.VideoStream))
             {
                 args += " -bsf h264_mp4toannexb";
-            }
-
-            if (string.Equals("wmv2", videoCodec))
-            {
-                args += " -f asf";
             }
 
             return args;

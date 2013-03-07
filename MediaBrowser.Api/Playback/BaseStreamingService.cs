@@ -518,7 +518,7 @@ namespace MediaBrowser.Api.Playback
 
             ServerEntryPoint.Instance.OnTranscodeBeginning(outputPath, TranscodingJobType, process);
 
-            //Logger.Info(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
+            Logger.Info(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
 
             var logFilePath = Path.Combine(ApplicationPaths.LogDirectoryPath, "ffmpeg-" + Guid.NewGuid() + ".txt");
 
