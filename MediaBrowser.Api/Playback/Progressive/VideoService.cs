@@ -124,6 +124,11 @@ namespace MediaBrowser.Api.Playback.Progressive
                 args += " -bsf h264_mp4toannexb";
             }
 
+            if (string.Equals("wmv2", videoCodec))
+            {
+                args += " -f asf";
+            }
+
             return args;
         }
 
