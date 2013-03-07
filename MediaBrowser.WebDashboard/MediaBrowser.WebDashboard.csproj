@@ -385,6 +385,7 @@
     <EmbeddedResource Include="Html\scripts\ItemDetailPage.js" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Html\css\images\supporterflag.png" />
     <EmbeddedResource Include="Html\scripts\ItemListPage.js" />
     <EmbeddedResource Include="Html\itemList.html" />
     <EmbeddedResource Include="Html\scripts\WizardFinishPage.js" />
