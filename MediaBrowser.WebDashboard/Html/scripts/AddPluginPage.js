@@ -50,7 +50,7 @@
                 regStatus += "You are currently registered for this feature";
             } else {
                 if (new Date(pkg.expDate).getTime() < new Date(1970, 1, 1).getTime()) {
-                    regStatus += "You have never installed this feature";
+                    regStatus += "This feature has no registration information";
                 } else {
                     if (pkg.expDate <= new Date().getTime()) {
                         regStatus += "The trial period for this feature has expired on this machine";
@@ -65,23 +65,29 @@
 
             if (pluginSecurityInfo.IsMBSupporter) {
                 $('#regInfo', page).html(pkg.regInfo || "");
-                // Fill in PayPal info
-                $('#featureId', page).val(pkg.featureId);
-                $('#featureName', page).val(pkg.name);
-                $('#amount', page).val(pkg.price);
-                $('#regPrice', page).html("<h2>Price: $" + pkg.price.toFixed(2) + " (USD)</h2>");
-                var url = "http://mb3admin.com/admin/service/user/getPayPalEmail?id=" + pkg.owner;
-                $.getJSON(url).done(function (dev) {
-                    if (dev.payPalEmail) {
-                        $('#payPalEmail', page).val(dev.payPalEmail);
+                if (pkg.price > 0) {
+                    // Fill in PayPal info
+                    $('premiumHasPrice', page).show();
+                    $('#featureId', page).val(pkg.featureId);
+                    $('#featureName', page).val(pkg.name);
+                    $('#amount', page).val(pkg.price);
+                    $('#regPrice', page).html("<h2>Price: $" + pkg.price.toFixed(2) + " (USD)</h2>");
+                    var url = "http://mb3admin.com/admin/service/user/getPayPalEmail?id=" + pkg.owner;
+                    $.getJSON(url).done(function(dev) {
+                        if (dev.payPalEmail) {
+                            $('#payPalEmail', page).val(dev.payPalEmail);
 
-                    } else {
-                        $('#ppButton', page).hide();
-                        $('#noEmail', page).show();
-                    }
-                });
+                        } else {
+                            $('#ppButton', page).hide();
+                            $('#noEmail', page).show();
+                        }
+                    });
+                } else {
+                    // Supporter-only feature
+                    $('premiumHasPrice', page).hide();
+                }
             } else {
-                $('#regInfo', page).html("<h3>You must be a <a href='supporter.html'>Media Browser Supporter</a> in order to register this feature.</h3>");
+                $('#regInfo', page).html("<h3>You must be a <a href='supporter.html'>Media Browser Supporter</a> in order to gain access to this feature.</h3>");
                 $('#ppButton', page).hide();
             }
 

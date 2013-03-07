@@ -47,7 +47,11 @@
             }
 
             if (plugin.isPremium) {
-                html += "<div class='premiumBanner'><img src='css/images/premiumflag.png' /></div>";
+                if (plugin.price > 0) {
+                    html += "<div class='premiumBanner'><img src='css/images/premiumflag.png' /></div>";
+                } else {
+                    html += "<div class='premiumBanner'><img src='css/images/supporterflag.png' /></div>";
+                }
             }
 
             var color = plugin.tileColor || Dashboard.getRandomMetroColor();
