@@ -3,7 +3,6 @@ using MediaBrowser.Common.Security;
 using MediaBrowser.Model.Serialization;
 using Mediabrowser.Model.Entities;
 using Mediabrowser.PluginSecurity;
-using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
 using System;
 using System.Threading;
@@ -44,29 +43,19 @@ namespace MediaBrowser.Common.Implementations.Security
 
         private IHttpClient _httpClient;
         private IJsonSerializer _jsonSerializer;
-
-        /// <summary>
-        /// The _kernel
-        /// </summary>
-        private readonly IKernel _kernel;
+        private IApplicationHost _appHost;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginSecurityManager" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
-        public PluginSecurityManager(IKernel kernel, IHttpClient httpClient, IJsonSerializer jsonSerializer, IApplicationPaths appPaths)
+        public PluginSecurityManager(IApplicationHost appHost, IHttpClient httpClient, IJsonSerializer jsonSerializer, IApplicationPaths appPaths)
         {
-            if (kernel == null)
-            {
-                throw new ArgumentNullException("kernel");
-            }
-
             if (httpClient == null)
             {
                 throw new ArgumentNullException("httpClient");
             }
-            
-            _kernel = kernel;
+
+            _appHost = appHost;
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
             MBRegistration.Init(appPaths);
@@ -98,7 +87,7 @@ namespace MediaBrowser.Common.Implementations.Security
                     // Clear this so it will re-evaluate
                     ResetSupporterInfo();
                     // And we'll need to restart to re-evaluate the status of plug-ins
-                    _kernel.NotifyPendingRestart();
+                    _appHost.NotifyPendingRestart();
 
                 }
             }
@@ -115,7 +104,7 @@ namespace MediaBrowser.Common.Implementations.Security
             {
                 MBRegistration.LegacyKey = value;
                 // And we'll need to restart to re-evaluate the status of plug-ins
-                _kernel.NotifyPendingRestart();
+                _appHost.NotifyPendingRestart();
             }
         }
 

@@ -1,7 +1,6 @@
-﻿using MediaBrowser.Common.Net;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Kernel
+namespace MediaBrowser.Common.Net
 {
     /// <summary>
     ///This is an interface for listening to messages coming through a web socket connection

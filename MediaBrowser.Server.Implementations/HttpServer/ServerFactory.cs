@@ -1,9 +1,9 @@
-﻿using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 
-namespace MediaBrowser.Common.Implementations.HttpServer
+namespace MediaBrowser.Server.Implementations.HttpServer
 {
     /// <summary>
     /// Class ServerFactory

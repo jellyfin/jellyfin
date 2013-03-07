@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
@@ -23,17 +23,16 @@ namespace MediaBrowser.Api.WebSocket
         /// <summary>
         /// The _kernel
         /// </summary>
-        private readonly IKernel _kernel;
+        private readonly IServerApplicationHost _appHost;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemInfoWebSocketListener" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
-        public SystemInfoWebSocketListener(Kernel kernel, ILogger logger)
+        public SystemInfoWebSocketListener(ILogger logger, IServerApplicationHost appHost)
             : base(logger)
         {
-            _kernel = kernel;
+            _appHost = appHost;
         }
 
         /// <summary>
@@ -43,7 +42,7 @@ namespace MediaBrowser.Api.WebSocket
         /// <returns>Task{SystemInfo}.</returns>
         protected override Task<SystemInfo> GetDataToSend(object state)
         {
-            return Task.FromResult(_kernel.GetSystemInfo());
+            return Task.FromResult(_appHost.GetSystemInfo());
         }
     }
 }

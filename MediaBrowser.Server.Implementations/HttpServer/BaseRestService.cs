@@ -14,7 +14,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MimeTypes = MediaBrowser.Common.Net.MimeTypes;
 
-namespace MediaBrowser.Common.Implementations.HttpServer
+namespace MediaBrowser.Server.Implementations.HttpServer
 {
     /// <summary>
     /// Class BaseRestService

@@ -1,8 +1,8 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Implementations.HttpServer;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Server.Implementations.HttpServer;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text.Controller;
 using System;

@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Common;
-using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using System.Linq;
@@ -20,14 +20,14 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         private readonly IUserManager _userManager;
 
-        private readonly IConfigurationManager _configurationManager;
+        private readonly IServerConfigurationManager _configurationManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StartupWizard" /> class.
         /// </summary>
         /// <param name="appHost">The app host.</param>
         /// <param name="userManager">The user manager.</param>
-        public StartupWizard(IApplicationHost appHost, IUserManager userManager, IConfigurationManager configurationManager)
+        public StartupWizard(IApplicationHost appHost, IUserManager userManager, IServerConfigurationManager configurationManager)
         {
             _appHost = appHost;
             _userManager = userManager;

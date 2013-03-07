@@ -1,6 +1,6 @@
 using Funq;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -26,7 +26,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Implementations.HttpServer
+namespace MediaBrowser.Server.Implementations.HttpServer
 {
     /// <summary>
     /// Class HttpServer

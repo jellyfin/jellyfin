@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Kernel;
 using System;
 using System.Configuration;
 using System.IO;

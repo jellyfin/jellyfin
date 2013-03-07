@@ -1,11 +1,11 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Implementations.HttpServer;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
+using MediaBrowser.Server.Implementations.HttpServer;
 using ServiceStack.ServiceHost;
 using System;
 using System.IO;
@@ -66,7 +66,7 @@ namespace MediaBrowser.Api
         /// <summary>
         /// The _app host
         /// </summary>
-        private readonly IApplicationHost _appHost;
+        private readonly IServerApplicationHost _appHost;
 
         /// <summary>
         /// The _configuration manager
@@ -80,7 +80,7 @@ namespace MediaBrowser.Api
         /// <param name="appHost">The app host.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
-        public SystemService(IJsonSerializer jsonSerializer, IApplicationHost appHost, IServerConfigurationManager configurationManager)
+        public SystemService(IJsonSerializer jsonSerializer, IServerApplicationHost appHost, IServerConfigurationManager configurationManager)
             : base()
         {
             if (jsonSerializer == null)
@@ -104,7 +104,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetSystemInfo request)
         {
-            var result = Kernel.Instance.GetSystemInfo();
+            var result = _appHost.GetSystemInfo();
 
             return ToOptimizedResult(result);
         }
@@ -132,7 +132,7 @@ namespace MediaBrowser.Api
             Task.Run(async () =>
             {
                 await Task.Delay(100);
-                Kernel.Instance.PerformPendingRestart();
+                _appHost.PerformPendingRestart();
             });
         }
 

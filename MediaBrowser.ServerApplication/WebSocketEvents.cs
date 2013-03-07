@@ -1,11 +1,14 @@
 ﻿using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Kernel;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Updates;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Updates;
 using System;
 
@@ -43,7 +46,9 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// The _kernel
         /// </summary>
-        private readonly IKernel _kernel;
+        private readonly IServerApplicationHost _appHost;
+
+        private readonly ITaskManager _taskManager;
         
         /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketEvents" /> class.
@@ -51,14 +56,15 @@ namespace MediaBrowser.ServerApplication
         /// <param name="serverManager">The server manager.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="userManager">The user manager.</param>
-        public WebSocketEvents(IServerManager serverManager, IKernel kernel, ILogger logger, IUserManager userManager, ILibraryManager libraryManager, IInstallationManager installationManager)
+        public WebSocketEvents(IServerManager serverManager, IServerApplicationHost appHost, ILogger logger, IUserManager userManager, ILibraryManager libraryManager, IInstallationManager installationManager, ITaskManager taskManager)
         {
             _serverManager = serverManager;
             _logger = logger;
             _userManager = userManager;
             _libraryManager = libraryManager;
             _installationManager = installationManager;
-            _kernel = kernel;
+            _appHost = appHost;
+            _taskManager = taskManager;
         }
 
         public void Run()
@@ -68,13 +74,27 @@ namespace MediaBrowser.ServerApplication
 
             _libraryManager.LibraryChanged += libraryManager_LibraryChanged;
 
-            _kernel.HasPendingRestartChanged += kernel_HasPendingRestartChanged;
+            _appHost.HasPendingRestartChanged += kernel_HasPendingRestartChanged;
 
             _installationManager.PluginUninstalled += InstallationManager_PluginUninstalled;
             _installationManager.PackageInstalling += installationManager_PackageInstalling;
             _installationManager.PackageInstallationCancelled += installationManager_PackageInstallationCancelled;
             _installationManager.PackageInstallationCompleted += installationManager_PackageInstallationCompleted;
             _installationManager.PackageInstallationFailed += installationManager_PackageInstallationFailed;
+
+            _taskManager.TaskExecuting += _taskManager_TaskExecuting;
+            _taskManager.TaskCompleted += _taskManager_TaskCompleted;
+        }
+
+        void _taskManager_TaskCompleted(object sender, GenericEventArgs<TaskResult> e)
+        {
+            _serverManager.SendWebSocketMessage("ScheduledTaskEndExecute", e.Argument);
+        }
+
+        void _taskManager_TaskExecuting(object sender, EventArgs e)
+        {
+            var task = (IScheduledTask) sender;
+            _serverManager.SendWebSocketMessage("ScheduledTaskBeginExecute", task.Name);
         }
 
         /// <summary>
@@ -144,9 +164,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         void kernel_HasPendingRestartChanged(object sender, EventArgs e)
         {
-            var kernel = (IKernel)sender;
-
-            _serverManager.SendWebSocketMessage("HasPendingRestartChanged", kernel.GetSystemInfo());
+            _serverManager.SendWebSocketMessage("HasPendingRestartChanged", _appHost.GetSystemInfo());
         }
 
         /// <summary>
@@ -196,7 +214,7 @@ namespace MediaBrowser.ServerApplication
                 _installationManager.PackageInstallationCompleted -= installationManager_PackageInstallationCompleted;
                 _installationManager.PackageInstallationFailed -= installationManager_PackageInstallationFailed;
 
-                _kernel.HasPendingRestartChanged -= kernel_HasPendingRestartChanged;
+                _appHost.HasPendingRestartChanged -= kernel_HasPendingRestartChanged;
             }
         }
     }

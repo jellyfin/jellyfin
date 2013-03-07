@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Implementations.HttpServer;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
@@ -7,6 +6,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Server.Implementations.HttpServer;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
@@ -89,15 +89,18 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         private readonly IUserManager _userManager;
 
+        private readonly IServerApplicationHost _appHost;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardService" /> class.
         /// </summary>
         /// <param name="taskManager">The task manager.</param>
         /// <param name="userManager">The user manager.</param>
-        public DashboardService(ITaskManager taskManager, IUserManager userManager)
+        public DashboardService(ITaskManager taskManager, IUserManager userManager, IServerApplicationHost appHost)
         {
             _taskManager = taskManager;
             _userManager = userManager;
+            _appHost = appHost;
         }
 
         /// <summary>
@@ -107,18 +110,17 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.Object.</returns>
         public object Get(GetDashboardInfo request)
         {
-            return GetDashboardInfo(Kernel.Instance, Logger, _taskManager, _userManager);
+            return GetDashboardInfo(_appHost, Logger, _taskManager, _userManager);
         }
 
         /// <summary>
         /// Gets the dashboard info.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="taskManager">The task manager.</param>
         /// <param name="userManager">The user manager.</param>
         /// <returns>DashboardInfo.</returns>
-        public static DashboardInfo GetDashboardInfo(Kernel kernel, ILogger logger, ITaskManager taskManager, IUserManager userManager)
+        public static DashboardInfo GetDashboardInfo(IServerApplicationHost appHost, ILogger logger, ITaskManager taskManager, IUserManager userManager)
         {
             var connections = userManager.ConnectedUsers.ToArray();
 
@@ -126,7 +128,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             return new DashboardInfo
             {
-                SystemInfo = kernel.GetSystemInfo(),
+                SystemInfo = appHost.GetSystemInfo(),
 
                 RunningTasks = taskManager.ScheduledTasks.Where(i => i.State == TaskState.Running || i.State == TaskState.Cancelling)
                                      .Select(ScheduledTaskHelpers.GetTaskInfo)

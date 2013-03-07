@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.ScheduledTasks
 {
@@ -64,23 +63,5 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// </summary>
         /// <value>The unique id.</value>
         Guid Id { get; }
-
-        /// <summary>
-        /// Executes the task
-        /// </summary>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.InvalidOperationException">Cannot execute a Task that is already running</exception>
-        Task Execute();
-
-        /// <summary>
-        /// Stops the task if it is currently executing
-        /// </summary>
-        /// <exception cref="System.InvalidOperationException">Cannot cancel a Task unless it is in the Running state.</exception>
-        void Cancel();
-
-        /// <summary>
-        /// Cancels if running.
-        /// </summary>
-        void CancelIfRunning();
     }
 }

@@ -13,6 +13,27 @@ namespace MediaBrowser.Model.Configuration
     public class ServerConfiguration : BaseApplicationConfiguration
     {
         /// <summary>
+        /// Gets or sets a value indicating whether [enable HTTP level logging].
+        /// </summary>
+        /// <value><c>true</c> if [enable HTTP level logging]; otherwise, <c>false</c>.</value>
+        [ProtoMember(56)]
+        public bool EnableHttpLevelLogging { get; set; }
+
+        /// <summary>
+        /// Gets or sets the HTTP server port number.
+        /// </summary>
+        /// <value>The HTTP server port number.</value>
+        [ProtoMember(2)]
+        public int HttpServerPortNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the legacy web socket port number.
+        /// </summary>
+        /// <value>The legacy web socket port number.</value>
+        [ProtoMember(59)]
+        public int LegacyWebSocketPortNumber { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [enable internet providers].
         /// </summary>
         /// <value><c>true</c> if [enable internet providers]; otherwise, <c>false</c>.</value>
@@ -255,6 +276,10 @@ namespace MediaBrowser.Model.Configuration
         public ServerConfiguration()
             : base()
         {
+            HttpServerPortNumber = 8096;
+            LegacyWebSocketPortNumber = 8945;
+            EnableHttpLevelLogging = true;
+
 #if (DEBUG)
             EnableDeveloperTools = true;
 #endif

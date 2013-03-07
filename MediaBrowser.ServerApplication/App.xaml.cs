@@ -1,18 +1,17 @@
-﻿using System.IO;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Constants;
-using MediaBrowser.Common.Kernel;
-using MediaBrowser.Common.Updates;
+using MediaBrowser.Common.Implementations.Updates;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Net.Cache;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -209,9 +208,9 @@ namespace MediaBrowser.ServerApplication
         /// Opens the dashboard page.
         /// </summary>
         /// <param name="page">The page.</param>
-        public static void OpenDashboardPage(string page, User loggedInUser, IConfigurationManager configurationManager)
+        public static void OpenDashboardPage(string page, User loggedInUser, IServerConfigurationManager configurationManager)
         {
-            var url = "http://localhost:" + configurationManager.CommonConfiguration.HttpServerPortNumber + "/" +
+            var url = "http://localhost:" + configurationManager.Configuration.HttpServerPortNumber + "/" +
                       Kernel.Instance.WebApplicationName + "/dashboard/" + page;
 
             if (loggedInUser != null)

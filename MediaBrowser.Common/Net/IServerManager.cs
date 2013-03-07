@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Kernel
+namespace MediaBrowser.Common.Net
 {
     public interface IServerManager : IDisposable
     {

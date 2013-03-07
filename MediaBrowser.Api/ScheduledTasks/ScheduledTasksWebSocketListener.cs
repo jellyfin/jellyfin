@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;

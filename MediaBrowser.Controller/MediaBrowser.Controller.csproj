@@ -70,7 +70,6 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
-    <Compile Include="BaseManager.cs" />
     <Compile Include="Configuration\IServerConfigurationManager.cs" />
     <Compile Include="Drawing\ImageExtensions.cs" />
     <Compile Include="Drawing\ImageHeader.cs" />
@@ -105,6 +104,7 @@
     <Compile Include="IO\FileSystem.cs" />
     <Compile Include="IO\FileSystemManager.cs" />
     <Compile Include="IO\NativeMethods.cs" />
+    <Compile Include="IServerApplicationHost.cs" />
     <Compile Include="IServerApplicationPaths.cs" />
     <Compile Include="Library\ChildrenChangedEventArgs.cs" />
     <Compile Include="Library\DtoBuilder.cs" />

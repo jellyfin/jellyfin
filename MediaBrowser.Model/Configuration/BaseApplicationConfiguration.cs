@@ -19,20 +19,6 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableDebugLevelLogging { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable HTTP level logging].
-        /// </summary>
-        /// <value><c>true</c> if [enable HTTP level logging]; otherwise, <c>false</c>.</value>
-        [ProtoMember(56)]
-        public bool EnableHttpLevelLogging { get; set; }
-
-        /// <summary>
-        /// Gets or sets the HTTP server port number.
-        /// </summary>
-        /// <value>The HTTP server port number.</value>
-        [ProtoMember(2)]
-        public int HttpServerPortNumber { get; set; }
-
-        /// <summary>
         /// Enable automatically and silently updating of the application
         /// </summary>
         /// <value><c>true</c> if [enable auto update]; otherwise, <c>false</c>.</value>
@@ -60,13 +46,6 @@ namespace MediaBrowser.Model.Configuration
         public bool RunAtStartup { get; set; }
 
         /// <summary>
-        /// Gets or sets the legacy web socket port number.
-        /// </summary>
-        /// <value>The legacy web socket port number.</value>
-        [ProtoMember(59)]
-        public int LegacyWebSocketPortNumber { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance is first run.
         /// </summary>
         /// <value><c>true</c> if this instance is first run; otherwise, <c>false</c>.</value>
@@ -78,13 +57,8 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         public BaseApplicationConfiguration()
         {
-            HttpServerPortNumber = 8096;
-            LegacyWebSocketPortNumber = 8945;
-
             EnableAutoUpdate = true;
             LogFileRetentionDays = 14;
-
-            EnableHttpLevelLogging = true;
 
 #if (DEBUG)
             EnableDebugLevelLogging = true;

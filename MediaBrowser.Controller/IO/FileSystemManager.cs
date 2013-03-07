@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -17,7 +16,7 @@ namespace MediaBrowser.Controller.IO
     /// modify the directories that the system is watching for changes should use the methods of
     /// this class to do so.  This way we can have the watchers correctly respond to only external changes.
     /// </summary>
-    public class FileSystemManager : BaseManager<Kernel>
+    public class FileSystemManager : IDisposable
     {
         /// <summary>
         /// Gets or sets the directory watchers.
@@ -26,22 +25,14 @@ namespace MediaBrowser.Controller.IO
         private DirectoryWatchers DirectoryWatchers { get; set; }
 
         /// <summary>
-        /// The _logger
-        /// </summary>
-        private readonly ILogger _logger;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="FileSystemManager" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="taskManager">The task manager.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        public FileSystemManager(Kernel kernel, ILogManager logManager, ITaskManager taskManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager)
-            : base(kernel)
+        public FileSystemManager(ILogManager logManager, ITaskManager taskManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager)
         {
-            _logger = logManager.GetLogger("FileSystemManager");
             DirectoryWatchers = new DirectoryWatchers(logManager, taskManager, libraryManager, configurationManager);
         }
 
@@ -113,14 +104,17 @@ namespace MediaBrowser.Controller.IO
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected override void Dispose(bool dispose)
+        protected virtual void Dispose(bool dispose)
         {
             if (dispose)
             {
                 DirectoryWatchers.Dispose();
             }
+        }
 
-            base.Dispose(dispose);
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

@@ -1,6 +1,7 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Kernel;
+﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -15,7 +16,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Implementations.ServerManager
+namespace MediaBrowser.Server.Implementations.ServerManager
 {
     /// <summary>
     /// Manages the Http Server, Udp Server and WebSocket connections
@@ -74,15 +75,10 @@ namespace MediaBrowser.Common.Implementations.ServerManager
         private readonly IApplicationHost _applicationHost;
 
         /// <summary>
-        /// The _kernel
-        /// </summary>
-        private readonly IKernel _kernel;
-
-        /// <summary>
         /// Gets or sets the configuration manager.
         /// </summary>
         /// <value>The configuration manager.</value>
-        private IConfigurationManager ConfigurationManager { get; set; }
+        private IServerConfigurationManager ConfigurationManager { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether [supports web socket].
@@ -99,7 +95,7 @@ namespace MediaBrowser.Common.Implementations.ServerManager
         /// <value>The web socket port number.</value>
         public int WebSocketPortNumber
         {
-            get { return SupportsNativeWebSocket ? ConfigurationManager.CommonConfiguration.HttpServerPortNumber : ConfigurationManager.CommonConfiguration.LegacyWebSocketPortNumber; }
+            get { return SupportsNativeWebSocket ? ConfigurationManager.Configuration.HttpServerPortNumber : ConfigurationManager.Configuration.LegacyWebSocketPortNumber; }
         }
 
         /// <summary>
@@ -108,25 +104,22 @@ namespace MediaBrowser.Common.Implementations.ServerManager
         /// <value>The web socket listeners.</value>
         private readonly List<IWebSocketListener> _webSocketListeners = new List<IWebSocketListener>();
 
+        private Kernel _kernel;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerManager" /> class.
         /// </summary>
         /// <param name="applicationHost">The application host.</param>
-        /// <param name="kernel">The kernel.</param>
         /// <param name="networkManager">The network manager.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <exception cref="System.ArgumentNullException">applicationHost</exception>
-        public ServerManager(IApplicationHost applicationHost, IKernel kernel, INetworkManager networkManager, IJsonSerializer jsonSerializer, ILogger logger, IConfigurationManager configurationManager)
+        public ServerManager(IApplicationHost applicationHost, INetworkManager networkManager, IJsonSerializer jsonSerializer, ILogger logger, IServerConfigurationManager configurationManager, Kernel kernel)
         {
             if (applicationHost == null)
             {
                 throw new ArgumentNullException("applicationHost");
-            }
-            if (kernel == null)
-            {
-                throw new ArgumentNullException("kernel");
             }
             if (networkManager == null)
             {
@@ -143,10 +136,10 @@ namespace MediaBrowser.Common.Implementations.ServerManager
 
             _logger = logger;
             _jsonSerializer = jsonSerializer;
-            _kernel = kernel;
             _applicationHost = applicationHost;
             _networkManager = networkManager;
             ConfigurationManager = configurationManager;
+            _kernel = kernel;
         }
 
         /// <summary>
@@ -175,17 +168,11 @@ namespace MediaBrowser.Common.Implementations.ServerManager
         /// </summary>
         private void ReloadExternalWebSocketServer()
         {
-            // Avoid windows firewall prompts in the ui
-            if (_kernel.KernelContext != KernelContext.Server)
-            {
-                return;
-            }
-
             DisposeExternalWebSocketServer();
 
             ExternalWebSocketServer = _applicationHost.Resolve<IWebSocketServer>();
 
-            ExternalWebSocketServer.Start(ConfigurationManager.CommonConfiguration.LegacyWebSocketPortNumber);
+            ExternalWebSocketServer.Start(ConfigurationManager.Configuration.LegacyWebSocketPortNumber);
             ExternalWebSocketServer.WebSocketConnected += HttpServer_WebSocketConnected;
         }
 
@@ -208,7 +195,7 @@ namespace MediaBrowser.Common.Implementations.ServerManager
             try
             {
                 HttpServer = _applicationHost.Resolve<IHttpServer>();
-                HttpServer.EnableHttpRequestLogging = ConfigurationManager.CommonConfiguration.EnableHttpLevelLogging;
+                HttpServer.EnableHttpRequestLogging = ConfigurationManager.Configuration.EnableHttpLevelLogging;
                 HttpServer.Start(_kernel.HttpServerUrlPrefix);
             }
             catch (HttpListenerException ex)
@@ -275,12 +262,6 @@ namespace MediaBrowser.Common.Implementations.ServerManager
                 return;
             }
 
-            // Avoid windows firewall prompts in the ui
-            if (_kernel.KernelContext != KernelContext.Server)
-            {
-                return;
-            }
-
             DisposeUdpServer();
 
             try
@@ -305,7 +286,9 @@ namespace MediaBrowser.Common.Implementations.ServerManager
         /// <param name="e">The <see cref="UdpMessageReceivedEventArgs" /> instance containing the event data.</param>
         async void UdpServer_MessageReceived(object sender, UdpMessageReceivedEventArgs e)
         {
-            var expectedMessage = String.Format("who is MediaBrowser{0}?", _kernel.KernelContext);
+            var context = "Server";
+
+            var expectedMessage = String.Format("who is MediaBrowser{0}?", context);
             var expectedMessageBytes = Encoding.UTF8.GetBytes(expectedMessage);
 
             if (expectedMessageBytes.SequenceEqual(e.Bytes))
@@ -313,7 +296,7 @@ namespace MediaBrowser.Common.Implementations.ServerManager
                 _logger.Info("Received UDP server request from " + e.RemoteEndPoint);
 
                 // Send a response back with our ip address and port
-                var response = String.Format("MediaBrowser{0}|{1}:{2}", _kernel.KernelContext, _networkManager.GetLocalIpAddress(), _kernel.UdpServerPortNumber);
+                var response = String.Format("MediaBrowser{0}|{1}:{2}", context, _networkManager.GetLocalIpAddress(), _kernel.UdpServerPortNumber);
 
                 await UdpServer.SendAsync(Encoding.UTF8.GetBytes(response), e.RemoteEndPoint);
             }
@@ -447,7 +430,7 @@ namespace MediaBrowser.Common.Implementations.ServerManager
             var tmpFile = Path.Combine(ConfigurationManager.CommonApplicationPaths.TempDirectory, Guid.NewGuid() + ".bat");
 
             // Extract the bat file
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Common.Implementations.ServerManager.RegisterServer.bat"))
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Server.Implementations.ServerManager.RegisterServer.bat"))
             {
                 using (var fileStream = File.Create(tmpFile))
                 {
@@ -459,10 +442,10 @@ namespace MediaBrowser.Common.Implementations.ServerManager
             {
                 FileName = tmpFile,
 
-                Arguments = string.Format("{0} {1} {2} {3}", ConfigurationManager.CommonConfiguration.HttpServerPortNumber,
+                Arguments = string.Format("{0} {1} {2} {3}", ConfigurationManager.Configuration.HttpServerPortNumber,
                 _kernel.HttpServerUrlPrefix,
                 _kernel.UdpServerPortNumber,
-                ConfigurationManager.CommonConfiguration.LegacyWebSocketPortNumber),
+                ConfigurationManager.Configuration.LegacyWebSocketPortNumber),
 
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden,
@@ -517,14 +500,14 @@ namespace MediaBrowser.Common.Implementations.ServerManager
         /// <exception cref="System.NotImplementedException"></exception>
         void _kernel_ConfigurationUpdated(object sender, EventArgs e)
         {
-            HttpServer.EnableHttpRequestLogging = ConfigurationManager.CommonConfiguration.EnableHttpLevelLogging;
+            HttpServer.EnableHttpRequestLogging = ConfigurationManager.Configuration.EnableHttpLevelLogging;
 
             if (!string.Equals(HttpServer.UrlPrefix, _kernel.HttpServerUrlPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 ReloadHttpServer();
             }
 
-            if (!SupportsNativeWebSocket && ExternalWebSocketServer != null && ExternalWebSocketServer.Port != ConfigurationManager.CommonConfiguration.LegacyWebSocketPortNumber)
+            if (!SupportsNativeWebSocket && ExternalWebSocketServer != null && ExternalWebSocketServer.Port != ConfigurationManager.Configuration.LegacyWebSocketPortNumber)
             {
                 ReloadExternalWebSocketServer();
             }

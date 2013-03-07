@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Implementations.WebSocket
+namespace MediaBrowser.Server.Implementations.WebSocket
 {
     /// <summary>
     /// Class AlchemyWebSocket

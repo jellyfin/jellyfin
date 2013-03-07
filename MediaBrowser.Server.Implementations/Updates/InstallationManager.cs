@@ -1,11 +1,9 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Updates;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -72,7 +70,7 @@ namespace MediaBrowser.Server.Implementations.Updates
 
             EventHelper.QueueEventIfNotNull(PluginUpdated, this, new GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> { Argument = new Tuple<IPlugin, PackageVersionInfo>(plugin, newVersion) }, _logger);
 
-            Kernel.NotifyPendingRestart();
+            ApplicationHost.NotifyPendingRestart();
         }
         #endregion
 
@@ -91,7 +89,7 @@ namespace MediaBrowser.Server.Implementations.Updates
 
             EventHelper.QueueEventIfNotNull(PluginInstalled, this, new GenericEventArgs<PackageVersionInfo> { Argument = package }, _logger);
 
-            Kernel.NotifyPendingRestart();
+            ApplicationHost.NotifyPendingRestart();
         }
         #endregion
 
@@ -123,19 +121,16 @@ namespace MediaBrowser.Server.Implementations.Updates
         /// <value>The application host.</value>
         protected IApplicationHost ApplicationHost { get; private set; }
 
-        private IKernel Kernel { get; set; }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="InstallationManager" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="packageManager">The package manager.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="appHost">The app host.</param>
         /// <exception cref="System.ArgumentNullException">zipClient</exception>
-        public InstallationManager(IKernel kernel, IHttpClient httpClient, IPackageManager packageManager, IJsonSerializer jsonSerializer, ILogger logger, IApplicationHost appHost)
+        public InstallationManager(IHttpClient httpClient, IPackageManager packageManager, IJsonSerializer jsonSerializer, ILogger logger, IApplicationHost appHost)
         {
             if (packageManager == null)
             {
@@ -161,7 +156,6 @@ namespace MediaBrowser.Server.Implementations.Updates
             ApplicationHost = appHost;
             _packageManager = packageManager;
             _logger = logger;
-            Kernel = kernel;
         }
 
         /// <summary>
@@ -454,7 +448,7 @@ namespace MediaBrowser.Server.Implementations.Updates
 
             OnPluginUninstalled(plugin);
 
-            Kernel.NotifyPendingRestart();
+            ApplicationHost.NotifyPendingRestart();
         }
 
         /// <summary>

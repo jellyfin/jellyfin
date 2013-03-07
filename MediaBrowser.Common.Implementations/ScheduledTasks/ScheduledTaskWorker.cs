@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Kernel;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -50,12 +49,6 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         private ITaskManager TaskManager { get; set; }
 
         /// <summary>
-        /// Gets or sets the server manager.
-        /// </summary>
-        /// <value>The server manager.</value>
-        private IServerManager ServerManager { get; set; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledTaskWorker" /> class.
         /// </summary>
         /// <param name="scheduledTask">The scheduled task.</param>
@@ -64,7 +57,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="serverManager">The server manager.</param>
-        public ScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, IJsonSerializer jsonSerializer, ILogger logger, IServerManager serverManager)
+        public ScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, IJsonSerializer jsonSerializer, ILogger logger)
         {
             if (scheduledTask == null)
             {
@@ -86,17 +79,12 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             {
                 throw new ArgumentNullException("logger");
             }
-            if (serverManager == null)
-            {
-                throw new ArgumentNullException("serverManager");
-            }
 
             ScheduledTask = scheduledTask;
             ApplicationPaths = applicationPaths;
             TaskManager = taskManager;
             JsonSerializer = jsonSerializer;
             Logger = logger;
-            ServerManager = serverManager;
 
             ReloadTriggerEvents(true);
         }
@@ -331,14 +319,14 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
 
             Logger.Info("Executing {0}", Name);
 
+            ((TaskManager)TaskManager).OnTaskExecuting(ScheduledTask);
+            
             var progress = new Progress<double>();
 
             progress.ProgressChanged += progress_ProgressChanged;
 
             TaskCompletionStatus status;
             CurrentExecutionStartTime = DateTime.UtcNow;
-
-            ServerManager.SendWebSocketMessage("ScheduledTaskBeginExecute", Name);
 
             try
             {
@@ -517,8 +505,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <param name="startTime">The start time.</param>
         /// <param name="endTime">The end time.</param>
         /// <param name="status">The status.</param>
-        /// <param name="sendNotification">if set to <c>true</c> [send notification].</param>
-        private void OnTaskCompleted(DateTime startTime, DateTime endTime, TaskCompletionStatus status, bool sendNotification = true)
+        private void OnTaskCompleted(DateTime startTime, DateTime endTime, TaskCompletionStatus status)
         {
             var elapsedTime = endTime - startTime;
 
@@ -537,10 +524,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
 
             LastExecutionResult = result;
 
-            if (sendNotification)
-            {
-                ServerManager.SendWebSocketMessage("ScheduledTaskEndExecute", result);
-            }
+            ((TaskManager) TaskManager).OnTaskCompleted(ScheduledTask, result);
         }
 
         /// <summary>
@@ -564,7 +548,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
 
                 if (State == TaskState.Running)
                 {
-                    OnTaskCompleted(CurrentExecutionStartTime, DateTime.UtcNow, TaskCompletionStatus.Aborted, false);
+                    OnTaskCompleted(CurrentExecutionStartTime, DateTime.UtcNow, TaskCompletionStatus.Aborted);
                 }
 
                 if (CurrentCancellationTokenSource != null)
