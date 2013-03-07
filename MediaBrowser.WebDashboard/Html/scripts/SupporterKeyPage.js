@@ -37,7 +37,7 @@
                 LegacyKey: legacyKey
             };
 
-            ApiClient.updateSecurityInfo(info).done(function () {
+            ApiClient.updatePluginSecurityInfo(info).done(function () {
                 Dashboard.resetPluginSecurityInfo();
                 Dashboard.hideLoadingMsg();
                 SupporterPage.load();
