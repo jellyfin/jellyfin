@@ -208,7 +208,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger);
 
-            var returnItems = await Task.WhenAll(pagedItems.Select(i => dtoBuilder.GetDtoBaseItem(i, user, fields, _libraryManager))).ConfigureAwait(false);
+            var returnItems = await Task.WhenAll(pagedItems.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields, _libraryManager))).ConfigureAwait(false);
 
             return new ItemsResult
             {

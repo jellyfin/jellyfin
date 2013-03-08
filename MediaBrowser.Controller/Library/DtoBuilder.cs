@@ -38,7 +38,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fields">The fields.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public async Task<BaseItemDto> GetDtoBaseItem(BaseItem item, List<ItemFields> fields, ILibraryManager libraryManager)
+        public async Task<BaseItemDto> GetBaseItemDto(BaseItem item, List<ItemFields> fields, ILibraryManager libraryManager)
         {
             if (item == null)
             {
@@ -96,7 +96,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="libraryManager">The library manager.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public async Task<BaseItemDto> GetDtoBaseItem(BaseItem item, User user, List<ItemFields> fields, ILibraryManager libraryManager)
+        public async Task<BaseItemDto> GetBaseItemDto(BaseItem item, User user, List<ItemFields> fields, ILibraryManager libraryManager)
         {
             if (item == null)
             {
@@ -168,7 +168,7 @@ namespace MediaBrowser.Controller.Library
 
                 if (userData != null)
                 {
-                    dto.UserData = GetDtoUserItemData(userData);
+                    dto.UserData = GetUserItemDataDto(userData);
                 }
             }
 
@@ -197,7 +197,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
         /// <returns>Task.</returns>
-        private async Task AttachPrimaryImageAspectRatio(BaseItemDto dto, BaseItem item)
+        private async Task AttachPrimaryImageAspectRatio(IItemDto dto, BaseItem item)
         {
             var path = item.PrimaryImagePath;
 
@@ -647,7 +647,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="data">The data.</param>
         /// <returns>DtoUserItemData.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public UserItemDataDto GetDtoUserItemData(UserItemData data)
+        public UserItemDataDto GetUserItemDataDto(UserItemData data)
         {
             if (data == null)
             {
@@ -758,7 +758,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <returns>DtoUser.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        public UserDto GetDtoUser(User user)
+        public async Task<UserDto> GetUserDto(User user)
         {
             if (user == null)
             {
@@ -780,8 +780,18 @@ namespace MediaBrowser.Controller.Library
             if (!string.IsNullOrEmpty(image))
             {
                 dto.PrimaryImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(user, ImageType.Primary, image);
-            }
 
+                try
+                {
+                    await AttachPrimaryImageAspectRatio(dto, user).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
+                    _logger.ErrorException("Error generating PrimaryImageAspectRatio for {0}", ex, user.Name);
+                }
+            }
+            
             return dto;
         }
 

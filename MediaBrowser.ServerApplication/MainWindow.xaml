@@ -18,6 +18,8 @@
                         </MenuItem>
                         <MenuItem x:Name="cmdSwaggerApiDocs" Header="Swagger" Click="cmdSwaggerApiDocs_Click" Background="White">
                         </MenuItem>
+                        <MenuItem x:Name="cmdGithubWiki" Header="GitHub Wiki" Click="cmdGithubWiki_Click" Background="White">
+                        </MenuItem>
                     </MenuItem>
                     <Separator/>
                     <MenuItem x:Name="cmShowLogWindow" Header="Show Log Window" IsCheckable="True" Click="CmShowLogWindow_click"/>

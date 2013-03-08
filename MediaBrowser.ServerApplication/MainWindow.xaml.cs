@@ -184,6 +184,11 @@ namespace MediaBrowser.ServerApplication
             App.OpenUrl("http://localhost:" + _configurationManager.Configuration.HttpServerPortNumber + "/" +
                       Kernel.Instance.WebApplicationName + "/swagger-ui/index.html");
         }
+
+        void cmdGithubWiki_Click(object sender, EventArgs e)
+        {
+            App.OpenUrl("https://github.com/MediaBrowser/MediaBrowser/wiki");
+        }
         
         /// <summary>
         /// Occurs when [property changed].

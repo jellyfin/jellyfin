@@ -12,7 +12,7 @@ namespace MediaBrowser.Model.Dto
     /// This holds information about a BaseItem in a format that is convenient for the client.
     /// </summary>
     [ProtoContract]
-    public class BaseItemDto : IHasProviderIds, INotifyPropertyChanged
+    public class BaseItemDto : IHasProviderIds, INotifyPropertyChanged, IItemDto
     {
         /// <summary>
         /// Gets or sets the name.

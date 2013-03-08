@@ -57,7 +57,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>Task{IEnumerable{TaskInfo}}.</returns>
         protected override Task<DashboardInfo> GetDataToSend(object state)
         {
-            return Task.FromResult(DashboardService.GetDashboardInfo(_appHost, Logger, _taskManager, _userManager));
+            return DashboardService.GetDashboardInfo(_appHost, Logger, _taskManager, _userManager);
         }
     }
 }
