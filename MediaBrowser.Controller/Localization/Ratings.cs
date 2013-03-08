@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.Localization
     /// </summary>
     public static class Ratings
     {
-        internal static IServerConfigurationManager ConfigurationManager;
+        public static IServerConfigurationManager ConfigurationManager;
 
         /// <summary>
         /// The ratings def

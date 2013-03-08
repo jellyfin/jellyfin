@@ -53,7 +53,7 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        protected override Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             return Task.Run(() => Fetch(item, cancellationToken));
         }

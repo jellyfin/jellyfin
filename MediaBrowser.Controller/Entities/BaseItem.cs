@@ -96,9 +96,10 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The logger
         /// </summary>
-        protected static internal ILogger Logger { get; internal set; }
-        protected static internal ILibraryManager LibraryManager { get; internal set; }
-        protected static internal IServerConfigurationManager ConfigurationManager { get; internal set; }
+        public static ILogger Logger { get; set; }
+        public static ILibraryManager LibraryManager { get; set; }
+        public static IServerConfigurationManager ConfigurationManager { get; set; }
+        public static IProviderManager ProviderManager { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -652,7 +653,7 @@ namespace MediaBrowser.Controller.Entities
             LocalTrailers = null;
 
             // Refresh for the item
-            var itemRefreshTask = Kernel.Instance.ProviderManager.ExecuteMetadataProviders(this, cancellationToken, forceRefresh, allowSlowProviders);
+            var itemRefreshTask = ProviderManager.ExecuteMetadataProviders(this, cancellationToken, forceRefresh, allowSlowProviders);
 
             cancellationToken.ThrowIfCancellationRequested();
 

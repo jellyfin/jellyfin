@@ -15,8 +15,12 @@ namespace MediaBrowser.Controller.Providers.Music
 {
     public class FanArtAlbumProvider : FanartBaseProvider
     {
-        public FanArtAlbumProvider(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
+        private readonly IProviderManager _providerManager;
+        
+        public FanArtAlbumProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
+            : base(logManager, configurationManager)
         {
+            _providerManager = providerManager;
         }
 
         public override bool Supports(BaseItem item)
@@ -37,7 +41,7 @@ namespace MediaBrowser.Controller.Providers.Music
                    DateTime.Today.Subtract(providerInfo.LastRefreshed).TotalDays > ConfigurationManager.Configuration.MetadataRefreshDays;
         }
 
-        protected override async Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             var mbid = item.GetProviderId(MetadataProviders.Musicbrainz);
             if (mbid == null)
@@ -67,7 +71,7 @@ namespace MediaBrowser.Controller.Providers.Music
                 return false;
             }
 
-            item.SetImage(ImageType.Primary, await Kernel.Instance.ProviderManager.DownloadAndSaveImage(item, cover, "folder.jpg", FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+            item.SetImage(ImageType.Primary, await _providerManager.DownloadAndSaveImage(item, cover, "folder.jpg", FanArtResourcePool, cancellationToken).ConfigureAwait(false));
             return true;
         }
     }

@@ -156,13 +156,13 @@ namespace MediaBrowser.ServerApplication
             {
                 CompositionRoot = new ApplicationHost();
 
-                var win = new MainWindow(CompositionRoot.LogManager, CompositionRoot, CompositionRoot.ServerConfigurationManager);
-
                 Logger = CompositionRoot.LogManager.GetLogger("App");
 
-                win.Show();
-
                 await CompositionRoot.Init();
+
+                var win = new MainWindow(CompositionRoot.LogManager, CompositionRoot, CompositionRoot.ServerConfigurationManager, CompositionRoot.UserManager, CompositionRoot.LibraryManager, CompositionRoot.JsonSerializer);
+
+                win.Show();
             }
             catch (Exception ex)
             {

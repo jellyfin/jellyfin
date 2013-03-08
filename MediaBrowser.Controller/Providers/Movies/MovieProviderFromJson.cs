@@ -15,8 +15,8 @@ namespace MediaBrowser.Controller.Providers.Movies
     /// </summary>
     public class MovieProviderFromJson : MovieDbProvider
     {
-        public MovieProviderFromJson(ILogManager logManager, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IHttpClient httpClient) : 
-            base(logManager, configurationManager, jsonSerializer, httpClient)
+        public MovieProviderFromJson(ILogManager logManager, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IHttpClient httpClient, IProviderManager providerManager)
+            : base(logManager, configurationManager, jsonSerializer, httpClient, providerManager)
         {
         }
 
@@ -79,7 +79,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        protected override Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             // Since we don't have anything truly async, and since deserializing can be expensive, create a task to force parallelism
             return Task.Run(() =>

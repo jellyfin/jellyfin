@@ -16,9 +16,12 @@ namespace MediaBrowser.Controller.Providers.Music
     {
         private static readonly Task<string> BlankId = Task.FromResult("0000");
 
-        public LastfmAlbumProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager)
+        private readonly IProviderManager _providerManager;
+        
+        public LastfmAlbumProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
             : base(jsonSerializer, httpClient, logManager, configurationManager)
         {
+            _providerManager = providerManager;
             LocalMetaFileName = LastfmHelper.LocalAlbumMetaFileName;
         }
 
@@ -62,7 +65,7 @@ namespace MediaBrowser.Controller.Providers.Music
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    await Kernel.Instance.FileSystemManager.SaveToLibraryFilesystem(item, Path.Combine(item.MetaLocation, LocalMetaFileName), ms, cancellationToken).ConfigureAwait(false);
+                    await _providerManager.SaveToLibraryFilesystem(item, Path.Combine(item.MetaLocation, LocalMetaFileName), ms, cancellationToken).ConfigureAwait(false);
                     
                 }
             }

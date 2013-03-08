@@ -25,8 +25,10 @@ namespace MediaBrowser.Controller.Providers.TV
         /// </summary>
         /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
+
+        private readonly IProviderManager _providerManager;
         
-        public RemoteSeasonProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager)
+        public RemoteSeasonProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
             : base(logManager, configurationManager)
         {
             if (httpClient == null)
@@ -34,6 +36,7 @@ namespace MediaBrowser.Controller.Providers.TV
                 throw new ArgumentNullException("httpClient");
             }
             HttpClient = httpClient;
+            _providerManager = providerManager;
         }
 
         /// <summary>
@@ -97,7 +100,7 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        protected override async Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -174,7 +177,7 @@ namespace MediaBrowser.Controller.Providers.TV
                                 try
                                 {
                                     if (n != null)
-                                        season.PrimaryImagePath = await Kernel.Instance.ProviderManager.DownloadAndSaveImage(season, TVUtils.BannerUrl + n.InnerText, "folder" + Path.GetExtension(n.InnerText), RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false);
+                                        season.PrimaryImagePath = await _providerManager.DownloadAndSaveImage(season, TVUtils.BannerUrl + n.InnerText, "folder" + Path.GetExtension(n.InnerText), RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false);
                                 }
                                 catch (HttpException)
                                 {
@@ -197,8 +200,7 @@ namespace MediaBrowser.Controller.Providers.TV
                                     try
                                     {
                                         var bannerImagePath =
-                                            await
-                                            Kernel.Instance.ProviderManager.DownloadAndSaveImage(season,
+                                            await _providerManager.DownloadAndSaveImage(season,
                                                                                              TVUtils.BannerUrl + n.InnerText,
                                                                                              "banner" +
                                                                                              Path.GetExtension(n.InnerText),
@@ -229,7 +231,7 @@ namespace MediaBrowser.Controller.Providers.TV
                                     try
                                     {
                                         if (season.BackdropImagePaths == null) season.BackdropImagePaths = new List<string>();
-                                        season.BackdropImagePaths.Add(await Kernel.Instance.ProviderManager.DownloadAndSaveImage(season, TVUtils.BannerUrl + n.InnerText, "backdrop" + Path.GetExtension(n.InnerText), RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false));
+                                        season.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(season, TVUtils.BannerUrl + n.InnerText, "backdrop" + Path.GetExtension(n.InnerText), RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false));
                                     }
                                     catch (HttpException)
                                     {
@@ -257,8 +259,7 @@ namespace MediaBrowser.Controller.Providers.TV
                                         try
                                         {
                                             season.BackdropImagePaths.Add(
-                                                await
-                                                Kernel.Instance.ProviderManager.DownloadAndSaveImage(season,
+                                                await _providerManager.DownloadAndSaveImage(season,
                                                                                                  TVUtils.BannerUrl +
                                                                                                  n.InnerText,
                                                                                                  "backdrop" +

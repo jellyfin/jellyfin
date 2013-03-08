@@ -93,7 +93,7 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected string GetOutputFilePath(StreamState state)
         {
-            var folder = ApplicationPaths.FFMpegStreamCachePath;
+            var folder = ApplicationPaths.EncodedMediaCachePath;
             return Path.Combine(folder, GetCommandLineArguments("dummy\\dummy", state).GetMD5() + GetOutputFileExtension(state).ToLower());
         }
 

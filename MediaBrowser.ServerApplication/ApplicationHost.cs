@@ -2,18 +2,24 @@
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Constants;
-using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Implementations;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Localization;
+using MediaBrowser.Controller.MediaInfo;
+using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Updates;
+using MediaBrowser.Controller.Weather;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
@@ -23,7 +29,9 @@ using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Implementations.BdInfo;
 using MediaBrowser.Server.Implementations.Configuration;
 using MediaBrowser.Server.Implementations.HttpServer;
+using MediaBrowser.Server.Implementations.IO;
 using MediaBrowser.Server.Implementations.Library;
+using MediaBrowser.Server.Implementations.Providers;
 using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Udp;
 using MediaBrowser.Server.Implementations.Updates;
@@ -78,23 +86,73 @@ namespace MediaBrowser.ServerApplication
             return new ServerConfigurationManager(ApplicationPaths, LogManager, XmlSerializer);
         }
 
+        /// <summary>
+        /// Gets or sets the installation manager.
+        /// </summary>
+        /// <value>The installation manager.</value>
         private IInstallationManager InstallationManager { get; set; }
+        /// <summary>
+        /// Gets or sets the server manager.
+        /// </summary>
+        /// <value>The server manager.</value>
         private IServerManager ServerManager { get; set; }
-
+        /// <summary>
+        /// Gets or sets the user manager.
+        /// </summary>
+        /// <value>The user manager.</value>
+        public IUserManager UserManager { get; set; }
+        /// <summary>
+        /// Gets or sets the library manager.
+        /// </summary>
+        /// <value>The library manager.</value>
+        internal ILibraryManager LibraryManager { get; set; }
+        /// <summary>
+        /// Gets or sets the directory watchers.
+        /// </summary>
+        /// <value>The directory watchers.</value>
+        private IDirectoryWatchers DirectoryWatchers { get; set; }
+        /// <summary>
+        /// Gets or sets the provider manager.
+        /// </summary>
+        /// <value>The provider manager.</value>
+        private IProviderManager ProviderManager { get; set; }
+        /// <summary>
+        /// Gets or sets the zip client.
+        /// </summary>
+        /// <value>The zip client.</value>
+        private IZipClient ZipClient { get; set; }
+        /// <summary>
+        /// Gets or sets the HTTP server.
+        /// </summary>
+        /// <value>The HTTP server.</value>
+        private IHttpServer HttpServer { get; set; }
+ 
+        /// <summary>
+        /// Inits this instance.
+        /// </summary>
+        /// <returns>Task.</returns>
         public override async Task Init()
         {
             await base.Init().ConfigureAwait(false);
 
-            await ServerKernel.Init().ConfigureAwait(false);
+            Task.Run(async () =>
+            {
+                await ServerKernel.LoadRepositories(ServerConfigurationManager).ConfigureAwait(false);
+
+                DirectoryWatchers.Start();
+
+                Parallel.ForEach(GetExports<IServerEntryPoint>(), entryPoint => entryPoint.Run());
+            });
         }
 
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
+        /// <returns>Task.</returns>
         protected override async Task RegisterResources()
         {
-            ServerKernel = new Kernel(this, XmlSerializer, LogManager, ServerConfigurationManager);
-            
+            ServerKernel = new Kernel(ServerConfigurationManager);
+
             await base.RegisterResources().ConfigureAwait(false);
 
             RegisterSingleInstance<IServerApplicationHost>(this);
@@ -108,20 +166,66 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<IIsoManager>(new PismoIsoManager(Logger));
             RegisterSingleInstance<IBlurayExaminer>(new BdInfoExaminer());
-            RegisterSingleInstance<IZipClient>(new DotNetZipClient());
-            RegisterSingleInstance(ServerFactory.CreateServer(this, ProtobufSerializer, Logger, "Media Browser", "index.html"), false);
+
+            ZipClient = new DotNetZipClient();
+            RegisterSingleInstance(ZipClient);
+
+            HttpServer = ServerFactory.CreateServer(this, ProtobufSerializer, Logger, "Media Browser", "index.html");
+            RegisterSingleInstance(HttpServer, false);
 
             ServerManager = new ServerManager(this, NetworkManager, JsonSerializer, Logger, ServerConfigurationManager, ServerKernel);
             RegisterSingleInstance(ServerManager);
 
-            var userManager = new UserManager(ServerKernel, Logger, ServerConfigurationManager);
+            UserManager = new UserManager(ServerKernel, Logger, ServerConfigurationManager);
+            RegisterSingleInstance(UserManager);
 
-            RegisterSingleInstance<IUserManager>(userManager);
-
-            RegisterSingleInstance<ILibraryManager>(new LibraryManager(ServerKernel, Logger, TaskManager, userManager, ServerConfigurationManager));
+            LibraryManager = new LibraryManager(ServerKernel, Logger, TaskManager, UserManager, ServerConfigurationManager);
+            RegisterSingleInstance(LibraryManager);
 
             InstallationManager = new InstallationManager(HttpClient, PackageManager, JsonSerializer, Logger, this);
             RegisterSingleInstance(InstallationManager);
+
+            DirectoryWatchers = new DirectoryWatchers(LogManager, TaskManager, LibraryManager, ServerConfigurationManager);
+            RegisterSingleInstance(DirectoryWatchers);
+
+            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, DirectoryWatchers, LogManager);
+            RegisterSingleInstance(ProviderManager);
+
+            SetKernelProperties();
+            SetStaticProperties();
+        }
+
+        /// <summary>
+        /// Sets the kernel properties.
+        /// </summary>
+        private void SetKernelProperties()
+        {
+            ServerKernel.FFMpegManager = new FFMpegManager(ServerKernel, ZipClient, JsonSerializer, ProtobufSerializer, LogManager, ApplicationPaths);
+            ServerKernel.ImageManager = new ImageManager(ServerKernel, ProtobufSerializer, LogManager.GetLogger("ImageManager"), ApplicationPaths);
+
+            ServerKernel.UserDataRepositories = GetExports<IUserDataRepository>();
+            ServerKernel.UserRepositories = GetExports<IUserRepository>();
+            ServerKernel.DisplayPreferencesRepositories = GetExports<IDisplayPreferencesRepository>();
+            ServerKernel.ItemRepositories = GetExports<IItemRepository>();
+            ServerKernel.WeatherProviders = GetExports<IWeatherProvider>();
+            ServerKernel.ImageEnhancers = GetExports<IImageEnhancer>().OrderBy(e => e.Priority).ToArray();
+            ServerKernel.StringFiles = GetExports<LocalizedStringData>();
+        }
+
+        /// <summary>
+        /// Dirty hacks
+        /// </summary>
+        private void SetStaticProperties()
+        {
+            // For now there's no real way to inject these properly
+            BaseItem.Logger = LogManager.GetLogger("BaseItem");
+            BaseItem.ConfigurationManager = ServerConfigurationManager;
+            BaseItem.LibraryManager = LibraryManager;
+            BaseItem.ProviderManager = ProviderManager;
+            User.XmlSerializer = XmlSerializer;
+            User.UserManager = UserManager;
+            Ratings.ConfigurationManager = ServerConfigurationManager;
+            LocalizedStrings.ApplicationPaths = ApplicationPaths;
         }
 
         /// <summary>
@@ -131,12 +235,14 @@ namespace MediaBrowser.ServerApplication
         {
             base.FindParts();
 
-            Resolve<IHttpServer>().Init(GetExports<IRestfulService>(false));
-            Resolve<IServerManager>().AddWebSocketListeners(GetExports<IWebSocketListener>(false));
+            HttpServer.Init(GetExports<IRestfulService>(false));
 
-            Resolve<IServerManager>().Start();
+            ServerManager.AddWebSocketListeners(GetExports<IWebSocketListener>(false));
+            ServerManager.Start();
 
-            Resolve<ILibraryManager>().AddParts(GetExports<IResolverIgnoreRule>(), GetExports<IVirtualFolderCreator>(), GetExports<IItemResolver>(), GetExports<IIntroProvider>());
+            LibraryManager.AddParts(GetExports<IResolverIgnoreRule>(), GetExports<IVirtualFolderCreator>(), GetExports<IItemResolver>(), GetExports<IIntroProvider>());
+
+            ProviderManager.AddMetadataProviders(GetExports<BaseMetadataProvider>().OrderBy(e => e.Priority).ToArray());
         }
 
         /// <summary>
@@ -164,9 +270,8 @@ namespace MediaBrowser.ServerApplication
         /// <returns>Task{CheckForUpdateResult}.</returns>
         public async override Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var pkgManager = Resolve<IPackageManager>();
-            var availablePackages = await pkgManager.GetAvailablePackages(CancellationToken.None).ConfigureAwait(false);
-            var version = Resolve<IInstallationManager>().GetLatestCompatibleVersion(availablePackages, Constants.MBServerPkgName, ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
+            var availablePackages = await PackageManager.GetAvailablePackages(CancellationToken.None).ConfigureAwait(false);
+            var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, Constants.MBServerPkgName, ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
 
             return version != null ? new CheckForUpdateResult { AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version } :
                        new CheckForUpdateResult { AvailableVersion = ApplicationVersion, IsUpdateAvailable = false };

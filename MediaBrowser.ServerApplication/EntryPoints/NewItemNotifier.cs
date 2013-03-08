@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Controls.Primitives;
 
-namespace MediaBrowser.ServerApplication
+namespace MediaBrowser.ServerApplication.EntryPoints
 {
     /// <summary>
     /// Class NewItemNotifier

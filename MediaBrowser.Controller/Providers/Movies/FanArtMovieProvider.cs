@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.Providers.Movies
     /// <summary>
     /// Class FanArtMovieProvider
     /// </summary>
-    class FanArtMovieProvider : FanartBaseProvider
+    class FanArtMovieProvider : FanartBaseProvider, IDisposable
     {
         /// <summary>
         /// The fan art
@@ -32,6 +32,8 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
 
+        private readonly IProviderManager _providerManager;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="FanArtMovieProvider" /> class.
         /// </summary>
@@ -39,7 +41,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public FanArtMovieProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager)
+        public FanArtMovieProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
             : base(logManager, configurationManager)
         {
             if (httpClient == null)
@@ -47,19 +49,19 @@ namespace MediaBrowser.Controller.Providers.Movies
                 throw new ArgumentNullException("httpClient");
             }
             HttpClient = httpClient;
+            _providerManager = providerManager;
         }
 
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected override void Dispose(bool dispose)
+        protected virtual void Dispose(bool dispose)
         {
             if (dispose)
             {
                 FanArtResourcePool.Dispose();
             }
-            base.Dispose(dispose);
         }
         
         /// <summary>
@@ -103,7 +105,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        protected override async Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -147,7 +149,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                             Logger.Debug("FanArtProvider getting ClearLogo for " + movie.Name);
                             try
                             {
-                                movie.SetImage(ImageType.Logo, await Kernel.Instance.ProviderManager.DownloadAndSaveImage(movie, path, LOGO_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                movie.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(movie, path, LOGO_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {
@@ -173,7 +175,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                             Logger.Debug("FanArtProvider getting ClearArt for " + movie.Name);
                             try
                             {
-                                movie.SetImage(ImageType.Art, await Kernel.Instance.ProviderManager.DownloadAndSaveImage(movie, path, ART_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                movie.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(movie, path, ART_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {
@@ -196,7 +198,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                             Logger.Debug("FanArtProvider getting DiscArt for " + movie.Name);
                             try
                             {
-                                movie.SetImage(ImageType.Disc, await Kernel.Instance.ProviderManager.DownloadAndSaveImage(movie, path, DISC_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                movie.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(movie, path, DISC_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {
@@ -220,7 +222,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                             Logger.Debug("FanArtProvider getting Banner for " + movie.Name);
                             try
                             {
-                                movie.SetImage(ImageType.Banner, await Kernel.Instance.ProviderManager.DownloadAndSaveImage(movie, path, BANNER_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                movie.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(movie, path, BANNER_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {
@@ -244,7 +246,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                             Logger.Debug("FanArtProvider getting Banner for " + movie.Name);
                             try
                             {
-                                movie.SetImage(ImageType.Thumb, await Kernel.Instance.ProviderManager.DownloadAndSaveImage(movie, path, THUMB_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                movie.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(movie, path, THUMB_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {
@@ -259,6 +261,11 @@ namespace MediaBrowser.Controller.Providers.Movies
             }
             SetLastRefreshed(movie, DateTime.UtcNow);
             return true;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

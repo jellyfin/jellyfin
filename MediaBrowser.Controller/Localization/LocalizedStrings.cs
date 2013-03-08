@@ -15,7 +15,7 @@ namespace MediaBrowser.Controller.Localization
     /// </summary>
     public class LocalizedStrings
     {
-        internal static IServerApplicationPaths ApplicationPaths;
+        public static IServerApplicationPaths ApplicationPaths;
         
         /// <summary>
         /// The base prefix

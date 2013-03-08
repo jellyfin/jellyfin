@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.ScheduledTasks;
 using MediaBrowser.Model.Logging;
@@ -12,35 +13,35 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.IO
+namespace MediaBrowser.Server.Implementations.IO
 {
     /// <summary>
     /// Class DirectoryWatchers
     /// </summary>
-    public class DirectoryWatchers : IDisposable
+    public class DirectoryWatchers : IDirectoryWatchers
     {
         /// <summary>
         /// The file system watchers
         /// </summary>
-        private ConcurrentBag<FileSystemWatcher> FileSystemWatchers = new ConcurrentBag<FileSystemWatcher>();
+        private ConcurrentBag<FileSystemWatcher> _fileSystemWatchers = new ConcurrentBag<FileSystemWatcher>();
         /// <summary>
         /// The update timer
         /// </summary>
-        private Timer updateTimer;
+        private Timer _updateTimer;
         /// <summary>
         /// The affected paths
         /// </summary>
-        private readonly ConcurrentDictionary<string, string> affectedPaths = new ConcurrentDictionary<string, string>();
+        private readonly ConcurrentDictionary<string, string> _affectedPaths = new ConcurrentDictionary<string, string>();
 
         /// <summary>
         /// A dynamic list of paths that should be ignored.  Added to during our own file sytem modifications.
         /// </summary>
-        private readonly ConcurrentDictionary<string,string> TempIgnoredPaths = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string,string> _tempIgnoredPaths = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// The timer lock
         /// </summary>
-        private readonly object timerLock = new object();
+        private readonly object _timerLock = new object();
 
         /// <summary>
         /// Add the path to our temporary ignore list.  Use when writing to a path within our listening scope.
@@ -48,7 +49,7 @@ namespace MediaBrowser.Controller.IO
         /// <param name="path">The path.</param>
         public void TemporarilyIgnore(string path)
         {
-            TempIgnoredPaths[path] = path;
+            _tempIgnoredPaths[path] = path;
         }
 
         /// <summary>
@@ -58,7 +59,7 @@ namespace MediaBrowser.Controller.IO
         public void RemoveTempIgnore(string path)
         {
             string val;
-            TempIgnoredPaths.TryRemove(path, out val);
+            _tempIgnoredPaths.TryRemove(path, out val);
         }
 
         /// <summary>
@@ -95,7 +96,7 @@ namespace MediaBrowser.Controller.IO
         /// <summary>
         /// Starts this instance.
         /// </summary>
-        internal void Start()
+        public void Start()
         {
             LibraryManager.LibraryChanged += Instance_LibraryChanged;
 
@@ -178,7 +179,7 @@ namespace MediaBrowser.Controller.IO
                 try
                 {
                     newWatcher.EnableRaisingEvents = true;
-                    FileSystemWatchers.Add(newWatcher);
+                    _fileSystemWatchers.Add(newWatcher);
 
                     Logger.Info("Watching directory " + path);
                 }
@@ -199,7 +200,7 @@ namespace MediaBrowser.Controller.IO
         /// <param name="path">The path.</param>
         private void StopWatchingPath(string path)
         {
-            var watcher = FileSystemWatchers.FirstOrDefault(f => f.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
+            var watcher = _fileSystemWatchers.FirstOrDefault(f => f.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
 
             if (watcher != null)
             {
@@ -218,18 +219,18 @@ namespace MediaBrowser.Controller.IO
             watcher.EnableRaisingEvents = false;
             watcher.Dispose();
 
-            var watchers = FileSystemWatchers.ToList();
+            var watchers = _fileSystemWatchers.ToList();
 
             watchers.Remove(watcher);
 
-            FileSystemWatchers = new ConcurrentBag<FileSystemWatcher>(watchers);
+            _fileSystemWatchers = new ConcurrentBag<FileSystemWatcher>(watchers);
         }
 
         /// <summary>
         /// Handles the LibraryChanged event of the Kernel
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Library.ChildrenChangedEventArgs" /> instance containing the event data.</param>
+        /// <param name="e">The <see cref="MediaBrowser.Controller.Library.ChildrenChangedEventArgs" /> instance containing the event data.</param>
         void Instance_LibraryChanged(object sender, ChildrenChangedEventArgs e)
         {
             if (e.Folder is AggregateFolder && e.HasAddOrRemoveChange)
@@ -316,7 +317,7 @@ namespace MediaBrowser.Controller.IO
             {
                 return;
             }
-            if (TempIgnoredPaths.ContainsKey(e.FullPath))
+            if (_tempIgnoredPaths.ContainsKey(e.FullPath))
             {
                 Logger.Info("Watcher requested to ignore change to " + e.FullPath);
                 return;
@@ -327,17 +328,17 @@ namespace MediaBrowser.Controller.IO
             //Since we're watching created, deleted and renamed we always want the parent of the item to be the affected path
             var affectedPath = e.FullPath;
 
-            affectedPaths.AddOrUpdate(affectedPath, affectedPath, (key, oldValue) => affectedPath);
+            _affectedPaths.AddOrUpdate(affectedPath, affectedPath, (key, oldValue) => affectedPath);
 
-            lock (timerLock)
+            lock (_timerLock)
             {
-                if (updateTimer == null)
+                if (_updateTimer == null)
                 {
-                    updateTimer = new Timer(TimerStopped, null, TimeSpan.FromSeconds(ConfigurationManager.Configuration.FileWatcherDelay), TimeSpan.FromMilliseconds(-1));
+                    _updateTimer = new Timer(TimerStopped, null, TimeSpan.FromSeconds(ConfigurationManager.Configuration.FileWatcherDelay), TimeSpan.FromMilliseconds(-1));
                 }
                 else
                 {
-                    updateTimer.Change(TimeSpan.FromSeconds(ConfigurationManager.Configuration.FileWatcherDelay), TimeSpan.FromMilliseconds(-1));
+                    _updateTimer.Change(TimeSpan.FromSeconds(ConfigurationManager.Configuration.FileWatcherDelay), TimeSpan.FromMilliseconds(-1));
                 }
             }
         }
@@ -348,24 +349,24 @@ namespace MediaBrowser.Controller.IO
         /// <param name="stateInfo">The state info.</param>
         private async void TimerStopped(object stateInfo)
         {
-            lock (timerLock)
+            lock (_timerLock)
             {
                 // Extend the timer as long as any of the paths are still being written to.
-                if (affectedPaths.Any(p => IsFileLocked(p.Key)))
+                if (_affectedPaths.Any(p => IsFileLocked(p.Key)))
                 {
                     Logger.Info("Timer extended.");
-                    updateTimer.Change(TimeSpan.FromSeconds(ConfigurationManager.Configuration.FileWatcherDelay), TimeSpan.FromMilliseconds(-1));
+                    _updateTimer.Change(TimeSpan.FromSeconds(ConfigurationManager.Configuration.FileWatcherDelay), TimeSpan.FromMilliseconds(-1));
                     return;
                 }
 
                 Logger.Info("Timer stopped.");
 
-                updateTimer.Dispose();
-                updateTimer = null;
+                _updateTimer.Dispose();
+                _updateTimer = null;
             }
 
-            var paths = affectedPaths.Keys.ToList();
-            affectedPaths.Clear();
+            var paths = _affectedPaths.Keys.ToList();
+            _affectedPaths.Clear();
 
             await ProcessPathChanges(paths).ConfigureAwait(false);
         }
@@ -493,29 +494,29 @@ namespace MediaBrowser.Controller.IO
         /// <summary>
         /// Stops this instance.
         /// </summary>
-        private void Stop()
+        public void Stop()
         {
             LibraryManager.LibraryChanged -= Instance_LibraryChanged;
 
             FileSystemWatcher watcher;
 
-            while (FileSystemWatchers.TryTake(out watcher))
+            while (_fileSystemWatchers.TryTake(out watcher))
             {
                 watcher.Changed -= watcher_Changed;
                 watcher.EnableRaisingEvents = false;
                 watcher.Dispose();
             }
 
-            lock (timerLock)
+            lock (_timerLock)
             {
-                if (updateTimer != null)
+                if (_updateTimer != null)
                 {
-                    updateTimer.Dispose();
-                    updateTimer = null;
+                    _updateTimer.Dispose();
+                    _updateTimer = null;
                 }
             } 
 
-            affectedPaths.Clear();
+            _affectedPaths.Clear();
         }
 
         /// <summary>

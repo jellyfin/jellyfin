@@ -302,7 +302,7 @@ namespace MediaBrowser.Server.Implementations
         /// Gets the FF MPEG stream cache path.
         /// </summary>
         /// <value>The FF MPEG stream cache path.</value>
-        public string FFMpegStreamCachePath
+        public string EncodedMediaCachePath
         {
             get
             {
@@ -343,6 +343,32 @@ namespace MediaBrowser.Server.Implementations
                 }
 
                 return _mediaToolsPath;
+            }
+        }
+
+        /// <summary>
+        /// The _images data path
+        /// </summary>
+        private string _downloadedImagesDataPath;
+        /// <summary>
+        /// Gets the images data path.
+        /// </summary>
+        /// <value>The images data path.</value>
+        public string DownloadedImagesDataPath
+        {
+            get
+            {
+                if (_downloadedImagesDataPath == null)
+                {
+                    _downloadedImagesDataPath = Path.Combine(DataPath, "remote-images");
+
+                    if (!Directory.Exists(_downloadedImagesDataPath))
+                    {
+                        Directory.CreateDirectory(_downloadedImagesDataPath);
+                    }
+                }
+
+                return _downloadedImagesDataPath;
             }
         }
     }

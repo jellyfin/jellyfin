@@ -26,7 +26,9 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// </summary>
         protected const string MetaFileName = "MBPerson.json";
 
-        public TmdbPersonProvider(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogManager logManager, IServerConfigurationManager configurationManager)
+        protected readonly IProviderManager ProviderManager;
+        
+        public TmdbPersonProvider(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
             : base(logManager, configurationManager)
         {
             if (jsonSerializer == null)
@@ -39,6 +41,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             }
             HttpClient = httpClient;
             JsonSerializer = jsonSerializer;
+            ProviderManager = providerManager;
         }
 
         /// <summary>
@@ -83,7 +86,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        protected override async Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -209,7 +212,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                 JsonSerializer.SerializeToStream(searchResult, memoryStream);
 
-                await Kernel.Instance.FileSystemManager.SaveToLibraryFilesystem(person, Path.Combine(person.MetaLocation, MetaFileName), memoryStream, cancellationToken);
+                await ProviderManager.SaveToLibraryFilesystem(person, Path.Combine(person.MetaLocation, MetaFileName), memoryStream, cancellationToken);
 
                 Logger.Debug("TmdbPersonProvider downloaded and saved information for {0}", person.Name);
             }
@@ -288,7 +291,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 }
                 if (profile != null)
                 {
-                    var tmdbSettings = await Kernel.Instance.MetadataProviders.OfType<MovieDbProvider>().First().TmdbSettings.ConfigureAwait(false);
+                    var tmdbSettings = await MovieDbProvider.Current.TmdbSettings.ConfigureAwait(false);
 
                     var img = await DownloadAndSaveImage(person, tmdbSettings.images.base_url + ConfigurationManager.Configuration.TmdbFetchedProfileSize + profile.File_Path,
                                              "folder" + Path.GetExtension(profile.File_Path), cancellationToken).ConfigureAwait(false);
@@ -319,7 +322,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             {
                 using (var sourceStream = await HttpClient.GetMemoryStream(source, MovieDbProvider.Current.MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
                 {
-                    await Kernel.Instance.FileSystemManager.SaveToLibraryFilesystem(item, localPath, sourceStream, cancellationToken).ConfigureAwait(false);
+                    await ProviderManager.SaveToLibraryFilesystem(item, localPath, sourceStream, cancellationToken).ConfigureAwait(false);
 
                     Logger.Debug("TmdbPersonProvider downloaded and saved image for {0}", item.Name);
                 }

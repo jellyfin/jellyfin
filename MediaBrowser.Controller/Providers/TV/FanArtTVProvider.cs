@@ -25,7 +25,9 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
 
-        public FanArtTvProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager)
+        private readonly IProviderManager _providerManager;
+        
+        public FanArtTvProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
             : base(logManager, configurationManager)
         {
             if (httpClient == null)
@@ -33,6 +35,7 @@ namespace MediaBrowser.Controller.Providers.TV
                 throw new ArgumentNullException("httpClient");
             }
             HttpClient = httpClient;
+            _providerManager = providerManager;
         }
 
         public override bool Supports(BaseItem item)
@@ -53,7 +56,7 @@ namespace MediaBrowser.Controller.Providers.TV
                 || (!thumbExists && ConfigurationManager.Configuration.DownloadSeriesImages.Thumb);
         }
 
-        protected override async Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -90,7 +93,7 @@ namespace MediaBrowser.Controller.Providers.TV
                             Logger.Debug("FanArtProvider getting ClearLogo for " + series.Name);
                             try
                             {
-                                series.SetImage(ImageType.Logo, await Kernel.Instance.ProviderManager.DownloadAndSaveImage(series, path, LOGO_FILE, FanArtMovieProvider.Current.FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                series.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(series, path, LOGO_FILE, FanArtMovieProvider.Current.FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {
@@ -114,7 +117,7 @@ namespace MediaBrowser.Controller.Providers.TV
                             Logger.Debug("FanArtProvider getting ClearArt for " + series.Name);
                             try
                             {
-                                series.SetImage(ImageType.Art, await Kernel.Instance.ProviderManager.DownloadAndSaveImage(series, path, ART_FILE, FanArtMovieProvider.Current.FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                series.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(series, path, ART_FILE, FanArtMovieProvider.Current.FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {
@@ -138,7 +141,7 @@ namespace MediaBrowser.Controller.Providers.TV
                             Logger.Debug("FanArtProvider getting ThumbArt for " + series.Name);
                             try
                             {
-                                series.SetImage(ImageType.Disc, await Kernel.Instance.ProviderManager.DownloadAndSaveImage(series, path, THUMB_FILE, FanArtMovieProvider.Current.FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                series.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(series, path, THUMB_FILE, FanArtMovieProvider.Current.FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {

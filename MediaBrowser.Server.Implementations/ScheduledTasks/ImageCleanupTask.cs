@@ -27,17 +27,21 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// </summary>
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
+        private readonly IServerApplicationPaths _appPaths;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageCleanupTask" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
-        public ImageCleanupTask(Kernel kernel, ILogger logger, ILibraryManager libraryManager)
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="appPaths">The app paths.</param>
+        public ImageCleanupTask(Kernel kernel, ILogger logger, ILibraryManager libraryManager, IServerApplicationPaths appPaths)
         {
             _kernel = kernel;
             _logger = logger;
             _libraryManager = libraryManager;
+            _appPaths = appPaths;
         }
 
         /// <summary>
@@ -65,7 +69,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
             // First gather all image files
             var files = GetFiles(_kernel.FFMpegManager.AudioImagesDataPath)
                 .Concat(GetFiles(_kernel.FFMpegManager.VideoImagesDataPath))
-                .Concat(GetFiles(_kernel.ProviderManager.ImagesDataPath))
+                .Concat(GetFiles(_appPaths.DownloadedImagesDataPath))
                 .ToList();
 
             // Now gather all items

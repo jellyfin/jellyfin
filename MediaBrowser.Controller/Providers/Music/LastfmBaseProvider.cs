@@ -196,7 +196,7 @@ namespace MediaBrowser.Controller.Providers.Music
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task{System.Boolean}.</returns>
-        protected override async Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             if (item.DontFetchMeta)
             {
