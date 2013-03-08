@@ -30,7 +30,7 @@ namespace MediaBrowser.Api.Library
         /// Gets or sets a value indicating whether this instance has internet provider.
         /// </summary>
         /// <value><c>true</c> if this instance has internet provider; otherwise, <c>false</c>.</value>
-        [ApiMember(Name = "HasInternetProvider", Description = "Optional filter by item types that have internet providers", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "HasInternetProvider", Description = "Optional filter by item types that have internet providers. true/false", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool HasInternetProvider { get; set; }
     }
 
