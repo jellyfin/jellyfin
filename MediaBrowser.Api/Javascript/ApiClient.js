@@ -1066,7 +1066,14 @@ var ApiClient = {
         if (password) {
             postData.password = password;
         }
-        return $.post(url, postData);
+        
+        return $.ajax({
+            type: "POST",
+            url: url,
+            data: JSON.stringify(postData),
+            dataType: "json",
+            contentType: "application/json"
+        });
     },
 
     /**
