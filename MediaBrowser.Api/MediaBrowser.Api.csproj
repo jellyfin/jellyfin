@@ -81,7 +81,6 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
-    <Compile Include="ApiService.cs" />
     <Compile Include="EnvironmentService.cs" />
     <Compile Include="Images\ImageRequest.cs" />
     <Compile Include="Images\ImageService.cs" />
@@ -105,7 +104,7 @@
     <Compile Include="PluginService.cs" />
     <Compile Include="ScheduledTasks\ScheduledTaskService.cs" />
     <Compile Include="ScheduledTasks\ScheduledTasksWebSocketListener.cs" />
-    <Compile Include="ServerEntryPoint.cs" />
+    <Compile Include="ApiEntryPoint.cs" />
     <Compile Include="SystemService.cs" />
     <Compile Include="UserLibrary\BaseItemsByNameService.cs" />
     <Compile Include="UserLibrary\GenresService.cs" />

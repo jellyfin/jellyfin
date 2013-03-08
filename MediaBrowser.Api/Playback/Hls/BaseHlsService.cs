@@ -77,7 +77,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
             else
             {
-                ServerEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
+                ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
             }
 
             // Get the current playlist text and convert to bytes
@@ -94,7 +94,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
             finally
             {
-                ServerEntryPoint.Instance.OnTranscodeEndRequest(playlist, TranscodingJobType.Hls);
+                ApiEntryPoint.Instance.OnTranscodeEndRequest(playlist, TranscodingJobType.Hls);
             }
         }
 

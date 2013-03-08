@@ -14,6 +14,7 @@ namespace MediaBrowser.Api
     /// Class GetCultures
     /// </summary>
     [Route("/Localization/Cultures", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets known cultures")]
     public class GetCultures : IReturn<List<CultureDto>>
     {
     }
@@ -22,6 +23,7 @@ namespace MediaBrowser.Api
     /// Class GetCountries
     /// </summary>
     [Route("/Localization/Countries", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets known countries")]
     public class GetCountries : IReturn<List<CountryInfo>>
     {
     }
@@ -30,6 +32,7 @@ namespace MediaBrowser.Api
     /// Class ParentalRatings
     /// </summary>
     [Route("/Localization/ParentalRatings", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets known parental ratings")]
     public class GetParentalRatings : IReturn<List<ParentalRating>>
     {
     }

@@ -16,12 +16,14 @@ namespace MediaBrowser.Api
     /// Class GetPackage
     /// </summary>
     [Route("/Packages/{Name}", "GET")]
+    [ServiceStack.ServiceHost.Api(("Gets a package, by name"))]
     public class GetPackage : IReturn<PackageInfo>
     {
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
+        [ApiMember(Name = "Name", Description = "The name of the package", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Name { get; set; }
     }
 
@@ -29,12 +31,14 @@ namespace MediaBrowser.Api
     /// Class GetPackages
     /// </summary>
     [Route("/Packages", "GET")]
+    [ServiceStack.ServiceHost.Api(("Gets available packages"))]
     public class GetPackages : IReturn<List<PackageInfo>>
     {
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
+        [ApiMember(Name = "PackageType", Description = "Optional package type filter (System/UserInstalled)", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public PackageType? PackageType { get; set; }
     }
 
@@ -42,12 +46,14 @@ namespace MediaBrowser.Api
     /// Class GetPackageVersionUpdates
     /// </summary>
     [Route("/Packages/Updates", "GET")]
+    [ServiceStack.ServiceHost.Api(("Gets available package updates for currently installed packages"))]
     public class GetPackageVersionUpdates : IReturn<List<PackageVersionInfo>>
     {
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
+        [ApiMember(Name = "PackageType", Description = "Package type filter (System/UserInstalled)", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public PackageType PackageType { get; set; }
     }
 
@@ -55,24 +61,28 @@ namespace MediaBrowser.Api
     /// Class InstallPackage
     /// </summary>
     [Route("/Packages/Installed/{Name}", "POST")]
+    [ServiceStack.ServiceHost.Api(("Installs a package"))]
     public class InstallPackage : IReturnVoid
     {
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
+        [ApiMember(Name = "Name", Description = "Package name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets the version.
         /// </summary>
         /// <value>The version.</value>
+        [ApiMember(Name = "Version", Description = "Optional version. Defaults to latest version.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Version { get; set; }
 
         /// <summary>
         /// Gets or sets the update class.
         /// </summary>
         /// <value>The update class.</value>
+        [ApiMember(Name = "UpdateClass", Description = "Optional update class (Dev, Beta, Release). Defaults to Release.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public PackageVersionClass UpdateClass { get; set; }
     }
 
@@ -80,12 +90,14 @@ namespace MediaBrowser.Api
     /// Class CancelPackageInstallation
     /// </summary>
     [Route("/Packages/Installing/{Id}", "DELETE")]
+    [ServiceStack.ServiceHost.Api(("Cancels a package installation"))]
     public class CancelPackageInstallation : IReturnVoid
     {
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Installation Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
         public Guid Id { get; set; }
     }
 
