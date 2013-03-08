@@ -22,7 +22,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the size of the page.
         /// </summary>
         /// <value>The size of the page.</value>
-        public int? PageSize { get; set; }
+        public int? Limit { get; set; }
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="GetItemsByName" /> is recursive.
         /// </summary>

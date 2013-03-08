@@ -1,6 +1,4 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using ServiceStack.ServiceHost;
 using System;
@@ -15,6 +13,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/Persons", "GET")]
     [Route("/Users/{UserId}/Items/Root/Persons", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets all persons from a given item, folder, or the entire library")]
     public class GetPersons : GetItemsByName
     {
         /// <summary>
