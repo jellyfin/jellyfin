@@ -1,9 +1,7 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using ServiceStack.Service;
-using ServiceStack.ServiceHost;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -12,7 +10,7 @@ namespace MediaBrowser.Api.Images
     /// <summary>
     /// Class ImageWriter
     /// </summary>
-    public class ImageWriter : IStreamWriter, IHasOptions
+    public class ImageWriter : IStreamWriter
     {
         /// <summary>
         /// Gets or sets the request.
@@ -33,11 +31,6 @@ namespace MediaBrowser.Api.Images
         /// The original image date modified
         /// </summary>
         public DateTime OriginalImageDateModified;
-        /// <summary>
-        /// Gets or sets the type of the content.
-        /// </summary>
-        /// <value>The type of the content.</value>
-        public string ContentType { get; set; }
 
         /// <summary>
         /// Writes to.
@@ -45,8 +38,6 @@ namespace MediaBrowser.Api.Images
         /// <param name="responseStream">The response stream.</param>
         public void WriteTo(Stream responseStream)
         {
-            Options["Content-Type"] = ContentType;
-
             var task = WriteToAsync(responseStream);
 
             Task.WaitAll(task);
@@ -62,19 +53,6 @@ namespace MediaBrowser.Api.Images
             return Kernel.Instance.ImageManager.ProcessImage(Item, Request.Type, Request.Index ?? 0, CropWhiteSpace,
                                                     OriginalImageDateModified, responseStream, Request.Width, Request.Height, Request.MaxWidth,
                                                     Request.MaxHeight, Request.Quality);
-        }
-
-        /// <summary>
-        /// The _options
-        /// </summary>
-        private readonly IDictionary<string, string> _options = new Dictionary<string, string> { };
-        /// <summary>
-        /// Gets the options.
-        /// </summary>
-        /// <value>The options.</value>
-        public IDictionary<string, string> Options
-        {
-            get { return _options; }
         }
     }
 }

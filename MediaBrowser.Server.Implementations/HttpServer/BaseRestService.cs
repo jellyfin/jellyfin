@@ -83,7 +83,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             var key = cacheKey.ToString("N");
 
-            var result = PreProcessCachedResult(cacheKey, key, lastDateModified, cacheDuration, string.Empty);
+            var result = PreProcessCachedResult(cacheKey, key, lastDateModified, cacheDuration);
 
             if (result != null)
             {
@@ -117,9 +117,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 throw new ArgumentNullException("factoryFn");
             }
 
+            Response.ContentType = contentType;
+            
             var key = cacheKey.ToString("N");
 
-            var result = PreProcessCachedResult(cacheKey, key, lastDateModified, cacheDuration, contentType);
+            var result = PreProcessCachedResult(cacheKey, key, lastDateModified, cacheDuration);
 
             if (result != null)
             {
@@ -183,7 +185,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             var key = cacheKey.ToString("N");
 
-            var result = PreProcessCachedResult(cacheKey, key, lastDateModified, cacheDuration, contentType);
+            Response.ContentType = contentType;
+            
+            var result = PreProcessCachedResult(cacheKey, key, lastDateModified, cacheDuration);
 
             if (result != null)
             {
@@ -278,9 +282,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="cacheKeyString">The cache key string.</param>
         /// <param name="lastDateModified">The last date modified.</param>
         /// <param name="cacheDuration">Duration of the cache.</param>
-        /// <param name="contentType">Type of the content.</param>
         /// <returns>System.Object.</returns>
-        private object PreProcessCachedResult(Guid cacheKey, string cacheKeyString, DateTime? lastDateModified, TimeSpan? cacheDuration, string contentType)
+        private object PreProcessCachedResult(Guid cacheKey, string cacheKeyString, DateTime? lastDateModified, TimeSpan? cacheDuration)
         {
             Response.AddHeader("ETag", cacheKeyString);
 
@@ -289,11 +292,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 AddAgeHeader(lastDateModified);
                 AddExpiresHeader(cacheKeyString, cacheDuration);
                 //ctx.Response.SendChunked = false;
-
-                if (!string.IsNullOrEmpty(contentType))
-                {
-                    Response.ContentType = contentType;
-                }
 
                 Response.StatusCode = 304;
 
