@@ -90,6 +90,7 @@ namespace MediaBrowser.ServerApplication
 
             UpdateButtons();
 
+            LoadLogWindow(null, EventArgs.Empty);
             _logManager.LoggerLoaded += LoadLogWindow;
             _configurationManager.ConfigurationUpdated += Instance_ConfigurationUpdated;
         }
