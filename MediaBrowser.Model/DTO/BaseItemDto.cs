@@ -558,6 +558,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets a value indicating whether this instance has menu image.
         /// </summary>
         /// <value><c>true</c> if this instance has menu image; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
         public bool HasMenuImage
         {
             get { return ImageTags != null && ImageTags.ContainsKey(ImageType.Menu); }

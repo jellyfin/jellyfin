@@ -12,7 +12,7 @@ namespace MediaBrowser.Api.Javascript
     /// Class GetJavascriptApiClient
     /// </summary>
     [Route("/JsApiClient.js", "GET")]
-    [ServiceStack.ServiceHost.Api(("Gets an api wrapper in Javascript"))]
+    [ServiceStack.ServiceHost.Api(("Gets an api wrapper written in Javascript"))]
     public class GetJavascriptApiClient
     {
         /// <summary>
