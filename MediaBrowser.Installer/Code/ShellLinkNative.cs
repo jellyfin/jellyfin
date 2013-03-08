@@ -19,8 +19,9 @@
 **************************************************************************/
 
 using System;
-using System.Text;
 using System.Runtime.InteropServices;
+using System.Text;
+using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
 namespace MediaBrowser.Installer.Code
 {
@@ -47,7 +48,7 @@ namespace MediaBrowser.Installer.Code
     SLGP_RAWPATH = 0x4
   }
 
-  [StructLayoutAttribute(LayoutKind.Sequential, CharSet=CharSet.Ansi)]
+  [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Ansi)]
   public struct WIN32_FIND_DATAA
   {
     public int dwFileAttributes;

@@ -33,10 +33,6 @@ namespace MediaBrowser.Model.Dto
         /// <summary>
         /// The item is resumable
         /// </summary>
-        IsResumable = 7,
-        /// <summary>
-        /// The item is recently played
-        /// </summary>
-        IsRecentlyPlayed = 8
+        IsResumable = 7
     }
 }

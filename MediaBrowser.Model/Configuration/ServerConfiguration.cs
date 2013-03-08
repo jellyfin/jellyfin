@@ -225,13 +225,6 @@ namespace MediaBrowser.Model.Configuration
         public int RecentItemDays { get; set; }
 
         /// <summary>
-        /// Gets or sets the recently played days.
-        /// </summary>
-        /// <value>The recently played days.</value>
-        [ProtoMember(35)]
-        public int RecentlyPlayedDays { get; set; }
-
-        /// <summary>
         /// Gets or sets the minimum percentage of an item that must be played in order for playstate to be updated.
         /// </summary>
         /// <value>The min resume PCT.</value>
@@ -291,7 +284,6 @@ namespace MediaBrowser.Model.Configuration
             FileWatcherDelay = 8;
 
             RecentItemDays = 14;
-            RecentlyPlayedDays = 14;
 
             EnableInternetProviders = true; //initial installs will need these
             InternetProviderExcludeTypes = new string[] { };
