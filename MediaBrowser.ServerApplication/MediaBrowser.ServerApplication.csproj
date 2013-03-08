@@ -368,6 +368,7 @@
     <PostBuildEvent>xcopy "$(SolutionDir)\packages\System.Data.SQLite.1.0.84.0\content\net40\x86\SQLite.Interop.dll" "$(TargetDir)" /y
 
 if $(ConfigurationName) == Release (
+rmdir "$(SolutionDir)..\Deploy\Server\System" /s /q
 mkdir "$(SolutionDir)..\Deploy\Server\System"
 xcopy "$(TargetDir)$(TargetFileName)" "$(SolutionDir)..\Deploy\Server\System\" /y
 xcopy "$(SolutionDir)Mediabrowser.Uninstaller\bin\Release\MediaBrowser.Uninstaller.exe.config" "$(SolutionDir)..\Deploy\Server\System\" /y
