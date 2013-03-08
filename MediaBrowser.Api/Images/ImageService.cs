@@ -28,6 +28,7 @@ namespace MediaBrowser.Api.Images
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
     }
 
@@ -43,6 +44,7 @@ namespace MediaBrowser.Api.Images
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
+        [ApiMember(Name = "Name", Description = "Person name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Name { get; set; }
     }
 
@@ -58,6 +60,7 @@ namespace MediaBrowser.Api.Images
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
+        [ApiMember(Name = "Name", Description = "Studio name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Name { get; set; }
     }
 
@@ -73,6 +76,7 @@ namespace MediaBrowser.Api.Images
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
+        [ApiMember(Name = "Name", Description = "Genre name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Name { get; set; }
     }
 
@@ -88,6 +92,7 @@ namespace MediaBrowser.Api.Images
         /// Gets or sets the year.
         /// </summary>
         /// <value>The year.</value>
+        [ApiMember(Name = "Year", Description = "Year", IsRequired = true, DataType = "int", ParameterType = "path", Verb = "GET")]
         public int Year { get; set; }
     }
 
@@ -103,6 +108,7 @@ namespace MediaBrowser.Api.Images
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public Guid Id { get; set; }
     }
 
@@ -118,6 +124,7 @@ namespace MediaBrowser.Api.Images
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
         public Guid Id { get; set; }
     }
 
@@ -130,6 +137,7 @@ namespace MediaBrowser.Api.Images
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public Guid Id { get; set; }
 
         /// <summary>
@@ -316,8 +324,7 @@ namespace MediaBrowser.Api.Images
                 Item = item,
                 Request = request,
                 CropWhiteSpace = request.Type == ImageType.Logo || request.Type == ImageType.Art,
-                OriginalImageDateModified = originalFileImageDateModified,
-                ContentType = contentType
+                OriginalImageDateModified = originalFileImageDateModified
 
             }, contentType);
         }
