@@ -33,6 +33,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
     }
 
@@ -54,6 +55,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the item id.
         /// </summary>
         /// <value>The item id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
     }
 
@@ -68,6 +70,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Id { get; set; }
     }
 
@@ -89,6 +92,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Id { get; set; }
     }
 
@@ -110,6 +114,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
         public string Id { get; set; }
     }
 
@@ -131,6 +136,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
         public string Id { get; set; }
     }
 
@@ -152,12 +158,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="UpdateUserItemRating" /> is likes.
         /// </summary>
         /// <value><c>true</c> if likes; otherwise, <c>false</c>.</value>
+        [ApiMember(Name = "Likes", Description = "Whether the user likes the item or not. true/false", IsRequired = true, DataType = "boolean", ParameterType = "query", Verb = "POST")]
         public bool Likes { get; set; }
     }
 
@@ -179,6 +187,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Id { get; set; }
     }
 
@@ -200,6 +209,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
         public string Id { get; set; }
     }
 
@@ -217,6 +227,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Id { get; set; }
     }
 
@@ -234,12 +245,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the position ticks.
         /// </summary>
         /// <value>The position ticks.</value>
+        [ApiMember(Name = "PositionTicks", Description = "Optional. The current position, in ticks. 1 tick = 10000 ms", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "DELETE")]
         public long? PositionTicks { get; set; }
     }
 
@@ -257,12 +270,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
         public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the position ticks.
         /// </summary>
         /// <value>The position ticks.</value>
+        [ApiMember(Name = "PositionTicks", Description = "Optional. The position, in ticks, where playback stopped. 1 tick = 10000 ms", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "DELETE")]
         public long? PositionTicks { get; set; }
     }
     
@@ -284,7 +299,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
     }
 
@@ -306,7 +321,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Movie Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "Id", Description = "Movie Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
     }
 
