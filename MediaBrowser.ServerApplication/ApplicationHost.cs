@@ -295,7 +295,7 @@ namespace MediaBrowser.ServerApplication
             }
 
             // Include composable parts in the Api assembly 
-            yield return typeof(ApiService).Assembly;
+            yield return typeof(ApiEntryPoint).Assembly;
 
             // Include composable parts in the Dashboard assembly 
             yield return typeof(DashboardInfo).Assembly;

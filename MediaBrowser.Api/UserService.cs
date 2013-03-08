@@ -24,6 +24,7 @@ namespace MediaBrowser.Api
     /// Class GetUser
     /// </summary>
     [Route("/Users/{Id}", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets a user by Id")]
     public class GetUser : IReturn<UserDto>
     {
         /// <summary>
@@ -38,13 +39,14 @@ namespace MediaBrowser.Api
     /// Class DeleteUser
     /// </summary>
     [Route("/Users/{Id}", "DELETE")]
+    [ServiceStack.ServiceHost.Api(Description = "Deletes a user")]
     public class DeleteUser : IReturnVoid
     {
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
-        [ApiMember(Name = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        [ApiMember(Name = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
         public Guid Id { get; set; }
     }
 
@@ -52,20 +54,21 @@ namespace MediaBrowser.Api
     /// Class AuthenticateUser
     /// </summary>
     [Route("/Users/{Id}/Authenticate", "POST")]
+    [ServiceStack.ServiceHost.Api(Description = "Authenticates a user")]
     public class AuthenticateUser : IReturnVoid
     {
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
-        [ApiMember(Name = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        [ApiMember(Name = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public Guid Id { get; set; }
 
         /// <summary>
         /// Gets or sets the password.
         /// </summary>
         /// <value>The password.</value>
-        [ApiMember(Name = "Password", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "GET")]
+        [ApiMember(Name = "Password", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
         public string Password { get; set; }
     }
 
@@ -73,6 +76,7 @@ namespace MediaBrowser.Api
     /// Class UpdateUserPassword
     /// </summary>
     [Route("/Users/{Id}/Password", "POST")]
+    [ServiceStack.ServiceHost.Api(Description = "Updates a user's password")]
     public class UpdateUserPassword : IReturnVoid
     {
         /// <summary>
@@ -104,6 +108,7 @@ namespace MediaBrowser.Api
     /// Class UpdateUser
     /// </summary>
     [Route("/Users/{Id}", "POST")]
+    [ServiceStack.ServiceHost.Api(Description = "Updates a user")]
     public class UpdateUser : UserDto, IReturnVoid
     {
     }
@@ -112,6 +117,7 @@ namespace MediaBrowser.Api
     /// Class CreateUser
     /// </summary>
     [Route("/Users", "POST")]
+    [ServiceStack.ServiceHost.Api(Description = "Creates a user")]
     public class CreateUser : UserDto, IReturn<UserDto>
     {
     }
@@ -127,11 +133,6 @@ namespace MediaBrowser.Api
         private readonly IXmlSerializer _xmlSerializer;
 
         /// <summary>
-        /// The _json serializer
-        /// </summary>
-        private readonly IJsonSerializer _jsonSerializer;
-
-        /// <summary>
         /// The _user manager
         /// </summary>
         private readonly IUserManager _userManager;
@@ -140,22 +141,15 @@ namespace MediaBrowser.Api
         /// Initializes a new instance of the <see cref="UserService" /> class.
         /// </summary>
         /// <param name="xmlSerializer">The XML serializer.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
         /// <exception cref="System.ArgumentNullException">xmlSerializer</exception>
-        public UserService(IXmlSerializer xmlSerializer, IJsonSerializer jsonSerializer, IUserManager userManager)
+        public UserService(IXmlSerializer xmlSerializer, IUserManager userManager)
             : base()
         {
-            if (jsonSerializer == null)
-            {
-                throw new ArgumentNullException("jsonSerializer");
-            }
-
             if (xmlSerializer == null)
             {
                 throw new ArgumentNullException("xmlSerializer");
             }
 
-            _jsonSerializer = jsonSerializer;
             _xmlSerializer = xmlSerializer;
             _userManager = userManager;
         }
