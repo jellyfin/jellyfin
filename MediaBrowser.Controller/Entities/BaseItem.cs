@@ -1005,29 +1005,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Determines if the item is considered recently played on user settings
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns><c>true</c> if [is recently played] [the specified user]; otherwise, <c>false</c>.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public bool IsRecentlyPlayed(User user)
-        {
-            if (user == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            var data = GetUserData(user, false);
-
-            if (data == null || data.LastPlayedDate == null || data.PlayCount == 0)
-            {
-                return false;
-            }
-
-            return (DateTime.UtcNow - data.LastPlayedDate.Value).TotalDays < ConfigurationManager.Configuration.RecentlyPlayedDays;
-        }
-
-        /// <summary>
         /// Adds people to the item
         /// </summary>
         /// <param name="people">The people.</param>

@@ -339,9 +339,6 @@ namespace MediaBrowser.Api.UserLibrary
                         return userdata != null && userdata.PlayCount > 0;
                     });
 
-                case ItemFilter.IsRecentlyPlayed:
-                    return items.Where(item => item.IsRecentlyPlayed(user));
-
                 case ItemFilter.IsUnplayed:
                     return items.Where(item =>
                     {
