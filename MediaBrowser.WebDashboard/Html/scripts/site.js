@@ -574,7 +574,7 @@ var Dashboard = {
         var promise;
 
         if (path === "Network") {
-            promise = ApiClient.getNetworkComputers();
+            promise = ApiClient.getNetworkDevices();
         }
         else if (path) {
             promise = ApiClient.getDirectoryContents(path, { includeDirectories: true });

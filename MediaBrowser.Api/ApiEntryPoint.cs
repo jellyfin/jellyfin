@@ -13,12 +13,12 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class ServerEntryPoint
     /// </summary>
-    public class ServerEntryPoint : IServerEntryPoint
+    public class ApiEntryPoint : IServerEntryPoint
     {
         /// <summary>
         /// The instance
         /// </summary>
-        public static ServerEntryPoint Instance;
+        public static ApiEntryPoint Instance;
 
         /// <summary>
         /// Gets or sets the logger.
@@ -27,10 +27,10 @@ namespace MediaBrowser.Api
         private ILogger Logger { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ServerEntryPoint" /> class.
+        /// Initializes a new instance of the <see cref="ApiEntryPoint" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        public ServerEntryPoint(ILogger logger)
+        public ApiEntryPoint(ILogger logger)
         {
             Logger = logger;
 
