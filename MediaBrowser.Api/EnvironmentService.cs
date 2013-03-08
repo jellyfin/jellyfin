@@ -30,21 +30,21 @@ namespace MediaBrowser.Api
         /// Gets or sets a value indicating whether [include files].
         /// </summary>
         /// <value><c>true</c> if [include files]; otherwise, <c>false</c>.</value>
-        [ApiMember(Name = "IncludeFiles", Description = "An optional filter to include or exclude files from the results.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "IncludeFiles", Description = "An optional filter to include or exclude files from the results. true/false", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool IncludeFiles { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [include directories].
         /// </summary>
         /// <value><c>true</c> if [include directories]; otherwise, <c>false</c>.</value>
-        [ApiMember(Name = "IncludeDirectories", Description = "An optional filter to include or exclude folders from the results.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "IncludeDirectories", Description = "An optional filter to include or exclude folders from the results. true/false", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool IncludeDirectories { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [include hidden].
         /// </summary>
         /// <value><c>true</c> if [include hidden]; otherwise, <c>false</c>.</value>
-        [ApiMember(Name = "IncludeHidden", Description = "An optional filter to include or exclude hidden files and folders.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "IncludeHidden", Description = "An optional filter to include or exclude hidden files and folders. true/false", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool IncludeHidden { get; set; }
 
         public GetDirectoryContents()

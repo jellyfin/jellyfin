@@ -4,13 +4,11 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Connectivity;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Server.Implementations.HttpServer;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text.Controller;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -21,12 +19,14 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}", "GET")]
     [Route("/Users/{UserId}/Items/Root", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets an item from a user's library")]
     public class GetItem : IReturn<BaseItemDto>
     {
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public Guid UserId { get; set; }
 
         /// <summary>
@@ -47,6 +47,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public Guid UserId { get; set; }
 
         /// <summary>
@@ -74,12 +75,14 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class MarkFavoriteItem
     /// </summary>
     [Route("/Users/{UserId}/FavoriteItems/{Id}", "POST")]
+    [ServiceStack.ServiceHost.Api(Description = "Marks an item as a favorite")]
     public class MarkFavoriteItem : IReturnVoid
     {
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public Guid UserId { get; set; }
 
         /// <summary>
@@ -93,12 +96,14 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class UnmarkFavoriteItem
     /// </summary>
     [Route("/Users/{UserId}/FavoriteItems/{Id}", "DELETE")]
+    [ServiceStack.ServiceHost.Api(Description = "Unmarks an item as a favorite")]
     public class UnmarkFavoriteItem : IReturnVoid
     {
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
         public Guid UserId { get; set; }
 
         /// <summary>
@@ -112,12 +117,14 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class ClearUserItemRating
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/Rating", "DELETE")]
+    [ServiceStack.ServiceHost.Api(Description = "Deletes a user's saved personal rating for an item")]
     public class DeleteUserItemRating : IReturnVoid
     {
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
         public Guid UserId { get; set; }
 
         /// <summary>
@@ -131,12 +138,14 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class UpdateUserItemRating
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/Rating", "POST")]
+    [ServiceStack.ServiceHost.Api(Description = "Updates a user's rating for an item")]
     public class UpdateUserItemRating : IReturnVoid
     {
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public Guid UserId { get; set; }
 
         /// <summary>
@@ -156,12 +165,14 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class MarkPlayedItem
     /// </summary>
     [Route("/Users/{UserId}/PlayedItems/{Id}", "POST")]
+    [ServiceStack.ServiceHost.Api(Description = "Marks an item as played")]
     public class MarkPlayedItem : IReturnVoid
     {
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public Guid UserId { get; set; }
 
         /// <summary>
@@ -175,12 +186,14 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class MarkUnplayedItem
     /// </summary>
     [Route("/Users/{UserId}/PlayedItems/{Id}", "DELETE")]
+    [ServiceStack.ServiceHost.Api(Description = "Marks an item as unplayed")]
     public class MarkUnplayedItem : IReturnVoid
     {
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
         public Guid UserId { get; set; }
 
         /// <summary>
@@ -197,6 +210,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public Guid UserId { get; set; }
 
         /// <summary>
@@ -213,6 +227,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public Guid UserId { get; set; }
 
         /// <summary>
@@ -235,6 +250,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
         public Guid UserId { get; set; }
 
         /// <summary>
@@ -254,18 +270,21 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class GetLocalTrailers
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/LocalTrailers", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets local trailers for an item")]
     public class GetLocalTrailers : IReturn<List<BaseItemDto>>
     {
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Id { get; set; }
     }
 
@@ -273,18 +292,21 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class GetSpecialFeatures
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/SpecialFeatures", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets special features for a movie")]
     public class GetSpecialFeatures : IReturn<List<BaseItemDto>>
     {
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Movie Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Id { get; set; }
     }
 
@@ -295,11 +317,6 @@ namespace MediaBrowser.Api.UserLibrary
     public class UserLibraryService : BaseRestService
     {
         /// <summary>
-        /// The _json serializer
-        /// </summary>
-        private readonly IJsonSerializer _jsonSerializer;
-
-        /// <summary>
         /// The _user manager
         /// </summary>
         private readonly IUserManager _userManager;
@@ -309,17 +326,10 @@ namespace MediaBrowser.Api.UserLibrary
         /// <summary>
         /// Initializes a new instance of the <see cref="UserLibraryService" /> class.
         /// </summary>
-        /// <param name="jsonSerializer">The json serializer.</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
-        public UserLibraryService(IJsonSerializer jsonSerializer, IUserManager userManager, ILibraryManager libraryManager)
+        public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager)
             : base()
         {
-            if (jsonSerializer == null)
-            {
-                throw new ArgumentNullException("jsonSerializer");
-            }
-
-            _jsonSerializer = jsonSerializer;
             _userManager = userManager;
             _libraryManager = libraryManager;
         }

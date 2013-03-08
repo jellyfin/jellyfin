@@ -184,7 +184,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets a value indicating whether this <see cref="GetItemsByName" /> is recursive.
         /// </summary>
         /// <value><c>true</c> if recursive; otherwise, <c>false</c>.</value>
-        [ApiMember(Name = "Recursive", Description = "When searching within folders, this determines whether or not the search will be recursive.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "Recursive", Description = "When searching within folders, this determines whether or not the search will be recursive. true/false", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool Recursive { get; set; }
 
         /// <summary>
