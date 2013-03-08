@@ -4,7 +4,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using System.Linq;
 
-namespace MediaBrowser.ServerApplication
+namespace MediaBrowser.ServerApplication.EntryPoints
 {
     /// <summary>
     /// Class StartupWizard

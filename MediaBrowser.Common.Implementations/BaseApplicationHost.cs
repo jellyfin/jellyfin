@@ -77,7 +77,7 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// The json serializer
         /// </summary>
-        protected readonly IJsonSerializer JsonSerializer = new JsonSerializer();
+        public readonly IJsonSerializer JsonSerializer = new JsonSerializer();
 
         /// <summary>
         /// The _XML serializer
@@ -524,8 +524,7 @@ namespace MediaBrowser.Common.Implementations
         /// <returns>Task.</returns>
         public async Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var pkgManager = Resolve<IPackageManager>();
-            await pkgManager.InstallPackage(progress, package, cancellationToken).ConfigureAwait(false);
+            await PackageManager.InstallPackage(progress, package, cancellationToken).ConfigureAwait(false);
 
             EventHelper.QueueEventIfNotNull(ApplicationUpdated, this, new GenericEventArgs<Version> { Argument = package.version }, Logger);
         }

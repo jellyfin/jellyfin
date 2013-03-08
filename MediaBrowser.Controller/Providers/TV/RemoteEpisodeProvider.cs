@@ -22,6 +22,8 @@ namespace MediaBrowser.Controller.Providers.TV
     /// </summary>
     class RemoteEpisodeProvider : BaseMetadataProvider
     {
+        private readonly IProviderManager _providerManager;
+        
         /// <summary>
         /// Gets the HTTP client.
         /// </summary>
@@ -34,10 +36,11 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        public RemoteEpisodeProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager)
+        public RemoteEpisodeProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
             : base(logManager, configurationManager)
         {
             HttpClient = httpClient;
+            _providerManager = providerManager;
         }
 
         /// <summary>
@@ -117,7 +120,7 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <param name="item">The item.</param>
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <returns>Task{System.Boolean}.</returns>
-        protected override async Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             
@@ -229,7 +232,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                         try
                         {
-                            episode.PrimaryImagePath = await Kernel.Instance.ProviderManager.DownloadAndSaveImage(episode, TVUtils.BannerUrl + p, Path.GetFileName(p), RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken);
+                            episode.PrimaryImagePath = await _providerManager.DownloadAndSaveImage(episode, TVUtils.BannerUrl + p, Path.GetFileName(p), RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken);
                         }
                         catch (HttpException)
                         {
@@ -282,7 +285,7 @@ namespace MediaBrowser.Controller.Providers.TV
                         var ms = new MemoryStream();
                         doc.Save(ms);
 
-                        await Kernel.Instance.FileSystemManager.SaveToLibraryFilesystem(episode, Path.Combine(episode.MetaLocation, Path.GetFileNameWithoutExtension(episode.Path) + ".xml"), ms, cancellationToken).ConfigureAwait(false);
+                        await _providerManager.SaveToLibraryFilesystem(episode, Path.Combine(episode.MetaLocation, Path.GetFileNameWithoutExtension(episode.Path) + ".xml"), ms, cancellationToken).ConfigureAwait(false);
                     }
 
                     return true;

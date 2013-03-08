@@ -22,8 +22,10 @@ namespace MediaBrowser.Controller.Providers.TV
     /// <summary>
     /// Class RemoteSeriesProvider
     /// </summary>
-    class RemoteSeriesProvider : BaseMetadataProvider
+    class RemoteSeriesProvider : BaseMetadataProvider, IDisposable
     {
+        private readonly IProviderManager _providerManager;
+        
         /// <summary>
         /// The tv db
         /// </summary>
@@ -44,7 +46,7 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public RemoteSeriesProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager)
+        public RemoteSeriesProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
             : base(logManager, configurationManager)
         {
             if (httpClient == null)
@@ -52,6 +54,7 @@ namespace MediaBrowser.Controller.Providers.TV
                 throw new ArgumentNullException("httpClient");
             }
             HttpClient = httpClient;
+            _providerManager = providerManager;
             Current = this;
         }
 
@@ -59,13 +62,12 @@ namespace MediaBrowser.Controller.Providers.TV
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected override void Dispose(bool dispose)
+        protected virtual void Dispose(bool dispose)
         {
             if (dispose)
             {
                 TvDbResourcePool.Dispose();
             }
-            base.Dispose(dispose);
         }
 
         /// <summary>
@@ -149,7 +151,7 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        protected override async Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             
@@ -252,8 +254,8 @@ namespace MediaBrowser.Controller.Providers.TV
                     {
                         var ms = new MemoryStream();
                         doc.Save(ms);
-                        
-                        await Kernel.Instance.FileSystemManager.SaveToLibraryFilesystem(series, Path.Combine(series.MetaLocation, LOCAL_META_FILE_NAME), ms, cancellationToken).ConfigureAwait(false);
+
+                        await _providerManager.SaveToLibraryFilesystem(series, Path.Combine(series.MetaLocation, LOCAL_META_FILE_NAME), ms, cancellationToken).ConfigureAwait(false);
                     }
                 }
             }
@@ -366,7 +368,7 @@ namespace MediaBrowser.Controller.Providers.TV
                             {
                                 try
                                 {
-                                    series.PrimaryImagePath = await Kernel.Instance.ProviderManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "folder" + Path.GetExtension(n.InnerText), TvDbResourcePool, cancellationToken).ConfigureAwait(false);
+                                    series.PrimaryImagePath = await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "folder" + Path.GetExtension(n.InnerText), TvDbResourcePool, cancellationToken).ConfigureAwait(false);
                                 }
                                 catch (HttpException)
                                 {
@@ -389,7 +391,7 @@ namespace MediaBrowser.Controller.Providers.TV
                             {
                                 try
                                 {
-                                    var bannerImagePath = await Kernel.Instance.ProviderManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "banner" + Path.GetExtension(n.InnerText), TvDbResourcePool, cancellationToken);
+                                    var bannerImagePath = await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "banner" + Path.GetExtension(n.InnerText), TvDbResourcePool, cancellationToken);
 
                                     series.SetImage(ImageType.Banner, bannerImagePath);
                                 }
@@ -418,7 +420,7 @@ namespace MediaBrowser.Controller.Providers.TV
                                 {
                                     try
                                     {
-                                        series.BackdropImagePaths.Add(await Kernel.Instance.ProviderManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + p.InnerText, bdName + Path.GetExtension(p.InnerText), TvDbResourcePool, cancellationToken).ConfigureAwait(false));
+                                        series.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + p.InnerText, bdName + Path.GetExtension(p.InnerText), TvDbResourcePool, cancellationToken).ConfigureAwait(false));
                                     }
                                     catch (HttpException)
                                     {
@@ -584,7 +586,9 @@ namespace MediaBrowser.Controller.Providers.TV
             return name.Trim();
         }
 
-
-
+        public void Dispose()
+        {
+            Dispose(true);
+        }
     }
 }

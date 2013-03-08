@@ -104,8 +104,8 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <value>The web socket listeners.</value>
         private readonly List<IWebSocketListener> _webSocketListeners = new List<IWebSocketListener>();
 
-        private Kernel _kernel;
-
+        private readonly Kernel _kernel;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerManager" /> class.
         /// </summary>

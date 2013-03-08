@@ -30,8 +30,10 @@ namespace MediaBrowser.Controller.Providers.Movies
     /// <summary>
     /// Class MovieDbProvider
     /// </summary>
-    public class MovieDbProvider : BaseMetadataProvider
+    public class MovieDbProvider : BaseMetadataProvider, IDisposable
     {
+        protected readonly IProviderManager ProviderManager;
+        
         /// <summary>
         /// The movie db
         /// </summary>
@@ -58,11 +60,12 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="httpClient">The HTTP client.</param>
-        public MovieDbProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IHttpClient httpClient)
+        public MovieDbProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IHttpClient httpClient, IProviderManager providerManager)
             : base(logManager, configurationManager)
         {
             JsonSerializer = jsonSerializer;
             HttpClient = httpClient;
+            ProviderManager = providerManager;
             Current = this;
         }
 
@@ -70,13 +73,12 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected override void Dispose(bool dispose)
+        protected virtual void Dispose(bool dispose)
         {
             if (dispose)
             {
                 MovieDbResourcePool.Dispose();
             }
-            base.Dispose(dispose);
         }
 
         /// <summary>
@@ -209,16 +211,17 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="value">The value.</param>
+        /// <param name="providerVersion">The provider version.</param>
         /// <param name="status">The status.</param>
-        protected override void SetLastRefreshed(BaseItem item, DateTime value, ProviderRefreshStatus status = ProviderRefreshStatus.Success)
+        public override void SetLastRefreshed(BaseItem item, DateTime value, string providerVersion, ProviderRefreshStatus status = ProviderRefreshStatus.Success)
         {
-            base.SetLastRefreshed(item, value, status);
+            base.SetLastRefreshed(item, value, providerVersion, status);
 
             if (ConfigurationManager.Configuration.SaveLocalMeta)
             {
                 //in addition to ours, we need to set the last refreshed time for the local data provider
                 //so it won't see the new files we download and process them all over again
-                if (JsonProvider == null) JsonProvider = new MovieProviderFromJson(LogManager, ConfigurationManager, JsonSerializer, HttpClient);
+                if (JsonProvider == null) JsonProvider = new MovieProviderFromJson(LogManager, ConfigurationManager, JsonSerializer, HttpClient, ProviderManager);
                 var data = item.ProviderData.GetValueOrDefault(JsonProvider.Id, new BaseProviderInfo { ProviderId = JsonProvider.Id });
                 data.LastRefreshed = value;
                 item.ProviderData[JsonProvider.Id] = data;
@@ -291,7 +294,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task{System.Boolean}.</returns>
-        protected override async Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             if (HasAltMeta(item))
             {
@@ -724,7 +727,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await Kernel.Instance.FileSystemManager.SaveToLibraryFilesystem(item, Path.Combine(item.MetaLocation, LOCAL_META_FILE_NAME), ms, cancellationToken).ConfigureAwait(false);
+                await ProviderManager.SaveToLibraryFilesystem(item, Path.Combine(item.MetaLocation, LOCAL_META_FILE_NAME), ms, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -1018,7 +1021,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 {
                     try
                     {
-                        item.PrimaryImagePath = await Kernel.Instance.ProviderManager.DownloadAndSaveImage(item, tmdbImageUrl + poster.file_path, "folder" + Path.GetExtension(poster.file_path), MovieDbResourcePool, cancellationToken).ConfigureAwait(false);
+                        item.PrimaryImagePath = await ProviderManager.DownloadAndSaveImage(item, tmdbImageUrl + poster.file_path, "folder" + Path.GetExtension(poster.file_path), MovieDbResourcePool, cancellationToken).ConfigureAwait(false);
                     }
                     catch (HttpException)
                     {
@@ -1050,7 +1053,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                     {
                         try
                         {
-                            item.BackdropImagePaths.Add(await Kernel.Instance.ProviderManager.DownloadAndSaveImage(item, tmdbImageUrl + images.backdrops[i].file_path, bdName + Path.GetExtension(images.backdrops[i].file_path), MovieDbResourcePool, cancellationToken).ConfigureAwait(false));
+                            item.BackdropImagePaths.Add(await ProviderManager.DownloadAndSaveImage(item, tmdbImageUrl + images.backdrops[i].file_path, bdName + Path.GetExtension(images.backdrops[i].file_path), MovieDbResourcePool, cancellationToken).ConfigureAwait(false));
                         }
                         catch (HttpException)
                         {
@@ -1661,5 +1664,10 @@ namespace MediaBrowser.Controller.Providers.Movies
             public TmdbImageSettings images { get; set; }
         }
         #endregion
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
     }
 }

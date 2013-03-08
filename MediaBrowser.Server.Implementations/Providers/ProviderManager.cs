@@ -1,9 +1,11 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
@@ -13,12 +15,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.Providers
+namespace MediaBrowser.Server.Implementations.Providers
 {
     /// <summary>
     /// Class ProviderManager
     /// </summary>
-    public class ProviderManager : IDisposable
+    public class ProviderManager : IProviderManager
     {
         /// <summary>
         /// The remote image cache
@@ -41,23 +43,37 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         private readonly IHttpClient _httpClient;
 
+        /// <summary>
+        /// The _directory watchers
+        /// </summary>
+        private readonly IDirectoryWatchers _directoryWatchers;
+
+        /// <summary>
+        /// Gets or sets the configuration manager.
+        /// </summary>
+        /// <value>The configuration manager.</value>
         private IServerConfigurationManager ConfigurationManager { get; set; }
 
-        private Kernel Kernel { get; set; }
+        /// <summary>
+        /// Gets the list of currently registered metadata prvoiders
+        /// </summary>
+        /// <value>The metadata providers enumerable.</value>
+        private BaseMetadataProvider[] MetadataProviders { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
         /// <param name="httpClient">The HTTP client.</param>
-        /// <param name="logger">The logger.</param>
-        public ProviderManager(Kernel kernel, IHttpClient httpClient, ILogger logger, IServerConfigurationManager configurationManager)
+        /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="directoryWatchers">The directory watchers.</param>
+        /// <param name="logManager">The log manager.</param>
+        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, IDirectoryWatchers directoryWatchers, ILogManager logManager)
         {
-            _logger = logger;
-            Kernel = kernel;
+            _logger = logManager.GetLogger("ProviderManager");
             _httpClient = httpClient;
             ConfigurationManager = configurationManager;
-            _remoteImageCache = new FileSystemRepository(ImagesDataPath);
+            _directoryWatchers = directoryWatchers;
+            _remoteImageCache = new FileSystemRepository(configurationManager.ApplicationPaths.DownloadedImagesDataPath);
 
             configurationManager.ConfigurationUpdated += configurationManager_ConfigurationUpdated;
         }
@@ -77,36 +93,19 @@ namespace MediaBrowser.Controller.Providers
         }
 
         /// <summary>
-        /// The _images data path
-        /// </summary>
-        private string _imagesDataPath;
-        /// <summary>
-        /// Gets the images data path.
-        /// </summary>
-        /// <value>The images data path.</value>
-        public string ImagesDataPath
-        {
-            get
-            {
-                if (_imagesDataPath == null)
-                {
-                    _imagesDataPath = Path.Combine(ConfigurationManager.ApplicationPaths.DataPath, "remote-images");
-
-                    if (!Directory.Exists(_imagesDataPath))
-                    {
-                        Directory.CreateDirectory(_imagesDataPath);
-                    }
-                }
-
-                return _imagesDataPath;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the supported providers key.
         /// </summary>
         /// <value>The supported providers key.</value>
         private Guid SupportedProvidersKey { get; set; }
+
+        /// <summary>
+        /// Adds the metadata providers.
+        /// </summary>
+        /// <param name="providers">The providers.</param>
+        public void AddMetadataProviders(IEnumerable<BaseMetadataProvider> providers)
+        {
+            MetadataProviders = providers.ToArray();
+        }
 
         /// <summary>
         /// Runs all metadata providers for an entity, and returns true or false indicating if at least one was refreshed and requires persistence
@@ -116,7 +115,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{System.Boolean}.</returns>
-        internal async Task<bool> ExecuteMetadataProviders(BaseItem item, CancellationToken cancellationToken, bool force = false, bool allowSlowProviders = true)
+        public async Task<bool> ExecuteMetadataProviders(BaseItem item, CancellationToken cancellationToken, bool force = false, bool allowSlowProviders = true)
         {
             // Allow providers of the same priority to execute in parallel
             MetadataProviderPriority? currentPriority = null;
@@ -127,7 +126,7 @@ namespace MediaBrowser.Controller.Providers
             cancellationToken.ThrowIfCancellationRequested();
 
             // Determine if supported providers have changed
-            var supportedProviders = Kernel.MetadataProviders.Where(p => p.Supports(item)).ToList();
+            var supportedProviders = MetadataProviders.Where(p => p.Supports(item)).ToList();
 
             BaseProviderInfo supportedProvidersInfo;
 
@@ -201,7 +200,7 @@ namespace MediaBrowser.Controller.Providers
                     continue;
                 }
 
-                currentTasks.Add(provider.FetchAsync(item, force, cancellationToken));
+                currentTasks.Add(FetchAsync(provider, item, force, cancellationToken));
                 currentPriority = provider.Priority;
             }
 
@@ -220,12 +219,68 @@ namespace MediaBrowser.Controller.Providers
         }
 
         /// <summary>
+        /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
+        /// </summary>
+        /// <param name="provider">The provider.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="force">if set to <c>true</c> [force].</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{System.Boolean}.</returns>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        private async Task<bool> FetchAsync(BaseMetadataProvider provider, BaseItem item, bool force, CancellationToken cancellationToken)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            _logger.Info("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name ?? "--Unknown--");
+
+            // This provides the ability to cancel just this one provider
+            var innerCancellationTokenSource = new CancellationTokenSource();
+
+            OnProviderRefreshBeginning(provider, item, innerCancellationTokenSource);
+
+            try
+            {
+                return await provider.FetchAsync(item, force, CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, innerCancellationTokenSource.Token).Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException ex)
+            {
+                _logger.Info("{0} cancelled for {1}", provider.GetType().Name, item.Name);
+
+                // If the outer cancellation token is the one that caused the cancellation, throw it
+                if (cancellationToken.IsCancellationRequested && ex.CancellationToken == cancellationToken)
+                {
+                    throw;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("{0} failed refreshing {1}", ex, provider.GetType().Name, item.Name);
+
+                provider.SetLastRefreshed(item, DateTime.UtcNow, ProviderRefreshStatus.Failure);
+                return true;
+            }
+            finally
+            {
+                innerCancellationTokenSource.Dispose();
+
+                OnProviderRefreshCompleted(provider, item);
+            }
+        }
+
+        /// <summary>
         /// Notifies the kernal that a provider has begun refreshing
         /// </summary>
         /// <param name="provider">The provider.</param>
         /// <param name="item">The item.</param>
         /// <param name="cancellationTokenSource">The cancellation token source.</param>
-        internal void OnProviderRefreshBeginning(BaseMetadataProvider provider, BaseItem item, CancellationTokenSource cancellationTokenSource)
+        public void OnProviderRefreshBeginning(BaseMetadataProvider provider, BaseItem item, CancellationTokenSource cancellationTokenSource)
         {
             var key = item.Id + provider.GetType().Name;
 
@@ -253,7 +308,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="provider">The provider.</param>
         /// <param name="item">The item.</param>
-        internal void OnProviderRefreshCompleted(BaseMetadataProvider provider, BaseItem item)
+        public void OnProviderRefreshCompleted(BaseMetadataProvider provider, BaseItem item)
         {
             var key = item.Id + provider.GetType().Name;
 
@@ -268,7 +323,7 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Validates the currently running providers and cancels any that should not be run due to configuration changes
         /// </summary>
-        internal void ValidateCurrentlyRunningProviders()
+        private void ValidateCurrentlyRunningProviders()
         {
             _logger.Info("Validing currently running providers");
 
@@ -321,7 +376,7 @@ namespace MediaBrowser.Controller.Providers
 
             if (ConfigurationManager.Configuration.SaveLocalMeta) // queue to media directories
             {
-                await Kernel.FileSystemManager.SaveToLibraryFilesystem(item, localPath, img, cancellationToken).ConfigureAwait(false);
+                await SaveToLibraryFilesystem(item, localPath, img, cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -352,6 +407,63 @@ namespace MediaBrowser.Controller.Providers
             return localPath;
         }
 
+
+        /// <summary>
+        /// Saves to library filesystem.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="path">The path.</param>
+        /// <param name="dataToSave">The data to save.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        public async Task SaveToLibraryFilesystem(BaseItem item, string path, Stream dataToSave, CancellationToken cancellationToken)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException();
+            }
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException();
+            }
+            if (dataToSave == null)
+            {
+                throw new ArgumentNullException();
+            }
+            if (cancellationToken == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            //Tell the watchers to ignore
+            _directoryWatchers.TemporarilyIgnore(path);
+
+            //Make the mod
+
+            dataToSave.Position = 0;
+
+            try
+            {
+                using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                {
+                    await dataToSave.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
+
+                    dataToSave.Dispose();
+
+                    // If this is ever used for something other than metadata we can add a file type param
+                    item.ResolveArgs.AddMetadataFile(path);
+                }
+            }
+            finally
+            {
+                //Remove the ignore
+                _directoryWatchers.RemoveTempIgnore(path);
+            }
+        }
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
@@ -364,6 +476,9 @@ namespace MediaBrowser.Controller.Providers
             }
         }
 
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);

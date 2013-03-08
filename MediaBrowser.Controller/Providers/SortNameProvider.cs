@@ -49,6 +49,17 @@ namespace MediaBrowser.Controller.Providers
             return !string.IsNullOrEmpty(item.Name) && string.IsNullOrEmpty(item.SortName);
         }
 
+        // Cache these since they will be used a lot
+        /// <summary>
+        /// The false task result
+        /// </summary>
+        protected static readonly Task<bool> FalseTaskResult = Task.FromResult(false);
+
+        /// <summary>
+        /// The true task result
+        /// </summary>
+        protected static readonly Task<bool> TrueTaskResult = Task.FromResult(true);
+
         /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>
@@ -56,7 +67,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        protected override Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             return SetSortName(item, cancellationToken) ? TrueTaskResult : FalseTaskResult;
         }

@@ -15,8 +15,8 @@ namespace MediaBrowser.Controller.Providers.Movies
     /// </summary>
     class PersonProviderFromJson : TmdbPersonProvider
     {
-        public PersonProviderFromJson(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogManager logManager, IServerConfigurationManager configurationManager) : 
-            base(httpClient, jsonSerializer, logManager, configurationManager)
+        public PersonProviderFromJson(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager) 
+            : base(httpClient, jsonSerializer, logManager, configurationManager, providerManager)
         {
         }
 
@@ -90,7 +90,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        protected override Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {

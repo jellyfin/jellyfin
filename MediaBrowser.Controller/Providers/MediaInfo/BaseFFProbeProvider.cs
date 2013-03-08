@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     /// Provides a base class for extracting media information through ffprobe
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class BaseFFProbeProvider<T> : BaseFFMpegProvider<T>
+    public abstract class BaseFFProbeProvider<T> : BaseFFMpegProvider<T>, IDisposable
         where T : BaseItem
     {
         protected BaseFFProbeProvider(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
@@ -69,7 +69,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        protected override async Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             var myItem = (T)item;
 
@@ -351,14 +351,17 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected override void Dispose(bool dispose)
+        protected virtual void Dispose(bool dispose)
         {
             if (dispose)
             {
                 FFProbeCache.Dispose();
             }
+        }
 
-            base.Dispose(dispose);
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

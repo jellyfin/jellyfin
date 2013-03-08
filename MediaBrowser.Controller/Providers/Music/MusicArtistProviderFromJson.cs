@@ -34,7 +34,7 @@ namespace MediaBrowser.Controller.Providers.Music
 
         }
 
-        protected override Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {

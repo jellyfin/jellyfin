@@ -18,8 +18,8 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class User : BaseItem
     {
-        internal static IUserManager UserManager { get; set; }
-        internal static IXmlSerializer XmlSerializer { get; set; }
+        public static IUserManager UserManager { get; set; }
+        public static IXmlSerializer XmlSerializer { get; set; }
 
         /// <summary>
         /// The _root folder path
@@ -363,7 +363,7 @@ namespace MediaBrowser.Controller.Entities
                 ResolveArgs = null;
             }
 
-            var changed = await Kernel.Instance.ProviderManager.ExecuteMetadataProviders(this, cancellationToken, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+            var changed = await ProviderManager.ExecuteMetadataProviders(this, cancellationToken, forceRefresh, allowSlowProviders).ConfigureAwait(false);
 
             if (changed || forceSave)
             {

@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.ServerApplication.Logging;
 using System;
 using System.ComponentModel;
@@ -38,7 +39,11 @@ namespace MediaBrowser.ServerApplication
         /// The _configuration manager
         /// </summary>
         private readonly IServerConfigurationManager _configurationManager;
-        
+
+        private readonly IUserManager _userManager;
+        private readonly ILibraryManager _libraryManager;
+        private readonly IJsonSerializer _jsonSerializer;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow" /> class.
         /// </summary>
@@ -46,7 +51,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="logger">The logger.</param>
         /// <param name="appHost">The app host.</param>
         /// <exception cref="System.ArgumentNullException">logger</exception>
-        public MainWindow(ILogManager logManager, IApplicationHost appHost, IServerConfigurationManager configurationManager)
+        public MainWindow(ILogManager logManager, IApplicationHost appHost, IServerConfigurationManager configurationManager, IUserManager userManager, ILibraryManager libraryManager, IJsonSerializer jsonSerializer)
         {
             if (logManager == null)
             {
@@ -65,6 +70,9 @@ namespace MediaBrowser.ServerApplication
             _appHost = appHost;
             _logManager = logManager;
             _configurationManager = configurationManager;
+            _userManager = userManager;
+            _libraryManager = libraryManager;
+            _jsonSerializer = jsonSerializer;
 
             InitializeComponent();
 
@@ -209,8 +217,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void cmOpenExplorer_click(object sender, RoutedEventArgs e)
         {
-            var explorer = (LibraryExplorer)_appHost.CreateInstance(typeof(LibraryExplorer));
-            explorer.Show();
+            new LibraryExplorer(_jsonSerializer, _logger, _appHost, _userManager, _libraryManager).Show();
         }
 
         /// <summary>
@@ -220,7 +227,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void cmOpenDashboard_click(object sender, RoutedEventArgs e)
         {
-            var user = _appHost.Resolve<IUserManager>().Users.FirstOrDefault(u => u.Configuration.IsAdministrator);
+            var user = _userManager.Users.FirstOrDefault(u => u.Configuration.IsAdministrator);
             OpenDashboard(user);
         }
 
@@ -249,7 +256,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void cmdBrowseLibrary_click(object sender, RoutedEventArgs e)
         {
-            var user = _appHost.Resolve<IUserManager>().Users.FirstOrDefault(u => u.Configuration.IsAdministrator);
+            var user = _userManager.Users.FirstOrDefault(u => u.Configuration.IsAdministrator);
             App.OpenDashboardPage("index.html", user, _configurationManager);
         }
 

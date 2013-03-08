@@ -1,22 +1,13 @@
-﻿using MediaBrowser.Common;
-using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Weather;
-using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller
@@ -24,7 +15,7 @@ namespace MediaBrowser.Controller
     /// <summary>
     /// Class Kernel
     /// </summary>
-    public class Kernel : IDisposable
+    public class Kernel 
     {
         /// <summary>
         /// Gets the instance.
@@ -36,25 +27,13 @@ namespace MediaBrowser.Controller
         /// Gets the image manager.
         /// </summary>
         /// <value>The image manager.</value>
-        public ImageManager ImageManager { get; private set; }
+        public ImageManager ImageManager { get; set; }
 
         /// <summary>
         /// Gets the FFMPEG controller.
         /// </summary>
         /// <value>The FFMPEG controller.</value>
-        public FFMpegManager FFMpegManager { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the file system manager.
-        /// </summary>
-        /// <value>The file system manager.</value>
-        public FileSystemManager FileSystemManager { get; private set; }
-
-        /// <summary>
-        /// Gets the provider manager.
-        /// </summary>
-        /// <value>The provider manager.</value>
-        public ProviderManager ProviderManager { get; private set; }
+        public FFMpegManager FFMpegManager { get; set; }
 
         /// <summary>
         /// Gets the name of the web application that can be used for url building.
@@ -82,74 +61,68 @@ namespace MediaBrowser.Controller
         /// Gets the list of Localized string files
         /// </summary>
         /// <value>The string files.</value>
-        public IEnumerable<LocalizedStringData> StringFiles { get; private set; }
+        public IEnumerable<LocalizedStringData> StringFiles { get; set; }
 
         /// <summary>
         /// Gets the list of currently registered weather prvoiders
         /// </summary>
         /// <value>The weather providers.</value>
-        public IEnumerable<IWeatherProvider> WeatherProviders { get; private set; }
-
-        /// <summary>
-        /// Gets the list of currently registered metadata prvoiders
-        /// </summary>
-        /// <value>The metadata providers enumerable.</value>
-        public BaseMetadataProvider[] MetadataProviders { get; private set; }
+        public IEnumerable<IWeatherProvider> WeatherProviders { get; set; }
 
         /// <summary>
         /// Gets the list of currently registered image processors
         /// Image processors are specialized metadata providers that run after the normal ones
         /// </summary>
         /// <value>The image enhancers.</value>
-        public IEnumerable<IImageEnhancer> ImageEnhancers { get; private set; }
+        public IEnumerable<IImageEnhancer> ImageEnhancers { get; set; }
 
         /// <summary>
         /// Gets the list of available user repositories
         /// </summary>
         /// <value>The user repositories.</value>
-        private IEnumerable<IUserRepository> UserRepositories { get; set; }
+        public IEnumerable<IUserRepository> UserRepositories { get; set; }
 
         /// <summary>
         /// Gets the active user repository
         /// </summary>
         /// <value>The user repository.</value>
-        public IUserRepository UserRepository { get; private set; }
+        public IUserRepository UserRepository { get; set; }
 
         /// <summary>
         /// Gets the active user repository
         /// </summary>
         /// <value>The display preferences repository.</value>
-        public IDisplayPreferencesRepository DisplayPreferencesRepository { get; private set; }
+        public IDisplayPreferencesRepository DisplayPreferencesRepository { get; set; }
 
         /// <summary>
         /// Gets the list of available item repositories
         /// </summary>
         /// <value>The item repositories.</value>
-        private IEnumerable<IItemRepository> ItemRepositories { get; set; }
+        public IEnumerable<IItemRepository> ItemRepositories { get; set; }
 
         /// <summary>
         /// Gets the active item repository
         /// </summary>
         /// <value>The item repository.</value>
-        public IItemRepository ItemRepository { get; private set; }
+        public IItemRepository ItemRepository { get; set; }
 
         /// <summary>
         /// Gets the list of available DisplayPreferencesRepositories
         /// </summary>
         /// <value>The display preferences repositories.</value>
-        private IEnumerable<IDisplayPreferencesRepository> DisplayPreferencesRepositories { get; set; }
+        public IEnumerable<IDisplayPreferencesRepository> DisplayPreferencesRepositories { get; set; }
 
         /// <summary>
         /// Gets the list of available item repositories
         /// </summary>
         /// <value>The user data repositories.</value>
-        private IEnumerable<IUserDataRepository> UserDataRepositories { get; set; }
+        public IEnumerable<IUserDataRepository> UserDataRepositories { get; set; }
 
         /// <summary>
         /// Gets the active user data repository
         /// </summary>
         /// <value>The user data repository.</value>
-        public IUserDataRepository UserDataRepository { get; private set; }
+        public IUserDataRepository UserDataRepository { get; set; }
 
         /// <summary>
         /// Gets the UDP server port number.
@@ -160,121 +133,39 @@ namespace MediaBrowser.Controller
             get { return 7359; }
         }
 
-        private readonly IXmlSerializer _xmlSerializer;
-
         private readonly IServerConfigurationManager _configurationManager;
-        private readonly ILogManager _logManager;
-        private IApplicationHost ApplicationHost { get; set; }
 
         /// <summary>
         /// Creates a kernel based on a Data path, which is akin to our current programdata path
         /// </summary>
-        /// <param name="appHost">The app host.</param>
-        /// <param name="xmlSerializer">The XML serializer.</param>
-        /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        /// <exception cref="System.ArgumentNullException">isoManager</exception>
-        public Kernel(IApplicationHost appHost, IXmlSerializer xmlSerializer, ILogManager logManager, IServerConfigurationManager configurationManager)
+        public Kernel(IServerConfigurationManager configurationManager)
         {
             Instance = this;
 
-            ApplicationHost = appHost;
             _configurationManager = configurationManager;
-            _xmlSerializer = xmlSerializer;
-            _logManager = logManager;
-            
-            // For now there's no real way to inject these properly
-            BaseItem.Logger = logManager.GetLogger("BaseItem");
-            User.XmlSerializer = _xmlSerializer;
-            Ratings.ConfigurationManager = _configurationManager;
-            LocalizedStrings.ApplicationPaths = _configurationManager.ApplicationPaths;
-            BaseItem.ConfigurationManager = configurationManager;
-        }
-
-        /// <summary>
-        /// Composes the parts with ioc container.
-        /// </summary>
-        protected void FindParts()
-        {
-            // For now there's no real way to inject these properly
-            BaseItem.LibraryManager = ApplicationHost.Resolve<ILibraryManager>();
-            User.UserManager = ApplicationHost.Resolve<IUserManager>();
-
-            FFMpegManager = (FFMpegManager)ApplicationHost.CreateInstance(typeof(FFMpegManager));
-            ImageManager = (ImageManager)ApplicationHost.CreateInstance(typeof(ImageManager));
-            ProviderManager = (ProviderManager)ApplicationHost.CreateInstance(typeof(ProviderManager));
-            
-            UserDataRepositories = ApplicationHost.GetExports<IUserDataRepository>();
-            UserRepositories = ApplicationHost.GetExports<IUserRepository>();
-            DisplayPreferencesRepositories = ApplicationHost.GetExports<IDisplayPreferencesRepository>();
-            ItemRepositories = ApplicationHost.GetExports<IItemRepository>();
-            WeatherProviders = ApplicationHost.GetExports<IWeatherProvider>();
-            ImageEnhancers = ApplicationHost.GetExports<IImageEnhancer>().OrderBy(e => e.Priority).ToArray();
-            StringFiles = ApplicationHost.GetExports<LocalizedStringData>();
-            MetadataProviders = ApplicationHost.GetExports<BaseMetadataProvider>().OrderBy(e => e.Priority).ToArray();
-        }
-
-        /// <summary>
-        /// Performs initializations that can be reloaded at anytime
-        /// </summary>
-        /// <returns>Task.</returns>
-        public async Task Init()
-        {
-            FindParts();
-
-            await LoadRepositories().ConfigureAwait(false);
-
-            await ApplicationHost.Resolve<IUserManager>().RefreshUsersMetadata(CancellationToken.None).ConfigureAwait(false);
-
-            foreach (var entryPoint in ApplicationHost.GetExports<IServerEntryPoint>())
-            {
-                entryPoint.Run();
-            }
-
-            ReloadFileSystemManager();
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (dispose)
-            {
-                DisposeFileSystemManager();
-            }
         }
 
         /// <summary>
         /// Called when [composable parts loaded].
         /// </summary>
         /// <returns>Task.</returns>
-        protected Task LoadRepositories()
+        public Task LoadRepositories(IServerConfigurationManager configurationManager)
         {
             // Get the current item repository
-            ItemRepository = GetRepository(ItemRepositories, _configurationManager.Configuration.ItemRepository);
+            ItemRepository = GetRepository(ItemRepositories, configurationManager.Configuration.ItemRepository);
             var itemRepoTask = ItemRepository.Initialize();
 
             // Get the current user repository
-            UserRepository = GetRepository(UserRepositories, _configurationManager.Configuration.UserRepository);
+            UserRepository = GetRepository(UserRepositories, configurationManager.Configuration.UserRepository);
             var userRepoTask = UserRepository.Initialize();
 
             // Get the current item repository
-            UserDataRepository = GetRepository(UserDataRepositories, _configurationManager.Configuration.UserDataRepository);
+            UserDataRepository = GetRepository(UserDataRepositories, configurationManager.Configuration.UserDataRepository);
             var userDataRepoTask = UserDataRepository.Initialize();
 
             // Get the current display preferences repository
-            DisplayPreferencesRepository = GetRepository(DisplayPreferencesRepositories, _configurationManager.Configuration.DisplayPreferencesRepository);
+            DisplayPreferencesRepository = GetRepository(DisplayPreferencesRepositories, configurationManager.Configuration.DisplayPreferencesRepository);
             var displayPreferencesRepoTask = DisplayPreferencesRepository.Initialize();
 
             return Task.WhenAll(itemRepoTask, userRepoTask, userDataRepoTask, displayPreferencesRepoTask);
@@ -294,29 +185,6 @@ namespace MediaBrowser.Controller
 
             return enumerable.FirstOrDefault(r => string.Equals(r.Name, name, StringComparison.OrdinalIgnoreCase)) ??
                    enumerable.FirstOrDefault();
-        }
-
-        /// <summary>
-        /// Disposes the file system manager.
-        /// </summary>
-        private void DisposeFileSystemManager()
-        {
-            if (FileSystemManager != null)
-            {
-                FileSystemManager.Dispose();
-                FileSystemManager = null;
-            }
-        }
-
-        /// <summary>
-        /// Reloads the file system manager.
-        /// </summary>
-        private void ReloadFileSystemManager()
-        {
-            DisposeFileSystemManager();
-
-            FileSystemManager = new FileSystemManager(_logManager, ApplicationHost.Resolve<ITaskManager>(), ApplicationHost.Resolve<ILibraryManager>(), _configurationManager);
-            FileSystemManager.StartWatchers();
         }
     }
 }

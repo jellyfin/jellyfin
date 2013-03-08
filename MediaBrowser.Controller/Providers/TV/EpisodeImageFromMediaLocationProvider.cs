@@ -51,13 +51,18 @@ namespace MediaBrowser.Controller.Providers.TV
         }
 
         /// <summary>
+        /// The true task result
+        /// </summary>
+        protected static readonly Task<bool> TrueTaskResult = Task.FromResult(true);
+
+        /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        protected override Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             

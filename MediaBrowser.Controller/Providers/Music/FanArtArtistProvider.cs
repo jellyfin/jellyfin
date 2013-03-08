@@ -28,7 +28,9 @@ namespace MediaBrowser.Controller.Providers.Music
         /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
 
-        public FanArtArtistProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager)
+        private readonly IProviderManager _providerManager;
+
+        public FanArtArtistProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
             : base(logManager, configurationManager)
         {
             if (httpClient == null)
@@ -36,6 +38,7 @@ namespace MediaBrowser.Controller.Providers.Music
                 throw new ArgumentNullException("httpClient");
             }
             HttpClient = httpClient;
+            _providerManager = providerManager;
         }
 
         /// <summary>
@@ -80,7 +83,7 @@ namespace MediaBrowser.Controller.Providers.Music
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        protected override async Task<bool> FetchAsyncInternal(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -118,7 +121,7 @@ namespace MediaBrowser.Controller.Providers.Music
                             Logger.Debug("FanArtProvider getting ClearLogo for " + artist.Name);
                             try
                             {
-                                artist.SetImage(ImageType.Logo, await Kernel.Instance.ProviderManager.DownloadAndSaveImage(artist, path, LOGO_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                artist.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(artist, path, LOGO_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {
@@ -146,7 +149,7 @@ namespace MediaBrowser.Controller.Providers.Music
                                     Logger.Debug("FanArtProvider getting Backdrop for " + artist.Name);
                                     try
                                     {
-                                        artist.BackdropImagePaths.Add(await Kernel.Instance.ProviderManager.DownloadAndSaveImage(artist, path, ("Backdrop"+(numBackdrops > 0 ? numBackdrops.ToString() : "")+".jpg"), FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                        artist.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(artist, path, ("Backdrop" + (numBackdrops > 0 ? numBackdrops.ToString() : "") + ".jpg"), FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                                         numBackdrops++;
                                         if (numBackdrops >= ConfigurationManager.Configuration.MaxBackdrops) break;
                                     }
@@ -203,7 +206,7 @@ namespace MediaBrowser.Controller.Providers.Music
                             Logger.Debug("FanArtProvider getting ClearArt for " + artist.Name);
                             try
                             {
-                                artist.SetImage(ImageType.Art, await Kernel.Instance.ProviderManager.DownloadAndSaveImage(artist, path, ART_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                artist.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(artist, path, ART_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {
@@ -226,7 +229,7 @@ namespace MediaBrowser.Controller.Providers.Music
                             Logger.Debug("FanArtProvider getting Banner for " + artist.Name);
                             try
                             {
-                                artist.SetImage(ImageType.Banner, await Kernel.Instance.ProviderManager.DownloadAndSaveImage(artist, path, BANNER_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                artist.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(artist, path, BANNER_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {
@@ -250,7 +253,7 @@ namespace MediaBrowser.Controller.Providers.Music
                             Logger.Debug("FanArtProvider getting Primary image for " + artist.Name);
                             try
                             {
-                                artist.SetImage(ImageType.Primary, await Kernel.Instance.ProviderManager.DownloadAndSaveImage(artist, path, PRIMARY_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                artist.SetImage(ImageType.Primary, await _providerManager.DownloadAndSaveImage(artist, path, PRIMARY_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {

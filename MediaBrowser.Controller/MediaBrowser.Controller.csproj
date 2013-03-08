@@ -102,12 +102,14 @@
     <Compile Include="Entities\Year.cs" />
     <Compile Include="Extensions\XmlExtensions.cs" />
     <Compile Include="IO\FileSystem.cs" />
-    <Compile Include="IO\FileSystemManager.cs" />
+    <Compile Include="IO\IDirectoryWatchers.cs" />
     <Compile Include="IO\NativeMethods.cs" />
     <Compile Include="IServerApplicationHost.cs" />
     <Compile Include="IServerApplicationPaths.cs" />
     <Compile Include="Library\ChildrenChangedEventArgs.cs" />
     <Compile Include="Library\DtoBuilder.cs" />
+    <Compile Include="Providers\IProviderManager.cs" />
+    <Compile Include="Providers\MetadataProviderPriority.cs" />
     <Compile Include="Providers\Music\LastfmAlbumProvider.cs" />
     <Compile Include="Providers\Music\FanArtAlbumProvider.cs" />
     <Compile Include="Providers\Music\FanArtArtistProvider.cs" />
@@ -154,7 +156,6 @@
     <Compile Include="Providers\Movies\MovieProviderFromXml.cs" />
     <Compile Include="Providers\Movies\PersonProviderFromJson.cs" />
     <Compile Include="Providers\Movies\TmdbPersonProvider.cs" />
-    <Compile Include="Providers\ProviderManager.cs" />
     <Compile Include="Providers\SortNameProvider.cs" />
     <Compile Include="Providers\TV\EpisodeImageFromMediaLocationProvider.cs" />
     <Compile Include="Providers\TV\EpisodeProviderFromXml.cs" />
@@ -176,7 +177,6 @@
     <Compile Include="Library\TVUtils.cs" />
     <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
     <Compile Include="Library\ItemResolveArgs.cs" />
-    <Compile Include="IO\DirectoryWatchers.cs" />
     <Compile Include="IO\FileData.cs" />
     <Compile Include="Kernel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
