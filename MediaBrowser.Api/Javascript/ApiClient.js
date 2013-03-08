@@ -194,11 +194,11 @@ var ApiClient = {
     },
 
     /**
-     * Gets a list of network computers from the server
+     * Gets a list of network devices from the server
      */
-    getNetworkComputers: function () {
+    getNetworkDevices: function () {
 
-        var url = ApiClient.getUrl("Environment/NetworkComputers");
+        var url = ApiClient.getUrl("Environment/NetworkDevices");
 
         return $.getJSON(url);
     },

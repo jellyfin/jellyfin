@@ -16,34 +16,49 @@ namespace MediaBrowser.Api
     /// Class GetDirectoryContents
     /// </summary>
     [Route("/Environment/DirectoryContents", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets the contents of a given directory in the file system")]
     public class GetDirectoryContents : IReturn<List<FileSystemEntryInfo>>
     {
         /// <summary>
         /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>
+        [ApiMember(Name = "Path", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Path { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether [include files].
         /// </summary>
         /// <value><c>true</c> if [include files]; otherwise, <c>false</c>.</value>
+        [ApiMember(Name = "IncludeFiles", Description = "An optional filter to include or exclude files from the results.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public bool IncludeFiles { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether [include directories].
         /// </summary>
         /// <value><c>true</c> if [include directories]; otherwise, <c>false</c>.</value>
+        [ApiMember(Name = "IncludeDirectories", Description = "An optional filter to include or exclude folders from the results.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public bool IncludeDirectories { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether [include hidden].
         /// </summary>
         /// <value><c>true</c> if [include hidden]; otherwise, <c>false</c>.</value>
+        [ApiMember(Name = "IncludeHidden", Description = "An optional filter to include or exclude hidden files and folders.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public bool IncludeHidden { get; set; }
+
+        public GetDirectoryContents()
+        {
+            IncludeDirectories = true;
+            IncludeFiles = true;
+        }
     }
 
     /// <summary>
     /// Class GetDrives
     /// </summary>
     [Route("/Environment/Drives", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets available drives from the server's file system")]
     public class GetDrives : IReturn<List<FileSystemEntryInfo>>
     {
     }
@@ -51,8 +66,9 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class GetNetworkComputers
     /// </summary>
-    [Route("/Environment/NetworkComputers", "GET")]
-    public class GetNetworkComputers : IReturn<List<FileSystemEntryInfo>>
+    [Route("/Environment/NetworkDevices", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets a list of devices on the network")]
+    public class GetNetworkDevices : IReturn<List<FileSystemEntryInfo>>
     {
     }
 
@@ -128,9 +144,9 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetNetworkComputers request)
+        public object Get(GetNetworkDevices request)
         {
-            var result = GetNetworkComputers().ToList();
+            var result = GetNetworkDevices().ToList();
 
             return ToOptimizedResult(result);
         }
@@ -155,7 +171,7 @@ namespace MediaBrowser.Api
         /// Gets the network computers.
         /// </summary>
         /// <returns>IEnumerable{FileSystemEntryInfo}.</returns>
-        private IEnumerable<FileSystemEntryInfo> GetNetworkComputers()
+        private IEnumerable<FileSystemEntryInfo> GetNetworkDevices()
         {
             return _networkManager.GetNetworkDevices().Select(c => new FileSystemEntryInfo
             {

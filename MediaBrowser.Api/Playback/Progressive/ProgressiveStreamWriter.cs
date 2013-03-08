@@ -41,7 +41,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
             finally
             {
-                ServerEntryPoint.Instance.OnTranscodeEndRequest(Path, TranscodingJobType.Progressive);
+                ApiEntryPoint.Instance.OnTranscodeEndRequest(Path, TranscodingJobType.Progressive);
             }
         }
 
