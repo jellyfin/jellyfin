@@ -155,6 +155,8 @@ namespace MediaBrowser.ServerApplication
 
             await base.RegisterResources().ConfigureAwait(false);
 
+            RegisterSingleInstance<IHttpResultFactory>(new HttpResultFactory());
+            
             RegisterSingleInstance<IServerApplicationHost>(this);
             RegisterSingleInstance<IServerApplicationPaths>(ApplicationPaths);
 
