@@ -10,7 +10,7 @@ namespace MediaBrowser.Model.Dto
     /// Class UserDto
     /// </summary>
     [ProtoContract]
-    public class UserDto : INotifyPropertyChanged
+    public class UserDto : INotifyPropertyChanged, IItemDto
     {
         /// <summary>
         /// Gets or sets the name.
@@ -61,6 +61,13 @@ namespace MediaBrowser.Model.Dto
         [ProtoMember(7)]
         public UserConfiguration Configuration { get; set; }
 
+        /// <summary>
+        /// Gets or sets the primary image aspect ratio.
+        /// </summary>
+        /// <value>The primary image aspect ratio.</value>
+        [ProtoMember(8)]
+        public double? PrimaryImageAspectRatio { get; set; }
+        
         /// <summary>
         /// Gets a value indicating whether this instance has primary image.
         /// </summary>

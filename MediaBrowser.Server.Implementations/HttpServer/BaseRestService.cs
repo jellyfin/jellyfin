@@ -53,7 +53,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {
                 throw new ArgumentNullException("result");
             }
-
+            
             Response.AddHeader("Vary", "Accept-Encoding");
 
             return RequestContext.ToOptimizedResult(result);
