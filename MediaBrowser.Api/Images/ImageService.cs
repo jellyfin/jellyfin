@@ -21,6 +21,7 @@ namespace MediaBrowser.Api.Images
     /// </summary>
     [Route("/Items/{Id}/Images/{Type}", "GET")]
     [Route("/Items/{Id}/Images/{Type}/{Index}", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets an item image")]
     public class GetItemImage : ImageRequest
     {
         /// <summary>
@@ -35,6 +36,7 @@ namespace MediaBrowser.Api.Images
     /// </summary>
     [Route("/Persons/{Name}/Images/{Type}", "GET")]
     [Route("/Persons/{Name}/Images/{Type}/{Index}", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets a person image")]
     public class GetPersonImage : ImageRequest
     {
         /// <summary>
@@ -49,6 +51,7 @@ namespace MediaBrowser.Api.Images
     /// </summary>
     [Route("/Studios/{Name}/Images/{Type}", "GET")]
     [Route("/Studios/{Name}/Images/{Type}/{Index}", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets a studio image")]
     public class GetStudioImage : ImageRequest
     {
         /// <summary>
@@ -63,6 +66,7 @@ namespace MediaBrowser.Api.Images
     /// </summary>
     [Route("/Genres/{Name}/Images/{Type}", "GET")]
     [Route("/Genres/{Name}/Images/{Type}/{Index}", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets a genre image")]
     public class GetGenreImage : ImageRequest
     {
         /// <summary>
@@ -77,6 +81,7 @@ namespace MediaBrowser.Api.Images
     /// </summary>
     [Route("/Years/{Year}/Images/{Type}", "GET")]
     [Route("/Years/{Year}/Images/{Type}/{Index}", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets a year image")]
     public class GetYearImage : ImageRequest
     {
         /// <summary>
@@ -91,6 +96,7 @@ namespace MediaBrowser.Api.Images
     /// </summary>
     [Route("/Users/{Id}/Images/{Type}", "GET")]
     [Route("/Users/{Id}/Images/{Type}/{Index}", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets a user image")]
     public class GetUserImage : ImageRequest
     {
         /// <summary>
@@ -105,6 +111,7 @@ namespace MediaBrowser.Api.Images
     /// </summary>
     [Route("/Users/{Id}/Images/{Type}", "DELETE")]
     [Route("/Users/{Id}/Images/{Type}/{Index}", "DELETE")]
+    [ServiceStack.ServiceHost.Api(Description = "Deletes a user image")]
     public class DeleteUserImage : DeleteImageRequest, IReturnVoid
     {
         /// <summary>
@@ -116,6 +123,7 @@ namespace MediaBrowser.Api.Images
 
     [Route("/Users/{Id}/Images/{Type}", "POST")]
     [Route("/Users/{Id}/Images/{Type}/{Index}", "POST")]
+    [ServiceStack.ServiceHost.Api(Description = "Posts a user image")]
     public class PostUserImage : DeleteImageRequest, IRequiresRequestStream, IReturnVoid
     {
         /// <summary>

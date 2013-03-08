@@ -1,13 +1,11 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Server.Implementations.HttpServer;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text.Controller;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace MediaBrowser.Api.ScheduledTasks
@@ -16,12 +14,14 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// Class GetScheduledTask
     /// </summary>
     [Route("/ScheduledTasks/{Id}", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets a scheduled task, by Id")]
     public class GetScheduledTask : IReturn<TaskInfo>
     {
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public Guid Id { get; set; }
     }
 
@@ -29,6 +29,7 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// Class GetScheduledTasks
     /// </summary>
     [Route("/ScheduledTasks", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets scheduled tasks")]
     public class GetScheduledTasks : IReturn<List<TaskInfo>>
     {
 
@@ -38,12 +39,14 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// Class StartScheduledTask
     /// </summary>
     [Route("/ScheduledTasks/Running/{Id}", "POST")]
+    [ServiceStack.ServiceHost.Api(Description = "Starts a scheduled task")]
     public class StartScheduledTask : IReturnVoid
     {
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public Guid Id { get; set; }
     }
 
@@ -51,12 +54,14 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// Class StopScheduledTask
     /// </summary>
     [Route("/ScheduledTasks/Running/{Id}", "DELETE")]
+    [ServiceStack.ServiceHost.Api(Description = "Stops a scheduled task")]
     public class StopScheduledTask : IReturnVoid
     {
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [ApiMember(Name = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
         public Guid Id { get; set; }
     }
 
@@ -64,12 +69,14 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// Class UpdateScheduledTaskTriggers
     /// </summary>
     [Route("/ScheduledTasks/{Id}/Triggers", "POST")]
+    [ServiceStack.ServiceHost.Api(Description = "Updates the triggers for a scheduled task")]
     public class UpdateScheduledTaskTriggers : List<TaskTriggerInfo>, IReturnVoid
     {
         /// <summary>
         /// Gets or sets the task id.
         /// </summary>
         /// <value>The task id.</value>
+        [ApiMember(Name = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public Guid Id { get; set; }
     }
 

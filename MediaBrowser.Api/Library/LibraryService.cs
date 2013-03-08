@@ -14,6 +14,7 @@ namespace MediaBrowser.Api.Library
     /// Class GetPhyscialPaths
     /// </summary>
     [Route("/Library/PhysicalPaths", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets a list of physical paths from virtual folders")]
     public class GetPhyscialPaths : IReturn<List<string>>
     {
     }
@@ -22,64 +23,74 @@ namespace MediaBrowser.Api.Library
     /// Class GetItemTypes
     /// </summary>
     [Route("/Library/ItemTypes", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets a list of BaseItem types")]
     public class GetItemTypes : IReturn<List<string>>
     {
         /// <summary>
         /// Gets or sets a value indicating whether this instance has internet provider.
         /// </summary>
         /// <value><c>true</c> if this instance has internet provider; otherwise, <c>false</c>.</value>
+        [ApiMember(Name = "HasInternetProvider", Description = "Optional filter by item types that have internet providers", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool HasInternetProvider { get; set; }
     }
 
     /// <summary>
     /// Class GetPerson
     /// </summary>
-    [Route("/Library/Persons/{Name}", "GET")]
+    [Route("/Persons/{Name}", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets a person, by name")]
     public class GetPerson : IReturn<BaseItemDto>
     {
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
+        [ApiMember(Name = "Name", Description = "The person name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Name { get; set; }
     }
 
     /// <summary>
     /// Class GetStudio
     /// </summary>
-    [Route("/Library/Studios/{Name}", "GET")]
+    [Route("/Studios/{Name}", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets a studio, by name")]
     public class GetStudio : IReturn<BaseItemDto>
     {
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
+        [ApiMember(Name = "Name", Description = "The studio name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Name { get; set; }
     }
 
     /// <summary>
     /// Class GetGenre
     /// </summary>
-    [Route("/Library/Genres/{Name}", "GET")]
+    [Route("/Genres/{Name}", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets a genre, by name")]
     public class GetGenre : IReturn<BaseItemDto>
     {
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
+        [ApiMember(Name = "Name", Description = "The genre name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Name { get; set; }
     }
 
     /// <summary>
     /// Class GetYear
     /// </summary>
-    [Route("/Library/Years/{Year}", "GET")]
+    [Route("/Years/{Year}", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets a year")]
     public class GetYear : IReturn<BaseItemDto>
     {
         /// <summary>
         /// Gets or sets the year.
         /// </summary>
         /// <value>The year.</value>
+        [ApiMember(Name = "Year", Description = "The year", IsRequired = true, DataType = "int", ParameterType = "path", Verb = "GET")]
         public int Year { get; set; }
     }
 

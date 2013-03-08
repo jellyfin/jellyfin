@@ -16,6 +16,7 @@ namespace MediaBrowser.Api
     /// Class GetUsers
     /// </summary>
     [Route("/Users", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets a list of users")]
     public class GetUsers : IReturn<List<UserDto>>
     {
     }

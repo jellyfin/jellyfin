@@ -670,7 +670,7 @@ var ApiClient = {
             throw new Error("null name");
         }
 
-        var url = ApiClient.getUrl("Library/Studios/" + name);
+        var url = ApiClient.getUrl("Studios/" + name);
 
         return $.getJSON(url);
     },
@@ -684,7 +684,7 @@ var ApiClient = {
             throw new Error("null name");
         }
 
-        var url = ApiClient.getUrl("Library/Genres/" + name);
+        var url = ApiClient.getUrl("Genres/" + name);
 
         return $.getJSON(url);
     },
@@ -698,7 +698,7 @@ var ApiClient = {
             throw new Error("null year");
         }
 
-        var url = ApiClient.getUrl("Library/Years/" + year);
+        var url = ApiClient.getUrl("Years/" + year);
 
         return $.getJSON(url);
     },
@@ -712,7 +712,7 @@ var ApiClient = {
             throw new Error("null name");
         }
 
-        var url = ApiClient.getUrl("Library/Persons/" + name);
+        var url = ApiClient.getUrl("Persons/" + name);
 
         return $.getJSON(url);
     },
