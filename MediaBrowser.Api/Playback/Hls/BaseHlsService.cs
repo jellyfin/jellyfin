@@ -52,10 +52,11 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <summary>
         /// Processes the request.
         /// </summary>
-        /// <param name="state">The state.</param>
         /// <returns>System.Object.</returns>
-        protected object ProcessRequest(StreamState state)
+        protected object ProcessRequest(StreamRequest request)
         {
+            var state = GetState(request);
+            
             return ProcessRequestAsync(state).Result;
         }
 
@@ -85,12 +86,10 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var content = Encoding.UTF8.GetBytes(playlistText);
 
-            var stream = new MemoryStream(content);
-
             try
             {
                 Response.ContentType = MimeTypes.GetMimeType("playlist.m3u8");
-                return new StreamWriter(stream);
+                return content;
             }
             finally
             {
@@ -129,6 +128,8 @@ namespace MediaBrowser.Api.Playback.Hls
 
             // The segement paths within the playlist are phsyical, so strip that out to make it relative
             fileText = fileText.Replace(Path.GetDirectoryName(playlist) + Path.DirectorySeparatorChar, string.Empty);
+
+            fileText = fileText.Replace(SegmentFilePrefix, "segments/");
 
             // Even though we specify target duration of 9, ffmpeg seems unable to keep all segments under that amount
             fileText = fileText.Replace("#EXT-X-TARGETDURATION:9", "#EXT-X-TARGETDURATION:10");

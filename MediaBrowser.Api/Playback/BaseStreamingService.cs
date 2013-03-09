@@ -647,11 +647,14 @@ namespace MediaBrowser.Api.Playback
                     videoRequest.VideoCodec = InferVideoCodec(url);
                 }
 
-                state.AudioStream = GetMediaStream(media.MediaStreams, videoRequest.AudioStreamIndex, MediaStreamType.Audio, true);
                 state.VideoStream = GetMediaStream(media.MediaStreams, videoRequest.VideoStreamIndex, MediaStreamType.Video, true);
                 state.SubtitleStream = GetMediaStream(media.MediaStreams, videoRequest.SubtitleStreamIndex, MediaStreamType.Subtitle, false);
             }
-
+            else
+            {
+                state.AudioStream = GetMediaStream(media.MediaStreams, null, MediaStreamType.Audio, true);
+            }
+            
             return state;
         }
 
