@@ -11,6 +11,11 @@ namespace MediaBrowser.Api.Playback
 
         public StreamRequest Request { get; set; }
 
+        public VideoStreamRequest VideoRequest
+        {
+            get { return (VideoStreamRequest) Request; }
+        }
+        
         /// <summary>
         /// Gets or sets the log file stream.
         /// </summary>

@@ -34,14 +34,16 @@ namespace MediaBrowser.Api.Playback.Progressive
                 return ext;
             }
 
+            var videoRequest = state.Request as VideoStreamRequest;
+
             // Try to infer based on the desired video codec
-            if (state.Request.VideoCodec.HasValue)
+            if (videoRequest != null && videoRequest.VideoCodec.HasValue)
             {
                 var video = state.Item as Video;
 
                 if (video != null)
                 {
-                    switch (state.Request.VideoCodec.Value)
+                    switch (videoRequest.VideoCodec.Value)
                     {
                         case VideoCodecs.H264:
                             return ".ts";

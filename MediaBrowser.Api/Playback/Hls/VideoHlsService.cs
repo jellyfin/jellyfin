@@ -60,7 +60,7 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <returns>System.String.</returns>
         protected override string GetVideoArguments(StreamState state)
         {
-            var codec = GetVideoCodec(state.Request);
+            var codec = GetVideoCodec(state.VideoRequest);
 
             // Right now all we support is either h264 or copy
             if (!codec.Equals("copy", StringComparison.OrdinalIgnoreCase) && !codec.Equals("libx264", StringComparison.OrdinalIgnoreCase))
@@ -76,19 +76,19 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var args = "-codec:v:0 " + codec + " -preset superfast";
 
-            if (state.Request.VideoBitRate.HasValue)
+            if (state.VideoRequest.VideoBitRate.HasValue)
             {
-                args += string.Format(" -b:v {0}", state.Request.VideoBitRate.Value);
+                args += string.Format(" -b:v {0}", state.VideoRequest.VideoBitRate.Value);
             }
 
             // Add resolution params, if specified
-            if (state.Request.Width.HasValue || state.Request.Height.HasValue || state.Request.MaxHeight.HasValue || state.Request.MaxWidth.HasValue)
+            if (state.VideoRequest.Width.HasValue || state.VideoRequest.Height.HasValue || state.VideoRequest.MaxHeight.HasValue || state.VideoRequest.MaxWidth.HasValue)
             {
                 args += GetOutputSizeParam(state, codec);
             }
 
             // Get the output framerate based on the FrameRate param
-            double framerate = state.Request.Framerate ?? 0;
+            double framerate = state.VideoRequest.Framerate ?? 0;
 
             // We have to supply a framerate for hls, so if it's null, account for that here
             if (framerate.Equals(0))

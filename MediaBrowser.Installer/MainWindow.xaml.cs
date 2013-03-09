@@ -113,7 +113,7 @@ namespace MediaBrowser.Installer
             {
                 case "mbt":
                     PackageName = "MBTheater";
-                    RootSuffix = "-UI";
+                    RootSuffix = "-Theater";
                     TargetExe = "MediaBrowser.UI.exe";
                     FriendlyName = "Media Browser Theater";
                     break;
