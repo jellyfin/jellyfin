@@ -1,10 +1,28 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.IO;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using System;
+using ServiceStack.ServiceHost;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
+    [Route("/Videos/{Id}/stream.m3u8", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets a video stream using HTTP live streaming.")]
+    public class GetHlsVideoStream : VideoStreamRequest
+    {
+
+    }
+
+    [Route("/Videos/{Id}/segments/{SegmentId}.ts", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
+    public class GetHlsVideoSegment
+    {
+        public string Id { get; set; }
+
+        public string SegmentId { get; set; }
+    }
+    
     public class VideoHlsService : BaseHlsService
     {
         public VideoHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager)
@@ -12,6 +30,25 @@ namespace MediaBrowser.Api.Playback.Hls
         {
         }
 
+        public object Get(GetHlsVideoSegment request)
+        {
+            var file = SegmentFilePrefix + request.SegmentId + Path.GetExtension(Request.PathInfo);
+
+            file = Path.Combine(ApplicationPaths.EncodedMediaCachePath, file);
+
+            return ToStaticFileResult(file);
+        }
+
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
+        public object Get(GetHlsVideoStream request)
+        {
+            return ProcessRequest(request);
+        }
+        
         /// <summary>
         /// Gets the audio arguments.
         /// </summary>
