@@ -313,7 +313,7 @@ namespace MediaBrowser.Controller.Entities
             var path = Path;
 
             // non file-system entries will not have a path
-            if (string.IsNullOrEmpty(path))
+            if (this.LocationType != LocationType.FileSystem || string.IsNullOrEmpty(path))
             {
                 return new ItemResolveArgs(ConfigurationManager.ApplicationPaths)
                 {
