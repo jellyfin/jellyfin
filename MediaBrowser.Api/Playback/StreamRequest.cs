@@ -19,7 +19,7 @@ namespace MediaBrowser.Api.Playback
         /// Gets or sets the audio codec.
         /// </summary>
         /// <value>The audio codec.</value>
-        [ApiMember(Name = "AudioCodec", Description = "Optional. Specify a specific audio codec to encode to, e.g. mp3. If omitted the server will attempt to infer it using the url's extension. Options: aac, mp3, vorbis, wma.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "AudioCodec", Description = "Optional. Specify a audio codec to encode to, e.g. mp3. If omitted the server will auto-select using the url's extension. Options: aac, mp3, vorbis, wma.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public AudioCodecs? AudioCodec { get; set; }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace MediaBrowser.Api.Playback
         /// Gets or sets the audio bit rate.
         /// </summary>
         /// <value>The audio bit rate.</value>
-        [ApiMember(Name = "AudioBitRate", Description = "Optional. Specify a specific audio bitrate to encode to, e.g. 128000", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "AudioBitRate", Description = "Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? AudioBitRate { get; set; }
 
         /// <summary>
@@ -64,60 +64,70 @@ namespace MediaBrowser.Api.Playback
         /// Gets or sets the video codec.
         /// </summary>
         /// <value>The video codec.</value>
+        [ApiMember(Name = "VideoCodec", Description = "Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h264, theora, vpx, wmv.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public VideoCodecs? VideoCodec { get; set; }
 
         /// <summary>
         /// Gets or sets the video bit rate.
         /// </summary>
         /// <value>The video bit rate.</value>
+        [ApiMember(Name = "VideoBitRate", Description = "Optional. Specify a video bitrate to encode to, e.g. 500000. If omitted this will be left to encoder defaults.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? VideoBitRate { get; set; }
 
         /// <summary>
         /// Gets or sets the index of the audio stream.
         /// </summary>
         /// <value>The index of the audio stream.</value>
+        [ApiMember(Name = "AudioStreamIndex", Description = "Optional. The index of the audio stream to use. If omitted the first audio stream will be used.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? AudioStreamIndex { get; set; }
 
         /// <summary>
         /// Gets or sets the index of the video stream.
         /// </summary>
         /// <value>The index of the video stream.</value>
+        [ApiMember(Name = "VideoStreamIndex", Description = "Optional. The index of the video stream to use. If omitted the first video stream will be used.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? VideoStreamIndex { get; set; }
 
         /// <summary>
         /// Gets or sets the index of the subtitle stream.
         /// </summary>
         /// <value>The index of the subtitle stream.</value>
+        [ApiMember(Name = "SubtitleStreamIndex", Description = "Optional. The index of the subtitle stream to use. If omitted no subtitles will be used.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? SubtitleStreamIndex { get; set; }
 
         /// <summary>
         /// Gets or sets the width.
         /// </summary>
         /// <value>The width.</value>
+        [ApiMember(Name = "Width", Description = "Optional. The fixed horizontal resolution of the encoded video.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? Width { get; set; }
 
         /// <summary>
         /// Gets or sets the height.
         /// </summary>
         /// <value>The height.</value>
+        [ApiMember(Name = "Height", Description = "Optional. The fixed vertical resolution of the encoded video.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? Height { get; set; }
 
         /// <summary>
         /// Gets or sets the width of the max.
         /// </summary>
         /// <value>The width of the max.</value>
+        [ApiMember(Name = "MaxWidth", Description = "Optional. The maximum horizontal resolution of the encoded video.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? MaxWidth { get; set; }
 
         /// <summary>
         /// Gets or sets the height of the max.
         /// </summary>
         /// <value>The height of the max.</value>
+        [ApiMember(Name = "MaxHeight", Description = "Optional. The maximum vertical resolution of the encoded video.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? MaxHeight { get; set; }
 
         /// <summary>
         /// Gets or sets the framerate.
         /// </summary>
         /// <value>The framerate.</value>
+        [ApiMember(Name = "Framerate", Description = "Optional. A specific video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements.", IsRequired = false, DataType = "double", ParameterType = "query", Verb = "GET")]
         public double? Framerate { get; set; }
     }
 }

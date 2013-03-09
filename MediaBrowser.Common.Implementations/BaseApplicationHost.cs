@@ -209,9 +209,9 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         protected virtual void FindParts()
         {
-            Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
-
             Plugins = GetExports<IPlugin>();
+            
+            Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
         }
 
         /// <summary>

@@ -16,12 +16,14 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class GetItems
     /// </summary>
     [Route("/Users/{UserId}/Items", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets items based on a query.")]
     public class GetItems : IReturn<ItemsResult>
     {
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public Guid UserId { get; set; }
 
         /// <summary>
@@ -34,36 +36,42 @@ namespace MediaBrowser.Api.UserLibrary
         /// Skips over a given number of items within the results. Use for paging.
         /// </summary>
         /// <value>The start index.</value>
+        [ApiMember(Name = "StartIndex", Description = "Optional. The record index to start at. All items with a lower index will be dropped from the results.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? StartIndex { get; set; }
 
         /// <summary>
         /// The maximum number of items to return
         /// </summary>
         /// <value>The limit.</value>
+        [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? Limit { get; set; }
 
         /// <summary>
         /// Whether or not to perform the query recursively
         /// </summary>
         /// <value><c>true</c> if recursive; otherwise, <c>false</c>.</value>
+        [ApiMember(Name = "Recursive", Description = "When searching within folders, this determines whether or not the search will be recursive. true/false", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool Recursive { get; set; }
 
         /// <summary>
         /// Limit results to items containing a specific person
         /// </summary>
         /// <value>The person.</value>
+        [ApiMember(Name = "Person", Description = "Optional. If specified, results will be filtered to include only those containing the specified person.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Person { get; set; }
 
         /// <summary>
         /// If the Person filter is used, this can also be used to restrict to a specific person type
         /// </summary>
         /// <value>The type of the person.</value>
+        [ApiMember(Name = "PersonType", Description = "Optional. If specified, along with Person, results will be filtered to include only those containing the specified person and PersonType.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string PersonType { get; set; }
 
         /// <summary>
         /// Search characters used to find items
         /// </summary>
         /// <value>The index by.</value>
+        [ApiMember(Name = "SearchTerm", Description = "Optional. If specified, results will be filtered based on a search term.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string SearchTerm { get; set; }
 
         /// <summary>
@@ -82,60 +90,70 @@ namespace MediaBrowser.Api.UserLibrary
         /// What to sort the results by
         /// </summary>
         /// <value>The sort by.</value>
+        [ApiMember(Name = "SortBy", Description = "Optional. Specify one or more sort orders, comma delimeted. Options: Album,AlbumArtist,Artist,DateCreated,DatePlayed,PremiereDate,SortName,Random", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string SortBy { get; set; }
 
         /// <summary>
         /// The sort order to return results with
         /// </summary>
         /// <value>The sort order.</value>
+        [ApiMember(Name = "SortOrder", Description = "Optional. Ascending / Descending sort order", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string SortOrder { get; set; }
 
         /// <summary>
         /// Filters to apply to the results
         /// </summary>
         /// <value>The filters.</value>
+        [ApiMember(Name = "Filters", Description = "Optional. Specify additional filters to apply. This allows multiple, comma delimeted. Options: IsFolder,IsNotFolder,IsUnplayed,IsPlayed,IsFavorite,IsResumable", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Filters { get; set; }
 
         /// <summary>
         /// Fields to return within the items, in addition to basic information
         /// </summary>
         /// <value>The fields.</value>
+        [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: AudioInfo, Chapters, DateCreated, DisplayMediaType, DisplayPreferences, Genres, ItemCounts, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, SeriesInfo, SortName, Studios, Taglines, TrailerUrls, UserData", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Fields { get; set; }
 
         /// <summary>
         /// Limit results to items containing specific genres
         /// </summary>
         /// <value>The genres.</value>
+        [ApiMember(Name = "Genres", Description = "Optional. If specified, results will be filtered based on genre. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Genres { get; set; }
 
         /// <summary>
         /// Limit results to items containing specific studios
         /// </summary>
         /// <value>The studios.</value>
+        [ApiMember(Name = "Studios", Description = "Optional. If specified, results will be filtered based on studio. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Studios { get; set; }
 
         /// <summary>
         /// Gets or sets the exclude item types.
         /// </summary>
         /// <value>The exclude item types.</value>
+        [ApiMember(Name = "ExcludeItemTypes", Description = "Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string ExcludeItemTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the include item types.
         /// </summary>
         /// <value>The include item types.</value>
+        [ApiMember(Name = "IncludeItemTypes", Description = "Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string IncludeItemTypes { get; set; }
 
         /// <summary>
         /// Limit results to items containing specific years
         /// </summary>
         /// <value>The years.</value>
+        [ApiMember(Name = "Years", Description = "Optional. If specified, results will be filtered based on production year. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Years { get; set; }
 
         /// <summary>
         /// Gets or sets the image types.
         /// </summary>
         /// <value>The image types.</value>
+        [ApiMember(Name = "ImageTypes", Description = "Optional. If specified, results will be filtered based on those containing image types. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string ImageTypes { get; set; }
     }
 
@@ -153,7 +171,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// The _library manager
         /// </summary>
         private readonly ILibraryManager _libraryManager;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsService" /> class.
         /// </summary>

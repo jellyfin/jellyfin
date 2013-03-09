@@ -268,7 +268,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the position ticks.
         /// </summary>
         /// <value>The position ticks.</value>
-        [ApiMember(Name = "PositionTicks", Description = "Optional. The current position, in ticks. 1 tick = 10000 ms", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "DELETE")]
+        [ApiMember(Name = "PositionTicks", Description = "Optional. The current position, in ticks. 1 tick = 10000 ms", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "POST")]
         public long? PositionTicks { get; set; }
     }
 

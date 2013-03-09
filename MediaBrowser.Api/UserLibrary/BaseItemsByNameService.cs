@@ -170,14 +170,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the start index.
         /// </summary>
         /// <value>The start index.</value>
-        [ApiMember(Name = "StartIndex", Description = "The record index to start at. All items with a lower index will be dropped from the results.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "StartIndex", Description = "Optional. The record index to start at. All items with a lower index will be dropped from the results.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? StartIndex { get; set; }
 
         /// <summary>
         /// Gets or sets the size of the page.
         /// </summary>
         /// <value>The size of the page.</value>
-        [ApiMember(Name = "Limit", Description = "The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? Limit { get; set; }
 
         /// <summary>
