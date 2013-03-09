@@ -84,12 +84,10 @@ namespace MediaBrowser.Api.Playback.Hls
             // Get the current playlist text and convert to bytes
             var playlistText = await GetPlaylistFileText(playlist, isPlaylistNewlyCreated).ConfigureAwait(false);
 
-            var content = Encoding.UTF8.GetBytes(playlistText);
-
             try
             {
                 Response.ContentType = MimeTypes.GetMimeType("playlist.m3u8");
-                return content;
+                return playlistText;
             }
             finally
             {
@@ -138,7 +136,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var playlistType = fileText.IndexOf("#EXT-X-ENDLIST", StringComparison.OrdinalIgnoreCase) == -1 ? "EVENT" : "VOD";
 
             // Add event type at the top
-            fileText = fileText.Replace("#EXT-X-ALLOWCACHE", "#EXT-X-PLAYLIST-TYPE:" + playlistType + Environment.NewLine + "#EXT-X-ALLOWCACHE");
+            fileText = fileText.Replace("#EXT-X-ALLOW-CACHE", "#EXT-X-PLAYLIST-TYPE:" + playlistType + Environment.NewLine + "#EXT-X-ALLOWCACHE");
 
             return fileText;
         }
