@@ -30,6 +30,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Specify this to localize the search to a specific item or folder. Omit to use the root.
         /// </summary>
         /// <value>The parent id.</value>
+        [ApiMember(Name = "ParentId", Description = "Specify this to localize the search to a specific item or folder. Omit to use the root", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ParentId { get; set; }
 
         /// <summary>
