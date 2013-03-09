@@ -52,7 +52,7 @@ namespace MediaBrowser.Uninstaller.Execute
 
                 case "mbt":
                     Product = "Theater";
-                    RootSuffix = "-UI";
+                    RootSuffix = "-Theater";
                     break;
 
                 default:
