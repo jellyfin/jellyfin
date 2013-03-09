@@ -675,9 +675,29 @@ namespace MediaBrowser.Api.Playback
             {
                 return AudioCodecs.Aac;
             }
-            if (string.Equals(ext, ".wam", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(ext, ".wma", StringComparison.OrdinalIgnoreCase))
             {
                 return AudioCodecs.Wma;
+            }
+            if (string.Equals(ext, ".ogg", StringComparison.OrdinalIgnoreCase))
+            {
+                return AudioCodecs.Vorbis;
+            }
+            if (string.Equals(ext, ".oga", StringComparison.OrdinalIgnoreCase))
+            {
+                return AudioCodecs.Vorbis;
+            }
+            if (string.Equals(ext, ".ogv", StringComparison.OrdinalIgnoreCase))
+            {
+                return AudioCodecs.Vorbis;
+            }
+            if (string.Equals(ext, ".webm", StringComparison.OrdinalIgnoreCase))
+            {
+                return AudioCodecs.Vorbis;
+            }
+            if (string.Equals(ext, ".webma", StringComparison.OrdinalIgnoreCase))
+            {
+                return AudioCodecs.Vorbis;
             }
 
             return null;
@@ -700,9 +720,13 @@ namespace MediaBrowser.Api.Playback
             {
                 return VideoCodecs.Vpx;
             }
-            if (string.Equals(ext, ".ogg", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(ext, ".ogg", StringComparison.OrdinalIgnoreCase) || string.Equals(ext, ".ogv", StringComparison.OrdinalIgnoreCase))
             {
                 return VideoCodecs.Theora;
+            }
+            if (string.Equals(ext, ".m3u8", StringComparison.OrdinalIgnoreCase) || string.Equals(ext, ".ts", StringComparison.OrdinalIgnoreCase))
+            {
+                return VideoCodecs.H264;
             }
 
             return null;
