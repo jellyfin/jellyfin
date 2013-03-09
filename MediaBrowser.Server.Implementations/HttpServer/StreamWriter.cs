@@ -40,9 +40,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// </summary>
         /// <param name="responseStream">The response stream.</param>
         /// <returns>Task.</returns>
-        private Task WriteToAsync(Stream responseStream)
+        private async Task WriteToAsync(Stream responseStream)
         {
-            return SourceStream.CopyToAsync(responseStream);
+            using (var src = SourceStream)
+            {
+                await src.CopyToAsync(responseStream).ConfigureAwait(false);
+            }
         }
     }
 }
