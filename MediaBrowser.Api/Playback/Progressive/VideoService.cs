@@ -21,7 +21,8 @@ namespace MediaBrowser.Api.Playback.Progressive
     [Route("/Videos/{Id}/stream.mpeg", "GET")]
     [Route("/Videos/{Id}/stream.avi", "GET")]
     [Route("/Videos/{Id}/stream", "GET")]
-    public class GetVideoStream : StreamRequest
+    [ServiceStack.ServiceHost.Api(Description = "Gets a video stream")]
+    public class GetVideoStream : VideoStreamRequest
     {
 
     }
@@ -59,7 +60,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             var probeSize = Kernel.Instance.FFMpegManager.GetProbeSizeArgument(video.VideoType, video.IsoType);
 
             // Get the output codec name
-            var videoCodec = GetVideoCodec(state.Request);
+            var videoCodec = GetVideoCodec(state.VideoRequest);
 
             var graphicalSubtitleParam = string.Empty;
 
@@ -103,7 +104,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         {
             var args = "-vcodec " + videoCodec;
 
-            var request = state.Request;
+            var request = state.VideoRequest;
 
             // If we're encoding video, add additional params
             if (!videoCodec.Equals("copy", StringComparison.OrdinalIgnoreCase))
@@ -186,7 +187,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <param name="request">The request.</param>
         /// <param name="videoCodec">The video codec.</param>
         /// <returns>System.String.</returns>
-        private string GetVideoQualityParam(StreamRequest request, string videoCodec)
+        private string GetVideoQualityParam(VideoStreamRequest request, string videoCodec)
         {
             var args = string.Empty;
 

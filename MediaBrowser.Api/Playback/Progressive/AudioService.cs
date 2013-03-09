@@ -15,6 +15,7 @@ namespace MediaBrowser.Api.Playback.Progressive
     [Route("/Audio/{Id}/stream.flac", "GET")]
     [Route("/Audio/{Id}/stream.ogg", "GET")]
     [Route("/Audio/{Id}/stream", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets an audio stream")]
     public class GetAudioStream : StreamRequest
     {
 

@@ -18,7 +18,6 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class GetItem
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}", "GET")]
-    [Route("/Users/{UserId}/Items/Root", "GET")]
     [ServiceStack.ServiceHost.Api(Description = "Gets an item from a user's library")]
     public class GetItem : IReturn<BaseItemDto>
     {
@@ -35,6 +34,21 @@ namespace MediaBrowser.Api.UserLibrary
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
+    }
+
+    /// <summary>
+    /// Class GetItem
+    /// </summary>
+    [Route("/Users/{UserId}/Items/Root", "GET")]
+    [ServiceStack.ServiceHost.Api(Description = "Gets the root folder from a user's library")]
+    public class GetRootFolder : IReturn<BaseItemDto>
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public Guid UserId { get; set; }
     }
 
     /// <summary>
@@ -214,6 +228,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     [Route("/Users/{UserId}/PlayingItems/{Id}", "POST")]
+    [ServiceStack.ServiceHost.Api(Description = "Reports that a user has begun playing an item")]
     public class OnPlaybackStart : IReturnVoid
     {
         /// <summary>
@@ -232,6 +247,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     [Route("/Users/{UserId}/PlayingItems/{Id}/Progress", "POST")]
+    [ServiceStack.ServiceHost.Api(Description = "Reports a user's playback progress")]
     public class OnPlaybackProgress : IReturnVoid
     {
         /// <summary>
@@ -257,6 +273,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     [Route("/Users/{UserId}/PlayingItems/{Id}", "DELETE")]
+    [ServiceStack.ServiceHost.Api(Description = "Reports that a user has stopped playing an item")]
     public class OnPlaybackStopped : IReturnVoid
     {
         /// <summary>
@@ -402,7 +419,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
+            var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
@@ -414,6 +431,22 @@ namespace MediaBrowser.Api.UserLibrary
             return ToOptimizedResult(result);
         }
 
+        public object Get(GetRootFolder request)
+        {
+            var user = _userManager.GetUserById(request.UserId);
+
+            var item = user.RootFolder;
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
+
+            var dtoBuilder = new DtoBuilder(Logger);
+
+            var result = dtoBuilder.GetBaseItemDto(item, user, fields, _libraryManager).Result;
+
+            return ToOptimizedResult(result);
+        }
+        
         /// <summary>
         /// Gets the specified request.
         /// </summary>

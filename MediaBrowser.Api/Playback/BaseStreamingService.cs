@@ -219,7 +219,7 @@ namespace MediaBrowser.Api.Playback
 
             var assSubtitleParam = string.Empty;
 
-            var request = state.Request;
+            var request = state.VideoRequest;
 
             if (state.SubtitleStream != null)
             {
@@ -354,7 +354,7 @@ namespace MediaBrowser.Api.Playback
         {
             var outputSizeParam = string.Empty;
 
-            var request = state.Request;
+            var request = state.VideoRequest;
 
             // Add resolution params, if specified
             if (request.Width.HasValue || request.Height.HasValue || request.MaxHeight.HasValue || request.MaxWidth.HasValue)
@@ -439,7 +439,7 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.String.</returns>
-        protected string GetVideoCodec(StreamRequest request)
+        protected string GetVideoCodec(VideoStreamRequest request)
         {
             var codec = request.VideoCodec;
 
@@ -630,20 +630,29 @@ namespace MediaBrowser.Api.Playback
             {
                 request.AudioCodec = InferAudioCodec(url);
             }
-            if (!request.VideoCodec.HasValue)
-            {
-                request.VideoCodec = InferVideoCodec(url);
-            }
 
-            return new StreamState
+            var state = new StreamState
             {
                 Item = item,
                 Request = request,
-                AudioStream = GetMediaStream(media.MediaStreams, request.AudioStreamIndex, MediaStreamType.Audio, true),
-                VideoStream = GetMediaStream(media.MediaStreams, request.VideoStreamIndex, MediaStreamType.Video, true),
-                SubtitleStream = GetMediaStream(media.MediaStreams, request.SubtitleStreamIndex, MediaStreamType.Subtitle, false),
                 Url = url
             };
+
+            var videoRequest = request as VideoStreamRequest;
+
+            if (videoRequest != null)
+            {
+                if (!videoRequest.VideoCodec.HasValue)
+                {
+                    videoRequest.VideoCodec = InferVideoCodec(url);
+                }
+
+                state.AudioStream = GetMediaStream(media.MediaStreams, videoRequest.AudioStreamIndex, MediaStreamType.Audio, true);
+                state.VideoStream = GetMediaStream(media.MediaStreams, videoRequest.VideoStreamIndex, MediaStreamType.Video, true);
+                state.SubtitleStream = GetMediaStream(media.MediaStreams, videoRequest.SubtitleStreamIndex, MediaStreamType.Subtitle, false);
+            }
+
+            return state;
         }
 
         /// <summary>
