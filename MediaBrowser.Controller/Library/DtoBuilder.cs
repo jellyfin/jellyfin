@@ -480,33 +480,30 @@ namespace MediaBrowser.Controller.Library
             double totalPercentPlayed = 0;
 
             // Loop through each recursive child
-            foreach (var child in folder.GetRecursiveChildren(user))
+            foreach (var child in folder.GetRecursiveChildren(user).Where(i => !i.IsFolder))
             {
                 var userdata = child.GetUserData(user, false);
 
-                if (!child.IsFolder)
+                recursiveItemCount++;
+
+                // Check is recently added
+                if (child.IsRecentlyAdded(user))
                 {
-                    recursiveItemCount++;
+                    rcentlyAddedItemCount++;
+                }
 
-                    // Check is recently added
-                    if (child.IsRecentlyAdded(user))
+                // Incrememt totalPercentPlayed
+                if (userdata != null)
+                {
+                    if (userdata.PlayCount > 0)
                     {
-                        rcentlyAddedItemCount++;
+                        totalPercentPlayed += 100;
                     }
-
-                    // Incrememt totalPercentPlayed
-                    if (userdata != null)
+                    else if (userdata.PlaybackPositionTicks > 0 && child.RunTimeTicks.HasValue && child.RunTimeTicks.Value > 0)
                     {
-                        if (userdata.PlayCount > 0)
-                        {
-                            totalPercentPlayed += 100;
-                        }
-                        else if (userdata.PlaybackPositionTicks > 0 && child.RunTimeTicks.HasValue && child.RunTimeTicks.Value > 0)
-                        {
-                            double itemPercent = userdata.PlaybackPositionTicks;
-                            itemPercent /= child.RunTimeTicks.Value;
-                            totalPercentPlayed += itemPercent;
-                        }
+                        double itemPercent = userdata.PlaybackPositionTicks;
+                        itemPercent /= child.RunTimeTicks.Value;
+                        totalPercentPlayed += itemPercent;
                     }
                 }
             }
