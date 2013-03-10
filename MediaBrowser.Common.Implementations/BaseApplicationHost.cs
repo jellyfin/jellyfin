@@ -13,7 +13,6 @@ using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.System;
 using MediaBrowser.Model.Updates;
 using SimpleInjector;
 using System;
@@ -26,6 +25,10 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.Implementations
 {
+    /// <summary>
+    /// Class BaseApplicationHost
+    /// </summary>
+    /// <typeparam name="TApplicationPathsType">The type of the T application paths type.</typeparam>
     public abstract class BaseApplicationHost<TApplicationPathsType> : IApplicationHost
         where TApplicationPathsType : class, IApplicationPaths, new()
     {
@@ -87,6 +90,7 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// Gets assemblies that failed to load
         /// </summary>
+        /// <value>The failed assemblies.</value>
         public List<string> FailedAssemblies { get; protected set; }
 
         /// <summary>
@@ -148,11 +152,31 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         /// <value>The kernel.</value>
         protected ITaskManager TaskManager { get; private set; }
+        /// <summary>
+        /// Gets the security manager.
+        /// </summary>
+        /// <value>The security manager.</value>
         protected ISecurityManager SecurityManager { get; private set; }
+        /// <summary>
+        /// Gets the package manager.
+        /// </summary>
+        /// <value>The package manager.</value>
         protected IPackageManager PackageManager { get; private set; }
+        /// <summary>
+        /// Gets the HTTP client.
+        /// </summary>
+        /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
+        /// <summary>
+        /// Gets the network manager.
+        /// </summary>
+        /// <value>The network manager.</value>
         protected INetworkManager NetworkManager { get; private set; }
 
+        /// <summary>
+        /// Gets the configuration manager.
+        /// </summary>
+        /// <value>The configuration manager.</value>
         protected IConfigurationManager ConfigurationManager { get; private set; }
 
         /// <summary>
@@ -187,7 +211,21 @@ namespace MediaBrowser.Common.Implementations
 
             FindParts();
 
-            Task.Run(() => ConfigureAutoRunAtStartup());
+            await RunStartupTasks().ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Runs the startup tasks.
+        /// </summary>
+        /// <returns>Task.</returns>
+        protected virtual Task RunStartupTasks()
+        {
+            return Task.Run(() =>
+            {
+                Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
+
+                Task.Run(() => ConfigureAutoRunAtStartup());
+            });
         }
 
         /// <summary>
@@ -202,6 +240,10 @@ namespace MediaBrowser.Common.Implementations
         /// <value>The name of the log file prefix.</value>
         protected abstract string LogFilePrefixName { get; }
 
+        /// <summary>
+        /// Gets the configuration manager.
+        /// </summary>
+        /// <returns>IConfigurationManager.</returns>
         protected abstract IConfigurationManager GetConfigurationManager();
 
         /// <summary>
@@ -210,8 +252,6 @@ namespace MediaBrowser.Common.Implementations
         protected virtual void FindParts()
         {
             Plugins = GetExports<IPlugin>();
-            
-            Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
         }
 
         /// <summary>
@@ -236,6 +276,7 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
+        /// <returns>Task.</returns>
         protected virtual Task RegisterResources()
         {
             return Task.Run(() =>
@@ -509,10 +550,23 @@ namespace MediaBrowser.Common.Implementations
             }
         }
 
+        /// <summary>
+        /// Restarts this instance.
+        /// </summary>
         public abstract void Restart();
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can self update.
+        /// </summary>
+        /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
         public abstract bool CanSelfUpdate { get; }
 
+        /// <summary>
+        /// Checks for update.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <returns>Task{CheckForUpdateResult}.</returns>
         public abstract Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress);
 
         /// <summary>
@@ -529,6 +583,9 @@ namespace MediaBrowser.Common.Implementations
             EventHelper.QueueEventIfNotNull(ApplicationUpdated, this, new GenericEventArgs<Version> { Argument = package.version }, Logger);
         }
 
+        /// <summary>
+        /// Shuts down.
+        /// </summary>
         public abstract void Shutdown();
     }
 }
