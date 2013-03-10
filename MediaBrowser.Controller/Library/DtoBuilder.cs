@@ -367,9 +367,6 @@ namespace MediaBrowser.Controller.Library
             {
                 var folder = (Folder)item;
 
-                dto.IsRoot = folder.IsRoot;
-                dto.IsVirtualFolder = folder.IsVirtualFolder;
-
                 if (fields.Contains(ItemFields.IndexOptions))
                 {
                     dto.IndexOptions = folder.IndexByOptionStrings.ToArray();
