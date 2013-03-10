@@ -2,41 +2,53 @@
 namespace MediaBrowser.Model.Dto
 {
     /// <summary>
-    /// Enum ItemSortBy
+    /// These represent sort orders that are known by the core
     /// </summary>
-    public enum ItemSortBy
+    public static class ItemSortBy
     {
         /// <summary>
         /// The album
         /// </summary>
-        Album,
+        public const string Album = "Album";
         /// <summary>
         /// The album artist
         /// </summary>
-        AlbumArtist,
+        public const string AlbumArtist = "AlbumArtist";
         /// <summary>
         /// The artist
         /// </summary>
-        Artist,
+        public const string Artist = "Artist";
         /// <summary>
         /// The date created
         /// </summary>
-        DateCreated,
+        public const string DateCreated = "DateCreated";
         /// <summary>
         /// The date played
         /// </summary>
-        DatePlayed,
+        public const string DatePlayed = "DatePlayed";
         /// <summary>
         /// The premiere date
         /// </summary>
-        PremiereDate,
+        public const string PremiereDate = "PremiereDate";
         /// <summary>
         /// The sort name
         /// </summary>
-        SortName,
+        public const string SortName = "SortName";
         /// <summary>
         /// The random
         /// </summary>
-        Random
+        public const string Random = "Random";
+        /// <summary>
+        /// The runtime
+        /// </summary>
+        public const string Runtime = "Runtime";
+        /// <summary>
+        /// The community rating
+        /// </summary>
+        public const string CommunityRating = "CommunityRating";
+        /// <summary>
+        /// The production year
+        /// </summary>
+        public const string ProductionYear = "ProductionYear";
     }
 }
