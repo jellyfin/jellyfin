@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -80,12 +79,6 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The index by.</value>
         public string IndexBy { get; set; }
-
-        /// <summary>
-        /// The dynamic, localized sort function name
-        /// </summary>
-        /// <value>The dynamic sort by.</value>
-        public string DynamicSortBy { get; set; }
 
         /// <summary>
         /// What to sort the results by
@@ -254,7 +247,7 @@ namespace MediaBrowser.Api.UserLibrary
                 return ((Folder)item).GetRecursiveChildren(user);
             }
 
-            return ((Folder)item).GetChildren(user, request.IndexBy, request.DynamicSortBy, GetSortOrder(request));
+            return ((Folder)item).GetChildren(user, request.IndexBy);
         }
 
         /// <summary>
@@ -266,58 +259,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{BaseItem}.</returns>
         private IEnumerable<BaseItem> ApplySortOrder(GetItems request, IEnumerable<BaseItem> items, User user)
         {
-            var isFirst = true;
-            var descending = (GetSortOrder(request) ?? SortOrder.Ascending) == SortOrder.Descending;
+            var orderBy = GetOrderBy(request).ToArray();
 
-            IOrderedEnumerable<BaseItem> orderedItems = null;
-
-            foreach (var orderBy in GetOrderBy(request).Select(o => GetComparer(o, user)))
-            {
-                if (isFirst)
-                {
-                    orderedItems = descending ? items.OrderByDescending(i => i, orderBy) : items.OrderBy(i => i, orderBy);
-                }
-                else
-                {
-                    orderedItems = descending ? orderedItems.ThenByDescending(i => i, orderBy) : orderedItems.ThenBy(i => i, orderBy);
-                }
-
-                isFirst = false;
-            }
-
-            return orderedItems ?? items;
-        }
-
-        /// <summary>
-        /// Gets the comparer.
-        /// </summary>
-        /// <param name="sortBy">The sort by.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>IComparer{BaseItem}.</returns>
-        /// <exception cref="System.ArgumentException"></exception>
-        private IComparer<BaseItem> GetComparer(ItemSortBy sortBy, User user)
-        {
-            switch (sortBy)
-            {
-                case ItemSortBy.Album:
-                    return new AlbumComparer();
-                case ItemSortBy.AlbumArtist:
-                    return new AlbumArtistComparer();
-                case ItemSortBy.Artist:
-                    return new ArtistComparer();
-                case ItemSortBy.Random:
-                    return new RandomComparer();
-                case ItemSortBy.DateCreated:
-                    return new DateCreatedComparer();
-                case ItemSortBy.SortName:
-                    return new SortNameComparer();
-                case ItemSortBy.PremiereDate:
-                    return new PremiereDateComparer();
-                case ItemSortBy.DatePlayed:
-                    return new DatePlayedComparer { User = user };
-                default:
-                    throw new ArgumentException();
-            }
+            return orderBy.Length == 0 ? items : _libraryManager.Sort(items, user, orderBy, GetSortOrder(request) ?? SortOrder.Ascending);
         }
 
         /// <summary>
@@ -575,16 +519,16 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>IEnumerable{ItemSortBy}.</returns>
-        private IEnumerable<ItemSortBy> GetOrderBy(GetItems request)
+        private IEnumerable<string> GetOrderBy(GetItems request)
         {
             var val = request.SortBy;
 
             if (string.IsNullOrEmpty(val))
             {
-                return new ItemSortBy[] { };
+                return new string[] { };
             }
 
-            return val.Split(',').Select(v => (ItemSortBy)Enum.Parse(typeof(ItemSortBy), v, true));
+            return val.Split(',');
         }
 
         /// <summary>
@@ -619,203 +563,6 @@ namespace MediaBrowser.Api.UserLibrary
         public int Compare(BaseItem x, BaseItem y)
         {
             return x.DateCreated.CompareTo(y.DateCreated);
-        }
-    }
-
-    /// <summary>
-    /// Class RandomComparer
-    /// </summary>
-    public class RandomComparer : IComparer<BaseItem>
-    {
-        /// <summary>
-        /// Compares the specified x.
-        /// </summary>
-        /// <param name="x">The x.</param>
-        /// <param name="y">The y.</param>
-        /// <returns>System.Int32.</returns>
-        public int Compare(BaseItem x, BaseItem y)
-        {
-            return Guid.NewGuid().CompareTo(Guid.NewGuid());
-        }
-    }
-
-    /// <summary>
-    /// Class SortNameComparer
-    /// </summary>
-    public class SortNameComparer : IComparer<BaseItem>
-    {
-        /// <summary>
-        /// Compares the specified x.
-        /// </summary>
-        /// <param name="x">The x.</param>
-        /// <param name="y">The y.</param>
-        /// <returns>System.Int32.</returns>
-        public int Compare(BaseItem x, BaseItem y)
-        {
-            return string.Compare(x.SortName, y.SortName, StringComparison.CurrentCultureIgnoreCase);
-        }
-    }
-
-    /// <summary>
-    /// Class AlbumArtistComparer
-    /// </summary>
-    public class AlbumArtistComparer : IComparer<BaseItem>
-    {
-        /// <summary>
-        /// Compares the specified x.
-        /// </summary>
-        /// <param name="x">The x.</param>
-        /// <param name="y">The y.</param>
-        /// <returns>System.Int32.</returns>
-        public int Compare(BaseItem x, BaseItem y)
-        {
-            return string.Compare(GetValue(x), GetValue(y), StringComparison.CurrentCultureIgnoreCase);
-        }
-
-        /// <summary>
-        /// Gets the value.
-        /// </summary>
-        /// <param name="x">The x.</param>
-        /// <returns>System.String.</returns>
-        private string GetValue(BaseItem x)
-        {
-            var audio = x as Audio;
-
-            return audio == null ? string.Empty : audio.AlbumArtist;
-        }
-    }
-
-    /// <summary>
-    /// Class AlbumComparer
-    /// </summary>
-    public class AlbumComparer : IComparer<BaseItem>
-    {
-        /// <summary>
-        /// Compares the specified x.
-        /// </summary>
-        /// <param name="x">The x.</param>
-        /// <param name="y">The y.</param>
-        /// <returns>System.Int32.</returns>
-        public int Compare(BaseItem x, BaseItem y)
-        {
-            return string.Compare(GetValue(x), GetValue(y), StringComparison.CurrentCultureIgnoreCase);
-        }
-
-        /// <summary>
-        /// Gets the value.
-        /// </summary>
-        /// <param name="x">The x.</param>
-        /// <returns>System.String.</returns>
-        private string GetValue(BaseItem x)
-        {
-            var audio = x as Audio;
-
-            return audio == null ? string.Empty : audio.Album;
-        }
-    }
-
-    /// <summary>
-    /// Class ArtistComparer
-    /// </summary>
-    public class ArtistComparer : IComparer<BaseItem>
-    {
-        /// <summary>
-        /// Compares the specified x.
-        /// </summary>
-        /// <param name="x">The x.</param>
-        /// <param name="y">The y.</param>
-        /// <returns>System.Int32.</returns>
-        public int Compare(BaseItem x, BaseItem y)
-        {
-            return string.Compare(GetValue(x), GetValue(y), StringComparison.CurrentCultureIgnoreCase);
-        }
-
-        /// <summary>
-        /// Gets the value.
-        /// </summary>
-        /// <param name="x">The x.</param>
-        /// <returns>System.String.</returns>
-        private string GetValue(BaseItem x)
-        {
-            var audio = x as Audio;
-
-            return audio == null ? string.Empty : audio.Artist;
-        }
-    }
-
-    /// <summary>
-    /// Class PremiereDateComparer
-    /// </summary>
-    public class PremiereDateComparer : IComparer<BaseItem>
-    {
-        /// <summary>
-        /// Compares the specified x.
-        /// </summary>
-        /// <param name="x">The x.</param>
-        /// <param name="y">The y.</param>
-        /// <returns>System.Int32.</returns>
-        public int Compare(BaseItem x, BaseItem y)
-        {
-            return GetDate(x).CompareTo(GetDate(y));
-        }
-
-        /// <summary>
-        /// Gets the date.
-        /// </summary>
-        /// <param name="x">The x.</param>
-        /// <returns>DateTime.</returns>
-        private DateTime GetDate(BaseItem x)
-        {
-            if (x.PremiereDate.HasValue)
-            {
-                return x.PremiereDate.Value;
-            }
-
-            if (x.ProductionYear.HasValue)
-            {
-                return new DateTime(x.ProductionYear.Value, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            }
-            return DateTime.MaxValue;
-        }
-    }
-
-    /// <summary>
-    /// Class DatePlayedComparer
-    /// </summary>
-    public class DatePlayedComparer : IComparer<BaseItem>
-    {
-        /// <summary>
-        /// Gets or sets the user.
-        /// </summary>
-        /// <value>The user.</value>
-        public User User { get; set; }
-
-        /// <summary>
-        /// Compares the specified x.
-        /// </summary>
-        /// <param name="x">The x.</param>
-        /// <param name="y">The y.</param>
-        /// <returns>System.Int32.</returns>
-        public int Compare(BaseItem x, BaseItem y)
-        {
-            return GetDate(x).CompareTo(GetDate(y));
-        }
-
-        /// <summary>
-        /// Gets the date.
-        /// </summary>
-        /// <param name="x">The x.</param>
-        /// <returns>DateTime.</returns>
-        private DateTime GetDate(BaseItem x)
-        {
-            var userdata = x.GetUserData(User, false);
-
-            if (userdata != null && userdata.LastPlayedDate.HasValue)
-            {
-                return userdata.LastPlayedDate.Value;
-            }
-
-            return DateTime.MinValue;
         }
     }
 }

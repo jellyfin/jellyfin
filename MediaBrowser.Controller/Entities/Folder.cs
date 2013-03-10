@@ -13,7 +13,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using SortOrder = MediaBrowser.Controller.Sorting.SortOrder;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -176,63 +175,6 @@ namespace MediaBrowser.Controller.Entities
                 DisplayPrefs = list;
             }
         }
-
-        #region Sorting
-
-        /// <summary>
-        /// The _sort by options
-        /// </summary>
-        private Dictionary<string, IComparer<BaseItem>> _sortByOptions;
-        /// <summary>
-        /// Dictionary of sort options - consists of a display value (localized) and an IComparer of BaseItem
-        /// </summary>
-        /// <value>The sort by options.</value>
-        [IgnoreDataMember]
-        public Dictionary<string, IComparer<BaseItem>> SortByOptions
-        {
-            get { return _sortByOptions ?? (_sortByOptions = GetSortByOptions()); }
-        }
-
-        /// <summary>
-        /// Returns the valid set of sort by options for this folder type.
-        /// Override or extend to modify.
-        /// </summary>
-        /// <returns>Dictionary{System.StringIComparer{BaseItem}}.</returns>
-        protected virtual Dictionary<string, IComparer<BaseItem>> GetSortByOptions()
-        {
-            return new Dictionary<string, IComparer<BaseItem>> {            
-                {LocalizedStrings.Instance.GetString("NameDispPref"), new BaseItemComparer(SortOrder.Name, Logger)},
-                {LocalizedStrings.Instance.GetString("DateDispPref"), new BaseItemComparer(SortOrder.Date, Logger)},
-                {LocalizedStrings.Instance.GetString("RatingDispPref"), new BaseItemComparer(SortOrder.Rating, Logger)},
-                {LocalizedStrings.Instance.GetString("RuntimeDispPref"), new BaseItemComparer(SortOrder.Runtime, Logger)},
-                {LocalizedStrings.Instance.GetString("YearDispPref"), new BaseItemComparer(SortOrder.Year, Logger)}
-            };
-
-        }
-
-        /// <summary>
-        /// Get a sorting comparer by name
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns>IComparer{BaseItem}.</returns>
-        private IComparer<BaseItem> GetSortingFunction(string name)
-        {
-            IComparer<BaseItem> sorting;
-            SortByOptions.TryGetValue(name ?? "", out sorting);
-            return sorting ?? new BaseItemComparer(SortOrder.Name, Logger);
-        }
-
-        /// <summary>
-        /// Get the list of sort by choices for this folder (localized).
-        /// </summary>
-        /// <value>The sort by option strings.</value>
-        [IgnoreDataMember]
-        public IEnumerable<string> SortByOptionStrings
-        {
-            get { return SortByOptions.Keys; }
-        }
-
-        #endregion
 
         #region Indexing
 
@@ -877,11 +819,9 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="indexBy">The index by.</param>
-        /// <param name="sortBy">The sort by.</param>
-        /// <param name="sortOrder">The sort order.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public virtual IEnumerable<BaseItem> GetChildren(User user, string indexBy = null, string sortBy = null, Model.Entities.SortOrder? sortOrder = null)
+        public virtual IEnumerable<BaseItem> GetChildren(User user, string indexBy = null)
         {
             if (user == null)
             {
@@ -889,7 +829,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             //the true root should return our users root folder children
-            if (IsPhysicalRoot) return user.RootFolder.GetChildren(user, indexBy, sortBy, sortOrder);
+            if (IsPhysicalRoot) return user.RootFolder.GetChildren(user, indexBy);
 
             IEnumerable<BaseItem> result = null;
 
@@ -904,14 +844,7 @@ namespace MediaBrowser.Controller.Entities
                 result = ActualChildren.Where(c => c.IsVisible(user));
             }
 
-            if (string.IsNullOrEmpty(sortBy))
-            {
-                return result;
-            }
-
-            return sortOrder.HasValue && sortOrder.Value == Model.Entities.SortOrder.Descending
-                       ? result.OrderByDescending(i => i, GetSortingFunction(sortBy))
-                       : result.OrderBy(i => i, GetSortingFunction(sortBy));
+            return result;
         }
 
         /// <summary>

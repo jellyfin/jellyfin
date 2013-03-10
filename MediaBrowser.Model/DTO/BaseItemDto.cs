@@ -316,13 +316,6 @@ namespace MediaBrowser.Model.Dto
         public List<DayOfWeek> AirDays { get; set; }
 
         /// <summary>
-        /// Gets or sets the sort options.
-        /// </summary>
-        /// <value>The sort options.</value>
-        [ProtoMember(53)]
-        public string[] SortOptions { get; set; }
-
-        /// <summary>
         /// Gets or sets the index options.
         /// </summary>
         /// <value>The index options.</value>

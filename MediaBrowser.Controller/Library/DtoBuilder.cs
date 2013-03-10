@@ -373,11 +373,6 @@ namespace MediaBrowser.Controller.Library
                 {
                     dto.IndexOptions = folder.IndexByOptionStrings.ToArray();
                 }
-
-                if (fields.Contains(ItemFields.SortOptions))
-                {
-                    dto.SortOptions = folder.SortByOptionStrings.ToArray();
-                }
             }
 
             // Add audio info

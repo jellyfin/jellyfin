@@ -87,11 +87,6 @@ namespace MediaBrowser.Model.Dto
         SortName,
 
         /// <summary>
-        /// The fields that the server supports sorting on
-        /// </summary>
-        SortOptions,
-
-        /// <summary>
         /// The studios of the item
         /// </summary>
         Studios,
