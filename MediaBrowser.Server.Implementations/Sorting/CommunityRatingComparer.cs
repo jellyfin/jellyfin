@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Sorting;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Server.Implementations.Sorting
