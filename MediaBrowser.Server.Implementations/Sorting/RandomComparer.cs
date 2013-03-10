@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Dto;
 using System;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Server.Implementations.Sorting
 {

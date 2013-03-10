@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Connectivity;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Server.Implementations.HttpServer;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text.Controller;

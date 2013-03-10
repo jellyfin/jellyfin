@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Server.Implementations.HttpServer;
 using ServiceStack.ServiceHost;
 using System;
@@ -84,7 +85,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// What to sort the results by
         /// </summary>
         /// <value>The sort by.</value>
-        [ApiMember(Name = "SortBy", Description = "Optional. Specify one or more sort orders, comma delimeted. Options: Album,AlbumArtist,Artist,DateCreated,DatePlayed,PremiereDate,SortName,Random", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        [ApiMember(Name = "SortBy", Description = "Optional. Specify one or more sort orders, comma delimeted. Options: Album, AlbumArtist, Artist, CommunityRating, DateCreated, DatePlayed, PremiereDate, ProductionYear, SortName, Random, Runtime", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string SortBy { get; set; }
 
         /// <summary>
@@ -98,7 +99,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Filters to apply to the results
         /// </summary>
         /// <value>The filters.</value>
-        [ApiMember(Name = "Filters", Description = "Optional. Specify additional filters to apply. This allows multiple, comma delimeted. Options: IsFolder,IsNotFolder,IsUnplayed,IsPlayed,IsFavorite,IsResumable", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        [ApiMember(Name = "Filters", Description = "Optional. Specify additional filters to apply. This allows multiple, comma delimeted. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsRecentlyAdded, IsResumable", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Filters { get; set; }
 
         /// <summary>

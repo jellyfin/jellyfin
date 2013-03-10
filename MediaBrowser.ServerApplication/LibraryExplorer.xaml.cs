@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;

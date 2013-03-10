@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Server.Implementations.HttpServer;
 using ServiceStack.ServiceHost;
 using System;
