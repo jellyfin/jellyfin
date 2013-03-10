@@ -85,6 +85,11 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
+            if (item.LocationType != LocationType.FileSystem)
+            {
+                return false;
+            }
+
             var video = item as Video;
 
             if (video != null)

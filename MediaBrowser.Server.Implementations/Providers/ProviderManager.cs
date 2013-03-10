@@ -368,7 +368,7 @@ namespace MediaBrowser.Server.Implementations.Providers
             }
 
             //download and save locally
-            var localPath = ConfigurationManager.Configuration.SaveLocalMeta ?
+            var localPath = (ConfigurationManager.Configuration.SaveLocalMeta && item.MetaLocation != null) ?
                 Path.Combine(item.MetaLocation, targetName) :
                 _remoteImageCache.GetResourcePath(item.GetType().FullName + item.Path.ToLower(), targetName);
 
