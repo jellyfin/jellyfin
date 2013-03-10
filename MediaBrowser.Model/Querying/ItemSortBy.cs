@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.Model.Dto
+namespace MediaBrowser.Model.Querying
 {
     /// <summary>
     /// These represent sort orders that are known by the core

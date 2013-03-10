@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.Model.Dto
+namespace MediaBrowser.Model.Querying
 {
     /// <summary>
     /// Used to control the data that gets attached to DtoBaseItems
