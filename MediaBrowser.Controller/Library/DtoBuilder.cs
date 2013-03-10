@@ -678,7 +678,7 @@ namespace MediaBrowser.Controller.Library
 
             if (!string.IsNullOrEmpty(chapterInfo.ImagePath))
             {
-                dto.ImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(item, ImageType.ChapterImage, chapterInfo.ImagePath);
+                dto.ImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(item, ImageType.Chapter, chapterInfo.ImagePath);
             }
 
             return dto;

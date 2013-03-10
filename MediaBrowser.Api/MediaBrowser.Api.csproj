@@ -85,7 +85,6 @@
     <Compile Include="Images\ImageRequest.cs" />
     <Compile Include="Images\ImageService.cs" />
     <Compile Include="Images\ImageWriter.cs" />
-    <Compile Include="Javascript\JavascriptApiClientService.cs" />
     <Compile Include="Library\LibraryHelpers.cs" />
     <Compile Include="Library\LibraryService.cs" />
     <Compile Include="Library\LibraryStructureService.cs" />
@@ -141,7 +140,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Javascript\ApiClient.js" />
     <Content Include="options.xml" />
   </ItemGroup>
   <ItemGroup />

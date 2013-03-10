@@ -465,7 +465,7 @@ namespace MediaBrowser.Api.UserLibrary
                 return item.ScreenshotImagePaths != null && item.ScreenshotImagePaths.Count > 0;
             }
 
-            if (imageType == ImageType.ChapterImage)
+            if (imageType == ImageType.Chapter)
             {
                 var video = item as Video;
 
