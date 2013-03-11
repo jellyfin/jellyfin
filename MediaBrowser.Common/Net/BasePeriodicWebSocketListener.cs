@@ -149,10 +149,6 @@ namespace MediaBrowser.Common.Net
 
                 tuple.Item5.Release();
             }
-            catch (ObjectDisposedException)
-            {
-                // Socket has already been disposed
-            }
             catch (OperationCanceledException)
             {
                 if (tuple.Item2.IsCancellationRequested)
