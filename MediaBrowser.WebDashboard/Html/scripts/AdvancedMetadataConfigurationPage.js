@@ -33,13 +33,19 @@
 
             var checkedAttribute = configuration.InternetProviderExcludeTypes.indexOf(type) != -1 ? ' checked="checked"' : '';
 
-            html += '<input' + checkedAttribute + ' class="chkItemType" data-itemtype="' + type + '" type="checkbox" name="' + id + '" id="' + id + '" />';
+            html += '<input' + checkedAttribute + ' class="chkItemType" data-itemtype="' + type + '" type="checkbox" name="' + id + '" id="' + id + '" onchange="AdvancedMetadataConfigurationPage.submit();" />';
             html += '<label for="' + id + '">' + type + '</label>';
         }
 
         html += "</div>";
 
         $('#divItemTypes', page).html(html).trigger("create");
+    },
+
+    submit: function () {
+
+        $('.btnSubmit', $.mobile.activePage)[0].click();
+
     },
 
     onSubmit: function () {
@@ -54,7 +60,7 @@
                 return currentCheckbox.getAttribute('data-itemtype');
             });
 
-            ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateServerConfiguration(config);
         });
 
         // Disable default form submission
