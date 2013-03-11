@@ -650,10 +650,8 @@ namespace MediaBrowser.Api.Playback
                 state.VideoStream = GetMediaStream(media.MediaStreams, videoRequest.VideoStreamIndex, MediaStreamType.Video, true);
                 state.SubtitleStream = GetMediaStream(media.MediaStreams, videoRequest.SubtitleStreamIndex, MediaStreamType.Subtitle, false);
             }
-            else
-            {
-                state.AudioStream = GetMediaStream(media.MediaStreams, null, MediaStreamType.Audio, true);
-            }
+
+            state.AudioStream = GetMediaStream(media.MediaStreams, null, MediaStreamType.Audio, true);
             
             return state;
         }
