@@ -94,31 +94,35 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// </summary>
         /// <param name="responseStream">The response stream.</param>
         /// <returns>Task.</returns>
-        private Task WriteToAsync(Stream responseStream)
+        private async Task WriteToAsync(Stream responseStream)
         {
-            var requestedRange = RequestedRanges.First();
-
-            var totalLength = SourceStream.Length;
-
-            // If the requested range is "0-", we can optimize by just doing a stream copy
-            if (!requestedRange.Value.HasValue)
+            using (var source = SourceStream)
             {
-                return ServeCompleteRangeRequest(requestedRange, responseStream, totalLength);
-            }
+                var requestedRange = RequestedRanges.First();
 
-            // This will have to buffer a portion of the content into memory
-            return ServePartialRangeRequest(requestedRange.Key, requestedRange.Value.Value, responseStream, totalLength);
+                var totalLength = SourceStream.Length;
+
+                // If the requested range is "0-", we can optimize by just doing a stream copy
+                if (!requestedRange.Value.HasValue)
+                {
+                    await ServeCompleteRangeRequest(source, requestedRange, responseStream, totalLength).ConfigureAwait(false);
+                }
+
+                // This will have to buffer a portion of the content into memory
+                await ServePartialRangeRequest(source, requestedRange.Key, requestedRange.Value.Value, responseStream, totalLength).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
         /// Handles a range request of "bytes=0-"
         /// This will serve the complete content and add the content-range header
         /// </summary>
+        /// <param name="sourceStream">The source stream.</param>
         /// <param name="requestedRange">The requested range.</param>
         /// <param name="responseStream">The response stream.</param>
         /// <param name="totalContentLength">Total length of the content.</param>
         /// <returns>Task.</returns>
-        private Task ServeCompleteRangeRequest(KeyValuePair<long, long?> requestedRange, Stream responseStream, long totalContentLength)
+        private Task ServeCompleteRangeRequest(Stream sourceStream, KeyValuePair<long, long?> requestedRange, Stream responseStream, long totalContentLength)
         {
             var rangeStart = requestedRange.Key;
             var rangeEnd = totalContentLength - 1;
@@ -130,21 +134,22 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             if (rangeStart > 0)
             {
-                SourceStream.Position = rangeStart;
+                sourceStream.Position = rangeStart;
             }
 
-            return SourceStream.CopyToAsync(responseStream);
+            return sourceStream.CopyToAsync(responseStream);
         }
 
         /// <summary>
         /// Serves a partial range request
         /// </summary>
+        /// <param name="sourceStream">The source stream.</param>
         /// <param name="rangeStart">The range start.</param>
         /// <param name="rangeEnd">The range end.</param>
         /// <param name="responseStream">The response stream.</param>
         /// <param name="totalContentLength">Total length of the content.</param>
         /// <returns>Task.</returns>
-        private async Task ServePartialRangeRequest(long rangeStart, long rangeEnd, Stream responseStream, long totalContentLength)
+        private async Task ServePartialRangeRequest(Stream sourceStream, long rangeStart, long rangeEnd, Stream responseStream, long totalContentLength)
         {
             var rangeLength = 1 + rangeEnd - rangeStart;
 
@@ -152,18 +157,18 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             Response.ContentLength64 = rangeLength;
             Response.Headers["Content-Range"] = string.Format("bytes {0}-{1}/{2}", rangeStart, rangeEnd, totalContentLength);
 
-            SourceStream.Position = rangeStart;
+            sourceStream.Position = rangeStart;
 
             // Fast track to just copy the stream to the end
             if (rangeEnd == totalContentLength - 1)
             {
-                await SourceStream.CopyToAsync(responseStream).ConfigureAwait(false);
+                await sourceStream.CopyToAsync(responseStream).ConfigureAwait(false);
             }
             else
             {
                 // Read the bytes we need
                 var buffer = new byte[Convert.ToInt32(rangeLength)];
-                await SourceStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+                await sourceStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
 
                 await responseStream.WriteAsync(buffer, 0, Convert.ToInt32(rangeLength)).ConfigureAwait(false);
             }
