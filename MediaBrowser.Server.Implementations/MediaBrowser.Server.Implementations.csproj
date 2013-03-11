@@ -109,6 +109,7 @@
     <Compile Include="HttpServer\HttpResultFactory.cs" />
     <Compile Include="HttpServer\HttpServer.cs" />
     <Compile Include="HttpServer\NativeWebSocket.cs" />
+    <Compile Include="HttpServer\RangeRequestWriter.cs" />
     <Compile Include="HttpServer\ServerFactory.cs" />
     <Compile Include="HttpServer\StreamWriter.cs" />
     <Compile Include="HttpServer\SwaggerService.cs" />
