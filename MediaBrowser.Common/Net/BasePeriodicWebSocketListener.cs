@@ -146,6 +146,12 @@ namespace MediaBrowser.Common.Net
                     Data = data
 
                 }, tuple.Item2.Token).ConfigureAwait(false);
+
+                tuple.Item5.Release();
+            }
+            catch (ObjectDisposedException)
+            {
+                // Socket has already been disposed
             }
             catch (OperationCanceledException)
             {
@@ -158,10 +164,6 @@ namespace MediaBrowser.Common.Net
             {
                 Logger.ErrorException("Error sending web socket message {0}", ex, Name);
                 DisposeConnection(tuple);
-            }
-            finally
-            {
-                tuple.Item5.Release();
             }
         }
 
