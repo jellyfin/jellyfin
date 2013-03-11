@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.Model.Dto
+namespace MediaBrowser.Model.Querying
 {
     /// <summary>
     /// Used to control the data that gets attached to DtoBaseItems
@@ -85,11 +85,6 @@ namespace MediaBrowser.Model.Dto
         /// The sort name of the item
         /// </summary>
         SortName,
-
-        /// <summary>
-        /// The fields that the server supports sorting on
-        /// </summary>
-        SortOptions,
 
         /// <summary>
         /// The studios of the item

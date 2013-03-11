@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Model.Entities;
 using System;
 
-namespace MediaBrowser.Model.Dto
+namespace MediaBrowser.Model.Querying
 {
     /// <summary>
     /// Class ItemsByNameQuery
@@ -34,10 +34,10 @@ namespace MediaBrowser.Model.Dto
         /// <value>The sort order.</value>
         public SortOrder? SortOrder { get; set; }
         /// <summary>
-        /// If specified the search will be localized within a specific item or folder
+        /// Gets or sets the parent id.
         /// </summary>
-        /// <value>The item id.</value>
-        public string ItemId { get; set; }
+        /// <value>The parent id.</value>
+        public string ParentId { get; set; }
         /// <summary>
         /// Fields to return within the items, in addition to basic information
         /// </summary>

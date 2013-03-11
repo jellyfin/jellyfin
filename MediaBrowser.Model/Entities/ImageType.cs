@@ -49,6 +49,6 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The chapter image
         /// </summary>
-        ChapterImage
+        Chapter
     }
 }

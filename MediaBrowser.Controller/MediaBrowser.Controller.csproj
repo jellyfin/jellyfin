@@ -185,8 +185,8 @@
     <Compile Include="Providers\FolderProviderFromXml.cs" />
     <Compile Include="Providers\ImageFromMediaLocationProvider.cs" />
     <Compile Include="Providers\MediaInfo\FFProbeVideoInfoProvider.cs" />
-    <Compile Include="Sorting\BaseItemComparer.cs" />
-    <Compile Include="Sorting\SortOrder.cs" />
+    <Compile Include="Sorting\IBaseItemComparer.cs" />
+    <Compile Include="Sorting\IUserBaseItemComparer.cs" />
     <Compile Include="Updates\IInstallationManager.cs" />
     <Compile Include="Weather\IWeatherProvider.cs" />
     <Compile Include="Providers\BaseItemXmlParser.cs" />
@@ -202,7 +202,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="MediaInfo\ffmpeg20130209.zip" />
+    <EmbeddedResource Include="MediaInfo\ffmpeg20130310.zip" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

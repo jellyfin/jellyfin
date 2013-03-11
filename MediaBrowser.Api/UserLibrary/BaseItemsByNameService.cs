@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Server.Implementations.HttpServer;
 using ServiceStack.ServiceHost;
 using System;
@@ -23,12 +23,16 @@ namespace MediaBrowser.Api.UserLibrary
         /// The _user manager
         /// </summary>
         protected readonly IUserManager UserManager;
+        /// <summary>
+        /// The library manager
+        /// </summary>
         protected readonly ILibraryManager LibraryManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseItemsByNameService{TItemType}" /> class.
         /// </summary>
         /// <param name="userManager">The user manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
         protected BaseItemsByNameService(IUserManager userManager, ILibraryManager libraryManager)
         {
             UserManager = userManager;
@@ -44,7 +48,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = UserManager.GetUserById(request.UserId);
 
-            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, UserManager, LibraryManager, user.Id);
+            var item = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.ParentId, UserManager, LibraryManager, user.Id);
 
             IEnumerable<BaseItem> items;
 
@@ -157,54 +161,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetItemsByName
     /// </summary>
-    public class GetItemsByName : IReturn<ItemsResult>
+    public class GetItemsByName : BaseItemsRequest, IReturn<ItemsResult>
     {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid UserId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the start index.
-        /// </summary>
-        /// <value>The start index.</value>
-        [ApiMember(Name = "StartIndex", Description = "Optional. The record index to start at. All items with a lower index will be dropped from the results.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
-        public int? StartIndex { get; set; }
-
-        /// <summary>
-        /// Gets or sets the size of the page.
-        /// </summary>
-        /// <value>The size of the page.</value>
-        [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
-        public int? Limit { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="GetItemsByName" /> is recursive.
-        /// </summary>
-        /// <value><c>true</c> if recursive; otherwise, <c>false</c>.</value>
-        [ApiMember(Name = "Recursive", Description = "When searching within folders, this determines whether or not the search will be recursive. true/false", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
-        public bool Recursive { get; set; }
-
-        /// <summary>
-        /// Gets or sets the sort order.
-        /// </summary>
-        /// <value>The sort order.</value>
-        [ApiMember(Name = "SortOrder", Description = "Sort Order - Ascending,Descending", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public SortOrder? SortOrder { get; set; }
-
-        /// <summary>
-        /// If specified the search will be localized within a specific item or folder
-        /// </summary>
-        /// <value>The item id.</value>
-        [ApiMember(Name = "Id", Description = "If specified the search will be localized within a specific item or folder", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string Id { get; set; }
-
-        /// <summary>
-        /// Fields to return within the items, in addition to basic information
-        /// </summary>
-        /// <value>The fields.</value>
-        public string Fields { get; set; }
     }
 }

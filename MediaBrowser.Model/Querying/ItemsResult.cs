@@ -1,6 +1,7 @@
-﻿using ProtoBuf;
+﻿using MediaBrowser.Model.Dto;
+using ProtoBuf;
 
-namespace MediaBrowser.Model.Dto
+namespace MediaBrowser.Model.Querying
 {
     /// <summary>
     /// Represents the result of a query for items

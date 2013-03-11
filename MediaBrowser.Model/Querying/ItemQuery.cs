@@ -1,7 +1,8 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using System;
 
-namespace MediaBrowser.Model.Dto
+namespace MediaBrowser.Model.Querying
 {
     /// <summary>
     /// Contains all the possible parameters that can be used to query for items
@@ -36,7 +37,7 @@ namespace MediaBrowser.Model.Dto
         /// What to sort the results by
         /// </summary>
         /// <value>The sort by.</value>
-        public ItemSortBy[] SortBy { get; set; }
+        public string[] SortBy { get; set; }
 
         /// <summary>
         /// The sort order to return results with
@@ -115,12 +116,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The index by.</value>
         public string IndexBy { get; set; }
-
-        /// <summary>
-        /// The dynamic, localized sort function name
-        /// </summary>
-        /// <value>The dynamic sort by.</value>
-        public string DynamicSortBy { get; set; }
 
         /// <summary>
         /// Gets or sets the image types.

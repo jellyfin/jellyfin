@@ -4,8 +4,10 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -78,7 +80,8 @@ namespace MediaBrowser.ServerApplication
             Cursor = Cursors.Wait;
             await Task.Run(() =>
                 {
-                    IEnumerable<BaseItem> children = CurrentUser.Name == "Physical" ? _libraryManager.RootFolder.Children.OrderBy(i => i.SortName) : _libraryManager.RootFolder.GetChildren(CurrentUser, sortBy: LocalizedStrings.Instance.GetString("NameDispPref"));
+                    IEnumerable<BaseItem> children = CurrentUser.Name == "Physical" ? _libraryManager.RootFolder.Children : _libraryManager.RootFolder.GetChildren(CurrentUser);
+                    children = OrderByName(children, CurrentUser);
 
                     foreach (Folder folder in children)
                                    {
@@ -86,9 +89,12 @@ namespace MediaBrowser.ServerApplication
                                         var currentFolder = folder;
                                        Task.Factory.StartNew(() =>
                                         {
-                                            var prefs = ddlProfile.SelectedItem != null ? currentFolder.GetDisplayPrefs(ddlProfile.SelectedItem as User, false) ?? new DisplayPreferences {SortBy = LocalizedStrings.Instance.GetString("NameDispPref")} : new DisplayPreferences {SortBy = LocalizedStrings.Instance.GetString("NameDispPref")};
+                                            var prefs = ddlProfile.SelectedItem != null ? currentFolder.GetDisplayPrefs(ddlProfile.SelectedItem as User, false) ?? new DisplayPreferences {SortBy = ItemSortBy.SortName} : new DisplayPreferences {SortBy = ItemSortBy.SortName};
                                             var node = new TreeViewItem { Tag = currentFolder };
-                                            AddChildren(node, currentFolder.GetChildren(CurrentUser, prefs.IndexBy, prefs.SortBy ?? LocalizedStrings.Instance.GetString("NameDispPref")), CurrentUser);
+
+                                            var subChildren = currentFolder.GetChildren(CurrentUser, prefs.IndexBy);
+                                            subChildren = OrderByName(subChildren, CurrentUser);
+                                            AddChildren(node, subChildren, CurrentUser);
                                             node.Header = currentFolder.Name + " (" +
                                                         node.Items.Count + ")";
                                             tvwLibrary.Items.Add(node);
@@ -98,6 +104,28 @@ namespace MediaBrowser.ServerApplication
             lblLoading.Visibility = Visibility.Hidden;
             Cursor = Cursors.Arrow;
 
+        }
+
+        /// <summary>
+        /// Orders the name of the by.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="user">The user.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        private IEnumerable<BaseItem> OrderByName(IEnumerable<BaseItem> items, User user)
+        {
+            return OrderBy(items, user, ItemSortBy.SortName);
+        }
+
+        /// <summary>
+        /// Orders the name of the by.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="user">The user.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        private IEnumerable<BaseItem> OrderBy(IEnumerable<BaseItem> items, User user, string order)
+        {
+            return _libraryManager.Sort(items, user, new[] { order }, SortOrder.Ascending);
         }
 
         /// <summary>
@@ -115,7 +143,7 @@ namespace MediaBrowser.ServerApplication
                 if (subFolder != null)
                 {
                     var prefs = subFolder.GetDisplayPrefs(user, false) ?? new DisplayPreferences {SortBy = LocalizedStrings.Instance.GetString("NameDispPref")};
-                    AddChildren(node, subFolder.GetChildren(user, sortBy: prefs.SortBy), user);
+                    AddChildren(node, OrderBy(subFolder.GetChildren(user), user, prefs.SortBy), user);
                     node.Header = item.Name + " (" + node.Items.Count + ")";
                 }
                 else
@@ -152,14 +180,29 @@ namespace MediaBrowser.ServerApplication
                 {
                     lblIndexBy.Visibility = ddlIndexBy.Visibility = ddlSortBy.Visibility = lblSortBy.Visibility = Visibility.Visible;
                     ddlIndexBy.ItemsSource = folder.IndexByOptionStrings;
-                    ddlSortBy.ItemsSource = folder.SortByOptionStrings;
+
+                    ddlSortBy.ItemsSource = new []
+                        {
+                            ItemSortBy.SortName, 
+                            ItemSortBy.Album, 
+                            ItemSortBy.AlbumArtist, 
+                            ItemSortBy.Artist, 
+                            ItemSortBy.CommunityRating, 
+                            ItemSortBy.DateCreated, 
+                            ItemSortBy.DatePlayed, 
+                            ItemSortBy.PremiereDate, 
+                            ItemSortBy.ProductionYear, 
+                            ItemSortBy.Random, 
+                            ItemSortBy.Runtime
+                        };
+
                     var prefs = folder.GetDisplayPrefs(ddlProfile.SelectedItem as User, false);
                     ddlIndexBy.SelectedItem = prefs != null
                                                   ? prefs.IndexBy ?? LocalizedStrings.Instance.GetString("NoneDispPref")
                                                   : LocalizedStrings.Instance.GetString("NoneDispPref");
                     ddlSortBy.SelectedItem = prefs != null
-                                                  ? prefs.SortBy ?? LocalizedStrings.Instance.GetString("NameDispPref")
-                                                  : LocalizedStrings.Instance.GetString("NameDispPref");
+                                                  ? prefs.SortBy ?? ItemSortBy.SortName
+                                                  : ItemSortBy.SortName;
                 }
                 else
                 {
@@ -311,7 +354,7 @@ namespace MediaBrowser.ServerApplication
                 var folder = treeItem != null
                                  ? treeItem.Tag as Folder
                                  : null;
-                var prefs = folder != null ? folder.GetDisplayPrefs(CurrentUser, true) : new DisplayPreferences {SortBy = LocalizedStrings.Instance.GetString("NameDispPref")};
+                var prefs = folder != null ? folder.GetDisplayPrefs(CurrentUser, true) : new DisplayPreferences {SortBy = ItemSortBy.SortName};
                 if (folder != null && prefs.IndexBy != ddlIndexBy.SelectedItem as string)
                 {
                     //grab UI context so we can update within the below task
@@ -326,7 +369,7 @@ namespace MediaBrowser.ServerApplication
                                                             //re-build the current item's children as an index
                                                             prefs.IndexBy = ddlIndexBy.SelectedItem as string;
                                                             treeItem.Items.Clear();
-                                                            AddChildren(treeItem,folder.GetChildren(CurrentUser, prefs.IndexBy, prefs.SortBy), CurrentUser);
+                                                            AddChildren(treeItem, OrderBy(folder.GetChildren(CurrentUser, prefs.IndexBy), CurrentUser, prefs.SortBy), CurrentUser);
                                                             treeItem.Header = folder.Name + "(" +
                                                                               treeItem.Items.Count + ")";
                                                             Cursor = Cursors.Arrow;
@@ -367,7 +410,7 @@ namespace MediaBrowser.ServerApplication
                                                             //re-sort
                                                             prefs.SortBy = ddlSortBy.SelectedItem as string;
                                                             treeItem.Items.Clear();
-                                                            AddChildren(treeItem,folder.GetChildren(CurrentUser,prefs.IndexBy, prefs.SortBy ?? LocalizedStrings.Instance.GetString("NameDispPref")), CurrentUser);
+                                                            AddChildren(treeItem, OrderBy(folder.GetChildren(CurrentUser, prefs.IndexBy), CurrentUser, prefs.SortBy ?? ItemSortBy.SortName), CurrentUser);
                                                             treeItem.Header = folder.Name + "(" +
                                                                               treeItem.Items.Count + ")";
                                                             Cursor = Cursors.Arrow;

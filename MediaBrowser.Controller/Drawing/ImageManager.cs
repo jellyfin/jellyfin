@@ -356,7 +356,7 @@ namespace MediaBrowser.Controller.Drawing
                 return item.ScreenshotImagePaths[imageIndex];
             }
 
-            if (imageType == ImageType.ChapterImage)
+            if (imageType == ImageType.Chapter)
             {
                 var video = (Video)item;
 

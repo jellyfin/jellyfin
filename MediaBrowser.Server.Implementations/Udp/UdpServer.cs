@@ -127,7 +127,10 @@ namespace MediaBrowser.Server.Implementations.Udp
         /// </summary>
         public void Stop()
         {
-            _udpClient.Close();
+            if (_udpClient != null)
+            {
+                _udpClient.Close();
+            }
         }
 
         /// <summary>

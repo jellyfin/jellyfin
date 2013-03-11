@@ -18,6 +18,7 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Updates;
 using MediaBrowser.Controller.Weather;
 using MediaBrowser.IsoMounter;
@@ -126,23 +127,21 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         /// <value>The HTTP server.</value>
         private IHttpServer HttpServer { get; set; }
- 
+
         /// <summary>
-        /// Inits this instance.
+        /// Runs the startup tasks.
         /// </summary>
         /// <returns>Task.</returns>
-        public override async Task Init()
+        protected override async Task RunStartupTasks()
         {
-            await base.Init().ConfigureAwait(false);
+            // Do these before allowing the base method to run, which will invoke startup scheduled tasks
+            await ServerKernel.LoadRepositories(ServerConfigurationManager).ConfigureAwait(false);
 
-            Task.Run(async () =>
-            {
-                await ServerKernel.LoadRepositories(ServerConfigurationManager).ConfigureAwait(false);
+            await base.RunStartupTasks().ConfigureAwait(false);
 
-                DirectoryWatchers.Start();
+            DirectoryWatchers.Start();
 
-                Parallel.ForEach(GetExports<IServerEntryPoint>(), entryPoint => entryPoint.Run());
-            });
+            Parallel.ForEach(GetExports<IServerEntryPoint>(), entryPoint => entryPoint.Run());
         }
 
         /// <summary>
@@ -205,13 +204,15 @@ namespace MediaBrowser.ServerApplication
             ServerKernel.FFMpegManager = new FFMpegManager(ServerKernel, ZipClient, JsonSerializer, ProtobufSerializer, LogManager, ApplicationPaths);
             ServerKernel.ImageManager = new ImageManager(ServerKernel, ProtobufSerializer, LogManager.GetLogger("ImageManager"), ApplicationPaths);
 
-            ServerKernel.UserDataRepositories = GetExports<IUserDataRepository>();
-            ServerKernel.UserRepositories = GetExports<IUserRepository>();
-            ServerKernel.DisplayPreferencesRepositories = GetExports<IDisplayPreferencesRepository>();
-            ServerKernel.ItemRepositories = GetExports<IItemRepository>();
-            ServerKernel.WeatherProviders = GetExports<IWeatherProvider>();
-            ServerKernel.ImageEnhancers = GetExports<IImageEnhancer>().OrderBy(e => e.Priority).ToArray();
-            ServerKernel.StringFiles = GetExports<LocalizedStringData>();
+            Parallel.Invoke(
+                () => ServerKernel.UserDataRepositories = GetExports<IUserDataRepository>(),
+                () => ServerKernel.UserRepositories = GetExports<IUserRepository>(),
+                () => ServerKernel.DisplayPreferencesRepositories = GetExports<IDisplayPreferencesRepository>(),
+                () => ServerKernel.ItemRepositories = GetExports<IItemRepository>(),
+                () => ServerKernel.WeatherProviders = GetExports<IWeatherProvider>(),
+                () => ServerKernel.ImageEnhancers = GetExports<IImageEnhancer>().OrderBy(e => e.Priority).ToArray(),
+                () => ServerKernel.StringFiles = GetExports<LocalizedStringData>()
+                );
         }
 
         /// <summary>
@@ -237,14 +238,20 @@ namespace MediaBrowser.ServerApplication
         {
             base.FindParts();
 
-            HttpServer.Init(GetExports<IRestfulService>(false));
+            Parallel.Invoke(
+                
+                () =>
+                    {
+                        HttpServer.Init(GetExports<IRestfulService>(false));
 
-            ServerManager.AddWebSocketListeners(GetExports<IWebSocketListener>(false));
-            ServerManager.Start();
+                        ServerManager.AddWebSocketListeners(GetExports<IWebSocketListener>(false));
+                        ServerManager.Start();
+                    },
 
-            LibraryManager.AddParts(GetExports<IResolverIgnoreRule>(), GetExports<IVirtualFolderCreator>(), GetExports<IItemResolver>(), GetExports<IIntroProvider>());
+                () => LibraryManager.AddParts(GetExports<IResolverIgnoreRule>(), GetExports<IVirtualFolderCreator>(), GetExports<IItemResolver>(), GetExports<IIntroProvider>(), GetExports<IBaseItemComparer>()),
 
-            ProviderManager.AddMetadataProviders(GetExports<BaseMetadataProvider>().OrderBy(e => e.Priority).ToArray());
+                () => ProviderManager.AddMetadataProviders(GetExports<BaseMetadataProvider>().OrderBy(e => e.Priority).ToArray())
+                );
         }
 
         /// <summary>

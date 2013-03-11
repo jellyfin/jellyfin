@@ -155,20 +155,6 @@ namespace MediaBrowser.Model.Dto
         public bool IsFolder { get; set; }
 
         /// <summary>
-        /// If the item is a Folder this will determine if it's the Root or not
-        /// </summary>
-        /// <value><c>null</c> if [is root] contains no value, <c>true</c> if [is root]; otherwise, <c>false</c>.</value>
-        [ProtoMember(26)]
-        public bool? IsRoot { get; set; }
-
-        /// <summary>
-        /// If the item is a Folder this will determine if it's a VF or not
-        /// </summary>
-        /// <value><c>null</c> if [is virtual folder] contains no value, <c>true</c> if [is virtual folder]; otherwise, <c>false</c>.</value>
-        [ProtoMember(27)]
-        public bool? IsVirtualFolder { get; set; }
-
-        /// <summary>
         /// Gets or sets the parent id.
         /// </summary>
         /// <value>The parent id.</value>
@@ -230,13 +216,6 @@ namespace MediaBrowser.Model.Dto
         /// <value>The user data.</value>
         [ProtoMember(36)]
         public UserItemDataDto UserData { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is new.
-        /// </summary>
-        /// <value><c>true</c> if this instance is new; otherwise, <c>false</c>.</value>
-        [ProtoMember(37)]
-        public bool IsNew { get; set; }
 
         /// <summary>
         /// Gets or sets the recently added item count.
@@ -316,13 +295,6 @@ namespace MediaBrowser.Model.Dto
         public List<DayOfWeek> AirDays { get; set; }
 
         /// <summary>
-        /// Gets or sets the sort options.
-        /// </summary>
-        /// <value>The sort options.</value>
-        [ProtoMember(53)]
-        public string[] SortOptions { get; set; }
-
-        /// <summary>
         /// Gets or sets the index options.
         /// </summary>
         /// <value>The index options.</value>
@@ -399,26 +371,6 @@ namespace MediaBrowser.Model.Dto
         }
 
         /// <summary>
-        /// Gets a value indicating whether this instance can resume.
-        /// </summary>
-        /// <value><c>true</c> if this instance can resume; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public bool CanResume
-        {
-            get { return UserData != null && UserData.PlaybackPositionTicks > 0; }
-        }
-
-        /// <summary>
-        /// Gets the resume position ticks.
-        /// </summary>
-        /// <value>The resume position ticks.</value>
-        [IgnoreDataMember]
-        public long ResumePositionTicks
-        {
-            get { return UserData == null ? 0 : UserData.PlaybackPositionTicks; }
-        }
-
-        /// <summary>
         /// Gets or sets the image tags.
         /// </summary>
         /// <value>The image tags.</value>
@@ -473,6 +425,26 @@ namespace MediaBrowser.Model.Dto
         /// <value>The type of the media.</value>
         [ProtoMember(69)]
         public string MediaType { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance can resume.
+        /// </summary>
+        /// <value><c>true</c> if this instance can resume; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
+        public bool CanResume
+        {
+            get { return UserData != null && UserData.PlaybackPositionTicks > 0; }
+        }
+
+        /// <summary>
+        /// Gets the resume position ticks.
+        /// </summary>
+        /// <value>The resume position ticks.</value>
+        [IgnoreDataMember]
+        public long ResumePositionTicks
+        {
+            get { return UserData == null ? 0 : UserData.PlaybackPositionTicks; }
+        }
 
         /// <summary>
         /// Gets the backdrop count.
@@ -604,10 +576,24 @@ namespace MediaBrowser.Model.Dto
             get { return string.Equals(MediaType, Entities.MediaType.Game, StringComparison.OrdinalIgnoreCase); }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is person.
+        /// </summary>
+        /// <value><c>true</c> if this instance is person; otherwise, <c>false</c>.</value>
         [IgnoreDataMember]
         public bool IsPerson
         {
             get { return string.Equals(Type, "Person", StringComparison.OrdinalIgnoreCase); }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is root.
+        /// </summary>
+        /// <value><c>true</c> if this instance is root; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
+        public bool IsRoot
+        {
+            get { return string.Equals(Type, "AggregateFolder", StringComparison.OrdinalIgnoreCase); }
         }
 
         /// <summary>

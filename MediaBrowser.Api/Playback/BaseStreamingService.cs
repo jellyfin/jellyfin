@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Server.Implementations.HttpServer;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,7 +15,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Server.Implementations.HttpServer;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -650,10 +650,8 @@ namespace MediaBrowser.Api.Playback
                 state.VideoStream = GetMediaStream(media.MediaStreams, videoRequest.VideoStreamIndex, MediaStreamType.Video, true);
                 state.SubtitleStream = GetMediaStream(media.MediaStreams, videoRequest.SubtitleStreamIndex, MediaStreamType.Subtitle, false);
             }
-            else
-            {
-                state.AudioStream = GetMediaStream(media.MediaStreams, null, MediaStreamType.Audio, true);
-            }
+
+            state.AudioStream = GetMediaStream(media.MediaStreams, null, MediaStreamType.Audio, true);
             
             return state;
         }

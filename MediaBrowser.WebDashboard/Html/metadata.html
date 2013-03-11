@@ -18,31 +18,28 @@
                 <form id="metadataConfigurationForm">
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <input type="checkbox" id="chkEnableInternetProviders" name="chkEnableInternetProviders" />
+                            <input type="checkbox" id="chkEnableInternetProviders" name="chkEnableInternetProviders" onchange="MetadataConfigurationPage.submit();" />
                             <label for="chkEnableInternetProviders">Download metadata from the internet </label>
                         </li>
                         <li>
-                            <input type="checkbox" id="chkSaveLocal" name="chkSaveLocal" />
+                            <input type="checkbox" id="chkSaveLocal" name="chkSaveLocal onchange="MetadataConfigurationPage.submit();" />
                             <label for="chkSaveLocal">Save metadata within media folders </label>
                         </li>
                         <li>
                             <label for="txtRefreshDays">Metadata refresh period (days): </label>
-                            <input type="number" id="txtRefreshDays" name="txtRefreshDays" pattern="[0-9]*" required="required" min="1" />
+                            <input type="number" id="txtRefreshDays" name="txtRefreshDays" pattern="[0-9]*" required="required" min="1" onchange="MetadataConfigurationPage.submit();" />
                         </li>
                         <li>
                             <label for="selectLanguage">Preferred language: </label>
-                            <select name="selectLanguage" id="selectLanguage"></select>
+                            <select name="selectLanguage" id="selectLanguage" onchange="MetadataConfigurationPage.submit();"></select>
                         </li>
                         <li>
                             <label for="selectCountry">Country: </label>
-                            <select name="selectCountry" id="selectCountry"></select>
+                            <select name="selectCountry" id="selectCountry" onchange="MetadataConfigurationPage.submit();"></select>
                         </li>
-                        <li>
-                            <button type="submit" data-theme="b">
+                        <li style="display: none;">
+                            <button class="btnSubmit" type="submit" data-theme="b">
                                 Save
-                            </button>
-                            <button type="button" onclick="Dashboard.navigate('dashboard.html');">
-                                Cancel
                             </button>
                         </li>
                     </ul>
