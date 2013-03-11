@@ -127,7 +127,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // The segement paths within the playlist are phsyical, so strip that out to make it relative
             fileText = fileText.Replace(Path.GetDirectoryName(playlist) + Path.DirectorySeparatorChar, string.Empty);
 
-            fileText = fileText.Replace(SegmentFilePrefix, "segments/");
+            fileText = fileText.Replace(SegmentFilePrefix, "segments/").Replace(".ts", "/stream.ts").Replace(".aac", "/stream.aac").Replace(".mp3", "/stream.mp3");
 
             // Even though we specify target duration of 9, ffmpeg seems unable to keep all segments under that amount
             fileText = fileText.Replace("#EXT-X-TARGETDURATION:9", "#EXT-X-TARGETDURATION:10");

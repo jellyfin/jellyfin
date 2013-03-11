@@ -14,7 +14,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
     }
 
-    [Route("/Videos/{Id}/segments/{SegmentId}.ts", "GET")]
+    [Route("/Videos/{Id}/segments/{SegmentId}/stream.ts", "GET")]
     [ServiceStack.ServiceHost.Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
     public class GetHlsVideoSegment
     {
@@ -35,6 +35,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var file = SegmentFilePrefix + request.SegmentId + Path.GetExtension(Request.PathInfo);
 
             file = Path.Combine(ApplicationPaths.EncodedMediaCachePath, file);
+            Logger.Info(file);
 
             return ToStaticFileResult(file);
         }

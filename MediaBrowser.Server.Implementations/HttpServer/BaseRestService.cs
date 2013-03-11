@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.Net;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
@@ -257,6 +258,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                 var stream = await factoryFn().ConfigureAwait(false);
 
+                var httpListenerResponse = (HttpListenerResponse) Response.OriginalResponse;
+                httpListenerResponse.SendChunked = false;
+
+                if (IsRangeRequest)
+                {
+                    return new RangeRequestWriter(Request.Headers, httpListenerResponse, stream);
+                }
+
+                httpListenerResponse.ContentLength64 = stream.Length;
                 return new StreamWriter(stream);
             }
 
