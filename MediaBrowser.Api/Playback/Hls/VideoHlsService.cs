@@ -35,7 +35,6 @@ namespace MediaBrowser.Api.Playback.Hls
             var file = SegmentFilePrefix + request.SegmentId + Path.GetExtension(Request.PathInfo);
 
             file = Path.Combine(ApplicationPaths.EncodedMediaCachePath, file);
-            Logger.Info(file);
 
             return ToStaticFileResult(file);
         }
