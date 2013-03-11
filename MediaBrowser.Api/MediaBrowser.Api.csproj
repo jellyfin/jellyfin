@@ -106,6 +106,7 @@
     <Compile Include="ApiEntryPoint.cs" />
     <Compile Include="SystemService.cs" />
     <Compile Include="UserLibrary\BaseItemsByNameService.cs" />
+    <Compile Include="UserLibrary\BaseItemsRequest.cs" />
     <Compile Include="UserLibrary\GenresService.cs" />
     <Compile Include="UserLibrary\ItemsService.cs" />
     <Compile Include="UserLibrary\PersonsService.cs" />
