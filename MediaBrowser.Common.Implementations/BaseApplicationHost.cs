@@ -581,6 +581,8 @@ namespace MediaBrowser.Common.Implementations
             await PackageManager.InstallPackage(progress, package, cancellationToken).ConfigureAwait(false);
 
             EventHelper.QueueEventIfNotNull(ApplicationUpdated, this, new GenericEventArgs<Version> { Argument = package.version }, Logger);
+
+            NotifyPendingRestart();
         }
 
         /// <summary>

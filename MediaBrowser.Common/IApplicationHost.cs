@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Plugins;
+﻿using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Updates;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,11 @@ namespace MediaBrowser.Common
     /// </summary>
     public interface IApplicationHost
     {
+        /// <summary>
+        /// Occurs when [application updated].
+        /// </summary>
+        event EventHandler<GenericEventArgs<Version>> ApplicationUpdated;
+
         /// <summary>
         /// Performs the pending restart.
         /// </summary>
