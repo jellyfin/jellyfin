@@ -267,7 +267,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 }
 
                 httpListenerResponse.ContentLength64 = stream.Length;
-                return new StreamWriter(stream);
+                return new StreamWriter(stream, Logger);
             }
 
             string content;

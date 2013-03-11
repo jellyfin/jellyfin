@@ -1,4 +1,6 @@
-﻿using ServiceStack.Service;
+﻿using MediaBrowser.Model.Logging;
+using ServiceStack.Service;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -9,6 +11,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
     /// </summary>
     public class StreamWriter : IStreamWriter
     {
+        private ILogger Logger { get; set; }
+        
         /// <summary>
         /// Gets or sets the source stream.
         /// </summary>
@@ -19,9 +23,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// Initializes a new instance of the <see cref="StreamWriter" /> class.
         /// </summary>
         /// <param name="source">The source.</param>
-        public StreamWriter(Stream source)
+        /// <param name="logger">The logger.</param>
+        public StreamWriter(Stream source, ILogger logger)
         {
             SourceStream = source;
+            Logger = logger;
         }
 
         /// <summary>
@@ -42,9 +48,18 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <returns>Task.</returns>
         private async Task WriteToAsync(Stream responseStream)
         {
-            using (var src = SourceStream)
+            try
             {
-                await src.CopyToAsync(responseStream).ConfigureAwait(false);
+                using (var src = SourceStream)
+                {
+                    await src.CopyToAsync(responseStream).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error streaming media", ex);
+
+                throw;
             }
         }
     }
