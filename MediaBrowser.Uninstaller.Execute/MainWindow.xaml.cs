@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Net;
-using System.Reflection;
+using Microsoft.Win32;
 using System.IO;
 using System.Threading;
 using System.Windows;
@@ -195,13 +195,43 @@ namespace MediaBrowser.Uninstaller.Execute
                 }
             }
 
+            // Remove reference to us
+            RemoveUninstall();
+
             // and done
             lblHeading.Content = string.Format("Media Browser {0} Uninstalled.", Product);
             btnUninstall.Visibility = Visibility.Hidden;
             btnFinished.Visibility = Visibility.Visible;
         }
 
-        private static void RemoveShortcut(string path)
+        private void RemoveUninstall()
+        {
+
+            using (var parent = Registry.LocalMachine.OpenSubKey(
+                @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", true))
+            {
+                if (parent == null)
+                {
+                    MessageBox.Show("Uninstall registry key not found.");
+                    return;
+                }
+                try
+                {
+                    const string guidText = "{4E76DB4E-1BB9-4A7B-860C-7940779CF7A0}";
+                    parent.DeleteSubKey(guidText,false);
+
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(
+                        "An error occurred removing uninstall information from the registry.",
+                        ex);
+                }
+            }
+        }
+
+        private static
+            void RemoveShortcut(string path)
         {
             try
             {

@@ -9,6 +9,7 @@ using System.Windows;
 using System.Linq;
 using Ionic.Zip;
 using MediaBrowser.Installer.Code;
+using Microsoft.Win32;
 using ServiceStack.Text;
 
 namespace MediaBrowser.Installer
@@ -19,7 +20,8 @@ namespace MediaBrowser.Installer
     public partial class MainWindow : Window
     {
         protected PackageVersionClass PackageClass = PackageVersionClass.Release;
-        protected Version PackageVersion = new Version(4,0,0,0);
+        protected Version RequestedVersion = new Version(4,0,0,0);
+        protected Version ActualVersion;
         protected string PackageName = "MBServer";
         protected string RootSuffix = "-Server";
         protected string TargetExe = "MediaBrowser.ServerApplication.exe";
@@ -92,7 +94,7 @@ namespace MediaBrowser.Installer
 
             var product = args.GetValueOrDefault("product", null) ?? ConfigurationManager.AppSettings["product"] ?? "server";
             PackageClass = (PackageVersionClass) Enum.Parse(typeof (PackageVersionClass), args.GetValueOrDefault("class", null) ?? ConfigurationManager.AppSettings["class"] ?? "Release");
-            PackageVersion = new Version(args.GetValueOrDefault("version", "4.0"));
+            RequestedVersion = new Version(args.GetValueOrDefault("version", "4.0"));
 
             var callerId = args.GetValueOrDefault("caller", null);
             if (callerId != null)
@@ -140,6 +142,7 @@ namespace MediaBrowser.Installer
 
             // Determine Package version
             var version = await GetPackageVersion();
+            ActualVersion = version.version;
 
             // Now try and shut down the server if that is what we are installing and it is running
             var procs = Process.GetProcessesByName("mediabrowser.serverapplication");
@@ -202,6 +205,7 @@ namespace MediaBrowser.Installer
                 catch (Exception e)
                 {
                     SystemClose("Error Downloading Package - " + e.GetType().FullName + "\n\n" + e.Message);
+                    return;
                 }
             }
 
@@ -224,11 +228,13 @@ namespace MediaBrowser.Installer
                 {
 
                     SystemClose("Error Removing Archive - " + e.GetType().FullName + "\n\n" + e.Message);
+                    return;
                 }
             }
             catch (Exception e)
             {
                 SystemClose("Error Extracting - " + e.GetType().FullName + "\n\n" + e.Message);
+                return;
             }
 
             // Create shortcut
@@ -240,6 +246,7 @@ namespace MediaBrowser.Installer
             catch (Exception e)
             {
                 SystemClose("Error Creating Shortcut - "+e.GetType().FullName+"\n\n"+e.Message);
+                return;
             }
 
             // And run
@@ -250,6 +257,7 @@ namespace MediaBrowser.Installer
             catch (Exception e)
             {
                 SystemClose("Error Executing - "+fullPath+ " "+e.GetType().FullName+"\n\n"+e.Message);
+                return;
             }
 
             SystemClose();
@@ -264,7 +272,7 @@ namespace MediaBrowser.Installer
                 var json = await MainClient.DownloadStringTaskAsync("http://www.mb3admin.com/admin/service/package/retrieveAll?name=" + PackageName);
                 var packages = JsonSerializer.DeserializeFromString<List<PackageInfo>>(json);
 
-                var version = packages[0].versions.Where(v => v.classification <= PackageClass).OrderByDescending(v => v.version).FirstOrDefault(v => v.version <= PackageVersion);
+                var version = packages[0].versions.Where(v => v.classification <= PackageClass).OrderByDescending(v => v.version).FirstOrDefault(v => v.version <= RequestedVersion);
                 if (version == null)
                 {
                     SystemClose("Could not locate download package.  Aborting.");
@@ -373,12 +381,66 @@ namespace MediaBrowser.Installer
                 dashboard.Save();
                 
             }
-            var uninstall = new ShellShortcut(Path.Combine(startMenu, "Uninstall " + FriendlyName + ".lnk")) 
-            {Path = Path.Combine(Path.GetDirectoryName(targetExe), "MediaBrowser.Uninstaller.exe"), Arguments = (PackageName == "MBServer" ? "server" : "mbt"), Description = "Uninstall " + FriendlyName};
-            uninstall.Save();
+            CreateUninstaller(Path.Combine(Path.GetDirectoryName(targetExe) ?? "", "MediaBrowser.Uninstaller.exe")+ " "+ (PackageName == "MBServer" ? "server" : "mbt"), targetExe);
 
         }
 
+        /// <summary>
+        /// Create uninstall entry in add/remove
+        /// </summary>
+        /// <param name="uninstallPath"></param>
+        /// <param name="targetExe"></param>
+        private void CreateUninstaller(string uninstallPath, string targetExe)
+        {
+            using (var parent = Registry.LocalMachine.OpenSubKey(
+                         @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", true))
+            {
+                if (parent == null)
+                {
+                    MessageBox.Show("Uninstall registry key not found.");
+                    return;
+                }
+                try
+                {
+                    RegistryKey key = null;
+
+                    try
+                    {
+                        const string guidText = "{4E76DB4E-1BB9-4A7B-860C-7940779CF7A0}";
+                        key = parent.OpenSubKey(guidText, true) ??
+                              parent.CreateSubKey(guidText);
+
+                        if (key == null)
+                        {
+                            MessageBox.Show(String.Format("Unable to create uninstaller entry'{0}\\{1}'", @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", guidText));
+                            return;
+                        }
+
+                        key.SetValue("DisplayName", FriendlyName);
+                        key.SetValue("ApplicationVersion", ActualVersion);
+                        key.SetValue("Publisher", "Media Browser Team");
+                        key.SetValue("DisplayIcon", targetExe);
+                        key.SetValue("DisplayVersion", ActualVersion.ToString(2));
+                        key.SetValue("URLInfoAbout", "http://www.mediabrowser3.com");
+                        key.SetValue("Contact", "http://community.mediabrowser.tv");
+                        key.SetValue("InstallDate", DateTime.Now.ToString("yyyyMMdd"));
+                        key.SetValue("UninstallString", uninstallPath);
+                    }
+                    finally
+                    {
+                        if (key != null)
+                        {
+                            key.Close();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("An error occurred writing uninstall information to the registry.");
+                }
+            }
+        }        
+        
         /// <summary>
         /// Prepare a temporary location to download to
         /// </summary>
