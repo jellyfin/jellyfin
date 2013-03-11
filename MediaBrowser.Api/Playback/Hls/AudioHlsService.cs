@@ -18,8 +18,8 @@ namespace MediaBrowser.Api.Playback.Hls
 
     }
 
-    [Route("/Audio/{Id}/segments/{SegmentId}.mp3", "GET")]
-    [Route("/Audio/{Id}/segments/{SegmentId}.aac", "GET")]
+    [Route("/Audio/{Id}/segments/{SegmentId}/stream.mp3", "GET")]
+    [Route("/Audio/{Id}/segments/{SegmentId}/stream.aac", "GET")]
     [ServiceStack.ServiceHost.Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
     public class GetHlsAudioSegment
     {

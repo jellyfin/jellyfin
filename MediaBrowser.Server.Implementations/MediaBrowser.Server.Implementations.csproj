@@ -109,6 +109,7 @@
     <Compile Include="HttpServer\HttpResultFactory.cs" />
     <Compile Include="HttpServer\HttpServer.cs" />
     <Compile Include="HttpServer\NativeWebSocket.cs" />
+    <Compile Include="HttpServer\RangeRequestWriter.cs" />
     <Compile Include="HttpServer\ServerFactory.cs" />
     <Compile Include="HttpServer\StreamWriter.cs" />
     <Compile Include="HttpServer\SwaggerService.cs" />
@@ -139,6 +140,17 @@
     <Compile Include="ServerApplicationPaths.cs" />
     <Compile Include="ServerManager\ServerManager.cs" />
     <Compile Include="ServerManager\WebSocketConnection.cs" />
+    <Compile Include="Sorting\AlbumArtistComparer.cs" />
+    <Compile Include="Sorting\AlbumComparer.cs" />
+    <Compile Include="Sorting\ArtistComparer.cs" />
+    <Compile Include="Sorting\CommunityRatingComparer.cs" />
+    <Compile Include="Sorting\DateCreatedComparer.cs" />
+    <Compile Include="Sorting\DatePlayedComparer.cs" />
+    <Compile Include="Sorting\PremiereDateComparer.cs" />
+    <Compile Include="Sorting\ProductionYearComparer.cs" />
+    <Compile Include="Sorting\RandomComparer.cs" />
+    <Compile Include="Sorting\RuntimeComparer.cs" />
+    <Compile Include="Sorting\SortNameComparer.cs" />
     <Compile Include="Sqlite\SQLiteDisplayPreferencesRepository.cs" />
     <Compile Include="Sqlite\SQLiteExtensions.cs" />
     <Compile Include="Sqlite\SQLiteItemRepository.cs" />

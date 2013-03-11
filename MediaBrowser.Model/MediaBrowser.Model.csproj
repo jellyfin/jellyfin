@@ -45,8 +45,7 @@
     <Compile Include="Dto\BaseItemPerson.cs" />
     <Compile Include="Dto\ChapterInfoDto.cs" />
     <Compile Include="Dto\IItemDto.cs" />
-    <Compile Include="Dto\ItemsByNameQuery.cs" />
-    <Compile Include="Dto\MediaType.cs" />
+    <Compile Include="Querying\ItemsByNameQuery.cs" />
     <Compile Include="Entities\BaseItemInfo.cs" />
     <Compile Include="Connectivity\ClientConnectionInfo.cs" />
     <Compile Include="Connectivity\ClientType.cs" />
@@ -63,8 +62,8 @@
     <Compile Include="Globalization\CultureDto.cs" />
     <Compile Include="IO\FileSystemEntryInfo.cs" />
     <Compile Include="Dto\ImageOptions.cs" />
-    <Compile Include="Dto\ItemFilter.cs" />
-    <Compile Include="Dto\ItemQuery.cs" />
+    <Compile Include="Querying\ItemFilter.cs" />
+    <Compile Include="Querying\ItemQuery.cs" />
     <Compile Include="Entities\LibraryUpdateInfo.cs" />
     <Compile Include="Entities\ParentalRating.cs" />
     <Compile Include="Dto\StreamOptions.cs" />
@@ -90,11 +89,11 @@
     <Compile Include="Configuration\UserConfiguration.cs" />
     <Compile Include="Drawing\DrawingUtils.cs" />
     <Compile Include="Dto\UserItemDataDto.cs" />
-    <Compile Include="Dto\ItemFields.cs" />
-    <Compile Include="Dto\ItemSortBy.cs" />
+    <Compile Include="Querying\ItemFields.cs" />
+    <Compile Include="Querying\ItemSortBy.cs" />
     <Compile Include="Dto\BaseItemDto.cs" />
     <Compile Include="Dto\UserDto.cs" />
-    <Compile Include="Dto\ItemsResult.cs" />
+    <Compile Include="Querying\ItemsResult.cs" />
     <Compile Include="Entities\DisplayPreferences.cs" />
     <Compile Include="Entities\ImageType.cs" />
     <Compile Include="Entities\IHasProviderIds.cs" />

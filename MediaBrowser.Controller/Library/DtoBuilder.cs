@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -160,8 +161,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fields">The fields.</param>
         private void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, List<ItemFields> fields)
         {
-            dto.IsNew = item.IsRecentlyAdded(user);
-
             if (fields.Contains(ItemFields.UserData))
             {
                 var userData = item.GetUserData(user, false);
@@ -366,17 +365,9 @@ namespace MediaBrowser.Controller.Library
             {
                 var folder = (Folder)item;
 
-                dto.IsRoot = folder.IsRoot;
-                dto.IsVirtualFolder = folder.IsVirtualFolder;
-
                 if (fields.Contains(ItemFields.IndexOptions))
                 {
                     dto.IndexOptions = folder.IndexByOptionStrings.ToArray();
-                }
-
-                if (fields.Contains(ItemFields.SortOptions))
-                {
-                    dto.SortOptions = folder.SortByOptionStrings.ToArray();
                 }
             }
 
@@ -678,7 +669,7 @@ namespace MediaBrowser.Controller.Library
 
             if (!string.IsNullOrEmpty(chapterInfo.ImagePath))
             {
-                dto.ImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(item, ImageType.ChapterImage, chapterInfo.ImagePath);
+                dto.ImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(item, ImageType.Chapter, chapterInfo.ImagePath);
             }
 
             return dto;

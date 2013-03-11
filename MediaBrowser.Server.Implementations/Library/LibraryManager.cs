@@ -9,6 +9,7 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.ScheduledTasks;
+using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.Library.Resolvers;
@@ -22,6 +23,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -53,6 +55,12 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         /// <value>The entity resolvers enumerable.</value>
         private IEnumerable<IItemResolver> EntityResolvers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the comparers.
+        /// </summary>
+        /// <value>The comparers.</value>
+        private IEnumerable<IBaseItemComparer> Comparers { get; set; }
 
         #region LibraryChanged Event
         /// <summary>
@@ -124,12 +132,14 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="pluginFolders">The plugin folders.</param>
         /// <param name="resolvers">The resolvers.</param>
         /// <param name="introProviders">The intro providers.</param>
-        public void AddParts(IEnumerable<IResolverIgnoreRule> rules, IEnumerable<IVirtualFolderCreator> pluginFolders, IEnumerable<IItemResolver> resolvers, IEnumerable<IIntroProvider> introProviders)
+        /// <param name="itemComparers">The item comparers.</param>
+        public void AddParts(IEnumerable<IResolverIgnoreRule> rules, IEnumerable<IVirtualFolderCreator> pluginFolders, IEnumerable<IItemResolver> resolvers, IEnumerable<IIntroProvider> introProviders, IEnumerable<IBaseItemComparer> itemComparers)
         {
             EntityResolutionIgnoreRules = rules;
             PluginFolderCreators = pluginFolders;
             EntityResolvers = resolvers.OrderBy(i => i.Priority).ToArray();
             IntroProviders = introProviders;
+            Comparers = itemComparers;
         }
 
         /// <summary>
@@ -701,6 +711,63 @@ namespace MediaBrowser.Server.Implementations.Library
         public IEnumerable<string> GetIntros(BaseItem item, User user)
         {
             return IntroProviders.SelectMany(i => i.GetIntros(item, user));
+        }
+
+        /// <summary>
+        /// Sorts the specified sort by.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="user">The user.</param>
+        /// <param name="sortBy">The sort by.</param>
+        /// <param name="sortOrder">The sort order.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<string> sortBy, SortOrder sortOrder)
+        {
+            var isFirst = true;
+
+            IOrderedEnumerable<BaseItem> orderedItems = null;
+
+            foreach (var orderBy in sortBy.Select(o => GetComparer(o, user)).Where(c => c != null))
+            {
+                if (isFirst)
+                {
+                    orderedItems = sortOrder == SortOrder.Descending ? items.OrderByDescending(i => i, orderBy) : items.OrderBy(i => i, orderBy);
+                }
+                else
+                {
+                    orderedItems = sortOrder == SortOrder.Descending ? orderedItems.ThenByDescending(i => i, orderBy) : orderedItems.ThenBy(i => i, orderBy);
+                }
+
+                isFirst = false;
+            }
+
+            return orderedItems ?? items;
+        }
+
+        /// <summary>
+        /// Gets the comparer.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="user">The user.</param>
+        /// <returns>IBaseItemComparer.</returns>
+        private IBaseItemComparer GetComparer(string name, User user)
+        {
+            var comparer = Comparers.FirstOrDefault(c => string.Equals(name, c.Name, StringComparison.OrdinalIgnoreCase));
+
+            if (comparer != null)
+            {
+                // If it requires a user, create a new one, and assign the user
+                if (comparer is IUserBaseItemComparer)
+                {
+                    var userComparer = (IUserBaseItemComparer)Activator.CreateInstance(comparer.GetType());
+
+                    userComparer.User = user;
+
+                    return userComparer;
+                }
+            }
+
+            return comparer;
         }
     }
 }

@@ -135,11 +135,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 ApiEntryPoint.Instance.OnTranscodeBeginRequest(outputPath, TranscodingJobType.Progressive);
             }
 
-            return new ProgressiveStreamWriter
-            {
-                Path = outputPath,
-                State = state
-            };
+            return new ProgressiveStreamWriter(outputPath, state, Logger);
         }
 
         /// <summary>

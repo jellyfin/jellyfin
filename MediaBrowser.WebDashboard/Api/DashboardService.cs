@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.Reflection;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
@@ -391,7 +392,6 @@ namespace MediaBrowser.WebDashboard.Api
                             {
                                 "http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js", 
                                 "http://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.js",
-                                "../jsapiclient.js" + versionString,
                                 "scripts/all.js" + versionString
             };
 
@@ -447,18 +447,25 @@ namespace MediaBrowser.WebDashboard.Api
 
             var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
 
+            await AppendResource(assembly, memoryStream, "MediaBrowser.WebDashboard.ApiClient.js", newLineBytes).ConfigureAwait(false);
+
             foreach (var file in scriptFiles)
             {
-                using (var stream = assembly.GetManifestResourceStream(resourcePrefix + file))
-                {
-                    await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
-
-                    await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
-                }
+                await AppendResource(assembly, memoryStream, resourcePrefix + file, newLineBytes).ConfigureAwait(false);
             }
 
             memoryStream.Position = 0;
             return memoryStream;
+        }
+
+        private async Task AppendResource(Assembly assembly, Stream outputStream, string path, byte[] newLineBytes)
+        {
+            using (var stream = assembly.GetManifestResourceStream(path))
+            {
+                await stream.CopyToAsync(outputStream).ConfigureAwait(false);
+
+                await outputStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
+            }
         }
 
     }

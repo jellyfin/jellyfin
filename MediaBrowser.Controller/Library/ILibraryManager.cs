@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -158,7 +159,19 @@ namespace MediaBrowser.Controller.Library
         /// <param name="pluginFolders">The plugin folders.</param>
         /// <param name="resolvers">The resolvers.</param>
         /// <param name="introProviders">The intro providers.</param>
+        /// <param name="itemComparers">The item comparers.</param>
         void AddParts(IEnumerable<IResolverIgnoreRule> rules, IEnumerable<IVirtualFolderCreator> pluginFolders,
-                      IEnumerable<IItemResolver> resolvers, IEnumerable<IIntroProvider> introProviders);
+                      IEnumerable<IItemResolver> resolvers, IEnumerable<IIntroProvider> introProviders, IEnumerable<IBaseItemComparer> itemComparers);
+
+        /// <summary>
+        /// Sorts the specified items.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="user">The user.</param>
+        /// <param name="sortBy">The sort by.</param>
+        /// <param name="sortOrder">The sort order.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<string> sortBy,
+                                   SortOrder sortOrder);
     }
 }
