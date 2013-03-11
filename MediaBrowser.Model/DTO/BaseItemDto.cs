@@ -218,13 +218,6 @@ namespace MediaBrowser.Model.Dto
         public UserItemDataDto UserData { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is new.
-        /// </summary>
-        /// <value><c>true</c> if this instance is new; otherwise, <c>false</c>.</value>
-        [ProtoMember(37)]
-        public bool IsNew { get; set; }
-
-        /// <summary>
         /// Gets or sets the recently added item count.
         /// </summary>
         /// <value>The recently added item count.</value>

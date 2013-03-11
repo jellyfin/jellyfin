@@ -161,8 +161,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fields">The fields.</param>
         private void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, List<ItemFields> fields)
         {
-            dto.IsNew = item.IsRecentlyAdded(user);
-
             if (fields.Contains(ItemFields.UserData))
             {
                 var userData = item.GetUserData(user, false);
