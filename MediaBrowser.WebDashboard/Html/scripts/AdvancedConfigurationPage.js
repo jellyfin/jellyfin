@@ -25,6 +25,7 @@
             $('#fldWebSocketPortNumber', page).show();
         }
 
+        $('#selectAutomaticUpdateLevel', page).val(config.SystemUpdateLevel).selectmenu('refresh');
         $('#txtWebSocketPortNumber', page).val(config.LegacyWebSocketPortNumber);
 
         $('#txtPortNumber', page).val(config.HttpServerPortNumber);
@@ -51,6 +52,7 @@
 
             config.EnableDeveloperTools = $('#chkEnableDeveloperTools', form).checked();
             config.RunAtStartup = $('#chkRunAtStartup', form).checked();
+            config.SystemUpdateLevel = $('#selectAutomaticUpdateLevel', form).val();
 
             ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
         });
