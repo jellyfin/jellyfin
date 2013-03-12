@@ -295,12 +295,12 @@ namespace MediaBrowser.Controller.Library
 
             if (fields.Contains(ItemFields.Overview))
             {
-                dto.Overview = item.Overview;
+                dto.OverviewHtml = string.IsNullOrEmpty(item.Overview) ? item.Overview : item.Overview.StripHtml();
             }
 
             if (fields.Contains(ItemFields.OverviewHtml))
             {
-                dto.OverviewHtml = string.IsNullOrEmpty(item.Overview) ? item.Overview : item.Overview.StripHtml();
+                dto.Overview = item.Overview;
             }
             
             // If there are no backdrops, indicate what parent has them in case the Ui wants to allow inheritance
