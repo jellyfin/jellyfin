@@ -173,5 +173,13 @@ namespace MediaBrowser.Controller.Library
         /// <returns>IEnumerable{BaseItem}.</returns>
         IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<string> sortBy,
                                    SortOrder sortOrder);
+
+        /// <summary>
+        /// Sorts the specified items.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="searchTerm">The search term.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        IEnumerable<BaseItem> Search(IEnumerable<BaseItem> items, string searchTerm);
     }
 }
