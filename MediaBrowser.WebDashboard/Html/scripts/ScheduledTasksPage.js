@@ -100,7 +100,7 @@
 
                 if (task.LastExecutionResult) {
 
-                    var text = "Last run " + humane_date(task.LastExecutionResult.EndTimeUtc) + ', taking ' + humane_elapsed(task.LastExecutionResult.StartTimeUtc, task.LastExecutionResult.EndTimeUtc);
+                    var text = "Last ran " + humane_date(task.LastExecutionResult.EndTimeUtc) + ', taking ' + humane_elapsed(task.LastExecutionResult.StartTimeUtc, task.LastExecutionResult.EndTimeUtc);
 
                     if (task.LastExecutionResult.Status == "Failed") {
                         text += " <span style='color:#FF0000;'>(failed)</span>";
