@@ -201,7 +201,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="MediaInfo\ffmpeg20130312.zip" />
+    <EmbeddedResource Include="MediaInfo\ffmpeg20130310.zip" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
