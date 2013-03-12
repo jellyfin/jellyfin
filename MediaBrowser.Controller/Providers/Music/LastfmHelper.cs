@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
@@ -41,7 +42,15 @@ namespace MediaBrowser.Controller.Providers.Music
         {
             if (!string.IsNullOrWhiteSpace(data.mbid)) item.SetProviderId(MetadataProviders.Musicbrainz, data.mbid);
 
-            item.Overview = data.wiki != null ? data.wiki.content : null;
+            var overview = data.wiki != null ? data.wiki.content : null;
+
+            if (!string.IsNullOrEmpty(overview))
+            {
+                overview = StripHtml(overview);
+            }
+
+            item.Overview = overview;
+
             var release = DateTime.MinValue;
             DateTime.TryParse(data.releasedate, out release);
             item.PremiereDate = release;
@@ -49,6 +58,13 @@ namespace MediaBrowser.Controller.Providers.Music
             {
                 AddGenres(item, data.toptags);
             }
+        }
+
+        private static string StripHtml(string htmlString)
+        {
+            // http://stackoverflow.com/questions/1349023/how-can-i-strip-html-from-text-in-net
+            const string pattern = @"<(.|\n)*?>";
+            return Regex.Replace(htmlString, pattern, string.Empty);
         }
 
         private static void AddGenres(BaseItem item, LastfmTags tags)
