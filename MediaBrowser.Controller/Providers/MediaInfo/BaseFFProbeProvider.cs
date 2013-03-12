@@ -262,11 +262,15 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             {
                 var parts = value.Split('/');
 
+                float result;
+
                 if (parts.Length == 2)
                 {
-                    return float.Parse(parts[0]) / float.Parse(parts[1]);
+                    result = float.Parse(parts[0]) / float.Parse(parts[1]);
                 }
-                return float.Parse(parts[0]);
+                result = float.Parse(parts[0]);
+
+                return float.IsNaN(result) ? (float?)null : result;
             }
 
             return null;
