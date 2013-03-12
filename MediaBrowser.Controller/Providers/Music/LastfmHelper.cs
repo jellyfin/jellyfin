@@ -16,7 +16,15 @@ namespace MediaBrowser.Controller.Providers.Music
 
         public static void ProcessArtistData(BaseItem artist, LastfmArtist data)
         {
-            artist.Overview = data.bio != null ? data.bio.content : null;
+            var overview = data.bio != null ? data.bio.content : null;
+
+            if (!string.IsNullOrEmpty(overview))
+            {
+                overview = StripHtml(overview);
+            }
+
+            artist.Overview = overview;
+
             var yearFormed = 0;
             try
             {
