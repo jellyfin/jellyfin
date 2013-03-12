@@ -50,6 +50,22 @@ namespace MediaBrowser.Controller.Providers.Music
             HttpClient = httpClient;
         }
 
+        protected override string ProviderVersion
+        {
+            get
+            {
+                return "3-12-13.2";
+            }
+        }
+
+        protected override bool RefreshOnVersionChange
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         /// <summary>
         /// Gets the json serializer.
         /// </summary>
@@ -171,6 +187,12 @@ namespace MediaBrowser.Controller.Providers.Music
                 return true;
             }
 
+            if (RefreshOnVersionChange && ProviderVersion != providerInfo.ProviderVersion)
+            {
+                Logger.Debug("LastfmProvider version change re-running for {0}", item.Path);
+                return true;
+            }
+
             var downloadDate = providerInfo.LastRefreshed;
 
             if (ConfigurationManager.Configuration.MetadataRefreshDays == -1 && downloadDate != DateTime.MinValue)
@@ -206,7 +228,7 @@ namespace MediaBrowser.Controller.Providers.Music
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (!ConfigurationManager.Configuration.SaveLocalMeta || !HasLocalMeta(item) || (force && !HasLocalMeta(item)))
+            if (!ConfigurationManager.Configuration.SaveLocalMeta || !HasLocalMeta(item) || (force && !HasLocalMeta(item)) || (RefreshOnVersionChange && item.ProviderData[Id].ProviderVersion != ProviderVersion))
             {
                 try
                 {
