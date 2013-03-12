@@ -134,6 +134,10 @@ pre, textarea.pre {
     vertical-align: middle;
 }
 
+.imageLink.supporter {
+    display:none;
+}
+
 .btnCurrentUser {
     text-decoration: none;
 }
@@ -280,6 +284,10 @@ form, .readOnlyContent {
     .imgLogoText {
         height: 50px;
         display: inline;
+    }
+
+    .imageLink.supporter {
+        display:inline-block;
     }
 
     .header {
