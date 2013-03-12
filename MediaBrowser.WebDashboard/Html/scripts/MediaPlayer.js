@@ -8,7 +8,7 @@
 
             if (media.canPlayType) {
 
-                return media.canPlayType('video/mp2t').replace(/no/, '') || media.canPlayType('video/webm').replace(/no/, '') || media.canPlayType('video/ogv').replace(/no/, '');
+                return media.canPlayType('video/mp2t').replace(/no/, '') || media.canPlayType('video/webm').replace(/no/, '') || media.canPlayType('application/x-mpegURL').replace(/no/, '') || media.canPlayType('video/ogv').replace(/no/, '');
             }
 
             return false;
@@ -91,10 +91,10 @@
 
         var html = '';
         html += '<audio class="itemAudio" preload="none" controls autoplay>';
-        html += '<source type="audio/mpeg" src="' + mp3Url + '">';
-        html += '<source type="audio/aac" src="' + aacUrl + '">';
-        html += '<source type="audio/webm" src="' + webmUrl + '">';
-        html += '<source type="audio/ogg" src="' + oggUrl + '">';
+        html += '<source type="audio/mpeg" src="' + mp3Url + '" />';
+        html += '<source type="audio/aac" src="' + aacUrl + '" />';
+        html += '<source type="audio/webm" src="' + webmUrl + '" />';
+        html += '<source type="audio/ogg" src="' + oggUrl + '" />';
         html += '</audio';
 
         var nowPlayingBar = $('#nowPlayingBar').show();
@@ -129,6 +129,11 @@
             audioCodec: 'Vorbis'
         }));
 
+        var hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.m3u8', $.extend({}, baseParams, {
+            videoCodec: 'h264',
+            audioCodec: 'aac'
+        }));
+
         var ogvVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ogv', $.extend({}, baseParams, {
             videoCodec: 'theora',
             audioCodec: 'Vorbis'
@@ -136,9 +141,18 @@
 
         var html = '';
         html += '<video class="itemVideo" preload="none" controls autoplay>';
-        html += '<source type=\'video/mp2t; codecs="h264, aac"\' src="' + tsVideoUrl + '">';
-        html += '<source type=\'video/webm; codecs="vp8, vorbis"\' src="' + webmVideoUrl + '">';
-        html += '<source type=\'video/ogg; codecs="theora, vorbis"\' src="' + ogvVideoUrl + '">';
+        html += '<source type=\'video/mp2t; codecs="h264, aac"\' src="' + tsVideoUrl + '" />';
+        html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
+        html += '<source type="application/x-mpegURL" src="' + hlsVideoUrl + '" />';
+        html += '<source type="video/ogg" src="' + ogvVideoUrl + '" />';
+        
+        //html += '<object type="application/x-shockwave-flash" data="http://releases.flowplayer.org/swf/flowplayer-3.2.1.swf" width="640" height="360">';
+        //html += '<param name="movie" value="http://releases.flowplayer.org/swf/flowplayer-3.2.1.swf" />';
+        //html += '<param name="allowFullScreen" value="true" />';
+        //html += '<param name="wmode" value="transparent" />';
+        ////html += '<param name="flashVars" value="config={'playlist':['http%3A%2F%2Fsandbox.thewikies.com%2Fvfe-generator%2Fimages%2Fbig-buck-bunny_poster.jpg',{'url':'http%3A%2F%2Fclips.vorwaerts-gmbh.de%2Fbig_buck_bunny.mp4','autoPlay':false}]}" />';
+        //html += '</object>';
+        
         html += '</video';
 
         var nowPlayingBar = $('#nowPlayingBar').show();
