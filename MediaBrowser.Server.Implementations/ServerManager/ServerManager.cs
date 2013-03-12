@@ -389,6 +389,8 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         {
             if (UdpServer != null)
             {
+                _logger.Info("Disposing UdpServer");
+                
                 UdpServer.MessageReceived -= UdpServer_MessageReceived;
                 UdpServer.Dispose();
             }
@@ -488,6 +490,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         {
             if (ExternalWebSocketServer != null)
             {
+                _logger.Info("Disposing {0}", ExternalWebSocketServer.GetType().Name);
                 ExternalWebSocketServer.Dispose();
             }
         }
