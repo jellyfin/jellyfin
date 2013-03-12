@@ -387,7 +387,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (!string.IsNullOrEmpty(term))
             {
-                items = items.Where(i => i.Name.StartsWith(term, StringComparison.OrdinalIgnoreCase));
+                items = _libraryManager.Search(items, request.SearchTerm);
             }
 
             return items;

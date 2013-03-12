@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using MediaBrowser.Common.Events;
+﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
@@ -12,7 +11,6 @@ using MediaBrowser.Controller.ScheduledTasks;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Server.Implementations.Library.Resolvers;
 using MediaBrowser.Server.Implementations.ScheduledTasks;
 using MoreLinq;
 using System;
@@ -768,6 +766,22 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             return comparer;
+        }
+
+        /// <summary>
+        /// Sorts the specified items.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="searchTerm">The search term.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        public IEnumerable<BaseItem> Search(IEnumerable<BaseItem> items, string searchTerm)
+        {
+            if (string.IsNullOrEmpty(searchTerm))
+            {
+                throw new ArgumentNullException("searchTerm");
+            }
+
+            return items.Where(i => i.Name.StartsWith(searchTerm, StringComparison.OrdinalIgnoreCase));
         }
     }
 }
