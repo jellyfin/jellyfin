@@ -473,10 +473,32 @@ namespace MediaBrowser.Common.Implementations
         }
 
         /// <summary>
+        /// Defines the full path to our shortcut in the start menu
+        /// </summary>
+        protected abstract string ProductShortcutPath { get; }
+
+        /// <summary>
         /// Configures the auto run at startup.
         /// </summary>
         private void ConfigureAutoRunAtStartup()
         {
+            if (ConfigurationManager.CommonConfiguration.RunAtStartup)
+            {
+                //Copy our shortut into the startup folder for this user
+                File.Copy(ProductShortcutPath, Environment.GetFolderPath(Environment.SpecialFolder.Startup), true);
+            }
+            else
+            {
+                //Remove our shortcut from the startup folder for this user
+                try
+                {
+                    File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), Path.GetFileName(ProductShortcutPath)));
+                }
+                catch (FileNotFoundException)
+                {
+                    //This is okay - trying to remove it anyway
+                }
+            }
         }
 
         /// <summary>
