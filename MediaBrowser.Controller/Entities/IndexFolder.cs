@@ -28,7 +28,7 @@ namespace MediaBrowser.Controller.Entities
             GroupContents = groupContents;
             if (shadow == null)
             {
-                Name = SortName = "<Unknown>";
+                Name = ForcedSortName = "<Unknown>";
             }
             else
             {
@@ -167,7 +167,7 @@ namespace MediaBrowser.Controller.Entities
             if (ShadowItem != null)
             {
                 Name = ShadowItem.Name;
-                SortName = ShadowItem.SortName;
+                ForcedSortName = ShadowItem.SortName;
                 Genres = ShadowItem.Genres;
                 Studios = ShadowItem.Studios;
                 OfficialRating = ShadowItem.OfficialRating;

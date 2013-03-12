@@ -371,10 +371,57 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
+        /// Gets or sets the name of the forced sort.
+        /// </summary>
+        /// <value>The name of the forced sort.</value>
+        public string ForcedSortName { get; set; }
+
+        private string _sortName;
+        /// <summary>
         /// Gets or sets the name of the sort.
         /// </summary>
         /// <value>The name of the sort.</value>
-        public string SortName { get; set; }
+        [IgnoreDataMember]
+        public string SortName
+        {
+            get
+            {
+                return ForcedSortName ?? _sortName ?? (_sortName = CreateSortName());
+            }
+        }
+
+        /// <summary>
+        /// Creates the name of the sort.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        protected virtual string CreateSortName()
+        {
+            if (Name == null) return null; //some items may not have name filled in properly
+
+            var sortable = Name.Trim().ToLower();
+            sortable = ConfigurationManager.Configuration.SortRemoveCharacters.Aggregate(sortable, (current, search) => current.Replace(search.ToLower(), string.Empty));
+
+            sortable = ConfigurationManager.Configuration.SortReplaceCharacters.Aggregate(sortable, (current, search) => current.Replace(search.ToLower(), " "));
+
+            foreach (var search in ConfigurationManager.Configuration.SortRemoveWords)
+            {
+                var searchLower = search.ToLower();
+                // Remove from beginning if a space follows
+                if (sortable.StartsWith(searchLower + " "))
+                {
+                    sortable = sortable.Remove(0, searchLower.Length + 1);
+                }
+                // Remove from middle if surrounded by spaces
+                sortable = sortable.Replace(" " + searchLower + " ", " ");
+
+                // Remove from end if followed by a space
+                if (sortable.EndsWith(" " + searchLower))
+                {
+                    sortable = sortable.Remove(sortable.Length - (searchLower.Length + 1));
+                }
+            }
+            return sortable;
+        }
 
         /// <summary>
         /// Gets or sets the parent.
@@ -686,7 +733,7 @@ namespace MediaBrowser.Controller.Entities
         public virtual void ClearMetaValues()
         {
             Images = null;
-            SortName = null;
+            ForcedSortName = null;
             PremiereDate = null;
             BackdropImagePaths = null;
             OfficialRating = null;

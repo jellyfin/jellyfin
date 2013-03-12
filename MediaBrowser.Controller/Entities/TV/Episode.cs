@@ -159,5 +159,14 @@ namespace MediaBrowser.Controller.Entities.TV
             get { return _season ?? (_season = FindParent<Season>()); }
         }
 
+        /// <summary>
+        /// Creates the name of the sort.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        protected override string CreateSortName()
+        {
+            return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("000-") : "")
+                    + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ") : "") + Name;
+        }
     }
 }

@@ -156,7 +156,6 @@
     <Compile Include="Providers\Movies\MovieProviderFromXml.cs" />
     <Compile Include="Providers\Movies\PersonProviderFromJson.cs" />
     <Compile Include="Providers\Movies\TmdbPersonProvider.cs" />
-    <Compile Include="Providers\SortNameProvider.cs" />
     <Compile Include="Providers\TV\EpisodeImageFromMediaLocationProvider.cs" />
     <Compile Include="Providers\TV\EpisodeProviderFromXml.cs" />
     <Compile Include="Providers\TV\EpisodeXmlParser.cs" />
