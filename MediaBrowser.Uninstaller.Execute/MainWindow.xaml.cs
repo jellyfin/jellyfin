@@ -198,10 +198,31 @@ namespace MediaBrowser.Uninstaller.Execute
             // Remove reference to us
             RemoveUninstall();
 
+            // Remove pismo
+            try
+            {
+                UnInstallPismo();
+            }
+            catch
+            {
+                // No biggie - maybe they uninstalled it themselves
+            }
+
             // and done
             lblHeading.Content = string.Format("Media Browser {0} Uninstalled.", Product);
             btnUninstall.Visibility = Visibility.Hidden;
             btnFinished.Visibility = Visibility.Visible;
+        }
+
+        private void UnInstallPismo()
+        {
+            // Kick off the Pismo uninstaller and wait for it to end
+            var pismo = new Process();
+            pismo.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            pismo.StartInfo.FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "pfm.exe");
+            pismo.StartInfo.Arguments = "uninstall pfm-license-mediabrowser.txt";
+            pismo.Start();
+            pismo.WaitForExit();
         }
 
         private void RemoveUninstall()
