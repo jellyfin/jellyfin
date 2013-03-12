@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -6,12 +7,12 @@ using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -26,10 +27,12 @@ namespace MediaBrowser.Controller.Library
         const string IndexFolderDelimeter = "-index-";
 
         private readonly ILogger _logger;
+        private readonly ILibraryManager _libraryManager;
 
-        public DtoBuilder(ILogger logger)
+        public DtoBuilder(ILogger logger, ILibraryManager libraryManager)
         {
             _logger = logger;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -39,7 +42,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fields">The fields.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public async Task<BaseItemDto> GetBaseItemDto(BaseItem item, List<ItemFields> fields, ILibraryManager libraryManager)
+        public async Task<BaseItemDto> GetBaseItemDto(BaseItem item, List<ItemFields> fields)
         {
             if (item == null)
             {
@@ -74,7 +77,7 @@ namespace MediaBrowser.Controller.Library
 
             if (fields.Contains(ItemFields.People))
             {
-                tasks.Add(AttachPeople(dto, item, libraryManager));
+                tasks.Add(AttachPeople(dto, item));
             }
 
             AttachBasicFields(dto, item, fields);
@@ -94,10 +97,9 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <param name="fields">The fields.</param>
-        /// <param name="libraryManager">The library manager.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public async Task<BaseItemDto> GetBaseItemDto(BaseItem item, User user, List<ItemFields> fields, ILibraryManager libraryManager)
+        public async Task<BaseItemDto> GetBaseItemDto(BaseItem item, User user, List<ItemFields> fields)
         {
             if (item == null)
             {
@@ -136,7 +138,7 @@ namespace MediaBrowser.Controller.Library
 
             if (fields.Contains(ItemFields.People))
             {
-                tasks.Add(AttachPeople(dto, item, libraryManager));
+                tasks.Add(AttachPeople(dto, item));
             }
 
             AttachBasicFields(dto, item, fields);
@@ -296,6 +298,11 @@ namespace MediaBrowser.Controller.Library
                 dto.Overview = item.Overview;
             }
 
+            if (fields.Contains(ItemFields.OverviewHtml))
+            {
+                dto.OverviewHtml = string.IsNullOrEmpty(item.Overview) ? item.Overview : item.Overview.StripHtml();
+            }
+            
             // If there are no backdrops, indicate what parent has them in case the Ui wants to allow inheritance
             if (dto.BackdropImageTags.Count == 0)
             {
@@ -515,7 +522,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <returns>Task.</returns>
-        private async Task AttachPeople(BaseItemDto dto, BaseItem item, ILibraryManager libraryManager)
+        private async Task AttachPeople(BaseItemDto dto, BaseItem item)
         {
             if (item.People == null)
             {
@@ -531,7 +538,7 @@ namespace MediaBrowser.Controller.Library
                     {
                         try
                         {
-                            return await libraryManager.GetPerson(c.Name).ConfigureAwait(false);
+                            return await _libraryManager.GetPerson(c.Name).ConfigureAwait(false);
                         }
                         catch (IOException ex)
                         {

@@ -91,17 +91,19 @@ namespace MediaBrowser.WebDashboard.Api
         private readonly IUserManager _userManager;
 
         private readonly IServerApplicationHost _appHost;
+        private readonly ILibraryManager _libraryManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardService" /> class.
         /// </summary>
         /// <param name="taskManager">The task manager.</param>
         /// <param name="userManager">The user manager.</param>
-        public DashboardService(ITaskManager taskManager, IUserManager userManager, IServerApplicationHost appHost)
+        public DashboardService(ITaskManager taskManager, IUserManager userManager, IServerApplicationHost appHost, ILibraryManager libraryManager)
         {
             _taskManager = taskManager;
             _userManager = userManager;
             _appHost = appHost;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -111,7 +113,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.Object.</returns>
         public object Get(GetDashboardInfo request)
         {
-            return GetDashboardInfo(_appHost, Logger, _taskManager, _userManager).Result;
+            return GetDashboardInfo(_appHost, Logger, _taskManager, _userManager, _libraryManager).Result;
         }
 
         /// <summary>
@@ -121,11 +123,11 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="taskManager">The task manager.</param>
         /// <param name="userManager">The user manager.</param>
         /// <returns>DashboardInfo.</returns>
-        public static async Task<DashboardInfo> GetDashboardInfo(IServerApplicationHost appHost, ILogger logger, ITaskManager taskManager, IUserManager userManager)
+        public static async Task<DashboardInfo> GetDashboardInfo(IServerApplicationHost appHost, ILogger logger, ITaskManager taskManager, IUserManager userManager, ILibraryManager libraryManager)
         {
             var connections = userManager.ConnectedUsers.ToArray();
 
-            var dtoBuilder = new DtoBuilder(logger);
+            var dtoBuilder = new DtoBuilder(logger, libraryManager);
 
             var tasks = userManager.Users.Where(u => connections.Any(c => c.UserId == u.Id)).Select(dtoBuilder.GetUserDto);
             var users = await Task.WhenAll(tasks).ConfigureAwait(false);

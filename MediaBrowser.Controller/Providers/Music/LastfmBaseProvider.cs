@@ -54,7 +54,7 @@ namespace MediaBrowser.Controller.Providers.Music
         {
             get
             {
-                return "3-12-13.2";
+                return "3-12-13.3";
             }
         }
 

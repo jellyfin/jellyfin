@@ -427,6 +427,13 @@ namespace MediaBrowser.Model.Dto
         public string MediaType { get; set; }
 
         /// <summary>
+        /// Gets or sets the overview HTML.
+        /// </summary>
+        /// <value>The overview HTML.</value>
+        [ProtoMember(70)]
+        public string OverviewHtml { get; set; }
+        
+        /// <summary>
         /// Gets a value indicating whether this instance can resume.
         /// </summary>
         /// <value><c>true</c> if this instance can resume; otherwise, <c>false</c>.</value>

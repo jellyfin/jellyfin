@@ -383,9 +383,9 @@ namespace MediaBrowser.Api.UserLibrary
 
             var movie = (Movie)item;
 
-            var dtoBuilder = new DtoBuilder(Logger);
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager);
 
-            var items = movie.SpecialFeatures.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields, _libraryManager)).AsParallel().Select(t => t.Result).ToList();
+            var items = movie.SpecialFeatures.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).AsParallel().Select(t => t.Result).ToList();
 
             return ToOptimizedResult(items);
         }
@@ -404,9 +404,9 @@ namespace MediaBrowser.Api.UserLibrary
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
 
-            var dtoBuilder = new DtoBuilder(Logger);
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager);
 
-            var items = item.LocalTrailers.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields, _libraryManager)).AsParallel().Select(t => t.Result).ToList();
+            var items = item.LocalTrailers.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).AsParallel().Select(t => t.Result).ToList();
 
             return ToOptimizedResult(items);
         }
@@ -425,9 +425,9 @@ namespace MediaBrowser.Api.UserLibrary
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
 
-            var dtoBuilder = new DtoBuilder(Logger);
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager);
 
-            var result = dtoBuilder.GetBaseItemDto(item, user, fields, _libraryManager).Result;
+            var result = dtoBuilder.GetBaseItemDto(item, user, fields).Result;
 
             return ToOptimizedResult(result);
         }
@@ -441,9 +441,9 @@ namespace MediaBrowser.Api.UserLibrary
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
 
-            var dtoBuilder = new DtoBuilder(Logger);
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager);
 
-            var result = dtoBuilder.GetBaseItemDto(item, user, fields, _libraryManager).Result;
+            var result = dtoBuilder.GetBaseItemDto(item, user, fields).Result;
 
             return ToOptimizedResult(result);
         }
