@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace MediaBrowser.Common.Extensions
 {
@@ -43,6 +44,18 @@ namespace MediaBrowser.Common.Extensions
             return val.Split(new[] { separator }, options);
         }
 
+        /// <summary>
+        /// Strips the HTML.
+        /// </summary>
+        /// <param name="htmlString">The HTML string.</param>
+        /// <returns>System.String.</returns>
+        public static string StripHtml(this string htmlString)
+        {
+            // http://stackoverflow.com/questions/1349023/how-can-i-strip-html-from-text-in-net
+            const string pattern = @"<(.|\n)*?>";
+            return Regex.Replace(htmlString, pattern, string.Empty);
+        }
+        
         /// <summary>
         /// Shuffles an IEnumerable
         /// </summary>

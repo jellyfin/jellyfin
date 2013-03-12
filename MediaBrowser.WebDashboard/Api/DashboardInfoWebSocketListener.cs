@@ -35,6 +35,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// The _user manager
         /// </summary>
         private readonly IUserManager _userManager;
+        private readonly ILibraryManager _libraryManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardInfoWebSocketListener" /> class.
@@ -57,7 +58,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>Task{IEnumerable{TaskInfo}}.</returns>
         protected override Task<DashboardInfo> GetDataToSend(object state)
         {
-            return DashboardService.GetDashboardInfo(_appHost, Logger, _taskManager, _userManager);
+            return DashboardService.GetDashboardInfo(_appHost, Logger, _taskManager, _userManager, _libraryManager);
         }
     }
 }

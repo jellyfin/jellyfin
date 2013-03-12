@@ -137,13 +137,14 @@ namespace MediaBrowser.Api
         /// The _user manager
         /// </summary>
         private readonly IUserManager _userManager;
-        
+        private readonly ILibraryManager _libraryManager;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserService" /> class.
         /// </summary>
         /// <param name="xmlSerializer">The XML serializer.</param>
         /// <exception cref="System.ArgumentNullException">xmlSerializer</exception>
-        public UserService(IXmlSerializer xmlSerializer, IUserManager userManager)
+        public UserService(IXmlSerializer xmlSerializer, IUserManager userManager, ILibraryManager libraryManager)
             : base()
         {
             if (xmlSerializer == null)
@@ -153,6 +154,7 @@ namespace MediaBrowser.Api
 
             _xmlSerializer = xmlSerializer;
             _userManager = userManager;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -162,7 +164,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetUsers request)
         {
-            var dtoBuilder = new DtoBuilder(Logger);
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager);
 
             var tasks = _userManager.Users.OrderBy(u => u.Name).Select(dtoBuilder.GetUserDto).ToArray();
 
@@ -185,7 +187,7 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
-            var result = new DtoBuilder(Logger).GetUserDto(user).Result;
+            var result = new DtoBuilder(Logger, _libraryManager).GetUserDto(user).Result;
 
             return ToOptimizedResult(result);
         }
@@ -298,8 +300,8 @@ namespace MediaBrowser.Api
             var newUser = _userManager.CreateUser(dtoUser.Name).Result;
 
             newUser.UpdateConfiguration(dtoUser.Configuration, _xmlSerializer);
-            
-            var result = new DtoBuilder(Logger).GetUserDto(newUser).Result;
+
+            var result = new DtoBuilder(Logger, _libraryManager).GetUserDto(newUser).Result;
 
             return ToOptimizedResult(result);
         }

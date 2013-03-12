@@ -150,7 +150,7 @@ namespace MediaBrowser.Api.UserLibrary
                 return null;
             }
 
-            var dto = await new DtoBuilder(Logger).GetBaseItemDto(item, user, fields, LibraryManager).ConfigureAwait(false);
+            var dto = await new DtoBuilder(Logger, LibraryManager).GetBaseItemDto(item, user, fields).ConfigureAwait(false);
 
             dto.ChildCount = stub.Item2();
 

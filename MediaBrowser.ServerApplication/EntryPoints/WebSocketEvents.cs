@@ -174,7 +174,7 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         /// <param name="e">The e.</param>
         async void userManager_UserUpdated(object sender, GenericEventArgs<User> e)
         {
-            var dto = await new DtoBuilder(_logger).GetUserDto(e.Argument).ConfigureAwait(false);
+            var dto = await new DtoBuilder(_logger, _libraryManager).GetUserDto(e.Argument).ConfigureAwait(false);
 
             _serverManager.SendWebSocketMessage("UserUpdated", dto);
         }
