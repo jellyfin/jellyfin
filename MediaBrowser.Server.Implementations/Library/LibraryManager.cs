@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.ScheduledTasks;
 using MediaBrowser.Controller.Sorting;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.ScheduledTasks;
@@ -121,6 +122,8 @@ namespace MediaBrowser.Server.Implementations.Library
             ConfigurationManager = configurationManager;
 
             ConfigurationManager.ConfigurationUpdated += kernel_ConfigurationUpdated;
+
+            RecordConfigurationValues(configurationManager.Configuration);
         }
 
         /// <summary>
@@ -174,6 +177,15 @@ namespace MediaBrowser.Server.Implementations.Library
             }
         }
 
+        private bool _internetProvidersEnabled;
+        private bool _peopleImageFetchingEnabled;
+
+        private void RecordConfigurationValues(ServerConfiguration configuration)
+        {
+            _internetProvidersEnabled = configuration.EnableInternetProviders;
+            _peopleImageFetchingEnabled = configuration.InternetProviderExcludeTypes == null || !configuration.InternetProviderExcludeTypes.Contains(typeof(Person).Name, StringComparer.OrdinalIgnoreCase);
+        }
+
         /// <summary>
         /// Handles the ConfigurationUpdated event of the kernel control.
         /// </summary>
@@ -181,23 +193,30 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         void kernel_ConfigurationUpdated(object sender, EventArgs e)
         {
-            //// Figure out whether or not we should refresh people after the update is finished
-            //var refreshPeopleAfterUpdate = !oldConfiguration.EnableInternetProviders && config.EnableInternetProviders;
+            var config = ConfigurationManager.Configuration;
 
-            //// This is true if internet providers has just been turned on, or if People have just been removed from InternetProviderExcludeTypes
-            //if (!refreshPeopleAfterUpdate)
-            //{
-            //    var oldConfigurationFetchesPeopleImages = oldConfiguration.InternetProviderExcludeTypes == null || !oldConfiguration.InternetProviderExcludeTypes.Contains(typeof(Person).Name, StringComparer.OrdinalIgnoreCase);
-            //    var newConfigurationFetchesPeopleImages = config.InternetProviderExcludeTypes == null || !config.InternetProviderExcludeTypes.Contains(typeof(Person).Name, StringComparer.OrdinalIgnoreCase);
+            // Figure out whether or not we should refresh people after the update is finished
+            var refreshPeopleAfterUpdate = !_internetProvidersEnabled && config.EnableInternetProviders;
 
-            //    refreshPeopleAfterUpdate = newConfigurationFetchesPeopleImages && !oldConfigurationFetchesPeopleImages;
-            //}
+            // This is true if internet providers has just been turned on, or if People have just been removed from InternetProviderExcludeTypes
+            if (!refreshPeopleAfterUpdate)
+            {
+                var newConfigurationFetchesPeopleImages = config.InternetProviderExcludeTypes == null || !config.InternetProviderExcludeTypes.Contains(typeof(Person).Name, StringComparer.OrdinalIgnoreCase);
+
+                refreshPeopleAfterUpdate = newConfigurationFetchesPeopleImages && !_peopleImageFetchingEnabled;
+            }
+
+            RecordConfigurationValues(config);
 
             Task.Run(() =>
             {
                 // Any number of configuration settings could change the way the library is refreshed, so do that now
                 _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
-                _taskManager.CancelIfRunningAndQueue<PeopleValidationTask>();
+
+                if (refreshPeopleAfterUpdate)
+                {
+                    _taskManager.CancelIfRunningAndQueue<PeopleValidationTask>();
+                }
             });
         }
 
