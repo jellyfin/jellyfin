@@ -138,5 +138,14 @@ namespace MediaBrowser.Controller.Entities.TV
 
             return args;
         }
+
+        /// <summary>
+        /// Creates the name of the sort.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        protected override string CreateSortName()
+        {
+            return IndexNumber != null ? IndexNumber.Value.ToString("0000") : Name;
+        }
     }
 }

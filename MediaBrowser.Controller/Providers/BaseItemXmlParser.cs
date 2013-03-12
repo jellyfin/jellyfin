@@ -102,7 +102,7 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
                 case "SortTitle":
-                    item.SortName = reader.ReadElementContentAsString();
+                    item.ForcedSortName = reader.ReadElementContentAsString();
                     break;
 
                 case "Overview":

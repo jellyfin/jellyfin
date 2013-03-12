@@ -129,5 +129,14 @@ namespace MediaBrowser.Controller.Entities.Audio
                 base.Studios = value;
             }
         }
+
+        /// <summary>
+        /// Creates the name of the sort.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        protected override string CreateSortName()
+        {
+            return ProductionYear != null ? ProductionYear.Value.ToString("0000") : Name;
+        }
     }
 }

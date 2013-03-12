@@ -74,5 +74,15 @@ namespace MediaBrowser.Controller.Entities.Audio
                 return Model.Entities.MediaType.Audio;
             }
         }
+
+        /// <summary>
+        /// Creates the name of the sort.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        protected override string CreateSortName()
+        {
+            return (ProductionYear != null ? ProductionYear.Value.ToString("000-") : "")
+                    + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ") : "") + Name;
+        }
     }
 }
