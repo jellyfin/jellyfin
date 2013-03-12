@@ -207,7 +207,7 @@ namespace MediaBrowser.Uninstaller.Execute
         private void RemoveUninstall()
         {
 
-            using (var parent = Registry.LocalMachine.OpenSubKey(
+            using (var parent = Registry.CurrentUser.OpenSubKey(
                 @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", true))
             {
                 if (parent == null)
