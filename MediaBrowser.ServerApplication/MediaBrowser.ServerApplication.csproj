@@ -373,12 +373,17 @@
 if $(ConfigurationName) == Release (
 rmdir "$(SolutionDir)..\Deploy\Server\System" /s /q
 mkdir "$(SolutionDir)..\Deploy\Server\System"
+rmdir "$(SolutionDir)..\Deploy\Server\Pismo" /s /q
+mkdir "$(SolutionDir)..\Deploy\Server\Pismo"
 xcopy "$(TargetDir)$(TargetFileName)" "$(SolutionDir)..\Deploy\Server\System\" /y
 xcopy "$(SolutionDir)Mediabrowser.Uninstaller\bin\Release\MediaBrowser.Uninstaller.exe.config" "$(SolutionDir)..\Deploy\Server\System\" /y
 xcopy "$(SolutionDir)Mediabrowser.Uninstaller.Execute\bin\Release\MediaBrowser.Uninstaller.Execute.exe.config" "$(SolutionDir)..\Deploy\Server\System\" /y
 xcopy "$(SolutionDir)Mediabrowser.Uninstaller\bin\Release\MediaBrowser.Uninstaller.exe" "$(SolutionDir)..\Deploy\Server\System\" /y
 xcopy "$(SolutionDir)Mediabrowser.Uninstaller.Execute\bin\Release\MediaBrowser.Uninstaller.Execute.exe" "$(SolutionDir)..\Deploy\Server\System\" /y
 xcopy "$(SolutionDir)Mediabrowser.Installer\bin\Release\MediaBrowser.Installer.exe" "$(SolutionDir)..\Deploy\Server\System\" /y
+
+//Pismo
+"$(SolutionDir)ThirdParty\7zip\7za" x  "$(SolutionDir)ThirdParty\Pismo-Install\pfm-168-mediabrowser-win.zip" -o"$(SolutionDir)..\Deploy\Server\Pismo\" -y 
 
 mkdir "$(SolutionDir)..\Deploy\Server\System\swagger-ui"
 xcopy "$(TargetDir)swagger-ui" "$(SolutionDir)..\Deploy\Server\System\swagger-ui" /y /s

@@ -249,6 +249,17 @@ namespace MediaBrowser.Installer
                 return;
             }
 
+            // Install Pismo
+            try
+            {
+                InstallPismo();
+            }
+            catch (Exception e)
+            {
+                SystemClose("Error Installing Pismo - "+e.GetType().FullName+"\n\n"+e.Message);
+                return;
+            }
+
             // And run
             try
             {
@@ -262,6 +273,17 @@ namespace MediaBrowser.Installer
 
             SystemClose();
 
+        }
+
+        private void InstallPismo()
+        {
+            // Kick off the Pismo installer and wait for it to end
+            var pismo = new Process();
+            pismo.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            pismo.StartInfo.FileName = Path.Combine(RootPath, "Pismo", "pfminst.exe");
+            pismo.StartInfo.Arguments = "install";
+            pismo.Start();
+            pismo.WaitForExit();
         }
 
         protected async Task<PackageVersionInfo> GetPackageVersion()
