@@ -54,9 +54,13 @@ var Dashboard = {
             Dashboard.getCurrentUser();
         }
 
-        // Re-render the header
-        $('.header').remove();
-        Dashboard.ensureHeader($.mobile.activePage);
+        var header = $('.header', $.mobile.activePage);
+        
+        if (header.length) {
+            // Re-render the header
+            header.remove();
+            Dashboard.ensureHeader($.mobile.activePage);
+        }
     },
 
     getCurrentUserId: function () {
