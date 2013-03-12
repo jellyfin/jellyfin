@@ -142,9 +142,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 DefaultRedirectPath = DefaultRedirectPath,
 
                 // Tell SS to bubble exceptions up to here
-                WriteErrorsToResponse = false,
-
-                DebugMode = true
+                WriteErrorsToResponse = false
             });
 
             container.Adapter = new ContainerAdapter(ApplicationHost);
@@ -153,6 +151,21 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             Plugins.Add(new CorsFeature());
 
             ServiceStack.Logging.LogManager.LogFactory = new NLogFactory();
+
+            ResponseFilters.Add((req, res, dto) =>
+                {
+                    var exception = dto as Exception;
+
+                    if (exception != null)
+                    {
+                        _logger.ErrorException("Error processing request", exception);
+
+                        if (!string.IsNullOrEmpty(exception.Message))
+                        {
+                            res.AddHeader("X-Application-Error-Code", exception.Message);
+                        }
+                    }
+                });
         }
 
         /// <summary>
