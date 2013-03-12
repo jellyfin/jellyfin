@@ -39,7 +39,8 @@ namespace MediaBrowser.Controller.Providers.Music
             catch (OverflowException)
             {
             }
-            artist.PremiereDate = new DateTime(yearFormed, 1,1);
+            artist.PremiereDate = yearFormed > 0 ? new DateTime(yearFormed, 1,1) : DateTime.MinValue;
+            artist.ProductionYear = yearFormed;
             if (data.tags != null)
             {
                 AddGenres(artist, data.tags);
@@ -62,6 +63,7 @@ namespace MediaBrowser.Controller.Providers.Music
             var release = DateTime.MinValue;
             DateTime.TryParse(data.releasedate, out release);
             item.PremiereDate = release;
+            item.ProductionYear = release.Year;
             if (data.toptags != null)
             {
                 AddGenres(item, data.toptags);
