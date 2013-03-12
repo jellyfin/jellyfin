@@ -129,6 +129,14 @@ namespace MediaBrowser.ServerApplication
         private IHttpServer HttpServer { get; set; }
 
         /// <summary>
+        /// The full path to our startmenu shortcut
+        /// </summary>
+        protected override string ProductShortcutPath
+        {
+            get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), "Media Browser Server.lnk"); }
+        }
+
+        /// <summary>
         /// Runs the startup tasks.
         /// </summary>
         /// <returns>Task.</returns>
