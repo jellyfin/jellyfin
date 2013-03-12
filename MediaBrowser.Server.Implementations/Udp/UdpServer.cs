@@ -187,7 +187,7 @@ namespace MediaBrowser.Server.Implementations.Udp
         /// <param name="bytes">The bytes.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <returns>Task.</returns>
-        public Task SendAsync(byte[] bytes, string remoteEndPoint)
+        public async Task SendAsync(byte[] bytes, string remoteEndPoint)
         {
             if (bytes == null)
             {
@@ -199,7 +199,9 @@ namespace MediaBrowser.Server.Implementations.Udp
                 throw new ArgumentNullException("remoteEndPoint");
             }
 
-            return _udpClient.SendAsync(bytes, bytes.Length, new NetworkManager().Parse(remoteEndPoint));
+            await _udpClient.SendAsync(bytes, bytes.Length, new NetworkManager().Parse(remoteEndPoint)).ConfigureAwait(false);
+
+            Logger.Info("Udp message sent to {0}", remoteEndPoint);
         }
     }
 
