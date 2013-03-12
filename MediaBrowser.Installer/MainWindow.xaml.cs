@@ -392,7 +392,7 @@ namespace MediaBrowser.Installer
         /// <param name="targetExe"></param>
         private void CreateUninstaller(string uninstallPath, string targetExe)
         {
-            using (var parent = Registry.LocalMachine.OpenSubKey(
+            using (var parent = Registry.CurrentUser.OpenSubKey(
                          @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", true))
             {
                 if (parent == null)
