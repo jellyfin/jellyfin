@@ -94,37 +94,45 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// Processes the request.
         /// </summary>
         /// <param name="request">The request.</param>
+        /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>Task.</returns>
-        protected object ProcessRequest(StreamRequest request)
+        protected object ProcessRequest(StreamRequest request, bool isHeadRequest)
         {
             var state = GetState(request);
 
             if (request.Static)
             {
-                return ToStaticFileResult(state.Item.Path);
+                return ToStaticFileResult(state.Item.Path, isHeadRequest);
             }
 
             var outputPath = GetOutputFilePath(state);
 
             if (File.Exists(outputPath) && !ApiEntryPoint.Instance.HasActiveTranscodingJob(outputPath, TranscodingJobType.Progressive))
             {
-                return ToStaticFileResult(outputPath);
+                return ToStaticFileResult(outputPath, isHeadRequest);
             }
 
-            return GetStreamResult(state).Result;
+            return GetStreamResult(state, isHeadRequest).Result;
         }
 
         /// <summary>
         /// Gets the stream result.
         /// </summary>
         /// <param name="state">The state.</param>
+        /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>Task{System.Object}.</returns>
-        private async Task<ProgressiveStreamWriter> GetStreamResult(StreamState state)
+        private async Task<ProgressiveStreamWriter> GetStreamResult(StreamState state, bool isHeadRequest)
         {
             // Use the command line args with a dummy playlist path
             var outputPath = GetOutputFilePath(state);
 
             Response.ContentType = MimeTypes.GetMimeType(outputPath);
+
+            // Headers only
+            if (isHeadRequest)
+            {
+                return null;
+            }
 
             if (!File.Exists(outputPath))
             {

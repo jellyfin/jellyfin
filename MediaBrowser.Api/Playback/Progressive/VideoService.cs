@@ -23,6 +23,18 @@ namespace MediaBrowser.Api.Playback.Progressive
     [Route("/Videos/{Id}/stream.avi", "GET")]
     [Route("/Videos/{Id}/stream.m2ts", "GET")]
     [Route("/Videos/{Id}/stream", "GET")]
+    [Route("/Videos/{Id}/stream.ts", "HEAD")]
+    [Route("/Videos/{Id}/stream.webm", "HEAD")]
+    [Route("/Videos/{Id}/stream.asf", "HEAD")]
+    [Route("/Videos/{Id}/stream.wmv", "HEAD")]
+    [Route("/Videos/{Id}/stream.ogv", "HEAD")]
+    [Route("/Videos/{Id}/stream.mp4", "HEAD")]
+    [Route("/Videos/{Id}/stream.m4v", "HEAD")]
+    [Route("/Videos/{Id}/stream.mkv", "HEAD")]
+    [Route("/Videos/{Id}/stream.mpeg", "HEAD")]
+    [Route("/Videos/{Id}/stream.avi", "HEAD")]
+    [Route("/Videos/{Id}/stream.m2ts", "HEAD")]
+    [Route("/Videos/{Id}/stream", "HEAD")]
     [ServiceStack.ServiceHost.Api(Description = "Gets a video stream")]
     public class GetVideoStream : VideoStreamRequest
     {
@@ -46,9 +58,14 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <returns>System.Object.</returns>
         public object Get(GetVideoStream request)
         {
-            return ProcessRequest(request);
+            return ProcessRequest(request, false);
         }
 
+        public object Head(GetVideoStream request)
+        {
+            return ProcessRequest(request, true);
+        }
+        
         /// <summary>
         /// Gets the command line arguments.
         /// </summary>
