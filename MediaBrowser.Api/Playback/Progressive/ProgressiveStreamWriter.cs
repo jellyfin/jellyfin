@@ -81,7 +81,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                     var bytesRead = fsPosition - position;
 
-                    //Logger.LogInfo("Streamed {0} bytes from file {1}", bytesRead, path);
+                    Logger.Info("Streamed {0} bytes from file {1}", bytesRead, path);
 
                     if (bytesRead == 0)
                     {
