@@ -38,9 +38,16 @@ namespace MediaBrowser.Installer
 
         public MainWindow()
         {
-            GetArgs();
-            InitializeComponent();
-            DoInstall(Archive);
+            try
+            {
+                GetArgs();
+                InitializeComponent();
+                DoInstall(Archive);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("Error: " + e.Message + " \n\n" + e.StackTrace);
+            }
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)
@@ -90,7 +97,6 @@ namespace MediaBrowser.Installer
                     args[nameValue[0]] = nameValue[1];
                 }
             }
-
             Archive = args.GetValueOrDefault("archive", null);
             if (args.GetValueOrDefault("pismo","true") == "false") InstallPismo = false;
 
@@ -113,6 +119,8 @@ namespace MediaBrowser.Installer
                 }
             }
 
+            //MessageBox.Show(string.Format("Called with args: product: {0} archive: {1} caller: {2}", product, Archive, callerId));
+            
             switch (product.ToLower())
             {
                 case "mbt":
@@ -143,8 +151,8 @@ namespace MediaBrowser.Installer
             lblStatus.Text = string.Format("Installing {0}...", FriendlyName);
 
             // Determine Package version
-            var version = await GetPackageVersion();
-            ActualVersion = version.version;
+            var version = archive == null ? await GetPackageVersion() : null;
+            ActualVersion = version != null ? version.version : new Version(3,0);
 
             // Now try and shut down the server if that is what we are installing and it is running
             var procs = Process.GetProcessesByName("mediabrowser.serverapplication");
@@ -168,9 +176,9 @@ namespace MediaBrowser.Installer
                     }
                     catch (WebException e)
                     {
-                        if (e.GetStatus() == HttpStatusCode.NotFound || e.Message.StartsWith("Unable to connect",StringComparison.OrdinalIgnoreCase)) return; // just wasn't running
+                        if (e.Status == WebExceptionStatus.Timeout || e.Message.StartsWith("Unable to connect",StringComparison.OrdinalIgnoreCase)) return; // just wasn't running
 
-                        MessageBox.Show("Error shutting down server. Please be sure it is not running before hitting OK.\n\n" + e.GetStatus() + "\n\n" + e.Message);
+                        MessageBox.Show("Error shutting down server. Please be sure it is not running before hitting OK.\n\n" + e.Status + "\n\n" + e.Message);
                     }
                 }
             }
