@@ -134,6 +134,11 @@ namespace MediaBrowser.ServerApplication
             Logger.ErrorException("UnhandledException", exception);
 
             MessageBox.Show("Unhandled exception: " + exception.Message);
+
+            if (!Debugger.IsAttached)
+            {
+                Environment.Exit(System.Runtime.InteropServices.Marshal.GetHRForException(exception));
+            }
         }
 
         /// <summary>
