@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.IO;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using System;
@@ -75,17 +76,25 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
 
             var format = string.Empty;
+            var keyFrame = string.Empty;
 
-            if (string.Equals("wmv2", videoCodec, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(Path.GetExtension(outputPath), ".mp4", StringComparison.OrdinalIgnoreCase))
             {
-                format = " -f asf ";
+                format = " -f mp4 -movflags frag_keyframe+empty_moov";
+                var framerate = state.VideoRequest.Framerate ??
+                                state.VideoStream.AverageFrameRate ?? state.VideoStream.RealFrameRate ?? 23.976;
+
+                framerate *= 2;
+
+                keyFrame = " -g " + Math.Round(framerate);
             }
 
-            return string.Format("{0} {1} -i {2}{3} -threads 0 {4} {5}{6} {7}{8} \"{9}\"",
+            return string.Format("{0} {1} -i {2}{3}{4} -threads 0 {5} {6}{7} {8}{9} \"{10}\"",
                 probeSize,
                 GetFastSeekCommandLineParameter(state.Request),
                 GetInputArgument(video, state.IsoMount),
                 GetSlowSeekCommandLineParameter(state.Request),
+                keyFrame,
                 GetMapArgs(state),
                 GetVideoArguments(state, videoCodec),
                 graphicalSubtitleParam,
@@ -131,6 +140,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
             else if (IsH264(state.VideoStream))
             {
+                // FFmpeg will fail to convert and give h264 bitstream malformated error if it isn't used when converting mp4 to transport stream.
                 args += " -bsf h264_mp4toannexb";
             }
 
