@@ -159,5 +159,20 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="data">The data.</param>
         Task SaveUserDataForItem(User user, BaseItem item, UserItemData data);
+
+        /// <summary>
+        /// Resets the password.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>Task.</returns>
+        Task ResetPassword(User user);
+
+        /// <summary>
+        /// Changes the password.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="newPassword">The new password.</param>
+        /// <returns>Task.</returns>
+        Task ChangePassword(User user, string newPassword);
     }
 }

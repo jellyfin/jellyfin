@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Common.Events;
+﻿using System.Security.Cryptography;
+using System.Text;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -185,10 +187,9 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("user");
             }
 
-            password = password ?? string.Empty;
-            var existingPassword = string.IsNullOrEmpty(user.Password) ? string.Empty.GetMD5().ToString() : user.Password;
+            var existingPasswordString = string.IsNullOrEmpty(user.Password) ? GetSha1String(string.Empty) : user.Password;
 
-            var success = password.GetMD5().ToString().Equals(existingPassword);
+            var success = string.Equals(existingPasswordString, password.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
 
             // Update LastActivityDate and LastLoginDate, then save
             if (success)
@@ -200,6 +201,20 @@ namespace MediaBrowser.Server.Implementations.Library
             _logger.Info("Authentication request for {0} {1}.", user.Name, (success ? "has succeeded" : "has been denied"));
 
             return success;
+        }
+
+        /// <summary>
+        /// Gets the sha1 string.
+        /// </summary>
+        /// <param name="str">The STR.</param>
+        /// <returns>System.String.</returns>
+        private static string GetSha1String(string str)
+        {
+            using (var provider = SHA1.Create())
+            {
+                var hash = provider.ComputeHash(Encoding.UTF8.GetBytes(str));
+                return BitConverter.ToString(hash).Replace("-", string.Empty);
+            }
         }
 
         /// <summary>
@@ -461,6 +476,33 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
+        /// Resets the password by clearing it.
+        /// </summary>
+        /// <returns>Task.</returns>
+        public Task ResetPassword(User user)
+        {
+            return ChangePassword(user, string.Empty);
+        }
+
+        /// <summary>
+        /// Changes the password.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="newPassword">The new password.</param>
+        /// <returns>Task.</returns>
+        public Task ChangePassword(User user, string newPassword)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+
+            user.Password = string.IsNullOrEmpty(newPassword) ? string.Empty : GetSha1String(newPassword);
+
+            return UpdateUser(user);
+        }
+
+        /// <summary>
         /// Instantiates the new user.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -475,6 +517,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 DateModified = DateTime.UtcNow
             };
         }
+
         /// <summary>
         /// Used to report that playback has started for an item
         /// </summary>

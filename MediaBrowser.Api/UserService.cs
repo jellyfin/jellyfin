@@ -228,7 +228,7 @@ namespace MediaBrowser.Api
             if (!success)
             {
                 // Unauthorized
-                throw new ResourceNotFoundException("Invalid user or password entered.");
+                throw new UnauthorizedAccessException("Invalid user or password entered.");
             }
         }
 
@@ -247,7 +247,7 @@ namespace MediaBrowser.Api
 
             if (request.ResetPassword)
             {
-                var task = user.ResetPassword(_userManager);
+                var task = _userManager.ResetPassword(user);
 
                 Task.WaitAll(task);
             }
@@ -257,10 +257,10 @@ namespace MediaBrowser.Api
 
                 if (!success)
                 {
-                    throw new ResourceNotFoundException("Invalid user or password entered.");
+                    throw new UnauthorizedAccessException("Invalid user or password entered.");
                 }
 
-                var task = user.ChangePassword(request.NewPassword, _userManager);
+                var task = _userManager.ChangePassword(user, request.NewPassword);
 
                 Task.WaitAll(task);
             }
