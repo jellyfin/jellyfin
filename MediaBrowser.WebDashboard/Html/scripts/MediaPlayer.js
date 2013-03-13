@@ -8,7 +8,7 @@
 
             if (media.canPlayType) {
 
-                return media.canPlayType('video/mp2t').replace(/no/, '') || media.canPlayType('video/webm').replace(/no/, '') || media.canPlayType('application/x-mpegURL').replace(/no/, '') || media.canPlayType('video/ogv').replace(/no/, '');
+                return media.canPlayType('video/mp4').replace(/no/, '') || media.canPlayType('video/mp2t').replace(/no/, '') || media.canPlayType('video/webm').replace(/no/, '') || media.canPlayType('application/x-mpegURL').replace(/no/, '') || media.canPlayType('video/ogv').replace(/no/, '');
             }
 
             return false;
@@ -119,6 +119,11 @@
             maxHeight: screenHeight
         };
 
+        var mp4VideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mp4', $.extend({}, baseParams, {
+            videoCodec: 'h264',
+            audioCodec: 'aac'
+        }));
+
         var tsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ts', $.extend({}, baseParams, {
             videoCodec: 'h264',
             audioCodec: 'aac'
@@ -141,6 +146,7 @@
 
         var html = '';
         html += '<video class="itemVideo" preload="none" controls autoplay>';
+        html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
         html += '<source type=\'video/mp2t; codecs="h264, aac"\' src="' + tsVideoUrl + '" />';
         html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
         html += '<source type="application/x-mpegURL" src="' + hlsVideoUrl + '" />';
