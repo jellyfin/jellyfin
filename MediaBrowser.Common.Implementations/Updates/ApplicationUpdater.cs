@@ -24,7 +24,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             var target = Path.Combine(Path.GetTempPath(), UpdaterExe);
             var product = app == MBApplication.MBTheater ? "mbt" : "server";
             File.Copy(source, target, true);
-            Process.Start(target, string.Format("product={0} archive=\"{1}\" caller={2}", product, archive, Process.GetCurrentProcess().Id));
+            Process.Start(target, string.Format("product={0} archive=\"{1}\" caller={2} pismo=false", product, archive, Process.GetCurrentProcess().Id));
 
             // That's it.  The installer will do the work once we exit
         }
