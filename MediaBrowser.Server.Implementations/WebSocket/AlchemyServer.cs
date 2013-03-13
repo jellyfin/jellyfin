@@ -57,7 +57,7 @@ namespace MediaBrowser.Server.Implementations.WebSocket
             WebSocketServer = new WebSocketServer(portNumber, IPAddress.Any)
             {
                 OnConnected = OnAlchemyWebSocketClientConnected,
-                TimeOut = TimeSpan.FromMinutes(60)
+                TimeOut = TimeSpan.FromHours(12)
             };
 
             WebSocketServer.Start();
