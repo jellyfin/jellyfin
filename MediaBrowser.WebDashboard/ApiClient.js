@@ -1061,11 +1061,8 @@ var ApiClient = {
         var url = ApiClient.getUrl("Users/" + userId + "/authenticate");
 
         var postData = {
+            password: SHA1(password || "")
         };
-
-        if (password) {
-            postData.password = password;
-        }
         
         return $.ajax({
             type: "POST",
@@ -1093,9 +1090,7 @@ var ApiClient = {
         var postData = {
         };
 
-        if (currentPassword) {
-            postData.currentPassword = currentPassword;
-        }
+        postData.currentPassword = SHA1(currentPassword);
         if (newPassword) {
             postData.newPassword = newPassword;
         }
@@ -1117,7 +1112,7 @@ var ApiClient = {
         var postData = {
         };
 
-        postData.resetPassword = 1;
+        postData.resetPassword = true;
         return $.post(url, postData);
     },
 

@@ -147,9 +147,9 @@
 
         var html = '';
         html += '<video class="itemVideo" preload="none" controls autoplay>';
+        html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
         html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
         html += '<source type=\'video/mp2t; codecs="h264, aac"\' src="' + tsVideoUrl + '" />';
-        html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
         html += '<source type="application/x-mpegURL" src="' + hlsVideoUrl + '" />';
         html += '<source type="video/ogg" src="' + ogvVideoUrl + '" />';
         

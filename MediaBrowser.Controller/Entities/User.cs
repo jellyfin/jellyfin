@@ -1,15 +1,14 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -424,27 +423,6 @@ namespace MediaBrowser.Controller.Entities
             {
                 FileSystem.CopyAll(defaultPath, userPath);
             }
-        }
-
-        /// <summary>
-        /// Resets the password by clearing it.
-        /// </summary>
-        /// <returns>Task.</returns>
-        public Task ResetPassword(IUserManager userManager)
-        {
-            return ChangePassword(string.Empty, userManager);
-        }
-
-        /// <summary>
-        /// Changes the password.
-        /// </summary>
-        /// <param name="newPassword">The new password.</param>
-        /// <returns>Task.</returns>
-        public Task ChangePassword(string newPassword, IUserManager userManager)
-        {
-            Password = string.IsNullOrEmpty(newPassword) ? string.Empty : newPassword.GetMD5().ToString();
-
-            return userManager.UpdateUser(this);
         }
     }
 }
