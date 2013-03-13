@@ -43,12 +43,13 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="logger">The logger.</param>
         /// <param name="taskManager">The task manager.</param>
         /// <param name="userManager">The user manager.</param>
-        public DashboardInfoWebSocketListener(IServerApplicationHost appHost, ILogger logger, ITaskManager taskManager, IUserManager userManager)
+        public DashboardInfoWebSocketListener(IServerApplicationHost appHost, ILogger logger, ITaskManager taskManager, IUserManager userManager, ILibraryManager libraryManager)
             : base(logger)
         {
             _appHost = appHost;
             _taskManager = taskManager;
             _userManager = userManager;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
