@@ -265,6 +265,9 @@ namespace MediaBrowser.Installer
                 }
             }
 
+            // Now delete the pismo install files
+            Directory.Delete(Path.Combine(RootPath, "Pismo"), true);
+
             // And run
             try
             {
@@ -289,6 +292,7 @@ namespace MediaBrowser.Installer
             pismo.StartInfo.Arguments = "install";
             pismo.Start();
             pismo.WaitForExit();
+
         }
 
         protected async Task<PackageVersionInfo> GetPackageVersion()
