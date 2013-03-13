@@ -7,7 +7,7 @@ using System.IO;
 using System.Threading;
 using System.Windows;
 
-namespace MediaBrowser.Uninstaller.Execute
+namespace MediaBrowser.Uninstaller
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
