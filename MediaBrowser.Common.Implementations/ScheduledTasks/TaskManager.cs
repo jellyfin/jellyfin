@@ -106,7 +106,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <param name="task">The task.</param>
         private void QueueScheduledTask(IScheduledTaskWorker task)
         {
-            var type = task.GetType();
+            var type = task.ScheduledTask.GetType();
 
             lock (_taskQueue)
             {
@@ -173,14 +173,46 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             return ((ScheduledTaskWorker)task).Execute();
         }
 
+        /// <summary>
+        /// Called when [task executing].
+        /// </summary>
+        /// <param name="task">The task.</param>
         internal void OnTaskExecuting(IScheduledTask task)
         {
             EventHelper.QueueEventIfNotNull(TaskExecuting, task, EventArgs.Empty, Logger);
         }
 
+        /// <summary>
+        /// Called when [task completed].
+        /// </summary>
+        /// <param name="task">The task.</param>
+        /// <param name="result">The result.</param>
         internal void OnTaskCompleted(IScheduledTask task, TaskResult result)
         {
             EventHelper.QueueEventIfNotNull(TaskExecuting, task, new GenericEventArgs<TaskResult> { Argument = result }, Logger);
+            ExecuteQueuedTasks();
+        }
+
+        /// <summary>
+        /// Executes the queued tasks.
+        /// </summary>
+        private void ExecuteQueuedTasks()
+        {
+            // Execute queued tasks
+            lock (_taskQueue)
+            {
+                foreach (var type in _taskQueue.ToList())
+                {
+                    var scheduledTask = ScheduledTasks.First(t => t.ScheduledTask.GetType() == type);
+
+                    if (scheduledTask.State == TaskState.Idle)
+                    {
+                        ((ScheduledTaskWorker)scheduledTask).Execute();
+
+                        _taskQueue.Remove(type);
+                    }
+                }
+            }
         }
     }
 }

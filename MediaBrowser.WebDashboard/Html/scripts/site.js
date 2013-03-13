@@ -382,7 +382,7 @@ var Dashboard = {
 
             setTimeout(function () {
                 Dashboard.reloadPageWhenServerAvailable();
-            }, 500);
+            }, 250);
 
         }).fail(function () {
             Dashboard.suppressAjaxErrors = false;
@@ -391,10 +391,17 @@ var Dashboard = {
 
     reloadPageWhenServerAvailable: function (retryCount) {
 
-        ApiClient.getSystemInfo().done(function () {
-            Dashboard.reloadPage();
+        ApiClient.getSystemInfo().done(function (info) {
+            
+            // If this is back to false, the restart completed
+            if (!info.HasPendingRestart) {
+                Dashboard.reloadPage();
+            } else {
+                Dashboard.reloadPageWhenServerAvailable(retryCount);
+            }
 
         }).fail(function () {
+            
             setTimeout(function () {
 
                 retryCount = retryCount || 0;
