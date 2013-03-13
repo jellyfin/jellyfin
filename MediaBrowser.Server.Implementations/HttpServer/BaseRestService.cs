@@ -270,7 +270,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 }
 
                 httpListenerResponse.ContentLength64 = stream.Length;
-                return new StreamWriter(stream, Logger);
+                return headersOnly ? null : new StreamWriter(stream, Logger);
+            }
+
+            if (headersOnly)
+            {
+                return null;
             }
 
             string content;
