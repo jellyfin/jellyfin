@@ -293,17 +293,23 @@ namespace MediaBrowser.Controller.Library
             dto.Name = item.Name;
             dto.OfficialRating = item.OfficialRating;
 
-            var strippedOverview = string.IsNullOrEmpty(item.Overview) ? item.Overview : item.Overview.StripHtml();
+            var hasOverview = fields.Contains(ItemFields.Overview);
+            var hasHtmlOverview = fields.Contains(ItemFields.OverviewHtml);
 
-            if (fields.Contains(ItemFields.Overview))
+            if (hasOverview || hasHtmlOverview)
             {
-                dto.Overview = strippedOverview;
-            }
+                var strippedOverview = string.IsNullOrEmpty(item.Overview) ? item.Overview : item.Overview.StripHtml();
 
-            // Only supply the html version if there was actually html content
-            if (fields.Contains(ItemFields.OverviewHtml) && !string.Equals(item.Overview, strippedOverview))
-            {
-                dto.OverviewHtml = item.Overview;
+                if (fields.Contains(ItemFields.Overview))
+                {
+                    dto.Overview = strippedOverview;
+                }
+
+                // Only supply the html version if there was actually html content
+                if (fields.Contains(ItemFields.OverviewHtml) && !string.Equals(item.Overview, strippedOverview))
+                {
+                    dto.OverviewHtml = item.Overview;
+                }
             }
             
             // If there are no backdrops, indicate what parent has them in case the Ui wants to allow inheritance
