@@ -49,8 +49,6 @@
     },
 
     onSubmit: function () {
-        Dashboard.showLoadingMsg();
-
         var form = this;
 
         ApiClient.getServerConfiguration().done(function (config) {
