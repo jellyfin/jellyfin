@@ -27,6 +27,7 @@ namespace MediaBrowser.Installer
         protected string TargetExe = "MediaBrowser.ServerApplication.exe";
         protected string FriendlyName = "Media Browser Server";
         protected string Archive = null;
+        protected bool InstallPismo = true;
         protected string RootPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "MediaBrowser-Server");
 
         protected bool SystemClosing = false;
@@ -91,6 +92,7 @@ namespace MediaBrowser.Installer
             }
 
             Archive = args.GetValueOrDefault("archive", null);
+            if (args.GetValueOrDefault("pismo","true") == "false") InstallPismo = false;
 
             var product = args.GetValueOrDefault("product", null) ?? ConfigurationManager.AppSettings["product"] ?? "server";
             PackageClass = (PackageVersionClass) Enum.Parse(typeof (PackageVersionClass), args.GetValueOrDefault("class", null) ?? ConfigurationManager.AppSettings["class"] ?? "Release");
@@ -250,14 +252,17 @@ namespace MediaBrowser.Installer
             }
 
             // Install Pismo
-            try
+            if (InstallPismo)
             {
-                InstallPismo();
-            }
-            catch (Exception e)
-            {
-                SystemClose("Error Installing Pismo - "+e.GetType().FullName+"\n\n"+e.Message);
-                return;
+                try
+                {
+                    PismoInstall();
+                }
+                catch (Exception e)
+                {
+                    SystemClose("Error Installing Pismo - "+e.GetType().FullName+"\n\n"+e.Message);
+                    return;
+                }
             }
 
             // And run
@@ -275,7 +280,7 @@ namespace MediaBrowser.Installer
 
         }
 
-        private void InstallPismo()
+        private void PismoInstall()
         {
             // Kick off the Pismo installer and wait for it to end
             var pismo = new Process();
