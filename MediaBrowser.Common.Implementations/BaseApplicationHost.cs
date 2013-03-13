@@ -225,6 +225,8 @@ namespace MediaBrowser.Common.Implementations
                 Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
 
                 Task.Run(() => ConfigureAutoRunAtStartup());
+
+                ConfigurationManager.ConfigurationUpdated += ConfigurationManager_ConfigurationUpdated;
             });
         }
 
@@ -477,6 +479,17 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         protected abstract string ProductShortcutPath { get; }
 
+        /// <summary>
+        /// Handles the ConfigurationUpdated event of the ConfigurationManager control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        void ConfigurationManager_ConfigurationUpdated(object sender, EventArgs e)
+        {
+            ConfigureAutoRunAtStartup();
+        }
+        
         /// <summary>
         /// Configures the auto run at startup.
         /// </summary>
