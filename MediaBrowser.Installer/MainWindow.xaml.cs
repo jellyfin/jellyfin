@@ -240,6 +240,7 @@ namespace MediaBrowser.Installer
             }
 
             // Create shortcut
+            lblStatus.Text = "Creating Shortcuts...";
             var fullPath = Path.Combine(RootPath, "System", TargetExe);
             try
             {
@@ -254,6 +255,7 @@ namespace MediaBrowser.Installer
             // Install Pismo
             if (InstallPismo)
             {
+                lblStatus.Text = "Installing ISO Support...";
                 try
                 {
                     PismoInstall();
@@ -269,6 +271,7 @@ namespace MediaBrowser.Installer
             Directory.Delete(Path.Combine(RootPath, "Pismo"), true);
 
             // And run
+            lblStatus.Text = string.Format("Starting {0}...", FriendlyName);
             try
             {
                 Process.Start(fullPath);
