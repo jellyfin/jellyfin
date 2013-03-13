@@ -108,6 +108,7 @@
 
         var item = items[0];
 
+        // Account for screen rotation. Use the larger dimension as the width.
         var screenWidth = Math.max(screen.height, screen.width);
         var screenHeight = Math.min(screen.height, screen.width);
 
@@ -151,13 +152,6 @@
         html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
         html += '<source type="application/x-mpegURL" src="' + hlsVideoUrl + '" />';
         html += '<source type="video/ogg" src="' + ogvVideoUrl + '" />';
-        
-        //html += '<object type="application/x-shockwave-flash" data="http://releases.flowplayer.org/swf/flowplayer-3.2.1.swf" width="640" height="360">';
-        //html += '<param name="movie" value="http://releases.flowplayer.org/swf/flowplayer-3.2.1.swf" />';
-        //html += '<param name="allowFullScreen" value="true" />';
-        //html += '<param name="wmode" value="transparent" />';
-        ////html += '<param name="flashVars" value="config={'playlist':['http%3A%2F%2Fsandbox.thewikies.com%2Fvfe-generator%2Fimages%2Fbig-buck-bunny_poster.jpg',{'url':'http%3A%2F%2Fclips.vorwaerts-gmbh.de%2Fbig_buck_bunny.mp4','autoPlay':false}]}" />';
-        //html += '</object>';
         
         html += '</video';
 

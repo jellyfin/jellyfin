@@ -15,9 +15,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// Gets or sets the source stream.
         /// </summary>
         /// <value>The source stream.</value>
-        public Stream SourceStream { get; set; }
-        public HttpListenerResponse Response { get; set; }
-        public NameValueCollection RequestHeaders { get; set; }
+        private Stream SourceStream { get; set; }
+        private HttpListenerResponse Response { get; set; }
+        private NameValueCollection RequestHeaders { get; set; }
+        private bool IsHeadRequest { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamWriter" /> class.
@@ -25,11 +26,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="requestHeaders">The request headers.</param>
         /// <param name="response">The response.</param>
         /// <param name="source">The source.</param>
-        public RangeRequestWriter(NameValueCollection requestHeaders, HttpListenerResponse response, Stream source)
+        /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
+        public RangeRequestWriter(NameValueCollection requestHeaders, HttpListenerResponse response, Stream source, bool isHeadRequest)
         {
             RequestHeaders = requestHeaders;
             Response = response;
             SourceStream = source;
+            IsHeadRequest = isHeadRequest;
         }
 
         /// <summary>
@@ -132,6 +135,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             Response.ContentLength64 = rangeLength;
             Response.Headers["Content-Range"] = string.Format("bytes {0}-{1}/{2}", rangeStart, rangeEnd, totalContentLength);
 
+            // Headers only
+            if (IsHeadRequest)
+            {
+                return Task.FromResult(true);
+            }
+
             if (rangeStart > 0)
             {
                 sourceStream.Position = rangeStart;
@@ -156,6 +165,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             // Content-Length is the length of what we're serving, not the original content
             Response.ContentLength64 = rangeLength;
             Response.Headers["Content-Range"] = string.Format("bytes {0}-{1}/{2}", rangeStart, rangeEnd, totalContentLength);
+
+            // Headers only
+            if (IsHeadRequest)
+            {
+                return;
+            }
 
             sourceStream.Position = rangeStart;
 

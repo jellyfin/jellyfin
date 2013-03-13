@@ -132,14 +132,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             return factoryFn();
         }
-        
+
         /// <summary>
         /// To the static file result.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="headersOnly">if set to <c>true</c> [headers only].</param>
         /// <returns>System.Object.</returns>
         /// <exception cref="System.ArgumentNullException">path</exception>
-        protected object ToStaticFileResult(string path)
+        protected object ToStaticFileResult(string path, bool headersOnly = false)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -150,7 +151,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             var cacheKey = path + dateModified.Ticks;
 
-            return ToStaticResult(cacheKey.GetMD5(), dateModified, null, MimeTypes.GetMimeType(path), () => Task.FromResult(GetFileStream(path)));
+            return ToStaticResult(cacheKey.GetMD5(), dateModified, null, MimeTypes.GetMimeType(path), () => Task.FromResult(GetFileStream(path)), headersOnly);
         }
 
         /// <summary>
@@ -162,7 +163,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous);
         }
-        
+
         /// <summary>
         /// To the static result.
         /// </summary>
@@ -171,9 +172,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="cacheDuration">Duration of the cache.</param>
         /// <param name="contentType">Type of the content.</param>
         /// <param name="factoryFn">The factory fn.</param>
+        /// <param name="headersOnly">if set to <c>true</c> [headers only].</param>
         /// <returns>System.Object.</returns>
         /// <exception cref="System.ArgumentNullException">cacheKey</exception>
-        protected object ToStaticResult(Guid cacheKey, DateTime? lastDateModified, TimeSpan? cacheDuration, string contentType, Func<Task<Stream>> factoryFn)
+        protected object ToStaticResult(Guid cacheKey, DateTime? lastDateModified, TimeSpan? cacheDuration, string contentType, Func<Task<Stream>> factoryFn, bool headersOnly = false)
         {
             if (cacheKey == Guid.Empty)
             {
@@ -203,7 +205,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 Response.AddHeader("Vary", "Accept-Encoding");
             }
 
-            return ToStaticResult(contentType, factoryFn, compress).Result;
+            return ToStaticResult(contentType, factoryFn, compress, headersOnly).Result;
         }
 
         /// <summary>
@@ -249,8 +251,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="contentType">Type of the content.</param>
         /// <param name="factoryFn">The factory fn.</param>
         /// <param name="compress">if set to <c>true</c> [compress].</param>
+        /// <param name="headersOnly">if set to <c>true</c> [headers only].</param>
         /// <returns>System.Object.</returns>
-        private async Task<object> ToStaticResult(string contentType, Func<Task<Stream>> factoryFn, bool compress)
+        private async Task<object> ToStaticResult(string contentType, Func<Task<Stream>> factoryFn, bool compress, bool headersOnly = false)
         {
             if (!compress || string.IsNullOrEmpty(RequestContext.CompressionType))
             {
@@ -263,7 +266,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                 if (IsRangeRequest)
                 {
-                    return new RangeRequestWriter(Request.Headers, httpListenerResponse, stream);
+                    return new RangeRequestWriter(Request.Headers, httpListenerResponse, stream, headersOnly);
                 }
 
                 httpListenerResponse.ContentLength64 = stream.Length;
