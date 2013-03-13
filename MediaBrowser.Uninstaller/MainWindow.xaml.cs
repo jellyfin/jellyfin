@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Net;
+using System.Reflection;
 using Microsoft.Win32;
 using System.IO;
 using System.Threading;
@@ -20,49 +21,68 @@ namespace MediaBrowser.Uninstaller.Execute
         {
 
             var args = Environment.GetCommandLineArgs();
-            var product = args.Length > 1 ? args[1] : "server";
-            var callerId = args.Length > 2 ? args[2] : null;
-            if (callerId != null)
+            var product = args.Length > 1 ? args[1] : null;
+            if (product == null)
             {
-                // Wait for our caller to exit
-                try
-                {
-                    var process = Process.GetProcessById(Convert.ToInt32(callerId));
-                    process.WaitForExit();
-                }
-                catch (ArgumentException)
-                {
-                    // wasn't running
-                }
+                MessageBox.Show("Please use 'Programs and Features' to uninstall.");
+                Close();
             }
             else
             {
-                Thread.Sleep(1000); // crude method
-            }
-
-            InitializeComponent();
-
-
-            switch (product)
-            {
-                case "server":
-                    Product = "Server";
-                    RootSuffix = "-Server";
-                    break;
-
-                case "mbt":
-                    Product = "Theater";
-                    RootSuffix = "-Theater";
-                    break;
-
-                default:
-                    MessageBox.Show("Please specify which application to un-install (server or mbt)");
+                var callerId = args.Length > 2 ? args[2] : null;
+                if (callerId != null)
+                {
+                    // Wait for our caller to exit
+                    try
+                    {
+                        var process = Process.GetProcessById(Convert.ToInt32(callerId));
+                        process.WaitForExit();
+                    }
+                    catch (ArgumentException)
+                    {
+                        // wasn't running
+                    }
+                }
+                else
+                {
+                    // No caller - means we were called directly and need to move to temp file and execute there
+                    //copy the real program to a temp location so we can delete everything here (including us)
+                    var us = Assembly.GetExecutingAssembly().Location;
+                    var tempExe = Path.Combine(Path.GetTempPath(), Path.GetFileName(us) ?? "Mediabrowser.Uninstaller.exe");
+                    File.Copy(us,tempExe,true);
+                    //get our pid to pass to the uninstaller so it can wait for us to exit
+                    var pid = Process.GetCurrentProcess().Id;
+                    //kick off the copy
+                    Process.Start(tempExe, product + " " + pid);
+                    //and shut down
                     Close();
-                    break;
+                }
 
+                InitializeComponent();
+
+
+                switch (product)
+                {
+                    case "server":
+                        Product = "Server";
+                        RootSuffix = "-Server";
+                        break;
+
+                    case "mbt":
+                        Product = "Theater";
+                        RootSuffix = "-Theater";
+                        break;
+
+                    default:
+                        MessageBox.Show("Please Use 'Programs and Features' to uninstall.");
+                        Close();
+                        break;
+
+                }
+
+                lblHeading.Content = this.Title = "Uninstall Media Browser " + Product;
+                
             }
-
-            lblHeading.Content = this.Title = "Uninstall Media Browser " + Product;
 
         }
 
