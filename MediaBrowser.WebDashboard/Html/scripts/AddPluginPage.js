@@ -52,8 +52,8 @@
                 if (new Date(pkg.expDate).getTime() < new Date(1970, 1, 1).getTime()) {
                     regStatus += "This feature has no registration information";
                 } else {
-                    if (pkg.expDate <= new Date().getTime()) {
-                        regStatus += "The trial period for this feature has expired on this machine";
+                    if (new Date(pkg.expDate).getTime() <= new Date().getTime()) {
+                        regStatus += "The trial period for this feature has expired";
                     } else {
                         regStatus += "The trial period for this feature will expire in " + Math.round((new Date(pkg.expDate).getTime() - new Date().getTime()) / (86400000)) + " day(s)";
                     }
