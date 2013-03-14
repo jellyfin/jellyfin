@@ -139,7 +139,7 @@ namespace MediaBrowser.Controller.Providers
         /// <returns><c>true</c> if [is in same directory] [the specified item]; otherwise, <c>false</c>.</returns>
         private bool IsInSameDirectory(BaseItem item, string path)
         {
-            return string.Equals(Path.GetDirectoryName(path), item.Path, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(Path.GetDirectoryName(path), item.MetaLocation, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
