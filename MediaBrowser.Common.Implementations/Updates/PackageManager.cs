@@ -71,7 +71,14 @@ namespace MediaBrowser.Common.Implementations.Updates
             var target = Path.Combine(isArchive ? _appPaths.TempUpdatePath : _appPaths.PluginsPath, package.targetFilename);
 
             // Download to temporary file so that, if interrupted, it won't destroy the existing installation
-            var tempFile = await _httpClient.GetTempFile(package.sourceUrl, cancellationToken, progress).ConfigureAwait(false);
+            var tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
+            {
+                Url = package.sourceUrl,
+                CancellationToken = cancellationToken,
+                Progress = progress,
+                MaxResumeCount = 3
+
+            }).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 
