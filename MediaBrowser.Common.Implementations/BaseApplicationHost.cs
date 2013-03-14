@@ -226,6 +226,8 @@ namespace MediaBrowser.Common.Implementations
 
                 Task.Run(() => ConfigureAutoRunAtStartup());
 
+                Task.Run(() => SecurityManager.LoadAllRegistrationInfo());
+
                 ConfigurationManager.ConfigurationUpdated += ConfigurationManager_ConfigurationUpdated;
             });
         }
