@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
@@ -228,7 +229,8 @@ namespace MediaBrowser.Controller.Providers.Music
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (!ConfigurationManager.Configuration.SaveLocalMeta || !HasLocalMeta(item) || (force && !HasLocalMeta(item)) || (RefreshOnVersionChange && item.ProviderData[Id].ProviderVersion != ProviderVersion))
+            var providerData = item.ProviderData.GetValueOrDefault(Id, new BaseProviderInfo { ProviderId = Id });
+            if (!ConfigurationManager.Configuration.SaveLocalMeta || !HasLocalMeta(item) || (force && !HasLocalMeta(item)) || (RefreshOnVersionChange && providerData.ProviderVersion != ProviderVersion))
             {
                 try
                 {

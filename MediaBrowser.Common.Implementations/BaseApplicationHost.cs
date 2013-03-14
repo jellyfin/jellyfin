@@ -500,14 +500,14 @@ namespace MediaBrowser.Common.Implementations
             if (ConfigurationManager.CommonConfiguration.RunAtStartup)
             {
                 //Copy our shortut into the startup folder for this user
-                File.Copy(ProductShortcutPath, Environment.GetFolderPath(Environment.SpecialFolder.Startup), true);
+                File.Copy(ProductShortcutPath, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup),Path.GetFileName(ProductShortcutPath) ?? "MBstartup.lnk"), true);
             }
             else
             {
                 //Remove our shortcut from the startup folder for this user
                 try
                 {
-                    File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), Path.GetFileName(ProductShortcutPath)));
+                    File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), Path.GetFileName(ProductShortcutPath) ?? "MBstartup.lnk"));
                 }
                 catch (FileNotFoundException)
                 {
