@@ -359,7 +359,7 @@ namespace MediaBrowser.Installer
                         {
                             return null;
                         }
-                        if (e.Status == WebExceptionStatus.Timeout || e.Status == WebExceptionStatus.ConnectFailure || e.Status == WebExceptionStatus.ProtocolError)
+                        if (retryCount < 3 && (e.Status == WebExceptionStatus.Timeout || e.Status == WebExceptionStatus.ConnectFailure || e.Status == WebExceptionStatus.ProtocolError))
                         {
                             Thread.Sleep(500); //wait just a sec
                             PrepareTempLocation(); //clear this out
