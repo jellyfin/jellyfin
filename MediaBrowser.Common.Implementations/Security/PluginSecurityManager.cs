@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Model.Serialization;
 using Mediabrowser.Model.Entities;
@@ -7,6 +8,7 @@ using MediaBrowser.Common.Net;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace MediaBrowser.Common.Implementations.Security
 {
@@ -44,6 +46,7 @@ namespace MediaBrowser.Common.Implementations.Security
         private IHttpClient _httpClient;
         private IJsonSerializer _jsonSerializer;
         private IApplicationHost _appHost;
+        private IEnumerable<IRequiresRegistration> _registeredEntities; 
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginSecurityManager" /> class.
@@ -58,7 +61,21 @@ namespace MediaBrowser.Common.Implementations.Security
             _appHost = appHost;
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
+            _registeredEntities = _appHost.GetExports<IRequiresRegistration>();
             MBRegistration.Init(appPaths);
+        }
+
+        /// <summary>
+        /// Load all registration info for all entities that require registration
+        /// </summary>
+        /// <returns></returns>
+        public async Task LoadAllRegistrationInfo()
+        {
+            var tasks = new List<Task>();
+
+            tasks.AddRange(_registeredEntities.Select(i => i.LoadRegistrationInfoAsync()));
+            await Task.WhenAll(tasks);
+            ResetSupporterInfo();
         }
 
         /// <summary>
