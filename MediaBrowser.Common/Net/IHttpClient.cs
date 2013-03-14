@@ -49,29 +49,15 @@ namespace MediaBrowser.Common.Net
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
         Task<Stream> Post(string url, Dictionary<string, string> postData, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Downloads the contents of a given url into a temporary location
         /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="resourcePool">The resource pool.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <param name="userAgent">The user agent.</param>
+        /// <param name="options">The options.</param>
         /// <returns>Task{System.String}.</returns>
         /// <exception cref="System.ArgumentNullException">progress</exception>
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        Task<string> GetTempFile(string url, SemaphoreSlim resourcePool, CancellationToken cancellationToken, IProgress<double> progress, string userAgent = null);
-
-        /// <summary>
-        /// Gets the temp file.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <param name="userAgent">The user agent.</param>
-        /// <returns>Task{System.String}.</returns>
-        Task<string> GetTempFile(string url, CancellationToken cancellationToken, IProgress<double> progress, string userAgent = null);
+        Task<string> GetTempFile(HttpRequestOptions options);
         
         /// <summary>
         /// Downloads the contents of a given url into a MemoryStream

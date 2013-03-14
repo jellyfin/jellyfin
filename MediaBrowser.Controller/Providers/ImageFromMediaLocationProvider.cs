@@ -100,7 +100,7 @@ namespace MediaBrowser.Controller.Providers
             {
                 var path = item.Images[image];
 
-                return IsInSameDirectory(item, path) && !item.ResolveArgs.GetMetaFileByPath(path).HasValue;
+                return IsInMetaLocation(item, path) && !item.ResolveArgs.GetMetaFileByPath(path).HasValue;
             }).ToList();
 
             // Now remove them from the dictionary
@@ -122,7 +122,7 @@ namespace MediaBrowser.Controller.Providers
             }
 
             // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
-            var deletedImages = item.BackdropImagePaths.Where(path => IsInSameDirectory(item, path) && !item.ResolveArgs.GetMetaFileByPath(path).HasValue).ToList();
+            var deletedImages = item.BackdropImagePaths.Where(path => IsInMetaLocation(item, path) && !item.ResolveArgs.GetMetaFileByPath(path).HasValue).ToList();
 
             // Now remove them from the dictionary
             foreach (var path in deletedImages)
@@ -137,7 +137,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="item">The item.</param>
         /// <param name="path">The path.</param>
         /// <returns><c>true</c> if [is in same directory] [the specified item]; otherwise, <c>false</c>.</returns>
-        private bool IsInSameDirectory(BaseItem item, string path)
+        private bool IsInMetaLocation(BaseItem item, string path)
         {
             return string.Equals(Path.GetDirectoryName(path), item.MetaLocation, StringComparison.OrdinalIgnoreCase);
         }
