@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Net.Http.Headers;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
@@ -203,50 +204,96 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <summary>
         /// Downloads the contents of a given url into a temporary location
         /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="resourcePool">The resource pool.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <param name="userAgent">The user agent.</param>
+        /// <param name="options">The options.</param>
         /// <returns>Task{System.String}.</returns>
         /// <exception cref="System.ArgumentNullException">progress</exception>
+        /// <exception cref="HttpException"></exception>
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public async Task<string> GetTempFile(string url, SemaphoreSlim resourcePool, CancellationToken cancellationToken, IProgress<double> progress, string userAgent = null)
+        public Task<string> GetTempFile(HttpRequestOptions options)
         {
-            ValidateParams(url, cancellationToken);
+            var tempFile = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".tmp");
 
-            if (progress == null)
+            return GetTempFile(options, tempFile, 0);
+        }
+
+        /// <summary>
+        /// Gets the temp file.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <param name="tempFile">The temp file.</param>
+        /// <param name="resumeCount">The resume count.</param>
+        /// <returns>Task{System.String}.</returns>
+        /// <exception cref="System.ArgumentNullException">progress</exception>
+        /// <exception cref="HttpException"></exception>
+        private async Task<string> GetTempFile(HttpRequestOptions options, string tempFile, int resumeCount)
+        {
+            ValidateParams(options.Url, options.CancellationToken);
+
+            if (options.Progress == null)
             {
                 throw new ArgumentNullException("progress");
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
+            options.CancellationToken.ThrowIfCancellationRequested();
 
-            var tempFile = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".tmp");
+            var message = new HttpRequestMessage(HttpMethod.Get, options.Url);
 
-            var message = new HttpRequestMessage(HttpMethod.Get, url);
-
-            if (!string.IsNullOrEmpty(userAgent))
+            if (!string.IsNullOrEmpty(options.UserAgent))
             {
-                message.Headers.Add("User-Agent", userAgent);
+                message.Headers.Add("User-Agent", options.UserAgent);
             }
 
-            if (resourcePool != null)
+            if (options.ResourcePool != null)
             {
-                await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+                await options.ResourcePool.WaitAsync(options.CancellationToken).ConfigureAwait(false);
             }
 
-            _logger.Info("HttpClientManager.GetTempFile url: {0}, temp file: {1}", url, tempFile);
+            options.Progress.Report(0);
+            
+            _logger.Info("HttpClientManager.GetTempFile url: {0}, temp file: {1}", options.Url, tempFile);
+
+            FileStream tempFileStream;
+
+            if (resumeCount > 0 && File.Exists(tempFile))
+            {
+                tempFileStream = new FileStream(tempFile, FileMode.Open, FileAccess.Write, FileShare.Read,
+                                                StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous);
+
+                var startPosition = tempFileStream.Length;
+                tempFileStream.Seek(startPosition, SeekOrigin.Current);
+
+                message.Headers.Range = new RangeHeaderValue(startPosition, null);
+
+                _logger.Info("Resuming from position {1} for {0}", options.Url, startPosition);
+            }
+            else
+            {
+                tempFileStream = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read,
+                                                StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous);
+            }
+
+            var serverSupportsRangeRequests = false;
+
+            Exception downloadException = null;
 
             try
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                options.CancellationToken.ThrowIfCancellationRequested();
 
-                using (var response = await GetHttpClient(GetHostFromUrl(url)).SendAsync(message, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false))
+                using (var response = await GetHttpClient(GetHostFromUrl(options.Url)).SendAsync(message, HttpCompletionOption.ResponseHeadersRead, options.CancellationToken).ConfigureAwait(false))
                 {
                     EnsureSuccessStatusCode(response);
 
-                    cancellationToken.ThrowIfCancellationRequested();
+                    options.CancellationToken.ThrowIfCancellationRequested();
+
+                    var rangeValue = string.Join(" ", response.Headers.AcceptRanges.ToArray());
+                    serverSupportsRangeRequests = rangeValue.IndexOf("bytes", StringComparison.OrdinalIgnoreCase) != -1 || rangeValue.IndexOf("*", StringComparison.OrdinalIgnoreCase) != -1;
+
+                    if (!serverSupportsRangeRequests && resumeCount > 0)
+                    {
+                        _logger.Info("Server does not support range requests for {0}", options.Url);
+                        tempFileStream.Position = 0;
+                    }
 
                     IEnumerable<string> lengthValues;
 
@@ -256,75 +303,97 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                         // We're not able to track progress
                         using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
                         {
-                            using (var fs = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
-                            {
-                                await stream.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
-                            }
+                            await stream.CopyToAsync(tempFileStream, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
                         }
                     }
                     else
                     {
                         var length = long.Parse(string.Join(string.Empty, lengthValues.ToArray()));
 
-                        using (var stream = ProgressStream.CreateReadProgressStream(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), progress.Report, length))
+                        using (var stream = ProgressStream.CreateReadProgressStream(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), options.Progress.Report, length))
                         {
-                            using (var fs = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
-                            {
-                                await stream.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
-                            }
+                            await stream.CopyToAsync(tempFileStream, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
                         }
                     }
 
-                    progress.Report(100);
+                    options.Progress.Report(100);
 
-                    cancellationToken.ThrowIfCancellationRequested();
+                    options.CancellationToken.ThrowIfCancellationRequested();
                 }
-
-                return tempFile;
-            }
-            catch (OperationCanceledException ex)
-            {
-                // Cleanup
-                if (File.Exists(tempFile))
-                {
-                    File.Delete(tempFile);
-                }
-
-                throw GetCancellationException(url, cancellationToken, ex);
-            }
-            catch (HttpRequestException ex)
-            {
-                _logger.ErrorException("Error getting response from " + url, ex);
-
-                // Cleanup
-                if (File.Exists(tempFile))
-                {
-                    File.Delete(tempFile);
-                }
-
-                throw new HttpException(ex.Message, ex);
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error getting response from " + url, ex);
+                downloadException = ex;
+            }
+            finally
+            {
+                tempFileStream.Dispose();
 
+                if (options.ResourcePool != null)
+                {
+                    options.ResourcePool.Release();
+                }
+            }
+
+            if (downloadException != null)
+            {
+                await HandleTempFileException(downloadException, options, tempFile, serverSupportsRangeRequests, resumeCount).ConfigureAwait(false);
+            }
+
+            return tempFile;
+        }
+
+        /// <summary>
+        /// Handles the temp file exception.
+        /// </summary>
+        /// <param name="ex">The ex.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="tempFile">The temp file.</param>
+        /// <param name="serverSupportsRangeRequests">if set to <c>true</c> [server supports range requests].</param>
+        /// <param name="resumeCount">The resume count.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="HttpException"></exception>
+        private Task HandleTempFileException(Exception ex, HttpRequestOptions options, string tempFile, bool serverSupportsRangeRequests, int resumeCount)
+        {
+            var operationCanceledException = ex as OperationCanceledException;
+
+            if (operationCanceledException != null)
+            {
                 // Cleanup
                 if (File.Exists(tempFile))
                 {
                     File.Delete(tempFile);
                 }
 
-                throw;
+                throw GetCancellationException(options.Url, options.CancellationToken, operationCanceledException);
             }
-            finally
-            {
-                if (resourcePool != null)
-                {
-                    resourcePool.Release();
-                }
-            }
-        }
 
+            _logger.ErrorException("Error getting response from " + options.Url, ex);
+
+            var httpRequestException = ex as HttpRequestException;
+
+            // Cleanup
+            if (File.Exists(tempFile))
+            {
+                // Try to resume
+                if (httpRequestException != null && serverSupportsRangeRequests && resumeCount < options.MaxResumeCount && new FileInfo(tempFile).Length > 0)
+                {
+                    _logger.Info("Attempting to resume download from {0}", options.Url);
+
+                    return GetTempFile(options, tempFile, resumeCount + 1);
+                }
+
+                File.Delete(tempFile);
+            }
+
+            if (httpRequestException != null)
+            {
+                throw new HttpException(ex.Message, ex);
+            }
+
+            throw ex;
+        }
+        
         /// <summary>
         /// Downloads the contents of a given url into a MemoryStream
         /// </summary>
@@ -517,19 +586,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         public Task<Stream> Post(string url, Dictionary<string, string> postData, CancellationToken cancellationToken)
         {
             return Post(url, postData, null, cancellationToken);
-        }
-
-        /// <summary>
-        /// Gets the temp file.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <param name="userAgent">The user agent.</param>
-        /// <returns>Task{System.String}.</returns>
-        public Task<string> GetTempFile(string url, CancellationToken cancellationToken, IProgress<double> progress, string userAgent = null)
-        {
-            return GetTempFile(url, null, cancellationToken, progress, userAgent);
         }
 
         /// <summary>

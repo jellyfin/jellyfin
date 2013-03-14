@@ -397,23 +397,26 @@ var Dashboard = {
             if (!info.HasPendingRestart) {
                 Dashboard.reloadPage();
             } else {
-                Dashboard.reloadPageWhenServerAvailable(retryCount);
+                Dashboard.retryReload(retryCount);
             }
 
-        }).fail(function () {
-            
-            setTimeout(function () {
-
-                retryCount = retryCount || 0;
-                retryCount++;
-
-                if (retryCount < 10) {
-                    Dashboard.reloadPageWhenServerAvailable(retryCount);
-                } else {
-                    Dashboard.suppressAjaxErrors = false;
-                }
-            }, 500);
+        }).fail(function() {
+            Dashboard.retryReload(retryCount);
         });
+    },
+    
+    retryReload: function (retryCount) {
+        setTimeout(function () {
+
+            retryCount = retryCount || 0;
+            retryCount++;
+
+            if (retryCount < 10) {
+                Dashboard.reloadPageWhenServerAvailable(retryCount);
+            } else {
+                Dashboard.suppressAjaxErrors = false;
+            }
+        }, 500);
     },
 
     getPosterViewHtml: function (options) {
