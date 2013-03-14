@@ -51,7 +51,7 @@ namespace MediaBrowser.Controller.MediaInfo
         /// The _logger
         /// </summary>
         private readonly Kernel _kernel;
-        
+
         /// <summary>
         /// The _logger
         /// </summary>
@@ -589,6 +589,12 @@ namespace MediaBrowser.Controller.MediaInfo
             if (video.Chapters == null)
             {
                 throw new ArgumentNullException();
+            }
+
+            // Can't extract images if there are no video streams
+            if (video.MediaStreams == null || video.MediaStreams.All(m => m.Type != MediaStreamType.Video))
+            {
+                return;
             }
 
             var changesMade = false;
