@@ -73,9 +73,9 @@ namespace MediaBrowser.Common.Implementations.Security
         {
             var tasks = new List<Task>();
 
+            ResetSupporterInfo();
             tasks.AddRange(_registeredEntities.Select(i => i.LoadRegistrationInfoAsync()));
             await Task.WhenAll(tasks);
-            ResetSupporterInfo();
         }
 
         /// <summary>
@@ -101,11 +101,8 @@ namespace MediaBrowser.Common.Implementations.Security
                 if (value != MBRegistration.SupporterKey)
                 {
                     MBRegistration.SupporterKey = value;
-                    // Clear this so it will re-evaluate
-                    ResetSupporterInfo();
-                    // And we'll need to restart to re-evaluate the status of plug-ins
-                    _appHost.NotifyPendingRestart();
-
+                    // re-load registration info
+                    Task.Run(() => LoadAllRegistrationInfo());
                 }
             }
         }
@@ -119,9 +116,12 @@ namespace MediaBrowser.Common.Implementations.Security
             get { return MBRegistration.LegacyKey; }
             set
             {
-                MBRegistration.LegacyKey = value;
-                // And we'll need to restart to re-evaluate the status of plug-ins
-                _appHost.NotifyPendingRestart();
+                if (value != MBRegistration.LegacyKey)
+                {
+                    MBRegistration.LegacyKey = value;
+                    // re-load registration info
+                    Task.Run(() => LoadAllRegistrationInfo());
+                }
             }
         }
 
