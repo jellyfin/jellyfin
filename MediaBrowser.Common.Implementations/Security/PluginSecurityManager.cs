@@ -47,6 +47,13 @@ namespace MediaBrowser.Common.Implementations.Security
         private IJsonSerializer _jsonSerializer;
         private IApplicationHost _appHost;
         private IEnumerable<IRequiresRegistration> _registeredEntities; 
+        protected IEnumerable<IRequiresRegistration> RegisteredEntities
+        {
+            get
+            {
+                return _registeredEntities ?? (_registeredEntities = _appHost.GetExports<IRequiresRegistration>());
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginSecurityManager" /> class.
@@ -61,7 +68,6 @@ namespace MediaBrowser.Common.Implementations.Security
             _appHost = appHost;
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
-            _registeredEntities = _appHost.GetExports<IRequiresRegistration>();
             MBRegistration.Init(appPaths);
         }
 
@@ -74,7 +80,7 @@ namespace MediaBrowser.Common.Implementations.Security
             var tasks = new List<Task>();
 
             ResetSupporterInfo();
-            tasks.AddRange(_registeredEntities.Select(i => i.LoadRegistrationInfoAsync()));
+            tasks.AddRange(RegisteredEntities.Select(i => i.LoadRegistrationInfoAsync()));
             await Task.WhenAll(tasks);
         }
 
