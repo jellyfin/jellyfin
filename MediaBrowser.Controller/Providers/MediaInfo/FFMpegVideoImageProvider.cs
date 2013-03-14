@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Linq;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
@@ -47,6 +48,12 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
             if (video != null)
             {
+                // Can't extract images if there are no video streams
+                if (video.MediaStreams == null || video.MediaStreams.All(m => m.Type != MediaStreamType.Video))
+                {
+                    return false;
+                }
+
                 if (video.VideoType == VideoType.Iso && video.IsoType.HasValue && _isoManager.CanMount(item.Path))
                 {
                     return true;
