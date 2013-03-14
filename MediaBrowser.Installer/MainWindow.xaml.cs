@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Linq;
@@ -336,23 +337,39 @@ namespace MediaBrowser.Installer
         /// <returns>The fully qualified name of the downloaded package</returns>
         protected async Task<string> DownloadPackage(PackageVersionInfo version)
         {
+            var success = false;
+            var retryCount = 0;
+            var archiveFile = Path.Combine(PrepareTempLocation(), version.targetFilename);
+
             try
             {
-                var archiveFile = Path.Combine(PrepareTempLocation(), version.targetFilename);
+                while (!success && retryCount < 3)
+                {
 
-                // setup download progress and download the package
-                MainClient.DownloadProgressChanged += DownloadProgressChanged;
-                try
-                {
-                    await MainClient.DownloadFileTaskAsync(version.sourceUrl, archiveFile);
-                }
-                catch (WebException e)
-                {
-                    if (e.Status == WebExceptionStatus.RequestCanceled)
+                    // setup download progress and download the package
+                    MainClient.DownloadProgressChanged += DownloadProgressChanged;
+                    try
                     {
-                        return null;
+                        await MainClient.DownloadFileTaskAsync(version.sourceUrl, archiveFile);
+                        success = true;
                     }
-                    throw;
+                    catch (WebException e)
+                    {
+                        if (e.Status == WebExceptionStatus.RequestCanceled)
+                        {
+                            return null;
+                        }
+                        if (e.Status == WebExceptionStatus.Timeout || e.Status == WebExceptionStatus.ConnectFailure || e.Status == WebExceptionStatus.ProtocolError)
+                        {
+                            Thread.Sleep(500); //wait just a sec
+                            PrepareTempLocation(); //clear this out
+                            retryCount++;
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
                 }
 
                 return archiveFile;
