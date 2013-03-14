@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
@@ -82,6 +83,70 @@ namespace MediaBrowser.Api.Playback.Progressive
         }
 
         /// <summary>
+        /// Adds the dlna headers.
+        /// </summary>
+        private bool AddDlnaHeaders(StreamState state)
+        {
+            var headers = Request.Headers;
+
+            if (!string.IsNullOrEmpty(headers["TimeSeekRange.dlna.org"]))
+            {
+                Response.StatusCode = 406;
+                return false;
+            }
+
+            var transferMode = headers["transferMode.dlna.org"];
+            Response.AddHeader("transferMode.dlna.org", string.IsNullOrEmpty(transferMode) ? "Streaming" : transferMode);
+
+            var contentFeatures = string.Empty;
+            var extension = GetOutputFileExtension(state);
+
+            if (string.Equals(extension, ".mp3", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=MP3;DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000";
+            }
+            else if (string.Equals(extension, ".aac", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=AAC_ISO;DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000";
+            }
+            else if (string.Equals(extension, ".wma", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=WMABASE;DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000";
+            }
+            else if (string.Equals(extension, ".avi", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=AVI;DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000";
+            }
+            else if (string.Equals(extension, ".mp4", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=MPEG4_P2_SP_AAC;DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000";
+            }
+            else if (string.Equals(extension, ".mpeg", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL;DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000";
+            }
+            else if (string.Equals(extension, ".wmv", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=WMVHIGH_BASE;DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000";
+            }
+            else if (string.Equals(extension, ".asf", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000";
+            }
+            else if (string.Equals(extension, ".mkv", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_OP=01;DLNA.ORG_CI=0";
+            }
+
+            if (!string.IsNullOrEmpty(contentFeatures))
+            {
+                Response.AddHeader("ContentFeatures.DLNA.ORG", contentFeatures);
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Gets the type of the transcoding job.
         /// </summary>
         /// <value>The type of the transcoding job.</value>
@@ -99,6 +164,11 @@ namespace MediaBrowser.Api.Playback.Progressive
         protected object ProcessRequest(StreamRequest request, bool isHeadRequest)
         {
             var state = GetState(request);
+
+            if (!AddDlnaHeaders(state))
+            {
+                return null;
+            }
 
             if (request.Static)
             {
