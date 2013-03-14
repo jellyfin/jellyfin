@@ -699,9 +699,9 @@ namespace MediaBrowser.Controller.Entities
 
                 await Task.WhenAll(saveTasks).ConfigureAwait(false);
 
-                //and save children in repo...
+                //and save children in repo... but never save virtual plugin folders as they will always be re-created by the plugin
                 Logger.Info("*** Saving " + newChildren.Count + " children for " + Name);
-                await Kernel.Instance.ItemRepository.SaveChildren(Id, newChildren, CancellationToken.None).ConfigureAwait(false);
+                await Kernel.Instance.ItemRepository.SaveChildren(Id, newChildren.Where(c => !(c is BasePluginFolder)), CancellationToken.None).ConfigureAwait(false);
             }
 
             if (changedArgs.HasChange)
