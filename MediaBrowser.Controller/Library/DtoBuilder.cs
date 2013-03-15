@@ -300,13 +300,13 @@ namespace MediaBrowser.Controller.Library
             {
                 var strippedOverview = string.IsNullOrEmpty(item.Overview) ? item.Overview : item.Overview.StripHtml();
 
-                if (fields.Contains(ItemFields.Overview))
+                if (hasOverview)
                 {
                     dto.Overview = strippedOverview;
                 }
 
                 // Only supply the html version if there was actually html content
-                if (fields.Contains(ItemFields.OverviewHtml) && !string.Equals(item.Overview, strippedOverview))
+                if (hasHtmlOverview)
                 {
                     dto.OverviewHtml = item.Overview;
                 }
