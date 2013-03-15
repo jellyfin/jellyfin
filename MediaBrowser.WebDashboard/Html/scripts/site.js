@@ -835,7 +835,7 @@ var Dashboard = {
         }, {
             name: "Help",
             href: "support.html",
-            selected: pageElem.id == "supportPage" || pageElem.id == "logPage" || pageElem.id == "supporterPage" || pageElem.id == "supporterKeyPage"
+            selected: pageElem.id == "supportPage" || pageElem.id == "logPage" || pageElem.id == "supporterPage" || pageElem.id == "supporterKeyPage" || pageElem.id == "aboutPage"
         }];
 
     },
