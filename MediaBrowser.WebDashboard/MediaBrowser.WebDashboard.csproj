@@ -385,6 +385,7 @@
     <EmbeddedResource Include="Html\scripts\ItemDetailPage.js" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Html\scripts\AboutPage.js" />
     <EmbeddedResource Include="Html\css\images\supporterflag.png" />
     <EmbeddedResource Include="Html\scripts\ItemListPage.js" />
     <EmbeddedResource Include="Html\itemList.html" />
@@ -404,6 +405,7 @@
     <EmbeddedResource Include="Html\css\images\mblogotextwhite.png" />
     <EmbeddedResource Include="Html\css\images\clients\dlna.png" />
     <EmbeddedResource Include="ApiClient.js" />
+    <EmbeddedResource Include="Html\about.html" />
     <Content Include="Html\css\images\stars.png" />
     <EmbeddedResource Include="Html\scripts\MediaPlayer.js" />
   </ItemGroup>
