@@ -6,17 +6,17 @@
 
 
     pollForInfo: function () {
-        $.getJSON("dashboardInfo").done(AboutPage.renderInfo);
+        ApiClient.getSystemInfo().done(AboutPage.renderInfo);
     },
 
-    renderInfo: function (dashboardInfo) {
-        AboutPage.renderSystemInfo(dashboardInfo);
+    renderInfo: function (info) {
+        AboutPage.renderSystemInfo(info);
     },
 
 
-    renderSystemInfo: function (dashboardInfo) {
+    renderSystemInfo: function (info) {
         var page = $.mobile.activePage;
-        $('#appVersionNumber', page).html(dashboardInfo.SystemInfo.Version);
+        $('#appVersionNumber', page).html(info.Version);
     },
 
 };
