@@ -28,95 +28,94 @@
                             <label for="txtNumbackdrops">Max number of backdrops per item: </label>
                             <input type="number" id="txtNumbackdrops" name="txtNumbackdrops" pattern="[0-9]*" required="required" min="1" onchange="MetadataImagesPage.submit();" />
                         </li>
-                        <li>
-                            <label>Enable additional image downloading:</label>
+                    </ul>
+                    <p>Enable additional image downloading:</p>
+                    <div data-role="collapsible">
+                        <h3>Movies</h3>
+                        <div data-role="controlgroup">
+                            <input type="checkbox" data-mini="true" id="chkDownloadMovieArt" name="chkDownloadMovieArt" onchange="MetadataImagesPage.submit();" />
+                            <label for="chkDownloadMovieArt">Movie Art</label>
 
-                            <div data-role="collapsible">
-                                <h3>Movies</h3>
-                                <div data-role="controlgroup">
-                                    <input type="checkbox" data-mini="true" id="chkDownloadMovieArt" name="chkDownloadMovieArt" onchange="MetadataImagesPage.submit();" />
-                                    <label for="chkDownloadMovieArt">Movie Art</label>
+                            <input type="checkbox" data-mini="true" id="chkDownloadMovieBanner" name="chkDownloadMovieBanner" onchange="MetadataImagesPage.submit();" />
+                            <label for="chkDownloadMovieBanner">Movie Banner</label>
 
-                                    <input type="checkbox" data-mini="true" id="chkDownloadMovieBanner" name="chkDownloadMovieBanner" onchange="MetadataImagesPage.submit();" />
-                                    <label for="chkDownloadMovieBanner">Movie Banner</label>
+                            <input type="checkbox" data-mini="true" id="chkDownloadMovieDisc" name="chkDownloadMovieDisc" onchange="MetadataImagesPage.submit();" />
+                            <label for="chkDownloadMovieDisc">Movie Disc</label>
 
-                                    <input type="checkbox" data-mini="true" id="chkDownloadMovieDisc" name="chkDownloadMovieDisc" onchange="MetadataImagesPage.submit();" />
-                                    <label for="chkDownloadMovieDisc">Movie Disc</label>
+                            <input type="checkbox" data-mini="true" id="chkDownloadMovieLogo" name="chkDownloadMovieLogo" onchange="MetadataImagesPage.submit();" />
+                            <label for="chkDownloadMovieLogo">Movie Logo</label>
 
-                                    <input type="checkbox" data-mini="true" id="chkDownloadMovieLogo" name="chkDownloadMovieLogo" onchange="MetadataImagesPage.submit();" />
-                                    <label for="chkDownloadMovieLogo">Movie Logo</label>
-
-                                    <input type="checkbox" data-mini="true" id="chkDownloadMovieThumb" name="chkDownloadMovieThumb" onchange="MetadataImagesPage.submit();" />
-                                    <label for="chkDownloadMovieThumb">Movie Thumb</label>
-
-
-                                </div>
-                            </div>
-
-                            <div data-role="collapsible">
-                                <h3>TV Series</h3>
-                                <div data-role="controlgroup">
-                                    <input type="checkbox" data-mini="true" id="chKDownloadTVArt" name="chKDownloadTVArt" onchange="MetadataImagesPage.submit();" />
-                                    <label for="chKDownloadTVArt">TV Series Art</label>
-
-                                    <input type="checkbox" data-mini="true" id="chkDownloadTVBanner" name="chkDownloadTVBanner" onchange="MetadataImagesPage.submit();" />
-                                    <label for="chkDownloadTVBanner">TV Series Banner</label>
-
-                                    <input type="checkbox" data-mini="true" id="chkDownloadTVLogo" name="chkDownloadTVLogo" onchange="MetadataImagesPage.submit();" />
-                                    <label for="chkDownloadTVLogo">TV Series Logo</label>
-
-                                    <input type="checkbox" data-mini="true" id="chkDownloadTVThumb" name="chkDownloadTVThumb" onchange="MetadataImagesPage.submit();" />
-                                    <label for="chkDownloadTVThumb">TV Series Thumb</label>
-                                </div>
-                            </div>
+                            <input type="checkbox" data-mini="true" id="chkDownloadMovieThumb" name="chkDownloadMovieThumb" onchange="MetadataImagesPage.submit();" />
+                            <label for="chkDownloadMovieThumb">Movie Thumb</label>
 
 
-                            <div data-role="collapsible">
-                                <h3>TV Seasons</h3>
-                                <div data-role="controlgroup">
-                                    <input type="checkbox" data-mini="true" id="chkDownloadSeasonBackdrops" name="chkDownloadSeasonBackdrops" onchange="MetadataImagesPage.submit();" />
-                                    <label for="chkDownloadSeasonBackdrops">TV Season Backdrops</label>
+                        </div>
+                    </div>
 
-                                    <input type="checkbox" data-mini="true" id="chkDownloadSeasonBanner" name="chkDownloadSeasonBanner" onchange="MetadataImagesPage.submit();" />
-                                    <label for="chkDownloadSeasonBanner">TV Season Banner</label>
+                    <div data-role="collapsible">
+                        <h3>TV Series</h3>
+                        <div data-role="controlgroup">
+                            <input type="checkbox" data-mini="true" id="chKDownloadTVArt" name="chKDownloadTVArt" onchange="MetadataImagesPage.submit();" />
+                            <label for="chKDownloadTVArt">TV Series Art</label>
 
-                                    <input type="checkbox" data-mini="true" id="chkDownloadSeasonThumb" name="chkDownloadSeasonThumb" onchange="MetadataImagesPage.submit();" />
-                                    <label for="chkDownloadSeasonThumb">TV Season Thumb</label>
-                                </div>
+                            <input type="checkbox" data-mini="true" id="chkDownloadTVBanner" name="chkDownloadTVBanner" onchange="MetadataImagesPage.submit();" />
+                            <label for="chkDownloadTVBanner">TV Series Banner</label>
 
-                            </div>
+                            <input type="checkbox" data-mini="true" id="chkDownloadTVLogo" name="chkDownloadTVLogo" onchange="MetadataImagesPage.submit();" />
+                            <label for="chkDownloadTVLogo">TV Series Logo</label>
 
-                            <div data-role="collapsible">
-                                <h3>Music Artists</h3>
-                                <div data-role="controlgroup">
-                                    <input type="checkbox" data-mini="true" id="chkDownloadArtistThumb" name="chkDownloadArtistThumb" onchange="MetadataImagesPage.submit();" />
-                                    <label for="chkDownloadArtistThumb">Music Artist Thumb (primary image)</label>
+                            <input type="checkbox" data-mini="true" id="chkDownloadTVThumb" name="chkDownloadTVThumb" onchange="MetadataImagesPage.submit();" />
+                            <label for="chkDownloadTVThumb">TV Series Thumb</label>
+                        </div>
+                    </div>
 
-                                    <input type="checkbox" data-mini="true" id="chkDownloadArtistBackdrops" name="chkDownloadArtistBackdrops" onchange="MetadataImagesPage.submit();" />
-                                    <label for="chkDownloadArtistBackdrops">Music Artist Backdrops</label>
 
-                                    <input type="checkbox" data-mini="true" id="chkDownloadArtistLogo" name="chkDownloadArtistLogo" onchange="MetadataImagesPage.submit();" />
-                                    <label for="chkDownloadArtistLogo">Music Artist Logo</label>
+                    <div data-role="collapsible">
+                        <h3>TV Seasons</h3>
+                        <div data-role="controlgroup">
+                            <input type="checkbox" data-mini="true" id="chkDownloadSeasonBackdrops" name="chkDownloadSeasonBackdrops" onchange="MetadataImagesPage.submit();" />
+                            <label for="chkDownloadSeasonBackdrops">TV Season Backdrops</label>
 
-                                    <input type="checkbox" data-mini="true" id="chkDownloadArtistBanner" name="chkDownloadArtistBanner" onchange="MetadataImagesPage.submit();" />
-                                    <label for="chkDownloadArtistBanner">Music Artist Banner</label>
-                                </div>
+                            <input type="checkbox" data-mini="true" id="chkDownloadSeasonBanner" name="chkDownloadSeasonBanner" onchange="MetadataImagesPage.submit();" />
+                            <label for="chkDownloadSeasonBanner">TV Season Banner</label>
 
-                            </div>
+                            <input type="checkbox" data-mini="true" id="chkDownloadSeasonThumb" name="chkDownloadSeasonThumb" onchange="MetadataImagesPage.submit();" />
+                            <label for="chkDownloadSeasonThumb">TV Season Thumb</label>
+                        </div>
 
-                            <div data-role="collapsible">
-                                <h3>Music Albums</h3>
-                                <div data-role="controlgroup">
-                                    <input type="checkbox" data-mini="true" id="chkDownloadAlbumPrimary" name="chkDownloadAlbumPrimary" onchange="MetadataImagesPage.submit();" />
-                                    <label for="chkDownloadAlbumPrimary">Music Album Cover</label>
+                    </div>
 
-                                    <input type="checkbox" data-mini="true" id="chkDownloadAlbumBackdrops" name="chkDownloadAlbumBackdrops" onchange="MetadataImagesPage.submit();" />
-                                    <label for="chkDownloadAlbumBackdrops">Music Album Backdrops</label>
-                                </div>
+                    <div data-role="collapsible">
+                        <h3>Music Artists</h3>
+                        <div data-role="controlgroup">
+                            <input type="checkbox" data-mini="true" id="chkDownloadArtistThumb" name="chkDownloadArtistThumb" onchange="MetadataImagesPage.submit();" />
+                            <label for="chkDownloadArtistThumb">Music Artist Thumb (primary image)</label>
 
-                            </div>
+                            <input type="checkbox" data-mini="true" id="chkDownloadArtistBackdrops" name="chkDownloadArtistBackdrops" onchange="MetadataImagesPage.submit();" />
+                            <label for="chkDownloadArtistBackdrops">Music Artist Backdrops</label>
 
-                        </li>
+                            <input type="checkbox" data-mini="true" id="chkDownloadArtistLogo" name="chkDownloadArtistLogo" onchange="MetadataImagesPage.submit();" />
+                            <label for="chkDownloadArtistLogo">Music Artist Logo</label>
+
+                            <input type="checkbox" data-mini="true" id="chkDownloadArtistBanner" name="chkDownloadArtistBanner" onchange="MetadataImagesPage.submit();" />
+                            <label for="chkDownloadArtistBanner">Music Artist Banner</label>
+                        </div>
+
+                    </div>
+                    <div data-role="collapsible">
+                        <h3>Music Albums</h3>
+                        <div data-role="controlgroup">
+                            <input type="checkbox" data-mini="true" id="chkDownloadAlbumPrimary" name="chkDownloadAlbumPrimary" onchange="MetadataImagesPage.submit();" />
+                            <label for="chkDownloadAlbumPrimary">Music Album Cover</label>
+
+                            <input type="checkbox" data-mini="true" id="chkDownloadAlbumBackdrops" name="chkDownloadAlbumBackdrops" onchange="MetadataImagesPage.submit();" />
+                            <label for="chkDownloadAlbumBackdrops">Music Album Backdrops</label>
+                        </div>
+
+                    </div>
+                    <br />
+                    <br />
+                    <ul data-role="listview" class="ulForm">
                         <li>
                             <label for="selectTmdbPosterDownloadSize">Tmdb poster download size: </label>
                             <select id="selectTmdbPosterDownloadSize" name="selectTmdbPosterDownloadSize" onchange="MetadataImagesPage.submit();">
