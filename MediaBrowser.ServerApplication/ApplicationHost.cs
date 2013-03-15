@@ -2,6 +2,7 @@
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Constants;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.IO;
@@ -133,7 +134,7 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         protected override string ProductShortcutPath
         {
-            get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),"Media Browser 3", "Media Browser Server.lnk"); }
+            get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), "Media Browser 3", "Media Browser Server.lnk"); }
         }
 
         /// <summary>
@@ -163,7 +164,7 @@ namespace MediaBrowser.ServerApplication
             await base.RegisterResources().ConfigureAwait(false);
 
             RegisterSingleInstance<IHttpResultFactory>(new HttpResultFactory());
-            
+
             RegisterSingleInstance<IServerApplicationHost>(this);
             RegisterSingleInstance<IServerApplicationPaths>(ApplicationPaths);
 
@@ -247,14 +248,14 @@ namespace MediaBrowser.ServerApplication
             base.FindParts();
 
             Parallel.Invoke(
-                
-                () =>
-                    {
-                        HttpServer.Init(GetExports<IRestfulService>(false));
 
-                        ServerManager.AddWebSocketListeners(GetExports<IWebSocketListener>(false));
-                        ServerManager.Start();
-                    },
+                () =>
+                {
+                    HttpServer.Init(GetExports<IRestfulService>(false));
+
+                    ServerManager.AddWebSocketListeners(GetExports<IWebSocketListener>(false));
+                    ServerManager.Start();
+                },
 
                 () => LibraryManager.AddParts(GetExports<IResolverIgnoreRule>(), GetExports<IVirtualFolderCreator>(), GetExports<IItemResolver>(), GetExports<IIntroProvider>(), GetExports<IBaseItemComparer>()),
 
@@ -334,6 +335,8 @@ namespace MediaBrowser.ServerApplication
             yield return GetType().Assembly;
         }
 
+        private readonly Guid _systemId = Environment.MachineName.GetMD5();
+
         /// <summary>
         /// Gets the system status.
         /// </summary>
@@ -349,7 +352,8 @@ namespace MediaBrowser.ServerApplication
                 SupportsNativeWebSocket = ServerManager.SupportsNativeWebSocket,
                 FailedPluginAssemblies = FailedAssemblies.ToArray(),
                 InProgressInstallations = InstallationManager.CurrentInstallations.Select(i => i.Item1).ToArray(),
-                CompletedInstallations = InstallationManager.CompletedInstallations.ToArray()
+                CompletedInstallations = InstallationManager.CompletedInstallations.ToArray(),
+                Id = _systemId
             };
         }
 

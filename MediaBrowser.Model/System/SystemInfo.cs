@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Updates;
 using ProtoBuf;
+using System;
 
 namespace MediaBrowser.Model.System
 {
@@ -62,6 +63,14 @@ namespace MediaBrowser.Model.System
         /// Gets or sets plugin assemblies that failed to load.
         /// </summary>
         /// <value>The failed assembly loads.</value>
+        [ProtoMember(8)]
         public string[] FailedPluginAssemblies { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ProtoMember(9)]
+        public Guid Id { get; set; }
     }
 }
