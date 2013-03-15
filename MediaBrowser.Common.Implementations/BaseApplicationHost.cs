@@ -381,6 +381,7 @@ namespace MediaBrowser.Common.Implementations
                 if (disposable != null)
                 {
                     Logger.Info("Registering " + disposable.GetType().Name);
+
                     DisposableParts.Add(disposable);
                 }
             }
@@ -458,7 +459,10 @@ namespace MediaBrowser.Common.Implementations
 
             if (manageLiftime)
             {
-                DisposableParts.AddRange(parts.OfType<IDisposable>());
+                lock (DisposableParts)
+                {
+                    DisposableParts.AddRange(parts.OfType<IDisposable>());
+                }
             }
 
             return parts;
