@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Concurrent;
@@ -15,7 +16,7 @@ namespace MediaBrowser.Controller.Entities
     /// Specialized Folder class that points to a subset of the physical folders in the system.
     /// It is created from the user-specific folders within the system root
     /// </summary>
-    public class CollectionFolder : Folder, ICollectionFolder
+    public class CollectionFolder : Folder, ICollectionFolder, IByReferenceItem
     {
         /// <summary>
         /// Gets a value indicating whether this instance is virtual folder.

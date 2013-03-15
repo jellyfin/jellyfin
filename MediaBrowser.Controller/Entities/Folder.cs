@@ -811,7 +811,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected virtual IEnumerable<BaseItem> GetCachedChildren()
         {
-            return Kernel.Instance.ItemRepository.RetrieveChildren(this);
+            return Kernel.Instance.ItemRepository.RetrieveChildren(this).Select(i => i is IByReferenceItem ? LibraryManager.GetOrAddByReferenceItem(i) : i);
         }
 
         /// <summary>

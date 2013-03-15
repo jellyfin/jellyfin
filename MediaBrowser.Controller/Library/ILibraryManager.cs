@@ -181,5 +181,12 @@ namespace MediaBrowser.Controller.Library
         /// <param name="searchTerm">The search term.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
         IEnumerable<BaseItem> Search(IEnumerable<BaseItem> items, string searchTerm);
+
+        /// <summary>
+        /// Ensure supplied item has only one instance throughout
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns>The proper instance to the item</returns>
+        BaseItem GetOrAddByReferenceItem(BaseItem item);
     }
 }
