@@ -182,6 +182,8 @@ namespace MediaBrowser.Api.Playback.Progressive
                 return ToStaticFileResult(outputPath, isHeadRequest);
             }
 
+            Response.AddHeader("Accept-Ranges", "none");
+
             return GetStreamResult(state, isHeadRequest).Result;
         }
 
