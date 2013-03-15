@@ -24,7 +24,11 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public abstract class BaseItem : IHasProviderIds
     {
-        /// <summary>
+        private Guid _testId = Guid.NewGuid();
+        public Guid TestId
+        {
+            get { return _testId; }
+        }        /// <summary>
         /// The trailer folder name
         /// </summary>
         public const string TrailerFolderName = "trailers";

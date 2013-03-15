@@ -106,6 +106,13 @@ namespace MediaBrowser.Server.Implementations.Library
         private IServerConfigurationManager ConfigurationManager { get; set; }
 
         /// <summary>
+        /// A collection of items that may be referenced from multiple physical places in the library
+        /// (typically, multiple user roots).  We store them here and be sure they all reference a
+        /// single instance.
+        /// </summary>
+        private ConcurrentDictionary<Guid, BaseItem> ByReferenceItems { get; set; } 
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="LibraryManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
@@ -120,6 +127,7 @@ namespace MediaBrowser.Server.Implementations.Library
             _taskManager = taskManager;
             _userManager = userManager;
             ConfigurationManager = configurationManager;
+            ByReferenceItems = new ConcurrentDictionary<Guid, BaseItem>();
 
             ConfigurationManager.ConfigurationUpdated += kernel_ConfigurationUpdated;
 
@@ -232,8 +240,32 @@ namespace MediaBrowser.Server.Implementations.Library
             if (item != null)
             {
                 ResolverHelper.SetInitialItemValues(item, args);
+
+                // Now handle the issue with posibly having the same item referenced from multiple physical
+                // places within the library.  Be sure we always end up with just one instance.
+                if (item is IByReferenceItem)
+                {
+                    item = GetOrAddByReferenceItem(item);
+                }
             }
 
+            return item;
+        }
+
+
+        /// <summary>
+        /// Ensure supplied item has only one instance throughout
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns>The proper instance to the item</returns>
+        public BaseItem GetOrAddByReferenceItem(BaseItem item)
+        {
+            // Add this item to our list if not there already
+            if (!ByReferenceItems.TryAdd(item.Id, item))
+            {
+                // Already there - return the existing reference
+                item = ByReferenceItems[item.Id];
+            }
             return item;
         }
 
@@ -617,10 +649,10 @@ namespace MediaBrowser.Server.Implementations.Library
             // Now validate the entire media library
             await RootFolder.ValidateChildren(progress, cancellationToken, recursive: true).ConfigureAwait(false);
 
-            foreach (var user in _userManager.Users)
-            {
-                await user.ValidateMediaLibrary(new Progress<double> { }, cancellationToken).ConfigureAwait(false);
-            }
+            //foreach (var user in _userManager.Users)
+            //{
+            //    await user.ValidateMediaLibrary(new Progress<double> { }, cancellationToken).ConfigureAwait(false);
+            //}
         }
 
         /// <summary>
