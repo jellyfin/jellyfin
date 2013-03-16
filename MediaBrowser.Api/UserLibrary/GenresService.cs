@@ -11,7 +11,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetGenres
     /// </summary>
-    [Route("/Users/{UserId}/Items/{Id}/Genres", "GET")]
+    [Route("/Users/{UserId}/Items/{ParentId}/Genres", "GET")]
     [Route("/Users/{UserId}/Items/Root/Genres", "GET")]
     [ServiceStack.ServiceHost.Api(Description = "Gets all genres from a given item, folder, or the entire library")]
     public class GetGenres : GetItemsByName

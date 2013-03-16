@@ -11,7 +11,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetStudios
     /// </summary>
-    [Route("/Users/{UserId}/Items/{Id}/Studios", "GET")]
+    [Route("/Users/{UserId}/Items/{ParentId}/Studios", "GET")]
     [Route("/Users/{UserId}/Items/Root/Studios", "GET")]
     [ServiceStack.ServiceHost.Api(Description = "Gets all studios from a given item, folder, or the entire library")]
     public class GetStudios : GetItemsByName
