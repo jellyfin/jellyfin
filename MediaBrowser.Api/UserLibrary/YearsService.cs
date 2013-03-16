@@ -12,7 +12,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetYears
     /// </summary>
-    [Route("/Users/{UserId}/Items/{Id}/Years", "GET")]
+    [Route("/Users/{UserId}/Items/{ParentId}/Years", "GET")]
     [Route("/Users/{UserId}/Items/Root/Years", "GET")]
     [ServiceStack.ServiceHost.Api(Description = "Gets all years from a given item, folder, or the entire library")]
     public class GetYears : GetItemsByName

@@ -11,7 +11,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetPersons
     /// </summary>
-    [Route("/Users/{UserId}/Items/{Id}/Persons", "GET")]
+    [Route("/Users/{UserId}/Items/{ParentId}/Persons", "GET")]
     [Route("/Users/{UserId}/Items/Root/Persons", "GET")]
     [ServiceStack.ServiceHost.Api(Description = "Gets all persons from a given item, folder, or the entire library")]
     public class GetPersons : GetItemsByName
