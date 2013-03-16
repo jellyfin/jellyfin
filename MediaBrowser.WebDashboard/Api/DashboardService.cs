@@ -125,7 +125,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>DashboardInfo.</returns>
         public static async Task<DashboardInfo> GetDashboardInfo(IServerApplicationHost appHost, ILogger logger, ITaskManager taskManager, IUserManager userManager, ILibraryManager libraryManager)
         {
-            var connections = userManager.ConnectedUsers.ToArray();
+            var connections = userManager.RecentConnections.ToArray();
 
             var dtoBuilder = new DtoBuilder(logger, libraryManager);
 

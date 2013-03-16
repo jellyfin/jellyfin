@@ -65,6 +65,39 @@ namespace MediaBrowser.Controller.Drawing
         }
 
         /// <summary>
+        /// Determines whether [is pixel format supported by graphics object] [the specified format].
+        /// </summary>
+        /// <param name="format">The format.</param>
+        /// <returns><c>true</c> if [is pixel format supported by graphics object] [the specified format]; otherwise, <c>false</c>.</returns>
+        public static bool IsPixelFormatSupportedByGraphicsObject(PixelFormat format)
+        {
+            // http://msdn.microsoft.com/en-us/library/system.drawing.graphics.fromimage.aspx
+
+            if (format.HasFlag(PixelFormat.Indexed))
+            {
+                return false;
+            }
+            if (format.HasFlag(PixelFormat.Undefined))
+            {
+                return false;
+            }
+            if (format.HasFlag(PixelFormat.DontCare))
+            {
+                return false;
+            }
+            if (format.HasFlag(PixelFormat.Format16bppArgb1555))
+            {
+                return false;
+            }
+            if (format.HasFlag(PixelFormat.Format16bppGrayScale))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Crops an image by removing whitespace and transparency from the edges
         /// </summary>
         /// <param name="bmp">The BMP.</param>

@@ -375,8 +375,10 @@ namespace MediaBrowser.Server.Implementations.Updates
 
                 throw;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.ErrorException("Package installation failed", ex);
+
                 lock (CurrentInstallations)
                 {
                     CurrentInstallations.Remove(tuple);
