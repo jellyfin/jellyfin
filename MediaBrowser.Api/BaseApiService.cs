@@ -47,7 +47,7 @@ namespace MediaBrowser.Api
 
             var auth = GetAuthorization(request);
 
-            if (auth != null)
+            if (auth != null && auth.ContainsKey("UserId"))
             {
                 var user = UserManager.GetUserById(new Guid(auth["UserId"]));
 
