@@ -100,6 +100,13 @@ namespace MediaBrowser.Api.UserLibrary
         /// <value>The image types.</value>
         [ApiMember(Name = "ImageTypes", Description = "Optional. If specified, results will be filtered based on those containing image types. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string ImageTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the item ids.
+        /// </summary>
+        /// <value>The item ids.</value>
+        [ApiMember(Name = "Ids", Description = "Optional. If specific items are needed, specify a list of item id's to retrieve. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string Ids { get; set; }
     }
 
     /// <summary>
@@ -192,6 +199,13 @@ namespace MediaBrowser.Api.UserLibrary
             var item = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.ParentId, _userManager, _libraryManager, user.Id);
 
             // Default list type = children
+
+            if (!string.IsNullOrEmpty(request.Ids))
+            {
+                var idList = request.Ids.Split(',').ToList();
+
+                return idList.Select(i => DtoBuilder.GetItemByClientId(i, _userManager, _libraryManager, user.Id));
+            }
 
             if (request.Recursive)
             {
