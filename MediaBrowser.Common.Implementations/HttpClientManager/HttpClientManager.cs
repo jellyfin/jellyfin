@@ -252,30 +252,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             
             _logger.Info("HttpClientManager.GetTempFile url: {0}, temp file: {1}", options.Url, tempFile);
 
-            FileStream tempFileStream;
-
-            if (resumeCount > 0 && File.Exists(tempFile))
-            {
-                tempFileStream = new FileStream(tempFile, FileMode.Open, FileAccess.Write, FileShare.Read,
-                                                StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous);
-
-                var startPosition = tempFileStream.Length;
-                tempFileStream.Seek(startPosition, SeekOrigin.Current);
-
-                message.Headers.Range = new RangeHeaderValue(startPosition, null);
-
-                _logger.Info("Resuming from position {1} for {0}", options.Url, startPosition);
-            }
-            else
-            {
-                tempFileStream = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read,
-                                                StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous);
-            }
-
-            var serverSupportsRangeRequests = false;
-
-            Exception downloadException = null;
-
             try
             {
                 options.CancellationToken.ThrowIfCancellationRequested();
@@ -286,15 +262,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                     options.CancellationToken.ThrowIfCancellationRequested();
 
-                    var rangeValue = string.Join(" ", response.Headers.AcceptRanges.ToArray());
-                    serverSupportsRangeRequests = rangeValue.IndexOf("bytes", StringComparison.OrdinalIgnoreCase) != -1 || rangeValue.IndexOf("*", StringComparison.OrdinalIgnoreCase) != -1;
-
-                    if (!serverSupportsRangeRequests && resumeCount > 0)
-                    {
-                        _logger.Info("Server does not support range requests for {0}", options.Url);
-                        tempFileStream.Position = 0;
-                    }
-
                     IEnumerable<string> lengthValues;
 
                     if (!response.Headers.TryGetValues("content-length", out lengthValues) &&
@@ -303,7 +270,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                         // We're not able to track progress
                         using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
                         {
-                            await stream.CopyToAsync(tempFileStream, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
+                            using (var fs = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                            {
+                                await stream.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
+                            }
                         }
                     }
                     else
@@ -312,7 +282,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                         using (var stream = ProgressStream.CreateReadProgressStream(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), options.Progress.Report, length))
                         {
-                            await stream.CopyToAsync(tempFileStream, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
+                            using (var fs = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                            {
+                                await stream.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
+                            }
                         }
                     }
 
@@ -323,21 +296,14 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
             catch (Exception ex)
             {
-                downloadException = ex;
+                HandleTempFileException(ex, options, tempFile);
             }
             finally
             {
-                tempFileStream.Dispose();
-
                 if (options.ResourcePool != null)
                 {
                     options.ResourcePool.Release();
                 }
-            }
-
-            if (downloadException != null)
-            {
-                await HandleTempFileException(downloadException, options, tempFile, serverSupportsRangeRequests, resumeCount).ConfigureAwait(false);
             }
 
             return tempFile;
@@ -349,11 +315,9 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <param name="ex">The ex.</param>
         /// <param name="options">The options.</param>
         /// <param name="tempFile">The temp file.</param>
-        /// <param name="serverSupportsRangeRequests">if set to <c>true</c> [server supports range requests].</param>
-        /// <param name="resumeCount">The resume count.</param>
         /// <returns>Task.</returns>
         /// <exception cref="HttpException"></exception>
-        private Task HandleTempFileException(Exception ex, HttpRequestOptions options, string tempFile, bool serverSupportsRangeRequests, int resumeCount)
+        private void HandleTempFileException(Exception ex, HttpRequestOptions options, string tempFile)
         {
             var operationCanceledException = ex as OperationCanceledException;
 
@@ -375,14 +339,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             // Cleanup
             if (File.Exists(tempFile))
             {
-                // Try to resume
-                if (httpRequestException != null && serverSupportsRangeRequests && resumeCount < options.MaxResumeCount && new FileInfo(tempFile).Length > 0)
-                {
-                    _logger.Info("Attempting to resume download from {0}", options.Url);
-
-                    return GetTempFile(options, tempFile, resumeCount + 1);
-                }
-
                 File.Delete(tempFile);
             }
 

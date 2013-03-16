@@ -1387,7 +1387,7 @@ $(document).ajaxSend(function (event, jqXHR) {
 
     if (ApiClient.currentUserId) {
 
-        var auth = 'MediaBrowser UserId="' + ApiClient.currentUserId + '", Client="Dashboard", Device="' + ApiClient.getDeviceName() + '", DeviceId="' + ApiClient.getDeviceName() + '"';
+        var auth = 'MediaBrowser UserId="' + ApiClient.currentUserId + '", Client="Dashboard", Device="' + ApiClient.getDeviceName() + '", DeviceId="' + ApiClient.getDeviceId() + '"';
         jqXHR.setRequestHeader("Authorization", auth);
     }
 });

@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.Library
         /// Gets the active connections.
         /// </summary>
         /// <value>The active connections.</value>
-        IEnumerable<ClientConnectionInfo> ConnectedUsers { get; }
+        IEnumerable<ClientConnectionInfo> RecentConnections { get; }
 
         /// <summary>
         /// Occurs when [playback start].

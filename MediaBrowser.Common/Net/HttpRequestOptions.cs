@@ -33,12 +33,6 @@ namespace MediaBrowser.Common.Net
         public string UserAgent { get; set; }
 
         /// <summary>
-        /// Gets or sets the max resume count.
-        /// </summary>
-        /// <value>The max resume count.</value>
-        public int MaxResumeCount { get; set; }
-
-        /// <summary>
         /// Gets or sets the progress.
         /// </summary>
         /// <value>The progress.</value>

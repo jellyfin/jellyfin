@@ -75,8 +75,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             {
                 Url = package.sourceUrl,
                 CancellationToken = cancellationToken,
-                Progress = progress,
-                MaxResumeCount = 3
+                Progress = progress
 
             }).ConfigureAwait(false);
 
