@@ -69,10 +69,11 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="clientType">Type of the client.</param>
+        /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        Task LogUserActivity(User user, ClientType clientType, string deviceName);
+        Task LogUserActivity(User user, ClientType clientType, string deviceId, string deviceName);
 
         /// <summary>
         /// Refreshes metadata for each user
@@ -124,9 +125,10 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <param name="item">The item.</param>
         /// <param name="clientType">Type of the client.</param>
+        /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <exception cref="System.ArgumentNullException"></exception>
-        void OnPlaybackStart(User user, BaseItem item, ClientType clientType, string deviceName);
+        void OnPlaybackStart(User user, BaseItem item, ClientType clientType, string deviceId, string deviceName);
 
         /// <summary>
         /// Used to report playback progress for an item
@@ -135,10 +137,11 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="positionTicks">The position ticks.</param>
         /// <param name="clientType">Type of the client.</param>
+        /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        Task OnPlaybackProgress(User user, BaseItem item, long? positionTicks, ClientType clientType, string deviceName);
+        Task OnPlaybackProgress(User user, BaseItem item, long? positionTicks, ClientType clientType, string deviceId, string deviceName);
 
         /// <summary>
         /// Used to report that playback has ended for an item
@@ -147,10 +150,11 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="positionTicks">The position ticks.</param>
         /// <param name="clientType">Type of the client.</param>
+        /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        Task OnPlaybackStopped(User user, BaseItem item, long? positionTicks, ClientType clientType, string deviceName);
+        Task OnPlaybackStopped(User user, BaseItem item, long? positionTicks, ClientType clientType, string deviceId, string deviceName);
 
         /// <summary>
         /// Saves user data for an item

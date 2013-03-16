@@ -150,7 +150,7 @@ namespace MediaBrowser.Api.Images
     /// <summary>
     /// Class ImageService
     /// </summary>
-    public class ImageService : BaseRestService
+    public class ImageService : BaseApiService
     {
         /// <summary>
         /// The _user manager

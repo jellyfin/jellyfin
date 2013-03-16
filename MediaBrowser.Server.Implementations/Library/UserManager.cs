@@ -62,7 +62,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets all connections.
         /// </summary>
@@ -71,7 +71,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             get { return _activeConnections.Where(c => GetUserById(c.UserId) != null).OrderByDescending(c => c.LastActivityDate); }
         }
-        
+
         /// <summary>
         /// Gets the active connections.
         /// </summary>
@@ -172,7 +172,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             return Users.FirstOrDefault(u => u.Id == id);
         }
-        
+
         /// <summary>
         /// Authenticates a User and returns a result indicating whether or not it succeeded
         /// </summary>
@@ -222,10 +222,11 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="clientType">Type of the client.</param>
+        /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        public Task LogUserActivity(User user, ClientType clientType, string deviceName)
+        public Task LogUserActivity(User user, ClientType clientType, string deviceId, string deviceName)
         {
             if (user == null)
             {
@@ -236,7 +237,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             user.LastActivityDate = activityDate;
 
-            LogConnection(user.Id, clientType, deviceName, activityDate);
+            LogConnection(user.Id, clientType, deviceId, deviceName, activityDate);
 
             // Save this directly. No need to fire off all the events for this.
             return Kernel.UserRepository.SaveUser(user, CancellationToken.None);
@@ -247,15 +248,17 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="clientType">Type of the client.</param>
+        /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="item">The item.</param>
         /// <param name="currentPositionTicks">The current position ticks.</param>
-        private void UpdateNowPlayingItemId(User user, ClientType clientType, string deviceName, BaseItem item, long? currentPositionTicks = null)
+        private void UpdateNowPlayingItemId(User user, ClientType clientType, string deviceId, string deviceName, BaseItem item, long? currentPositionTicks = null)
         {
-            var conn = GetConnection(user.Id, clientType, deviceName);
+            var conn = GetConnection(user.Id, clientType, deviceId, deviceName);
 
             conn.NowPlayingPositionTicks = currentPositionTicks;
             conn.NowPlayingItem = DtoBuilder.GetBaseItemInfo(item);
+            conn.LastActivityDate = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -263,11 +266,12 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="clientType">Type of the client.</param>
+        /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="item">The item.</param>
-        private void RemoveNowPlayingItemId(User user, ClientType clientType, string deviceName, BaseItem item)
+        private void RemoveNowPlayingItemId(User user, ClientType clientType, string deviceId, string deviceName, BaseItem item)
         {
-            var conn = GetConnection(user.Id, clientType, deviceName);
+            var conn = GetConnection(user.Id, clientType, deviceId, deviceName);
 
             if (conn.NowPlayingItem != null && conn.NowPlayingItem.Id.Equals(item.Id.ToString()))
             {
@@ -281,11 +285,12 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <param name="clientType">Type of the client.</param>
+        /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="lastActivityDate">The last activity date.</param>
-        private void LogConnection(Guid userId, ClientType clientType, string deviceName, DateTime lastActivityDate)
+        private void LogConnection(Guid userId, ClientType clientType, string deviceId, string deviceName, DateTime lastActivityDate)
         {
-            GetConnection(userId, clientType, deviceName).LastActivityDate = lastActivityDate;
+            GetConnection(userId, clientType, deviceId, deviceName).LastActivityDate = lastActivityDate;
         }
 
         /// <summary>
@@ -293,11 +298,12 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <param name="clientType">Type of the client.</param>
+        /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <returns>ClientConnectionInfo.</returns>
-        private ClientConnectionInfo GetConnection(Guid userId, ClientType clientType, string deviceName)
+        private ClientConnectionInfo GetConnection(Guid userId, ClientType clientType, string deviceId, string deviceName)
         {
-            var conn = _activeConnections.FirstOrDefault(c => c.UserId == userId && c.ClientType == clientType && string.Equals(deviceName, c.DeviceName, StringComparison.OrdinalIgnoreCase));
+            var conn = _activeConnections.FirstOrDefault(c => c.UserId == userId && c.ClientType == clientType && string.Equals(deviceId, c.DeviceId));
 
             if (conn == null)
             {
@@ -305,7 +311,8 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     UserId = userId,
                     ClientType = clientType,
-                    DeviceName = deviceName
+                    DeviceName = deviceName,
+                    DeviceId = deviceId
                 };
 
                 _activeConnections.Add(conn);
@@ -524,9 +531,10 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="user">The user.</param>
         /// <param name="item">The item.</param>
         /// <param name="clientType">Type of the client.</param>
+        /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public void OnPlaybackStart(User user, BaseItem item, ClientType clientType, string deviceName)
+        public void OnPlaybackStart(User user, BaseItem item, ClientType clientType, string deviceId, string deviceName)
         {
             if (user == null)
             {
@@ -537,7 +545,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException();
             }
 
-            UpdateNowPlayingItemId(user, clientType, deviceName, item);
+            UpdateNowPlayingItemId(user, clientType, deviceId, deviceName, item);
 
             // Nothing to save here
             // Fire events to inform plugins
@@ -555,10 +563,11 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="item">The item.</param>
         /// <param name="positionTicks">The position ticks.</param>
         /// <param name="clientType">Type of the client.</param>
+        /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public async Task OnPlaybackProgress(User user, BaseItem item, long? positionTicks, ClientType clientType, string deviceName)
+        public async Task OnPlaybackProgress(User user, BaseItem item, long? positionTicks, ClientType clientType, string deviceId, string deviceName)
         {
             if (user == null)
             {
@@ -569,7 +578,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException();
             }
 
-            UpdateNowPlayingItemId(user, clientType, deviceName, item, positionTicks);
+            UpdateNowPlayingItemId(user, clientType, deviceId, deviceName, item, positionTicks);
 
             if (positionTicks.HasValue)
             {
@@ -594,10 +603,11 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="item">The item.</param>
         /// <param name="positionTicks">The position ticks.</param>
         /// <param name="clientType">Type of the client.</param>
+        /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public async Task OnPlaybackStopped(User user, BaseItem item, long? positionTicks, ClientType clientType, string deviceName)
+        public async Task OnPlaybackStopped(User user, BaseItem item, long? positionTicks, ClientType clientType, string deviceId, string deviceName)
         {
             if (user == null)
             {
@@ -608,7 +618,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException();
             }
 
-            RemoveNowPlayingItemId(user, clientType, deviceName, item);
+            RemoveNowPlayingItemId(user, clientType, deviceId, deviceName, item);
 
             var data = item.GetUserData(user, true);
 

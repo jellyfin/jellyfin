@@ -98,7 +98,7 @@ namespace MediaBrowser.Api.Library
     /// <summary>
     /// Class LibraryService
     /// </summary>
-    public class LibraryService : BaseRestService
+    public class LibraryService : BaseApiService
     {
         /// <summary>
         /// The _app host

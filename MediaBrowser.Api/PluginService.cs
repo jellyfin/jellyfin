@@ -126,7 +126,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class PluginsService
     /// </summary>
-    public class PluginService : BaseRestService
+    public class PluginService : BaseApiService
     {
         /// <summary>
         /// The _json serializer

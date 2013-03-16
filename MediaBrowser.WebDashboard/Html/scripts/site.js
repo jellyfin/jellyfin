@@ -81,12 +81,14 @@ var Dashboard = {
 
     setCurrentUser: function (userId) {
         localStorage.setItem("userId", userId);
+        ApiClient.currentUserId = userId;
         Dashboard.getUserPromise = null;
     },
 
     logout: function () {
         localStorage.removeItem("userId");
         Dashboard.getUserPromise = null;
+        ApiClient.currentUserId = null;
         window.location = "login.html";
     },
 
@@ -1113,6 +1115,13 @@ var Dashboard = {
                     tag: item.PrimaryImageTag,
                     type: "Primary"
                 });
+                
+                if (!item.Id || data.icon.indexOf("undefined") != -1) {
+                    alert("bad image url: " + JSON.stringify(item));
+                    console.log("bad image url: " + JSON.stringify(item));
+
+                    continue;
+                }
             }
 
             WebNotifications.show(data);
@@ -1200,9 +1209,11 @@ $(document).on('pagebeforeshow', ".page", function () {
 }).on('pageinit', ".page", function () {
 
     var page = $(this);
-    var hasLogin = Dashboard.getCurrentUserId();
+    
+    var userId = Dashboard.getCurrentUserId();
+    ApiClient.currentUserId = userId;
 
-    if (!hasLogin) {
+    if (!userId) {
 
         if (this.id !== "loginPage" && !page.hasClass('wizardPage')) {
 

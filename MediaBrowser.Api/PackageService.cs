@@ -104,7 +104,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class PackageService
     /// </summary>
-    public class PackageService : BaseRestService
+    public class PackageService : BaseApiService
     {
         private readonly IInstallationManager _installationManager;
         private readonly IApplicationHost _appHost;

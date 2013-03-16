@@ -16,7 +16,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class BaseItemsByNameService
     /// </summary>
     /// <typeparam name="TItemType">The type of the T item type.</typeparam>
-    public abstract class BaseItemsByNameService<TItemType> : BaseRestService
+    public abstract class BaseItemsByNameService<TItemType> : BaseApiService
         where TItemType : BaseItem
     {
         /// <summary>

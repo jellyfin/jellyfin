@@ -122,5 +122,11 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The image types.</value>
         public ImageType[] ImageTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ids, which are specific items to retrieve
+        /// </summary>
+        /// <value>The ids.</value>
+        public string[] Ids { get; set; }
     }
 }
