@@ -101,7 +101,6 @@ namespace MediaBrowser.Common.Implementations.Updates
             try
             {
                 File.Copy(tempFile, target, true);
-                File.Delete(tempFile);
             }
             catch (IOException e)
             {
@@ -109,6 +108,15 @@ namespace MediaBrowser.Common.Implementations.Updates
                 throw;
             }
 
+            try
+            {
+                File.Delete(tempFile);
+            }
+            catch (IOException e)
+            {
+                // Don't fail because of this
+                _logger.ErrorException("Error deleting temp file {0]", e, tempFile);
+            }
         }
 
     }
