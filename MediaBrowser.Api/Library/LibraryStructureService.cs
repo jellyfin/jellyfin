@@ -129,7 +129,7 @@ namespace MediaBrowser.Api.Library
     /// <summary>
     /// Class LibraryStructureService
     /// </summary>
-    public class LibraryStructureService : BaseRestService
+    public class LibraryStructureService : BaseApiService
     {
         /// <summary>
         /// The _app paths

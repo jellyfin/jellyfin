@@ -6,6 +6,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Server.Implementations.HttpServer;
+using MediaBrowser.Server.Implementations.Library;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text.Controller;
 using System;
@@ -347,7 +348,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class UserLibraryService
     /// </summary>
-    public class UserLibraryService : BaseRestService
+    public class UserLibraryService : BaseApiService
     {
         /// <summary>
         /// The _user manager
@@ -592,7 +593,16 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
-            _userManager.OnPlaybackStart(user, item, ClientType.Other, string.Empty);
+            var auth = RequestFilterAttribute.GetAuthorization(Request);
+
+            if (auth != null)
+            {
+                ClientType clientType;
+
+                Enum.TryParse(auth["Client"] ?? string.Empty, out clientType);
+
+                _userManager.OnPlaybackStart(user, item, clientType, auth["DeviceId"], auth["Device"] ?? string.Empty);
+            }
         }
 
         /// <summary>
@@ -605,9 +615,18 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
-            var task = _userManager.OnPlaybackProgress(user, item, request.PositionTicks, ClientType.Other, string.Empty);
+            var auth = RequestFilterAttribute.GetAuthorization(Request);
 
-            Task.WaitAll(task);
+            if (auth != null)
+            {
+                ClientType clientType;
+
+                Enum.TryParse(auth["Client"] ?? string.Empty, out clientType);
+
+                var task = _userManager.OnPlaybackProgress(user, item, request.PositionTicks, clientType, auth["DeviceId"], auth["Device"] ?? string.Empty);
+
+                Task.WaitAll(task);
+            }
         }
 
         /// <summary>
@@ -620,9 +639,18 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
-            var task = _userManager.OnPlaybackStopped(user, item, request.PositionTicks, ClientType.Other, string.Empty);
+            var auth = RequestFilterAttribute.GetAuthorization(Request);
 
-            Task.WaitAll(task);
+            if (auth != null)
+            {
+                ClientType clientType;
+
+                Enum.TryParse(auth["Client"] ?? string.Empty, out clientType);
+
+                var task = _userManager.OnPlaybackStopped(user, item, request.PositionTicks, clientType, auth["DeviceId"], auth["Device"] ?? string.Empty);
+
+                Task.WaitAll(task);
+            }
         }
 
         /// <summary>

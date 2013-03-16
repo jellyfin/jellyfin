@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
-using MediaBrowser.Server.Implementations.HttpServer;
 using ServiceStack.ServiceHost;
 using System;
 using System.IO;
@@ -59,7 +58,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class SystemInfoService
     /// </summary>
-    public class SystemService : BaseRestService
+    public class SystemService : BaseApiService
     {
         /// <summary>
         /// The _json serializer

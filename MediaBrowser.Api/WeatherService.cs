@@ -25,7 +25,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class WeatherService
     /// </summary>
-    public class WeatherService : BaseRestService
+    public class WeatherService : BaseApiService
     {
         /// <summary>
         /// Gets the specified request.

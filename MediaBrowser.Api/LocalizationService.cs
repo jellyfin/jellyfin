@@ -40,7 +40,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class CulturesService
     /// </summary>
-    public class LocalizationService : BaseRestService
+    public class LocalizationService : BaseApiService
     {
         /// <summary>
         /// Gets the specified request.

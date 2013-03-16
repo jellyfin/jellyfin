@@ -21,7 +21,7 @@ namespace MediaBrowser.Api.Playback
     /// <summary>
     /// Class BaseStreamingService
     /// </summary>
-    public abstract class BaseStreamingService : BaseRestService
+    public abstract class BaseStreamingService : BaseApiService
     {
         /// <summary>
         /// Gets or sets the application paths.

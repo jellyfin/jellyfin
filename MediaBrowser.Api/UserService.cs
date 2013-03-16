@@ -126,7 +126,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class UsersService
     /// </summary>
-    public class UserService : BaseRestService
+    public class UserService : BaseApiService
     {
         /// <summary>
         /// The _XML serializer

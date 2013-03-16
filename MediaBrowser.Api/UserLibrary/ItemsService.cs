@@ -112,7 +112,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class ItemsService
     /// </summary>
-    public class ItemsService : BaseRestService
+    public class ItemsService : BaseApiService
     {
         /// <summary>
         /// The _user manager

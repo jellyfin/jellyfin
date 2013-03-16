@@ -13,6 +13,8 @@ var ApiClient = {
 
     serverPortNumber: 8096,
 
+    currentUserId: null,
+
     /**
      * Detects the hostname and port of MB server based on the current url
      */
@@ -36,14 +38,12 @@ var ApiClient = {
             throw new Error("Url name cannot be empty");
         }
 
-        params = params || {};
-
         var url = ApiClient.serverProtocol + "//" + ApiClient.serverHostName + ":" + ApiClient.serverPortNumber + "/mediabrowser/" + name;
 
         if (params) {
             url += "?" + $.param(params);
-
         }
+
         return url;
     },
 
@@ -76,6 +76,10 @@ var ApiClient = {
 
         return "Web Browser";
     },
+    
+    getDeviceId: function() {
+        return SHA1(navigator.userAgent + (navigator.cpuClass || ""));
+    },
 
     /**
      * Creates a custom api url based on a handler name and query string parameters
@@ -89,16 +93,14 @@ var ApiClient = {
         }
 
         params = params || {};
-        params.client = "Dashboard";
-        params.device = ApiClient.getDeviceName();
         params.format = "json";
 
         var url = ApiClient.serverProtocol + "//" + ApiClient.serverHostName + ":" + ApiClient.serverPortNumber + "/mediabrowser/" + name;
 
         if (params) {
             url += "?" + $.param(params);
-
         }
+
         return url;
     },
 
@@ -1063,7 +1065,7 @@ var ApiClient = {
         var postData = {
             password: SHA1(password || "")
         };
-        
+
         return $.ajax({
             type: "POST",
             url: url,
@@ -1380,3 +1382,12 @@ var ApiClient = {
 
 // Do this initially. The consumer can always override later
 ApiClient.inferServerFromUrl();
+
+$(document).ajaxSend(function (event, jqXHR) {
+
+    if (ApiClient.currentUserId) {
+
+        var auth = 'MediaBrowser UserId="' + ApiClient.currentUserId + '", Client="Dashboard", Device="' + ApiClient.getDeviceName() + '", DeviceId="' + ApiClient.getDeviceName() + '"';
+        jqXHR.setRequestHeader("Authorization", auth);
+    }
+});

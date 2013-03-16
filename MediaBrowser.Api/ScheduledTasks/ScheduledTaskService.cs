@@ -83,7 +83,7 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// <summary>
     /// Class ScheduledTasksService
     /// </summary>
-    public class ScheduledTaskService : BaseRestService
+    public class ScheduledTaskService : BaseApiService
     {
         /// <summary>
         /// Gets or sets the task manager.

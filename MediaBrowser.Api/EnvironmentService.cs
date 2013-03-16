@@ -75,7 +75,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class EnvironmentService
     /// </summary>
-    public class EnvironmentService : BaseRestService
+    public class EnvironmentService : BaseApiService
     {
         /// <summary>
         /// The _network manager

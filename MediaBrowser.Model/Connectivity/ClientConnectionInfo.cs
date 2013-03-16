@@ -51,5 +51,12 @@ namespace MediaBrowser.Model.Connectivity
         /// <value>The now playing position ticks.</value>
         [ProtoMember(6)]
         public long? NowPlayingPositionTicks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the device id.
+        /// </summary>
+        /// <value>The device id.</value>
+        [ProtoMember(7)]
+        public string DeviceId { get; set; }
     }
 }
