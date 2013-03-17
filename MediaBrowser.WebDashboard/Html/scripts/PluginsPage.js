@@ -36,7 +36,7 @@
             var plugin = plugins[i];
             
             var configPage = $.grep(pluginConfigurationPages, function (pluginConfigurationPage) {
-                return pluginConfigurationPage.Plugin.Id == plugin.Id;
+                return pluginConfigurationPage.PluginId == plugin.Id;
             })[0];
 
             html += "<li>";

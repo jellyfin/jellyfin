@@ -81,6 +81,7 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Api\ConfigurationPageInfo.cs" />
     <Compile Include="Api\DashboardInfo.cs" />
     <Compile Include="Api\DashboardService.cs" />
     <Compile Include="Api\DashboardInfoWebSocketListener.cs" />
