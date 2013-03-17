@@ -25,7 +25,7 @@ namespace MediaBrowser.WebDashboard.Api
     /// Class GetDashboardConfigurationPages
     /// </summary>
     [Route("/dashboard/ConfigurationPages", "GET")]
-    public class GetDashboardConfigurationPages : IReturn<List<IPluginConfigurationPage>>
+    public class GetDashboardConfigurationPages : IReturn<List<ConfigurationPageInfo>>
     {
         /// <summary>
         /// Gets or sets the type of the page.
@@ -38,7 +38,7 @@ namespace MediaBrowser.WebDashboard.Api
     /// Class GetDashboardConfigurationPage
     /// </summary>
     [Route("/dashboard/ConfigurationPage", "GET")]
-    public class GetDashboardConfigurationPage : IReturn<IPluginConfigurationPage>
+    public class GetDashboardConfigurationPage
     {
         /// <summary>
         /// Gets or sets the name.
@@ -174,7 +174,7 @@ namespace MediaBrowser.WebDashboard.Api
                 pages = pages.Where(p => p.ConfigurationPageType == request.PageType.Value);
             }
 
-            return ToOptimizedResult(pages.ToList());
+            return ToOptimizedResult(pages.Select(p => new ConfigurationPageInfo(p)).ToList());
         }
 
         /// <summary>
