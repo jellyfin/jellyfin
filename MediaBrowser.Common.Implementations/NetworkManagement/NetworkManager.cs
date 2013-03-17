@@ -24,7 +24,7 @@ namespace MediaBrowser.Common.Implementations.NetworkManagement
         {
             var host = Dns.GetHostEntry(Dns.GetHostName());
 
-            var ip = host.AddressList.FirstOrDefault(i => i.AddressFamily == AddressFamily.InterNetwork);
+            var ip = host.AddressList.LastOrDefault(i => i.AddressFamily == AddressFamily.InterNetwork);
 
             if (ip == null)
             {
