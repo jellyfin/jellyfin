@@ -296,7 +296,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
                 _logger.Info("Received UDP server request from " + e.RemoteEndPoint);
 
                 // Send a response back with our ip address and port
-                var response = String.Format("MediaBrowser{0}|{1}:{2}", context, _networkManager.GetLocalIpAddress(), _kernel.UdpServerPortNumber);
+                var response = String.Format("MediaBrowser{0}|{1}:{2}", context, _networkManager.GetLocalIpAddress(), ConfigurationManager.Configuration.HttpServerPortNumber);
 
                 await UdpServer.SendAsync(Encoding.UTF8.GetBytes(response), e.RemoteEndPoint);
             }
