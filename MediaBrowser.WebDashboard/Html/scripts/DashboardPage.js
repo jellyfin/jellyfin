@@ -114,36 +114,36 @@
 
     getClientType: function (connection) {
 
-        if (connection.ClientType == "Dashboard") {
+        if (connection.Client.toLowerCase() == "dashboard") {
 
             return "<img src='css/images/clients/html5.png' alt='Dashboard' title='Dashboard' />";
         }
-        if (connection.ClientType == "Pc") {
+        if (connection.Client.toLowerCase() == "mediabrowsertheater") {
 
-            return "<img src='css/images/clients/mb.png' alt='Media Browser' title='Media Browser' />";
+            return "<img src='css/images/clients/mb.png' alt='Media Browser Theater' title='Media Browser Theater' />";
         }
-        if (connection.ClientType == "Android") {
+        if (connection.Client.toLowerCase() == "android") {
 
             return "<img src='css/images/clients/android.png' alt='Android' title='Android' />";
         }
-        if (connection.ClientType == "Ios") {
+        if (connection.Client.toLowerCase() == "ios") {
 
             return "<img src='css/images/clients/ios.png' alt='iOS' title='iOS' />";
         }
-        if (connection.ClientType == "WindowsRT") {
+        if (connection.Client.toLowerCase() == "windowsrt") {
 
             return "<img src='css/images/clients/windowsrt.png' alt='Windows RT' title='Windows RT' />";
         }
-        if (connection.ClientType == "WindowsPhone") {
+        if (connection.Client.toLowerCase() == "windowsphone") {
 
             return "<img src='css/images/clients/windowsphone.png' alt='Windows Phone' title='Windows Phone' />";
         }
-        if (connection.ClientType == "Dlna") {
+        if (connection.Client.toLowerCase() == "dlna") {
 
             return "<img src='css/images/clients/dlna.png' alt='Dlna' title='Dlna' />";
         }
 
-        return connection.ClientType;
+        return connection.Client;
     },
 
     getNowPlayingImage: function (item) {

@@ -51,11 +51,7 @@ namespace MediaBrowser.Api
             {
                 var user = UserManager.GetUserById(new Guid(auth["UserId"]));
 
-                ClientType clientType;
-
-                Enum.TryParse(auth["Client"] ?? string.Empty, out clientType);
-
-                UserManager.LogUserActivity(user, clientType, auth["DeviceId"], auth["Device"] ?? string.Empty);
+                UserManager.LogUserActivity(user, auth["Client"], auth["DeviceId"], auth["Device"] ?? string.Empty);
             }
         }
 

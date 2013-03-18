@@ -5,8 +5,7 @@ using MediaBrowser.Model.Connectivity;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Server.Implementations.HttpServer;
-using MediaBrowser.Server.Implementations.Library;
+using MediaBrowser.Model.Serialization;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text.Controller;
 using System;
@@ -356,16 +355,18 @@ namespace MediaBrowser.Api.UserLibrary
         private readonly IUserManager _userManager;
 
         private readonly ILibraryManager _libraryManager;
+        private readonly IJsonSerializer _jsonSerializer;
         
         /// <summary>
         /// Initializes a new instance of the <see cref="UserLibraryService" /> class.
         /// </summary>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
-        public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager)
+        public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager, IJsonSerializer jsonSerializer)
             : base()
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
+            _jsonSerializer = jsonSerializer;
         }
 
         /// <summary>
@@ -481,7 +482,8 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = (Folder)DtoBuilder.GetItemByClientId(itemId, _userManager, _libraryManager, user.Id);
 
-            var displayPreferences = request;
+            // Serialize to json and then back so that the core doesn't see the request dto type
+            var displayPreferences = _jsonSerializer.DeserializeFromString<DisplayPreferences>(_jsonSerializer.SerializeToString(request));
 
             var task = _libraryManager.SaveDisplayPreferencesForFolder(user, item, displayPreferences);
 
@@ -597,11 +599,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (auth != null)
             {
-                ClientType clientType;
-
-                Enum.TryParse(auth["Client"] ?? string.Empty, out clientType);
-
-                _userManager.OnPlaybackStart(user, item, clientType, auth["DeviceId"], auth["Device"] ?? string.Empty);
+                _userManager.OnPlaybackStart(user, item, auth["Client"], auth["DeviceId"], auth["Device"] ?? string.Empty);
             }
         }
 
@@ -619,11 +617,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (auth != null)
             {
-                ClientType clientType;
-
-                Enum.TryParse(auth["Client"] ?? string.Empty, out clientType);
-
-                var task = _userManager.OnPlaybackProgress(user, item, request.PositionTicks, clientType, auth["DeviceId"], auth["Device"] ?? string.Empty);
+                var task = _userManager.OnPlaybackProgress(user, item, request.PositionTicks, auth["Client"], auth["DeviceId"], auth["Device"] ?? string.Empty);
 
                 Task.WaitAll(task);
             }
@@ -633,7 +627,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(OnPlaybackStopped request)
+        public void Delete(OnPlaybackStopped request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -643,11 +637,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (auth != null)
             {
-                ClientType clientType;
-
-                Enum.TryParse(auth["Client"] ?? string.Empty, out clientType);
-
-                var task = _userManager.OnPlaybackStopped(user, item, request.PositionTicks, clientType, auth["DeviceId"], auth["Device"] ?? string.Empty);
+                var task = _userManager.OnPlaybackStopped(user, item, request.PositionTicks, auth["Client"], auth["DeviceId"], auth["Device"] ?? string.Empty);
 
                 Task.WaitAll(task);
             }

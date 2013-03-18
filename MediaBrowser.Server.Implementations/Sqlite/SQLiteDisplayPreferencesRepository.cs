@@ -97,7 +97,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public Task SaveDisplayPrefs(Folder item, CancellationToken cancellationToken)
+        public Task SaveDisplayPreferences(Folder item, CancellationToken cancellationToken)
         {
             if (item == null)
             {
@@ -116,17 +116,17 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 var cmd = connection.CreateCommand();
 
                 cmd.CommandText = "delete from display_prefs where item_id = @guid";
-                cmd.AddParam("@guid", item.DisplayPrefsId);
+                cmd.AddParam("@guid", item.DisplayPreferencesId);
 
                 QueueCommand(cmd);
 
-                if (item.DisplayPrefs != null)
+                if (item.DisplayPreferences != null)
                 {
-                    foreach (var data in item.DisplayPrefs)
+                    foreach (var data in item.DisplayPreferences)
                     {
                         cmd = connection.CreateCommand();
                         cmd.CommandText = "insert into display_prefs (item_id, user_id, data) values (@1, @2, @3)";
-                        cmd.AddParam("@1", item.DisplayPrefsId);
+                        cmd.AddParam("@1", item.DisplayPreferencesId);
                         cmd.AddParam("@2", data.UserId);
 
                         cmd.AddParam("@3", _protobufSerializer.SerializeToBytes(data));
@@ -143,7 +143,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <param name="item">The item.</param>
         /// <returns>IEnumerable{DisplayPreferences}.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public IEnumerable<DisplayPreferences> RetrieveDisplayPrefs(Folder item)
+        public IEnumerable<DisplayPreferences> RetrieveDisplayPreferences(Folder item)
         {
             if (item == null)
             {
@@ -153,7 +153,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
             var cmd = connection.CreateCommand();
             cmd.CommandText = "select data from display_prefs where item_id = @guid";
             var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
-            guidParam.Value = item.DisplayPrefsId;
+            guidParam.Value = item.DisplayPreferencesId;
 
             using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
             {

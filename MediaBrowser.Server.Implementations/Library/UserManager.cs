@@ -226,7 +226,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="deviceName">Name of the device.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        public Task LogUserActivity(User user, ClientType clientType, string deviceId, string deviceName)
+        public Task LogUserActivity(User user, string clientType, string deviceId, string deviceName)
         {
             if (user == null)
             {
@@ -252,7 +252,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="item">The item.</param>
         /// <param name="currentPositionTicks">The current position ticks.</param>
-        private void UpdateNowPlayingItemId(User user, ClientType clientType, string deviceId, string deviceName, BaseItem item, long? currentPositionTicks = null)
+        private void UpdateNowPlayingItemId(User user, string clientType, string deviceId, string deviceName, BaseItem item, long? currentPositionTicks = null)
         {
             var conn = GetConnection(user.Id, clientType, deviceId, deviceName);
 
@@ -269,7 +269,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="item">The item.</param>
-        private void RemoveNowPlayingItemId(User user, ClientType clientType, string deviceId, string deviceName, BaseItem item)
+        private void RemoveNowPlayingItemId(User user, string clientType, string deviceId, string deviceName, BaseItem item)
         {
             var conn = GetConnection(user.Id, clientType, deviceId, deviceName);
 
@@ -288,7 +288,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="lastActivityDate">The last activity date.</param>
-        private void LogConnection(Guid userId, ClientType clientType, string deviceId, string deviceName, DateTime lastActivityDate)
+        private void LogConnection(Guid userId, string clientType, string deviceId, string deviceName, DateTime lastActivityDate)
         {
             GetConnection(userId, clientType, deviceId, deviceName).LastActivityDate = lastActivityDate;
         }
@@ -301,18 +301,18 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <returns>ClientConnectionInfo.</returns>
-        private ClientConnectionInfo GetConnection(Guid userId, ClientType clientType, string deviceId, string deviceName)
+        private ClientConnectionInfo GetConnection(Guid userId, string clientType, string deviceId, string deviceName)
         {
             lock (_activeConnections)
             {
-                var conn = _activeConnections.FirstOrDefault(c => c.ClientType == clientType && string.Equals(deviceId, c.DeviceId));
+                var conn = _activeConnections.FirstOrDefault(c => string.Equals(c.Client, clientType, StringComparison.OrdinalIgnoreCase) && string.Equals(deviceId, c.DeviceId));
 
                 if (conn == null)
                 {
                     conn = new ClientConnectionInfo
                     {
                         UserId = userId,
-                        ClientType = clientType,
+                        Client = clientType,
                         DeviceName = deviceName,
                         DeviceId = deviceId
                     };
@@ -541,7 +541,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public void OnPlaybackStart(User user, BaseItem item, ClientType clientType, string deviceId, string deviceName)
+        public void OnPlaybackStart(User user, BaseItem item, string clientType, string deviceId, string deviceName)
         {
             if (user == null)
             {
@@ -574,7 +574,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="deviceName">Name of the device.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public async Task OnPlaybackProgress(User user, BaseItem item, long? positionTicks, ClientType clientType, string deviceId, string deviceName)
+        public async Task OnPlaybackProgress(User user, BaseItem item, long? positionTicks, string clientType, string deviceId, string deviceName)
         {
             if (user == null)
             {
@@ -614,7 +614,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="deviceName">Name of the device.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public async Task OnPlaybackStopped(User user, BaseItem item, long? positionTicks, ClientType clientType, string deviceId, string deviceName)
+        public async Task OnPlaybackStopped(User user, BaseItem item, long? positionTicks, string clientType, string deviceId, string deviceName)
         {
             if (user == null)
             {

@@ -73,7 +73,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="deviceName">Name of the device.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        Task LogUserActivity(User user, ClientType clientType, string deviceId, string deviceName);
+        Task LogUserActivity(User user, string clientType, string deviceId, string deviceName);
 
         /// <summary>
         /// Refreshes metadata for each user
@@ -128,7 +128,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <exception cref="System.ArgumentNullException"></exception>
-        void OnPlaybackStart(User user, BaseItem item, ClientType clientType, string deviceId, string deviceName);
+        void OnPlaybackStart(User user, BaseItem item, string clientType, string deviceId, string deviceName);
 
         /// <summary>
         /// Used to report playback progress for an item
@@ -141,7 +141,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="deviceName">Name of the device.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        Task OnPlaybackProgress(User user, BaseItem item, long? positionTicks, ClientType clientType, string deviceId, string deviceName);
+        Task OnPlaybackProgress(User user, BaseItem item, long? positionTicks, string clientType, string deviceId, string deviceName);
 
         /// <summary>
         /// Used to report that playback has ended for an item
@@ -154,7 +154,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="deviceName">Name of the device.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        Task OnPlaybackStopped(User user, BaseItem item, long? positionTicks, ClientType clientType, string deviceId, string deviceName);
+        Task OnPlaybackStopped(User user, BaseItem item, long? positionTicks, string clientType, string deviceId, string deviceName);
 
         /// <summary>
         /// Saves user data for an item
