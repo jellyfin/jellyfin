@@ -175,7 +175,7 @@ namespace MediaBrowser.Controller.Library
 
             if (item.IsFolder && fields.Contains(ItemFields.DisplayPreferences))
             {
-                dto.DisplayPreferences = ((Folder)item).GetDisplayPrefs(user, false) ?? new DisplayPreferences { UserId = user.Id };
+                dto.DisplayPreferences = ((Folder)item).GetDisplayPreferences(user, false) ?? new DisplayPreferences { UserId = user.Id };
             }
 
             if (item.IsFolder)

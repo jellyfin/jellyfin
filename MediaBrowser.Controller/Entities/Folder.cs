@@ -64,7 +64,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The display prefs id.</value>
         [IgnoreDataMember]
-        public virtual Guid DisplayPrefsId
+        public virtual Guid DisplayPreferencesId
         {
             get
             {
@@ -76,35 +76,35 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The _display prefs
         /// </summary>
-        private IEnumerable<DisplayPreferences> _displayPrefs;
+        private IEnumerable<DisplayPreferences> _displayPreferences;
         /// <summary>
         /// The _display prefs initialized
         /// </summary>
-        private bool _displayPrefsInitialized;
+        private bool _displayPreferencesInitialized;
         /// <summary>
         /// The _display prefs sync lock
         /// </summary>
-        private object _displayPrefsSyncLock = new object();
+        private object _displayPreferencesSyncLock = new object();
         /// <summary>
         /// Gets the display prefs.
         /// </summary>
         /// <value>The display prefs.</value>
         [IgnoreDataMember]
-        public IEnumerable<DisplayPreferences> DisplayPrefs
+        public IEnumerable<DisplayPreferences> DisplayPreferences
         {
             get
             {
                 // Call ToList to exhaust the stream because we'll be iterating over this multiple times
-                LazyInitializer.EnsureInitialized(ref _displayPrefs, ref _displayPrefsInitialized, ref _displayPrefsSyncLock, () => Kernel.Instance.DisplayPreferencesRepository.RetrieveDisplayPrefs(this).ToList());
-                return _displayPrefs;
+                LazyInitializer.EnsureInitialized(ref _displayPreferences, ref _displayPreferencesInitialized, ref _displayPreferencesSyncLock, () => Kernel.Instance.DisplayPreferencesRepository.RetrieveDisplayPreferences(this).ToList());
+                return _displayPreferences;
             }
             private set
             {
-                _displayPrefs = value;
+                _displayPreferences = value;
 
                 if (value == null)
                 {
-                    _displayPrefsInitialized = false;
+                    _displayPreferencesInitialized = false;
                 }
             }
         }
@@ -116,29 +116,29 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="createIfNull">if set to <c>true</c> [create if null].</param>
         /// <returns>DisplayPreferences.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public DisplayPreferences GetDisplayPrefs(User user, bool createIfNull)
+        public DisplayPreferences GetDisplayPreferences(User user, bool createIfNull)
         {
             if (user == null)
             {
                 throw new ArgumentNullException();
             }
 
-            if (DisplayPrefs == null)
+            if (DisplayPreferences == null)
             {
                 if (!createIfNull)
                 {
                     return null;
                 }
 
-                AddOrUpdateDisplayPrefs(user, new DisplayPreferences { UserId = user.Id });
+                AddOrUpdateDisplayPreferences(user, new DisplayPreferences { UserId = user.Id });
             }
 
-            var data = DisplayPrefs.FirstOrDefault(u => u.UserId == user.Id);
+            var data = DisplayPreferences.FirstOrDefault(u => u.UserId == user.Id);
 
             if (data == null && createIfNull)
             {
                 data = new DisplayPreferences { UserId = user.Id };
-                AddOrUpdateDisplayPrefs(user, data);
+                AddOrUpdateDisplayPreferences(user, data);
             }
 
             return data;
@@ -150,7 +150,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="user">The user.</param>
         /// <param name="data">The data.</param>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public void AddOrUpdateDisplayPrefs(User user, DisplayPreferences data)
+        public void AddOrUpdateDisplayPreferences(User user, DisplayPreferences data)
         {
             if (user == null)
             {
@@ -164,15 +164,15 @@ namespace MediaBrowser.Controller.Entities
 
             data.UserId = user.Id;
 
-            if (DisplayPrefs == null)
+            if (DisplayPreferences == null)
             {
-                DisplayPrefs = new[] { data };
+                DisplayPreferences = new[] { data };
             }
             else
             {
-                var list = DisplayPrefs.Where(u => u.UserId != user.Id).ToList();
+                var list = DisplayPreferences.Where(u => u.UserId != user.Id).ToList();
                 list.Add(data);
-                DisplayPrefs = list;
+                DisplayPreferences = list;
             }
         }
 

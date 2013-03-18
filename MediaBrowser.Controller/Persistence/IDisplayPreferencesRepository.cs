@@ -17,13 +17,13 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveDisplayPrefs(Folder item, CancellationToken cancellationToken);
+        Task SaveDisplayPreferences(Folder item, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets display preferences for an item
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>IEnumerable{DisplayPreferences}.</returns>
-        IEnumerable<DisplayPreferences> RetrieveDisplayPrefs(Folder item);
+        IEnumerable<DisplayPreferences> RetrieveDisplayPreferences(Folder item);
     }
 }

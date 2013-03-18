@@ -664,15 +664,15 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public Task SaveDisplayPreferencesForFolder(User user, Folder folder, DisplayPreferences data)
         {
-            // Need to update all items with the same DisplayPrefsId
+            // Need to update all items with the same DisplayPreferencesId
             foreach (var child in RootFolder.GetRecursiveChildren(user)
                 .OfType<Folder>()
-                .Where(i => i.DisplayPrefsId == folder.DisplayPrefsId))
+                .Where(i => i.DisplayPreferencesId == folder.DisplayPreferencesId))
             {
-                child.AddOrUpdateDisplayPrefs(user, data);
+                child.AddOrUpdateDisplayPreferences(user, data);
             }
 
-            return Kernel.DisplayPreferencesRepository.SaveDisplayPrefs(folder, CancellationToken.None);
+            return Kernel.DisplayPreferencesRepository.SaveDisplayPreferences(folder, CancellationToken.None);
         }
 
         /// <summary>

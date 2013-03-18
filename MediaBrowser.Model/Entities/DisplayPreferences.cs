@@ -21,8 +21,6 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         public DisplayPreferences()
         {
-            ViewType = ViewTypes.Poster;
-            PrimaryImageType = ImageType.Primary;
             RememberIndexing = false;
             PrimaryImageHeight = 250;
             PrimaryImageWidth = 250;
@@ -40,13 +38,7 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The type of the view.</value>
         [ProtoMember(2)]
-        public ViewTypes ViewType { get; set; }
-        /// <summary>
-        /// Gets or sets the type of the primary image.
-        /// </summary>
-        /// <value>The type of the primary image.</value>
-        [ProtoMember(3)]
-        public ImageType PrimaryImageType { get; set; }
+        public string ViewType { get; set; }
         /// <summary>
         /// Gets or sets the sort by.
         /// </summary>
@@ -125,29 +117,6 @@ namespace MediaBrowser.Model.Entities
             PrimaryImageWidth = Convert.ToInt32(size.Width);
             PrimaryImageHeight = Convert.ToInt32(size.Height);
         }
-    }
-
-    /// <summary>
-    /// Enum ViewTypes
-    /// </summary>
-    public enum ViewTypes
-    {
-        /// <summary>
-        /// The poster
-        /// </summary>
-        Poster,
-        /// <summary>
-        /// The cover flow
-        /// </summary>
-        CoverFlow,
-        /// <summary>
-        /// The thumb strip
-        /// </summary>
-        ThumbStrip,
-        /// <summary>
-        /// The list
-        /// </summary>
-        List
     }
 
     /// <summary>

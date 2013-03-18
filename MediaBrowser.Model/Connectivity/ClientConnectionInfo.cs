@@ -22,7 +22,7 @@ namespace MediaBrowser.Model.Connectivity
         /// </summary>
         /// <value>The type of the client.</value>
         [ProtoMember(2)]
-        public ClientType ClientType { get; set; }
+        public string Client { get; set; }
 
         /// <summary>
         /// Gets or sets the last activity date.

@@ -466,7 +466,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// Gets the routes.
         /// </summary>
         /// <returns>IEnumerable{RouteInfo}.</returns>
-        public IEnumerable<RouteInfo> GetRoutes()
+        public virtual IEnumerable<RouteInfo> GetRoutes()
         {
             return new RouteInfo[] {};
         }
