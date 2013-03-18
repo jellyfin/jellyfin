@@ -119,7 +119,7 @@ namespace MediaBrowser.Controller.Drawing
             {
                 try
                 {
-                    originalImagePath = GetCroppedImage(originalImagePath, dateModified);
+                    originalImagePath = await GetCroppedImage(originalImagePath, dateModified).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -433,7 +433,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="originalImagePath">The original image path.</param>
         /// <param name="dateModified">The date modified.</param>
         /// <returns>System.String.</returns>
-        private string GetCroppedImage(string originalImagePath, DateTime dateModified)
+        private async Task<string> GetCroppedImage(string originalImagePath, DateTime dateModified)
         {
             var name = originalImagePath;
             name += "datemodified=" + dateModified.Ticks;
@@ -450,16 +450,28 @@ namespace MediaBrowser.Controller.Drawing
 
                         using (var croppedImage = originalImage.CropWhitespace())
                         {
-                            using (var cacheFileStream = new FileStream(croppedImagePath, FileMode.Create))
-                            {
-                                croppedImage.Save(outputFormat, cacheFileStream, 100);
-                            }
+                            await SaveImageToFile(croppedImage, outputFormat, croppedImagePath).ConfigureAwait(false);
                         }
                     }
                 }
             }
 
             return croppedImagePath;
+        }
+
+        private async Task SaveImageToFile(Image image, ImageFormat outputFormat, string file)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                image.Save(outputFormat, memoryStream, 100);
+
+                memoryStream.Position = 0;
+
+                using (var cacheFileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                {
+                    await memoryStream.CopyToAsync(cacheFileStream).ConfigureAwait(false);
+                }
+            }
         }
 
         /// <summary>
@@ -507,7 +519,7 @@ namespace MediaBrowser.Controller.Drawing
                         using (var newImage = await ExecuteImageEnhancers(supportedEnhancers, originalImage, item, imageType, imageIndex).ConfigureAwait(false))
                         {
                             //And then save it in the cache
-                            newImage.Save(enhancedImagePath, ImageFormat.Png);
+                            await SaveImageToFile(newImage, ImageFormat.Png, enhancedImagePath).ConfigureAwait(false);
                         }
                     }
                 }
