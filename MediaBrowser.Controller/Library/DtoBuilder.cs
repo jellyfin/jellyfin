@@ -223,6 +223,11 @@ namespace MediaBrowser.Controller.Library
                 _logger.Error("Image file does not exist: {0}", path);
                 return;
             }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Failed to determine primary image aspect ratio for {0}", ex, path);
+                return;
+            }
 
             foreach (var enhancer in Kernel.Instance.ImageEnhancers
                 .Where(i => i.Supports(item, ImageType.Primary)))
