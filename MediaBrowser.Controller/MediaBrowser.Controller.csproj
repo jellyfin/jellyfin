@@ -88,7 +88,7 @@
     <Compile Include="Entities\Movies\BoxSet.cs" />
     <Compile Include="Entities\Movies\Movie.cs" />
     <Compile Include="Entities\Person.cs" />
-    <Compile Include="Entities\PlaybackProgressEventArgs.cs" />
+    <Compile Include="Library\PlaybackProgressEventArgs.cs" />
     <Compile Include="Entities\Studio.cs" />
     <Compile Include="Entities\Trailer.cs" />
     <Compile Include="Entities\TV\Episode.cs" />
