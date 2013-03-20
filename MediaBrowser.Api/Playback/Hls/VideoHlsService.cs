@@ -56,12 +56,12 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <returns>System.String.</returns>
         protected override string GetAudioArguments(StreamState state)
         {
-            if (!state.Request.AudioCodec.HasValue)
+            var codec = GetAudioCodec(state.Request);
+
+            if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
                 return "-codec:a:0 copy";
             }
-
-            var codec = GetAudioCodec(state.Request);
 
             var args = "-codec:a:0 " + codec;
 
@@ -84,6 +84,8 @@ namespace MediaBrowser.Api.Playback.Hls
                     args += " -ab " + state.Request.AudioBitRate.Value;
                 }
 
+                args += " -af \"aresample=async=1000\"";
+
                 return args;
             }
 
@@ -98,12 +100,6 @@ namespace MediaBrowser.Api.Playback.Hls
         protected override string GetVideoArguments(StreamState state)
         {
             var codec = GetVideoCodec(state.VideoRequest);
-
-            // Right now all we support is either h264 or copy
-            if (!codec.Equals("copy", StringComparison.OrdinalIgnoreCase) && !codec.Equals("libx264", StringComparison.OrdinalIgnoreCase))
-            {
-                codec = "libx264";
-            }
 
             // See if we can save come cpu cycles by avoiding encoding
             if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
@@ -125,7 +121,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             // Get the output framerate based on the FrameRate param
-            double framerate = state.VideoRequest.Framerate ?? 0;
+            var framerate = state.VideoRequest.Framerate ?? 0;
 
             // We have to supply a framerate for hls, so if it's null, account for that here
             if (framerate.Equals(0))
@@ -146,6 +142,9 @@ namespace MediaBrowser.Api.Playback.Hls
             // Needed to ensure segments stay under 10 seconds
             args += string.Format(" -g {0}", framerate);
 
+            args += " -vsync vfr";
+            
+            
             return args;
         }
 
