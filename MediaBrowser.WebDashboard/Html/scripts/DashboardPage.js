@@ -293,6 +293,7 @@
 
         DashboardPage.renderApplicationUpdateInfo(dashboardInfo);
         DashboardPage.renderPluginUpdateInfo(dashboardInfo);
+        DashboardPage.renderPendingInstallations(dashboardInfo.SystemInfo);
     },
 
     renderApplicationUpdateInfo: function (dashboardInfo) {
@@ -330,15 +331,41 @@
             });
 
         } else {
-            
+
             if (dashboardInfo.SystemInfo.HasPendingRestart) {
                 $('#pUpToDate', page).hide();
             } else {
                 $('#pUpToDate', page).show();
             }
-            
+
             $('#pUpdateNow', page).hide();
         }
+    },
+
+    renderPendingInstallations: function (systemInfo) {
+
+        var page = $.mobile.activePage;
+
+        if (systemInfo.CompletedInstallations.length) {
+
+            $('#collapsiblePendingInstallations', page).show();
+
+        } else {
+            $('#collapsiblePendingInstallations', page).hide();
+
+            return;
+        }
+
+        var html = '';
+
+        for (var i = 0, length = systemInfo.CompletedInstallations.length; i < length; i++) {
+
+            var update = systemInfo.CompletedInstallations[i];
+
+            html += '<div><strong>' + update.Name + '</strong> (' + update.Version + ')</div>';
+        }
+
+        $('#pendingInstallations', page).html(html);
     },
 
     renderPluginUpdateInfo: function (dashboardInfo) {
@@ -354,12 +381,14 @@
 
         ApiClient.getAvailablePluginUpdates().done(function (updates) {
 
+            var elem = $('#pPluginUpdates', page);
+
             if (updates.length) {
 
-                $('#collapsiblePluginUpdates', page).show();
+                elem.show();
 
             } else {
-                $('#collapsiblePluginUpdates', page).hide();
+                elem.hide();
 
                 return;
             }
@@ -374,8 +403,8 @@
                 html += '<button type="button" data-icon="download" data-theme="b" onclick="DashboardPage.installPluginUpdate(this);" data-name="' + update.name + '" data-version="' + update.versionStr + '" data-classification="' + update.classification + '">Update Now</button>';
             }
 
-            $('#pPluginUpdates', page).html(html).trigger('create');
-            
+            elem.html(html).trigger('create');
+
         }).fail(function () {
 
             Dashboard.showFooterNotification({ html: '<img src="css/images/notifications/error.png" class="notificationIcon" />There was an error connecting to the remote Media Browser repository.', id: "MB3ConnectionError" });

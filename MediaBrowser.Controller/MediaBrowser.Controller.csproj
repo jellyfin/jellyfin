@@ -174,7 +174,6 @@
     <Compile Include="Resolvers\EntityResolutionHelper.cs" />
     <Compile Include="Resolvers\ResolverPriority.cs" />
     <Compile Include="Library\TVUtils.cs" />
-    <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
     <Compile Include="Library\ItemResolveArgs.cs" />
     <Compile Include="IO\FileData.cs" />
     <Compile Include="Kernel.cs" />
