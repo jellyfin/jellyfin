@@ -558,7 +558,7 @@ namespace MediaBrowser.Server.Implementations.Library
             // Fire events to inform plugins
             EventHelper.QueueEventIfNotNull(PlaybackStart, this, new PlaybackProgressEventArgs
             {
-                Argument = item,
+                Item = item,
                 User = user
             }, _logger);
         }
@@ -597,7 +597,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             EventHelper.QueueEventIfNotNull(PlaybackProgress, this, new PlaybackProgressEventArgs
             {
-                Argument = item,
+                Item = item,
                 User = user,
                 PlaybackPositionTicks = positionTicks
             }, _logger);
@@ -644,7 +644,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             EventHelper.QueueEventIfNotNull(PlaybackStopped, this, new PlaybackProgressEventArgs
             {
-                Argument = item,
+                Item = item,
                 User = user,
                 PlaybackPositionTicks = positionTicks
             }, _logger);
