@@ -65,7 +65,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         {
             return ProcessRequest(request, true);
         }
-        
+
         /// <summary>
         /// Gets the command line arguments.
         /// </summary>
@@ -195,6 +195,12 @@ namespace MediaBrowser.Api.Playback.Progressive
                 if (channels.HasValue)
                 {
                     args += " -ac " + channels.Value;
+
+                    // Boost volume to 200% when downsampling from 6ch to 2ch
+                    if (channels.Value <= 2 && state.AudioStream.Channels.HasValue && state.AudioStream.Channels.Value > 5)
+                    {
+                        args += " -vol 512";
+                    }
                 }
 
                 if (request.AudioSampleRate.HasValue)
