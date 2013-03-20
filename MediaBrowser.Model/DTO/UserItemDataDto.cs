@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using ProtoBuf;
 
 namespace MediaBrowser.Model.Dto
@@ -45,10 +46,17 @@ namespace MediaBrowser.Model.Dto
         public bool? Likes { get; set; }
 
         /// <summary>
+        /// Gets or sets the last played date.
+        /// </summary>
+        /// <value>The last played date.</value>
+        [ProtoMember(6)]
+        public DateTime? LastPlayedDate { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="UserItemDataDto" /> is played.
         /// </summary>
         /// <value><c>true</c> if played; otherwise, <c>false</c>.</value>
-        [ProtoMember(6)]
+        [ProtoMember(7)]
         public bool Played { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
