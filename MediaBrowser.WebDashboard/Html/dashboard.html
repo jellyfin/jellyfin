@@ -24,12 +24,17 @@
                                 <p id="newVersionNumber"></p>
                                 <button id="btnUpdateApplication" type="button" data-icon="download" data-theme="b" onclick="DashboardPage.updateApplication();">Update Now</button>
                             </div>
+                            <div id="pPluginUpdates"></div>
                         </div>
                     </div>
 
-                    <div data-role="collapsible" data-content-theme="c" data-collapsed="false" style="margin-top: 2em; display: none;" id="collapsiblePluginUpdates">
-                        <h3>Plugin Information</h3>
-                        <div id="pPluginUpdates"></div>
+                    <div id="collapsiblePendingInstallations" data-role="collapsible" data-content-theme="c" data-collapsed="false" style="margin-top: 2em; display: none;">
+                        <h3>Pending Installations</h3>
+                        <p>The following components have been installed or updated:</p>
+                        <div id="pendingInstallations">
+                        </div>
+                        <p>Please restart the server to finish applying updates.</p>
+                        <button type="button" data-icon="refresh" data-theme="b" onclick="Dashboard.restartServer();">Restart Now</button>
                     </div>
 
                     <div data-role="collapsible" data-content-theme="c" data-collapsed="false" style="margin-top: 2em;">

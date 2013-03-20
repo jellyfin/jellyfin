@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.ScheduledTasks
+namespace MediaBrowser.Server.Implementations.ScheduledTasks
 {
     /// <summary>
     /// Class RefreshMediaLibraryTask
