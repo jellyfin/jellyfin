@@ -670,7 +670,8 @@ namespace MediaBrowser.Controller.Library
                 PlaybackPositionTicks = data.PlaybackPositionTicks,
                 PlayCount = data.PlayCount,
                 Rating = data.Rating,
-                Played = data.Played
+                Played = data.Played,
+                LastPlayedDate = data.LastPlayedDate
             };
         }
 
