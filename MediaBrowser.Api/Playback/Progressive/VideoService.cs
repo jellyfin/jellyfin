@@ -154,6 +154,8 @@ namespace MediaBrowser.Api.Playback.Progressive
                 {
                     args += " " + qualityParam;
                 }
+
+                args += " -vsync vfr";
             }
             else if (IsH264(state.VideoStream))
             {
