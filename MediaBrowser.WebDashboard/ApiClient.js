@@ -46,6 +46,9 @@ MediaBrowser.ApiClient = function ($, navigator) {
             }
         };
 
+        /**
+         * Wraps around jQuery ajax methods to add additional info to the request.
+         */
         self.ajax = function (request) {
 
             if (!request) {
@@ -834,7 +837,7 @@ MediaBrowser.ApiClient = function ($, navigator) {
         /**
          * Gets all users from the server
          */
-        self.getAllUsers = function () {
+        self.getUsers = function () {
 
             var url = self.getUrl("users");
 

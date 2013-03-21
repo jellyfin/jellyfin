@@ -7,7 +7,7 @@
     loadPageData: function () {
 
         Dashboard.showLoadingMsg();
-        ApiClient.getAllUsers().done(UserProfilesPage.renderUsers);
+        ApiClient.getUsers().done(UserProfilesPage.renderUsers);
     },
 
     renderUsers: function (users) {
