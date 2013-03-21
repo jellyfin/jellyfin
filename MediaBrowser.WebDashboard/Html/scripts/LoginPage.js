@@ -3,7 +3,7 @@
     onPageShow: function () {
         Dashboard.showLoadingMsg();
 
-        ApiClient.getAllUsers().done(LoginPage.loadUserList);
+        ApiClient.getUsers().done(LoginPage.loadUserList);
     },
 
     getLastSeenText: function (lastActivityDate) {

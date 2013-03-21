@@ -2,7 +2,7 @@
 
     gotoNextPage: function () {
 
-        ApiClient.getAllUsers().done(function (users) {
+        ApiClient.getUsers().done(function (users) {
 
             if (users.length > 1) {
 

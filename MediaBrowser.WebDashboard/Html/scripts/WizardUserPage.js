@@ -6,7 +6,7 @@
 
         var page = this;
 
-        ApiClient.getAllUsers().done(function (users) {
+        ApiClient.getUsers().done(function (users) {
 
             var user = users[0] || { Name: "User" };
 
@@ -23,7 +23,7 @@
 
         var page = $.mobile.activePage;
 
-        ApiClient.getAllUsers().done(function (users) {
+        ApiClient.getUsers().done(function (users) {
 
             var user;
             
