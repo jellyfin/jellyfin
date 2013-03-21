@@ -81,14 +81,14 @@ var Dashboard = {
 
     setCurrentUser: function (userId) {
         localStorage.setItem("userId", userId);
-        ApiClient.currentUserId = userId;
+        ApiClient.currentUserId(userId);
         Dashboard.getUserPromise = null;
     },
 
     logout: function () {
         localStorage.removeItem("userId");
         Dashboard.getUserPromise = null;
-        ApiClient.currentUserId = null;
+        ApiClient.currentUserId(null);
         window.location = "login.html";
     },
 
@@ -857,7 +857,7 @@ var Dashboard = {
 
         systemInfo = systemInfo || Dashboard.lastSystemInfo;
 
-        var url = "ws://" + ApiClient.serverHostName + ":" + systemInfo.WebSocketPortNumber + "/mediabrowser";
+        var url = "ws://" + ApiClient.serverHostName() + ":" + systemInfo.WebSocketPortNumber + "/mediabrowser";
 
         var ws = new WebSocket(url);
 
@@ -1171,6 +1171,8 @@ var Dashboard = {
 
 };
 
+var ApiClient = MediaBrowser.ApiClient.create("Dashboard");
+
 $(function () {
 
     var footerHtml = '<div id="footer" class="ui-bar-a">';
@@ -1211,7 +1213,7 @@ $(document).on('pagebeforeshow', ".page", function () {
     var page = $(this);
     
     var userId = Dashboard.getCurrentUserId();
-    ApiClient.currentUserId = userId;
+    ApiClient.currentUserId(userId);
 
     if (!userId) {
 

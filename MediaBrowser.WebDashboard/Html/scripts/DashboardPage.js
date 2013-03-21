@@ -114,31 +114,37 @@
 
     getClientType: function (connection) {
 
-        if (connection.Client.toLowerCase() == "dashboard") {
+        var clientLowered = connection.Client.toLowerCase();
+        
+        if (clientLowered == "dashboard") {
 
             return "<img src='css/images/clients/html5.png' alt='Dashboard' title='Dashboard' />";
         }
-        if (connection.Client.toLowerCase() == "mediabrowsertheater") {
+        if (clientLowered == "media browser classic") {
+
+            return "<img src='css/images/clients/mb.png' alt='Media Browser Classic' title='Media Browser Classic' />";
+        }
+        if (clientLowered == "media browser theater") {
 
             return "<img src='css/images/clients/mb.png' alt='Media Browser Theater' title='Media Browser Theater' />";
         }
-        if (connection.Client.toLowerCase() == "android") {
+        if (clientLowered == "android") {
 
             return "<img src='css/images/clients/android.png' alt='Android' title='Android' />";
         }
-        if (connection.Client.toLowerCase() == "ios") {
+        if (clientLowered == "ios") {
 
             return "<img src='css/images/clients/ios.png' alt='iOS' title='iOS' />";
         }
-        if (connection.Client.toLowerCase() == "windowsrt") {
+        if (clientLowered == "windows rt") {
 
             return "<img src='css/images/clients/windowsrt.png' alt='Windows RT' title='Windows RT' />";
         }
-        if (connection.Client.toLowerCase() == "windowsphone") {
+        if (clientLowered == "windows phone") {
 
             return "<img src='css/images/clients/windowsphone.png' alt='Windows Phone' title='Windows Phone' />";
         }
-        if (connection.Client.toLowerCase() == "dlna") {
+        if (clientLowered == "dlna") {
 
             return "<img src='css/images/clients/dlna.png' alt='Dlna' title='Dlna' />";
         }
