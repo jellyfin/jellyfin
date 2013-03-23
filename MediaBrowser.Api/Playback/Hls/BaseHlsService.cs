@@ -129,9 +129,6 @@ namespace MediaBrowser.Api.Playback.Hls
 
             fileText = fileText.Replace(SegmentFilePrefix, "segments/").Replace(".ts", "/stream.ts").Replace(".aac", "/stream.aac").Replace(".mp3", "/stream.mp3");
 
-            // Even though we specify target duration of 9, ffmpeg seems unable to keep all segments under that amount
-            fileText = fileText.Replace("#EXT-X-TARGETDURATION:9", "#EXT-X-TARGETDURATION:10");
-
             // It's considered live while still encoding (EVENT). Once the encoding has finished, it's video on demand (VOD).
             var playlistType = fileText.IndexOf("#EXT-X-ENDLIST", StringComparison.OrdinalIgnoreCase) == -1 ? "EVENT" : "VOD";
 
@@ -175,7 +172,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var probeSize = Kernel.Instance.FFMpegManager.GetProbeSizeArgument(state.Item);
 
-            return string.Format("{0} {1} -i {2}{3} -threads 0 {4} {5} {6} -f ssegment -segment_list_flags +live -segment_time 9 -segment_list \"{7}\" \"{8}\"",
+            return string.Format("{0} {1} -i {2}{3} -threads 0 {4} {5} {6} -force_key_frames expr:gte(t,n_forced*5) -f ssegment -segment_list_flags +live -segment_time 10 -segment_list \"{7}\" \"{8}\"",
                 probeSize,
                 GetFastSeekCommandLineParameter(state.Request),
                 GetInputArgument(state.Item, state.IsoMount),
