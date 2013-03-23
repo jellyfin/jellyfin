@@ -145,7 +145,7 @@ namespace MediaBrowser.Controller.MediaInfo
         /// <summary>
         /// The video image resource pool count
         /// </summary>
-        private const int VideoImageResourcePoolCount = 1;
+        private const int VideoImageResourcePoolCount = 2;
 
         /// <summary>
         /// The FF probe resource pool
