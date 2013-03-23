@@ -280,6 +280,7 @@ namespace MediaBrowser.Model.Configuration
             HttpServerPortNumber = 8096;
             LegacyWebSocketPortNumber = 8945;
             EnableHttpLevelLogging = true;
+            EnableDashboardResponseCaching = true;
 
 #if (DEBUG)
             EnableDeveloperTools = true;
