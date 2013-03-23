@@ -250,14 +250,14 @@ namespace MediaBrowser.Api.Images
         /// <param name="request">The request.</param>
         public void Post(PostUserImage request)
         {
-            var pathInfo = PathInfo.Parse(Request.PathInfo);
+            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
             var id = new Guid(pathInfo.GetArgumentValue<string>(1));
 
             request.Type = (ImageType)Enum.Parse(typeof(ImageType), pathInfo.GetArgumentValue<string>(3), true);
 
             var item = _userManager.Users.First(i => i.Id == id);
 
-            var task = PostImage(item, request.RequestStream, request.Type, Request.ContentType);
+            var task = PostImage(item, request.RequestStream, request.Type, RequestContext.ContentType);
 
             Task.WaitAll(task);
         }

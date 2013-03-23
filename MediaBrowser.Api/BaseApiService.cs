@@ -63,9 +63,32 @@ namespace MediaBrowser.Api
         public static Dictionary<string, string> GetAuthorization(IHttpRequest httpReq)
         {
             var auth = httpReq.Headers[HttpHeaders.Authorization];
-            if (auth == null) return null;
 
-            var parts = auth.Split(' ');
+            return GetAuthorization(auth);
+        }
+
+        /// <summary>
+        /// Gets the authorization.
+        /// </summary>
+        /// <param name="httpReq">The HTTP req.</param>
+        /// <returns>Dictionary{System.StringSystem.String}.</returns>
+        public static Dictionary<string, string> GetAuthorization(IRequestContext httpReq)
+        {
+            var auth = httpReq.GetHeader("Authorization");
+
+            return GetAuthorization(auth);
+        }
+        
+        /// <summary>
+        /// Gets the authorization.
+        /// </summary>
+        /// <param name="authorizationHeader">The authorization header.</param>
+        /// <returns>Dictionary{System.StringSystem.String}.</returns>
+        private static Dictionary<string, string> GetAuthorization(string authorizationHeader)
+        {
+            if (authorizationHeader == null) return null;
+
+            var parts = authorizationHeader.Split(' ');
 
             // There should be at least to parts
             if (parts.Length < 2) return null;
@@ -77,8 +100,8 @@ namespace MediaBrowser.Api
             }
 
             // Remove uptil the first space
-            auth = auth.Substring(auth.IndexOf(' '));
-            parts = auth.Split(',');
+            authorizationHeader = authorizationHeader.Substring(authorizationHeader.IndexOf(' '));
+            parts = authorizationHeader.Split(',');
 
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 

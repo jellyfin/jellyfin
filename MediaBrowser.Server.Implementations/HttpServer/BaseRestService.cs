@@ -1,5 +1,4 @@
-﻿using System.Net;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
@@ -11,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using MimeTypes = MediaBrowser.Common.Net.MimeTypes;
 
@@ -27,7 +26,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// </summary>
         /// <value>The logger.</value>
         public ILogger Logger { get; set; }
-        
+
         /// <summary>
         /// Gets a value indicating whether this instance is range request.
         /// </summary>
@@ -36,7 +35,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             get
             {
-                return Request.Headers.AllKeys.Contains("Range");
+                return !string.IsNullOrEmpty(RequestContext.GetHeader("Range"));
             }
         }
 
@@ -55,8 +54,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 throw new ArgumentNullException("result");
             }
             
-            Response.AddHeader("Vary", "Accept-Encoding");
-
             return RequestContext.ToOptimizedResult(result);
         }
 
@@ -200,11 +197,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             var compress = ShouldCompressResponse(contentType);
 
-            if (compress)
-            {
-                Response.AddHeader("Vary", "Accept-Encoding");
-            }
-
             return ToStaticResult(contentType, factoryFn, compress, headersOnly).Result;
         }
 
@@ -266,9 +258,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                 if (IsRangeRequest)
                 {
-                    return new RangeRequestWriter(Request.Headers, httpListenerResponse, stream, headersOnly);
+                    return new RangeRequestWriter(RequestContext.GetHeader("Range"), httpListenerResponse, stream, headersOnly);
                 }
-
+             
                 httpListenerResponse.ContentLength64 = stream.Length;
                 return headersOnly ? null : new StreamWriter(stream, Logger);
             }
@@ -332,22 +324,26 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             var isNotModified = true;
 
-            if (Request.Headers.AllKeys.Contains("If-Modified-Since"))
+            var ifModifiedSinceHeader = RequestContext.GetHeader("If-Modified-Since");
+
+            if (!string.IsNullOrEmpty(ifModifiedSinceHeader))
             {
                 DateTime ifModifiedSince;
 
-                if (DateTime.TryParse(Request.Headers["If-Modified-Since"], out ifModifiedSince))
+                if (DateTime.TryParse(ifModifiedSinceHeader, out ifModifiedSince))
                 {
                     isNotModified = IsNotModified(ifModifiedSince.ToUniversalTime(), cacheDuration, lastDateModified);
                 }
             }
 
+            var ifNoneMatchHeader = RequestContext.GetHeader("If-None-Match");
+            
             // Validate If-None-Match
-            if (isNotModified && (cacheKey.HasValue || !string.IsNullOrEmpty(Request.Headers["If-None-Match"])))
+            if (isNotModified && (cacheKey.HasValue || !string.IsNullOrEmpty(ifNoneMatchHeader)))
             {
                 Guid ifNoneMatch;
 
-                if (Guid.TryParse(Request.Headers["If-None-Match"] ?? string.Empty, out ifNoneMatch))
+                if (Guid.TryParse(ifNoneMatchHeader ?? string.Empty, out ifNoneMatch))
                 {
                     if (cacheKey.HasValue && cacheKey.Value == ifNoneMatch)
                     {

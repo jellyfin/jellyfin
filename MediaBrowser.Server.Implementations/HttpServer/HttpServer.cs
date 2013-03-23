@@ -162,8 +162,17 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                         if (!string.IsNullOrEmpty(exception.Message))
                         {
-                            res.AddHeader("X-Application-Error-Code", exception.Message);
+                            res.AddHeader("X-Application-Error-Code", exception.Message.Replace(Environment.NewLine, " "));
                         }
+                    }
+
+                    if (dto is CompressedResult)
+                    {
+                        // Per Google PageSpeed
+                        // This instructs the proxies to cache two versions of the resource: one compressed, and one uncompressed. 
+                        // The correct version of the resource is delivered based on the client request header. 
+                        // This is a good choice for applications that are singly homed and depend on public proxies for user locality.                        
+                        res.AddHeader("Vary", "Accept-Encoding");
                     }
                 });
         }

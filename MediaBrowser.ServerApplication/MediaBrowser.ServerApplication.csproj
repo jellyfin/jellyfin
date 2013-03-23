@@ -404,6 +404,9 @@ xcopy "$(TargetDir)x86" "$(SolutionDir)..\Deploy\Server\System\x86" /y
 mkdir "$(SolutionDir)..\Deploy\Server\System\CorePlugins"
 xcopy "$(TargetDir)CorePlugins" "$(SolutionDir)..\Deploy\Server\System\CorePlugins" /y
 
+mkdir "$(SolutionDir)..\Deploy\Server\System\dashboard-ui"
+xcopy "$(TargetDir)dashboard-ui" "$(SolutionDir)..\Deploy\Server\System\dashboard-ui" /y
+
 del "$(SolutionDir)..\Deploy\MBServer.zip"
 "$(SolutionDir)ThirdParty\7zip\7za" a -tzip "$(SolutionDir)..\Deploy\MBServer.zip" "$(SolutionDir)..\Deploy\Server\*"
 )</PostBuildEvent>

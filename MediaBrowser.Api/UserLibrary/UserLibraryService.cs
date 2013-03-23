@@ -474,7 +474,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             // We need to parse this manually because we told service stack not to with IRequiresRequestStream
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
-            var pathInfo = PathInfo.Parse(Request.PathInfo);
+            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
             var userId = new Guid(pathInfo.GetArgumentValue<string>(1));
             var itemId = pathInfo.GetArgumentValue<string>(3);
 
@@ -595,7 +595,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
-            var auth = RequestFilterAttribute.GetAuthorization(Request);
+            var auth = RequestFilterAttribute.GetAuthorization(RequestContext);
 
             if (auth != null)
             {
@@ -613,7 +613,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
-            var auth = RequestFilterAttribute.GetAuthorization(Request);
+            var auth = RequestFilterAttribute.GetAuthorization(RequestContext);
 
             if (auth != null)
             {
@@ -633,7 +633,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
-            var auth = RequestFilterAttribute.GetAuthorization(Request);
+            var auth = RequestFilterAttribute.GetAuthorization(RequestContext);
 
             if (auth != null)
             {
