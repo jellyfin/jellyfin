@@ -854,7 +854,7 @@ namespace MediaBrowser.Controller.MediaInfo
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     FileName = FFMpegPath,
-                    Arguments = string.Format("-ss {0} -i {1} -threads 0 -v quiet -t 1 -f image2 \"{2}\"", Convert.ToInt32(offset.TotalSeconds), inputPath, outputPath),
+                    Arguments = string.Format("-ss {0} -i {1} -threads 0 -v quiet -vframes 1 -filter:v select=\\'eq(pict_type\\,I)\\' -f image2 \"{2}\"", Convert.ToInt32(offset.TotalSeconds), inputPath, outputPath),
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false
                 }
