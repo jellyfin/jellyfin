@@ -143,6 +143,8 @@ namespace MediaBrowser.Api.Playback.Hls
                 framerate = 23.976;
             }
 
+            framerate = Math.Round(framerate);
+
             args += string.Format(" -r {0}", framerate);
 
             // Needed to ensure segments stay under 10 seconds
