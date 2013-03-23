@@ -6,7 +6,7 @@
 
         $('#logContents', this).html('');
 
-        $(document).on("websocketmessage", LogPage.onWebSocketMessage).on("websocketopen", LogPage.onWebSocketConnectionChange).on("websocketerror", LogPage.onWebSocketConnectionChange).on("websocketclose", LogPage.onWebSocketConnectionChange);
+        $(ApiClient).on("websocketmessage", LogPage.onWebSocketMessage).on("websocketopen", LogPage.onWebSocketConnectionChange).on("websocketerror", LogPage.onWebSocketConnectionChange).on("websocketclose", LogPage.onWebSocketConnectionChange);
 
         LogPage.startInterval();
 
@@ -22,22 +22,22 @@
 
     onPageHide: function () {
 
-        $(document).off("websocketmessage", LogPage.onWebSocketMessage).off("websocketopen", LogPage.onWebSocketConnectionChange).off("websocketerror", LogPage.onWebSocketConnectionChange).off("websocketclose", LogPage.onWebSocketConnectionChange);
+        $(ApiClient).off("websocketmessage", LogPage.onWebSocketMessage).off("websocketopen", LogPage.onWebSocketConnectionChange).off("websocketerror", LogPage.onWebSocketConnectionChange).off("websocketclose", LogPage.onWebSocketConnectionChange);
 
         LogPage.stopInterval();
     },
 
     startInterval: function () {
 
-        if (Dashboard.isWebSocketOpen()) {
-            Dashboard.sendWebSocketMessage("LogFileStart", "0,2000");
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("LogFileStart", "0,2000");
         } 
     },
 
     stopInterval: function () {
 
-        if (Dashboard.isWebSocketOpen()) {
-            Dashboard.sendWebSocketMessage("LogFileStop");
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("LogFileStop");
         }
     },
 

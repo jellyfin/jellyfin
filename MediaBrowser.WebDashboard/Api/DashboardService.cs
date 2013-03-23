@@ -1,8 +1,10 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
@@ -14,7 +16,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
-using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -90,20 +92,31 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         private readonly IUserManager _userManager;
 
+        /// <summary>
+        /// The _app host
+        /// </summary>
         private readonly IServerApplicationHost _appHost;
+        /// <summary>
+        /// The _library manager
+        /// </summary>
         private readonly ILibraryManager _libraryManager;
+
+        private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardService" /> class.
         /// </summary>
         /// <param name="taskManager">The task manager.</param>
         /// <param name="userManager">The user manager.</param>
-        public DashboardService(ITaskManager taskManager, IUserManager userManager, IServerApplicationHost appHost, ILibraryManager libraryManager)
+        /// <param name="appHost">The app host.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        public DashboardService(ITaskManager taskManager, IUserManager userManager, IServerApplicationHost appHost, ILibraryManager libraryManager, IServerConfigurationManager serverConfigurationManager)
         {
             _taskManager = taskManager;
             _userManager = userManager;
             _appHost = appHost;
             _libraryManager = libraryManager;
+            _serverConfigurationManager = serverConfigurationManager;
         }
 
         /// <summary>
@@ -119,9 +132,11 @@ namespace MediaBrowser.WebDashboard.Api
         /// <summary>
         /// Gets the dashboard info.
         /// </summary>
+        /// <param name="appHost">The app host.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="taskManager">The task manager.</param>
         /// <param name="userManager">The user manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
         /// <returns>DashboardInfo.</returns>
         public static async Task<DashboardInfo> GetDashboardInfo(IServerApplicationHost appHost, ILogger logger, ITaskManager taskManager, IUserManager userManager, ILibraryManager libraryManager)
         {
@@ -188,6 +203,14 @@ namespace MediaBrowser.WebDashboard.Api
 
             var contentType = MimeTypes.GetMimeType(path);
 
+            // Don't cache if not configured to do so
+            // But always cache images to simulate production
+            if (!_serverConfigurationManager.Configuration.EnableDashboardResponseCaching && !contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+            {
+                Response.ContentType = contentType;
+                return GetResourceStream(path).Result;
+            }
+
             TimeSpan? cacheDuration = null;
 
             // Cache images unconditionally - updates to image files will require new filename
@@ -199,7 +222,9 @@ namespace MediaBrowser.WebDashboard.Api
 
             var assembly = GetType().Assembly.GetName();
 
-            return ToStaticResult(assembly.Version.ToString().GetMD5(), null, cacheDuration, contentType, () => GetResourceStream(path));
+            var cacheKey = (assembly.Version + path).GetMD5();
+
+            return ToStaticResult(cacheKey, null, cacheDuration, contentType, () => GetResourceStream(path));
         }
 
         /// <summary>
@@ -217,7 +242,7 @@ namespace MediaBrowser.WebDashboard.Api
             }
             else
             {
-                resourceStream = GetType().Assembly.GetManifestResourceStream("MediaBrowser.WebDashboard.Html." + ConvertUrlToResourcePath(path));
+                resourceStream = GetRawResourceStream(path);
             }
 
             if (resourceStream != null)
@@ -236,32 +261,20 @@ namespace MediaBrowser.WebDashboard.Api
         }
 
         /// <summary>
-        /// Redirects the specified CTX.
+        /// Gets the raw resource stream.
         /// </summary>
-        /// <param name="ctx">The CTX.</param>
-        /// <param name="url">The URL.</param>
-        private void Redirect(HttpListenerContext ctx, string url)
+        /// <param name="path">The path.</param>
+        /// <returns>Task{Stream}.</returns>
+        private Stream GetRawResourceStream(string path)
         {
-            // Try to prevent the browser from caching the redirect response (the right way)
-            ctx.Response.Headers[HttpResponseHeader.CacheControl] = "no-cache, no-store, must-revalidate";
-            ctx.Response.Headers[HttpResponseHeader.Pragma] = "no-cache, no-store, must-revalidate";
-            ctx.Response.Headers[HttpResponseHeader.Expires] = "-1";
+            var runningDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
 
-            ctx.Response.Redirect(url);
-            ctx.Response.Close();
-        }
+            path = Path.Combine(runningDirectory, "dashboard-ui", path.Replace('/', '\\'));
 
-        /// <summary>
-        /// Preserves the current query string when redirecting
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="newUrl">The new URL.</param>
-        /// <returns>System.String.</returns>
-        private string GetRedirectUrl(HttpListenerRequest request, string newUrl)
-        {
-            var query = request.Url.Query;
+            return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, StreamDefaults.DefaultFileStreamBufferSize, true);
 
-            return string.IsNullOrEmpty(query) ? newUrl : newUrl + query;
+            // This code is used when the files are embedded resources
+            //return GetType().Assembly.GetManifestResourceStream("MediaBrowser.WebDashboard.Html." + ConvertUrlToResourcePath(path));
         }
 
         /// <summary>
@@ -454,13 +467,21 @@ namespace MediaBrowser.WebDashboard.Api
 
             foreach (var file in scriptFiles)
             {
-                await AppendResource(assembly, memoryStream, resourcePrefix + file, newLineBytes).ConfigureAwait(false);
+                await AppendResource(memoryStream, "scripts/" + file, newLineBytes).ConfigureAwait(false);
             }
 
             memoryStream.Position = 0;
             return memoryStream;
         }
 
+        /// <summary>
+        /// Appends the resource.
+        /// </summary>
+        /// <param name="assembly">The assembly.</param>
+        /// <param name="outputStream">The output stream.</param>
+        /// <param name="path">The path.</param>
+        /// <param name="newLineBytes">The new line bytes.</param>
+        /// <returns>Task.</returns>
         private async Task AppendResource(Assembly assembly, Stream outputStream, string path, byte[] newLineBytes)
         {
             using (var stream = assembly.GetManifestResourceStream(path))
@@ -471,6 +492,22 @@ namespace MediaBrowser.WebDashboard.Api
             }
         }
 
+        /// <summary>
+        /// Appends the resource.
+        /// </summary>
+        /// <param name="outputStream">The output stream.</param>
+        /// <param name="path">The path.</param>
+        /// <param name="newLineBytes">The new line bytes.</param>
+        /// <returns>Task.</returns>
+        private async Task AppendResource(Stream outputStream, string path, byte[] newLineBytes)
+        {
+            using (var stream = GetRawResourceStream(path))
+            {
+                await stream.CopyToAsync(outputStream).ConfigureAwait(false);
+
+                await outputStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
+            }
+        }
     }
 
 }

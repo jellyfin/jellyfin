@@ -1,7 +1,6 @@
 ﻿using ServiceStack.Service;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -17,19 +16,19 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <value>The source stream.</value>
         private Stream SourceStream { get; set; }
         private HttpListenerResponse Response { get; set; }
-        private NameValueCollection RequestHeaders { get; set; }
+        private string RangeHeader { get; set; }
         private bool IsHeadRequest { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamWriter" /> class.
         /// </summary>
-        /// <param name="requestHeaders">The request headers.</param>
+        /// <param name="rangeHeader">The range header.</param>
         /// <param name="response">The response.</param>
         /// <param name="source">The source.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
-        public RangeRequestWriter(NameValueCollection requestHeaders, HttpListenerResponse response, Stream source, bool isHeadRequest)
+        public RangeRequestWriter(string rangeHeader, HttpListenerResponse response, Stream source, bool isHeadRequest)
         {
-            RequestHeaders = requestHeaders;
+            RangeHeader = rangeHeader;
             Response = response;
             SourceStream = source;
             IsHeadRequest = isHeadRequest;
@@ -52,7 +51,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     _requestedRanges = new List<KeyValuePair<long, long?>>();
 
                     // Example: bytes=0-,32-63
-                    var ranges = RequestHeaders["Range"].Split('=')[1].Split(',');
+                    var ranges = RangeHeader.Split('=')[1].Split(',');
 
                     foreach (var range in ranges)
                     {

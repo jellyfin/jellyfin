@@ -261,7 +261,15 @@ namespace MediaBrowser.Model.Configuration
         [ProtoMember(57)]
         public bool EnableDeveloperTools { get; set; }
 
-        // Next Proto number ====> 61
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable dashboard response caching].
+        /// Allows potential contributors without visual studio to modify production dashboard code and test changes.
+        /// </summary>
+        /// <value><c>true</c> if [enable dashboard response caching]; otherwise, <c>false</c>.</value>
+        [ProtoMember(61)]
+        public bool EnableDashboardResponseCaching { get; set; }
+        
+        // Next Proto number ====> 62
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.

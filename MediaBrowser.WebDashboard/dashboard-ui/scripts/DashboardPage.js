@@ -5,7 +5,7 @@
         Dashboard.showLoadingMsg();
         DashboardPage.pollForInfo();
         DashboardPage.startInterval();
-        $(document).on("websocketmessage", DashboardPage.onWebSocketMessage).on("websocketopen", DashboardPage.onWebSocketConnectionChange).on("websocketerror", DashboardPage.onWebSocketConnectionChange).on("websocketclose", DashboardPage.onWebSocketConnectionChange);
+        $(ApiClient).on("websocketmessage", DashboardPage.onWebSocketMessage).on("websocketopen", DashboardPage.onWebSocketConnectionChange).on("websocketerror", DashboardPage.onWebSocketConnectionChange).on("websocketclose", DashboardPage.onWebSocketConnectionChange);
 
         DashboardPage.lastAppUpdateCheck = null;
         DashboardPage.lastPluginUpdateCheck = null;
@@ -13,21 +13,21 @@
 
     onPageHide: function () {
 
-        $(document).off("websocketmessage", DashboardPage.onWebSocketMessage).off("websocketopen", DashboardPage.onWebSocketConnectionChange).off("websocketerror", DashboardPage.onWebSocketConnectionChange).off("websocketclose", DashboardPage.onWebSocketConnectionChange);
+        $(ApiClient).off("websocketmessage", DashboardPage.onWebSocketMessage).off("websocketopen", DashboardPage.onWebSocketConnectionChange).off("websocketerror", DashboardPage.onWebSocketConnectionChange).off("websocketclose", DashboardPage.onWebSocketConnectionChange);
         DashboardPage.stopInterval();
     },
 
     startInterval: function () {
 
-        if (Dashboard.isWebSocketOpen()) {
-            Dashboard.sendWebSocketMessage("DashboardInfoStart", "0,1500");
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("DashboardInfoStart", "0,1500");
         }
     },
 
     stopInterval: function () {
 
-        if (Dashboard.isWebSocketOpen()) {
-            Dashboard.sendWebSocketMessage("DashboardInfoStop");
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("DashboardInfoStop");
         }
     },
 

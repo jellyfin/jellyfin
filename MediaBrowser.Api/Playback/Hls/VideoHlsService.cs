@@ -32,7 +32,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         public object Get(GetHlsVideoSegment request)
         {
-            var file = SegmentFilePrefix + request.SegmentId + Path.GetExtension(Request.PathInfo);
+            var file = SegmentFilePrefix + request.SegmentId + Path.GetExtension(RequestContext.PathInfo);
 
             file = Path.Combine(ApplicationPaths.EncodedMediaCachePath, file);
 

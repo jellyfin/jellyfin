@@ -87,15 +87,15 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// </summary>
         private bool AddDlnaHeaders(StreamState state)
         {
-            var headers = Request.Headers;
+            var timeSeek = RequestContext.GetHeader("TimeSeekRange.dlna.org");
 
-            if (!string.IsNullOrEmpty(headers["TimeSeekRange.dlna.org"]))
+            if (!string.IsNullOrEmpty(timeSeek))
             {
                 Response.StatusCode = 406;
                 return false;
             }
 
-            var transferMode = headers["transferMode.dlna.org"];
+            var transferMode = RequestContext.GetHeader("transferMode.dlna.org");
             Response.AddHeader("transferMode.dlna.org", string.IsNullOrEmpty(transferMode) ? "Streaming" : transferMode);
 
             var contentFeatures = string.Empty;

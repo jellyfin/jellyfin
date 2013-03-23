@@ -107,308 +107,579 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\index.html" />
+    <Content Include="dashboard-ui\index.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\advanced.html" />
+    <Content Include="dashboard-ui\advanced.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\dashboard.html" />
+    <Content Include="dashboard-ui\dashboard.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\Site.js" />
+    <Content Include="dashboard-ui\scripts\Site.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\site.css" />
+    <Content Include="dashboard-ui\css\site.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\library.html" />
+    <Content Include="dashboard-ui\library.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\metadata.html" />
+    <Content Include="dashboard-ui\metadata.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\userProfiles.html" />
+    <Content Include="dashboard-ui\userProfiles.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\plugins.html" />
+    <Content Include="dashboard-ui\plugins.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\login.html" />
+    <Content Include="dashboard-ui\login.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\logindefault.png" />
+    <Content Include="dashboard-ui\css\images\logindefault.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\uiSettings.html" />
+    <Content Include="dashboard-ui\uiSettings.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\editUser.html" />
+    <Content Include="dashboard-ui\editUser.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\favicon.ico" />
+    <Content Include="dashboard-ui\favicon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\touchicon.png" />
-    <EmbeddedResource Include="Html\css\images\touchicon114.png" />
-    <EmbeddedResource Include="Html\css\images\touchicon72.png" />
+    <Content Include="dashboard-ui\css\images\touchicon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\css\images\touchicon114.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\css\images\touchicon72.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\iossplash.png" />
+    <Content Include="dashboard-ui\css\images\iossplash.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\updatePassword.html" />
+    <Content Include="dashboard-ui\updatePassword.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\userImage.html" />
+    <Content Include="dashboard-ui\userImage.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\IndexPage.js" />
+    <Content Include="dashboard-ui\scripts\IndexPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\defaultCollectionImage.png" />
+    <Content Include="dashboard-ui\css\images\defaultCollectionImage.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\toolsWhite.png" />
+    <Content Include="dashboard-ui\css\images\toolsWhite.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\currentUserDefaultWhite.png" />
+    <Content Include="dashboard-ui\css\images\currentUserDefaultWhite.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\rightArrow.png" />
+    <Content Include="dashboard-ui\css\images\rightArrow.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\userFlyoutDefault.png" />
+    <Content Include="dashboard-ui\css\images\userFlyoutDefault.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\MediaLibraryPage.js" />
+    <Content Include="dashboard-ui\scripts\MediaLibraryPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\DisplaySettingsPage.js" />
+    <Content Include="dashboard-ui\scripts\DisplaySettingsPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\PluginsPage.js" />
+    <Content Include="dashboard-ui\scripts\PluginsPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\MetadataConfigurationPage.js" />
+    <Content Include="dashboard-ui\scripts\MetadataConfigurationPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\LoginPage.js" />
+    <Content Include="dashboard-ui\scripts\LoginPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\UpdatePasswordPage.js" />
+    <Content Include="dashboard-ui\scripts\UpdatePasswordPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\AdvancedConfigurationPage.js" />
-    <EmbeddedResource Include="Html\scripts\EditUserPage.js" />
-    <EmbeddedResource Include="Html\scripts\UserImagePage.js" />
-    <EmbeddedResource Include="Html\scripts\UserProfilesPage.js" />
+    <Content Include="dashboard-ui\scripts\AdvancedConfigurationPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\scripts\EditUserPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\scripts\UserImagePage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\scripts\UserProfilesPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\advancedMetadata.html" />
+    <Content Include="dashboard-ui\advancedMetadata.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\AdvancedMetadataConfigurationPage.js" />
+    <Content Include="dashboard-ui\scripts\AdvancedMetadataConfigurationPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\pluginUpdates.html" />
+    <Content Include="dashboard-ui\pluginUpdates.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\PluginUpdatesPage.js" />
+    <Content Include="dashboard-ui\scripts\PluginUpdatesPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\addPlugin.html" />
-    <EmbeddedResource Include="Html\scripts\AddPluginPage.js" />
+    <Content Include="dashboard-ui\addPlugin.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\scripts\AddPluginPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\bg.png" />
+    <Content Include="dashboard-ui\css\images\bg.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\pluginCatalog.html" />
-    <EmbeddedResource Include="Html\scripts\PluginCatalogPage.js" />
+    <Content Include="dashboard-ui\pluginCatalog.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\scripts\PluginCatalogPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\leftArrowBlack.png" />
+    <Content Include="dashboard-ui\css\images\leftArrowBlack.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\leftArrowWhite.png" />
+    <Content Include="dashboard-ui\css\images\leftArrowWhite.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\currentUserDefaultBlack.png" />
-    <EmbeddedResource Include="Html\css\images\toolsBlack.png" />
+    <Content Include="dashboard-ui\css\images\currentUserDefaultBlack.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\css\images\toolsBlack.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scheduledTasks.html" />
+    <Content Include="dashboard-ui\scheduledTasks.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\ScheduledTasksPage.js" />
+    <Content Include="dashboard-ui\scripts\ScheduledTasksPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scheduledTask.html" />
-    <EmbeddedResource Include="Html\scripts\ScheduledTaskPage.js" />
+    <Content Include="dashboard-ui\scheduledTask.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\scripts\ScheduledTaskPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\wizardStart.html" />
+    <Content Include="dashboard-ui\wizardStart.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\wizardFinish.html" />
+    <Content Include="dashboard-ui\wizardFinish.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\wizardUser.html" />
-    <EmbeddedResource Include="Html\wizardLibrary.html" />
+    <Content Include="dashboard-ui\wizardUser.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\wizardLibrary.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\WizardStartPage.js" />
+    <Content Include="dashboard-ui\scripts\WizardStartPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\WizardUserPage.js" />
+    <Content Include="dashboard-ui\scripts\WizardUserPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\cloudNetwork.png" />
+    <Content Include="dashboard-ui\css\images\cloudNetwork.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\movieFolder.png" />
+    <Content Include="dashboard-ui\css\images\movieFolder.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\checkmarkblack.png" />
+    <Content Include="dashboard-ui\css\images\checkmarkblack.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\log.html" />
+    <Content Include="dashboard-ui\log.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\LogPage.js" />
+    <Content Include="dashboard-ui\scripts\LogPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\metadataImages.html" />
+    <Content Include="dashboard-ui\metadataImages.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\MetadataImagesPage.js" />
+    <Content Include="dashboard-ui\scripts\MetadataImagesPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\DashboardPage.js" />
+    <Content Include="dashboard-ui\scripts\DashboardPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\checkMarkGreen.png" />
+    <Content Include="dashboard-ui\css\images\checkMarkGreen.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\clients\html5.png" />
+    <Content Include="dashboard-ui\css\images\clients\html5.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\clients\android.png" />
-    <EmbeddedResource Include="Html\css\images\clients\ios.png" />
+    <Content Include="dashboard-ui\css\images\clients\android.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\css\images\clients\ios.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\clients\mb.png" />
+    <Content Include="dashboard-ui\css\images\clients\mb.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\clients\windowsrt.png" />
+    <Content Include="dashboard-ui\css\images\clients\windowsrt.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\clients\windowsphone.png" />
-    <EmbeddedResource Include="Html\css\images\clients\win8.png" />
+    <Content Include="dashboard-ui\css\images\clients\windowsphone.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\css\images\clients\win8.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\notifications\download.png" />
+    <Content Include="dashboard-ui\css\images\notifications\download.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\Extensions.js" />
+    <Content Include="dashboard-ui\scripts\Extensions.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\support.html" />
+    <Content Include="dashboard-ui\support.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\SupporterPage.js" />
+    <Content Include="dashboard-ui\scripts\SupporterPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\supporter.html" />
+    <Content Include="dashboard-ui\supporter.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\suppbadge.png" />
+    <Content Include="dashboard-ui\css\images\suppbadge.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\premiumflag.png" />
+    <Content Include="dashboard-ui\css\images\premiumflag.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\supporterKey.html" />
+    <Content Include="dashboard-ui\supporterKey.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\SupporterKeyPage.js" />
+    <Content Include="dashboard-ui\scripts\SupporterKeyPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\donatepp.png" />
+    <Content Include="dashboard-ui\css\images\donatepp.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\faicons-v2.png" />
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\faicons.png" />
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\images\ajax-loader.png" />
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\images\icons-18-black-pack.png" />
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\images\icons-18-white-pack.png" />
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\images\icons-36-black-pack.png" />
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\images\icons-36-white-pack.png" />
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\index.html" />
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\jqm-icon-pack-3.0.0-fa.css" />
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\original\images\ajax-loader.gif" />
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\original\images\ajax-loader.png" />
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\original\images\icons-18-black-pack.png" />
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\original\images\icons-18-white-pack.png" />
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\original\images\icons-36-black-pack.png" />
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\original\images\icons-36-white-pack.png" />
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\original\index.html" />
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\original\jqm-icon-pack-2.0-original.css" />
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\font-awesome\faicons-v2.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\font-awesome\faicons.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\font-awesome\images\ajax-loader.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\font-awesome\images\icons-18-black-pack.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\font-awesome\images\icons-18-white-pack.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\font-awesome\images\icons-36-black-pack.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\font-awesome\images\icons-36-white-pack.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\font-awesome\index.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\font-awesome\jqm-icon-pack-3.0.0-fa.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\original\images\ajax-loader.gif">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\original\images\ajax-loader.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\original\images\icons-18-black-pack.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\original\images\icons-18-white-pack.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\original\images\icons-36-black-pack.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\original\images\icons-36-white-pack.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\original\index.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\original\jqm-icon-pack-2.0-original.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\font\fontawesome-webfont.eot" />
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\font\fontawesome-webfont.ttf" />
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\font\fontawesome-webfont.woff" />
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\font\FontAwesome.otf" />
-    <EmbeddedResource Include="Html\thirdparty\jqm-icon-pack-3.0\font-awesome\jqm-icon-pack-3.0.0-fa.scss" />
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\font-awesome\font\fontawesome-webfont.eot">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\font-awesome\font\fontawesome-webfont.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\font-awesome\font\fontawesome-webfont.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\font-awesome\font\FontAwesome.otf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\jqm-icon-pack-3.0\font-awesome\jqm-icon-pack-3.0.0-fa.scss">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\registerpp.png" />
+    <Content Include="dashboard-ui\css\images\registerpp.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\home.png" />
+    <Content Include="dashboard-ui\css\images\home.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\notifications\done.png" />
-    <EmbeddedResource Include="Html\css\images\notifications\error.png" />
+    <Content Include="dashboard-ui\css\images\notifications\done.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\css\images\notifications\error.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\notifications\cancelled.png" />
+    <Content Include="dashboard-ui\css\images\notifications\cancelled.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\css\images\notifications\info.png" />
+    <Content Include="dashboard-ui\css\images\notifications\info.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\itemDetails.html" />
+    <Content Include="dashboard-ui\itemDetails.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\ItemDetailPage.js" />
+    <Content Include="dashboard-ui\scripts\ItemDetailPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Html\scripts\AboutPage.js" />
-    <EmbeddedResource Include="Html\css\images\supporterflag.png" />
-    <EmbeddedResource Include="Html\scripts\ItemListPage.js" />
-    <EmbeddedResource Include="Html\itemList.html" />
-    <EmbeddedResource Include="Html\scripts\WizardFinishPage.js" />
-    <EmbeddedResource Include="Html\Readme.txt" />
-    <EmbeddedResource Include="Html\css\images\media\playCircle.png" />
-    <EmbeddedResource Include="Html\css\images\media\nextTrack.png" />
-    <EmbeddedResource Include="Html\css\images\media\pause.png" />
-    <EmbeddedResource Include="Html\css\images\media\play.png" />
-    <EmbeddedResource Include="Html\css\images\media\previousTrack.png" />
-    <EmbeddedResource Include="Html\css\images\media\stop.png" />
-    <EmbeddedResource Include="Html\css\images\itemDetails\videoDefault.png" />
-    <EmbeddedResource Include="Html\css\images\itemDetails\audioDefault.png" />
-    <EmbeddedResource Include="Html\css\images\itemDetails\gameDefault.png" />
-    <EmbeddedResource Include="Html\css\images\mblogoicon.png" />
-    <EmbeddedResource Include="Html\css\images\mblogotextblack.png" />
-    <EmbeddedResource Include="Html\css\images\mblogotextwhite.png" />
-    <EmbeddedResource Include="Html\css\images\clients\dlna.png" />
-    <EmbeddedResource Include="Html\about.html" />
+    <Content Include="dashboard-ui\scripts\AboutPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\css\images\supporterflag.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\scripts\ItemListPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\itemList.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\scripts\WizardFinishPage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\css\images\media\playCircle.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\css\images\media\nextTrack.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\css\images\media\pause.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\css\images\media\play.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\css\images\media\previousTrack.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\css\images\media\stop.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\css\images\itemDetails\videoDefault.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\css\images\itemDetails\audioDefault.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\css\images\itemDetails\gameDefault.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\css\images\mblogoicon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\css\images\mblogotextblack.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\css\images\mblogotextwhite.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\css\images\clients\dlna.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\about.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <EmbeddedResource Include="ApiClient.js" />
-    <Content Include="Html\css\images\stars.png" />
-    <EmbeddedResource Include="Html\scripts\MediaPlayer.js" />
+    <Content Include="dashboard-ui\css\images\stars.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\scripts\MediaPlayer.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

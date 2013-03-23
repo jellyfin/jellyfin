@@ -6,25 +6,25 @@
 
         ScheduledTasksPage.reloadList(true);
 
-        $(document).on("websocketmessage", ScheduledTasksPage.onWebSocketMessage).on("websocketopen", ScheduledTasksPage.onWebSocketConnectionChange).on("websocketerror", ScheduledTasksPage.onWebSocketConnectionChange).on("websocketclose", ScheduledTasksPage.onWebSocketConnectionChange);
+        $(ApiClient).on("websocketmessage", ScheduledTasksPage.onWebSocketMessage).on("websocketopen", ScheduledTasksPage.onWebSocketConnectionChange).on("websocketerror", ScheduledTasksPage.onWebSocketConnectionChange).on("websocketclose", ScheduledTasksPage.onWebSocketConnectionChange);
     },
 
     onPageHide: function () {
-        $(document).off("websocketmessage", ScheduledTasksPage.onWebSocketMessage).off("websocketopen", ScheduledTasksPage.onWebSocketConnectionChange).off("websocketerror", ScheduledTasksPage.onWebSocketConnectionChange).off("websocketclose", ScheduledTasksPage.onWebSocketConnectionChange);
+        $(ApiClient).off("websocketmessage", ScheduledTasksPage.onWebSocketMessage).off("websocketopen", ScheduledTasksPage.onWebSocketConnectionChange).off("websocketerror", ScheduledTasksPage.onWebSocketConnectionChange).off("websocketclose", ScheduledTasksPage.onWebSocketConnectionChange);
         ScheduledTasksPage.stopInterval();
     },
 
     startInterval: function () {
 
-        if (Dashboard.isWebSocketOpen()) {
-            Dashboard.sendWebSocketMessage("ScheduledTasksInfoStart", "1500,1500");
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1500,1500");
         }
     },
 
     stopInterval: function () {
 
-        if (Dashboard.isWebSocketOpen()) {
-            Dashboard.sendWebSocketMessage("ScheduledTasksInfoStop");
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStop");
         }
     },
 

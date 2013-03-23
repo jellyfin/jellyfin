@@ -1,10 +1,13 @@
 ﻿var MediaPlayer = {
 
+    testableAudioElement: document.createElement('audio'),
+    testableVideoElement: document.createElement('video'),
+
     canPlay: function (item) {
 
         if (item.MediaType === "Video") {
 
-            var media = document.createElement('video');
+            var media = MediaPlayer.testableVideoElement;
 
             if (media.canPlayType) {
 
@@ -16,7 +19,7 @@
 
         if (item.MediaType === "Audio") {
 
-            var media = document.createElement('audio');
+            var media = MediaPlayer.testableAudioElement;
 
             if (media.canPlayType) {
                 return media.canPlayType('audio/mpeg').replace(/no/, '') || media.canPlayType('audio/aac').replace(/no/, '');
