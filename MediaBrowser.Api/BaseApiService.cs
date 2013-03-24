@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Connectivity;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Server.Implementations.HttpServer;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Api
 {
@@ -13,8 +12,70 @@ namespace MediaBrowser.Api
     /// Class BaseApiService
     /// </summary>
     [RequestFilter]
-    public class BaseApiService : BaseRestService
+    public class BaseApiService : IHasResultFactory, IRestfulService
     {
+        /// <summary>
+        /// Gets or sets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
+        public ILogger Logger { get; set; }
+
+        /// <summary>
+        /// Gets or sets the HTTP result factory.
+        /// </summary>
+        /// <value>The HTTP result factory.</value>
+        public IHttpResultFactory ResultFactory { get; set; }
+
+        /// <summary>
+        /// Gets or sets the request context.
+        /// </summary>
+        /// <value>The request context.</value>
+        public IRequestContext RequestContext { get; set; }
+        
+        /// <summary>
+        /// To the optimized result.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="result">The result.</param>
+        /// <returns>System.Object.</returns>
+        protected object ToOptimizedResult<T>(T result)
+            where T : class
+        {
+            return ResultFactory.GetOptimizedResult(RequestContext, result);
+        }
+
+        /// <summary>
+        /// To the optimized result using cache.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="cacheKey">The cache key.</param>
+        /// <param name="lastDateModified">The last date modified.</param>
+        /// <param name="cacheDuration">Duration of the cache.</param>
+        /// <param name="factoryFn">The factory fn.</param>
+        /// <returns>System.Object.</returns>
+        /// <exception cref="System.ArgumentNullException">cacheKey</exception>
+        protected object ToOptimizedResultUsingCache<T>(Guid cacheKey, DateTime lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn)
+               where T : class
+        {
+            return ResultFactory.GetOptimizedResultUsingCache(RequestContext, cacheKey, lastDateModified, cacheDuration, factoryFn);
+        }
+
+        /// <summary>
+        /// To the cached result.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="cacheKey">The cache key.</param>
+        /// <param name="lastDateModified">The last date modified.</param>
+        /// <param name="cacheDuration">Duration of the cache.</param>
+        /// <param name="factoryFn">The factory fn.</param>
+        /// <param name="contentType">Type of the content.</param>
+        /// <returns>System.Object.</returns>
+        /// <exception cref="System.ArgumentNullException">cacheKey</exception>
+        protected object ToCachedResult<T>(Guid cacheKey, DateTime lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, string contentType)
+          where T : class
+        {
+            return ResultFactory.GetCachedResult(RequestContext, cacheKey, lastDateModified, cacheDuration, factoryFn, contentType);
+        }
     }
 
     /// <summary>

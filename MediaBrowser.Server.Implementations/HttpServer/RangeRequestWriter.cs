@@ -1,6 +1,8 @@
 ﻿using ServiceStack.Service;
+using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -8,30 +10,105 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {
-    public class RangeRequestWriter : IStreamWriter
+    public class RangeRequestWriter : IStreamWriter, IHttpResult
     {
         /// <summary>
         /// Gets or sets the source stream.
         /// </summary>
         /// <value>The source stream.</value>
         private Stream SourceStream { get; set; }
-        private HttpListenerResponse Response { get; set; }
         private string RangeHeader { get; set; }
         private bool IsHeadRequest { get; set; }
+
+        private long RangeStart { get; set; }
+        private long RangeEnd { get; set; }
+        private long RangeLength { get; set; }
+        private long TotalContentLength { get; set; }
+
+        /// <summary>
+        /// The _options
+        /// </summary>
+        private readonly Dictionary<string, string> _options = new Dictionary<string, string>();
+
+        /// <summary>
+        /// The us culture
+        /// </summary>
+        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+
+        /// <summary>
+        /// Additional HTTP Headers
+        /// </summary>
+        /// <value>The headers.</value>
+        public Dictionary<string, string> Headers
+        {
+            get { return _options; }
+        }
+
+        /// <summary>
+        /// Gets the options.
+        /// </summary>
+        /// <value>The options.</value>
+        public IDictionary<string, string> Options
+        {
+            get { return Headers; }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamWriter" /> class.
         /// </summary>
         /// <param name="rangeHeader">The range header.</param>
-        /// <param name="response">The response.</param>
         /// <param name="source">The source.</param>
+        /// <param name="contentType">Type of the content.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
-        public RangeRequestWriter(string rangeHeader, HttpListenerResponse response, Stream source, bool isHeadRequest)
+        public RangeRequestWriter(string rangeHeader, Stream source, string contentType, bool isHeadRequest)
         {
+            if (string.IsNullOrEmpty(contentType))
+            {
+                throw new ArgumentNullException("contentType");
+            }
+            
             RangeHeader = rangeHeader;
-            Response = response;
             SourceStream = source;
             IsHeadRequest = isHeadRequest;
+
+            ContentType = contentType;
+            Options["Content-Type"] = contentType;
+            Options["Accept-Ranges"] = "bytes";
+            StatusCode = HttpStatusCode.PartialContent;
+
+            SetRangeValues();
+        }
+
+        /// <summary>
+        /// Sets the range values.
+        /// </summary>
+        private void SetRangeValues()
+        {
+            var requestedRange = RequestedRanges.First();
+
+            TotalContentLength = SourceStream.Length;
+
+            // If the requested range is "0-", we can optimize by just doing a stream copy
+            if (!requestedRange.Value.HasValue)
+            {
+                RangeEnd = TotalContentLength - 1;
+            }
+            else
+            {
+                RangeEnd = requestedRange.Value.Value;
+            }
+
+            RangeStart = requestedRange.Key;
+            RangeLength = 1 + RangeEnd - RangeStart;
+            
+            // Content-Length is the length of what we're serving, not the original content
+            Options["Content-Length"] = RangeLength.ToString(UsCulture);
+            Options["Content-Range"] = string.Format("bytes {0}-{1}/{2}", RangeStart, RangeEnd, TotalContentLength);
+            
+            if (RangeStart > 0)
+            {
+                SourceStream.Position = RangeStart;
+            }
         }
 
         /// <summary>
@@ -42,7 +119,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// Gets the requested ranges.
         /// </summary>
         /// <value>The requested ranges.</value>
-        protected IEnumerable<KeyValuePair<long, long?>> RequestedRanges
+        protected List<KeyValuePair<long, long?>> RequestedRanges
         {
             get
             {
@@ -83,9 +160,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="responseStream">The response stream.</param>
         public void WriteTo(Stream responseStream)
         {
-            Response.Headers["Accept-Ranges"] = "bytes";
-            Response.StatusCode = 206;
-            
             var task = WriteToAsync(responseStream);
 
             Task.WaitAll(task);
@@ -98,94 +172,46 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <returns>Task.</returns>
         private async Task WriteToAsync(Stream responseStream)
         {
-            using (var source = SourceStream)
-            {
-                var requestedRange = RequestedRanges.First();
-
-                var totalLength = SourceStream.Length;
-
-                // If the requested range is "0-", we can optimize by just doing a stream copy
-                if (!requestedRange.Value.HasValue)
-                {
-                    await ServeCompleteRangeRequest(source, requestedRange, responseStream, totalLength).ConfigureAwait(false);
-                }
-
-                // This will have to buffer a portion of the content into memory
-                await ServePartialRangeRequest(source, requestedRange.Key, requestedRange.Value.Value, responseStream, totalLength).ConfigureAwait(false);
-            }
-        }
-
-        /// <summary>
-        /// Handles a range request of "bytes=0-"
-        /// This will serve the complete content and add the content-range header
-        /// </summary>
-        /// <param name="sourceStream">The source stream.</param>
-        /// <param name="requestedRange">The requested range.</param>
-        /// <param name="responseStream">The response stream.</param>
-        /// <param name="totalContentLength">Total length of the content.</param>
-        /// <returns>Task.</returns>
-        private Task ServeCompleteRangeRequest(Stream sourceStream, KeyValuePair<long, long?> requestedRange, Stream responseStream, long totalContentLength)
-        {
-            var rangeStart = requestedRange.Key;
-            var rangeEnd = totalContentLength - 1;
-            var rangeLength = 1 + rangeEnd - rangeStart;
-
-            // Content-Length is the length of what we're serving, not the original content
-            Response.ContentLength64 = rangeLength;
-            Response.Headers["Content-Range"] = string.Format("bytes {0}-{1}/{2}", rangeStart, rangeEnd, totalContentLength);
-
-            // Headers only
-            if (IsHeadRequest)
-            {
-                return Task.FromResult(true);
-            }
-
-            if (rangeStart > 0)
-            {
-                sourceStream.Position = rangeStart;
-            }
-
-            return sourceStream.CopyToAsync(responseStream);
-        }
-
-        /// <summary>
-        /// Serves a partial range request
-        /// </summary>
-        /// <param name="sourceStream">The source stream.</param>
-        /// <param name="rangeStart">The range start.</param>
-        /// <param name="rangeEnd">The range end.</param>
-        /// <param name="responseStream">The response stream.</param>
-        /// <param name="totalContentLength">Total length of the content.</param>
-        /// <returns>Task.</returns>
-        private async Task ServePartialRangeRequest(Stream sourceStream, long rangeStart, long rangeEnd, Stream responseStream, long totalContentLength)
-        {
-            var rangeLength = 1 + rangeEnd - rangeStart;
-
-            // Content-Length is the length of what we're serving, not the original content
-            Response.ContentLength64 = rangeLength;
-            Response.Headers["Content-Range"] = string.Format("bytes {0}-{1}/{2}", rangeStart, rangeEnd, totalContentLength);
-
             // Headers only
             if (IsHeadRequest)
             {
                 return;
             }
 
-            sourceStream.Position = rangeStart;
-
-            // Fast track to just copy the stream to the end
-            if (rangeEnd == totalContentLength - 1)
+            using (var source = SourceStream)
             {
-                await sourceStream.CopyToAsync(responseStream).ConfigureAwait(false);
-            }
-            else
-            {
-                // Read the bytes we need
-                var buffer = new byte[Convert.ToInt32(rangeLength)];
-                await sourceStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+                // If the requested range is "0-", we can optimize by just doing a stream copy
+                if (RangeEnd == TotalContentLength - 1)
+                {
+                    await source.CopyToAsync(responseStream).ConfigureAwait(false);
+                }
+                else
+                {
+                    // Read the bytes we need
+                    var buffer = new byte[Convert.ToInt32(RangeLength)];
+                    await source.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
 
-                await responseStream.WriteAsync(buffer, 0, Convert.ToInt32(rangeLength)).ConfigureAwait(false);
+                    await responseStream.WriteAsync(buffer, 0, Convert.ToInt32(RangeLength)).ConfigureAwait(false);
+                }
             }
         }
+
+        public string ContentType { get; set; }
+
+        public IRequestContext RequestContext { get; set; }
+
+        public object Response { get; set; }
+
+        public IContentTypeWriter ResponseFilter { get; set; }
+
+        public int Status { get; set; }
+
+        public HttpStatusCode StatusCode
+        {
+            get { return (HttpStatusCode)Status; }
+            set { Status = (int)value; }
+        }
+
+        public string StatusDescription { get; set; }
     }
 }

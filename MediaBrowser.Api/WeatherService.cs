@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Model.Weather;
-using MediaBrowser.Server.Implementations.HttpServer;
 using ServiceStack.ServiceHost;
 using System.Linq;
 using System.Threading;
@@ -11,7 +10,7 @@ namespace MediaBrowser.Api
     /// Class Weather
     /// </summary>
     [Route("/Weather", "GET")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets weather information for a given location")]
+    [Api(Description = "Gets weather information for a given location")]
     public class GetWeather : IReturn<WeatherInfo>
     {
         /// <summary>

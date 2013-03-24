@@ -1,4 +1,5 @@
-﻿using ServiceStack.ServiceHost;
+﻿using MediaBrowser.Common.Net;
+using ServiceStack.ServiceHost;
 using System.Diagnostics;
 using System.IO;
 
@@ -16,9 +17,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <value>The name.</value>
         public string ResourceName { get; set; }
     }
-    
-    public class SwaggerService : BaseRestService
+
+    public class SwaggerService : IRequiresRequestContext, IRestfulService
     {
+        public IHttpResultFactory HttpResultFactory { get; set; }
+        
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -32,7 +35,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             var requestedFile = Path.Combine(swaggerDirectory, request.ResourceName.Replace('/', '\\'));
 
-            return ToStaticFileResult(requestedFile);
+            return HttpResultFactory.GetStaticFileResult(RequestContext, requestedFile);
         }
+
+        /// <summary>
+        /// Gets or sets the request context.
+        /// </summary>
+        /// <value>The request context.</value>
+        public IRequestContext RequestContext { get; set; }
     }
 }

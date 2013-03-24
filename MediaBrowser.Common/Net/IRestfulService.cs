@@ -1,16 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using ServiceStack.ServiceHost;
 
 namespace MediaBrowser.Common.Net
 {
     /// <summary>
     /// Interface IRestfulService
     /// </summary>
-    public interface IRestfulService
+    public interface IRestfulService : IService
     {
-        /// <summary>
-        /// Gets the routes.
-        /// </summary>
-        /// <returns>IEnumerable{RouteInfo}.</returns>
-        IEnumerable<RouteInfo> GetRoutes();
     }
 }

@@ -1,7 +1,9 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using ServiceStack.Service;
+using ServiceStack.ServiceHost;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -10,7 +12,7 @@ namespace MediaBrowser.Api.Images
     /// <summary>
     /// Class ImageWriter
     /// </summary>
-    public class ImageWriter : IStreamWriter
+    public class ImageWriter : IStreamWriter, IHasOptions
     {
         /// <summary>
         /// Gets or sets the request.
@@ -31,6 +33,19 @@ namespace MediaBrowser.Api.Images
         /// The original image date modified
         /// </summary>
         public DateTime OriginalImageDateModified;
+
+        /// <summary>
+        /// The _options
+        /// </summary>
+        private readonly IDictionary<string, string> _options = new Dictionary<string, string>();
+        /// <summary>
+        /// Gets the options.
+        /// </summary>
+        /// <value>The options.</value>
+        public IDictionary<string, string> Options
+        {
+            get { return _options; }
+        }
 
         /// <summary>
         /// Writes to.

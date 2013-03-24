@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
@@ -86,8 +87,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             try
             {
-                Response.ContentType = MimeTypes.GetMimeType("playlist.m3u8");
-                return playlistText;
+                return ResultFactory.GetResult(playlistText, MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
             }
             finally
             {

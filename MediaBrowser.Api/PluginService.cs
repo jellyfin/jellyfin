@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Updates;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Server.Implementations.HttpServer;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text.Controller;
 using System;
@@ -19,7 +18,7 @@ namespace MediaBrowser.Api
     /// Class Plugins
     /// </summary>
     [Route("/Plugins", "GET")]
-    [ServiceStack.ServiceHost.Api(("Gets a list of currently installed plugins"))]
+    [Api(("Gets a list of currently installed plugins"))]
     public class GetPlugins : IReturn<List<PluginInfo>>
     {
     }
@@ -28,7 +27,7 @@ namespace MediaBrowser.Api
     /// Class GetPluginAssembly
     /// </summary>
     [Route("/Plugins/{Id}/Assembly", "GET")]
-    [ServiceStack.ServiceHost.Api(("Gets a plugin assembly file"))]
+    [Api(("Gets a plugin assembly file"))]
     public class GetPluginAssembly
     {
         /// <summary>
@@ -58,7 +57,7 @@ namespace MediaBrowser.Api
     /// Class GetPluginConfiguration
     /// </summary>
     [Route("/Plugins/{Id}/Configuration", "GET")]
-    [ServiceStack.ServiceHost.Api(("Gets a plugin's configuration"))]
+    [Api(("Gets a plugin's configuration"))]
     public class GetPluginConfiguration
     {
         /// <summary>
@@ -73,7 +72,7 @@ namespace MediaBrowser.Api
     /// Class UpdatePluginConfiguration
     /// </summary>
     [Route("/Plugins/{Id}/Configuration", "POST")]
-    [ServiceStack.ServiceHost.Api(("Updates a plugin's configuration"))]
+    [Api(("Updates a plugin's configuration"))]
     public class UpdatePluginConfiguration : IRequiresRequestStream, IReturnVoid
     {
         /// <summary>
@@ -94,7 +93,7 @@ namespace MediaBrowser.Api
     /// Class GetPluginConfigurationFile
     /// </summary>
     [Route("/Plugins/{Id}/ConfigurationFile", "GET")]
-    [ServiceStack.ServiceHost.Api(("Gets a plugin's configuration file, in plain text"))]
+    [Api(("Gets a plugin's configuration file, in plain text"))]
     public class GetPluginConfigurationFile
     {
         /// <summary>
@@ -109,7 +108,8 @@ namespace MediaBrowser.Api
     /// Class GetPluginSecurityInfo
     /// </summary>
     [Route("/Plugins/SecurityInfo", "GET")]
-    [ServiceStack.ServiceHost.Api(("Gets plugin registration information"))]
+    [Api(("Gets plugin registration information"))]
+    [Restrict(VisibilityTo = EndpointAttributes.None)]
     public class GetPluginSecurityInfo : IReturn<PluginSecurityInfo>
     {
     }
@@ -118,7 +118,8 @@ namespace MediaBrowser.Api
     /// Class UpdatePluginSecurityInfo
     /// </summary>
     [Route("/Plugins/SecurityInfo", "POST")]
-    [ServiceStack.ServiceHost.Api(("Updates plugin registration information"))]
+    [Api("Updates plugin registration information")]
+    [Restrict(VisibilityTo = EndpointAttributes.None)]
     public class UpdatePluginSecurityInfo : PluginSecurityInfo, IReturnVoid
     {
     }
@@ -171,7 +172,7 @@ namespace MediaBrowser.Api
         public object Get(GetPlugins request)
         {
             var result = _appHost.Plugins.OrderBy(p => p.Name).Select(p => p.GetPluginInfo()).ToList();
-            
+
             return ToOptimizedResult(result);
         }
 
@@ -184,7 +185,7 @@ namespace MediaBrowser.Api
         {
             var plugin = _appHost.Plugins.First(p => p.Id == request.Id);
 
-            return ToStaticFileResult(plugin.AssemblyFilePath);
+            return ResultFactory.GetStaticFileResult(RequestContext, plugin.AssemblyFilePath);
         }
 
         /// <summary>
@@ -212,7 +213,7 @@ namespace MediaBrowser.Api
         {
             var plugin = _appHost.Plugins.First(p => p.Id == request.Id);
 
-            return ToStaticFileResult(plugin.ConfigurationFilePath);
+            return ResultFactory.GetStaticFileResult(RequestContext, plugin.ConfigurationFilePath);
         }
 
         /// <summary>

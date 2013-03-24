@@ -115,7 +115,6 @@
     </Compile>
     <Compile Include="BdInfo\BdInfoExaminer.cs" />
     <Compile Include="Configuration\ServerConfigurationManager.cs" />
-    <Compile Include="HttpServer\BaseRestService.cs" />
     <Compile Include="HttpServer\HttpResultFactory.cs" />
     <Compile Include="HttpServer\HttpServer.cs" />
     <Compile Include="HttpServer\NativeWebSocket.cs" />

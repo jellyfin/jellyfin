@@ -1,11 +1,12 @@
-﻿using System;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -16,7 +17,7 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// </summary>
     public abstract class BaseProgressiveStreamingService : BaseStreamingService
     {
-        protected BaseProgressiveStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager) : 
+        protected BaseProgressiveStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager) :
             base(appPaths, userManager, libraryManager, isoManager)
         {
         }
@@ -85,18 +86,21 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <summary>
         /// Adds the dlna headers.
         /// </summary>
-        private bool AddDlnaHeaders(StreamState state)
+        /// <param name="state">The state.</param>
+        /// <param name="responseHeaders">The response headers.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        private void AddDlnaHeaders(StreamState state, IDictionary<string,string> responseHeaders)
         {
             var timeSeek = RequestContext.GetHeader("TimeSeekRange.dlna.org");
 
             if (!string.IsNullOrEmpty(timeSeek))
             {
-                Response.StatusCode = 406;
-                return false;
+                ResultFactory.ThrowError(406, "Time seek not supported during encoding.", responseHeaders);
+                return;
             }
 
             var transferMode = RequestContext.GetHeader("transferMode.dlna.org");
-            Response.AddHeader("transferMode.dlna.org", string.IsNullOrEmpty(transferMode) ? "Streaming" : transferMode);
+            responseHeaders["transferMode.dlna.org"] = string.IsNullOrEmpty(transferMode) ? "Streaming" : transferMode;
 
             var contentFeatures = string.Empty;
             var extension = GetOutputFileExtension(state);
@@ -140,10 +144,8 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             if (!string.IsNullOrEmpty(contentFeatures))
             {
-                Response.AddHeader("ContentFeatures.DLNA.ORG", contentFeatures);
+                responseHeaders["ContentFeatures.DLNA.ORG"] = contentFeatures;
             }
-
-            return true;
         }
 
         /// <summary>
@@ -165,45 +167,45 @@ namespace MediaBrowser.Api.Playback.Progressive
         {
             var state = GetState(request);
 
-            if (!AddDlnaHeaders(state))
-            {
-                return null;
-            }
+            var responseHeaders = new Dictionary<string, string>();
+
+            AddDlnaHeaders(state, responseHeaders);
 
             if (request.Static)
             {
-                return ToStaticFileResult(state.Item.Path, isHeadRequest);
+                return ResultFactory.GetStaticFileResult(RequestContext, state.Item.Path, responseHeaders, isHeadRequest);
             }
 
             var outputPath = GetOutputFilePath(state);
 
             if (File.Exists(outputPath) && !ApiEntryPoint.Instance.HasActiveTranscodingJob(outputPath, TranscodingJobType.Progressive))
             {
-                return ToStaticFileResult(outputPath, isHeadRequest);
+                return ResultFactory.GetStaticFileResult(RequestContext, outputPath, responseHeaders, isHeadRequest);
             }
 
-            Response.AddHeader("Accept-Ranges", "none");
-
-            return GetStreamResult(state, isHeadRequest).Result;
+            return GetStreamResult(state, responseHeaders, isHeadRequest).Result;
         }
 
         /// <summary>
         /// Gets the stream result.
         /// </summary>
         /// <param name="state">The state.</param>
+        /// <param name="responseHeaders">The response headers.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>Task{System.Object}.</returns>
-        private async Task<ProgressiveStreamWriter> GetStreamResult(StreamState state, bool isHeadRequest)
+        private async Task<object> GetStreamResult(StreamState state, IDictionary<string,string> responseHeaders, bool isHeadRequest)
         {
             // Use the command line args with a dummy playlist path
             var outputPath = GetOutputFilePath(state);
 
-            Response.ContentType = MimeTypes.GetMimeType(outputPath);
+            var contentType = MimeTypes.GetMimeType(outputPath);
 
             // Headers only
             if (isHeadRequest)
             {
-                return null;
+                responseHeaders["Accept-Ranges"] = "none";
+
+                return ResultFactory.GetResult(null, contentType, responseHeaders);
             }
 
             if (!File.Exists(outputPath))
@@ -215,7 +217,18 @@ namespace MediaBrowser.Api.Playback.Progressive
                 ApiEntryPoint.Instance.OnTranscodeBeginRequest(outputPath, TranscodingJobType.Progressive);
             }
 
-            return new ProgressiveStreamWriter(outputPath, state, Logger);
+            var result = new ProgressiveStreamWriter(outputPath, state, Logger);
+
+            result.Options["Accept-Ranges"] = "none";
+            result.Options["Content-Type"] = contentType;
+
+            // Add the response headers to the result object
+            foreach (var item in responseHeaders)
+            {
+                result.Options[item.Key] = item.Value;
+            }
+
+            return result;
         }
 
         /// <summary>

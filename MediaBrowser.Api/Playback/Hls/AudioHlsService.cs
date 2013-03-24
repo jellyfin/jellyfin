@@ -44,7 +44,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             file = Path.Combine(ApplicationPaths.EncodedMediaCachePath, file);
 
-            return ToStaticFileResult(file);
+            return ResultFactory.GetStaticFileResult(RequestContext, file);
         }
 
         /// <summary>
