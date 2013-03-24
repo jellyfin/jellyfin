@@ -151,8 +151,16 @@ namespace MediaBrowser.Api.Playback.Hls
             args += string.Format(" -g {0}", framerate);
 
             args += " -vsync vfr";
-            
-            
+
+            if (state.SubtitleStream != null)
+            {
+                // This is for internal graphical subs
+                if (!state.SubtitleStream.IsExternal && (state.SubtitleStream.Codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) != -1 || state.SubtitleStream.Codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) != -1))
+                {
+                    args += GetInternalGraphicalSubtitleParam(state, codec);
+                }
+            }
+         
             return args;
         }
 
