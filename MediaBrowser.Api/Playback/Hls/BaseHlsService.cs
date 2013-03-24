@@ -171,7 +171,7 @@ namespace MediaBrowser.Api.Playback.Hls
             segmentOutputPath = Path.Combine(segmentOutputPath, segmentOutputName + "%03d." + GetSegmentFileExtension(state).TrimStart('.'));
 
             var probeSize = Kernel.Instance.FFMpegManager.GetProbeSizeArgument(state.Item);
-
+            
             return string.Format("{0} {1} -i {2}{3} -threads 0 {4} {5} {6} -force_key_frames expr:gte(t,n_forced*5) -f ssegment -segment_list_flags +live -segment_time 10 -segment_list \"{7}\" \"{8}\"",
                 probeSize,
                 GetFastSeekCommandLineParameter(state.Request),
