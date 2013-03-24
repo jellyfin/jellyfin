@@ -72,12 +72,6 @@ namespace MediaBrowser.Api.Playback.Hls
                 if (channels.HasValue)
                 {
                     args += " -ac " + channels.Value;
-
-                    // Boost volume to 200% when downsampling from 6ch to 2ch
-                    if (channels.Value <= 2 && state.AudioStream.Channels.HasValue && state.AudioStream.Channels.Value > 5)
-                    {
-                        args += " -vol 512";
-                    }
                 }
 
                 if (state.Request.AudioSampleRate.HasValue)
@@ -90,7 +84,15 @@ namespace MediaBrowser.Api.Playback.Hls
                     args += " -ab " + state.Request.AudioBitRate.Value;
                 }
 
-                args += " -af \"aresample=async=1000\"";
+                var volParam = string.Empty;
+
+                // Boost volume to 200% when downsampling from 6ch to 2ch
+                if (channels.HasValue && channels.Value <= 2 && state.AudioStream.Channels.HasValue && state.AudioStream.Channels.Value > 5)
+                {
+                    volParam = ",volume=2.000000";
+                }
+                
+                args += string.Format(" -af \"aresample=async=1000,{0}\"", volParam);
 
                 return args;
             }
