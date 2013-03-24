@@ -184,35 +184,40 @@ namespace MediaBrowser.Api.Playback.Progressive
             // Get the output codec name
             var codec = GetAudioCodec(request);
 
+            if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
+            {
+                return "-acodec copy";
+            }
+            
             var args = "-acodec " + codec;
 
-            // If we're encoding audio, add additional params
-            if (!codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
+            // Add the number of audio channels
+            var channels = GetNumAudioChannelsParam(request, state.AudioStream);
+
+            if (channels.HasValue)
             {
-                // Add the number of audio channels
-                var channels = GetNumAudioChannelsParam(request, state.AudioStream);
-
-                if (channels.HasValue)
-                {
-                    args += " -ac " + channels.Value;
-
-                    // Boost volume to 200% when downsampling from 6ch to 2ch
-                    if (channels.Value <= 2 && state.AudioStream.Channels.HasValue && state.AudioStream.Channels.Value > 5)
-                    {
-                        args += " -vol 512";
-                    }
-                }
-
-                if (request.AudioSampleRate.HasValue)
-                {
-                    args += " -ar " + request.AudioSampleRate.Value;
-                }
-
-                if (request.AudioBitRate.HasValue)
-                {
-                    args += " -ab " + request.AudioBitRate.Value;
-                }
+                args += " -ac " + channels.Value;
             }
+
+            if (request.AudioSampleRate.HasValue)
+            {
+                args += " -ar " + request.AudioSampleRate.Value;
+            }
+
+            if (request.AudioBitRate.HasValue)
+            {
+                args += " -ab " + request.AudioBitRate.Value;
+            }
+
+            var volParam = string.Empty;
+
+            // Boost volume to 200% when downsampling from 6ch to 2ch
+            if (channels.HasValue && channels.Value <= 2 && state.AudioStream.Channels.HasValue && state.AudioStream.Channels.Value > 5)
+            {
+                volParam = ",volume=2.000000";
+            }
+
+            args += string.Format(" -af \"aresample=async=1000,{0}\"", volParam);
 
             return args;
         }
