@@ -1,6 +1,8 @@
 ﻿using MediaBrowser.Model.Logging;
 using ServiceStack.Service;
+using ServiceStack.ServiceHost;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -9,7 +11,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
     /// <summary>
     /// Class StreamWriter
     /// </summary>
-    public class StreamWriter : IStreamWriter
+    public class StreamWriter : IStreamWriter, IHasOptions
     {
         private ILogger Logger { get; set; }
         
@@ -20,14 +22,35 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         public Stream SourceStream { get; set; }
 
         /// <summary>
+        /// The _options
+        /// </summary>
+        private readonly IDictionary<string, string> _options = new Dictionary<string, string>();
+        /// <summary>
+        /// Gets the options.
+        /// </summary>
+        /// <value>The options.</value>
+        public IDictionary<string, string> Options
+        {
+            get { return _options; }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="StreamWriter" /> class.
         /// </summary>
         /// <param name="source">The source.</param>
+        /// <param name="contentType">Type of the content.</param>
         /// <param name="logger">The logger.</param>
-        public StreamWriter(Stream source, ILogger logger)
+        public StreamWriter(Stream source, string contentType, ILogger logger)
         {
+            if (string.IsNullOrEmpty(contentType))
+            {
+                throw new ArgumentNullException("contentType");
+            }
+
             SourceStream = source;
             Logger = logger;
+
+            Options["Content-Type"] = contentType;
         }
 
         /// <summary>

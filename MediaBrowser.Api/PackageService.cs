@@ -2,7 +2,6 @@
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Updates;
 using MediaBrowser.Model.Updates;
-using MediaBrowser.Server.Implementations.HttpServer;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
@@ -16,7 +15,7 @@ namespace MediaBrowser.Api
     /// Class GetPackage
     /// </summary>
     [Route("/Packages/{Name}", "GET")]
-    [ServiceStack.ServiceHost.Api(("Gets a package, by name"))]
+    [Api(("Gets a package, by name"))]
     public class GetPackage : IReturn<PackageInfo>
     {
         /// <summary>

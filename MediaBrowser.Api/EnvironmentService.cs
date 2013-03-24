@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
-using MediaBrowser.Server.Implementations.HttpServer;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
@@ -16,7 +15,7 @@ namespace MediaBrowser.Api
     /// Class GetDirectoryContents
     /// </summary>
     [Route("/Environment/DirectoryContents", "GET")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets the contents of a given directory in the file system")]
+    [Api(Description = "Gets the contents of a given directory in the file system")]
     public class GetDirectoryContents : IReturn<List<FileSystemEntryInfo>>
     {
         /// <summary>

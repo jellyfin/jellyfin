@@ -174,6 +174,30 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                         // This is a good choice for applications that are singly homed and depend on public proxies for user locality.                        
                         res.AddHeader("Vary", "Accept-Encoding");
                     }
+
+                    var hasOptions = dto as IHasOptions;
+
+                    if (hasOptions != null)
+                    {
+                        // Content length has to be explicitly set on on HttpListenerResponse or it won't be happy
+                        string contentLength;
+
+                        if (hasOptions.Options.TryGetValue("Content-Length", out contentLength) && !string.IsNullOrEmpty(contentLength))
+                        {
+                            var length = long.Parse(contentLength);
+
+                            if (length > 0)
+                            {
+                                var response = (HttpListenerResponse) res.OriginalResponse;
+
+                                response.ContentLength64 = length;
+
+                                // Disable chunked encoding. Technically this is only needed when using Content-Range, but
+                                // anytime we know the content length there's no need for it
+                                response.SendChunked = false;
+                            }
+                        }
+                    }
                 });
         }
 
@@ -532,11 +556,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             EndpointHost.ConfigureHost(this, ServerName, CreateServiceManager());
             ContentTypeFilters.Register(ContentType.ProtoBuf, (reqCtx, res, stream) => ProtobufSerializer.SerializeToStream(res, stream), (type, stream) => ProtobufSerializer.DeserializeFromStream(stream, type));
-            
-            foreach (var route in services.SelectMany(i => i.GetRoutes()))
-            {
-                Routes.Add(route.RequestType, route.Path, route.Verbs);
-            }
 
             Init();
         }

@@ -163,7 +163,7 @@ namespace MediaBrowser.ServerApplication
 
             await base.RegisterResources().ConfigureAwait(false);
 
-            RegisterSingleInstance<IHttpResultFactory>(new HttpResultFactory());
+            RegisterSingleInstance<IHttpResultFactory>(new HttpResultFactory(LogManager));
 
             RegisterSingleInstance<IServerApplicationHost>(this);
             RegisterSingleInstance<IServerApplicationPaths>(ApplicationPaths);

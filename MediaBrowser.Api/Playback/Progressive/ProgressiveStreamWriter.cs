@@ -1,17 +1,32 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Model.Logging;
 using ServiceStack.Service;
+using ServiceStack.ServiceHost;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
-    public class ProgressiveStreamWriter : IStreamWriter
+    public class ProgressiveStreamWriter : IStreamWriter, IHasOptions
     {
         private string Path { get; set; }
         private StreamState State { get; set; }
         private ILogger Logger { get; set; }
+
+        /// <summary>
+        /// The _options
+        /// </summary>
+        private readonly IDictionary<string, string> _options = new Dictionary<string, string>();
+        /// <summary>
+        /// Gets the options.
+        /// </summary>
+        /// <value>The options.</value>
+        public IDictionary<string, string> Options
+        {
+            get { return _options; }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProgressiveStreamWriter" /> class.

@@ -135,6 +135,15 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.51\lib\net45\pfmclrapi.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceStack.Common">
+      <HintPath>..\packages\ServiceStack.Common.3.9.42\lib\net35\ServiceStack.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\packages\ServiceStack.Common.3.9.42\lib\net35\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Text">
+      <HintPath>..\packages\ServiceStack.Text.3.9.42\lib\net35\ServiceStack.Text.dll</HintPath>
+    </Reference>
     <Reference Include="SimpleInjector, Version=2.0.0.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\SimpleInjector.2.0.0-beta5\lib\net40-client\SimpleInjector.dll</HintPath>
@@ -405,7 +414,7 @@ mkdir "$(SolutionDir)..\Deploy\Server\System\CorePlugins"
 xcopy "$(TargetDir)CorePlugins" "$(SolutionDir)..\Deploy\Server\System\CorePlugins" /y
 
 mkdir "$(SolutionDir)..\Deploy\Server\System\dashboard-ui"
-xcopy "$(TargetDir)dashboard-ui" "$(SolutionDir)..\Deploy\Server\System\dashboard-ui" /y
+xcopy "$(TargetDir)dashboard-ui" "$(SolutionDir)..\Deploy\Server\System\dashboard-ui" /y /s
 
 del "$(SolutionDir)..\Deploy\MBServer.zip"
 "$(SolutionDir)ThirdParty\7zip\7za" a -tzip "$(SolutionDir)..\Deploy\MBServer.zip" "$(SolutionDir)..\Deploy\Server\*"

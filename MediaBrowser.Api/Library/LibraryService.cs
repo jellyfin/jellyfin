@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Server.Implementations.HttpServer;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
@@ -15,7 +14,7 @@ namespace MediaBrowser.Api.Library
     /// Class GetPhyscialPaths
     /// </summary>
     [Route("/Library/PhysicalPaths", "GET")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets a list of physical paths from virtual folders")]
+    [Api(Description = "Gets a list of physical paths from virtual folders")]
     public class GetPhyscialPaths : IReturn<List<string>>
     {
     }
@@ -24,7 +23,7 @@ namespace MediaBrowser.Api.Library
     /// Class GetItemTypes
     /// </summary>
     [Route("/Library/ItemTypes", "GET")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets a list of BaseItem types")]
+    [Api(Description = "Gets a list of BaseItem types")]
     public class GetItemTypes : IReturn<List<string>>
     {
         /// <summary>
@@ -39,7 +38,7 @@ namespace MediaBrowser.Api.Library
     /// Class GetPerson
     /// </summary>
     [Route("/Persons/{Name}", "GET")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets a person, by name")]
+    [Api(Description = "Gets a person, by name")]
     public class GetPerson : IReturn<BaseItemDto>
     {
         /// <summary>
@@ -54,7 +53,7 @@ namespace MediaBrowser.Api.Library
     /// Class GetStudio
     /// </summary>
     [Route("/Studios/{Name}", "GET")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets a studio, by name")]
+    [Api(Description = "Gets a studio, by name")]
     public class GetStudio : IReturn<BaseItemDto>
     {
         /// <summary>
@@ -69,7 +68,7 @@ namespace MediaBrowser.Api.Library
     /// Class GetGenre
     /// </summary>
     [Route("/Genres/{Name}", "GET")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets a genre, by name")]
+    [Api(Description = "Gets a genre, by name")]
     public class GetGenre : IReturn<BaseItemDto>
     {
         /// <summary>
@@ -84,7 +83,7 @@ namespace MediaBrowser.Api.Library
     /// Class GetYear
     /// </summary>
     [Route("/Years/{Year}", "GET")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets a year")]
+    [Api(Description = "Gets a year")]
     public class GetYear : IReturn<BaseItemDto>
     {
         /// <summary>

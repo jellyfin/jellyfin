@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Server.Implementations.HttpServer;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
@@ -15,7 +14,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class GetItems
     /// </summary>
     [Route("/Users/{UserId}/Items", "GET")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets items based on a query.")]
+    [Api(Description = "Gets items based on a query.")]
     public class GetItems : BaseItemsRequest, IReturn<ItemsResult>
     {
         /// <summary>

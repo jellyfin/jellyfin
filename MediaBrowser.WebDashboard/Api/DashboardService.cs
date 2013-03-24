@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.ScheduledTasks;
@@ -9,11 +8,11 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Server.Implementations.HttpServer;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -27,6 +26,7 @@ namespace MediaBrowser.WebDashboard.Api
     /// Class GetDashboardConfigurationPages
     /// </summary>
     [Route("/dashboard/ConfigurationPages", "GET")]
+    [Restrict(VisibilityTo = EndpointAttributes.None)]
     public class GetDashboardConfigurationPages : IReturn<List<ConfigurationPageInfo>>
     {
         /// <summary>
@@ -40,6 +40,7 @@ namespace MediaBrowser.WebDashboard.Api
     /// Class GetDashboardConfigurationPage
     /// </summary>
     [Route("/dashboard/ConfigurationPage", "GET")]
+    [Restrict(VisibilityTo = EndpointAttributes.None)]
     public class GetDashboardConfigurationPage
     {
         /// <summary>
@@ -53,6 +54,7 @@ namespace MediaBrowser.WebDashboard.Api
     /// Class GetDashboardResource
     /// </summary>
     [Route("/dashboard/{ResourceName*}", "GET")]
+    [Restrict(VisibilityTo = EndpointAttributes.None)]
     public class GetDashboardResource
     {
         /// <summary>
@@ -71,6 +73,7 @@ namespace MediaBrowser.WebDashboard.Api
     /// Class GetDashboardInfo
     /// </summary>
     [Route("/dashboard/dashboardInfo", "GET")]
+    [Restrict(VisibilityTo = EndpointAttributes.None)]
     public class GetDashboardInfo : IReturn<DashboardInfo>
     {
     }
@@ -79,8 +82,26 @@ namespace MediaBrowser.WebDashboard.Api
     /// Class DashboardService
     /// </summary>
     [Export(typeof(IRestfulService))]
-    public class DashboardService : BaseRestService
+    public class DashboardService : IRestfulService, IHasResultFactory
     {
+        /// <summary>
+        /// Gets or sets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
+        public ILogger Logger { get; set; }
+
+        /// <summary>
+        /// Gets or sets the HTTP result factory.
+        /// </summary>
+        /// <value>The HTTP result factory.</value>
+        public IHttpResultFactory ResultFactory { get; set; }
+
+        /// <summary>
+        /// Gets or sets the request context.
+        /// </summary>
+        /// <value>The request context.</value>
+        public IRequestContext RequestContext { get; set; }
+        
         /// <summary>
         /// Gets or sets the task manager.
         /// </summary>
@@ -172,7 +193,7 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var page = ServerEntryPoint.Instance.PluginConfigurationPages.First(p => p.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
 
-            return ToStaticResult(page.Plugin.Version.ToString().GetMD5(), page.Plugin.AssemblyDateLastModified, null, MimeTypes.GetMimeType("page.html"), () => ModifyHtml(page.GetHtmlStream()));
+            return ResultFactory.GetStaticResult(RequestContext, page.Plugin.Version.ToString().GetMD5(), page.Plugin.AssemblyDateLastModified, null, MimeTypes.GetMimeType("page.html"), () => ModifyHtml(page.GetHtmlStream()));
         }
 
         /// <summary>
@@ -189,7 +210,7 @@ namespace MediaBrowser.WebDashboard.Api
                 pages = pages.Where(p => p.ConfigurationPageType == request.PageType.Value);
             }
 
-            return ToOptimizedResult(pages.Select(p => new ConfigurationPageInfo(p)).ToList());
+            return ResultFactory.GetOptimizedResult(RequestContext, pages.Select(p => new ConfigurationPageInfo(p)).ToList());
         }
 
         /// <summary>
@@ -207,8 +228,7 @@ namespace MediaBrowser.WebDashboard.Api
             // But always cache images to simulate production
             if (!_serverConfigurationManager.Configuration.EnableDashboardResponseCaching && !contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
             {
-                Response.ContentType = contentType;
-                return GetResourceStream(path).Result;
+                return ResultFactory.GetResult(GetResourceStream(path).Result, contentType);
             }
 
             TimeSpan? cacheDuration = null;
@@ -224,7 +244,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var cacheKey = (assembly.Version + path).GetMD5();
 
-            return ToStaticResult(cacheKey, null, cacheDuration, contentType, () => GetResourceStream(path));
+            return ResultFactory.GetStaticResult(RequestContext, cacheKey, null, cacheDuration, contentType, () => GetResourceStream(path));
         }
 
         /// <summary>
@@ -385,6 +405,7 @@ namespace MediaBrowser.WebDashboard.Api
             var files = new[]
                             {
                                 "http://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.css",
+                                "http://vjs.zencdn.net/c/video-js.css",
                                 "thirdparty/jqm-icon-pack-3.0/font-awesome/jqm-icon-pack-3.0.0-fa.css",
                                 "css/site.css" + versionString
                             };
@@ -407,6 +428,7 @@ namespace MediaBrowser.WebDashboard.Api
                             {
                                 "http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js", 
                                 "http://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.js",
+                                "http://vjs.zencdn.net/c/video.js",
                                 "scripts/all.js" + versionString
             };
 
