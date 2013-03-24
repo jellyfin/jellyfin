@@ -92,7 +92,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     volParam = ",volume=2.000000";
                 }
                 
-                args += string.Format(" -af \"aresample=async=1000,{0}\"", volParam);
+                args += string.Format(" -af \"aresample=async=1000{0}\"", volParam);
 
                 return args;
             }
