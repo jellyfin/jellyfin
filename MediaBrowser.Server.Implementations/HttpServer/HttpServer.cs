@@ -1,3 +1,16 @@
+// ***********************************************************************
+// Assembly         : MediaBrowser.Server.Implementations
+// Author           : Luke
+// Created          : 03-06-2013
+//
+// Last Modified By : Luke
+// Last Modified On : 03-24-2013
+// ***********************************************************************
+// <copyright file="HttpServer.cs" company="">
+//     Copyright (c) . All rights reserved.
+// </copyright>
+// <summary></summary>
+// ***********************************************************************
 using Funq;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
@@ -47,7 +60,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <summary>
         /// The _rest services
         /// </summary>
-        private readonly List<IRestfulService> _restServices = new List<IRestfulService>(); 
+        private readonly List<IRestfulService> _restServices = new List<IRestfulService>();
 
         /// <summary>
         /// Gets or sets the application host.
@@ -66,7 +79,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// </summary>
         /// <value>The protobuf serializer.</value>
         private IProtobufSerializer ProtobufSerializer { get; set; }
-        
+
         /// <summary>
         /// Occurs when [web socket connected].
         /// </summary>
@@ -208,6 +221,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// Format should be: http://127.0.0.1:8080/ or http://127.0.0.1:8080/somevirtual/
         /// Note: the trailing slash is required! For more info see the
         /// HttpListener.Prefixes property on MSDN.</param>
+        /// <exception cref="System.ArgumentNullException">urlBase</exception>
         public override void Start(string urlBase)
         {
             if (string.IsNullOrEmpty(urlBase))
@@ -457,6 +471,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// Logs the response.
         /// </summary>
         /// <param name="ctx">The CTX.</param>
+        /// <param name="url">The URL.</param>
+        /// <param name="endPoint">The end point.</param>
         private void LogResponse(HttpListenerContext ctx, string url, IPEndPoint endPoint)
         {
             if (!EnableHttpRequestLogging)
@@ -554,9 +570,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             _restServices.AddRange(services);
 
+            _logger.Info("Calling EndpointHost.ConfigureHost");
             EndpointHost.ConfigureHost(this, ServerName, CreateServiceManager());
+
+            _logger.Info("Registering protobuf as a content type filter");
             ContentTypeFilters.Register(ContentType.ProtoBuf, (reqCtx, res, stream) => ProtobufSerializer.SerializeToStream(res, stream), (type, stream) => ProtobufSerializer.DeserializeFromStream(stream, type));
 
+            _logger.Info("Calling ServiceStack AppHost.Init");
             Init();
         }
     }

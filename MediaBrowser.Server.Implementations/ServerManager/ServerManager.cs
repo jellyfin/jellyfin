@@ -153,6 +153,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             }
 
             ReloadUdpServer();
+
             ReloadHttpServer();
 
             if (!SupportsNativeWebSocket)
@@ -268,6 +269,9 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             {
                 // The port number can't be in configuration because we don't want it to ever change
                 UdpServer = _applicationHost.Resolve<IUdpServer>();
+
+                _logger.Info("Starting udp server");
+
                 UdpServer.Start(_kernel.UdpServerPortNumber);
             }
             catch (SocketException ex)
@@ -428,6 +432,8 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// </summary>
         private void RegisterServerWithAdministratorAccess()
         {
+            _logger.Info("Requesting administrative access to authorize http server");
+
             // Create a temp file path to extract the bat file to
             var tmpFile = Path.Combine(ConfigurationManager.CommonApplicationPaths.TempDirectory, Guid.NewGuid() + ".bat");
 

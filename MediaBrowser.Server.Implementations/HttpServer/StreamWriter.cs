@@ -19,7 +19,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// Gets or sets the source stream.
         /// </summary>
         /// <value>The source stream.</value>
-        public Stream SourceStream { get; set; }
+        private Stream SourceStream { get; set; }
 
         /// <summary>
         /// The _options
@@ -51,6 +51,17 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             Logger = logger;
 
             Options["Content-Type"] = contentType;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StreamWriter"/> class.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="contentType">Type of the content.</param>
+        /// <param name="logger">The logger.</param>
+        public StreamWriter(byte[] source, string contentType, ILogger logger)
+            : this(new MemoryStream(source), contentType, logger)
+        {
         }
 
         /// <summary>
