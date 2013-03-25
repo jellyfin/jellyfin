@@ -19,7 +19,7 @@
             } else {
                 $('.supporterOnly', page).hide();
             }
-            $('#paypalReturnUrl', page).val(ApiClient.getCustomUrl("dashboard/supporterKey.html"));
+            $('#paypalReturnUrl', page).val(ApiClient.getUrl("dashboard/supporterKey.html"));
             Dashboard.hideLoadingMsg();
         });
     }
