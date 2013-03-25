@@ -814,18 +814,27 @@ progress {
     margin-right: 20px;
     display: inline-block;
     position: relative;
+    width: 270px;
 }
 
 .mediaButton img {
     height: 28px;
 }
 
-.itemVideo {
+.itemVideo, .itemVideo.video-js {
     position: absolute;
     z-index: 99998;
     height: auto;
-    width: 180px;
+    /*width: 180px;*/
     bottom: -5px;
+}
+.vjs-quality-button {
+    padding: 0 0.6em !important;
+    width: auto !important;
+}
+.vjs-quality-button div {
+    width: auto !important;
+    background: none !important;
 }
 
 @media all and (min-width: 650px) {

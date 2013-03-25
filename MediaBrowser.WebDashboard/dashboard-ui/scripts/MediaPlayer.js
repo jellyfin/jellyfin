@@ -68,13 +68,15 @@
         }
     },
 
-    playAudio: function (items) {
+    playAudio: function (items, params) {
         var item = items[0];
 
         var baseParams = {
             audioChannels: 2,
             audioBitrate: 128000
         };
+
+        $.extend(baseParams, params);
 
         var mp3Url = ApiClient.getUrl('Audio/' + item.Id + '/stream.mp3', $.extend({}, baseParams, {
             audioCodec: 'mp3'
@@ -123,44 +125,51 @@
             maxHeight: screenHeight
         };
 
-        var mp4VideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mp4', $.extend({}, baseParams, {
-            videoCodec: 'h264',
-            audioCodec: 'aac'
-        }));
+        //TODO if you press "stop" button on the nowPlayingBar and restart the same video without refreshing the page
+        //there is an issue since VideoJS is still loaded.
 
-        var tsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ts', $.extend({}, baseParams, {
-            videoCodec: 'h264',
-            audioCodec: 'aac'
-        }));
+        var html = '<video id="videoWindow" class="itemVideo video-js vjs-default-skin"></video>';
 
-        var webmVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
-            videoCodec: 'vpx',
-            audioCodec: 'Vorbis'
-        }));
+        var nowPlayingBar = $('#nowPlayingBar');
 
-        var hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.m3u8', $.extend({}, baseParams, {
-            videoCodec: 'h264',
-            audioCodec: 'aac'
-        }));
+        $('#mediaElement', nowPlayingBar).html(html).show();
 
-        var ogvVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ogv', $.extend({}, baseParams, {
-            videoCodec: 'theora',
-            audioCodec: 'Vorbis'
-        }));
+        _V_("videoWindow", {'controls': true, 'autoplay': true, 'preload': 'auto'}, function(){
 
-        var html = '';
-        html += '<video class="itemVideo" preload="none" controls autoplay>';
-        html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
-        html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
-        html += '<source type=\'video/mp2t; codecs="h264, aac"\' src="' + tsVideoUrl + '" />';
-        html += '<source type="application/x-mpegURL" src="' + hlsVideoUrl + '" />';
-        html += '<source type="video/ogg" src="' + ogvVideoUrl + '" />';
-        
-        html += '</video';
+            var mp4VideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mp4', $.extend({}, baseParams, {
+                videoCodec: 'h264',
+                audioCodec: 'aac'
+            }));
 
-        var nowPlayingBar = $('#nowPlayingBar').show();
+            var tsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ts', $.extend({}, baseParams, {
+                videoCodec: 'h264',
+                audioCodec: 'aac'
+            }));
 
-        $('#mediaElement', nowPlayingBar).html(html);
+            var webmVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
+                videoCodec: 'vpx',
+                audioCodec: 'Vorbis'
+            }));
+
+            var hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.m3u8', $.extend({}, baseParams, {
+                videoCodec: 'h264',
+                audioCodec: 'aac'
+            }));
+
+            var ogvVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ogv', $.extend({}, baseParams, {
+                videoCodec: 'theora',
+                audioCodec: 'Vorbis'
+            }));
+
+            (this).src([{ type: "video/webm", src: webmVideoUrl },
+                { type: "video/mp4", src: mp4VideoUrl },
+                { type: "video/mp2t; codecs='h264, aac'", src: tsVideoUrl },
+                { type: "application/x-mpegURL", src: hlsVideoUrl },
+                { type: "video/ogg", src: ogvVideoUrl }]);
+
+            videoJSextension.setup_video( $( '#videoWindow' ), item );
+
+        });
 
         return $('video', nowPlayingBar)[0];
     },
@@ -181,5 +190,75 @@
 
     isPlaying: function () {
         return MediaPlayer.mediaElement;
+    }
+
+};
+
+var videoJSextension = {
+
+    /*
+     Add our video quality selector button to the videojs controls. This takes
+     a mandatory jQuery object of the <video> element we are setting up the
+     videojs video for.
+     */
+    setup_video : function( $video, item ) {
+
+        var vid_id = $video.attr( 'id' ),
+            available_res = ['high','medium','low'],
+            default_res,
+            vjs_sources = [], // This will be an array of arrays of objects, see the video.js api documentation for myPlayer.src()
+            vjs_source = {},
+            vjs_chapters = [], // This will be an array of arrays of objects, see the video.js api documentation for myPlayer.src()
+            vjs_chapter = {};
+
+        // Determine this video's default res (it might not have the globally determined default available)
+        default_res = available_res[0];
+
+        // Put together the videojs source arrays for each available resolution
+        $.each( available_res, function( i, res ) {
+
+            vjs_sources[i] = [];
+
+            vjs_source = {};
+            vjs_source.res = res;
+            vjs_source.vid_id = vid_id;
+
+            vjs_sources[i].push( vjs_source );
+
+        });
+
+        _V_.ResolutionSelectorButton = _V_.ResolutionSelector.extend({
+            buttonText: default_res,
+            availableRes: vjs_sources
+        });
+
+        // Add the resolution selector button.
+        _V_.merge( _V_.ControlBar.prototype.options.components, { ResolutionSelectorButton : {} } );
+
+        //chceck if chapters exist and add chapter selector
+        if (item.Chapters.length > 0) {
+            // Put together the videojs source arrays for each available chapter
+            $.each( item.Chapters, function( i, chapter ) {
+
+                vjs_chapters[i] = [];
+
+                vjs_chapter = {};
+                vjs_chapter.Name = chapter.Name;
+                vjs_chapter.StartPositionTicks = chapter.StartPositionTicks;
+                vjs_chapter.vid_id = vid_id;
+
+                vjs_chapters[i].push( vjs_chapter );
+
+            });
+
+            _V_.ChapterSelectorButton = _V_.ChapterSelector.extend({
+                buttonText: '',
+                Chapters: vjs_chapters
+            });
+
+            // Add the chapter selector button.
+            _V_.merge( _V_.ControlBar.prototype.options.components, { ChapterSelectorButton : {} } );
+        }
+
     }
 };
