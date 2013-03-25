@@ -1573,6 +1573,30 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         };
 
         /**
+         * Reports the user has started playing something
+         * @param {String} userId
+         * @param {String} itemId
+         */
+        self.reportPlaybackStart = function (userId, itemId) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            if (!itemId) {
+                throw new Error("null itemId");
+            }
+
+            var url = self.getUrl("Users/" + userId + "/PlayingItems/" + itemId);
+
+            return self.ajax({
+                type: "POST",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        /**
          * Reports progress viewing an item
          * @param {String} userId
          * @param {String} itemId
