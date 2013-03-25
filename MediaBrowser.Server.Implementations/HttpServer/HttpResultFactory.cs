@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using MimeTypes = MediaBrowser.Common.Net.MimeTypes;
 
@@ -74,7 +75,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 }
                 else
                 {
-                    result = new HttpResult(content, contentType);
+                    var text = content as string;
+
+                    if (text != null)
+                    {
+                        result = new StreamWriter(Encoding.UTF8.GetBytes(text), contentType, _logger);
+                    }
+                    else
+                    {
+                        result = new HttpResult(content, contentType);
+                    }
                 }
             }
 
