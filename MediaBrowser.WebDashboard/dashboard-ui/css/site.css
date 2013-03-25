@@ -837,6 +837,20 @@ progress {
     background: none !important;
 }
 
+.vjs-chapter-button div {
+    background-position: -100px -75px !important;
+}
+.vjs-chapter-button.vjs-menu-button ul {
+    width: auto;
+    max-width: 25em;
+    overflow-y: scroll;
+}
+.vjs-chapter-button.vjs-menu-button ul li {
+    width: auto;
+    white-space: nowrap;
+    font-size: 1.1em;
+}
+
 @media all and (min-width: 650px) {
 
     .itemVideo {

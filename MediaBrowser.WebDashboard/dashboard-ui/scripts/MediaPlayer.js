@@ -169,6 +169,14 @@
 
             videoJSextension.setup_video( $( '#videoWindow' ), item );
 
+            (this).addEvent("loadstart",function(){
+                $(".vjs-remaining-time-display").hide();
+            });
+
+            (this).addEvent("durationchange",function(){
+                if ((this).duration() != "Infinity")
+                    $(".vjs-remaining-time-display").show();
+            });
         });
 
         return $('video', nowPlayingBar)[0];
@@ -243,7 +251,7 @@ var videoJSextension = {
                 vjs_chapters[i] = [];
 
                 vjs_chapter = {};
-                vjs_chapter.Name = chapter.Name;
+                vjs_chapter.Name = chapter.Name + " (" + ticks_to_human(chapter.StartPositionTicks) + ")";
                 vjs_chapter.StartPositionTicks = chapter.StartPositionTicks;
                 vjs_chapter.vid_id = vid_id;
 
