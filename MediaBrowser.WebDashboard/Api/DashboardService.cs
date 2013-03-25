@@ -388,7 +388,8 @@ namespace MediaBrowser.WebDashboard.Api
             sb.Append("<link rel=\"apple-touch-icon\" href=\"css/images/touchicon.png\" />");
             sb.Append("<link rel=\"apple-touch-icon\" sizes=\"72x72\" href=\"css/images/touchicon72.png\" />");
             sb.Append("<link rel=\"apple-touch-icon\" sizes=\"114x114\" href=\"css/images/touchicon114.png\" />");
-            sb.Append("<link rel=\"apple-touch-startup-image\" href=\"css/images/iossplash.png\">");
+            sb.Append("<link rel=\"apple-touch-startup-image\" href=\"css/images/iossplash.png\" />");
+            sb.Append("<link rel=\"shortcut icon\" href=\"favicon.ico\" />");
 
             return sb.ToString();
         }
