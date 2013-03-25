@@ -1571,7 +1571,70 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 dataType: "json"
             });
         };
-    };
+
+        /**
+         * Reports progress viewing an item
+         * @param {String} userId
+         * @param {String} itemId
+         */
+        self.reportPlaybackProgress = function (userId, itemId, positionTicks) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            if (!itemId) {
+                throw new Error("null itemId");
+            }
+
+            var params = {
+            };
+
+            if (positionTicks) {
+                params.positionTicks = positionTicks;
+            }
+
+            var url = self.getUrl("Users/" + userId + "/PlayingItems/" + itemId + "/Progress", params);
+
+            return self.ajax({
+                type: "POST",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+
+        /**
+         * Reports a user has stopped playing an item
+         * @param {String} userId
+         * @param {String} itemId
+         */
+        self.reportPlaybackStopped = function (userId, itemId, positionTicks) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            if (!itemId) {
+                throw new Error("null itemId");
+            }
+
+            var params = {
+            };
+
+            if (positionTicks) {
+                params.positionTicks = positionTicks;
+            }
+
+            var url = self.getUrl("Users/" + userId + "/PlayingItems/" + itemId, params);
+
+            return self.ajax({
+                type: "DELETE",
+                url: url,
+                dataType: "json"
+            });
+        };
+    }
 
 }(jQuery, navigator, JSON, window.WebSocket, setTimeout);
 
@@ -1669,7 +1732,7 @@ MediaBrowser.SHA1 = function (msg) {
     var word_array = new Array();
     for (i = 0; i < msg_len - 3; i += 4) {
         j = msg.charCodeAt(i) << 24 | msg.charCodeAt(i + 1) << 16 |
-		msg.charCodeAt(i + 2) << 8 | msg.charCodeAt(i + 3);
+        msg.charCodeAt(i + 2) << 8 | msg.charCodeAt(i + 3);
         word_array.push(j);
     }
 
@@ -1756,4 +1819,4 @@ MediaBrowser.SHA1 = function (msg) {
     var temp = cvt_hex(H0) + cvt_hex(H1) + cvt_hex(H2) + cvt_hex(H3) + cvt_hex(H4);
 
     return temp.toLowerCase();
-};
+}
