@@ -43,13 +43,46 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <returns>System.Object.</returns>
         public object GetResult(object content, string contentType, IDictionary<string, string> responseHeaders = null)
         {
-            var result = new HttpResult(content, contentType);
+            return GetHttpResult(content, contentType, responseHeaders);
+        }
+
+        /// <summary>
+        /// Gets the HTTP result.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <param name="contentType">Type of the content.</param>
+        /// <param name="responseHeaders">The response headers.</param>
+        /// <returns>IHasOptions.</returns>
+        private IHasOptions GetHttpResult(object content, string contentType, IDictionary<string, string> responseHeaders = null)
+        {
+            IHasOptions result;
+
+            var stream = content as Stream;
+
+            if (stream != null)
+            {
+                result = new StreamWriter(stream, contentType, _logger);
+            }
+
+            else
+            {
+                var bytes = content as byte[];
+
+                if (bytes != null)
+                {
+                    result = new StreamWriter(bytes, contentType, _logger);
+                }
+                else
+                {
+                    result = new HttpResult(content, contentType);
+                }
+            }
 
             if (responseHeaders != null)
             {
                 AddResponseHeaders(result, responseHeaders);
             }
-
+            
             return result;
         }
 
@@ -376,7 +409,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                 if (isHeadRequest)
                 {
-                    return new HttpResult(new byte[] { }, contentType);
+                    return GetHttpResult(new byte[] { }, contentType);
                 }
 
                 return new StreamWriter(stream, contentType, _logger);
@@ -384,7 +417,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             if (isHeadRequest)
             {
-                return new HttpResult(new byte[] { }, contentType);
+                return GetHttpResult(new byte[] { }, contentType);
             }
 
             string content;
