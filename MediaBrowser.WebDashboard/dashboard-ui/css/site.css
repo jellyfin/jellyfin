@@ -446,6 +446,10 @@ form, .readOnlyContent {
     padding-bottom: 56px;
 }
 
+.posterViewItemWithDualText .posterViewItemText {
+    text-align: left;
+}
+
 .posterViewItemWithNoText {
     padding-bottom: 0!important;
 }
@@ -479,7 +483,7 @@ form, .readOnlyContent {
     text-wrap: none;
     white-space: nowrap;
     margin: 0;
-    padding: 4px 2px 0;
+    padding: 4px 4px 0;
     position: absolute;
     bottom: 0;
     left: 0;

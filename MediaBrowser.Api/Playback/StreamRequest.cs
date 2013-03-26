@@ -56,6 +56,12 @@ namespace MediaBrowser.Api.Playback
         /// <value><c>true</c> if static; otherwise, <c>false</c>.</value>
         [ApiMember(Name = "Static", Description = "Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool Static { get; set; }
+
+        /// <summary>
+        /// This is an xbox 360 param that is used with dlna. If true the item's image should be returned instead of audio or video.
+        /// No need to put this in api docs since it's dlna only
+        /// </summary>
+        public bool AlbumArt { get; set; }
     }
 
     public class VideoStreamRequest : StreamRequest
