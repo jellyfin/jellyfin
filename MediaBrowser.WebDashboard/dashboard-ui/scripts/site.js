@@ -460,7 +460,7 @@ var Dashboard = {
                     tag: item.BackdropImageTags[0]
                 }) + "' />";
             } else {
-                html += "<img style='background:" + Dashboard.getRandomMetroColor() + ";' src='css/images/defaultCollectionImage.png' />";
+                html += "<img style='background:" + Dashboard.getRandomMetroColor() + ";' src='css/images/items/list/collection.png' />";
             }
 
             if (showText) {
@@ -750,7 +750,7 @@ var Dashboard = {
 
         Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
             if (pluginSecurityInfo.IsMBSupporter) {
-                $('<a class="imageLink" href="supporter.html"><img src="css/images/suppbadge.png" /></a>').insertBefore('.btnTools', page);
+                $('<a class="imageLink" href="supporter.html"><img src="css/images/supporter/supporterbadge.png" /></a>').insertBefore('.btnTools', page);
             }
         });
     },

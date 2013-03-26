@@ -99,15 +99,15 @@
             });
         }
         else if (item.MediaType == "Audio") {
-            url = "css/images/itemDetails/audioDefault.png";
+            url = "css/images/items/detail/audio.png";
             useBackgroundColor = true;
         }
         else if (item.MediaType == "Game") {
-            url = "css/images/itemDetails/gameDefault.png";
+            url = "css/images/items/detail/game.png";
             useBackgroundColor = true;
         }
         else {
-            url = "css/images/itemDetails/videoDefault.png";
+            url = "css/images/items/detail/video.png";
             useBackgroundColor = true;
         }
 
@@ -290,7 +290,7 @@
 
                 html += '<img src="' + imgUrl + '" />';
             } else {
-                html += '<img src="css/images/itemDetails/videoDefault.png"/>';
+                html += '<img src="css/images/items/detail/video.png"/>';
             }
 
             html += '<div class="posterViewItemText posterViewItemPrimaryText">' + chapter_name + '</div>';
