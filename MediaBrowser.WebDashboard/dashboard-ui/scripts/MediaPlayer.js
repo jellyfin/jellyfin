@@ -186,8 +186,21 @@
 
         var elem = MediaPlayer.mediaElement;
 
-        elem.pause();
-        elem.src = "";
+        //check if it's a video using VideoJS
+        if ($(elem).hasClass("vjs-tech")) {
+            var player = _V_("videoWindow");
+
+            if (player.techName == "html5") {
+                player.tag.src = "";
+                player.tech.removeTriggers();
+                player.load();
+            }
+//        player.tech.destroy();
+            player.destroy();
+        }else {
+            elem.pause();
+            elem.src = "";
+        }
 
         $(elem).remove();
 
@@ -229,7 +242,6 @@ var videoJSextension = {
 
             vjs_source = {};
             vjs_source.res = res;
-            vjs_source.vid_id = vid_id;
 
             vjs_sources[i].push( vjs_source );
 
@@ -253,7 +265,6 @@ var videoJSextension = {
                 vjs_chapter = {};
                 vjs_chapter.Name = chapter.Name + " (" + ticks_to_human(chapter.StartPositionTicks) + ")";
                 vjs_chapter.StartPositionTicks = chapter.StartPositionTicks;
-                vjs_chapter.vid_id = vid_id;
 
                 vjs_chapters[i].push( vjs_chapter );
 

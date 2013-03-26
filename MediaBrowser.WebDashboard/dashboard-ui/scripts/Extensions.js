@@ -483,7 +483,7 @@ _V_.ResolutionMenuItem = _V_.MenuItem.extend({
         jQuery( this.player.controlBar.el ).find( '.vjs-quality-text' ).html( this.options.label );
 
         // Change the source and make sure we don't start the video over
-        var currentSrc = $("#"+this.options.src[0].vid_id).find('video').attr("src");
+        var currentSrc = this.player.tag.src;
         var newSrc = currentSrc.replace("videoBitrate="+resolutions[this.player.options.currentResolution],"videoBitrate="+resolutions[this.options.src[0].res]);
 
         if (this.player.duration() == "Infinity")  {
@@ -657,7 +657,7 @@ _V_.ChapterMenuItem = _V_.MenuItem.extend({
         //jQuery( this.player.controlBar.el ).find( '.vjs-chapter-text' ).html( this.options.label );
 
         if (this.player.duration() == "Infinity") {
-            var currentSrc = $("#"+this.options.src[0].vid_id).find('video').attr("src");
+            var currentSrc = this.player.tag.src;
 
             if (currentSrc.indexOf("StartTimeTicks") >= 0) {
                 var newSrc = currentSrc.replace(new RegExp("StartTimeTicks=[0-9]+","g"),"StartTimeTicks="+this.options.src[0].StartPositionTicks);
