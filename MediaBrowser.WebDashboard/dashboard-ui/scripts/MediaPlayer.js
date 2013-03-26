@@ -258,7 +258,7 @@ var videoJSextension = {
         _V_.merge( _V_.ControlBar.prototype.options.components, { ResolutionSelectorButton : {} } );
 
         //chceck if chapters exist and add chapter selector
-        if (item.Chapters.length > 0) {
+        if (item.Chapters && item.Chapters.length) {
             // Put together the videojs source arrays for each available chapter
             $.each( item.Chapters, function( i, chapter ) {
 
