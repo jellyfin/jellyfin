@@ -4,6 +4,7 @@
 
         ItemDetailPage.reload();
 
+        $('#mediaInfoCollapsible', this).on('expand', ItemDetailPage.onMediaInfoExpand);
         $('#scenesCollapsible', this).on('expand', ItemDetailPage.onScenesExpand);
         $('#specialsCollapsible', this).on('expand', ItemDetailPage.onSpecialsExpand);
         $('#trailersCollapsible', this).on('expand', ItemDetailPage.onTrailersExpand);
@@ -12,6 +13,7 @@
 
     onPageHide: function () {
 
+        $('#mediaInfoCollapsible', this).off('expand', ItemDetailPage.onMediaInfoExpand);
         $('#scenesCollapsible', this).off('expand', ItemDetailPage.onScenesExpand);
         $('#specialsCollapsible', this).off('expand', ItemDetailPage.onSpecialsExpand);
         $('#trailersCollapsible', this).off('expand', ItemDetailPage.onTrailersExpand);
@@ -49,26 +51,27 @@
 
         ItemDetailPage.renderImage(item);
         ItemDetailPage.renderOverviewBlock(item);
-        ItemDetailPage.renderMediaInfo(item);
         ItemDetailPage.renderGallery(item);
 
+        if (!item.MediaStreams || !item.MediaStreams.length) {
+            $('#mediaInfoCollapsible', page).hide();
+        }else {
+            $('#mediaInfoCollapsible', page).show();
+        }
         if (!item.Chapters || !item.Chapters.length) {
             $('#scenesCollapsible', page).hide();
         } else {
             $('#scenesCollapsible', page).show();
-            ItemDetailPage.renderScenes(item);
         }
         if (!item.LocalTrailerCount || item.LocalTrailerCount == 0) {
             $('#trailersCollapsible', page).hide();
         } else {
             $('#trailersCollapsible', page).show();
-            ItemDetailPage.renderTrailers(item);
         }
         if (!item.SpecialFeatureCount || item.SpecialFeatureCount == 0) {
             $('#specialsCollapsible', page).hide();
         } else {
             $('#specialsCollapsible', page).show();
-            ItemDetailPage.renderSpecials(item);
         }
 
         $('#itemName', page).html(name);
@@ -148,7 +151,7 @@
     },
 
     renderOverviewBlock: function (item) {
-console.log(item);
+
         var page = $.mobile.activePage;
 
         if (item.Taglines && item.Taglines.length) {
@@ -426,15 +429,84 @@ console.log(item);
         return html;
     },
 
+    onMediaInfoExpand: function () {
+
+        if (ItemDetailPage.item) {
+
+            ItemDetailPage.renderMediaInfo(ItemDetailPage.item);
+
+            $(this).off('expand', ItemDetailPage.onMediaInfoExpand);
+        }
+    },
+
     renderMediaInfo: function (item) {
 
         var page = $.mobile.activePage;
+        var html = '';
 
-        if (!item.MediaStreams || !item.MediaStreams.length) {
-            $('#mediaInfoCollapsible', page).hide();
-            return;
+        html += '<table class="ui-responsive table-stroke" id="mediaInfo-table" data-role="table" data-mode="reflow">';
+        html += '<thead><tr>';
+        html += '<th data-priority="1">Type</th>';
+        html += '<th data-priority="2">Codec</th>';
+        html += '<th data-priority="3">Language</th>';
+        html += '<th data-priority="4">Misc</th>';
+        html += '<th data-priority="5">Bitrate</th>';
+        html += '<th data-priority="6">Notes</th>';
+        html += '</tr></thead>';
+        html += '<tbody>';
+
+        for (var i = 0, length = item.MediaStreams.length; i < length; i++) {
+
+            var stream = item.MediaStreams[i];
+
+            html += '<tr>';
+            html += '<td>' + stream.Type + '</td>';
+            html += '<td>' + stream.Codec +'</td>';
+
+            if (stream.Language)
+                html += '<td>' + stream.Language +'</td>';
+            else html += '<td></td>';
+
+            if (stream.Type == "Video") {
+                html += '<td>'+ stream.Width +' '+ stream.Height +' ('+ stream.AspectRatio +')</td>';
+            }else if (stream.Type == "Audio") {
+                html += '<td>'+ stream.Channels +'ch '+ stream.SampleRate +'</td>';
+            }else if (stream.Type == "Subtitle") {
+                if (stream.IsExternal) {
+                    html += '<td>external file</td>';
+                }else {
+                    html += '<td></td>';
+                }
+            }else {
+                html += '<td></td>';
+            }
+
+            html += '<td>' + stream.BitRate +'</td>';
+
+            if (stream.Type == "Video") {
+                html += '<td>'+ stream.AverageFrameRate || stream.RealFrameRate +'</td>';
+            }else if (stream.Type == "Audio") {
+                var notes = new Array();
+                if (stream.IsDefault) notes.push("Default");
+                if (stream.IsForced) notes.push("Forced");
+
+                html += '<td>' + notes.join(', ') + '</td>';
+            }else if (stream.Type == "Subtitle") {
+                var notes = new Array();
+                if (stream.IsDefault) notes.push("Default");
+                if (stream.IsForced) notes.push("Forced");
+
+                html += '<td>' + notes.join(', ') + '</td>';
+            }else {
+                html += '<td></td>';
+            }
+
+            html += '</tr>';
         }
 
+        html += '</tbody></table>';
+
+        $('#mediaInfoContent', page).html(html).trigger('create');
         $('#mediaInfoCollapsible', page).show();
     },
 
