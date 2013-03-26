@@ -120,7 +120,7 @@
         var baseParams = {
             audioChannels: 2,
             audioBitrate: 128000,
-            videoBitrate: 500000,
+            videoBitrate: 1800000,
             maxWidth: screenWidth,
             maxHeight: screenHeight,
             StartTimeTicks: 0

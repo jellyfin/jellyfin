@@ -42,11 +42,7 @@
         ItemDetailPage.renderOverviewBlock(item);
         ItemDetailPage.renderMediaInfo(item);
 
-        if (item.BackdropImageTags || item.ImageTags.Logo || item.ImageTags.Thumb || item.ImageTags.Menu || item.ImageTags.Disc || item.ImageTags.Art || item.ImageTags.Box) {
-            ItemDetailPage.renderGallery(item);
-        }else {
-            $('#galleryCollapsible', page).remove();
-        }
+        ItemDetailPage.renderGallery(item);
 
         if (!item.Chapters || !item.Chapters.length) {
             $('#scenesCollapsible', page).remove();
@@ -336,141 +332,71 @@
         var page = $.mobile.activePage;
         var imageTags = item.ImageTags || {};
         var html = '';
-        var downloadWidth = 400;
-        var lightboxWidth = 800;
 
         if (imageTags.Logo) {
 
-            html += '<a href="#pop'+item.ImageTags.Logo+'" data-transition="fade" data-rel="popup" data-position-to="window">';
-            html += '<img class="galleryImage" src="' + ApiClient.getImageUrl(item.Id, {
-                type: "Logo",
-                width: downloadWidth,
-                tag: item.ImageTags.Logo
-            }) + '" />';
-            html += '<div class="galleryPopup" id="pop'+item.ImageTags.Logo+'" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
-            html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
-            html += '<img class="" src="' + ApiClient.getImageUrl(item.Id, {
-                type: "Logo",
-                width: lightboxWidth,
-                tag: item.ImageTags.Logo
-            }) + '" />';
-            html += '</div>';
+            html += ItemDetailPage.createGalleryImage(item, "Logo", item.ImageTags.Logo);
         }
         if (imageTags.Thumb) {
 
-            html += '<a href="#pop'+item.ImageTags.Thumb+'" data-transition="fade" data-rel="popup" data-position-to="window">';
-            html += '<img class="galleryImage" src="' + ApiClient.getImageUrl(item.Id, {
-                type: "Thumb",
-                width: downloadWidth,
-                tag: item.ImageTags.Thumb
-            }) + '" />';
-            html += '<div class="galleryPopup" id="pop'+item.ImageTags.Thumb+'" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
-            html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
-            html += '<img class="" src="' + ApiClient.getImageUrl(item.Id, {
-                type: "Thumb",
-                width: lightboxWidth,
-                tag: item.ImageTags.Thumb
-            }) + '" />';
-            html += '</div>';
+            html += ItemDetailPage.createGalleryImage(item, "Thumb", item.ImageTags.Thumb);
         }
         if (imageTags.Art) {
 
-            html += '<a href="#pop'+item.ImageTags.Art+'" data-transition="fade" data-rel="popup" data-position-to="window">';
-            html += '<img class="galleryImage" src="' + ApiClient.getImageUrl(item.Id, {
-                type: "Art",
-                width: downloadWidth,
-                tag: item.ImageTags.Art
-            }) + '" />';
-            html += '<div class="galleryPopup" id="pop'+item.ImageTags.Art+'" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
-            html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
-            html += '<img class="" src="' + ApiClient.getImageUrl(item.Id, {
-                type: "Art",
-                width: lightboxWidth,
-                tag: item.ImageTags.Art
-            }) + '" />';
-            html += '</div>';
+            html += ItemDetailPage.createGalleryImage(item, "Art", item.ImageTags.Art);
 
         }
         if (imageTags.Menu) {
 
-            html += '<a href="#pop'+item.ImageTags.Menu+'" data-transition="fade" data-rel="popup" data-position-to="window">';
-            html += '<img class="galleryImage" src="' + ApiClient.getImageUrl(item.Id, {
-                type: "Menu",
-                width: downloadWidth,
-                tag: item.ImageTags.Menu
-            }) + '" />';
-            html += '<div class="galleryPopup" id="pop'+item.ImageTags.Menu+'" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
-            html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
-            html += '<img class="" src="' + ApiClient.getImageUrl(item.Id, {
-                type: "Menu",
-                width: lightboxWidth,
-                tag: item.ImageTags.Menu
-            }) + '" />';
-            html += '</div>';
+            html += ItemDetailPage.createGalleryImage(item, "Menu", item.ImageTags.Menu);
 
         }
         if (imageTags.Disc) {
 
-            html += '<a href="#pop'+item.ImageTags.Disc+'" data-transition="fade" data-rel="popup" data-position-to="window">';
-            html += '<img class="galleryImage" src="' + ApiClient.getImageUrl(item.Id, {
-                type: "Disc",
-                width: downloadWidth,
-                tag: item.ImageTags.Disc
-            }) + '" />';
-            html += '<div class="galleryPopup" id="pop'+item.ImageTags.Disc+'" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
-            html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
-            html += '<img class="" src="' + ApiClient.getImageUrl(item.Id, {
-                type: "Disc",
-                width: lightboxWidth,
-                tag: item.ImageTags.Disc
-            }) + '" />';
-            html += '</div>';
+            html += ItemDetailPage.createGalleryImage(item, "Disc", item.ImageTags.Disc);
         }
         if (imageTags.Box) {
 
-            html += '<a href="#pop'+item.ImageTags.Box+'" data-transition="fade" data-rel="popup" data-position-to="window">';
-            html += '<img class="galleryImage" src="' + ApiClient.getImageUrl(item.Id, {
-                type: "Box",
-                width: downloadWidth,
-                tag: item.ImageTags.Box
-            }) + '" />';
-            html += '<div class="galleryPopup" id="pop'+item.ImageTags.Box+'" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
-            html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
-            html += '<img class="" src="' + ApiClient.getImageUrl(item.Id, {
-                type: "Box",
-                width: lightboxWidth,
-                tag: item.ImageTags.Box
-            }) + '" />';
-            html += '</div>';
+            html += ItemDetailPage.createGalleryImage(item, "Box", item.ImageTags.Box);
         }
 
         if (item.BackdropImageTags) {
 
             for (var i = 0, length = item.BackdropImageTags.length; i < length; i++) {
-                html += '<a href="#pop_'+i+'_'+item.BackdropImageTags[0]+'" data-transition="fade" data-rel="popup" data-position-to="window" data-corners="true">';
-                html += '<img class="galleryImage" src="' + ApiClient.getImageUrl(item.Id, {
-                    type: "Backdrop",
-                    width: downloadWidth,
-                    tag: item.BackdropImageTags[0],
-                    index: i
-                }) + '" />';
-                html += '<div class="galleryPopup" id="pop_'+i+'_'+item.BackdropImageTags[0]+'" data-role="popup" data-position-to="window">';
-                html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
-                html += '<img class="" src="' + ApiClient.getImageUrl(item.Id, {
-                    type: "Backdrop",
-                    width: lightboxWidth,
-                    tag: item.BackdropImageTags[0],
-                    index: i
-                }) + '" />';
-                html += '</div>';
-
+                html += ItemDetailPage.createGalleryImage(item.Id, "Backdrop", item.BackdropImageTags[0], i);
             }
 
         }
 
-        $('#galleryContent', page).html(html);
+        $('#galleryContent', page).html(html).trigger('create');
+    },
 
-        $(".galleryPopup").popup();
+    createGalleryImage: function(item_id, type, tag, index) {
+
+        var downloadWidth = 400;
+        var lightboxWidth = 800;
+        var html = '';
+
+        if (typeof(index)=="undefined") index = 0;
+
+        html += '<a href="#pop_'+index+'_'+tag+'" data-transition="fade" data-rel="popup" data-position-to="window">';
+        html += '<img class="galleryImage" src="' + ApiClient.getImageUrl(item_id, {
+            type: type,
+            width: downloadWidth,
+            tag: tag,
+            index: index
+        }) + '" />';
+        html += '<div class="galleryPopup" id="pop_'+index+'_'+tag+'" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
+        html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
+        html += '<img class="" src="' + ApiClient.getImageUrl(item_id, {
+            type: type,
+            width: lightboxWidth,
+            tag: tag,
+            index: index
+        }) + '" />';
+        html += '</div>';
+
+        return html;
     },
     
     renderMediaInfo: function(item) {

@@ -473,9 +473,9 @@ _V_.ResolutionMenuItem = _V_.MenuItem.extend({
             return;
 
         var resolutions = new Array();
-        resolutions['high'] = 500000;
-        resolutions['medium'] = 250000;
-        resolutions['low'] = 50000;
+        resolutions['high'] = 1800000;
+        resolutions['medium'] = 500000;
+        resolutions['low'] = 150000;
 
         var current_time = this.player.currentTime();
 
@@ -491,9 +491,9 @@ _V_.ResolutionMenuItem = _V_.MenuItem.extend({
                 var startTimeTicks = newSrc.match(new RegExp("StartTimeTicks=[0-9]+","g"));
                 var start_time = startTimeTicks[0].replace("StartTimeTicks=","");
 
-                newSrc = newSrc.replace(new RegExp("StartTimeTicks=[0-9]+","g"),"StartTimeTicks="+(parseInt(start_time)+(10000000*current_time)));
+                newSrc = newSrc.replace(new RegExp("StartTimeTicks=[0-9]+","g"),"StartTimeTicks="+Math.floor((start_time)+(10000000*current_time)));
             }else {
-                newSrc += "&StartTimeTicks="+10000000*current_time;
+                newSrc += "&StartTimeTicks="+Math.floor(10000000*current_time);
             }
 
             this.player.src( newSrc ).one( 'loadedmetadata', function() {
