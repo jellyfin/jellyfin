@@ -31,7 +31,7 @@
         return false;
     },
 
-    play: function (items) {
+    play: function (items, startPosition) {
 
         if (MediaPlayer.isPlaying()) {
             MediaPlayer.stop();
@@ -43,7 +43,7 @@
 
         if (item.MediaType === "Video") {
 
-            mediaElement = MediaPlayer.playVideo(items);
+            mediaElement = MediaPlayer.playVideo(items, startPosition);
         }
 
         else if (item.MediaType === "Audio") {
@@ -109,7 +109,7 @@
         return $('audio', nowPlayingBar)[0];
     },
 
-    playVideo: function (items) {
+    playVideo: function (items, startPosition) {
 
         var item = items[0];
 
@@ -122,11 +122,13 @@
             audioBitrate: 128000,
             videoBitrate: 500000,
             maxWidth: screenWidth,
-            maxHeight: screenHeight
+            maxHeight: screenHeight,
+            StartTimeTicks: 0
         };
 
-        //TODO if you press "stop" button on the nowPlayingBar and restart the same video without refreshing the page
-        //there is an issue since VideoJS is still loaded.
+        if (typeof(startPosition) != "undefined") {
+            baseParams['StartTimeTicks'] = startPosition;
+        }
 
         var html = '<video id="videoWindow" class="itemVideo video-js vjs-default-skin"></video>';
 

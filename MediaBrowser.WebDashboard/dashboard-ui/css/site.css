@@ -849,6 +849,7 @@ progress {
     width: auto;
     white-space: nowrap;
     font-size: 1.1em;
+    padding-right: 10px;
 }
 
 @media all and (min-width: 650px) {
