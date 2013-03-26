@@ -685,13 +685,15 @@ function ticks_to_human(str) {
 
     var in_seconds = (str / 10000000);
     var hours = Math.floor(in_seconds/3600);
-    var minutes = '0'+Math.floor((in_seconds-(hours*3600))/60);
+    var minutes = Math.floor((in_seconds-(hours*3600))/60);
     var seconds = '0'+Math.round(in_seconds-(hours*3600)-(minutes*60));
 
     var time = '';
 
     if (hours > 0) time += hours+":";
-    time += minutes.substr(-2) + ":" +seconds.substr(-2);
+    if (minutes < 10 && hours == 0) time += minutes;
+    else time += ('0'+minutes).substr(-2);
+    time += ":" + seconds.substr(-2);
 
     return time;
 };

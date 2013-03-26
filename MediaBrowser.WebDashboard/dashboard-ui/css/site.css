@@ -74,6 +74,10 @@ pre, textarea.pre {
     color: #1B58B8;
 }
 
+.hide {
+    display: none;
+}
+
 /*
     Page / Base styles
     */
