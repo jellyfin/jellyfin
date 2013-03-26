@@ -87,8 +87,6 @@
     <Compile Include="Net\MimeTypes.cs" />
     <Compile Include="Net\UdpMessageReceivedEventArgs.cs" />
     <Compile Include="Net\WebSocketConnectEventArgs.cs" />
-    <Compile Include="Net\WebSocketMessageType.cs" />
-    <Compile Include="Net\WebSocketState.cs" />
     <Compile Include="Plugins\IPlugin.cs" />
     <Compile Include="Plugins\IUIPlugin.cs" />
     <Compile Include="Progress\ActionableProgress.cs" />

@@ -4,8 +4,8 @@ using System;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using WebSocketMessageType = MediaBrowser.Common.Net.WebSocketMessageType;
-using WebSocketState = MediaBrowser.Common.Net.WebSocketState;
+using WebSocketMessageType = MediaBrowser.Model.Net.WebSocketMessageType;
+using WebSocketState = MediaBrowser.Model.Net.WebSocketState;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {
@@ -83,7 +83,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 }
                 catch (WebSocketException ex)
                 {
-                    _logger.ErrorException("Error reveiving web socket message", ex);
+                    _logger.ErrorException("Error receiving web socket message", ex);
 
                     break;
                 }

@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Model.Net
 {
     /// <summary>
     /// Enum WebSocketMessageType
@@ -17,6 +17,6 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// The close
         /// </summary>
-        Close,
+        Close
     }
 }
