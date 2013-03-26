@@ -491,7 +491,7 @@ _V_.ResolutionMenuItem = _V_.MenuItem.extend({
                 var startTimeTicks = newSrc.match(new RegExp("StartTimeTicks=[0-9]+","g"));
                 var start_time = startTimeTicks[0].replace("StartTimeTicks=","");
 
-                newSrc = newSrc.replace(new RegExp("StartTimeTicks=[0-9]+","g"),"StartTimeTicks="+Math.floor((start_time)+(10000000*current_time)));
+                newSrc = newSrc.replace(new RegExp("StartTimeTicks=[0-9]+","g"),"StartTimeTicks="+Math.floor(parseInt(start_time)+(10000000*current_time)));
             }else {
                 newSrc += "&StartTimeTicks="+Math.floor(10000000*current_time);
             }

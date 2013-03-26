@@ -179,6 +179,10 @@
                 if ((this).duration() != "Infinity")
                     $(".vjs-remaining-time-display").show();
             });
+
+            (this).addEvent("play", MediaPlayer.updateProgress);
+
+            ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id);
         });
 
         return $('video', nowPlayingBar)[0];
@@ -192,12 +196,24 @@
         if ($(elem).hasClass("vjs-tech")) {
             var player = _V_("videoWindow");
 
+            var startTimeTicks = player.tag.src.match(new RegExp("StartTimeTicks=[0-9]+","g"));
+            var start_time = startTimeTicks[0].replace("StartTimeTicks=","");
+
+            var item_string = player.tag.src.match(new RegExp("Videos/[0-9a-z\-]+","g"));
+            var item_id = item_string[0].replace("Videos/","");
+
+            var positionTicks = parseInt(start_time) + Math.floor(10000000*player.currentTime());
+
+            ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), item_id, positionTicks);
+
+            clearTimeout(progressInterval);
+
             if (player.techName == "html5") {
                 player.tag.src = "";
                 player.tech.removeTriggers();
                 player.load();
             }
-//        player.tech.destroy();
+            //player.tech.destroy();
             player.destroy();
         }else {
             elem.pause();
@@ -213,6 +229,22 @@
 
     isPlaying: function () {
         return MediaPlayer.mediaElement;
+    },
+
+    updateProgress: function () {
+        progressInterval = setInterval(function(){
+            var player = _V_("videoWindow");
+
+            var startTimeTicks = player.tag.src.match(new RegExp("StartTimeTicks=[0-9]+","g"));
+            var start_time = startTimeTicks[0].replace("StartTimeTicks=","");
+
+            var item_string = player.tag.src.match(new RegExp("Videos/[0-9a-z\-]+","g"));
+            var item_id = item_string[0].replace("Videos/","");
+
+            var positionTicks = parseInt(start_time) + Math.floor(10000000*player.currentTime());
+
+            ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), item_id, positionTicks);
+        },30000);
     }
 
 };

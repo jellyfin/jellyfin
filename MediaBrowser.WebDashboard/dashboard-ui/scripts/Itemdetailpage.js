@@ -6,7 +6,7 @@
 
         $('#galleryCollapsible', this).on('expand', ItemDetailPage.onGalleryExpand);
     },
-    
+
     onPageHide: function () {
 
         $('#galleryCollapsible', this).off('expand', ItemDetailPage.onGalleryExpand);
@@ -31,7 +31,7 @@
         ItemDetailPage.item = item;
 
         var name = item.Name;
-        
+
         if (item.IndexNumber != null) {
             name = item.IndexNumber + " - " + name;
         }
@@ -44,18 +44,18 @@
         ItemDetailPage.renderGallery(item);
 
         if (!item.Chapters || !item.Chapters.length) {
-            $('#scenesCollapsible', page).remove();
-        }else {
+            $('#scenesCollapsible', page).hide();
+        } else {
             ItemDetailPage.renderScenes(item);
         }
         if (!item.LocalTrailerCount || item.LocalTrailerCount == 0) {
-            $('#trailersCollapsible', page).remove();
-        }else {
+            $('#trailersCollapsible', page).hide();
+        } else {
             ItemDetailPage.renderTrailers(item);
         }
         if (!item.SpecialFeatureCount || item.SpecialFeatureCount == 0) {
-            $('#specialsCollapsible', page).remove();
-        }else {
+            $('#specialsCollapsible', page).hide();
+        } else {
             ItemDetailPage.renderSpecials(item);
         }
 
@@ -264,7 +264,7 @@
         return html;
     },
 
-    onScenesExpand: function() {
+    onScenesExpand: function () {
 
         if (ItemDetailPage.item) {
 
@@ -283,10 +283,10 @@
         for (var i = 0, length = chapters.length; i < length; i++) {
 
             var chapter = chapters[i];
-            var chapter_name = chapter.Name || "Chapter "+i;
+            var chapter_name = chapter.Name || "Chapter " + i;
 
             html += '<div class="posterViewItem posterViewItemWithDualText">';
-            html += '<a href="#play-Chapter-' + i + '" onclick="ItemDetailPage.play('+chapter.StartPositionTicks+');">';
+            html += '<a href="#play-Chapter-' + i + '" onclick="ItemDetailPage.play(' + chapter.StartPositionTicks + ');">';
 
             if (chapter.ImageTag) {
 
@@ -326,7 +326,7 @@
         MediaPlayer.play([ItemDetailPage.item], startPosition);
     },
 
-    onGalleryExpand: function() {
+    onGalleryExpand: function () {
 
         if (ItemDetailPage.item) {
 
@@ -380,22 +380,22 @@
         $('#galleryContent', page).html(html).trigger('create');
     },
 
-    createGalleryImage: function(itemId, type, tag, index) {
+    createGalleryImage: function (itemId, type, tag, index) {
 
         var downloadWidth = 400;
         var lightboxWidth = 800;
         var html = '';
 
-        if (typeof(index)=="undefined") index = 0;
+        if (typeof (index) == "undefined") index = 0;
 
-        html += '<a href="#pop_'+index+'_'+tag+'" data-transition="fade" data-rel="popup" data-position-to="window">';
+        html += '<a href="#pop_' + index + '_' + tag + '" data-transition="fade" data-rel="popup" data-position-to="window">';
         html += '<img class="galleryImage" src="' + ApiClient.getImageUrl(itemId, {
             type: type,
             width: downloadWidth,
             tag: tag,
             index: index
         }) + '" />';
-        html += '<div class="galleryPopup" id="pop_'+index+'_'+tag+'" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
+        html += '<div class="galleryPopup" id="pop_' + index + '_' + tag + '" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
         html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
         html += '<img class="" src="' + ApiClient.getImageUrl(itemId, {
             type: type,
@@ -407,9 +407,9 @@
 
         return html;
     },
-    
-    renderMediaInfo: function(item) {
-        
+
+    renderMediaInfo: function (item) {
+
         var page = $.mobile.activePage;
 
         if (!item.MediaStreams || !item.MediaStreams.length) {
@@ -426,7 +426,7 @@
         });
     },
 
-    onTrailersExpand: function() {
+    onTrailersExpand: function () {
 
         if (ItemDetailPage.item) {
 
@@ -445,39 +445,40 @@
 
             for (var i = 0, length = trailers.length; i < length; i++) {
 
-                 var trailer = trailers[i];
+                var trailer = trailers[i];
 
-                 html += '<div class="posterViewItem posterViewItemWithDualText">';
-                 html += '<a href="#play-Trailer-' + i + '" onclick="ItemDetailPage.playTrailer('+i+');">';
+                html += '<div class="posterViewItem posterViewItemWithDualText">';
+                html += '<a href="#play-Trailer-' + i + '" onclick="ItemDetailPage.playTrailer(' + i + ');">';
 
-                 if (trailer.ImageTag) {
+                var imageTags = trailer.ImageTags || {};
+                
+                if (imageTags.Primary) {
 
-                     var imgUrl = ApiClient.getImageUrl(item.Id, {
-                         width: 500,
-                         tag: trailer.ImageTag,
-                         type: "Trailer",
-                         index: i
-                     });
+                    var imgUrl = ApiClient.getImageUrl(trailer.Id, {
+                        maxwidth: 500,
+                        tag: imageTags.Primary,
+                        type: "primary"
+                    });
 
-                     html += '<img src="' + imgUrl + '" />';
-                 } else {
-                     html += '<img src="css/images/itemDetails/videoDefault.png"/>';
-                 }
+                    html += '<img src="' + imgUrl + '" />';
+                } else {
+                    html += '<img src="css/images/items/detail/video.png"/>';
+                }
 
-                 html += '<div class="posterViewItemText posterViewItemPrimaryText">' + trailer.Name + '</div>';
-                 html += '<div class="posterViewItemText">';
+                html += '<div class="posterViewItemText posterViewItemPrimaryText">' + trailer.Name + '</div>';
+                html += '<div class="posterViewItemText">';
 
-                 if (trailer.RunTimeTicks != "") {
+                if (trailer.RunTimeTicks != "") {
                     html += ticks_to_human(trailer.RunTimeTicks);
-                 }
-                 else {
+                }
+                else {
                     html += "&nbsp;";
-                 }
-                 html += '</div>';
+                }
+                html += '</div>';
 
-                 html += '</a>';
+                html += '</a>';
 
-                 html += '</div>';
+                html += '</div>';
             }
 
             $('#trailersContent', page).html(html);
@@ -492,7 +493,7 @@
         });
     },
 
-    onSpecialsExpand: function() {
+    onSpecialsExpand: function () {
 
         if (ItemDetailPage.item) {
 
@@ -514,21 +515,23 @@
                 var special = specials[i];
 
                 html += '<div class="posterViewItem posterViewItemWithDualText">';
-                html += '<a href="#play-Special-' + i + '" onclick="ItemDetailPage.playSpecial('+i+');">';
+                html += '<a href="#play-Special-' + i + '" onclick="ItemDetailPage.playSpecial(' + i + ');">';
 
-                if (special.ImageTag) {
+                var imageTags = special.ImageTags || {};
 
-                    var imgUrl = ApiClient.getImageUrl(item.Id, {
-                        width: 500,
-                        tag: special.ImageTag,
-                        type: "Special",
-                        index: i
+                if (imageTags.Primary) {
+
+                    var imgUrl = ApiClient.getImageUrl(special.Id, {
+                        maxwidth: 500,
+                        tag: imageTags.Primary,
+                        type: "primary"
                     });
 
                     html += '<img src="' + imgUrl + '" />';
                 } else {
-                    html += '<img src="css/images/itemDetails/videoDefault.png"/>';
+                    html += '<img src="css/images/items/detail/video.png"/>';
                 }
+
 
                 html += '<div class="posterViewItemText posterViewItemPrimaryText">' + special.Name + '</div>';
                 html += '<div class="posterViewItemText">';
