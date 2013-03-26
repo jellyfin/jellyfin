@@ -46,6 +46,8 @@
     <Compile Include="Dto\ChapterInfoDto.cs" />
     <Compile Include="Dto\IItemDto.cs" />
     <Compile Include="Entities\IByReferenceItem.cs" />
+    <Compile Include="Net\WebSocketMessageType.cs" />
+    <Compile Include="Net\WebSocketState.cs" />
     <Compile Include="Querying\ItemsByNameQuery.cs" />
     <Compile Include="Entities\BaseItemInfo.cs" />
     <Compile Include="Connectivity\ClientConnectionInfo.cs" />

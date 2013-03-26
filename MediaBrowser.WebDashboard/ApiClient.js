@@ -1,54 +1,4 @@
-﻿(function (jQuery, window, undefined) {
-    "use strict";
-
-    var matched, browser;
-
-    jQuery.uaMatch = function (ua) {
-        ua = ua.toLowerCase();
-
-        var match = /(chrome)[ \/]([\w.]+)/.exec(ua) ||
-            /(webkit)[ \/]([\w.]+)/.exec(ua) ||
-            /(opera)(?:.*version|)[ \/]([\w.]+)/.exec(ua) ||
-            /(msie) ([\w.]+)/.exec(ua) ||
-            ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec(ua) ||
-            [];
-
-        var platform_match = /(ipad)/.exec(ua) ||
-            /(iphone)/.exec(ua) ||
-            /(android)/.exec(ua) ||
-            [];
-
-        return {
-            browser: match[1] || "",
-            version: match[2] || "0",
-            platform: platform_match[0] || ""
-        };
-    };
-
-    matched = jQuery.uaMatch(window.navigator.userAgent);
-    browser = {};
-
-    if (matched.browser) {
-        browser[matched.browser] = true;
-        browser.version = matched.version;
-    }
-
-    if (matched.platform) {
-        browser[matched.platform] = true
-    }
-
-    // Chrome is Webkit, but Webkit is also Safari.
-    if (browser.chrome) {
-        browser.webkit = true;
-    } else if (browser.webkit) {
-        browser.safari = true;
-    }
-
-    jQuery.browser = browser;
-
-})(jQuery, window);
-
-if (!window.MediaBrowser) {
+﻿if (!window.MediaBrowser) {
     window.MediaBrowser = {};
 }
 
@@ -62,6 +12,16 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
      * @param {String} clientName 
      */
     return function (serverProtocol, serverHostName, serverPortNumber, clientName) {
+
+        if (!serverProtocol) {
+            throw new Error("Must supply a serverProtocol, e.g. http:");
+        }
+        if (!serverHostName) {
+            throw new Error("Must supply serverHostName, e.g. 192.168.1.1 or myServerName");
+        }
+        if (!serverPortNumber) {
+            throw new Error("Must supply a serverPortNumber");
+        }
 
         var self = this;
         var deviceName = "Web Browser";
@@ -113,10 +73,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             else if ($.browser.msie) {
                 name = "Internet Explorer";
             }
-            else if ($.browser.firefox) {
-                name = "Firefox";
-            }
-            else if ($.browser.mozilla) {
+            else if ($.browser.firefox || $.browser.mozilla) {
                 name = "Firefox";
             }
             else if ($.browser.opera) {
@@ -147,15 +104,18 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("Request cannot be null");
             }
 
-            var auth = 'MediaBrowser Client="' + clientName + '", Device="' + deviceName + '", DeviceId="' + deviceId + '"';
+            if (clientName) {
 
-            if (currentUserId) {
-                auth += ', UserId="' + currentUserId + '"';
+                var auth = 'MediaBrowser Client="' + clientName + '", Device="' + deviceName + '", DeviceId="' + deviceId + '"';
+
+                if (currentUserId) {
+                    auth += ', UserId="' + currentUserId + '"';
+                }
+
+                request.headers = {
+                    Authorization: auth
+                };
             }
-
-            request.headers = {
-                Authorization: auth
-            };
 
             return $.ajax(request);
         };
@@ -1934,3 +1894,53 @@ MediaBrowser.SHA1 = function (msg) {
 
     return temp.toLowerCase();
 };
+
+(function (jQuery, window, undefined) {
+    "use strict";
+
+    var matched, browser;
+
+    jQuery.uaMatch = function (ua) {
+        ua = ua.toLowerCase();
+
+        var match = /(chrome)[ \/]([\w.]+)/.exec(ua) ||
+            /(webkit)[ \/]([\w.]+)/.exec(ua) ||
+            /(opera)(?:.*version|)[ \/]([\w.]+)/.exec(ua) ||
+            /(msie) ([\w.]+)/.exec(ua) ||
+            ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec(ua) ||
+            [];
+
+        var platform_match = /(ipad)/.exec(ua) ||
+            /(iphone)/.exec(ua) ||
+            /(android)/.exec(ua) ||
+            [];
+
+        return {
+            browser: match[1] || "",
+            version: match[2] || "0",
+            platform: platform_match[0] || ""
+        };
+    };
+
+    matched = jQuery.uaMatch(window.navigator.userAgent);
+    browser = {};
+
+    if (matched.browser) {
+        browser[matched.browser] = true;
+        browser.version = matched.version;
+    }
+
+    if (matched.platform) {
+        browser[matched.platform] = true
+    }
+
+    // Chrome is Webkit, but Webkit is also Safari.
+    if (browser.chrome) {
+        browser.webkit = true;
+    } else if (browser.webkit) {
+        browser.safari = true;
+    }
+
+    jQuery.browser = browser;
+
+})(jQuery, window);

@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Model.Net
 {
     /// <summary>
     /// Enum WebSocketState
