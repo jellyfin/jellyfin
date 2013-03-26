@@ -84,6 +84,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ApiClient.js" />
+    <Content Include="dashboard-ui\css\images\items\list\chapter.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\index.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -99,7 +102,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\Site.js">
+    <Content Include="dashboard-ui\scripts\site.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -119,7 +122,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\userProfiles.html">
+    <Content Include="dashboard-ui\userprofiles.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -139,12 +142,12 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\uiSettings.html">
+    <Content Include="dashboard-ui\uisettings.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\editUser.html">
+    <Content Include="dashboard-ui\edituser.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -170,114 +173,109 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\updatePassword.html">
+    <Content Include="dashboard-ui\updatepassword.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\userImage.html">
+    <Content Include="dashboard-ui\userimage.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\IndexPage.js">
+    <Content Include="dashboard-ui\scripts\indexpage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\css\images\defaultCollectionImage.png">
+    <Content Include="dashboard-ui\css\images\items\list\collection.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\css\images\toolsWhite.png">
+    <Content Include="dashboard-ui\css\images\toolswhite.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\css\images\currentUserDefaultWhite.png">
+    <Content Include="dashboard-ui\css\images\rightarrow.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\css\images\rightArrow.png">
+    <Content Include="dashboard-ui\css\images\userflyoutdefault.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\css\images\userFlyoutDefault.png">
+    <Content Include="dashboard-ui\scripts\medialibrarypage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\MediaLibraryPage.js">
+    <Content Include="dashboard-ui\scripts\displaysettingspage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\DisplaySettingsPage.js">
+    <Content Include="dashboard-ui\scripts\pluginspage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\PluginsPage.js">
+    <Content Include="dashboard-ui\scripts\metadataconfigurationpage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\MetadataConfigurationPage.js">
+    <Content Include="dashboard-ui\scripts\loginpage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\LoginPage.js">
+    <Content Include="dashboard-ui\scripts\updatepasswordpage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\UpdatePasswordPage.js">
+    <Content Include="dashboard-ui\scripts\advancedconfigurationpage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\scripts\edituserpage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\scripts\userimagepage.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\scripts\userprofilespage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\AdvancedConfigurationPage.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\scripts\EditUserPage.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\scripts\UserImagePage.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\scripts\UserProfilesPage.js">
+    <Content Include="dashboard-ui\advancedmetadata.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\advancedMetadata.html">
+    <Content Include="dashboard-ui\scripts\advancedmetadataconfigurationpage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\AdvancedMetadataConfigurationPage.js">
+    <Content Include="dashboard-ui\pluginupdates.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\pluginUpdates.html">
+    <Content Include="dashboard-ui\scripts\pluginupdatespage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\PluginUpdatesPage.js">
+    <Content Include="dashboard-ui\addplugin.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="dashboard-ui\addPlugin.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\scripts\AddPluginPage.js">
+    <Content Include="dashboard-ui\scripts\addpluginpage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -287,84 +285,71 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\pluginCatalog.html">
+    <Content Include="dashboard-ui\plugincatalog.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\scripts\PluginCatalogPage.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="dashboard-ui\css\images\leftArrowBlack.png">
+    <Content Include="dashboard-ui\scripts\plugincatalogpage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\css\images\leftArrowWhite.png">
+    <Content Include="dashboard-ui\css\images\leftarrowblack.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\css\images\currentUserDefaultBlack.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\css\images\toolsBlack.png">
+    <Content Include="dashboard-ui\css\images\leftarrowwhite.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scheduledTasks.html">
+    <Content Include="dashboard-ui\css\images\toolsblack.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\ScheduledTasksPage.js">
+    <Content Include="dashboard-ui\scheduledtasks.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scheduledTask.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\scripts\ScheduledTaskPage.js">
+    <Content Include="dashboard-ui\scripts\scheduledtaskspage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\wizardStart.html">
+    <Content Include="dashboard-ui\scheduledtask.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\scripts\scheduledtaskpage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\wizardFinish.html">
+    <Content Include="dashboard-ui\wizardstart.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\wizardUser.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\wizardLibrary.html">
+    <Content Include="dashboard-ui\wizardfinish.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\WizardStartPage.js">
+    <Content Include="dashboard-ui\wizarduser.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\wizardlibrary.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\WizardUserPage.js">
+    <Content Include="dashboard-ui\scripts\wizardstartpage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\css\images\cloudNetwork.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="dashboard-ui\css\images\movieFolder.png">
+    <Content Include="dashboard-ui\scripts\wizarduserpage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -379,27 +364,27 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\LogPage.js">
+    <Content Include="dashboard-ui\scripts\logpage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\metadataImages.html">
+    <Content Include="dashboard-ui\metadataimages.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\MetadataImagesPage.js">
+    <Content Include="dashboard-ui\scripts\metadataimagespage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\DashboardPage.js">
+    <Content Include="dashboard-ui\scripts\dashboardpage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\css\images\checkMarkGreen.png">
+    <Content Include="dashboard-ui\css\images\checkmarkgreen.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -440,7 +425,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\Extensions.js">
+    <Content Include="dashboard-ui\scripts\extensions.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -450,7 +435,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\SupporterPage.js">
+    <Content Include="dashboard-ui\scripts\supporterpage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -460,27 +445,27 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\css\images\suppbadge.png">
+    <Content Include="dashboard-ui\css\images\supporter\supporterbadge.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\css\images\premiumflag.png">
+    <Content Include="dashboard-ui\css\images\supporter\premiumflag.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\supporterKey.html">
+    <Content Include="dashboard-ui\supporterkey.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\SupporterKeyPage.js">
+    <Content Include="dashboard-ui\scripts\supporterkeypage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\css\images\donatepp.png">
+    <Content Include="dashboard-ui\css\images\supporter\donatepaypal.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -555,7 +540,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\css\images\registerpp.png">
+    <Content Include="dashboard-ui\css\images\supporter\registerpaypal.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -583,35 +568,35 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\itemDetails.html">
+    <Content Include="dashboard-ui\itemdetails.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\ItemDetailPage.js">
+    <Content Include="dashboard-ui\scripts\itemdetailpage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\scripts\AboutPage.js">
+    <Content Include="dashboard-ui\scripts\aboutpage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\supporterflag.png">
+    <Content Include="dashboard-ui\css\images\supporter\supporterflag.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\scripts\ItemListPage.js">
+    <Content Include="dashboard-ui\scripts\itemlistpage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\itemList.html">
+    <Content Include="dashboard-ui\itemlist.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\scripts\WizardFinishPage.js">
+    <Content Include="dashboard-ui\scripts\wizardfinishpage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\media\playCircle.png">
+    <Content Include="dashboard-ui\css\images\media\playcircle.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\media\nextTrack.png">
+    <Content Include="dashboard-ui\css\images\media\nexttrack.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\css\images\media\pause.png">
@@ -620,19 +605,19 @@
     <Content Include="dashboard-ui\css\images\media\play.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\media\previousTrack.png">
+    <Content Include="dashboard-ui\css\images\media\previoustrack.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\css\images\media\stop.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\itemDetails\videoDefault.png">
+    <Content Include="dashboard-ui\css\images\items\detail\video.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\itemDetails\audioDefault.png">
+    <Content Include="dashboard-ui\css\images\items\detail\audio.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\itemDetails\gameDefault.png">
+    <Content Include="dashboard-ui\css\images\items\detail\game.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\css\images\mblogoicon.png">
@@ -653,7 +638,7 @@
     <Content Include="dashboard-ui\css\images\stars.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\scripts\MediaPlayer.js">
+    <Content Include="dashboard-ui\scripts\mediaplayer.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

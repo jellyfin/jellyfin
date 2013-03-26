@@ -43,14 +43,14 @@
             if (plugin.thumbImage) {
                 html += "<img src='" + plugin.thumbImage + "' />";
             } else {
-                html += "<img style='background:#444444;' src='css/images/defaultCollectionImage.png' />";
+                html += "<img style='background:#444444;' src='css/images/items/list/collection.png' />";
             }
 
             if (plugin.isPremium) {
                 if (plugin.price > 0) {
-                    html += "<div class='premiumBanner'><img src='css/images/premiumflag.png' /></div>";
+                    html += "<div class='premiumBanner'><img src='css/images/supporter/premiumflag.png' /></div>";
                 } else {
-                    html += "<div class='premiumBanner'><img src='css/images/supporterflag.png' /></div>";
+                    html += "<div class='premiumBanner'><img src='css/images/supporter/supporterflag.png' /></div>";
                 }
             }
 

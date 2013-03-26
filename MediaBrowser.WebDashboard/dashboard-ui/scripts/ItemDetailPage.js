@@ -108,15 +108,15 @@
             });
         }
         else if (item.MediaType == "Audio") {
-            url = "css/images/itemDetails/audioDefault.png";
+            url = "css/images/items/detail/audio.png";
             useBackgroundColor = true;
         }
         else if (item.MediaType == "Game") {
-            url = "css/images/itemDetails/gameDefault.png";
+            url = "css/images/items/detail/game.png";
             useBackgroundColor = true;
         }
         else {
-            url = "css/images/itemDetails/videoDefault.png";
+            url = "css/images/items/detail/video.png";
             useBackgroundColor = true;
         }
 
@@ -299,7 +299,7 @@
 
                 html += '<img src="' + imgUrl + '" />';
             } else {
-                html += '<img src="css/images/itemDetails/videoDefault.png"/>';
+                html += '<img src="css/images/items/list/chapter.png"/>';
             }
 
             html += '<div class="posterViewItemText posterViewItemPrimaryText">' + chapter_name + '</div>';
@@ -344,29 +344,29 @@
 
         if (imageTags.Logo) {
 
-            html += ItemDetailPage.createGalleryImage(item, "Logo", item.ImageTags.Logo);
+            html += ItemDetailPage.createGalleryImage(item.Id, "Logo", item.ImageTags.Logo);
         }
         if (imageTags.Thumb) {
 
-            html += ItemDetailPage.createGalleryImage(item, "Thumb", item.ImageTags.Thumb);
+            html += ItemDetailPage.createGalleryImage(item.Id, "Thumb", item.ImageTags.Thumb);
         }
         if (imageTags.Art) {
 
-            html += ItemDetailPage.createGalleryImage(item, "Art", item.ImageTags.Art);
+            html += ItemDetailPage.createGalleryImage(item.Id, "Art", item.ImageTags.Art);
 
         }
         if (imageTags.Menu) {
 
-            html += ItemDetailPage.createGalleryImage(item, "Menu", item.ImageTags.Menu);
+            html += ItemDetailPage.createGalleryImage(item.Id, "Menu", item.ImageTags.Menu);
 
         }
         if (imageTags.Disc) {
 
-            html += ItemDetailPage.createGalleryImage(item, "Disc", item.ImageTags.Disc);
+            html += ItemDetailPage.createGalleryImage(item.Id, "Disc", item.ImageTags.Disc);
         }
         if (imageTags.Box) {
 
-            html += ItemDetailPage.createGalleryImage(item, "Box", item.ImageTags.Box);
+            html += ItemDetailPage.createGalleryImage(item.Id, "Box", item.ImageTags.Box);
         }
 
         if (item.BackdropImageTags) {
@@ -380,7 +380,7 @@
         $('#galleryContent', page).html(html).trigger('create');
     },
 
-    createGalleryImage: function(item_id, type, tag, index) {
+    createGalleryImage: function(itemId, type, tag, index) {
 
         var downloadWidth = 400;
         var lightboxWidth = 800;
@@ -389,7 +389,7 @@
         if (typeof(index)=="undefined") index = 0;
 
         html += '<a href="#pop_'+index+'_'+tag+'" data-transition="fade" data-rel="popup" data-position-to="window">';
-        html += '<img class="galleryImage" src="' + ApiClient.getImageUrl(item_id, {
+        html += '<img class="galleryImage" src="' + ApiClient.getImageUrl(itemId, {
             type: type,
             width: downloadWidth,
             tag: tag,
@@ -397,7 +397,7 @@
         }) + '" />';
         html += '<div class="galleryPopup" id="pop_'+index+'_'+tag+'" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
         html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
-        html += '<img class="" src="' + ApiClient.getImageUrl(item_id, {
+        html += '<img class="" src="' + ApiClient.getImageUrl(itemId, {
             type: type,
             width: lightboxWidth,
             tag: tag,
