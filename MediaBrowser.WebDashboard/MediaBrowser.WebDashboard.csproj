@@ -193,17 +193,17 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\css\images\toolsWhite.png">
+    <Content Include="dashboard-ui\css\images\toolswhite.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\css\images\rightArrow.png">
+    <Content Include="dashboard-ui\css\images\rightarrow.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\css\images\userFlyoutDefault.png">
+    <Content Include="dashboard-ui\css\images\userflyoutdefault.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -293,17 +293,17 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\css\images\leftArrowBlack.png">
+    <Content Include="dashboard-ui\css\images\leftarrowblack.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\css\images\leftArrowWhite.png">
+    <Content Include="dashboard-ui\css\images\leftarrowwhite.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\css\images\toolsBlack.png">
+    <Content Include="dashboard-ui\css\images\toolsblack.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -384,7 +384,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\css\images\checkMarkGreen.png">
+    <Content Include="dashboard-ui\css\images\checkmarkgreen.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -593,10 +593,10 @@
     <Content Include="dashboard-ui\scripts\WizardFinishPage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\media\playCircle.png">
+    <Content Include="dashboard-ui\css\images\media\playcircle.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\media\nextTrack.png">
+    <Content Include="dashboard-ui\css\images\media\nexttrack.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\css\images\media\pause.png">
@@ -605,7 +605,7 @@
     <Content Include="dashboard-ui\css\images\media\play.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\media\previousTrack.png">
+    <Content Include="dashboard-ui\css\images\media\previoustrack.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\css\images\media\stop.png">
