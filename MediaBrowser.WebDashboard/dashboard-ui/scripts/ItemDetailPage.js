@@ -348,7 +348,7 @@
                 tag: item.ImageTags.Logo
             }) + '" />';
             html += '<div class="galleryPopup" id="pop'+item.ImageTags.Logo+'" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
-            html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
+            html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="btnImageClose ui-btn-right">Close</a>';
             html += '<img class="" src="' + ApiClient.getImageUrl(item.Id, {
                 type: "Logo",
                 width: lightboxWidth,
@@ -365,7 +365,7 @@
                 tag: item.ImageTags.Thumb
             }) + '" />';
             html += '<div class="galleryPopup" id="pop'+item.ImageTags.Thumb+'" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
-            html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
+            html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="btnImageClose ui-btn-right">Close</a>';
             html += '<img class="" src="' + ApiClient.getImageUrl(item.Id, {
                 type: "Thumb",
                 width: lightboxWidth,
@@ -382,7 +382,7 @@
                 tag: item.ImageTags.Art
             }) + '" />';
             html += '<div class="galleryPopup" id="pop'+item.ImageTags.Art+'" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
-            html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
+            html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="btnImageClose ui-btn-right">Close</a>';
             html += '<img class="" src="' + ApiClient.getImageUrl(item.Id, {
                 type: "Art",
                 width: lightboxWidth,
@@ -400,7 +400,7 @@
                 tag: item.ImageTags.Menu
             }) + '" />';
             html += '<div class="galleryPopup" id="pop'+item.ImageTags.Menu+'" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
-            html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
+            html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="btnImageClose ui-btn-right">Close</a>';
             html += '<img class="" src="' + ApiClient.getImageUrl(item.Id, {
                 type: "Menu",
                 width: lightboxWidth,
@@ -418,7 +418,7 @@
                 tag: item.ImageTags.Disc
             }) + '" />';
             html += '<div class="galleryPopup" id="pop'+item.ImageTags.Disc+'" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
-            html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
+            html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="btnImageClose ui-btn-right">Close</a>';
             html += '<img class="" src="' + ApiClient.getImageUrl(item.Id, {
                 type: "Disc",
                 width: lightboxWidth,
@@ -435,7 +435,7 @@
                 tag: item.ImageTags.Box
             }) + '" />';
             html += '<div class="galleryPopup" id="pop'+item.ImageTags.Box+'" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
-            html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
+            html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="btnImageClose ui-btn-right">Close</a>';
             html += '<img class="" src="' + ApiClient.getImageUrl(item.Id, {
                 type: "Box",
                 width: lightboxWidth,
@@ -455,7 +455,7 @@
                     index: i
                 }) + '" />';
                 html += '<div class="galleryPopup" id="pop_'+i+'_'+item.BackdropImageTags[0]+'" data-role="popup" data-position-to="window">';
-                html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
+                html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="btnImageClose ui-btn-right">Close</a>';
                 html += '<img class="" src="' + ApiClient.getImageUrl(item.Id, {
                     type: "Backdrop",
                     width: lightboxWidth,
@@ -468,9 +468,7 @@
 
         }
 
-        $('#galleryContent', page).html(html);
-
-        $(".galleryPopup").popup();
+        $('#galleryContent', page).html(html).trigger('create');
     },
     
     renderMediaInfo: function(item) {
