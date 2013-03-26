@@ -444,42 +444,41 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>Task{Stream}.</returns>
         private async Task<Stream> GetAllJavascript()
         {
-            const string resourcePrefix = "MediaBrowser.WebDashboard.Html.scripts.";
             var assembly = GetType().Assembly;
 
             var scriptFiles = new[]
                                   {
-                                      "Extensions.js",
-                                      "Site.js",
-                                      "AboutPage.js",
-                                      "AddPluginPage.js",
-                                      "AdvancedConfigurationPage.js",
-                                      "AdvancedMetadataConfigurationPage.js",
-                                      "PluginCatalogPage.js",
-                                      "DashboardPage.js",
-                                      "DisplaySettingsPage.js",
-                                      "EditUserPage.js",
-                                      "IndexPage.js",
-                                      "ItemDetailPage.js",
-                                      "ItemListPage.js",
-                                      "LoginPage.js",
-                                      "LogPage.js",
-                                      "MediaLibraryPage.js",
-                                      "MediaPlayer.js",
-                                      "MetadataConfigurationPage.js",
-                                      "MetadataImagesPage.js",
-                                      "PluginsPage.js",
-                                      "PluginUpdatesPage.js",
-                                      "ScheduledTaskPage.js",
-                                      "ScheduledTasksPage.js",
-                                      "UpdatePasswordPage.js",
-                                      "UserImagePage.js",
-                                      "UserProfilesPage.js",
-                                      "WizardFinishPage.js",
-                                      "WizardStartPage.js",
-                                      "WizardUserPage.js",
-                                      "SupporterKeyPage.js",
-                                      "SupporterPage.js"
+                                      "extensions.js",
+                                      "site.js",
+                                      "aboutpage.js",
+                                      "addpluginpage.js",
+                                      "advancedconfigurationpage.js",
+                                      "advancedmetadataconfigurationpage.js",
+                                      "plugincatalogpage.js",
+                                      "dashboardpage.js",
+                                      "displaysettingspage.js",
+                                      "edituserpage.js",
+                                      "indexpage.js",
+                                      "itemdetailpage.js",
+                                      "itemlistpage.js",
+                                      "loginpage.js",
+                                      "logpage.js",
+                                      "medialibrarypage.js",
+                                      "mediaplayer.js",
+                                      "metadataconfigurationpage.js",
+                                      "metadataimagespage.js",
+                                      "pluginspage.js",
+                                      "pluginupdatespage.js",
+                                      "scheduledtaskpage.js",
+                                      "scheduledtaskspage.js",
+                                      "updatepasswordpage.js",
+                                      "userimagepage.js",
+                                      "userprofilespage.js",
+                                      "wizardfinishpage.js",
+                                      "wizardstartpage.js",
+                                      "wizarduserpage.js",
+                                      "supporterkeypage.js",
+                                      "supporterpage.js"
                                   };
 
             var memoryStream = new MemoryStream();
