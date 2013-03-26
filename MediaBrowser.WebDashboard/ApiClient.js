@@ -1517,6 +1517,48 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         };
 
         /**
+         * Gets local trailers for an item
+         */
+        self.getLocalTrailers = function (userId, itemId) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+            if (!itemId) {
+                throw new Error("null itemId");
+            }
+
+            var url = self.getUrl("Users/" + userId + "/Items/" + itemId + "/LocalTrailers");
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        /**
+         * Gets special features for an item
+         */
+        self.getSpecialFeatures = function (userId, itemId) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+            if (!itemId) {
+                throw new Error("null itemId");
+            }
+
+            var url = self.getUrl("Users/" + userId + "/Items/" + itemId + "/SpecialFeatures");
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        /**
          * Marks an item as played or unplayed
          * This should not be used to update playstate following playback.
          * There are separate playstate check-in methods for that. This should be used for a
