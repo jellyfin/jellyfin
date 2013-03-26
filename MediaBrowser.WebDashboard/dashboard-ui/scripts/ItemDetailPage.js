@@ -41,13 +41,22 @@
         ItemDetailPage.renderImage(item);
         ItemDetailPage.renderOverviewBlock(item);
         ItemDetailPage.renderMediaInfo(item);
-
         ItemDetailPage.renderGallery(item);
 
         if (!item.Chapters || !item.Chapters.length) {
             $('#scenesCollapsible', page).remove();
         }else {
             ItemDetailPage.renderScenes(item);
+        }
+        if (!item.LocalTrailerCount || item.LocalTrailerCount == 0) {
+            $('#trailersCollapsible', page).remove();
+        }else {
+            ItemDetailPage.renderTrailers(item);
+        }
+        if (!item.SpecialFeatureCount || item.SpecialFeatureCount == 0) {
+            $('#specialsCollapsible', page).remove();
+        }else {
+            ItemDetailPage.renderSpecials(item);
         }
 
         $('#itemName', page).html(name);
@@ -409,6 +418,137 @@
         }
 
         $('#mediaInfoCollapsible', page).show();
+    },
+
+    playTrailer: function (index) {
+        ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), ItemDetailPage.item.Id).done(function (trailers) {
+            MediaPlayer.play([trailers[index]]);
+        });
+    },
+
+    onTrailersExpand: function() {
+
+        if (ItemDetailPage.item) {
+
+            ItemDetailPage.renderTrailers(ItemDetailPage.item);
+
+            $(this).off('expand', ItemDetailPage.onTrailersExpand);
+        }
+    },
+
+    renderTrailers: function (item) {
+
+        var html = '';
+        var page = $.mobile.activePage;
+
+        ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), item.Id).done(function (trailers) {
+
+            for (var i = 0, length = trailers.length; i < length; i++) {
+
+                 var trailer = trailers[i];
+
+                 html += '<div class="posterViewItem posterViewItemWithDualText">';
+                 html += '<a href="#play-Trailer-' + i + '" onclick="ItemDetailPage.playTrailer('+i+');">';
+
+                 if (trailer.ImageTag) {
+
+                     var imgUrl = ApiClient.getImageUrl(item.Id, {
+                         width: 500,
+                         tag: trailer.ImageTag,
+                         type: "Trailer",
+                         index: i
+                     });
+
+                     html += '<img src="' + imgUrl + '" />';
+                 } else {
+                     html += '<img src="css/images/itemDetails/videoDefault.png"/>';
+                 }
+
+                 html += '<div class="posterViewItemText posterViewItemPrimaryText">' + trailer.Name + '</div>';
+                 html += '<div class="posterViewItemText">';
+
+                 if (trailer.RunTimeTicks != "") {
+                    html += ticks_to_human(trailer.RunTimeTicks);
+                 }
+                 else {
+                    html += "&nbsp;";
+                 }
+                 html += '</div>';
+
+                 html += '</a>';
+
+                 html += '</div>';
+            }
+
+            $('#trailersContent', page).html(html);
+
+        });
+
+    },
+
+    playSpecial: function (index) {
+        ApiClient.getSpecialFeatures(Dashboard.getCurrentUserId(), ItemDetailPage.item.Id).done(function (specials) {
+            MediaPlayer.play([specials[index]]);
+        });
+    },
+
+    onSpecialsExpand: function() {
+
+        if (ItemDetailPage.item) {
+
+            ItemDetailPage.renderSpecials(ItemDetailPage.item);
+
+            $(this).off('expand', ItemDetailPage.onSpecialsExpand);
+        }
+    },
+
+    renderSpecials: function (item) {
+
+        var html = '';
+        var page = $.mobile.activePage;
+
+        ApiClient.getSpecialFeatures(Dashboard.getCurrentUserId(), item.Id).done(function (specials) {
+
+            for (var i = 0, length = specials.length; i < length; i++) {
+
+                var special = specials[i];
+
+                html += '<div class="posterViewItem posterViewItemWithDualText">';
+                html += '<a href="#play-Special-' + i + '" onclick="ItemDetailPage.playSpecial('+i+');">';
+
+                if (special.ImageTag) {
+
+                    var imgUrl = ApiClient.getImageUrl(item.Id, {
+                        width: 500,
+                        tag: special.ImageTag,
+                        type: "Special",
+                        index: i
+                    });
+
+                    html += '<img src="' + imgUrl + '" />';
+                } else {
+                    html += '<img src="css/images/itemDetails/videoDefault.png"/>';
+                }
+
+                html += '<div class="posterViewItemText posterViewItemPrimaryText">' + special.Name + '</div>';
+                html += '<div class="posterViewItemText">';
+
+                if (special.RunTimeTicks != "") {
+                    html += ticks_to_human(special.RunTimeTicks);
+                }
+                else {
+                    html += "&nbsp;";
+                }
+                html += '</div>';
+
+                html += '</a>';
+
+                html += '</div>';
+            }
+
+            $('#specialsContent', page).html(html);
+
+        });
     }
 };
 
