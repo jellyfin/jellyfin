@@ -55,7 +55,7 @@ var Dashboard = {
         }
 
         var header = $('.header', $.mobile.activePage);
-        
+
         if (header.length) {
             // Re-render the header
             header.remove();
@@ -394,7 +394,7 @@ var Dashboard = {
     reloadPageWhenServerAvailable: function (retryCount) {
 
         ApiClient.getSystemInfo().done(function (info) {
-            
+
             // If this is back to false, the restart completed
             if (!info.HasPendingRestart) {
                 Dashboard.reloadPage();
@@ -402,11 +402,11 @@ var Dashboard = {
                 Dashboard.retryReload(retryCount);
             }
 
-        }).fail(function() {
+        }).fail(function () {
             Dashboard.retryReload(retryCount);
         });
     },
-    
+
     retryReload: function (retryCount) {
         setTimeout(function () {
 
@@ -459,7 +459,13 @@ var Dashboard = {
                     width: 352,
                     tag: item.BackdropImageTags[0]
                 }) + "' />";
-            } else {
+            }
+            else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
+                
+                html += "<img style='background:" + Dashboard.getRandomMetroColor() + ";' src='css/images/items/list/audio.png' />";
+            }
+            else {
+                
                 html += "<img style='background:" + Dashboard.getRandomMetroColor() + ";' src='css/images/items/list/collection.png' />";
             }
 
@@ -859,9 +865,9 @@ var Dashboard = {
 
         $(ApiClient).on("websocketmessage", Dashboard.onWebSocketMessageReceived);
     },
-    
+
     onWebSocketMessageReceived: function (msg) {
-        
+
         if (msg.MessageType === "LibraryChanged") {
             Dashboard.processLibraryUpdateNotification(msg.Data);
         }
@@ -1054,7 +1060,7 @@ var Dashboard = {
                     tag: item.PrimaryImageTag,
                     type: "Primary"
                 });
-                
+
                 if (!item.Id || data.icon.indexOf("undefined") != -1) {
                     alert("bad image url: " + JSON.stringify(item));
                     console.log("bad image url: " + JSON.stringify(item));
@@ -1150,7 +1156,7 @@ $(document).on('pagebeforeshow', ".page", function () {
 }).on('pageinit', ".page", function () {
 
     var page = $(this);
-    
+
     var userId = Dashboard.getCurrentUserId();
     ApiClient.currentUserId(userId);
 
