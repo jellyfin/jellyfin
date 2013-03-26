@@ -290,7 +290,7 @@
 
                 html += '<img src="' + imgUrl + '" />';
             } else {
-                html += '<img src="css/images/items/detail/video.png"/>';
+                html += '<img src="css/images/items/list/chapter.png"/>';
             }
 
             html += '<div class="posterViewItemText posterViewItemPrimaryText">' + chapter_name + '</div>';
