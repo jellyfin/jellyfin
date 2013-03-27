@@ -675,7 +675,7 @@
             if (cast.PrimaryImageTag) {
 
                 var imgUrl = ApiClient.getPersonImageUrl(cast.Name, {
-                    maxwidth: 185,
+                    width: 185,
                     tag: cast.PrimaryImageTag,
                     type: "primary"
                 });
