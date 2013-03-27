@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Api.Images;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
@@ -9,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
@@ -89,7 +91,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <param name="state">The state.</param>
         /// <param name="responseHeaders">The response headers.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private void AddDlnaHeaders(StreamState state, IDictionary<string,string> responseHeaders)
+        private void AddDlnaHeaders(StreamState state, IDictionary<string, string> responseHeaders)
         {
             var timeSeek = RequestContext.GetHeader("TimeSeekRange.dlna.org");
 
@@ -167,6 +169,11 @@ namespace MediaBrowser.Api.Playback.Progressive
         {
             var state = GetState(request);
 
+            if (request.AlbumArt)
+            {
+                return GetAlbumArtResponse(state);
+            }
+
             var responseHeaders = new Dictionary<string, string>();
 
             AddDlnaHeaders(state, responseHeaders);
@@ -187,13 +194,54 @@ namespace MediaBrowser.Api.Playback.Progressive
         }
 
         /// <summary>
+        /// Gets the album art response.
+        /// </summary>
+        /// <param name="state">The state.</param>
+        /// <returns>System.Object.</returns>
+        private object GetAlbumArtResponse(StreamState state)
+        {
+            var request = new GetItemImage
+            {
+                MaxWidth = 800,
+                MaxHeight = 800,
+                Type = ImageType.Primary,
+                Id = state.Item.Id.ToString()
+            };
+
+            // Try and find some image to return
+            if (!state.Item.HasImage(ImageType.Primary))
+            {
+                if (state.Item.HasImage(ImageType.Backdrop))
+                {
+                    request.Type = ImageType.Backdrop;
+                }
+                else if (state.Item.HasImage(ImageType.Thumb))
+                {
+                    request.Type = ImageType.Thumb;
+                }
+                else if (state.Item.HasImage(ImageType.Logo))
+                {
+                    request.Type = ImageType.Logo;
+                }
+            }
+
+            return new ImageService(UserManager, LibraryManager)
+            {
+                Logger = Logger,
+                RequestContext = RequestContext,
+                ResultFactory = ResultFactory
+
+            }.Get(request);
+        }
+
+        /// <summary>
         /// Gets the stream result.
         /// </summary>
         /// <param name="state">The state.</param>
         /// <param name="responseHeaders">The response headers.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>Task{System.Object}.</returns>
-        private async Task<object> GetStreamResult(StreamState state, IDictionary<string,string> responseHeaders, bool isHeadRequest)
+        private async Task<object> GetStreamResult(StreamState state, IDictionary<string, string> responseHeaders, bool isHeadRequest)
         {
             // Use the command line args with a dummy playlist path
             var outputPath = GetOutputFilePath(state);
