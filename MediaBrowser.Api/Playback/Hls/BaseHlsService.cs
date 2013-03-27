@@ -132,9 +132,13 @@ namespace MediaBrowser.Api.Playback.Hls
             // It's considered live while still encoding (EVENT). Once the encoding has finished, it's video on demand (VOD).
             var playlistType = fileText.IndexOf("#EXT-X-ENDLIST", StringComparison.OrdinalIgnoreCase) == -1 ? "EVENT" : "VOD";
 
+            // fix this to make the media stream validator happy
+            // https://ffmpeg.org/trac/ffmpeg/ticket/2228
+            fileText = fileText.Replace("#EXT-X-ALLOWCACHE", "#EXT-X-ALLOW-CACHE");
+
             // Add event type at the top
             fileText = fileText.Replace("#EXT-X-ALLOW-CACHE", "#EXT-X-PLAYLIST-TYPE:" + playlistType + Environment.NewLine + "#EXT-X-ALLOWCACHE");
-
+    
             return fileText;
         }
 
