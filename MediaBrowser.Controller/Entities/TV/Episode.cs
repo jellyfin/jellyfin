@@ -118,6 +118,30 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         /// <summary>
+        /// Our rating comes from our series
+        /// </summary>
+        public override string OfficialRating
+        {
+            get { return Series != null ? Series.OfficialRating : base.OfficialRating; }
+            set
+            {
+                base.OfficialRating = value;
+            }
+        }
+
+        /// <summary>
+        /// Our rating comes from our series
+        /// </summary>
+        public override string CustomRating
+        {
+            get { return Series != null ? Series.CustomRating : base.CustomRating; }
+            set
+            {
+                base.CustomRating = value;
+            }
+        }
+
+        /// <summary>
         /// We persist the MB Id of our series object so we can always find it no matter
         /// what context we happen to be loaded from.
         /// </summary>

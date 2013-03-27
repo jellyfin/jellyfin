@@ -500,13 +500,13 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the official rating.
         /// </summary>
         /// <value>The official rating.</value>
-        public string OfficialRating { get; set; }
+        public virtual string OfficialRating { get; set; }
 
         /// <summary>
         /// Gets or sets the custom rating.
         /// </summary>
         /// <value>The custom rating.</value>
-        public string CustomRating { get; set; }
+        public virtual string CustomRating { get; set; }
 
         /// <summary>
         /// Gets or sets the language.
