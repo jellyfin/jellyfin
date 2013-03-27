@@ -453,16 +453,18 @@
 
         var page = $.mobile.activePage;
         var html = '';
+        var hasVideo = false;
+        var hasLanguage = false;
 
         html += '<table class="ui-responsive table-stroke" id="mediaInfo-table" data-role="table" data-mode="reflow">';
         html += '<thead><tr>';
         html += '<th data-priority="1">Type</th>';
         html += '<th data-priority="2">Codec</th>';
-        html += '<th data-priority="3">Language</th>';
-        html += '<th data-priority="4">Resolution</th>';
+        html += '<th data-priority="3" class="language">Language</th>';
+        html += '<th data-priority="4" class="resolution">Resolution</th>';
         html += '<th data-priority="6">Channels</th>';
         html += '<th data-priority="7">Bitrate</th>';
-        html += '<th data-priority="8">Framerate</th>';
+        html += '<th data-priority="8" class="framerate">Framerate</th>';
         html += '<th data-priority="9">Flags</th>';
         html += '</tr></thead>';
         html += '<tbody>';
@@ -471,18 +473,23 @@
 
             var stream = item.MediaStreams[i];
 
+            if (stream.Type == "Video") {
+                hasVideo = true;
+            }
+
             html += '<tr>';
             html += '<td>' + stream.Type + '</td>';
             html += '<td>' + stream.Codec +'</td>';
 
-            if (stream.Language)
-                html += '<td>' + stream.Language +'</td>';
-            else html += '<td></td>';
+            if (stream.Language) {
+                hasLanguage = true;
+                html += '<td class="language">' + stream.Language +'</td>';
+            } else html += '<td class="language"></td>';
 
             if (stream.Type == "Video") {
-                html += '<td>'+ stream.Width +'/'+ stream.Height +' ('+ stream.AspectRatio +')</td>';
+                html += '<td class="resolution">'+ stream.Width +'/'+ stream.Height +' ('+ stream.AspectRatio +')</td>';
             }else {
-                html += '<td></td>';
+                html += '<td class="resolution"></td>';
             }
 
             if (stream.Channels) {
@@ -495,7 +502,7 @@
 
             if (stream.Type == "Video") {
                 var framerate = stream.AverageFrameRate || stream.RealFrameRate;
-                html += '<td>'+ framerate +'</td>';
+                html += '<td class="framerate">'+ framerate +'</td>';
             }else {
                 html += '<td></td>';
             }
@@ -513,6 +520,11 @@
         html += '</tbody></table>';
 
         $('#mediaInfoContent', page).html(html).trigger('create');
+        if (!hasLanguage) $('#mediaInfoCollapsible #mediaInfo-table .language', page).hide();
+        if (!hadVideo) {
+            $('#mediaInfoCollapsible #mediaInfo-table .resolution', page).hide();
+            $('#mediaInfoCollapsible #mediaInfo-table .framerate', page).hide();
+        }
         $('#mediaInfoCollapsible', page).show();
     },
 
