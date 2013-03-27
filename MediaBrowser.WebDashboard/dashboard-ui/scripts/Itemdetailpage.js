@@ -480,13 +480,13 @@
             else html += '<td></td>';
 
             if (stream.Type == "Video") {
-                html += '<td>'+ stream.Width +' '+ stream.Height +' ('+ stream.AspectRatio +')</td>';
+                html += '<td>'+ stream.Width +'/'+ stream.Height +' ('+ stream.AspectRatio +')</td>';
             }else {
                 html += '<td></td>';
             }
 
             if (stream.Channels) {
-                html += '<td>'+ stream.Channels +'ch '+ stream.SampleRate +'</td>';
+                html += '<td>'+ stream.Channels +'ch '+ stream.SampleRate +' khz</td>';
             }else {
                 html += '<td></td>';
             }
