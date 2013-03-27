@@ -423,10 +423,14 @@ var Dashboard = {
 
     getPosterViewHtml: function (options) {
 
+        var items = options.items;
+
+        var primaryImageAspectRatio = options.useAverageAspectRatio ? Dashboard.getAveragePrimaryImageAspectRatio(items) : null;
+
         var html = "";
 
-        for (var i = 0, length = options.items.length; i < length; i++) {
-            var item = options.items[i];
+        for (var i = 0, length = items.length; i < length; i++) {
+            var item = items[i];
 
             var hasPrimaryImage = item.ImageTags && item.ImageTags.Primary;
 
@@ -446,11 +450,17 @@ var Dashboard = {
                     tag: item.BackdropImageTags[0]
                 }) + "' />";
             } else if (hasPrimaryImage) {
+
+                var height = 300;
+                var width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
+                
                 html += "<img src='" + ApiClient.getImageUrl(item.Id, {
                     type: "Primary",
-                    height: 300,
+                    height: height,
+                    width: width,
                     tag: item.ImageTags.Primary
                 }) + "' />";
+                
             }
             else if (item.BackdropImageTags && item.BackdropImageTags.length) {
                 html += "<img src='" + ApiClient.getImageUrl(item.Id, {
@@ -479,6 +489,27 @@ var Dashboard = {
         }
 
         return html;
+    },
+    
+    getAveragePrimaryImageAspectRatio: function(items) {
+
+        var total = 0;
+        var count = 0;
+        
+        for (var i = 0, length = items.length; i < length; i++) {
+            
+            var ratio = items[i].PrimaryImageAspectRatio || 0;
+
+            if (!ratio)
+            {
+                continue;
+            }
+
+            total += ratio;
+            count++;
+        }
+        
+        return count == 0 ? 1 : total / count;
     },
 
     showUserFlyout: function () {
