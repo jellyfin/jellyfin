@@ -459,6 +459,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "displaysettingspage.js",
                                       "edituserpage.js",
                                       "indexpage.js",
+                                      "itembynamedetailpage.js",
                                       "itemdetailpage.js",
                                       "itemlistpage.js",
                                       "loginpage.js",
