@@ -534,7 +534,7 @@ var Dashboard = {
                 tag: user.PrimaryImageTag,
                 type: "Primary"
 
-            }) : "css/images/userFlyoutDefault.png";
+            }) : "css/images/userflyoutdefault.png";
 
             html += '<img style="max-height:125px;max-width:200px;" src="' + imageUrl + '" />';
             html += '</p>';
@@ -755,7 +755,7 @@ var Dashboard = {
         }
         headerHtml += '</a>';
 
-        var imageColor = isLibraryPage ? "White" : "Black";
+        var imageColor = isLibraryPage ? "white" : "black";
 
         if (user && !page.hasClass('wizardPage')) {
             headerHtml += '<div class="headerButtons">';
@@ -771,7 +771,7 @@ var Dashboard = {
 
                 headerHtml += '<img src="' + url + '" />';
             } else {
-                headerHtml += '<img src="css/images/currentUserDefault' + imageColor + '.png" />';
+                headerHtml += '<img src="css/images/currentuserdefault' + imageColor + '.png" />';
             }
             headerHtml += '</a>';
 
@@ -1155,11 +1155,11 @@ $(function () {
 
     footerHtml += '<div id="nowPlayingBar" style="display:none;">';
 
-    footerHtml += '<button id="previousTrackButton" class="imageButton mediaButton" title="Previous Track" type="button"><img src="css/images/media/previousTrack.png" /></button>';
+    footerHtml += '<button id="previousTrackButton" class="imageButton mediaButton" title="Previous Track" type="button"><img src="css/images/media/previoustrack.png" /></button>';
 
     footerHtml += '<button id="stopButton" class="imageButton mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();"><img src="css/images/media/stop.png" /></button>';
 
-    footerHtml += '<button id="nextTrackButton" class="imageButton mediaButton" title="Next Track" type="button"><img src="css/images/media/nextTrack.png" /></button>';
+    footerHtml += '<button id="nextTrackButton" class="imageButton mediaButton" title="Next Track" type="button"><img src="css/images/media/nexttrack.png" /></button>';
 
     footerHtml += '<div id="mediaElement"></div>';
 

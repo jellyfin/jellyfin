@@ -33,7 +33,7 @@
                 });
                 html += "<img src='" + url + "' />";
             } else {
-                html += "<img src='css/images/userFlyoutDefault.png' />";
+                html += "<img src='css/images/userflyoutdefault.png' />";
             }
 
             html += "<h3>" + user.Name + "</h3>";
