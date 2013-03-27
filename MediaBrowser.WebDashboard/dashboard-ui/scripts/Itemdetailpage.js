@@ -477,8 +477,11 @@
                 hasVideo = true;
             }
 
+            if (item.MediaType == "Audio" && stream.Type == "Video") var type = "Embedded Image";
+            else var type = stream.Type;
+
             html += '<tr>';
-            html += '<td>' + stream.Type + '</td>';
+            html += '<td>' + type + '</td>';
             html += '<td>' + stream.Codec +'</td>';
 
             if (stream.Language) {
