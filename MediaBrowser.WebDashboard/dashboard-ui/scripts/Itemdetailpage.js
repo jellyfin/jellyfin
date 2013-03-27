@@ -416,6 +416,7 @@
 
         if (typeof (index) == "undefined") index = 0;
 
+        html += '<div class="posterViewItem" style="padding-bottom:0px;">';
         html += '<a href="#pop_' + index + '_' + tag + '" data-transition="fade" data-rel="popup" data-position-to="window">';
         html += '<img class="galleryImage" src="' + ApiClient.getImageUrl(itemId, {
             type: type,
@@ -423,6 +424,8 @@
             tag: tag,
             index: index
         }) + '" />';
+        html += '</div>';
+
         html += '<div class="galleryPopup" id="pop_' + index + '_' + tag + '" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
         html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
         html += '<img class="" src="' + ApiClient.getImageUrl(itemId, {
@@ -456,9 +459,11 @@
         html += '<th data-priority="1">Type</th>';
         html += '<th data-priority="2">Codec</th>';
         html += '<th data-priority="3">Language</th>';
-        html += '<th data-priority="4">Misc</th>';
-        html += '<th data-priority="5">Bitrate</th>';
-        html += '<th data-priority="6">Notes</th>';
+        html += '<th data-priority="4">Resolution</th>';
+        html += '<th data-priority="6">Channels</th>';
+        html += '<th data-priority="7">Bitrate</th>';
+        html += '<th data-priority="8">Framerate</th>';
+        html += '<th data-priority="9">Flags</th>';
         html += '</tr></thead>';
         html += '<tbody>';
 
@@ -476,14 +481,12 @@
 
             if (stream.Type == "Video") {
                 html += '<td>'+ stream.Width +' '+ stream.Height +' ('+ stream.AspectRatio +')</td>';
-            }else if (stream.Type == "Audio") {
+            }else {
+                html += '<td></td>';
+            }
+
+            if (stream.Channels) {
                 html += '<td>'+ stream.Channels +'ch '+ stream.SampleRate +'</td>';
-            }else if (stream.Type == "Subtitle") {
-                if (stream.IsExternal) {
-                    html += '<td>external file</td>';
-                }else {
-                    html += '<td></td>';
-                }
             }else {
                 html += '<td></td>';
             }
@@ -493,21 +496,16 @@
             if (stream.Type == "Video") {
                 var framerate = stream.AverageFrameRate || stream.RealFrameRate;
                 html += '<td>'+ framerate +'</td>';
-            }else if (stream.Type == "Audio") {
-                var notes = new Array();
-                if (stream.IsDefault) notes.push("Default");
-                if (stream.IsForced) notes.push("Forced");
-
-                html += '<td>' + notes.join(', ') + '</td>';
-            }else if (stream.Type == "Subtitle") {
-                var notes = new Array();
-                if (stream.IsDefault) notes.push("Default");
-                if (stream.IsForced) notes.push("Forced");
-
-                html += '<td>' + notes.join(', ') + '</td>';
             }else {
                 html += '<td></td>';
             }
+
+            var notes = new Array();
+            if (stream.IsExternal) notes.push("external file");
+            if (stream.IsDefault) notes.push("Default");
+            if (stream.IsForced) notes.push("Forced");
+
+            html += '<td>' + notes.join(', ') + '</td>';
 
             html += '</tr>';
         }
