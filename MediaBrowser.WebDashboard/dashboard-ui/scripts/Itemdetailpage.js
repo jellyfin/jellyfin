@@ -233,10 +233,10 @@
                     html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
                 }
 
-                html += '<a class="interiorLink" href="#">' + item.Genres[i] + '</a>';
+                html += '<a href="#">' + item.Genres[i] + '</a>';
             }
 
-            elem.html(html);
+            elem.html(html).trigger('create');
 
 
         } else {
@@ -259,10 +259,10 @@
                     html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
                 }
 
-                html += '<a class="interiorLink" href="#">' + item.Studios[i] + '</a>';
+                html += '<a href="#">' + item.Studios[i] + '</a>';
             }
 
-            elem.html(html);
+            elem.html(html).trigger('create');
 
 
         } else {
