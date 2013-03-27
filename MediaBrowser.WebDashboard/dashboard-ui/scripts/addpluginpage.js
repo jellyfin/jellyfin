@@ -87,7 +87,7 @@
                     $('premiumHasPrice', page).hide();
                 }
             } else {
-                $('#regInfo', page).html("<h3>You must be a <a href='supporter.html'>Media Browser Supporter</a> in order to gain access to this feature.</h3>");
+                $('#regInfo', page).html("You must be a <a href='supporter.html'>Media Browser Supporter</a> in order to gain access to this feature.").trigger('create');
                 $('#ppButton', page).hide();
             }
 
