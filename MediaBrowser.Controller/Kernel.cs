@@ -124,15 +124,6 @@ namespace MediaBrowser.Controller
         /// <value>The user data repository.</value>
         public IUserDataRepository UserDataRepository { get; set; }
 
-        /// <summary>
-        /// Gets the UDP server port number.
-        /// </summary>
-        /// <value>The UDP server port number.</value>
-        public int UdpServerPortNumber
-        {
-            get { return 7359; }
-        }
-
         private readonly IServerConfigurationManager _configurationManager;
 
         /// <summary>

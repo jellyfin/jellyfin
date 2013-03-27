@@ -14,7 +14,7 @@
 
         var options = {
 
-            limit: 5,
+            limit: 6,
             sortBy: "DateCreated",
             sortOrder: "Descending",
             filters: "IsRecentlyAdded,IsNotFolder",
@@ -34,7 +34,7 @@
 
         options = {
 
-            limit: 5,
+            limit: 6,
             sortBy: "DatePlayed",
             sortOrder: "Descending",
             filters: "IsResumable",

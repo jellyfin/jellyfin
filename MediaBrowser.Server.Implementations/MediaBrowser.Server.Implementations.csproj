@@ -167,6 +167,7 @@
     <Compile Include="Sqlite\SQLiteRepository.cs" />
     <Compile Include="Sqlite\SQLiteUserDataRepository.cs" />
     <Compile Include="Sqlite\SQLiteUserRepository.cs" />
+    <Compile Include="Udp\UdpMessageReceivedEventArgs.cs" />
     <Compile Include="Udp\UdpServer.cs" />
     <Compile Include="Updates\InstallationManager.cs" />
     <Compile Include="WebSocket\AlchemyServer.cs" />
@@ -244,7 +245,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <EmbeddedResource Include="ServerManager\RegisterServer.bat" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

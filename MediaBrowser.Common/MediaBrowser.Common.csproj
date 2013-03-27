@@ -80,12 +80,10 @@
     <Compile Include="Net\IHttpServer.cs" />
     <Compile Include="Net\INetworkManager.cs" />
     <Compile Include="Net\IRestfulService.cs" />
-    <Compile Include="Net\IUdpServer.cs" />
     <Compile Include="Net\IWebSocket.cs" />
     <Compile Include="Net\IWebSocketConnection.cs" />
     <Compile Include="Net\IWebSocketServer.cs" />
     <Compile Include="Net\MimeTypes.cs" />
-    <Compile Include="Net\UdpMessageReceivedEventArgs.cs" />
     <Compile Include="Net\WebSocketConnectEventArgs.cs" />
     <Compile Include="Plugins\IPlugin.cs" />
     <Compile Include="Plugins\IUIPlugin.cs" />

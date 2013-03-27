@@ -1,4 +1,8 @@
-﻿using MediaBrowser.Api;
+﻿using System.Diagnostics;
+using System.Net.Cache;
+using System.Net.Http;
+using System.Net.Sockets;
+using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Constants;
@@ -55,6 +59,8 @@ namespace MediaBrowser.ServerApplication
     /// </summary>
     public class ApplicationHost : BaseApplicationHost<ServerApplicationPaths>, IServerApplicationHost
     {
+        private const int UdpServerPort = 7359;
+
         /// <summary>
         /// Gets the server kernel.
         /// </summary>
@@ -130,6 +136,12 @@ namespace MediaBrowser.ServerApplication
         private IHttpServer HttpServer { get; set; }
 
         /// <summary>
+        /// Gets or sets the UDP server.
+        /// </summary>
+        /// <value>The UDP server.</value>
+        private UdpServer UdpServer { get; set; }
+
+        /// <summary>
         /// The full path to our startmenu shortcut
         /// </summary>
         protected override string ProductShortcutPath
@@ -172,7 +184,6 @@ namespace MediaBrowser.ServerApplication
             RegisterSingleInstance(ServerConfigurationManager);
 
             RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
-            RegisterSingleInstance<IUdpServer>(new UdpServer(Logger), false);
 
             RegisterSingleInstance<IIsoManager>(new PismoIsoManager(Logger));
             RegisterSingleInstance<IBlurayExaminer>(new BdInfoExaminer());
@@ -183,7 +194,7 @@ namespace MediaBrowser.ServerApplication
             HttpServer = ServerFactory.CreateServer(this, ProtobufSerializer, Logger, "Media Browser", "index.html");
             RegisterSingleInstance(HttpServer, false);
 
-            ServerManager = new ServerManager(this, NetworkManager, JsonSerializer, Logger, ServerConfigurationManager, ServerKernel);
+            ServerManager = new ServerManager(this, JsonSerializer, Logger, ServerConfigurationManager, ServerKernel);
             RegisterSingleInstance(ServerManager);
 
             UserManager = new UserManager(ServerKernel, Logger, ServerConfigurationManager);
@@ -247,6 +258,11 @@ namespace MediaBrowser.ServerApplication
         {
             base.FindParts();
 
+            //if (IsFirstRun)
+            {
+                RegisterServerWithAdministratorAccess();
+            }
+
             Parallel.Invoke(
 
                 () =>
@@ -261,6 +277,17 @@ namespace MediaBrowser.ServerApplication
 
                 () => ProviderManager.AddMetadataProviders(GetExports<BaseMetadataProvider>().OrderBy(e => e.Priority).ToArray())
                 );
+
+            UdpServer = new UdpServer(Logger, NetworkManager, ServerConfigurationManager);
+
+            try
+            {
+                UdpServer.Start(UdpServerPort);
+            }
+            catch (SocketException ex)
+            {
+                Logger.ErrorException("Failed to start UDP Server", ex);
+            }
         }
 
         /// <summary>
@@ -278,6 +305,23 @@ namespace MediaBrowser.ServerApplication
         public override bool CanSelfUpdate
         {
             get { return ConfigurationManager.CommonConfiguration.EnableAutoUpdate; }
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected override void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                if (UdpServer != null)
+                {
+                    UdpServer.Dispose();
+                }
+            }
+
+            base.Dispose(dispose);
         }
 
         /// <summary>
@@ -363,6 +407,46 @@ namespace MediaBrowser.ServerApplication
         public override void Shutdown()
         {
             App.Instance.Dispatcher.Invoke(App.Instance.Shutdown);
+        }			        
+        
+        /// <summary>
+        /// Registers the server with administrator access.
+        /// </summary>
+        private void RegisterServerWithAdministratorAccess()
+        {
+            Logger.Info("Requesting administrative access to authorize http server");
+
+            // Create a temp file path to extract the bat file to
+            var tmpFile = Path.Combine(ConfigurationManager.CommonApplicationPaths.TempDirectory, Guid.NewGuid() + ".bat");
+
+            // Extract the bat file
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.ServerApplication.RegisterServer.bat"))
+            {
+                using (var fileStream = File.Create(tmpFile))
+                {
+                    stream.CopyTo(fileStream);
+                }
+            }
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = tmpFile,
+
+                Arguments = string.Format("{0} {1} {2} {3}", ServerConfigurationManager.Configuration.HttpServerPortNumber,
+                ServerKernel.HttpServerUrlPrefix,
+                UdpServerPort,
+                ServerConfigurationManager.Configuration.LegacyWebSocketPortNumber),
+
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                Verb = "runas",
+                ErrorDialog = false
+            };
+
+            using (var process = Process.Start(startInfo))
+            {
+                process.WaitForExit();
+            }
         }
     }
 }

@@ -1,5 +1,7 @@
-﻿using MediaBrowser.Common.Implementations.NetworkManagement;
+﻿using System.Linq;
+using MediaBrowser.Common.Implementations.NetworkManagement;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Net;
@@ -13,36 +15,49 @@ namespace MediaBrowser.Server.Implementations.Udp
     /// <summary>
     /// Provides a Udp Server
     /// </summary>
-    public class UdpServer : IUdpServer
+    public class UdpServer : IDisposable
     {
         /// <summary>
-        /// Occurs when [message received].
+        /// The _logger
         /// </summary>
-        public event EventHandler<UdpMessageReceivedEventArgs> MessageReceived;
+        private readonly ILogger _logger;
 
-        /// <summary>
-        /// Gets or sets the logger.
-        /// </summary>
-        /// <value>The logger.</value>
-        private ILogger Logger { get; set; }
+        private readonly INetworkManager _networkManager;
 
+        private readonly IServerConfigurationManager _serverConfigurationManager;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpServer" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        public UdpServer(ILogger logger)
+        /// <param name="networkManager">The network manager.</param>
+        public UdpServer(ILogger logger, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager)
         {
-            Logger = logger;
+            _logger = logger;
+            _networkManager = networkManager;
+            _serverConfigurationManager = serverConfigurationManager;
         }
 
         /// <summary>
         /// Raises the <see cref="E:MessageReceived" /> event.
         /// </summary>
         /// <param name="e">The <see cref="UdpMessageReceivedEventArgs" /> instance containing the event data.</param>
-        protected virtual void OnMessageReceived(UdpMessageReceivedEventArgs e)
+        private async void OnMessageReceived(UdpMessageReceivedEventArgs e)
         {
-            EventHandler<UdpMessageReceivedEventArgs> handler = MessageReceived;
-            if (handler != null) handler(this, e);
+            var context = "Server";
+
+            var expectedMessage = String.Format("who is MediaBrowser{0}?", context);
+            var expectedMessageBytes = Encoding.UTF8.GetBytes(expectedMessage);
+
+            if (expectedMessageBytes.SequenceEqual(e.Bytes))
+            {
+                _logger.Info("Received UDP server request from " + e.RemoteEndPoint);
+
+                // Send a response back with our ip address and port
+                var response = String.Format("MediaBrowser{0}|{1}:{2}", context, _networkManager.GetLocalIpAddress(), _serverConfigurationManager.Configuration.HttpServerPortNumber);
+
+                await SendAsync(Encoding.UTF8.GetBytes(response), e.RemoteEndPoint);
+            }
         }
 
         /// <summary>
@@ -82,7 +97,7 @@ namespace MediaBrowser.Server.Implementations.Udp
                                     }
                                     catch (Exception ex)
                                     {
-                                        Logger.ErrorException("Error receiving udp message", ex);
+                                        _logger.ErrorException("Error receiving udp message", ex);
                                         return Task.FromResult(new UdpReceiveResult(new byte[] { }, new IPEndPoint(IPAddress.Any, 0)));
                                     }
                                 })
@@ -201,7 +216,7 @@ namespace MediaBrowser.Server.Implementations.Udp
 
             await _udpClient.SendAsync(bytes, bytes.Length, new NetworkManager().Parse(remoteEndPoint)).ConfigureAwait(false);
 
-            Logger.Info("Udp message sent to {0}", remoteEndPoint);
+            _logger.Info("Udp message sent to {0}", remoteEndPoint);
         }
     }
 
