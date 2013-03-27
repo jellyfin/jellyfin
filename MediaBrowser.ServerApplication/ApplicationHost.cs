@@ -258,7 +258,7 @@ namespace MediaBrowser.ServerApplication
         {
             base.FindParts();
 
-            //if (IsFirstRun)
+            if (IsFirstRun)
             {
                 RegisterServerWithAdministratorAccess();
             }
