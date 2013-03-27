@@ -15,8 +15,12 @@
 
             if (user.HasPassword) {
                 $('#btnResetPassword', page).show();
+                $('#fldCurrentPassword', page).show();
+                $('h3', page).html('Update Password').show();
             } else {
                 $('#btnResetPassword', page).hide();
+                $('#fldCurrentPassword', page).hide();
+                $('h3', page).html('Create Password').show();
             }
 
         });
