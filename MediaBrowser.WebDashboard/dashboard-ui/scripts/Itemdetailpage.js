@@ -521,7 +521,7 @@
 
         $('#mediaInfoContent', page).html(html).trigger('create');
         if (!hasLanguage) $('#mediaInfoCollapsible #mediaInfo-table .language', page).hide();
-        if (!hadVideo) {
+        if (!hasVideo) {
             $('#mediaInfoCollapsible #mediaInfo-table .resolution', page).hide();
             $('#mediaInfoCollapsible #mediaInfo-table .framerate', page).hide();
         }
