@@ -454,6 +454,10 @@ namespace MediaBrowser.Server.Implementations.IO
                     // Should we remove it from it's parent?
                     Logger.ErrorException("Error refreshing {0}", ex, i.Name);
                 }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error refreshing {0}", ex, i.Name);
+                }
 
             }))).ConfigureAwait(false);
         }

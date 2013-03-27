@@ -7,13 +7,8 @@ using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
-using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,14 +17,8 @@ namespace MediaBrowser.Server.Implementations.ServerManager
     /// <summary>
     /// Manages the Http Server, Udp Server and WebSocket connections
     /// </summary>
-    public class ServerManager : IServerManager, IDisposable
+    public class ServerManager : IServerManager
     {
-        /// <summary>
-        /// This is the udp server used for server discovery by clients
-        /// </summary>
-        /// <value>The UDP server.</value>
-        private IUdpServer UdpServer { get; set; }
-
         /// <summary>
         /// Both the Ui and server will have a built-in HttpServer.
         /// People will inevitably want remote control apps so it's needed in the Ui too.
@@ -64,11 +53,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// The _network manager
-        /// </summary>
-        private readonly INetworkManager _networkManager;
 
         /// <summary>
         /// The _application host
@@ -106,25 +90,21 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         private readonly List<IWebSocketListener> _webSocketListeners = new List<IWebSocketListener>();
 
         private readonly Kernel _kernel;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerManager" /> class.
         /// </summary>
         /// <param name="applicationHost">The application host.</param>
-        /// <param name="networkManager">The network manager.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="kernel">The kernel.</param>
         /// <exception cref="System.ArgumentNullException">applicationHost</exception>
-        public ServerManager(IApplicationHost applicationHost, INetworkManager networkManager, IJsonSerializer jsonSerializer, ILogger logger, IServerConfigurationManager configurationManager, Kernel kernel)
+        public ServerManager(IApplicationHost applicationHost, IJsonSerializer jsonSerializer, ILogger logger, IServerConfigurationManager configurationManager, Kernel kernel)
         {
             if (applicationHost == null)
             {
                 throw new ArgumentNullException("applicationHost");
-            }
-            if (networkManager == null)
-            {
-                throw new ArgumentNullException("networkManager");
             }
             if (jsonSerializer == null)
             {
@@ -138,7 +118,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             _logger = logger;
             _jsonSerializer = jsonSerializer;
             _applicationHost = applicationHost;
-            _networkManager = networkManager;
             ConfigurationManager = configurationManager;
             _kernel = kernel;
         }
@@ -148,13 +127,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// </summary>
         public void Start()
         {
-            if (_applicationHost.IsFirstRun)
-            {
-                RegisterServerWithAdministratorAccess();
-            }
-
-            ReloadUdpServer();
-
             ReloadHttpServer();
 
             if (!SupportsNativeWebSocket)
@@ -162,7 +134,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
                 ReloadExternalWebSocketServer();
             }
 
-            ConfigurationManager.ConfigurationUpdated += _kernel_ConfigurationUpdated;
+            ConfigurationManager.ConfigurationUpdated += ConfigurationUpdated;
         }
 
         /// <summary>
@@ -181,8 +153,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <summary>
         /// Restarts the Http Server, or starts it if not currently running
         /// </summary>
-        /// <param name="registerServerOnFailure">if set to <c>true</c> [register server on failure].</param>
-        private void ReloadHttpServer(bool registerServerOnFailure = true)
+        private void ReloadHttpServer()
         {
             // Only reload if the port has changed, so that we don't disconnect any active users
             if (HttpServer != null && HttpServer.UrlPrefix.Equals(_kernel.HttpServerUrlPrefix, StringComparison.OrdinalIgnoreCase))
@@ -203,16 +174,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             catch (HttpListenerException ex)
             {
                 _logger.ErrorException("Error starting Http Server", ex);
-
-                if (registerServerOnFailure)
-                {
-                    RegisterServerWithAdministratorAccess();
-
-                    // Don't get stuck in a loop
-                    ReloadHttpServer(false);
-
-                    return;
-                }
 
                 throw;
             }
@@ -251,60 +212,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             }));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Starts or re-starts the udp server
-        /// </summary>
-        private void ReloadUdpServer()
-        {
-            // For now, there's no reason to keep reloading this over and over
-            if (UdpServer != null)
-            {
-                return;
-            }
-
-            DisposeUdpServer();
-
-            try
-            {
-                // The port number can't be in configuration because we don't want it to ever change
-                UdpServer = _applicationHost.Resolve<IUdpServer>();
-
-                _logger.Info("Starting udp server");
-
-                UdpServer.Start(_kernel.UdpServerPortNumber);
-            }
-            catch (SocketException ex)
-            {
-                _logger.ErrorException("Failed to start UDP Server", ex);
-                return;
-            }
-
-            UdpServer.MessageReceived += UdpServer_MessageReceived;
-        }
-
-        /// <summary>
-        /// Handles the MessageReceived event of the UdpServer control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="UdpMessageReceivedEventArgs" /> instance containing the event data.</param>
-        async void UdpServer_MessageReceived(object sender, UdpMessageReceivedEventArgs e)
-        {
-            var context = "Server";
-
-            var expectedMessage = String.Format("who is MediaBrowser{0}?", context);
-            var expectedMessageBytes = Encoding.UTF8.GetBytes(expectedMessage);
-
-            if (expectedMessageBytes.SequenceEqual(e.Bytes))
-            {
-                _logger.Info("Received UDP server request from " + e.RemoteEndPoint);
-
-                // Send a response back with our ip address and port
-                var response = String.Format("MediaBrowser{0}|{1}:{2}", context, _networkManager.GetLocalIpAddress(), ConfigurationManager.Configuration.HttpServerPortNumber);
-
-                await UdpServer.SendAsync(Encoding.UTF8.GetBytes(response), e.RemoteEndPoint);
-            }
         }
 
         /// <summary>
@@ -388,20 +295,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         }
 
         /// <summary>
-        /// Disposes the udp server
-        /// </summary>
-        private void DisposeUdpServer()
-        {
-            if (UdpServer != null)
-            {
-                _logger.Info("Disposing UdpServer");
-                
-                UdpServer.MessageReceived -= UdpServer_MessageReceived;
-                UdpServer.Dispose();
-            }
-        }
-
-        /// <summary>
         /// Disposes the current HttpServer
         /// </summary>
         private void DisposeHttpServer()
@@ -429,46 +322,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         }
 
         /// <summary>
-        /// Registers the server with administrator access.
-        /// </summary>
-        private void RegisterServerWithAdministratorAccess()
-        {
-            _logger.Info("Requesting administrative access to authorize http server");
-
-            // Create a temp file path to extract the bat file to
-            var tmpFile = Path.Combine(ConfigurationManager.CommonApplicationPaths.TempDirectory, Guid.NewGuid() + ".bat");
-
-            // Extract the bat file
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.Server.Implementations.ServerManager.RegisterServer.bat"))
-            {
-                using (var fileStream = File.Create(tmpFile))
-                {
-                    stream.CopyTo(fileStream);
-                }
-            }
-
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = tmpFile,
-
-                Arguments = string.Format("{0} {1} {2} {3}", ConfigurationManager.Configuration.HttpServerPortNumber,
-                _kernel.HttpServerUrlPrefix,
-                _kernel.UdpServerPortNumber,
-                ConfigurationManager.Configuration.LegacyWebSocketPortNumber),
-
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                Verb = "runas",
-                ErrorDialog = false
-            };
-
-            using (var process = Process.Start(startInfo))
-            {
-                process.WaitForExit();
-            }
-        }
-
-        /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
         public void Dispose()
@@ -485,7 +338,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         {
             if (dispose)
             {
-                DisposeUdpServer();
                 DisposeHttpServer();
             }
         }
@@ -508,7 +360,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        void _kernel_ConfigurationUpdated(object sender, EventArgs e)
+        void ConfigurationUpdated(object sender, EventArgs e)
         {
             HttpServer.EnableHttpRequestLogging = ConfigurationManager.Configuration.EnableHttpLevelLogging;
 
