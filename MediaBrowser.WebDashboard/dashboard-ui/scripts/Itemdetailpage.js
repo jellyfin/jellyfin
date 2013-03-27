@@ -8,6 +8,7 @@
         $('#scenesCollapsible', this).on('expand', ItemDetailPage.onScenesExpand);
         $('#specialsCollapsible', this).on('expand', ItemDetailPage.onSpecialsExpand);
         $('#trailersCollapsible', this).on('expand', ItemDetailPage.onTrailersExpand);
+        $('#castCollapsible', this).on('expand', ItemDetailPage.onCastExpand);
         $('#galleryCollapsible', this).on('expand', ItemDetailPage.onGalleryExpand);
     },
 
@@ -17,6 +18,7 @@
         $('#scenesCollapsible', this).off('expand', ItemDetailPage.onScenesExpand);
         $('#specialsCollapsible', this).off('expand', ItemDetailPage.onSpecialsExpand);
         $('#trailersCollapsible', this).off('expand', ItemDetailPage.onTrailersExpand);
+        $('#castCollapsible', this).off('expand', ItemDetailPage.onCastExpand);
         $('#galleryCollapsible', this).off('expand', ItemDetailPage.onGalleryExpand);
 
         ItemDetailPage.item = null;
@@ -72,6 +74,11 @@
             $('#specialsCollapsible', page).hide();
         } else {
             $('#specialsCollapsible', page).show();
+        }
+        if (!item.People || !item.People.length) {
+            $('#castCollapsible', page).hide();
+        } else {
+            $('#castCollapsible', page).show();
         }
 
         $('#itemName', page).html(name);
@@ -484,7 +491,8 @@
             html += '<td>' + stream.BitRate +'</td>';
 
             if (stream.Type == "Video") {
-                html += '<td>'+ stream.AverageFrameRate || stream.RealFrameRate +'</td>';
+                var framerate = stream.AverageFrameRate || stream.RealFrameRate;
+                html += '<td>'+ framerate +'</td>';
             }else if (stream.Type == "Audio") {
                 var notes = new Array();
                 if (stream.IsDefault) notes.push("Default");
@@ -622,7 +630,6 @@
                     html += '<img src="css/images/items/detail/video.png"/>';
                 }
 
-
                 html += '<div class="posterViewItemText posterViewItemPrimaryText">' + special.Name + '</div>';
                 html += '<div class="posterViewItemText">';
 
@@ -642,6 +649,52 @@
             $('#specialsContent', page).html(html);
 
         });
+    },
+
+    onCastExpand: function () {
+
+        if (ItemDetailPage.item) {
+
+            ItemDetailPage.renderCast(ItemDetailPage.item);
+
+            $(this).off('expand', ItemDetailPage.onCastExpand);
+        }
+    },
+
+    renderCast: function (item) {
+
+        var html = '';
+        var page = $.mobile.activePage;
+        var casts = item.People || {};
+
+        for (var i = 0, length = casts.length; i < length; i++) {
+
+            var cast = casts[i];
+            var role = cast.Role || cast.Type;
+
+            html += '<div class="posterViewItem posterViewItemWithDualText">';
+
+            if (cast.PrimaryImageTag) {
+
+                var imgUrl = ApiClient.getPersonImageUrl(cast.Name, {
+                    maxwidth: 185,
+                    tag: cast.PrimaryImageTag,
+                    type: "primary"
+                });
+
+                html += '<img src="' + imgUrl + '" />';
+            } else {
+                html += '<img src="css/images/items/list/person.png" style="width:185px;"/>';
+            }
+
+            html += '<div class="posterViewItemText posterViewItemPrimaryText">' + cast.Name + '</div>';
+            html += '<div class="posterViewItemText">' + role + '</div>';
+
+            html += '</div>';
+
+        }
+
+        $('#castContent', page).html(html);
     }
 };
 
