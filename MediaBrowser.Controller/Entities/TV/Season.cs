@@ -112,6 +112,30 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         /// <summary>
+        /// Our rating comes from our series
+        /// </summary>
+        public override string OfficialRating
+        {
+            get { return Series != null ? Series.OfficialRating : base.OfficialRating; }
+            set
+            {
+                base.OfficialRating = value;
+            }
+        }
+
+        /// <summary>
+        /// Our rating comes from our series
+        /// </summary>
+        public override string CustomRating
+        {
+            get { return Series != null ? Series.CustomRating : base.CustomRating; }
+            set
+            {
+                base.CustomRating = value;
+            }
+        }
+
+        /// <summary>
         /// Add files from the metadata folder to ResolveArgs
         /// </summary>
         /// <param name="args">The args.</param>
