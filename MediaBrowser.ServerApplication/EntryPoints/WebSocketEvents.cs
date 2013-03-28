@@ -88,13 +88,13 @@ namespace MediaBrowser.ServerApplication.EntryPoints
 
         void _taskManager_TaskCompleted(object sender, GenericEventArgs<TaskResult> e)
         {
-            _serverManager.SendWebSocketMessage("ScheduledTaskEndExecute", e.Argument);
+            _serverManager.SendWebSocketMessage("ScheduledTaskEnded", e.Argument);
         }
 
         void _taskManager_TaskExecuting(object sender, EventArgs e)
         {
             var task = (IScheduledTask) sender;
-            _serverManager.SendWebSocketMessage("ScheduledTaskBeginExecute", task.Name);
+            _serverManager.SendWebSocketMessage("ScheduledTaskStarted", task.Name);
         }
 
         /// <summary>
@@ -164,7 +164,7 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         void kernel_HasPendingRestartChanged(object sender, EventArgs e)
         {
-            _serverManager.SendWebSocketMessage("HasPendingRestartChanged", _appHost.GetSystemInfo());
+            _serverManager.SendWebSocketMessage("RestartRequired", _appHost.GetSystemInfo());
         }
 
         /// <summary>
