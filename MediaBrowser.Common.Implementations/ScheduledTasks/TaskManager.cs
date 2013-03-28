@@ -189,7 +189,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <param name="result">The result.</param>
         internal void OnTaskCompleted(IScheduledTask task, TaskResult result)
         {
-            EventHelper.QueueEventIfNotNull(TaskExecuting, task, new GenericEventArgs<TaskResult> { Argument = result }, Logger);
+            EventHelper.QueueEventIfNotNull(TaskCompleted, task, new GenericEventArgs<TaskResult> { Argument = result }, Logger);
             ExecuteQueuedTasks();
         }
 
