@@ -81,17 +81,6 @@ namespace MediaBrowser.Api.Playback.Progressive
             // Get the output codec name
             var videoCodec = GetVideoCodec(state.VideoRequest);
 
-            var graphicalSubtitleParam = string.Empty;
-
-            if (state.SubtitleStream != null)
-            {
-                // This is for internal graphical subs
-                if (!state.SubtitleStream.IsExternal && (state.SubtitleStream.Codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) != -1 || state.SubtitleStream.Codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) != -1))
-                {
-                    graphicalSubtitleParam = GetInternalGraphicalSubtitleParam(state, videoCodec);
-                }
-            }
-
             var format = string.Empty;
             var keyFrame = string.Empty;
 
@@ -106,7 +95,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 keyFrame = " -g " + Math.Round(framerate);
             }
 
-            return string.Format("{0} {1} -i {2}{3}{4} -threads 0 {5} {6}{7} {8}{9} \"{10}\"",
+            return string.Format("{0} {1} -i {2}{3}{4} -threads 0 {5} {6} {7}{8} \"{9}\"",
                 probeSize,
                 GetFastSeekCommandLineParameter(state.Request),
                 GetInputArgument(video, state.IsoMount),
@@ -114,7 +103,6 @@ namespace MediaBrowser.Api.Playback.Progressive
                 keyFrame,
                 GetMapArgs(state),
                 GetVideoArguments(state, videoCodec),
-                graphicalSubtitleParam,
                 GetAudioArguments(state),
                 format,
                 outputPath
@@ -125,14 +113,14 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// Gets video arguments to pass to ffmpeg
         /// </summary>
         /// <param name="state">The state.</param>
-        /// <param name="videoCodec">The video codec.</param>
+        /// <param name="codec">The video codec.</param>
         /// <returns>System.String.</returns>
-        private string GetVideoArguments(StreamState state, string videoCodec)
+        private string GetVideoArguments(StreamState state, string codec)
         {
-            var args = "-vcodec " + videoCodec;
+            var args = "-vcodec " + codec;
 
             // See if we can save come cpu cycles by avoiding encoding
-            if (videoCodec.Equals("copy", StringComparison.OrdinalIgnoreCase))
+            if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
                 return IsH264(state.VideoStream) ? args + " -bsf h264_mp4toannexb" : args;
             }
@@ -146,7 +134,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             // Add resolution params, if specified
             if (request.Width.HasValue || request.Height.HasValue || request.MaxHeight.HasValue || request.MaxWidth.HasValue)
             {
-                args += GetOutputSizeParam(state, videoCodec);
+                args += GetOutputSizeParam(state, codec);
             }
 
             if (request.Framerate.HasValue)
@@ -155,7 +143,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
 
             // Add the audio bitrate
-            var qualityParam = GetVideoQualityParam(request, videoCodec);
+            var qualityParam = GetVideoQualityParam(request, codec);
 
             if (!string.IsNullOrEmpty(qualityParam))
             {
@@ -166,12 +154,21 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             if (!string.IsNullOrEmpty(state.VideoRequest.Profile))
             {
-                args += " -profile:v " + state.VideoRequest.Profile;
+                args += " -profile:v" + state.VideoRequest.Profile;
             }
 
             if (!string.IsNullOrEmpty(state.VideoRequest.Level))
             {
-                args += " -level 3 " + state.VideoRequest.Level;
+                args += " -level 3" + state.VideoRequest.Level;
+            }
+
+            if (state.SubtitleStream != null)
+            {
+                // This is for internal graphical subs
+                if (!state.SubtitleStream.IsExternal && (state.SubtitleStream.Codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) != -1 || state.SubtitleStream.Codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) != -1))
+                {
+                    args += GetInternalGraphicalSubtitleParam(state, codec);
+                }
             }
 
             return args;

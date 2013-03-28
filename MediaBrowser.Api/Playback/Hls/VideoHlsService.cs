@@ -158,12 +158,12 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (!string.IsNullOrEmpty(state.VideoRequest.Profile))
             {
-                args += " -profile:v " + state.VideoRequest.Profile;
+                args += " -profile:v" + state.VideoRequest.Profile;
             }
 
             if (!string.IsNullOrEmpty(state.VideoRequest.Level))
             {
-                args += " -level 3 " + state.VideoRequest.Level;
+                args += " -level 3" + state.VideoRequest.Level;
             }
             
             if (state.SubtitleStream != null)
