@@ -420,7 +420,7 @@
         html += '<a href="#pop_' + index + '_' + tag + '" data-transition="fade" data-rel="popup" data-position-to="window">';
         html += '<img class="galleryImage" src="' + ApiClient.getImageUrl(itemId, {
             type: type,
-            width: downloadWidth,
+            maxwidth: downloadWidth,
             tag: tag,
             index: index
         }) + '" />';
