@@ -766,15 +766,12 @@ namespace MediaBrowser.Controller.Entities
 
                     innerProgress.RegisterAction(p =>
                     {
-                        lock (progress)
-                        {
-                            percentages.TryUpdate(child.Id, p / 100, percentages[child.Id]);
+                        percentages.TryUpdate(child.Id, p / 100, percentages[child.Id]);
 
-                            var percent = percentages.Values.Sum();
-                            percent /= list.Count;
+                        var percent = percentages.Values.Sum();
+                        percent /= list.Count;
 
-                            progress.Report((90 * percent) + 10);
-                        }
+                        progress.Report((90 * percent) + 10);
                     });
 
                     await ((Folder)child).ValidateChildren(innerProgress, cancellationToken, recursive: recursive).ConfigureAwait(false);
