@@ -447,6 +447,7 @@ form, .readOnlyContent {
 
     .posterViewItemWithDualText .posterViewItemText {
         text-align: left;
+        color: #fff;
     }
 
 .posterViewItemWithNoText {
@@ -818,6 +819,10 @@ progress {
 #nowPlayingBar #mediaInfo, #nowPlayingBar #mediaInfo div {
     margin-left: 10px;
     display: inline-block;
+}
+#nowPlayingBar #mediaInfo {display:none;}
+@media all and (min-width: 650px) {
+    #nowPlayingBar #mediaInfo {display:inline-block;}
 }
 
 .mediaButton img {

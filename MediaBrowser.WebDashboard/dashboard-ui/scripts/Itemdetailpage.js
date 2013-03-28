@@ -240,7 +240,7 @@
                     html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
                 }
 
-                html += '<a href="#">' + item.Genres[i] + '</a>';
+                html += '<a href="itembynamedetails.html?genre='+item.Genres[i]+'">' + item.Genres[i] + '</a>';
             }
 
             elem.html(html).trigger('create');
@@ -266,7 +266,7 @@
                     html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
                 }
 
-                html += '<a href="#">' + item.Studios[i] + '</a>';
+                html += '<a href="itembynamedetails.html?studio='+item.Studios[i]+'">' + item.Studios[i] + '</a>';
             }
 
             elem.html(html).trigger('create');
@@ -685,6 +685,7 @@
             var cast = casts[i];
             var role = cast.Role || cast.Type;
 
+            html += '<a href="itembynamedetails.html?person='+cast.Name+'">';
             html += '<div class="posterViewItem posterViewItemWithDualText">';
 
             if (cast.PrimaryImageTag) {
@@ -703,7 +704,7 @@
             html += '<div class="posterViewItemText posterViewItemPrimaryText">' + cast.Name + '</div>';
             html += '<div class="posterViewItemText">' + role + '</div>';
 
-            html += '</div>';
+            html += '</div></a>';
 
         }
 
