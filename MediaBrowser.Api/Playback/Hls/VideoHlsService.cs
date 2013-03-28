@@ -115,7 +115,9 @@ namespace MediaBrowser.Api.Playback.Hls
                 return IsH264(state.VideoStream) ? "-codec:v:0 copy -bsf h264_mp4toannexb" : "-codec:v:0 copy";
             }
 
-            var args = "-codec:v:0 " + codec + " -preset superfast";
+            const string keyFrameArg = " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,0),gte(t,prev_forced_t+5))";
+
+            var args = "-codec:v:0 " + codec + " -preset superfast" + keyFrameArg;
 
             if (state.VideoRequest.VideoBitRate.HasValue)
             {
