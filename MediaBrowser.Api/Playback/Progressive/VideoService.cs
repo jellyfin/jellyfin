@@ -131,47 +131,47 @@ namespace MediaBrowser.Api.Playback.Progressive
         {
             var args = "-vcodec " + videoCodec;
 
+            // See if we can save come cpu cycles by avoiding encoding
+            if (videoCodec.Equals("copy", StringComparison.OrdinalIgnoreCase))
+            {
+                return IsH264(state.VideoStream) ? args + " -bsf h264_mp4toannexb" : args;
+            }
+
+            const string keyFrameArg = " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,0),gte(t,prev_forced_t+2))";
+
+            args += keyFrameArg;
+
             var request = state.VideoRequest;
 
-            // If we're encoding video, add additional params
-            if (!videoCodec.Equals("copy", StringComparison.OrdinalIgnoreCase))
+            // Add resolution params, if specified
+            if (request.Width.HasValue || request.Height.HasValue || request.MaxHeight.HasValue || request.MaxWidth.HasValue)
             {
-                // Add resolution params, if specified
-                if (request.Width.HasValue || request.Height.HasValue || request.MaxHeight.HasValue || request.MaxWidth.HasValue)
-                {
-                    args += GetOutputSizeParam(state, videoCodec);
-                }
-
-                if (request.Framerate.HasValue)
-                {
-                    args += string.Format(" -r {0}", request.Framerate.Value);
-                }
-
-                // Add the audio bitrate
-                var qualityParam = GetVideoQualityParam(request, videoCodec);
-
-                if (!string.IsNullOrEmpty(qualityParam))
-                {
-                    args += " " + qualityParam;
-                }
-
-                args += " -vsync vfr";
-
-                if (!string.IsNullOrEmpty(state.VideoRequest.Profile))
-                {
-                    args += " -profile:v " + state.VideoRequest.Profile;
-                }
-
-                if (!string.IsNullOrEmpty(state.VideoRequest.Level))
-                {
-                    args += " -level 3 " + state.VideoRequest.Level;
-                }
-
+                args += GetOutputSizeParam(state, videoCodec);
             }
-            else if (IsH264(state.VideoStream))
+
+            if (request.Framerate.HasValue)
             {
-                // FFmpeg will fail to convert and give h264 bitstream malformated error if it isn't used when converting mp4 to transport stream.
-                args += " -bsf h264_mp4toannexb";
+                args += string.Format(" -r {0}", request.Framerate.Value);
+            }
+
+            // Add the audio bitrate
+            var qualityParam = GetVideoQualityParam(request, videoCodec);
+
+            if (!string.IsNullOrEmpty(qualityParam))
+            {
+                args += " " + qualityParam;
+            }
+
+            args += " -vsync vfr";
+
+            if (!string.IsNullOrEmpty(state.VideoRequest.Profile))
+            {
+                args += " -profile:v " + state.VideoRequest.Profile;
+            }
+
+            if (!string.IsNullOrEmpty(state.VideoRequest.Level))
+            {
+                args += " -level 3 " + state.VideoRequest.Level;
             }
 
             return args;
