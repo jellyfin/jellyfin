@@ -151,9 +151,6 @@ namespace MediaBrowser.Api.Playback.Hls
 
             args += string.Format(" -r {0}", framerate);
 
-            // Needed to ensure segments stay under 10 seconds
-            args += string.Format(" -g {0}", framerate);
-
             args += " -vsync vfr";
 
             if (!string.IsNullOrEmpty(state.VideoRequest.Profile))

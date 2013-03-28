@@ -87,12 +87,6 @@ namespace MediaBrowser.Api.Playback.Progressive
             if (string.Equals(Path.GetExtension(outputPath), ".mp4", StringComparison.OrdinalIgnoreCase))
             {
                 format = " -f mp4 -movflags frag_keyframe+empty_moov";
-                var framerate = state.VideoRequest.Framerate ??
-                                state.VideoStream.AverageFrameRate ?? state.VideoStream.RealFrameRate ?? 23.976;
-
-                framerate *= 2;
-
-                keyFrame = " -g " + Math.Round(framerate);
             }
 
             return string.Format("{0} {1} -i {2}{3}{4} -threads 0 {5} {6} {7}{8} \"{9}\"",
