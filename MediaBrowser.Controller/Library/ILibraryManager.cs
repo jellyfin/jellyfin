@@ -175,14 +175,6 @@ namespace MediaBrowser.Controller.Library
                                    SortOrder sortOrder);
 
         /// <summary>
-        /// Sorts the specified items.
-        /// </summary>
-        /// <param name="items">The items.</param>
-        /// <param name="searchTerm">The search term.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        IEnumerable<BaseItem> Search(IEnumerable<BaseItem> items, string searchTerm);
-
-        /// <summary>
         /// Ensure supplied item has only one instance throughout
         /// </summary>
         /// <param name="item"></param>

@@ -817,21 +817,5 @@ namespace MediaBrowser.Server.Implementations.Library
 
             return comparer;
         }
-
-        /// <summary>
-        /// Sorts the specified items.
-        /// </summary>
-        /// <param name="items">The items.</param>
-        /// <param name="searchTerm">The search term.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        public IEnumerable<BaseItem> Search(IEnumerable<BaseItem> items, string searchTerm)
-        {
-            if (string.IsNullOrEmpty(searchTerm))
-            {
-                throw new ArgumentNullException("searchTerm");
-            }
-
-            return items.Where(i => i.Name.StartsWith(searchTerm, StringComparison.OrdinalIgnoreCase));
-        }
     }
 }
