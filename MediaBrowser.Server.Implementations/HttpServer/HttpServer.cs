@@ -1,16 +1,3 @@
-// ***********************************************************************
-// Assembly         : MediaBrowser.Server.Implementations
-// Author           : Luke
-// Created          : 03-06-2013
-//
-// Last Modified By : Luke
-// Last Modified On : 03-24-2013
-// ***********************************************************************
-// <copyright file="HttpServer.cs" company="">
-//     Copyright (c) . All rights reserved.
-// </copyright>
-// <summary></summary>
-// ***********************************************************************
 using Funq;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
