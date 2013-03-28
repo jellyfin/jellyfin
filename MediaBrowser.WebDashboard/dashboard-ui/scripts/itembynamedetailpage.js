@@ -40,7 +40,7 @@
         ItemByNameDetailPage.renderImage(item);
         ItemByNameDetailPage.renderOverviewBlock(item);
 
-        $('#itemByNameDetailPage', page).html(name);
+        $('#itemName', page).html(name);
 
         Dashboard.hideLoadingMsg();
     },
