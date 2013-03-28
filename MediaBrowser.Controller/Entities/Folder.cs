@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
@@ -713,7 +714,7 @@ namespace MediaBrowser.Controller.Entities
                 LibraryManager.ReportLibraryChanged(changedArgs);
             }
 
-            progress.Report(15);
+            progress.Report(10);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -732,9 +733,9 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         private Task RefreshChildren(IEnumerable<Tuple<BaseItem, bool>> children, IProgress<double> progress, CancellationToken cancellationToken, bool? recursive)
         {
-            var numComplete = 0;
-
             var list = children.ToList();
+
+            var percentages = new ConcurrentDictionary<Guid, double>(list.Select(i => new KeyValuePair<Guid, double>(i.Item1.Id, 0)));
 
             var tasks = list.Select(tuple => Task.Run(async () =>
             {
@@ -744,10 +745,6 @@ namespace MediaBrowser.Controller.Entities
 
                 //refresh it
                 await child.RefreshMetadata(cancellationToken, resetResolveArgs: child.IsFolder).ConfigureAwait(false);
-
-                //and add it to our valid children
-                //fire an added event...?
-                //if it is a folder we need to validate its children as well
 
                 // Refresh children if a folder and the item changed or recursive is set to true
                 var refreshChildren = child.IsFolder && (tuple.Item2 || (recursive.HasValue && recursive.Value));
@@ -765,17 +762,22 @@ namespace MediaBrowser.Controller.Entities
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    await ((Folder)child).ValidateChildren(new Progress<double> { }, cancellationToken, recursive: recursive).ConfigureAwait(false);
-                }
+                    var innerProgress = new ActionableProgress<double>();
 
-                lock (progress)
-                {
-                    numComplete++;
+                    innerProgress.RegisterAction(p =>
+                    {
+                        lock (progress)
+                        {
+                            percentages.TryUpdate(child.Id, p / 100, percentages[child.Id]);
 
-                    double percent = numComplete;
-                    percent /= list.Count;
+                            var percent = percentages.Values.Sum();
+                            percent /= list.Count;
 
-                    progress.Report((85 * percent) + 15);
+                            progress.Report((90 * percent) + 10);
+                        }
+                    });
+
+                    await ((Folder)child).ValidateChildren(innerProgress, cancellationToken, recursive: recursive).ConfigureAwait(false);
                 }
             }));
 
