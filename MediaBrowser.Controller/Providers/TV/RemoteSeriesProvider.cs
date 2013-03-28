@@ -227,7 +227,7 @@ namespace MediaBrowser.Controller.Providers.TV
                     string n = doc.SafeGetString("//banner");
                     if (!string.IsNullOrWhiteSpace(n))
                     {
-                        series.SetImage(ImageType.Banner, TVUtils.BannerUrl + n);
+                        series.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n, "banner" + Path.GetExtension(n), TvDbResourcePool, cancellationToken).ConfigureAwait(false));
                     }
 
                     string s = doc.SafeGetString("//Network");
