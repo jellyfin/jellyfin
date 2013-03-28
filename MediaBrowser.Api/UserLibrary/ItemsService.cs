@@ -122,15 +122,19 @@ namespace MediaBrowser.Api.UserLibrary
         /// The _library manager
         /// </summary>
         private readonly ILibraryManager _libraryManager;
+        private readonly ILibrarySearchEngine _searchEngine;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsService" /> class.
         /// </summary>
         /// <param name="userManager">The user manager.</param>
-        public ItemsService(IUserManager userManager, ILibraryManager libraryManager)
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="searchEngine">The search engine.</param>
+        public ItemsService(IUserManager userManager, ILibraryManager libraryManager, ILibrarySearchEngine searchEngine)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
+            _searchEngine = searchEngine;
         }
 
         /// <summary>
@@ -400,7 +404,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (!string.IsNullOrEmpty(term))
             {
-                items = _libraryManager.Search(items, request.SearchTerm);
+                items = _searchEngine.Search(items, request.SearchTerm);
             }
 
             return items;

@@ -212,6 +212,8 @@ namespace MediaBrowser.ServerApplication
             ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, DirectoryWatchers, LogManager);
             RegisterSingleInstance(ProviderManager);
 
+            RegisterSingleInstance<ILibrarySearchEngine>(() => new LuceneSearchEngine());
+            
             SetKernelProperties();
             SetStaticProperties();
         }
