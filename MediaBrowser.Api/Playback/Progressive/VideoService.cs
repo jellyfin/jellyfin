@@ -156,6 +156,17 @@ namespace MediaBrowser.Api.Playback.Progressive
                 }
 
                 args += " -vsync vfr";
+
+                if (!string.IsNullOrEmpty(state.VideoRequest.Profile))
+                {
+                    args += " -profile:v " + state.VideoRequest.Profile;
+                }
+
+                if (!string.IsNullOrEmpty(state.VideoRequest.Level))
+                {
+                    args += " -level 3 " + state.VideoRequest.Level;
+                }
+
             }
             else if (IsH264(state.VideoStream))
             {
