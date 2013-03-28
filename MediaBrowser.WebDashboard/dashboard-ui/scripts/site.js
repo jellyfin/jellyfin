@@ -897,8 +897,10 @@ var Dashboard = {
         $(ApiClient).on("websocketmessage", Dashboard.onWebSocketMessageReceived);
     },
 
-    onWebSocketMessageReceived: function (msg) {
+    onWebSocketMessageReceived: function (e, data) {
 
+        var msg = data;
+        
         if (msg.MessageType === "LibraryChanged") {
             Dashboard.processLibraryUpdateNotification(msg.Data);
         }
@@ -908,7 +910,7 @@ var Dashboard = {
         else if (msg.MessageType === "SystemInfo") {
             Dashboard.updateSystemInfo(msg.Data);
         }
-        else if (msg.MessageType === "HasPendingRestartChanged") {
+        else if (msg.MessageType === "RestartRequired") {
             Dashboard.updateSystemInfo(msg.Data);
         }
         else if (msg.MessageType === "UserUpdated") {
@@ -937,7 +939,7 @@ var Dashboard = {
             Dashboard.showPackageInstallNotification(msg.Data, "progress");
             Dashboard.refreshSystemInfoFromServer();
         }
-        else if (msg.MessageType === "ScheduledTaskEndExecute") {
+        else if (msg.MessageType === "ScheduledTaskEnded") {
 
             Dashboard.showTaskCompletionNotification(msg.Data);
         }
@@ -1092,7 +1094,7 @@ var Dashboard = {
                     type: "Primary"
                 });
 
-                if (!item.Id || data.icon.indexOf("undefined") != -1) {
+                if (!item.Id || !data.icon) {
                     alert("bad image url: " + JSON.stringify(item));
                     console.log("bad image url: " + JSON.stringify(item));
 

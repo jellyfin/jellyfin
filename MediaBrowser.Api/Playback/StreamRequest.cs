@@ -135,5 +135,19 @@ namespace MediaBrowser.Api.Playback
         /// <value>The framerate.</value>
         [ApiMember(Name = "Framerate", Description = "Optional. A specific video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements.", IsRequired = false, DataType = "double", ParameterType = "query", Verb = "GET")]
         public double? Framerate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the profile.
+        /// </summary>
+        /// <value>The profile.</value>
+        [ApiMember(Name = "Profile", Description = "Optional. Specify a specific h264 profile, e.g. main, baseline, high.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string Profile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the level.
+        /// </summary>
+        /// <value>The level.</value>
+        [ApiMember(Name = "Level", Description = "Optional. Specify a level for the h264 profile, e.g. 3, 3.1.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string Level { get; set; }
     }
 }

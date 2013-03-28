@@ -71,11 +71,13 @@
         var imageTags = item.ImageTags || {};
         var html = '';
 
+        var url = "";
+        
         if (item.BackdropImageTags && item.BackdropImageTags.length) {
 
             url = ApiClient.getImageUrl(item.Id, {
                 type: "Backdrop",
-                height: 30,
+                height: 36,
                 tag: item.BackdropImageTags[0]
             });
         }
@@ -83,7 +85,7 @@
 
             url = ApiClient.getImageUrl(item.Id, {
                 type: "Thumb",
-                height: 30,
+                height: 36,
                 tag: item.ImageTags.Thumb
             });
         }
@@ -91,7 +93,7 @@
 
             url = ApiClient.getImageUrl(item.Id, {
                 type: "Primary",
-                height: 30,
+                height: 36,
                 tag: item.ImageTags.Primary
             });
         }else {
@@ -111,7 +113,7 @@
             series_name = item.SeriesName || item.Album || item.ProductionYear;
         }
 
-        html += "<div><img class='clientNowPlayingImage' alt='' title='' src='" + url + "' style='height:30px;display:inline-block;' /></div>";
+        html += "<div><img class='nowPlayingBarImage ' alt='' title='' src='" + url + "' style='height:36px;display:inline-block;' /></div>";
         html += '<div>'+name+'<br/>'+series_name+'</div>';
 
         $('#mediaInfo', nowPlayingBar).html(html);

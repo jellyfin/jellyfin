@@ -178,9 +178,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var probeSize = Kernel.Instance.FFMpegManager.GetProbeSizeArgument(state.Item);
 
-            const string keyFrameArg = " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,0),gte(t,prev_forced_t+5))";
-
-            return string.Format("{0} {1} -i {2}{3} -threads 0 {4} {5} {6}{7} -f ssegment -segment_list_flags +live -segment_time 10 -segment_list \"{8}\" \"{9}\"",
+            return string.Format("{0} {1} -i {2}{3} -threads 0 {4} {5} {6} -f ssegment -segment_list_flags +live -segment_time 10 -segment_list \"{7}\" \"{8}\"",
                 probeSize,
                 GetFastSeekCommandLineParameter(state.Request),
                 GetInputArgument(state.Item, state.IsoMount),
@@ -188,7 +186,6 @@ namespace MediaBrowser.Api.Playback.Hls
                 GetMapArgs(state),
                 GetVideoArguments(state),
                 GetAudioArguments(state),
-                keyFrameArg,
                 outputPath,
                 segmentOutputPath
                 ).Trim();

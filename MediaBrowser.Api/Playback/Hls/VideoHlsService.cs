@@ -8,14 +8,14 @@ using ServiceStack.ServiceHost;
 namespace MediaBrowser.Api.Playback.Hls
 {
     [Route("/Videos/{Id}/stream.m3u8", "GET")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets a video stream using HTTP live streaming.")]
+    [Api(Description = "Gets a video stream using HTTP live streaming.")]
     public class GetHlsVideoStream : VideoStreamRequest
     {
 
     }
 
     [Route("/Videos/{Id}/segments/{SegmentId}/stream.ts", "GET")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
+    [Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
     public class GetHlsVideoSegment
     {
         public string Id { get; set; }
@@ -115,7 +115,9 @@ namespace MediaBrowser.Api.Playback.Hls
                 return IsH264(state.VideoStream) ? "-codec:v:0 copy -bsf h264_mp4toannexb" : "-codec:v:0 copy";
             }
 
-            var args = "-codec:v:0 " + codec + " -preset superfast";
+            const string keyFrameArg = " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,0),gte(t,prev_forced_t+5))";
+
+            var args = "-codec:v:0 " + codec + " -preset superfast" + keyFrameArg;
 
             if (state.VideoRequest.VideoBitRate.HasValue)
             {
@@ -154,6 +156,16 @@ namespace MediaBrowser.Api.Playback.Hls
 
             args += " -vsync vfr";
 
+            if (!string.IsNullOrEmpty(state.VideoRequest.Profile))
+            {
+                args += " -profile:v" + state.VideoRequest.Profile;
+            }
+
+            if (!string.IsNullOrEmpty(state.VideoRequest.Level))
+            {
+                args += " -level 3" + state.VideoRequest.Level;
+            }
+            
             if (state.SubtitleStream != null)
             {
                 // This is for internal graphical subs
