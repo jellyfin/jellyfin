@@ -815,6 +815,10 @@ progress {
     position: relative;
     width: 270px;
 }
+#nowPlayingBar #mediaInfo, #nowPlayingBar #mediaInfo div {
+    margin-left: 10px;
+    display: inline-block;
+}
 
 .mediaButton img {
     height: 28px;

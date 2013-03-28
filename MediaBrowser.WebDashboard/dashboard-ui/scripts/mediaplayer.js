@@ -66,6 +66,55 @@
             $('#previousTrackButton', nowPlayingBar)[0].disabled = true;
             $('#nextTrackButton', nowPlayingBar)[0].disabled = true;
         }
+
+        //display image and title
+        var imageTags = item.ImageTags || {};
+        var html = '';
+
+        if (item.BackdropImageTags && item.BackdropImageTags.length) {
+
+            url = ApiClient.getImageUrl(item.Id, {
+                type: "Backdrop",
+                height: 30,
+                tag: item.BackdropImageTags[0]
+            });
+        }
+        else if (imageTags.Thumb) {
+
+            url = ApiClient.getImageUrl(item.Id, {
+                type: "Thumb",
+                height: 30,
+                tag: item.ImageTags.Thumb
+            });
+        }
+        else if (imageTags.Primary) {
+
+            url = ApiClient.getImageUrl(item.Id, {
+                type: "Primary",
+                height: 30,
+                tag: item.ImageTags.Primary
+            });
+        }else {
+            url = "css/images/items/detail/video.png";
+        }
+
+        var name = item.Name;
+        var series_name = '';
+
+        if (item.IndexNumber != null) {
+            name = item.IndexNumber + " - " + name;
+        }
+        if (item.ParentIndexNumber != null) {
+            name = item.ParentIndexNumber + "." + name;
+        }
+        if (item.SeriesName || item.Album || item.ProductionYear) {
+            series_name = item.SeriesName || item.Album || item.ProductionYear;
+        }
+
+        html += "<div><img class='clientNowPlayingImage' alt='' title='' src='" + url + "' style='height:30px;display:inline-block;' /></div>";
+        html += '<div>'+name+'<br/>'+series_name+'</div>';
+
+        $('#mediaInfo', nowPlayingBar).html(html);
     },
 
     playAudio: function (items, params) {
