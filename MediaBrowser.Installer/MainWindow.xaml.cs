@@ -409,14 +409,34 @@ namespace MediaBrowser.Installer
             }
 
             // And extract
-            using (var fileStream = File.OpenRead(archive))
+            var retryCount = 0;
+            var success = false;
+            while (!success && retryCount < 3)
             {
-                using (var zipFile = ZipFile.Read(fileStream))
+                try
                 {
-                    zipFile.ExtractAll(RootPath, ExtractExistingFileAction.OverwriteSilently);
+                    using (var fileStream = File.OpenRead(archive))
+                    {
+                        using (var zipFile = ZipFile.Read(fileStream))
+                        {
+                            zipFile.ExtractAll(RootPath, ExtractExistingFileAction.OverwriteSilently);
+                            success = true;
+                        }
+                    }
+                }
+                catch
+                {
+                    if (retryCount < 3)
+                    {
+                        Thread.Sleep(250);
+                        retryCount++;
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
             }
-
         }
 
         /// <summary>
