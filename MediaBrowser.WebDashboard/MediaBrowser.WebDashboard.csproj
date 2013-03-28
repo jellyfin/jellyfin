@@ -84,6 +84,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ApiClient.js" />
+    <Content Include="dashboard-ui\css\images\currentuserdefaultblack.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\css\images\currentuserdefaultwhite.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\css\images\items\detail\person.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
