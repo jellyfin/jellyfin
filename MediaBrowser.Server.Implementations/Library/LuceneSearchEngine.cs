@@ -13,7 +13,7 @@ namespace MediaBrowser.Server.Implementations.Library
     public class LuceneSearchEngine : ILibrarySearchEngine
     {
         /// <summary>
-        /// Sorts the specified items.
+        /// Searches items and returns them in order of relevance.
         /// </summary>
         /// <param name="items">The items.</param>
         /// <param name="searchTerm">The search term.</param>
