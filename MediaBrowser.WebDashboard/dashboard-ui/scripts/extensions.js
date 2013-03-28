@@ -473,9 +473,9 @@ _V_.ResolutionMenuItem = _V_.MenuItem.extend({
             return;
 
         var resolutions = new Array();
-        resolutions['high'] = 1800000;
-        resolutions['medium'] = 500000;
-        resolutions['low'] = 150000;
+        resolutions['high'] = new Array(1500000, 128000, 1920, 1080);
+        resolutions['medium'] = new Array(750000, 128000, 1280, 720);
+        resolutions['low'] = new Array(200000, 128000, 720, 480);
 
         var current_time = this.player.currentTime();
 
@@ -484,7 +484,10 @@ _V_.ResolutionMenuItem = _V_.MenuItem.extend({
 
         // Change the source and make sure we don't start the video over
         var currentSrc = this.player.tag.src;
-        var newSrc = currentSrc.replace("videoBitrate="+resolutions[this.player.options.currentResolution],"videoBitrate="+resolutions[this.options.src[0].res]);
+        var newSrc = currentSrc.replace(new RegExp("videoBitrate=[0-9]+","g"),"videoBitrate="+resolutions[this.options.src[0].res][0]);
+        newSrc = newSrc.replace(new RegExp("audioBitrate=[0-9]+","g"),"audioBitrate="+resolutions[this.options.src[0].res][1]);
+        newSrc = newSrc.replace(new RegExp("maxWidth=[0-9]+","g"),"maxWidth="+resolutions[this.options.src[0].res][2]);
+        newSrc = newSrc.replace(new RegExp("maxHeight=[0-9]+","g"),"maxHeight="+resolutions[this.options.src[0].res][3]);
 
         if (this.player.duration() == "Infinity")  {
             if (currentSrc.indexOf("StartTimeTicks") >= 0) {
