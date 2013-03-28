@@ -65,6 +65,18 @@
         /// </summary>
         /// <value>The index of the subtitle stream.</value>
         public int? SubtitleStreamIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets the profile.
+        /// </summary>
+        /// <value>The profile.</value>
+        public string Profile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the level.
+        /// </summary>
+        /// <value>The level.</value>
+        public string Level { get; set; }
     }
 
     /// <summary>
