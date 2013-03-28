@@ -117,6 +117,8 @@
         var screenWidth = Math.max(screen.height, screen.width);
         var screenHeight = Math.min(screen.height, screen.width);
 
+        var volume = localStorage.getItem("volume") || 0.5;
+
         var baseParams = {
             audioChannels: 2,
             audioBitrate: 128000,
@@ -167,7 +169,8 @@
                 { type: "video/mp4", src: mp4VideoUrl },
                 { type: "video/mp2t; codecs='h264, aac'", src: tsVideoUrl },
                 { type: "application/x-mpegURL", src: hlsVideoUrl },
-                { type: "video/ogg", src: ogvVideoUrl }]);
+                { type: "video/ogg", src: ogvVideoUrl }]
+            ).volume(volume);
 
             videoJSextension.setup_video( $( '#videoWindow' ), item );
 
@@ -178,6 +181,10 @@
             (this).addEvent("durationchange",function(){
                 if ((this).duration() != "Infinity")
                     $(".vjs-remaining-time-display").show();
+            });
+
+            (this).addEvent("volumechange",function(){
+                localStorage.setItem("volume", (this).volume());
             });
 
             (this).addEvent("play", MediaPlayer.updateProgress);
