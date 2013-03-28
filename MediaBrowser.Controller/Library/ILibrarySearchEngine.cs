@@ -9,11 +9,12 @@ namespace MediaBrowser.Controller.Library
     public interface ILibrarySearchEngine
     {
         /// <summary>
-        /// Sorts the specified items.
+        /// Searches items and returns them in order of relevance.
         /// </summary>
         /// <param name="items">The items.</param>
         /// <param name="searchTerm">The search term.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
+        /// <exception cref="System.ArgumentNullException">searchTerm</exception>
         IEnumerable<BaseItem> Search(IEnumerable<BaseItem> items, string searchTerm);
     }
 }
