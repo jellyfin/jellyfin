@@ -301,8 +301,8 @@ form, .readOnlyContent {
     }
 
     .libraryPage .ui-content {
-        padding-right: 50px;
-        padding-left: 50px;
+        padding-right: 40px;
+        padding-left: 40px;
     }
 
     .type-interior > .ui-content {
@@ -624,7 +624,7 @@ form, .readOnlyContent {
 
 /* Footer */
 #footer {
-    background: #5a5a5a;
+    background: #4C4C4C;
     position: fixed;
     bottom: -2px;
     left: -2px;
@@ -801,8 +801,14 @@ progress {
 
 /* Now playing bar */
 #nowPlayingBar {
-    padding: 10px 20px 8px;
-    border-top: 1px solid #5490CC;
+    padding: 8px 20px;
+    border-top: 2px solid #D7742B;
+}
+
+.nowPlayingBarImage {
+    border: 1px solid #a7a7a7;
+    padding: 1px;
+    vertical-align: bottom;
 }
 
 .mediaButton {
