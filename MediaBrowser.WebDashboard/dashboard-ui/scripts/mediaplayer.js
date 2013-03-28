@@ -70,12 +70,13 @@
         //display image and title
         var imageTags = item.ImageTags || {};
         var html = '';
+        var url = "";
 
         if (item.BackdropImageTags && item.BackdropImageTags.length) {
 
             url = ApiClient.getImageUrl(item.Id, {
                 type: "Backdrop",
-                height: 30,
+                height: 36,
                 tag: item.BackdropImageTags[0]
             });
         }
@@ -83,7 +84,7 @@
 
             url = ApiClient.getImageUrl(item.Id, {
                 type: "Thumb",
-                height: 30,
+                height: 36,
                 tag: item.ImageTags.Thumb
             });
         }
@@ -91,7 +92,7 @@
 
             url = ApiClient.getImageUrl(item.Id, {
                 type: "Primary",
-                height: 30,
+                height: 36,
                 tag: item.ImageTags.Primary
             });
         }else {
@@ -99,7 +100,7 @@
         }
 
         var name = item.Name;
-        var series_name = '';
+        var seriesName = '';
 
         if (item.IndexNumber != null) {
             name = item.IndexNumber + " - " + name;
@@ -108,11 +109,11 @@
             name = item.ParentIndexNumber + "." + name;
         }
         if (item.SeriesName || item.Album || item.ProductionYear) {
-            series_name = item.SeriesName || item.Album || item.ProductionYear;
+            seriesName = item.SeriesName || item.Album || item.ProductionYear;
         }
 
-        html += "<div><img class='clientNowPlayingImage' alt='' title='' src='" + url + "' style='height:30px;display:inline-block;' /></div>";
-        html += '<div>'+name+'<br/>'+series_name+'</div>';
+        html += "<div><img class='nowPlayingBarImage' alt='' title='' src='" + url + "' style='height:36px;display:inline-block;' /></div>";
+        html += '<div>'+name+'<br/>'+seriesName+'</div>';
 
         $('#mediaInfo', nowPlayingBar).html(html);
     },
