@@ -83,7 +83,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                 client = new HttpClient(handler);
                 client.DefaultRequestHeaders.Add("Accept", "application/json,image/*");
-                client.Timeout = TimeSpan.FromSeconds(15);
+                client.Timeout = TimeSpan.FromSeconds(30);
                 _httpClients.TryAdd(host, client);
             }
 

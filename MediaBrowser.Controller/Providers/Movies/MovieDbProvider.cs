@@ -37,7 +37,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <summary>
         /// The movie db
         /// </summary>
-        internal readonly SemaphoreSlim MovieDbResourcePool = new SemaphoreSlim(5, 5);
+        internal readonly SemaphoreSlim MovieDbResourcePool = new SemaphoreSlim(4, 4);
 
         internal static MovieDbProvider Current { get; private set; }
 
