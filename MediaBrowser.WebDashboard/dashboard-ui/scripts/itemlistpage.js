@@ -7,23 +7,32 @@
 
     reload: function () {
 
-        var userId = Dashboard.getCurrentUserId();
-
         var parentId = getParameterByName('parentId');
 
         var query = {
-            SortBy: "SortName",
-            
-            Fields: "PrimaryImageAspectRatio"
+            Fields: "PrimaryImageAspectRatio",
+            SortBy: "SortName"
         };
 
         if (parentId) {
             query.parentId = parentId;
 
-            ApiClient.getItem(userId, parentId).done(ItemListPage.renderTitle);
+            ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).done(ItemListPage.renderTitle);
         }
 
-        ApiClient.getItems(userId, query).done(ItemListPage.renderItems);
+        ItemListPage.refreshItems(query);
+    },
+
+    refreshItems: function (query) {
+
+
+        var page = $.mobile.activePage;
+
+        page.itemQuery = query;
+
+        $('#btnSort', page).html(query.SortBy).button("refresh");
+
+        ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(ItemListPage.renderItems);
     },
 
     renderItems: function (result) {
@@ -45,6 +54,20 @@
 
 
         $('#itemName', $.mobile.activePage).html(item.Name);
+    },
+
+    sortBy: function (sortBy) {
+
+        var query = $.mobile.activePage.itemQuery;
+        query.SortBy = sortBy;
+        ItemListPage.refreshItems(query);
+    },
+
+    sortOrder: function (order) {
+
+        var query = $.mobile.activePage.itemQuery;
+        query.SortOrder = order;
+        ItemListPage.refreshItems(query);
     }
 };
 

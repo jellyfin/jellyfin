@@ -152,7 +152,7 @@
         if (userId) {
             Dashboard.alert("Settings saved.");
         } else {
-            Dashboard.navigate("userProfiles.html");
+            Dashboard.navigate("userprofiles.html");
         }
     },
 
