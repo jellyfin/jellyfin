@@ -731,9 +731,9 @@
         }
 
         if (userData.IsFavorite) {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_on.png" alt="Remove favorite" title="Remove favorite" onclick="ItemDetailPage.setFavorite();" />';
+            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_on.png" alt="Favorite" title="Remove favorite" onclick="ItemDetailPage.setFavorite();" />';
         } else {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_off.png" alt="Mark favorite" title="Mark favorite" onclick="ItemDetailPage.setFavorite();" />';
+            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_off.png" alt="Favorite" title="Mark favorite" onclick="ItemDetailPage.setFavorite();" />';
         }
 
         $('#itemRatings', page).html(html);

@@ -213,7 +213,17 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
          */
         self.getRootFolder = function (userId) {
 
-            return self.getItem(userId);
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            var url = self.getUrl("Users/" + userId + "/Items/Root");
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
         };
 
         /**
@@ -1577,7 +1587,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null itemId");
             }
 
-            var url = "Users/" + userId + "/PlayedItems/" + itemId;
+            var url = self.getUrl("Users/" + userId + "/PlayedItems/" + itemId);
 
             var method = wasPlayed ? "POST" : "DELETE";
 
@@ -1604,7 +1614,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null itemId");
             }
 
-            var url = "Users/" + userId + "/FavoriteItems/" + itemId;
+            var url = self.getUrl("Users/" + userId + "/FavoriteItems/" + itemId);
 
             var method = isFavorite ? "POST" : "DELETE";
 

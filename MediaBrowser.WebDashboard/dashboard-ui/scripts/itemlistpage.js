@@ -27,12 +27,9 @@
 
     refreshItems: function (query) {
 
-
         var page = $.mobile.activePage;
 
         page.itemQuery = query;
-
-        $('#btnSort', page).html(query.SortBy).button("refresh");
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(ItemListPage.renderItems);
     },
