@@ -33,7 +33,7 @@ body {
 h1 {
     font-family: 'Segoe UI Light', 'Open Sans', Arial, Helvetica, sans-serif;
     font-weight: 200;
-    font-size: 28pt;
+    font-size: 32pt;
 }
 
 .toolsSidebar h1 {
@@ -158,7 +158,7 @@ h1 .imageLink {
 }
 
     h1 .imageLink img {
-        height: 28px;
+        height: 32px;
     }
 
 .imageLink:hover {
@@ -907,7 +907,6 @@ progress {
         margin: -.7em .5em auto 0;
     }
 
-#itemFav img {
-    width: 64px;
-    cursor: pointer;
+.userProfileIcon {
+    width: 36px;
 }

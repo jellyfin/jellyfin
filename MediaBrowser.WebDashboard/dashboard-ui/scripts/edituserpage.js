@@ -85,6 +85,12 @@
         $('#chkForcedSubtitlesOnly', page).checked(user.Configuration.UseForcedSubtitlesOnly || false).checkboxradio("refresh");
         $('#chkIsAdmin', page).checked(user.Configuration.IsAdministrator || false).checkboxradio("refresh");
 
+        var userProfileIcons = '';
+        if (user.Configuration.HasPassword) userProfileIcons += '<img src="css/images/userdata/password.png" alt="Password" title="Password" class="userProfileIcon" />';
+        if (user.Configuration.IsAdministrator) userProfileIcons += '<img src="css/images/userdata/administrator.png" alt="Administrator" title="Administrator" class="userProfileIcon" />';
+
+        $('#fldIcons', page).html(userProfileIcons);
+
         Dashboard.hideLoadingMsg();
     },
 
