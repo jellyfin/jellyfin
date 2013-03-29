@@ -774,7 +774,16 @@ namespace MediaBrowser.Controller.Entities
                         progress.Report((90 * percent) + 10);
                     });
 
-                    await ((Folder)child).ValidateChildren(innerProgress, cancellationToken, recursive: recursive).ConfigureAwait(false);
+                    await ((Folder) child).ValidateChildren(innerProgress, cancellationToken, recursive).ConfigureAwait(false);
+                }
+                else
+                {
+                    percentages.TryUpdate(child.Id, 1, percentages[child.Id]);
+
+                    var percent = percentages.Values.Sum();
+                    percent /= list.Count;
+
+                    progress.Report((90 * percent) + 10);
                 }
             }));
 
