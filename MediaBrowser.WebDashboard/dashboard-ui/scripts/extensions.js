@@ -484,17 +484,17 @@ _V_.ResolutionMenuItem = _V_.MenuItem.extend({
 
         // Change the source and make sure we don't start the video over
         var currentSrc = this.player.tag.src;
-        var newSrc = currentSrc.replace(new RegExp("videoBitrate=[0-9]+","g"),"videoBitrate="+resolutions[this.options.src[0].res][0]);
-        newSrc = newSrc.replace(new RegExp("audioBitrate=[0-9]+","g"),"audioBitrate="+resolutions[this.options.src[0].res][1]);
-        newSrc = newSrc.replace(new RegExp("maxWidth=[0-9]+","g"),"maxWidth="+resolutions[this.options.src[0].res][2]);
-        newSrc = newSrc.replace(new RegExp("maxHeight=[0-9]+","g"),"maxHeight="+resolutions[this.options.src[0].res][3]);
+        var src = parse_src_url(currentSrc);
+        var newSrc = "/mediabrowser/"+src.Type+"/"+src.item_id+"/stream."+src.stream+"?audioChannels="+src.audioChannels+"&audioBitrate="+resolutions[this.options.src[0].res][1]+
+            "&videoBitrate="+resolutions[this.options.src[0].res][0]+"&maxWidth="+resolutions[this.options.src[0].res][2]+"&maxHeight="+resolutions[this.options.src[0].res][3]+
+            "&videoCodec="+src.videoCodec+"&audioCodec="+src.audioCodec;
 
         if (this.player.duration() == "Infinity")  {
             if (currentSrc.indexOf("StartTimeTicks") >= 0) {
-                var startTimeTicks = newSrc.match(new RegExp("StartTimeTicks=[0-9]+","g"));
+                var startTimeTicks = currentSrc.match(new RegExp("StartTimeTicks=[0-9]+","g"));
                 var start_time = startTimeTicks[0].replace("StartTimeTicks=","");
 
-                newSrc = newSrc.replace(new RegExp("StartTimeTicks=[0-9]+","g"),"StartTimeTicks="+Math.floor(parseInt(start_time)+(10000000*current_time)));
+                newSrc += "&StartTimeTicks="+Math.floor(parseInt(start_time)+(10000000*current_time));
             }else {
                 newSrc += "&StartTimeTicks="+Math.floor(10000000*current_time);
             }
@@ -683,6 +683,36 @@ _V_.ChapterMenuItem = _V_.MenuItem.extend({
     }
 });
 
+/*
+ JS for the stop button in video.js player
+ */
+
+/*
+ Define the base class for the stop button.
+ */
+
+_V_.StopButton = _V_.Button.extend({
+
+    kind: "stop",
+    className: "vjs-stop-button",
+
+    init: function(player, options) {
+
+        this._super(player, options);
+
+    },
+
+    buildCSSClass: function() {
+
+        return this.className + " vjs-menu-button " + this._super();
+    },
+
+    onClick: function() {
+        MediaPlayer.stop();
+    }
+});
+
+
 //convert Ticks to human hr:min:sec format
 function ticks_to_human(str) {
 
@@ -700,3 +730,27 @@ function ticks_to_human(str) {
 
     return time;
 };
+
+//parse video player src URL
+function parse_src_url(url) {
+   var src = url.replace("\?","\&");
+    var parts = src.split("/");
+    var len = parts.length-1;
+    var query = parts[len].split("&");
+    var array = new Array();
+
+    array['Type'] = parts[len-2];
+    array['item_id'] = parts[len-1];
+
+    for (i = 0; i < query.length; i++) {
+        if (i == 0) {
+            var pairs = query[i].split(".");
+        }else {
+            var pairs = query[i].split("=");
+        }
+
+        array[pairs[0]] = pairs[1];
+    }
+
+    return array;
+}

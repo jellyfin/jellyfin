@@ -843,15 +843,22 @@ progress {
     bottom: -5px;
 }
 
+@media all and (min-width: 650px) {
+
+    .itemVideo {
+        width: 270px;
+    }
+}
+
 .vjs-quality-button {
     padding: 0 0.6em !important;
     width: auto !important;
 }
 
-    .vjs-quality-button div {
-        width: auto !important;
-        background: none !important;
-    }
+.vjs-quality-button div {
+    width: auto !important;
+    background: none !important;
+}
 
 .vjs-chapter-button div {
     background-position: -100px -75px !important;
@@ -863,16 +870,21 @@ progress {
     overflow-y: scroll;
 }
 
-    .vjs-chapter-button.vjs-menu-button ul li {
-        width: auto;
-        white-space: nowrap;
-        font-size: 1.1em;
-        padding-right: 10px;
-    }
+.vjs-chapter-button.vjs-menu-button ul li {
+    width: auto;
+    white-space: nowrap;
+    font-size: 1.1em;
+    padding-right: 10px;
+}
 
-@media all and (min-width: 650px) {
-
-    .itemVideo {
-        width: 270px;
-    }
+.vjs-default-skin .vjs-menu-button.vjs-stop-button {
+    float: left;
+    background: none;
+    border: 0;
+}
+.vjs-default-skin .vjs-menu-button.vjs-stop-button div {
+    background: url("images/media/stop.png");
+    height: 26px;
+    width: 26px;
+    margin: -.7em .5em auto 0;
 }

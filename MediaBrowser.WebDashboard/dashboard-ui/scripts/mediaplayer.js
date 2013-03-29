@@ -316,6 +316,9 @@ var videoJSextension = {
      */
     setup_video : function( $video, item ) {
 
+        // Add the stop button.
+        _V_.merge( _V_.ControlBar.prototype.options.components, { StopButton : {} } );
+
         var vid_id = $video.attr( 'id' ),
             available_res = ['high','medium','low'],
             default_res,
