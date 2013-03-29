@@ -160,7 +160,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (!string.IsNullOrEmpty(state.VideoRequest.Level))
             {
-                args += " -level 3" + state.VideoRequest.Level;
+                args += " -level " + state.VideoRequest.Level;
             }
             
             if (state.SubtitleStream != null)
