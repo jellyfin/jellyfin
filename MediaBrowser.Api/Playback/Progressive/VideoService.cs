@@ -148,7 +148,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             if (!string.IsNullOrEmpty(state.VideoRequest.Profile))
             {
-                args += " -profile:v" + state.VideoRequest.Profile;
+                args += " -profile:v " + state.VideoRequest.Profile;
             }
 
             if (!string.IsNullOrEmpty(state.VideoRequest.Level))
