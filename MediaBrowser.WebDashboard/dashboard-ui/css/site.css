@@ -33,7 +33,7 @@ body {
 h1 {
     font-family: 'Segoe UI Light', 'Open Sans', Arial, Helvetica, sans-serif;
     font-weight: 200;
-    font-size: 32pt;
+    font-size: 28pt;
 }
 
 .toolsSidebar h1 {
@@ -158,7 +158,7 @@ h1 .imageLink {
 }
 
     h1 .imageLink img {
-        height: 32px;
+        height: 28px;
     }
 
 .imageLink:hover {
