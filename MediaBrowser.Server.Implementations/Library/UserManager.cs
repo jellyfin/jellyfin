@@ -77,7 +77,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <value>The active connections.</value>
         public IEnumerable<ClientConnectionInfo> RecentConnections
         {
-            get { return AllConnections.Where(c => (DateTime.UtcNow - c.LastActivityDate).TotalMinutes <= 10); }
+            get { return AllConnections.Where(c => (DateTime.UtcNow - c.LastActivityDate).TotalMinutes <= 5); }
         }
 
         /// <summary>
