@@ -6,10 +6,10 @@
 
             if (users.length > 1) {
 
-                Dashboard.navigate('wizardLibrary.html');
+                Dashboard.navigate('wizardlibrary.html');
 
             } else {
-                Dashboard.navigate('wizardUser.html');
+                Dashboard.navigate('wizarduser.html');
             }
         });
 

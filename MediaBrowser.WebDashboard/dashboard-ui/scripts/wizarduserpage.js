@@ -51,7 +51,7 @@
         
         Dashboard.hideLoadingMsg();
 
-        Dashboard.navigate('wizardLibrary.html');
+        Dashboard.navigate('wizardlibrary.html');
     }
 
 };

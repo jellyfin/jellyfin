@@ -19,11 +19,6 @@ namespace MediaBrowser.Controller.Providers.Movies
     /// </summary>
     class FanArtMovieProvider : FanartBaseProvider, IDisposable
     {
-        /// <summary>
-        /// The fan art
-        /// </summary>
-        internal readonly SemaphoreSlim FanArtResourcePool = new SemaphoreSlim(5, 5);
-
         internal static FanArtMovieProvider Current { get; private set; }
 
         /// <summary>
