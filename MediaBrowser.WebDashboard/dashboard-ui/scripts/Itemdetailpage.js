@@ -57,7 +57,7 @@
 
         if (!item.MediaStreams || !item.MediaStreams.length) {
             $('#mediaInfoCollapsible', page).hide();
-        }else {
+        } else {
             $('#mediaInfoCollapsible', page).show();
         }
         if (!item.Chapters || !item.Chapters.length) {
@@ -173,8 +173,8 @@
             var overview = item.OverviewHtml || item.Overview;
 
             $('#itemOverview', page).html(overview).show();
-            $('#itemOverview a').each(function(){
-                $(this).attr("target","_blank");
+            $('#itemOverview a').each(function () {
+                $(this).attr("target", "_blank");
             });
         } else {
             $('#itemOverview', page).hide();
@@ -242,7 +242,7 @@
                     html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
                 }
 
-                html += '<a href="itembynamedetails.html?genre='+item.Genres[i]+'">' + item.Genres[i] + '</a>';
+                html += '<a href="itembynamedetails.html?genre=' + item.Genres[i] + '">' + item.Genres[i] + '</a>';
             }
 
             elem.html(html).trigger('create');
@@ -268,7 +268,7 @@
                     html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
                 }
 
-                html += '<a href="itembynamedetails.html?studio='+item.Studios[i]+'">' + item.Studios[i] + '</a>';
+                html += '<a href="itembynamedetails.html?studio=' + item.Studios[i] + '">' + item.Studios[i] + '</a>';
             }
 
             elem.html(html).trigger('create');
@@ -484,31 +484,31 @@
 
             html += '<tr>';
             html += '<td>' + type + '</td>';
-            html += '<td>' + stream.Codec +'</td>';
+            html += '<td>' + stream.Codec + '</td>';
 
             if (stream.Language) {
                 hasLanguage = true;
-                html += '<td class="language">' + stream.Language +'</td>';
+                html += '<td class="language">' + stream.Language + '</td>';
             } else html += '<td class="language"></td>';
 
             if (stream.Type == "Video") {
-                html += '<td class="resolution">'+ stream.Width +'/'+ stream.Height +' ('+ stream.AspectRatio +')</td>';
-            }else {
+                html += '<td class="resolution">' + stream.Width + '/' + stream.Height + ' (' + stream.AspectRatio + ')</td>';
+            } else {
                 html += '<td class="resolution"></td>';
             }
 
             if (stream.Channels) {
-                html += '<td>'+ stream.Channels +'ch '+ stream.SampleRate +' khz</td>';
-            }else {
+                html += '<td>' + stream.Channels + 'ch ' + stream.SampleRate + ' khz</td>';
+            } else {
                 html += '<td></td>';
             }
 
-            html += '<td>' + stream.BitRate +'</td>';
+            html += '<td>' + stream.BitRate + '</td>';
 
             if (stream.Type == "Video") {
                 var framerate = stream.AverageFrameRate || stream.RealFrameRate;
-                html += '<td class="framerate">'+ framerate +'</td>';
-            }else {
+                html += '<td class="framerate">' + framerate + '</td>';
+            } else {
                 html += '<td></td>';
             }
 
@@ -564,7 +564,7 @@
                 html += '<a href="#play-Trailer-' + i + '" onclick="ItemDetailPage.playTrailer(' + i + ');">';
 
                 var imageTags = trailer.ImageTags || {};
-                
+
                 if (imageTags.Primary) {
 
                     var imgUrl = ApiClient.getImageUrl(trailer.Id, {
@@ -687,7 +687,7 @@
             var cast = casts[i];
             var role = cast.Role || cast.Type;
 
-            html += '<a href="itembynamedetails.html?person='+cast.Name+'">';
+            html += '<a href="itembynamedetails.html?person=' + cast.Name + '">';
             html += '<div class="posterViewItem posterViewItemWithDualText">';
 
             if (cast.PrimaryImageTag) {
@@ -717,28 +717,32 @@
         var html = '';
         var page = $.mobile.activePage;
 
-        if (typeof(item.UserData.Likes) == "undefined") {
-            html += '<img src="css/images/userdata/thumbs_down_off.png" alt="Set Did Not Like" title="Set Did Not Like" onclick="ItemDetailPage.setDislike();" />';
-            html += '<img src="css/images/userdata/thumbs_up_off.png" alt="Set Liked" title="Set Liked" onclick="ItemDetailPage.setLike();" />';
-        } else if (item.UserData.Likes) {
-            html += '<img src="css/images/userdata/thumbs_down_off.png" alt="Set Did Not Like" title="Set Did Not Like" onclick="ItemDetailPage.setDislike();" />';
-            html += '<img src="css/images/userdata/thumbs_up_on.png" alt="Liked" title="Liked" onclick="ItemDetailPage.clearLike();" />';
+        var userData = item.UserData || {};
+
+        if (typeof userData.Likes == "undefined") {
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.setDislike();" />';
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="ItemDetailPage.setLike();" />';
+        } else if (userData.Likes) {
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.setDislike();" />';
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_on.png" alt="Liked" title="Like" onclick="ItemDetailPage.clearLike();" />';
         } else {
-            html += '<img src="css/images/userdata/thumbs_down_on.png" alt="Did Not Like" title="Did Not Like" onclick="ItemDetailPage.clearLike();" />';
-            html += '<img src="css/images/userdata/thumbs_up_off.png" alt="Set Liked" title="Set Liked" onclick="ItemDetailPage.setLike();" />';
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.clearLike();" />';
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="ItemDetailPage.setLike();" />';
         }
 
-        if (item.UserData.IsFavorite) {
-            html += '<img class="favorite" src="css/images/userdata/heart_on.png" alt="Make Not Favorite" title="Make Not Favorite" onclick="ItemDetailPage.setFavorite();" />';
-        }else {
-            html += '<img class="favorite" src="css/images/userdata/heart_off.png" alt="Make Favorite" title="Make Favorite" onclick="ItemDetailPage.setFavorite();" />';
+        if (userData.IsFavorite) {
+            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_on.png" alt="Remove favorite" title="Remove favorite" onclick="ItemDetailPage.setFavorite();" />';
+        } else {
+            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_off.png" alt="Mark favorite" title="Mark favorite" onclick="ItemDetailPage.setFavorite();" />';
         }
 
-        $('#itemFav', page).html(html);
+        $('#itemRatings', page).html(html);
     },
 
     setFavorite: function () {
         var item = ItemDetailPage.item;
+
+        item.UserData = item.UserData || {};
 
         var setting = !item.UserData.IsFavorite;
         item.UserData.IsFavorite = setting;
@@ -749,7 +753,10 @@
     },
 
     setLike: function () {
+
         var item = ItemDetailPage.item;
+
+        item.UserData = item.UserData || {};
 
         item.UserData.Likes = true;
 
@@ -759,9 +766,12 @@
     },
 
     clearLike: function () {
+
         var item = ItemDetailPage.item;
 
-        delete item.UserData.Likes;
+        item.UserData = item.UserData || {};
+
+        item.UserData.Likes = undefined;
 
         ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), item.Id);
 
@@ -770,6 +780,8 @@
 
     setDislike: function () {
         var item = ItemDetailPage.item;
+
+        item.UserData = item.UserData || {};
 
         item.UserData.Likes = false;
 

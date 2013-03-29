@@ -18,6 +18,8 @@
             query.parentId = parentId;
 
             ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).done(ItemListPage.renderTitle);
+        } else {
+            $('#itemName', $.mobile.activePage).html("Media Library");
         }
 
         ItemListPage.refreshItems(query);
