@@ -78,7 +78,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class UpdateDisplayPreferences
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/DisplayPreferences", "POST")]
-    [ServiceStack.ServiceHost.Api(("Updates a user's display preferences for an item"))]
+    [Api(("Updates a user's display preferences for an item"))]
     public class UpdateDisplayPreferences : DisplayPreferences, IReturnVoid
     {
         /// <summary>
@@ -93,7 +93,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class MarkFavoriteItem
     /// </summary>
     [Route("/Users/{UserId}/FavoriteItems/{Id}", "POST")]
-    [ServiceStack.ServiceHost.Api(Description = "Marks an item as a favorite")]
+    [Api(Description = "Marks an item as a favorite")]
     public class MarkFavoriteItem : IReturnVoid
     {
         /// <summary>
@@ -115,7 +115,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class UnmarkFavoriteItem
     /// </summary>
     [Route("/Users/{UserId}/FavoriteItems/{Id}", "DELETE")]
-    [ServiceStack.ServiceHost.Api(Description = "Unmarks an item as a favorite")]
+    [Api(Description = "Unmarks an item as a favorite")]
     public class UnmarkFavoriteItem : IReturnVoid
     {
         /// <summary>
@@ -498,7 +498,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var item = (Folder)DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
+            var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
             // Get the user data for this item
             var data = item.GetUserData(user, true);
@@ -519,7 +519,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var item = (Folder)DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
+            var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
             // Get the user data for this item
             var data = item.GetUserData(user, true);
@@ -540,7 +540,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var item = (Folder)DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
+            var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
             // Get the user data for this item
             var data = item.GetUserData(user, true);
@@ -560,7 +560,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var item = (Folder)DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
+            var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
             // Get the user data for this item
             var data = item.GetUserData(user, true);
