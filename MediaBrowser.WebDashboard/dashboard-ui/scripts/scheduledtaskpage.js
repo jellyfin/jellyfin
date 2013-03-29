@@ -133,7 +133,9 @@
 
         $('#selectTriggerType', page).val('DailyTrigger').trigger('change').selectmenu('refresh');
 
-        $('#popupAddTrigger', page).popup("open").on("popupafterclose", function () {
+        $('#popupAddTrigger', page).on("popupafteropen",function() {
+            $('#addTriggerForm input:first', this).focus();
+        }).popup("open").on("popupafterclose", function () {
 
             $('#addTriggerForm', page).off("submit");
             $(this).off("popupafterclose");

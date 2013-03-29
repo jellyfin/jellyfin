@@ -168,13 +168,12 @@
         $('label', popup).html(label);
         $('#txtValue', popup).val(initialValue);
 
-        popup.popup("open").on("popupafterclose", function () {
-
+        popup.on("popupafteropen",function() {
+            $('#textEntryForm input:first', this).focus();
+        }).on("popupafterclose", function () {
             $(this).off("popupafterclose").off("click");
-
             $('#textEntryForm', this).off("submit");
-
-        });
+        }).popup("open");
 
         $('#textEntryForm', popup).on('submit', function () {
 

@@ -58,7 +58,10 @@
         </div>
 
         <script type="text/javascript">
-            $('#displaySettingsForm').on('submit', DisplaySettingsPage.onSubmit);
+            $(function() {
+                $('#displaySettingsForm input:first').focus();
+                $('#displaySettingsForm').on('submit', DisplaySettingsPage.onSubmit);
+            });
         </script>
     </div>
 </body>

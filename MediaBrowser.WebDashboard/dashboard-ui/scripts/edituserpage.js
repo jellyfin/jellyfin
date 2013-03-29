@@ -38,6 +38,8 @@
             EditUserPage.loadUser(response1[0] || response1, response2[0], response3[0], response4[0]);
 
         });
+
+        $("#editUserProfileForm input:first").focus();
     },
 
     loadUser: function (user, loggedInUser, allParentalRatings, allCultures) {
@@ -150,7 +152,7 @@
         if (userId) {
             Dashboard.alert("Settings saved.");
         } else {
-            Dashboard.navigate("userprofiles.html");
+            Dashboard.navigate("userProfiles.html");
         }
     },
 

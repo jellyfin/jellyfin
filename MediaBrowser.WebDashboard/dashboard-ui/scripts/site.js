@@ -434,7 +434,7 @@ var Dashboard = {
 
             var hasPrimaryImage = item.ImageTags && item.ImageTags.Primary;
 
-            var href = item.IsFolder ? (item.Id ? "itemlist.html?parentId=" + item.Id : "#") : "itemdetails.html?id=" + item.Id;
+            var href = item.IsFolder ? (item.Id ? "itemList.html?parentId=" + item.Id : "#") : "itemDetails.html?id=" + item.Id;
 
             var showText = options.showTitle || !hasPrimaryImage || (item.Type !== 'Movie' && item.Type !== 'Series' && item.Type !== 'Season' && item.Type !== 'Trailer');
 
@@ -539,7 +539,7 @@ var Dashboard = {
             html += '<img style="max-height:125px;max-width:200px;" src="' + imageUrl + '" />';
             html += '</p>';
 
-            html += '<p><button type="button" onclick="Dashboard.navigate(\'edituser.html?userId=' + user.Id + '\');" data-icon="user">View Profile</button></p>';
+            html += '<p><button type="button" onclick="Dashboard.navigate(\'editUser.html?userId=' + user.Id + '\');" data-icon="user">View Profile</button></p>';
             html += '<p><button type="button" onclick="Dashboard.logout();" data-icon="lock">Sign Out</button></p>';
             html += '</div>';
 
@@ -589,7 +589,9 @@ var Dashboard = {
 
         $($.mobile.activePage).append(html);
 
-        var popup = $('#popupDirectoryPicker').popup().trigger('create').popup("open").on("popupafterclose", function () {
+        var popup = $('#popupDirectoryPicker').popup().trigger('create').on("popupafteropen",function() {
+            $('#popupDirectoryPicker input:first', this).focus();
+        }).popup("open").on("popupafterclose", function () {
 
             $('form', this).off("submit");
             $(this).off("click").off("popupafterclose").remove();
@@ -857,11 +859,11 @@ var Dashboard = {
             selected: page.hasClass("pluginConfigurationPage")
         }, {
             name: "User Profiles",
-            href: "userprofiles.html",
+            href: "userProfiles.html",
             selected: page.hasClass("userProfilesConfigurationPage")
         }, {
             name: "Display Settings",
-            href: "uisettings.html",
+            href: "uiSettings.html",
             selected: pageElem.id == "displaySettingsPage"
         }, {
             name: "Advanced",
@@ -869,7 +871,7 @@ var Dashboard = {
             selected: pageElem.id == "advancedConfigurationPage"
         }, {
             name: "Scheduled Tasks",
-            href: "scheduledtasks.html",
+            href: "scheduledTasks.html",
             selected: pageElem.id == "scheduledTasksPage" || pageElem.id == "scheduledTaskPage"
         }, {
             name: "Help",
@@ -1156,7 +1158,7 @@ $(function () {
     var footerHtml = '<div id="footer" class="ui-bar-a">';
     footerHtml += '<div id="nowPlayingBar" style="display:none;">';
     footerHtml += '<button id="previousTrackButton" class="imageButton mediaButton" title="Previous Track" type="button"><img src="css/images/media/previoustrack.png" /></button>';
-    //footerHtml += '<button id="stopButton" class="imageButton mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();"><img src="css/images/media/stop.png" /></button>';
+    footerHtml += '<button id="stopButton" class="imageButton mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();"><img src="css/images/media/stop.png" /></button>';
     footerHtml += '<button id="nextTrackButton" class="imageButton mediaButton" title="Next Track" type="button"><img src="css/images/media/nexttrack.png" /></button>';
     footerHtml += '<div id="mediaElement"></div>';
     footerHtml += '<div id="mediaInfo"></div>';
