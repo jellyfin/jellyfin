@@ -888,3 +888,8 @@ progress {
     width: 26px;
     margin: -.7em .5em auto 0;
 }
+
+#itemFav img {
+    width: 64px;
+    cursor: pointer;
+}

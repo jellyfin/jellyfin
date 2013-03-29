@@ -88,6 +88,8 @@
             $('#seriesName', page).html(series_name).show();
         }
 
+        ItemDetailPage.renderFav(item);
+
         Dashboard.hideLoadingMsg();
     },
 
@@ -709,7 +711,73 @@
         }
 
         $('#castContent', page).html(html);
+    },
+
+    renderFav: function (item) {
+        var html = '';
+        var page = $.mobile.activePage;
+
+        if (typeof(item.UserData.Likes) == "undefined") {
+            html += '<img src="css/images/userdata/thumbs_down_off.png" alt="Set Did Not Like" title="Set Did Not Like" onclick="ItemDetailPage.setDislike();" />';
+            html += '<img src="css/images/userdata/thumbs_up_off.png" alt="Set Liked" title="Set Liked" onclick="ItemDetailPage.setLike();" />';
+        } else if (item.UserData.Likes) {
+            html += '<img src="css/images/userdata/thumbs_down_off.png" alt="Set Did Not Like" title="Set Did Not Like" onclick="ItemDetailPage.setDislike();" />';
+            html += '<img src="css/images/userdata/thumbs_up_on.png" alt="Liked" title="Liked" onclick="ItemDetailPage.clearLike();" />';
+        } else {
+            html += '<img src="css/images/userdata/thumbs_down_on.png" alt="Did Not Like" title="Did Not Like" onclick="ItemDetailPage.clearLike();" />';
+            html += '<img src="css/images/userdata/thumbs_up_off.png" alt="Set Liked" title="Set Liked" onclick="ItemDetailPage.setLike();" />';
+        }
+
+        if (item.UserData.IsFavorite) {
+            html += '<img class="favorite" src="css/images/userdata/heart_on.png" alt="Make Not Favorite" title="Make Not Favorite" onclick="ItemDetailPage.setFavorite();" />';
+        }else {
+            html += '<img class="favorite" src="css/images/userdata/heart_off.png" alt="Make Favorite" title="Make Favorite" onclick="ItemDetailPage.setFavorite();" />';
+        }
+
+        $('#itemFav', page).html(html);
+    },
+
+    setFavorite: function () {
+        var item = ItemDetailPage.item;
+
+        var setting = !item.UserData.IsFavorite;
+        item.UserData.IsFavorite = setting;
+
+        ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), item.Id, setting);
+
+        ItemDetailPage.renderFav(item);
+    },
+
+    setLike: function () {
+        var item = ItemDetailPage.item;
+
+        item.UserData.Likes = true;
+
+        ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), item.Id, true);
+
+        ItemDetailPage.renderFav(item);
+    },
+
+    clearLike: function () {
+        var item = ItemDetailPage.item;
+
+        delete item.UserData.Likes;
+
+        ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), item.Id);
+
+        ItemDetailPage.renderFav(item);
+    },
+
+    setDislike: function () {
+        var item = ItemDetailPage.item;
+
+        item.UserData.Likes = false;
+
+        ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), item.Id, false);
+
+        ItemDetailPage.renderFav(item);
     }
+
 };
 
 $(document).on('pageshow', "#itemDetailPage", ItemDetailPage.onPageShow).on('pagehide', "#itemDetailPage", ItemDetailPage.onPageHide);
