@@ -434,7 +434,7 @@ var Dashboard = {
 
             var hasPrimaryImage = item.ImageTags && item.ImageTags.Primary;
 
-            var href = item.IsFolder ? (item.Id ? "itemList.html?parentId=" + item.Id : "#") : "itemDetails.html?id=" + item.Id;
+            var href = item.IsFolder ? (item.Id ? "itemlist.html?parentId=" + item.Id : "#") : "itemdetails.html?id=" + item.Id;
 
             var showText = options.showTitle || !hasPrimaryImage || (item.Type !== 'Movie' && item.Type !== 'Series' && item.Type !== 'Season' && item.Type !== 'Trailer');
 
@@ -539,7 +539,7 @@ var Dashboard = {
             html += '<img style="max-height:125px;max-width:200px;" src="' + imageUrl + '" />';
             html += '</p>';
 
-            html += '<p><button type="button" onclick="Dashboard.navigate(\'editUser.html?userId=' + user.Id + '\');" data-icon="user">View Profile</button></p>';
+            html += '<p><button type="button" onclick="Dashboard.navigate(\'edituser.html?userId=' + user.Id + '\');" data-icon="user">View Profile</button></p>';
             html += '<p><button type="button" onclick="Dashboard.logout();" data-icon="lock">Sign Out</button></p>';
             html += '</div>';
 
@@ -857,11 +857,11 @@ var Dashboard = {
             selected: page.hasClass("pluginConfigurationPage")
         }, {
             name: "User Profiles",
-            href: "userProfiles.html",
+            href: "userprofiles.html",
             selected: page.hasClass("userProfilesConfigurationPage")
         }, {
             name: "Display Settings",
-            href: "uiSettings.html",
+            href: "uisettings.html",
             selected: pageElem.id == "displaySettingsPage"
         }, {
             name: "Advanced",
@@ -869,7 +869,7 @@ var Dashboard = {
             selected: pageElem.id == "advancedConfigurationPage"
         }, {
             name: "Scheduled Tasks",
-            href: "scheduledTasks.html",
+            href: "scheduledtasks.html",
             selected: pageElem.id == "scheduledTasksPage" || pageElem.id == "scheduledTaskPage"
         }, {
             name: "Help",

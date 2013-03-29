@@ -92,7 +92,7 @@
 
             html += "<li>";
 
-            html += "<a href='scheduledTask.html?id=" + task.Id + "'>";
+            html += "<a href='scheduledtask.html?id=" + task.Id + "'>";
 
             html += "<h3>" + task.Name + "</h3>";
 
