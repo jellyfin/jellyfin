@@ -33,7 +33,7 @@ body {
 h1 {
     font-family: 'Segoe UI Light', 'Open Sans', Arial, Helvetica, sans-serif;
     font-weight: 200;
-    font-size: 32pt;
+    font-size: 28pt;
 }
 
 .toolsSidebar h1 {
@@ -89,10 +89,6 @@ pre, textarea.pre {
 .libraryPage, .itemListContent {
     background: #262626!important;
     background-attachment: fixed!important;
-}
-
-.ui-btn-icon-notext .ui-btn-inner .ui-icon {
-    margin: -10px -9px 0 0!important;
 }
 
 /*
