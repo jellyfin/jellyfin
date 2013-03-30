@@ -9,57 +9,99 @@
 
 
             <h1 class="listHeader" style="margin-top: 0;">
-
-                <span id="itemName"></span>
-
-                <div style="display: inline-block; margin-left: 50px;">
-                    <button id="btnOptions" type="button" data-icon="table" data-mini="true" data-inline="true" onclick="$('#optionsPanel', $.mobile.activePage).panel( 'toggle' );">Change View</button>
-                </div>
+                <span id="itemName" style="margin-right: 30px;"></span>
             </h1>
+            <div style="float: right; margin-top: -60px;">
+                <button id="btnOptions" type="button" data-mini="true" data-inline="true" data-icon="grid" onclick="$('#optionsPanel', $.mobile.activePage).panel( 'toggle' );">View</button>
+            </div>
 
-            <div id="listItems"></div>
+            <div id="listItems" style="clear: both;"></div>
 
             <div data-role="panel" id="optionsPanel" data-position="right" data-display="overlay" data-theme="b" data-position-fixed="true">
 
+                <div data-role="controlgroup" data-type="horizontal">
+                    <a id="btnViewPanel" href="#" data-role="button" data-theme="a" data-mini="true" onclick="ItemListPage.showViewPanel();">View</a>
+                    <a id="btnSortPanel" href="#" data-role="button" data-theme="c" data-mini="true" onclick="ItemListPage.showSortPanel();">Sort</a>
+                    <a id="btnFilterPanel" href="#" data-role="button" data-theme="c" data-mini="true" onclick="ItemListPage.showFilterPanel();">Filter</a>
+                    <a id="btnIndexPanel" href="#" data-role="button" data-theme="c" data-mini="true" onclick="ItemListPage.showIndexPanel();">Index</a>
+                </div>
+
                 <form>
-                    <fieldset data-role="controlgroup">
-                        <legend>
-                            <h3>Sort By:</h3>
-                        </legend>
+                    <div id="viewpanel" style="display: none;"></div>
+                    <div id="sortpanel" style="display: none;">
+                        <fieldset data-role="controlgroup">
+                            <legend>
+                                <h3>Sort By:</h3>
+                            </legend>
 
-                        <input data-theme="c" type="radio" name="radioSortBy" id="radio-choice-v-2a" value="on" checked="checked">
-                        <label for="radio-choice-v-2a" onclick="ItemListPage.sortBy('SortName');">Name</label>
+                            <input data-theme="c" type="radio" name="radioSortBy" id="radioName" value="on" checked="checked">
+                            <label for="radioName" onclick="ItemListPage.sortBy('SortName');">Name</label>
 
-                        <input data-theme="c" type="radio" name="radioSortBy" id="radioCommunityRating" value="other">
-                        <label for="radioCommunityRating" onclick="ItemListPage.sortBy('CommunityRating');">Community Rating</label>
+                            <input data-theme="c" type="radio" name="radioSortBy" id="radioCommunityRating" value="other">
+                            <label for="radioCommunityRating" onclick="ItemListPage.sortBy('CommunityRating');">Community Rating</label>
 
-                        <input data-theme="c" type="radio" name="radioSortBy" id="radio-choice-v-2c" value="other">
-                        <label for="radio-choice-v-2c" onclick="ItemListPage.sortBy('DateCreated');">Date Added</label>
+                            <input data-theme="c" type="radio" name="radioSortBy" id="radioDateAdded" value="other">
+                            <label for="radioDateAdded" onclick="ItemListPage.sortBy('DateCreated');">Date Added</label>
 
-                        <input data-theme="c" type="radio" name="radioSortBy" id="radioDatePlayed" value="other">
-                        <label for="radioDatePlayed" onclick="ItemListPage.sortBy('DatePlayed');">Date Played</label>
+                            <input data-theme="c" type="radio" name="radioSortBy" id="radioDatePlayed" value="other">
+                            <label for="radioDatePlayed" onclick="ItemListPage.sortBy('DatePlayed');">Date Played</label>
 
-                        <input data-theme="c" type="radio" name="radioSortBy" id="radioPremiereDate" value="other">
-                        <label for="radioPremiereDate" onclick="ItemListPage.sortBy('PremiereDate');">Date Released</label>
+                            <input data-theme="c" type="radio" name="radioSortBy" id="radioPremiereDate" value="other">
+                            <label for="radioPremiereDate" onclick="ItemListPage.sortBy('PremiereDate');">Date Released</label>
 
-                        <input data-theme="c" type="radio" name="radioSortBy" id="radio-choice-v-2b" value="off">
-                        <label for="radio-choice-v-2b" onclick="ItemListPage.sortBy('Random');">Random</label>
+                            <input data-theme="c" type="radio" name="radioSortBy" id="radioPlayCount" value="off">
+                            <label for="radioPlayCount" onclick="ItemListPage.sortBy('PlayCount');">Play Count</label>
 
-                        <input data-theme="c" type="radio" name="radioSortBy" id="radioRuntime" value="off">
-                        <label for="radioRuntime" onclick="ItemListPage.sortBy('Runtime');">Runtime</label>
-                    </fieldset>
+                            <input data-theme="c" type="radio" name="radioSortBy" id="radioRandom" value="off">
+                            <label for="radioRandom" onclick="ItemListPage.sortBy('Random');">Random</label>
 
-                    <fieldset data-role="controlgroup">
-                        <legend>
-                            <h3>Sort Order:</h3>
-                        </legend>
+                            <input data-theme="c" type="radio" name="radioSortBy" id="radioRuntime" value="off">
+                            <label for="radioRuntime" onclick="ItemListPage.sortBy('Runtime');">Runtime</label>
+                        </fieldset>
 
-                        <input data-theme="c" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked">
-                        <label for="radioAscending" onclick="ItemListPage.sortOrder('Ascending');">Ascending</label>
+                        <fieldset data-role="controlgroup">
+                            <legend>
+                                <h3>Sort Order:</h3>
+                            </legend>
 
-                        <input data-theme="c" type="radio" name="radioSortOrder" id="radioDescending" value="other">
-                        <label for="radioDescending" onclick="ItemListPage.sortOrder('Descending');">Descending</label>
-                    </fieldset>
+                            <input data-theme="c" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked">
+                            <label for="radioAscending" onclick="ItemListPage.sortOrder('Ascending');">Ascending</label>
+
+                            <input data-theme="c" type="radio" name="radioSortOrder" id="radioDescending" value="other">
+                            <label for="radioDescending" onclick="ItemListPage.sortOrder('Descending');">Descending</label>
+                        </fieldset>
+                    </div>
+                    <div id="filterpanel" style="display: none;">
+
+                        <fieldset data-role="controlgroup">
+                            <legend>
+                                <h3>Filters:</h3>
+                            </legend>
+                            <input type="checkbox" name="chkPlayed" id="chkPlayed" onchange="ItemListPage.filter('IsPlayed', this.checked);" data-theme="c">
+                            <label for="chkPlayed">Played</label>
+
+                            <input type="checkbox" name="chkUnplayed" id="chkUnplayed" onchange="ItemListPage.filter('IsUnplayed', this.checked);" data-theme="c">
+                            <label for="chkUnplayed">Unplayed</label>
+
+                            <input type="checkbox" name="chkIsFavorite" id="chkIsFavorite" onchange="ItemListPage.filter('IsFavorite', this.checked);" data-theme="c">
+                            <label for="chkIsFavorite">Favorites</label>
+
+                            <input type="checkbox" name="chkLikes" id="chkLikes" onchange="ItemListPage.filter('Likes', this.checked);" data-theme="c">
+                            <label for="chkLikes">Likes</label>
+
+                            <input type="checkbox" name="chkDislikes" id="chkDislikes" onchange="ItemListPage.filter('Dislikes', this.checked);" data-theme="c">
+                            <label for="chkDislikes">Dislikes</label>
+
+                            <input type="checkbox" name="chkRecentlyAdded" id="chkRecentlyAdded" onchange="ItemListPage.filter('IsRecentlyAdded', this.checked);" data-theme="c">
+                            <label for="chkRecentlyAdded">Recently added</label>
+
+                            <input type="checkbox" name="chkResumable" id="chkResumable" onchange="ItemListPage.filter('IsResumable', this.checked);" data-theme="c">
+                            <label for="chkResumable">Resumable</label>
+                        </fieldset>
+
+                    </div>
+                    <div id="indexpanel" style="display: none;"></div>
+
                 </form>
             </div>
         </div>

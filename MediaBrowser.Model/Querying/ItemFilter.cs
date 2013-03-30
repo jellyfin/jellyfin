@@ -33,6 +33,14 @@ namespace MediaBrowser.Model.Querying
         /// <summary>
         /// The item is resumable
         /// </summary>
-        IsResumable = 7
+        IsResumable = 7,
+        /// <summary>
+        /// The likes
+        /// </summary>
+        Likes = 8,
+        /// <summary>
+        /// The dislikes
+        /// </summary>
+        Dislikes = 9
     }
 }

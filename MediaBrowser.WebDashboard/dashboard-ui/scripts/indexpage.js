@@ -81,7 +81,8 @@
             IsFolder: true
         }, {
             Name: "Favorites",
-            IsFolder: true
+            IsFolder: true,
+            url: "itemlist.html?IsFavorite=true&Recursive=true&Title=Favorites"
         }, {
             Name: "Genres",
             IsFolder: true

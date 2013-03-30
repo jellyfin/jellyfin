@@ -311,11 +311,11 @@ var Dashboard = {
     },
 
     showLoadingMsg: function () {
-        $.mobile.showPageLoadingMsg();
+        $.mobile.loading("show");
     },
 
     hideLoadingMsg: function () {
-        $.mobile.hidePageLoadingMsg();
+        $.mobile.loading("hide");
     },
 
     processPluginConfigurationUpdateResult: function () {
@@ -434,7 +434,7 @@ var Dashboard = {
 
             var hasPrimaryImage = item.ImageTags && item.ImageTags.Primary;
 
-            var href = item.IsFolder ? (item.Id ? "itemList.html?parentId=" + item.Id : "#") : "itemdetails.html?id=" + item.Id;
+            var href = item.url || (item.IsFolder ? (item.Id ? "itemList.html?parentId=" + item.Id : "#") : "itemdetails.html?id=" + item.Id);
 
             var showText = options.showTitle || !hasPrimaryImage || (item.Type !== 'Movie' && item.Type !== 'Series' && item.Type !== 'Season' && item.Type !== 'Trailer');
 

@@ -50,5 +50,9 @@ namespace MediaBrowser.Model.Querying
         /// The production year
         /// </summary>
         public const string ProductionYear = "ProductionYear";
+        /// <summary>
+        /// The play count
+        /// </summary>
+        public const string PlayCount = "PlayCount";
     }
 }

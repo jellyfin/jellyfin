@@ -7,25 +7,50 @@
 
     reload: function () {
 
+        var page = $.mobile.activePage;
+
         var parentId = getParameterByName('parentId');
 
         var query = {
             Fields: "PrimaryImageAspectRatio",
-            SortBy: "SortName"
+            SortBy: "SortName",
+            Recursive: getParameterByName('Recursive') == 'true'
         };
+
+        var filters = [];
+
+        if (getParameterByName('IsResumable') == 'true') {
+            filters.push("IsResumable");
+            $('#chkResumable', page).checked(true).checkboxradio("refresh");
+        }
+
+        if (getParameterByName('IsFavorite') == 'true') {
+            filters.push("IsFavorite");
+            $('#chkIsFavorite', page).checked(true).checkboxradio("refresh");
+        }
+
+        if (getParameterByName('IsRecentlyAdded') == 'true') {
+            filters.push("IsRecentlyAdded");
+            $('#chkRecentlyAdded', page).checked(true).checkboxradio("refresh");
+        }
+
+        query.Filters = filters.join(',');
 
         if (parentId) {
             query.parentId = parentId;
 
             ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).done(ItemListPage.renderTitle);
-        } else {
-            $('#itemName', $.mobile.activePage).html("Media Library");
+        }
+        else {
+            $('#itemName', page).html(getParameterByName('Title') || "Media Library");
         }
 
         ItemListPage.refreshItems(query);
     },
 
     refreshItems: function (query) {
+
+        Dashboard.showLoadingMsg();
 
         var page = $.mobile.activePage;
 
@@ -38,15 +63,20 @@
 
         var items = result.Items;
 
+        var query = $.mobile.activePage.itemQuery;
+
         var renderOptions = {
 
             items: items,
-            useAverageAspectRatio: true
+            useAverageAspectRatio: query.Recursive !== true,
+            showTitle: query.Recursive
         };
 
         var html = Dashboard.getPosterViewHtml(renderOptions);
 
         $('#listItems', $.mobile.activePage).html(html);
+
+        Dashboard.hideLoadingMsg();
     },
 
     renderTitle: function (item) {
@@ -67,6 +97,84 @@
         var query = $.mobile.activePage.itemQuery;
         query.SortOrder = order;
         ItemListPage.refreshItems(query);
+    },
+
+    filter: function(name, add)
+    {
+        var query = $.mobile.activePage.itemQuery;
+        var filters = query.Filters || "";
+
+        filters = (',' + filters).replace(',' + name, '').substring(1);
+
+        if (add) {
+            filters = filters ? (filters + ',' + name) : name;
+        }
+
+        query.Filters = filters;
+
+        query.Recursive = filters.length ? true : false;
+
+        ItemListPage.refreshItems(query);
+    },
+
+    showSortPanel: function () {
+
+        var page = $.mobile.activePage;
+
+        $('#viewpanel', page).hide();
+        $('#filterpanel', page).hide();
+        $('#indexpanel', page).hide();
+        $('#sortpanel', page).show();
+
+        $('#btnViewPanel', page).buttonMarkup({ theme: "c" });
+        $('#btnSortPanel', page).buttonMarkup({ theme: "a" });
+        $('#btnIndexPanel', page).buttonMarkup({ theme: "c" });
+        $('#btnFilterPanel', page).buttonMarkup({ theme: "c" });
+    },
+
+    showViewPanel: function () {
+
+        var page = $.mobile.activePage;
+
+        $('#viewpanel', page).show();
+        $('#filterpanel', page).hide();
+        $('#indexpanel', page).hide();
+        $('#sortpanel', page).hide();
+
+        $('#btnViewPanel', page).buttonMarkup({ theme: "a" });
+        $('#btnSortPanel', page).buttonMarkup({ theme: "c" });
+        $('#btnIndexPanel', page).buttonMarkup({ theme: "c" });
+        $('#btnFilterPanel', page).buttonMarkup({ theme: "c" });
+    },
+
+    showIndexPanel: function () {
+
+        var page = $.mobile.activePage;
+
+        $('#viewpanel', page).hide();
+        $('#filterpanel', page).hide();
+        $('#indexpanel', page).show();
+        $('#sortpanel', page).hide();
+
+        $('#btnViewPanel', page).buttonMarkup({ theme: "c" });
+        $('#btnSortPanel', page).buttonMarkup({ theme: "c" });
+        $('#btnIndexPanel', page).buttonMarkup({ theme: "a" });
+        $('#btnFilterPanel', page).buttonMarkup({ theme: "c" });
+    },
+
+    showFilterPanel: function () {
+
+        var page = $.mobile.activePage;
+
+        $('#viewpanel', page).hide();
+        $('#filterpanel', page).show();
+        $('#indexpanel', page).hide();
+        $('#sortpanel', page).hide();
+
+        $('#btnViewPanel', page).buttonMarkup({ theme: "c" });
+        $('#btnSortPanel', page).buttonMarkup({ theme: "c" });
+        $('#btnIndexPanel', page).buttonMarkup({ theme: "c" });
+        $('#btnFilterPanel', page).buttonMarkup({ theme: "a" });
     }
 };
 

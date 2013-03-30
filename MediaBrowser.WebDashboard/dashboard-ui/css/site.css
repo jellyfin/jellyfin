@@ -91,6 +91,10 @@ pre, textarea.pre {
     background-attachment: fixed!important;
 }
 
+.ui-btn-icon-notext .ui-btn-inner .ui-icon {
+    margin: -10px -9px 0 0!important;
+}
+
 /*
     Header
     */
@@ -756,9 +760,9 @@ progress {
     cursor: pointer;
 }
 
-.imgUserItemRating:hover {
-    opacity: .5;
-}
+    .imgUserItemRating:hover {
+        opacity: .5;
+    }
 
 @media all and (min-width: 650px) {
     .itemImageBlock {
