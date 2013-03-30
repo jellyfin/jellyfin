@@ -36,9 +36,12 @@
                 html += "<img src='css/images/userflyoutdefault.png' />";
             }
 
-            html += "<h3>" + user.Name + "</h3>";
+            html += "<h3>" + user.Name;
 
-            html += "</a>";
+            if (user.Configuration.HasPassword) html += '<img src="css/images/userdata/password.png" alt="Password" title="Password" class="userProfileIcon" />';
+            if (user.Configuration.IsAdministrator) html += '<img src="css/images/userdata/administrator.png" alt="Administrator" title="Administrator" class="userProfileIcon" />';
+
+            html += "</h3></a>";
 
             html += "<a onclick='UserProfilesPage.deleteUser(this);' data-userid='" + user.Id + "' data-username='" + user.Name + "' href='#'>Delete</a>";
 
