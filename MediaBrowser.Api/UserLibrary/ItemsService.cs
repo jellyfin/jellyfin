@@ -48,7 +48,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// What to sort the results by
         /// </summary>
         /// <value>The sort by.</value>
-        [ApiMember(Name = "SortBy", Description = "Optional. Specify one or more sort orders, comma delimeted. Options: Album, AlbumArtist, Artist, CommunityRating, DateCreated, DatePlayed, PremiereDate, ProductionYear, SortName, Random, Runtime", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        [ApiMember(Name = "SortBy", Description = "Optional. Specify one or more sort orders, comma delimeted. Options: Album, AlbumArtist, Artist, CommunityRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Runtime", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string SortBy { get; set; }
 
         /// <summary>
@@ -243,6 +243,22 @@ namespace MediaBrowser.Api.UserLibrary
         {
             switch (filter)
             {
+                case ItemFilter.Likes:
+                    return items.Where(item =>
+                    {
+                        var userdata = item.GetUserData(user, false);
+
+                        return userdata != null && userdata.Likes.HasValue && userdata.Likes.Value;
+                    });
+
+                case ItemFilter.Dislikes:
+                    return items.Where(item =>
+                    {
+                        var userdata = item.GetUserData(user, false);
+
+                        return userdata != null && userdata.Likes.HasValue && !userdata.Likes.Value;
+                    });
+
                 case ItemFilter.IsFavorite:
                     return items.Where(item =>
                     {
