@@ -118,30 +118,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             cancellationToken.ThrowIfCancellationRequested();
 
             return result;
-        }
-
-        /// <summary>
-        /// Finds an item by ID, recursively
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>BaseItem.</returns>
-        public override BaseItem FindItemById(Guid id, User user)
-        {
-            var item = base.FindItemById(id, user);
-
-            if (item != null)
-            {
-                return item;
-            }
-
-            if (SpecialFeatures != null)
-            {
-                return SpecialFeatures.FirstOrDefault(i => i.Id == id);
-            }
-
-            return null;
-        }        
+        }      
         
         /// <summary>
         /// Loads special features from the file system

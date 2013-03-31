@@ -139,11 +139,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                         if (!string.IsNullOrEmpty(vals[0]))
                         {
-                            start = long.Parse(vals[0]);
+                            start = long.Parse(vals[0], UsCulture);
                         }
                         if (!string.IsNullOrEmpty(vals[1]))
                         {
-                            end = long.Parse(vals[1]);
+                            end = long.Parse(vals[1], UsCulture);
                         }
 
                         _requestedRanges.Add(new KeyValuePair<long, long?>(start, end));

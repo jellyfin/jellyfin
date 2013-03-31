@@ -69,7 +69,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
                 // If we got something, parse it
                 if (!string.IsNullOrEmpty(duration))
                 {
-                    audio.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(duration)).Ticks;
+                    audio.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(duration, UsCulture)).Ticks;
                 }
 
                 if (data.format.tags != null)

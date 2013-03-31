@@ -951,33 +951,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Finds an item by ID, recursively
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>BaseItem.</returns>
-        /// <exception cref="System.ArgumentNullException">id</exception>
-        public virtual BaseItem FindItemById(Guid id, User user)
-        {
-            if (id == Guid.Empty)
-            {
-                throw new ArgumentNullException("id");
-            }
-
-            if (Id == id)
-            {
-                return this;
-            }
-
-            if (LocalTrailers != null)
-            {
-                return LocalTrailers.FirstOrDefault(i => i.Id == id);
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Finds the particular item by searching through our parents and, if not found there, loading from repo
         /// </summary>
         /// <param name="id">The id.</param>

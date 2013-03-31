@@ -673,7 +673,7 @@ namespace MediaBrowser.Controller.Entities
 
                 foreach (var item in changedArgs.ItemsRemoved)
                 {
-                    Logger.Info("** " + item.Name + " Removed from library.");
+                    Logger.Debug("** " + item.Name + " Removed from library.");
                 }
 
                 var childrenReplaced = false;
@@ -688,7 +688,7 @@ namespace MediaBrowser.Controller.Entities
 
                 foreach (var item in changedArgs.ItemsAdded)
                 {
-                    Logger.Info("** " + item.Name + " Added to library.");
+                    Logger.Debug("** " + item.Name + " Added to library.");
 
                     if (!childrenReplaced)
                     {
@@ -701,7 +701,7 @@ namespace MediaBrowser.Controller.Entities
                 await Task.WhenAll(saveTasks).ConfigureAwait(false);
 
                 //and save children in repo...
-                Logger.Info("*** Saving " + newChildren.Count + " children for " + Name);
+                Logger.Debug("*** Saving " + newChildren.Count + " children for " + Name);
                 await Kernel.Instance.ItemRepository.SaveChildren(Id, newChildren, CancellationToken.None).ConfigureAwait(false);
             }
 
@@ -911,36 +911,6 @@ namespace MediaBrowser.Controller.Entities
             var tasks = GetChildren(user).Select(c => c.SetPlayedStatus(user, wasPlayed, userManager));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Finds an item by ID, recursively
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>BaseItem.</returns>
-        public override BaseItem FindItemById(Guid id, User user)
-        {
-            var result = base.FindItemById(id, user);
-
-            if (result != null)
-            {
-                return result;
-            }
-
-            var children = user == null ? ActualChildren : GetChildren(user);
-
-            foreach (var child in children)
-            {
-                result = child.FindItemById(id, user);
-
-                if (result != null)
-                {
-                    return result;
-                }
-            }
-
-            return null;
         }
 
         /// <summary>
