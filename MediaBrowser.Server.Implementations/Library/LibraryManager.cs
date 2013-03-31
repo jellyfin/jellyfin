@@ -316,7 +316,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 foreach (var special in movie.SpecialFeatures)
                 {
                     // Prevent access to foreach variable in closure
-                    Video special1 = special;
+                    var special1 = special;
                     LibraryItemsCache.AddOrUpdate(special.Id, special, delegate { return special1; });
                 }
             }
