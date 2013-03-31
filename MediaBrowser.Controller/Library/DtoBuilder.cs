@@ -809,15 +809,19 @@ namespace MediaBrowser.Controller.Library
         /// Gets a BaseItem based upon it's client-side item id
         /// </summary>
         /// <param name="id">The id.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
         /// <param name="userId">The user id.</param>
         /// <returns>BaseItem.</returns>
         public static BaseItem GetItemByClientId(string id, IUserManager userManager, ILibraryManager libraryManager, Guid? userId = null)
         {
-            var isIdEmpty = string.IsNullOrEmpty(id);
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentNullException("id");
+            }
 
             // If the item is an indexed folder we have to do a special routine to get it
-            var isIndexFolder = !isIdEmpty &&
-                                id.IndexOf(IndexFolderDelimeter, StringComparison.OrdinalIgnoreCase) != -1;
+            var isIndexFolder = id.IndexOf(IndexFolderDelimeter, StringComparison.OrdinalIgnoreCase) != -1;
 
             if (isIndexFolder)
             {
@@ -831,9 +835,7 @@ namespace MediaBrowser.Controller.Library
 
             if (userId.HasValue)
             {
-                item = isIdEmpty
-                           ? userManager.GetUserById(userId.Value).RootFolder
-                           : libraryManager.GetItemById(new Guid(id), userId.Value);
+                item = libraryManager.GetItemById(new Guid(id));
             }
             else if (!isIndexFolder)
             {
@@ -862,6 +864,8 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="id">The id.</param>
         /// <param name="userId">The user id.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
         /// <returns>BaseItem.</returns>
         private static BaseItem GetIndexFolder(string id, Guid userId, IUserManager userManager, ILibraryManager libraryManager)
         {

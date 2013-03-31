@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.Globalization;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Weather;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -181,6 +182,8 @@ namespace MediaBrowser.Server.Implementations.WorldWeatherOnline
         /// <value>The weather code.</value>
         public string weatherCode { get; set; }
 
+        protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        
         /// <summary>
         /// To the weather status.
         /// </summary>
@@ -189,9 +192,9 @@ namespace MediaBrowser.Server.Implementations.WorldWeatherOnline
         {
             return new WeatherStatus
             {
-                TemperatureCelsius = int.Parse(temp_C),
-                TemperatureFahrenheit = int.Parse(temp_F),
-                Humidity = int.Parse(humidity),
+                TemperatureCelsius = int.Parse(temp_C, UsCulture),
+                TemperatureFahrenheit = int.Parse(temp_F, UsCulture),
+                Humidity = int.Parse(humidity, UsCulture),
                 Condition = DailyWeatherInfo.GetCondition(weatherCode)
             };
         }
@@ -263,6 +266,8 @@ namespace MediaBrowser.Server.Implementations.WorldWeatherOnline
         /// <value>The windspeed miles.</value>
         public string windspeedMiles { get; set; }
 
+        protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        
         /// <summary>
         /// To the weather forecast.
         /// </summary>
@@ -271,11 +276,11 @@ namespace MediaBrowser.Server.Implementations.WorldWeatherOnline
         {
             return new WeatherForecast
             {
-                Date = DateTime.Parse(date),
-                HighTemperatureCelsius = int.Parse(tempMaxC),
-                HighTemperatureFahrenheit = int.Parse(tempMaxF),
-                LowTemperatureCelsius = int.Parse(tempMinC),
-                LowTemperatureFahrenheit = int.Parse(tempMinF),
+                Date = DateTime.Parse(date, UsCulture),
+                HighTemperatureCelsius = int.Parse(tempMaxC, UsCulture),
+                HighTemperatureFahrenheit = int.Parse(tempMaxF, UsCulture),
+                LowTemperatureCelsius = int.Parse(tempMinC, UsCulture),
+                LowTemperatureFahrenheit = int.Parse(tempMinF, UsCulture),
                 Condition = GetCondition(weatherCode)
             };
         }

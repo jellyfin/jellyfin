@@ -127,6 +127,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             EndpointHostConfig.Instance.MetadataRedirectPath = "metadata";
         }
 
+        protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        
         /// <summary>
         /// Configures the specified container.
         /// </summary>
@@ -184,7 +186,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                         if (hasOptions.Options.TryGetValue("Content-Length", out contentLength) && !string.IsNullOrEmpty(contentLength))
                         {
-                            var length = long.Parse(contentLength);
+                            var length = long.Parse(contentLength, UsCulture);
 
                             if (length > 0)
                             {

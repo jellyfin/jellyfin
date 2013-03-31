@@ -191,7 +191,6 @@ namespace MediaBrowser.Controller.Extensions
 
             if (!string.IsNullOrWhiteSpace(valueString))
             {
-
                 int.TryParse(valueString, out value);
             }
 

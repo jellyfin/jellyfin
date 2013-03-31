@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Globalization;
+using System.Net.Http.Headers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
@@ -216,6 +217,8 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             return GetTempFile(options, tempFile, 0);
         }
 
+        protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        
         /// <summary>
         /// Gets the temp file.
         /// </summary>
@@ -278,7 +281,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                     }
                     else
                     {
-                        var length = long.Parse(string.Join(string.Empty, lengthValues.ToArray()));
+                        var length = long.Parse(string.Join(string.Empty, lengthValues.ToArray()), UsCulture);
 
                         using (var stream = ProgressStream.CreateReadProgressStream(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), options.Progress.Report, length))
                         {
