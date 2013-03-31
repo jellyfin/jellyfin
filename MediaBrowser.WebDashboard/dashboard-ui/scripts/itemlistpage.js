@@ -13,7 +13,6 @@
 
         var query = {
             Fields: "PrimaryImageAspectRatio",
-            SortBy: "SortName",
             Recursive: getParameterByName('Recursive') == 'true'
         };
 
@@ -34,7 +33,19 @@
             $('#chkRecentlyAdded', page).checked(true).checkboxradio("refresh");
         }
 
+        var sortBy = getParameterByName('SortBy') || 'SortName';
+        query.SortBy = sortBy;
+        $('.radioSortBy', page).checked(false).checkboxradio("refresh");
+        $('#radio' + sortBy, page).checked(true).checkboxradio("refresh");
+
+        var order = getParameterByName('SortOrder') || 'Ascending';
+
+        query.SortOrder = order;
+        $('.radioSortOrder', page).checked(false).checkboxradio("refresh");
+        $('#radio' + order, page).checked(true).checkboxradio("refresh");
+
         query.Filters = filters.join(',');
+        //query.limit = 100;
 
         if (parentId) {
             query.parentId = parentId;
@@ -111,8 +122,6 @@
         }
 
         query.Filters = filters;
-
-        query.Recursive = filters.length ? true : false;
 
         ItemListPage.refreshItems(query);
     },

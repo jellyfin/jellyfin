@@ -70,37 +70,6 @@
             }));
 
         });
-
-        IndexPage.loadMyLibrary(userId, page);
-    },
-
-    loadMyLibrary: function (userId, page) {
-
-        var items = [{
-            Name: "Recently Played",
-            IsFolder: true
-        }, {
-            Name: "Favorites",
-            IsFolder: true,
-            url: "itemlist.html?IsFavorite=true&Recursive=true&Title=Favorites"
-        }, {
-            Name: "Genres",
-            IsFolder: true
-        }, {
-            Name: "Studios",
-            IsFolder: true
-        }, {
-            Name: "Performers",
-            IsFolder: true
-        }, {
-            Name: "Directors",
-            IsFolder: true
-        }];
-
-        $('#divMyLibrary', page).html(Dashboard.getPosterViewHtml({
-            items: items,
-            showTitle: true
-        }));
     }
 };
 

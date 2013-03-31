@@ -236,7 +236,7 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            _logger.Info("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name ?? "--Unknown--");
+            _logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name ?? "--Unknown--");
 
             // This provides the ability to cancel just this one provider
             var innerCancellationTokenSource = new CancellationTokenSource();
@@ -249,7 +249,7 @@ namespace MediaBrowser.Server.Implementations.Providers
             }
             catch (OperationCanceledException ex)
             {
-                _logger.Info("{0} cancelled for {1}", provider.GetType().Name, item.Name);
+                _logger.Debug("{0} cancelled for {1}", provider.GetType().Name, item.Name);
 
                 // If the outer cancellation token is the one that caused the cancellation, throw it
                 if (cancellationToken.IsCancellationRequested && ex.CancellationToken == cancellationToken)
@@ -325,8 +325,6 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// </summary>
         private void ValidateCurrentlyRunningProviders()
         {
-            _logger.Info("Validing currently running providers");
-
             var enableInternetProviders = ConfigurationManager.Configuration.EnableInternetProviders;
             var internetProviderExcludeTypes = ConfigurationManager.Configuration.InternetProviderExcludeTypes;
 

@@ -198,7 +198,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
                     if (needToSetRuntime && !string.IsNullOrEmpty(data.format.duration))
                     {
-                        video.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(data.format.duration)).Ticks;
+                        video.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(data.format.duration, UsCulture)).Ticks;
                     }
                 }
 
