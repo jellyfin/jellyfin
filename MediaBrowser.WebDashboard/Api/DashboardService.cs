@@ -406,8 +406,8 @@ namespace MediaBrowser.WebDashboard.Api
             var files = new[]
                             {
                                 "http://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.css",
-                                "http://vjs.zencdn.net/c/video-js.css",
                                 "thirdparty/jqm-icon-pack-3.0/font-awesome/jqm-icon-pack-3.0.0-fa.css",
+                                "css/jplayer.css" + versionString,
                                 "css/site.css" + versionString
                             };
 
@@ -429,7 +429,8 @@ namespace MediaBrowser.WebDashboard.Api
                             {
                                 "http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js", 
                                 "http://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.js",
-                                "http://vjs.zencdn.net/c/video.js",
+                                "thirdparty/jplayer/jquery.jplayer.min.js" + versionString,
+                                "thirdparty/jplayer/jplayer.playlist.min.js" + versionString,
                                 "scripts/all.js" + versionString
             };
 
