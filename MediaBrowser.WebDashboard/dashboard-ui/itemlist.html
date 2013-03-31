@@ -34,28 +34,28 @@
                                 <h3>Sort By:</h3>
                             </legend>
 
-                            <input data-theme="c" type="radio" name="radioSortBy" id="radioName" value="on" checked="checked">
-                            <label for="radioName" onclick="ItemListPage.sortBy('SortName');">Name</label>
+                            <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked">
+                            <label for="radioSortName" onclick="ItemListPage.sortBy('SortName');">Name</label>
 
-                            <input data-theme="c" type="radio" name="radioSortBy" id="radioCommunityRating" value="other">
+                            <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioCommunityRating" value="other">
                             <label for="radioCommunityRating" onclick="ItemListPage.sortBy('CommunityRating');">Community Rating</label>
 
-                            <input data-theme="c" type="radio" name="radioSortBy" id="radioDateAdded" value="other">
-                            <label for="radioDateAdded" onclick="ItemListPage.sortBy('DateCreated');">Date Added</label>
+                            <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioDateCreated" value="other">
+                            <label for="radioDateCreated" onclick="ItemListPage.sortBy('DateCreated');">Date Added</label>
 
-                            <input data-theme="c" type="radio" name="radioSortBy" id="radioDatePlayed" value="other">
+                            <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioDatePlayed" value="other">
                             <label for="radioDatePlayed" onclick="ItemListPage.sortBy('DatePlayed');">Date Played</label>
 
-                            <input data-theme="c" type="radio" name="radioSortBy" id="radioPremiereDate" value="other">
+                            <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioPremiereDate" value="other">
                             <label for="radioPremiereDate" onclick="ItemListPage.sortBy('PremiereDate');">Date Released</label>
 
-                            <input data-theme="c" type="radio" name="radioSortBy" id="radioPlayCount" value="off">
+                            <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioPlayCount" value="off">
                             <label for="radioPlayCount" onclick="ItemListPage.sortBy('PlayCount');">Play Count</label>
 
-                            <input data-theme="c" type="radio" name="radioSortBy" id="radioRandom" value="off">
+                            <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioRandom" value="off">
                             <label for="radioRandom" onclick="ItemListPage.sortBy('Random');">Random</label>
 
-                            <input data-theme="c" type="radio" name="radioSortBy" id="radioRuntime" value="off">
+                            <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioRuntime" value="off">
                             <label for="radioRuntime" onclick="ItemListPage.sortBy('Runtime');">Runtime</label>
                         </fieldset>
 
@@ -64,10 +64,10 @@
                                 <h3>Sort Order:</h3>
                             </legend>
 
-                            <input data-theme="c" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked">
+                            <input class="radioSortOrder" data-theme="c" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked">
                             <label for="radioAscending" onclick="ItemListPage.sortOrder('Ascending');">Ascending</label>
 
-                            <input data-theme="c" type="radio" name="radioSortOrder" id="radioDescending" value="other">
+                            <input class="radioSortOrder" data-theme="c" type="radio" name="radioSortOrder" id="radioDescending" value="other">
                             <label for="radioDescending" onclick="ItemListPage.sortOrder('Descending');">Descending</label>
                         </fieldset>
                     </div>
@@ -91,9 +91,6 @@
 
                             <input type="checkbox" name="chkDislikes" id="chkDislikes" onchange="ItemListPage.filter('Dislikes', this.checked);" data-theme="c">
                             <label for="chkDislikes">Dislikes</label>
-
-                            <input type="checkbox" name="chkRecentlyAdded" id="chkRecentlyAdded" onchange="ItemListPage.filter('IsRecentlyAdded', this.checked);" data-theme="c">
-                            <label for="chkRecentlyAdded">Recently added</label>
 
                             <input type="checkbox" name="chkResumable" id="chkResumable" onchange="ItemListPage.filter('IsResumable', this.checked);" data-theme="c">
                             <label for="chkResumable">Resumable</label>

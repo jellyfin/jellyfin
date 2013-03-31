@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using System.Globalization;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -80,6 +81,8 @@ namespace MediaBrowser.Common.Net
             return NullTaskResult;
         }
 
+        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        
         /// <summary>
         /// Starts sending messages over a web socket
         /// </summary>
@@ -88,8 +91,8 @@ namespace MediaBrowser.Common.Net
         {
             var vals = message.Data.Split(',');
 
-            var dueTimeMs = long.Parse(vals[0]);
-            var periodMs = long.Parse(vals[1]);
+            var dueTimeMs = long.Parse(vals[0], UsCulture);
+            var periodMs = long.Parse(vals[1], UsCulture);
 
             var cancellationTokenSource = new CancellationTokenSource();
 

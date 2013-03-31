@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Globalization;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.MediaInfo;
@@ -61,6 +62,8 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             get { return MetadataProviderPriority.Second; }
         }
 
+        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        
         /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>
@@ -203,7 +206,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
                 if (!string.IsNullOrEmpty(streamInfo.sample_rate))
                 {
-                    stream.SampleRate = int.Parse(streamInfo.sample_rate);
+                    stream.SampleRate = int.Parse(streamInfo.sample_rate, UsCulture);
                 }
             }
             else if (streamInfo.codec_type.Equals("subtitle", StringComparison.OrdinalIgnoreCase))
@@ -227,12 +230,12 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             {
                 if (!string.IsNullOrEmpty(streamInfo.bit_rate))
                 {
-                    stream.BitRate = int.Parse(streamInfo.bit_rate);
+                    stream.BitRate = int.Parse(streamInfo.bit_rate, UsCulture);
                 }
                 else if (formatInfo != null && !string.IsNullOrEmpty(formatInfo.bit_rate))
                 {
                     // If the stream info doesn't have a bitrate get the value from the media format info
-                    stream.BitRate = int.Parse(formatInfo.bit_rate);
+                    stream.BitRate = int.Parse(formatInfo.bit_rate, UsCulture);
                 }
             }
 
@@ -265,11 +268,11 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
                 if (parts.Length == 2)
                 {
-                    result = float.Parse(parts[0])/float.Parse(parts[1]);
+                    result = float.Parse(parts[0], UsCulture) / float.Parse(parts[1], UsCulture);
                 }
                 else
                 {
-                    result = float.Parse(parts[0]);
+                    result = float.Parse(parts[0], UsCulture);
                 }
 
                 return float.IsNaN(result) ? (float?)null : result;

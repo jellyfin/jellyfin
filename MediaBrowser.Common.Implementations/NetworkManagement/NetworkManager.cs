@@ -1,4 +1,5 @@
-﻿using System.Management;
+﻿using System.Globalization;
+using System.Management;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Net;
 using System;
@@ -343,6 +344,8 @@ namespace MediaBrowser.Common.Implementations.NetworkManagement
             return new IPEndPoint(ipaddy, port);
         }
 
+        protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        
         /// <summary>
         /// Gets the port.
         /// </summary>

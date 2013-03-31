@@ -4,6 +4,7 @@ using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
@@ -73,6 +74,8 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="args">The <see cref="ChildrenChangedEventArgs" /> instance containing the event data.</param>
         public void ReportLibraryChanged(ChildrenChangedEventArgs args)
         {
+            UpdateLibraryCache(args);
+
             EventHelper.QueueEventIfNotNull(LibraryChanged, this, args, _logger);
         }
         #endregion
@@ -109,7 +112,28 @@ namespace MediaBrowser.Server.Implementations.Library
         /// (typically, multiple user roots).  We store them here and be sure they all reference a
         /// single instance.
         /// </summary>
-        private ConcurrentDictionary<Guid, BaseItem> ByReferenceItems { get; set; } 
+        private ConcurrentDictionary<Guid, BaseItem> ByReferenceItems { get; set; }
+
+        private ConcurrentDictionary<Guid, BaseItem> _libraryItemsCache;
+        private object _libraryItemsCacheSyncLock = new object();
+        private bool _libraryItemsCacheInitialized;
+        private ConcurrentDictionary<Guid, BaseItem> LibraryItemsCache
+        {
+            get
+            {
+                LazyInitializer.EnsureInitialized(ref _libraryItemsCache, ref _libraryItemsCacheInitialized, ref _libraryItemsCacheSyncLock, CreateLibraryItemsCache);
+                return _libraryItemsCache;
+            }
+            set
+            {
+                _libraryItemsCache = value;
+
+                if (value == null)
+                {
+                    _libraryItemsCacheInitialized = false;
+                }
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryManager" /> class.
@@ -219,12 +243,83 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 // Any number of configuration settings could change the way the library is refreshed, so do that now
                 _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
-
+                
                 if (refreshPeopleAfterUpdate)
                 {
                     _taskManager.CancelIfRunningAndQueue<PeopleValidationTask>();
                 }
             });
+        }
+
+        /// <summary>
+        /// Creates the library items cache.
+        /// </summary>
+        /// <returns>ConcurrentDictionary{GuidBaseItem}.</returns>
+        private ConcurrentDictionary<Guid, BaseItem> CreateLibraryItemsCache()
+        {
+            var items = RootFolder.RecursiveChildren.ToList();
+
+            items.Add(RootFolder);
+
+            var specialFeatures = items.OfType<Movie>().SelectMany(i => i.SpecialFeatures).ToList();
+            var localTrailers = items.SelectMany(i => i.LocalTrailers).ToList();
+
+            items.AddRange(specialFeatures);
+            items.AddRange(localTrailers);
+
+            // Can't add these right now because there could be separate instances with the same id.
+            //items.AddRange(_userManager.Users.Select(i => i.RootFolder).Distinct().ToList());
+
+            items.AddRange(_userManager.Users.SelectMany(i => i.RootFolder.Children).Where(i => !(i is BasePluginFolder)).Distinct().ToList());
+
+            return new ConcurrentDictionary<Guid,BaseItem>(items.ToDictionary(i => i.Id));
+        }
+
+        /// <summary>
+        /// Updates the library cache.
+        /// </summary>
+        /// <param name="args">The <see cref="ChildrenChangedEventArgs"/> instance containing the event data.</param>
+        private void UpdateLibraryCache(ChildrenChangedEventArgs args)
+        {
+            UpdateItemInLibraryCache(args.Folder);
+
+            foreach (var item in args.ItemsAdded)
+            {
+                UpdateItemInLibraryCache(item);
+            }
+
+            foreach (var item in args.ItemsUpdated)
+            {
+                UpdateItemInLibraryCache(item);
+            }
+        }
+
+        /// <summary>
+        /// Updates the item in library cache.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        private void UpdateItemInLibraryCache(BaseItem item)
+        {
+            LibraryItemsCache.AddOrUpdate(item.Id, item, delegate { return item; });
+
+            foreach (var trailer in item.LocalTrailers)
+            {
+                // Prevent access to foreach variable in closure
+                var trailer1 = trailer;
+                LibraryItemsCache.AddOrUpdate(trailer.Id, trailer, delegate { return trailer1; });
+            }
+
+            var movie = item as Movie;
+
+            if (movie != null)
+            {
+                foreach (var special in movie.SpecialFeatures)
+                {
+                    // Prevent access to foreach variable in closure
+                    Video special1 = special;
+                    LibraryItemsCache.AddOrUpdate(special.Id, special, delegate { return special1; });
+                }
+            }
         }
 
         /// <summary>
@@ -647,11 +742,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
             // Now validate the entire media library
             await RootFolder.ValidateChildren(progress, cancellationToken, recursive: true).ConfigureAwait(false);
-
-            //foreach (var user in _userManager.Users)
-            //{
-            //    await user.ValidateMediaLibrary(new Progress<double> { }, cancellationToken).ConfigureAwait(false);
-            //}
         }
 
         /// <summary>
@@ -709,32 +799,6 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Finds a library item by Id and UserId.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="userId">The user id.</param>
-        /// <param name="userManager">The user manager.</param>
-        /// <returns>BaseItem.</returns>
-        /// <exception cref="System.ArgumentNullException">id</exception>
-        public BaseItem GetItemById(Guid id, Guid userId)
-        {
-            if (id == Guid.Empty)
-            {
-                throw new ArgumentNullException("id");
-            }
-
-            if (userId == Guid.Empty)
-            {
-                throw new ArgumentNullException("userId");
-            }
-
-            var user = _userManager.GetUserById(userId);
-            var userRoot = user.RootFolder;
-
-            return userRoot.FindItemById(id, user);
-        }
-
-        /// <summary>
         /// Gets the item by id.
         /// </summary>
         /// <param name="id">The id.</param>
@@ -747,7 +811,11 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("id");
             }
 
-            return RootFolder.FindItemById(id, null);
+            BaseItem item;
+
+            LibraryItemsCache.TryGetValue(id, out item);
+
+            return item;
         }
 
         /// <summary>

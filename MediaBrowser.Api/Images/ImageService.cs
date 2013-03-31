@@ -160,11 +160,12 @@ namespace MediaBrowser.Api.Images
         /// The _library manager
         /// </summary>
         private readonly ILibraryManager _libraryManager;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageService" /> class.
         /// </summary>
         /// <param name="userManager">The user manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
         public ImageService(IUserManager userManager, ILibraryManager libraryManager)
         {
             _userManager = userManager;
@@ -178,7 +179,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetItemImage request)
         {
-            var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager);
+            var item = string.IsNullOrEmpty(request.Id) ? _libraryManager.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager);
 
             return GetImage(request, item);
         }
