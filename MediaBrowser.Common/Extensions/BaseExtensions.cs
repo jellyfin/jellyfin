@@ -53,7 +53,7 @@ namespace MediaBrowser.Common.Extensions
         {
             // http://stackoverflow.com/questions/1349023/how-can-i-strip-html-from-text-in-net
             const string pattern = @"<(.|\n)*?>";
-            return Regex.Replace(htmlString, pattern, string.Empty);
+            return Regex.Replace(htmlString, pattern, string.Empty).Trim();
         }
         
         /// <summary>
