@@ -22,7 +22,8 @@
             var media = MediaPlayer.testableAudioElement;
 
             if (media.canPlayType) {
-                return media.canPlayType('audio/mpeg').replace(/no/, '') || media.canPlayType('audio/aac').replace(/no/, '');
+
+                return media.canPlayType('audio/mpeg').replace(/no/, '') || media.canPlayType('audio/webm').replace(/no/, '') || media.canPlayType('audio/aac').replace(/no/, '') || media.canPlayType('audio/ogg').replace(/no/, '');
             }
 
             return false;
