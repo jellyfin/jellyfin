@@ -473,6 +473,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "mediaplayer.js",
                                       "metadataconfigurationpage.js",
                                       "metadataimagespage.js",
+                                      "moviesrecommended.js",
                                       "pluginspage.js",
                                       "pluginupdatespage.js",
                                       "scheduledtaskpage.js",
