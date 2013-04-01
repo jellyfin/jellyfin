@@ -60,7 +60,7 @@
 
             var linkId = "lnkUser" + i;
 
-            var background = Dashboard.getRandomMetroColor();
+            var background = Dashboard.getMetroColor(user.Id);
 
             html += '<div class="posterViewItem posterViewItemWithDualText">';
 

@@ -54,7 +54,7 @@
                 }
             }
 
-            var color = plugin.tileColor || Dashboard.getRandomMetroColor();
+            var color = plugin.tileColor || Dashboard.getMetroColor(plugin.name);
 
             html += "<div class='posterViewItemText' style='background:" + color + "'>";
 
