@@ -424,7 +424,7 @@ form, .readOnlyContent {
 
 .posterViewItem img {
     max-width: 155px;
-    max-height: 148px;
+    max-height: 125px;
     vertical-align: bottom;
 }
 
@@ -486,7 +486,7 @@ form, .readOnlyContent {
 
     .posterViewItem img {
         max-width: 190px;
-        max-height: 190px;
+        max-height: 160px;
     }
 }
 
@@ -494,7 +494,7 @@ form, .readOnlyContent {
 
     .posterViewItem img {
         max-width: 250px;
-        max-height: 250px;
+        max-height: 200px;
     }
 }
 
@@ -519,7 +519,7 @@ form, .readOnlyContent {
 
     .posterViewItem img {
         max-width: 300px;
-        max-height: 300px;
+        max-height: 250px;
     }
 }
 

@@ -1,24 +1,12 @@
-﻿var AboutPage = {
+﻿(function ($, document) {
 
-    onPageShow: function () {
-        AboutPage.pollForInfo();
-    },
+    $(document).on('pageshow', "#aboutPage", function () {
 
+        var page = this;
+        
+        ApiClient.getSystemInfo().done(function(info) {
+            $('#appVersionNumber', page).html(info.Version);
+        });
+    });
 
-    pollForInfo: function () {
-        ApiClient.getSystemInfo().done(AboutPage.renderInfo);
-    },
-
-    renderInfo: function (info) {
-        AboutPage.renderSystemInfo(info);
-    },
-
-
-    renderSystemInfo: function (info) {
-        var page = $.mobile.activePage;
-        $('#appVersionNumber', page).html(info.Version);
-    },
-
-};
-
-$(document).on('pageshow', "#aboutPage", AboutPage.onPageShow);
+})(jQuery, document);

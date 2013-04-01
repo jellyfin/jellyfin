@@ -493,8 +493,7 @@ var Dashboard = {
 
     getAveragePrimaryImageAspectRatio: function (items) {
 
-        var total = 0;
-        var count = 0;
+        var values = [];
 
         for (var i = 0, length = items.length; i < length; i++) {
 
@@ -504,11 +503,22 @@ var Dashboard = {
                 continue;
             }
 
-            total += ratio;
-            count++;
+            values[values.length] = ratio;
+        }
+        
+        if (!values.length) {
+            return null;
         }
 
-        return count == 0 ? 1 : total / count;
+        // Use the median
+        values.sort(function (a, b) { return a - b; });
+
+        var half = Math.floor(values.length / 2);
+
+        if (values.length % 2)
+            return values[half];
+        else
+            return (values[half - 1] + values[half]) / 2.0;
     },
 
     showUserFlyout: function () {

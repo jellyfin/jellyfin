@@ -1,11 +1,11 @@
-﻿var IndexPage = {
+﻿(function ($, document) {
 
-    onPageShow: function () {
-        IndexPage.loadLibrary(Dashboard.getCurrentUserId(), this);
-    },
+    $(document).on('pageshow', "#indexPage", function () {
 
-    loadLibrary: function (userId, page) {
+        var page = this;
 
+        var userId = Dashboard.getCurrentUserId();
+        
         if (!userId) {
             return;
         }
@@ -25,7 +25,6 @@
             }));
 
         });
-    }
-};
+    });
 
-$(document).on('pageshow', "#indexPage", IndexPage.onPageShow);
+})(jQuery, document);
