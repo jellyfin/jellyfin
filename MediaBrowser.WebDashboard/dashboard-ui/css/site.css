@@ -416,18 +416,6 @@ form, .readOnlyContent {
 }
 
 /*
-    Plugin updates Page
-    */
-#pluginUpdatesForm table {
-    width: 100%;
-}
-
-#pluginUpdatesForm td + td {
-    text-align: center;
-}
-
-
-/*
     List Vew Items
     */
 
@@ -591,17 +579,6 @@ form, .readOnlyContent {
     margin-right: .5em;
     position: relative;
     top: -3px;
-}
-
-/* User Image */
-.imageDropZone {
-    border: 2px dashed #bbb;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-    border-radius: 5px;
-    padding: 25px;
-    text-align: center;
-    color: #bbb;
 }
 
 /* Dashboard home */

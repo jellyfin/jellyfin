@@ -1,0 +1,10 @@
+﻿/*
+    Plugin updates Page
+    */
+#pluginUpdatesForm table {
+    width: 100%;
+}
+
+#pluginUpdatesForm td + td {
+    text-align: center;
+}

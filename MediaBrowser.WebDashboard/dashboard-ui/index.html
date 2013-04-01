@@ -6,21 +6,27 @@
 <body>
     <div id="indexPage" data-role="page" class="page type-home libraryPage" data-theme="a">
         <div data-role="content">
-            <h1>What's New <a href="itemlist.html?SortBy=DateCreated&SortOrder=Descending&Recursive=true&Title=Recently Added" class="imageLink">
-                <img src="css/images/rightarrow.png" /></a></h1>
 
-            <div id="divWhatsNew"></div>
-
-            <div id="divResumable" style="display: none;">
-                <h1>Resume <a href="itemlist.html?IsResumable=true&Recursive=true&Title=Resumable Items" class="imageLink">
+            <div class="libraryContent">
+                <h1>What's New <a href="itemlist.html?SortBy=DateCreated&SortOrder=Descending&Recursive=true&Title=Recently Added" class="imageLink">
                     <img src="css/images/rightarrow.png" /></a></h1>
 
-                <div id="divResumableItems"></div>
+                <div id="divWhatsNew"></div>
+
+                <div id="divResumable" style="display: none;">
+                    <h1>Resume <a href="itemlist.html?IsResumable=true&Recursive=true&Title=Resumable Items" class="imageLink">
+                        <img src="css/images/rightarrow.png" /></a></h1>
+
+                    <div id="divResumableItems"></div>
+                </div>
+
+                <h1>Collections</h1>
+
+                <div id="divCollections"></div>
             </div>
 
-            <h1>Collections</h1>
-
-            <div id="divCollections"></div>
+            <div class="librarySidebar">
+            </div>
         </div>
     </div>
 </body>
