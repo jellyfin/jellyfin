@@ -722,21 +722,28 @@
         var userData = item.UserData || {};
 
         if (typeof userData.Likes == "undefined") {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.setDislike();" />';
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="ItemDetailPage.setLike();" />';
+            html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.setDislike();" /></div>';
+            html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="ItemDetailPage.setLike();" /></div>';
         } else if (userData.Likes) {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.setDislike();" />';
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_on.png" alt="Liked" title="Like" onclick="ItemDetailPage.clearLike();" />';
+            html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.setDislike();" /></div>';
+            html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_up_on.png" alt="Liked" title="Like" onclick="ItemDetailPage.clearLike();" /></div>';
         } else {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.clearLike();" />';
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="ItemDetailPage.setLike();" />';
+            html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.clearLike();" /></div>';
+            html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="ItemDetailPage.setLike();" /></div>';
         }
 
         if (userData.IsFavorite) {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" onclick="ItemDetailPage.setFavorite();" />';
+            html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" onclick="ItemDetailPage.setFavorite();" /></div>';
         } else {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" onclick="ItemDetailPage.setFavorite();" />';
+            html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" onclick="ItemDetailPage.setFavorite();" /></div>';
         }
+
+	    //played/unplayed
+	    if (userData.Played) {
+		    html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/played.png" alt="Played" title="Played" onclick="ItemDetailPage.setPlayed();" /></div>';
+	    } else {
+		    html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/unplayed.png" alt="Unplayed" title="Unplayed" onclick="ItemDetailPage.setPlayed();" /></div>';
+	    }
 
         $('#itemRatings', page).html(html);
     },
@@ -790,7 +797,20 @@
         ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), item.Id, false);
 
         ItemDetailPage.renderFav(item);
-    }
+    },
+
+	setPlayed: function () {
+		var item = ItemDetailPage.item;
+
+		item.UserData = item.UserData || {};
+
+		var setting = !item.UserData.Played;
+		item.UserData.Played = setting;
+
+		ApiClient.updatePlayedStatus(Dashboard.getCurrentUserId(), item.Id, setting);
+
+		ItemDetailPage.renderFav(item);
+	}
 
 };
 

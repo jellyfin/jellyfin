@@ -701,15 +701,21 @@ progress {
     background-position: right center;
 }
 
+.userItemRating {
+	height: 24px;
+	width: 24px;
+	margin-right: 1em;
+	overflow: hidden;
+	display: inline-block;
+}
 .imgUserItemRating {
     height: 24px;
-    margin-right: 1em;
     cursor: pointer;
 }
 
-    .imgUserItemRating:hover {
-        opacity: .5;
-    }
+.imgUserItemRating:hover {
+    opacity: .5;
+}
 
 @media all and (min-width: 650px) {
     .itemImageBlock {

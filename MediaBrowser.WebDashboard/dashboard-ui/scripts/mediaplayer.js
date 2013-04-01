@@ -114,7 +114,7 @@
         }
 
         html += "<div><img class='nowPlayingBarImage ' alt='' title='' src='" + url + "' style='height:36px;display:inline-block;' /></div>";
-        html += '<div>' + name + '<br/>' + series_name + '</div>';
+        html += '<div>' + series_name + '<br/>' + name + '</div>';
 
         $('#mediaInfo', nowPlayingBar).html(html);
     },
