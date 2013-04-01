@@ -467,11 +467,6 @@ form, .readOnlyContent {
 
 @media all and (min-width: 750px) {
 
-    .posterViewItem {
-        font-size: 16px;
-        padding-bottom: 29px;
-    }
-
     .posterViewItemWithDualText {
         padding-bottom: 58px;
     }
@@ -491,6 +486,11 @@ form, .readOnlyContent {
 }
 
 @media all and (min-width: 1200px) {
+
+    .posterViewItem {
+        font-size: 16px;
+        padding-bottom: 29px;
+    }
 
     .posterViewItem img {
         max-width: 250px;

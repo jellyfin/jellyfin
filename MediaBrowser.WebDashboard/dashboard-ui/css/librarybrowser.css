@@ -16,7 +16,7 @@
 
 .libraryPage, .itemListContent {
     background: #262626!important;
-    /*background: #494949 url(images/bgflip.png) repeat-x!important;*/
+    background: #494949 url(images/bgflip.png) repeat-x!important;
     background-attachment: fixed!important;
 }
 
@@ -26,7 +26,7 @@
 
 .listHeader {
     margin-top: 1.25em;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     font-weight: normal;
 }
 
