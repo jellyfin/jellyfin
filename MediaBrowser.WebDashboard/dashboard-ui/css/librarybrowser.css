@@ -1,3 +1,64 @@
-﻿body {
-    
+﻿/*.libraryContent {
 }
+
+.librarySidebar {
+    display: none;
+}
+
+@media all and (min-width: 650px) {
+
+    .libraryContent {
+        float: right;
+        width: 65%;
+    }
+
+    .librarySidebar {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 35%;
+        border-right: 2px solid #666;
+    }
+}
+
+@media all and (min-width: 750px) {
+    .libraryContent {
+        width: 70%;
+    }
+
+    .librarySidebar {
+        width: 30%;
+    }
+}
+
+@media all and (min-width: 1200px) {
+    .libraryContent {
+        width: 75%;
+    }
+
+    .librarySidebar {
+        width: 25%;
+    }
+}
+
+@media all and (min-width: 1440px) {
+    .libraryContent {
+        width: 80%;
+    }
+
+    .librarySidebar {
+        width: 20%;
+    }
+}
+
+@media all and (min-width: 1920px) {
+    .libraryContent {
+        width: 87.5%;
+    }
+
+    .librarySidebar {
+        width: 12.5%;
+    }
+}*/

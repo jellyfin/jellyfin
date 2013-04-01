@@ -311,11 +311,11 @@ var Dashboard = {
     },
 
     showLoadingMsg: function () {
-        $.mobile.showPageLoadingMsg();
+        $.mobile.loading("show");
     },
 
     hideLoadingMsg: function () {
-        $.mobile.hidePageLoadingMsg();
+        $.mobile.loading("hide");
     },
 
     processPluginConfigurationUpdateResult: function () {
@@ -434,7 +434,7 @@ var Dashboard = {
 
             var hasPrimaryImage = item.ImageTags && item.ImageTags.Primary;
 
-            var href = item.IsFolder ? (item.Id ? "itemList.html?parentId=" + item.Id : "#") : "itemdetails.html?id=" + item.Id;
+            var href = item.url || (item.IsFolder ? (item.Id ? "itemList.html?parentId=" + item.Id : "#") : "itemdetails.html?id=" + item.Id);
 
             var showText = options.showTitle || !hasPrimaryImage || (item.Type !== 'Movie' && item.Type !== 'Series' && item.Type !== 'Season' && item.Type !== 'Trailer');
 
@@ -453,14 +453,14 @@ var Dashboard = {
 
                 var height = 300;
                 var width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
-                
+
                 html += "<img src='" + ApiClient.getImageUrl(item.Id, {
                     type: "Primary",
                     height: height,
                     width: width,
                     tag: item.ImageTags.Primary
                 }) + "' />";
-                
+
             }
             else if (item.BackdropImageTags && item.BackdropImageTags.length) {
                 html += "<img src='" + ApiClient.getImageUrl(item.Id, {
@@ -471,11 +471,11 @@ var Dashboard = {
                 }) + "' />";
             }
             else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
-                
+
                 html += "<img style='background:" + Dashboard.getRandomMetroColor() + ";' src='css/images/items/list/audio.png' />";
             }
             else {
-                
+
                 html += "<img style='background:" + Dashboard.getRandomMetroColor() + ";' src='css/images/items/list/collection.png' />";
             }
 
@@ -490,25 +490,24 @@ var Dashboard = {
 
         return html;
     },
-    
-    getAveragePrimaryImageAspectRatio: function(items) {
+
+    getAveragePrimaryImageAspectRatio: function (items) {
 
         var total = 0;
         var count = 0;
-        
+
         for (var i = 0, length = items.length; i < length; i++) {
-            
+
             var ratio = items[i].PrimaryImageAspectRatio || 0;
 
-            if (!ratio)
-            {
+            if (!ratio) {
                 continue;
             }
 
             total += ratio;
             count++;
         }
-        
+
         return count == 0 ? 1 : total / count;
     },
 
@@ -589,7 +588,7 @@ var Dashboard = {
 
         $($.mobile.activePage).append(html);
 
-        var popup = $('#popupDirectoryPicker').popup().trigger('create').on("popupafteropen",function() {
+        var popup = $('#popupDirectoryPicker').popup().trigger('create').on("popupafteropen", function () {
             $('#popupDirectoryPicker input:first', this).focus();
         }).popup("open").on("popupafterclose", function () {
 
@@ -902,7 +901,7 @@ var Dashboard = {
     onWebSocketMessageReceived: function (e, data) {
 
         var msg = data;
-        
+
         if (msg.MessageType === "LibraryChanged") {
             Dashboard.processLibraryUpdateNotification(msg.Data);
         }
@@ -1157,61 +1156,10 @@ $(function () {
 
     var footerHtml = '<div id="footer" class="ui-bar-a">';
     footerHtml += '<div id="nowPlayingBar" style="display:none;">';
-
-    footerHtml += '<div id="media_container" class="jp-video">';
-    footerHtml += '<div class="jp-type-single">';
-    footerHtml += '<div id="media_player" class="jp-jplayer"></div>';
-    footerHtml += '<div class="jp-gui">';
-    footerHtml += '<div class="jp-video-play">';
-    footerHtml += '<a href="javascript:;" class="jp-video-play-icon" tabindex="1">play</a>';
-    footerHtml += '</div>';
-    footerHtml += '<div class="jp-interface">';
-    footerHtml += '<div class="jp-progress">';
-    footerHtml += '<div class="jp-seek-bar">';
-    footerHtml += '<div class="jp-play-bar"></div>';
-    footerHtml += '</div>';
-    footerHtml += '</div>';
-    footerHtml += '<div class="jp-current-time"></div>';
-    footerHtml += '<div class="jp_duration"></div>';
-    footerHtml += '<div class="jp-controls-holder">';
-
-
-    footerHtml += '<button id="playButton" class="jp-play imageButton mediaButton" title="play" type="button"><img src="css/images/media/play.png" /></button>';
-    footerHtml += '<button id="pauseButton" class="jp-pause imageButton mediaButton" title="pause" type="button"><img src="css/images/media/pause.png" /></button>';
     footerHtml += '<button id="previousTrackButton" class="imageButton mediaButton" title="Previous Track" type="button"><img src="css/images/media/previoustrack.png" /></button>';
     footerHtml += '<button id="stopButton" class="imageButton mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();"><img src="css/images/media/stop.png" /></button>';
     footerHtml += '<button id="nextTrackButton" class="imageButton mediaButton" title="Next Track" type="button"><img src="css/images/media/nexttrack.png" /></button>';
-
-    //footerHtml += '<ul class="jp-toggles">';
-    //footerHtml += '<li><a href="javascript:;" class="jp-repeat" tabindex="1" title="repeat">repeat</a></li>';
-    //footerHtml += '<li><a href="javascript:;" class="jp-repeat-off" tabindex="1" title="repeat off">repeat off</a></li>';
-    //footerHtml += '</ul>';
-
-    footerHtml += '<div class="jp_volume">';
-    footerHtml += '<ul>';
-    footerHtml += '<li><a href="javascript:;" class="jp-mute" tabindex="1" title="mute">mute</a></li>';
-    footerHtml += '<li><a href="javascript:;" class="jp-unmute" tabindex="1" title="unmute">unmute</a></li>';
-    footerHtml += '<li><a href="javascript:;" class="jp-volume-max" tabindex="1" title="max volume">max volume</a></li>';
-    footerHtml += '</ul>';
-    footerHtml += '<div class="jp-volume-bar">';
-    footerHtml += '<div class="jp-volume-bar-value"></div>';
-    footerHtml += '</div>';
-    footerHtml += '</div>';
-
-    footerHtml += '<div class="jp_res_chapters">';
-    footerHtml += '<button id="chapterButton" class="jp-chapter-button imageButton mediaButton" onclick="$(\'.jp_chapters\').toggle();"><img src="css/images/media/chapters.png" /></button><ul class="jp_chapters"></ul>';
-    footerHtml += '<button id="qualityButton" class="jp-quality-button imageButton mediaButton" onclick="$(\'.jp_quality\').toggle();"><img src="css/images/media/quality.png" /></button><ul class="jp_quality"></ul>';
-
-    footerHtml += '<button id="fullscreenButton" class="jp-full-screen imageButton mediaButton" title="fullscreen" type="button"><img src="css/images/media/fullscreen.png" /></button>';
-    footerHtml += '<button id="restorescreenButton" class="jp-restore-screen imageButton mediaButton" title="restore screen" type="button"><img src="css/images/media/reduce.png" /></button>';
-    footerHtml += '</div>';
-
-    footerHtml += '</div>';
-    footerHtml += '</div>';
-    footerHtml += '</div>';
-    footerHtml += '</div>';
-    footerHtml += '</div>';
-
+    footerHtml += '<div id="mediaElement"></div>';
     footerHtml += '<div id="mediaInfo"></div>';
     footerHtml += '</div>';
     footerHtml += '<div id="footerNotifications"></div>';
