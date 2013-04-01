@@ -260,6 +260,10 @@ namespace MediaBrowser.WebDashboard.Api
             {
                 resourceStream = await GetAllJavascript().ConfigureAwait(false);
             }
+            else if (path.Equals("css/all.css", StringComparison.OrdinalIgnoreCase))
+            {
+                resourceStream = await GetAllCss().ConfigureAwait(false);
+            }
             else
             {
                 resourceStream = GetRawResourceStream(path);
@@ -408,7 +412,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "http://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.css",
                                 "thirdparty/jqm-icon-pack-3.0/font-awesome/jqm-icon-pack-3.0.0-fa.css",
                                 "css/jplayer.css" + versionString,
-                                "css/site.css" + versionString
+                                "css/all.css" + versionString
                             };
 
             var tags = files.Select(s => string.Format("<link rel=\"stylesheet\" href=\"{0}\" />", s)).ToArray();
@@ -499,6 +503,33 @@ namespace MediaBrowser.WebDashboard.Api
         }
 
         /// <summary>
+        /// Gets all CSS.
+        /// </summary>
+        /// <returns>Task{Stream}.</returns>
+        private async Task<Stream> GetAllCss()
+        {
+            var files = new[]
+                                  {
+                                      "site.css",
+                                      "librarybrowser.css",
+                                      "pluginupdates.css",
+                                      "userimage.css"
+                                  };
+
+            var memoryStream = new MemoryStream();
+
+            var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
+
+            foreach (var file in files)
+            {
+                await AppendResource(memoryStream, "css/" + file, newLineBytes).ConfigureAwait(false);
+            }
+
+            memoryStream.Position = 0;
+            return memoryStream;
+        }
+        
+        /// <summary>
         /// Appends the resource.
         /// </summary>
         /// <param name="assembly">The assembly.</param>
@@ -525,12 +556,21 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>Task.</returns>
         private async Task AppendResource(Stream outputStream, string path, byte[] newLineBytes)
         {
-            using (var stream = GetRawResourceStream(path))
-            {
-                await stream.CopyToAsync(outputStream).ConfigureAwait(false);
+            var runningDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
 
-                await outputStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
+            path = Path.Combine(runningDirectory, "dashboard-ui", path.Replace('/', '\\'));
+
+            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, StreamDefaults.DefaultFileStreamBufferSize, true))
+            {
+                using (var streamReader = new StreamReader(fs))
+                {
+                    var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
+                    var bytes = Encoding.UTF8.GetBytes(text);
+                    await outputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                }
             }
+
+            await outputStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
         }
     }
 
