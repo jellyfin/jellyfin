@@ -1,64 +1,69 @@
-﻿/*.libraryContent {
+﻿.libraryPage .header {
+    padding-bottom: 0;
 }
 
-.librarySidebar {
-    display: none;
+.libraryPageHeader {
+    margin: -5px 0 0;
+}
+
+.libraryPageHeader a {
+    margin-right: 20px;
+}
+
+.libraryPage .ui-content {
+    padding: 15px 30px 100px;
+}
+
+.libraryPage, .itemListContent {
+    background: #262626!important;
+    /*background: #494949 url(images/bgflip.png) repeat-x!important;*/
+    background-attachment: fixed!important;
+}
+
+    .libraryPage .currentUsername {
+        color: #fff;
+    }
+
+.listHeader {
+    margin-top: 1.25em;
+    margin-bottom: 10px;
+    font-weight: normal;
+}
+
+.firstListHeader {
+    margin-top: .5em;
+}
+
+.libraryViewNav {
+    text-align: center;
+}
+
+    .libraryViewNav .ui-btn-inner {
+        padding: .6em 20px;
+    }
+
+.ehsContent {
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 @media all and (min-width: 650px) {
-
-    .libraryContent {
-        float: right;
-        width: 65%;
-    }
-
-    .librarySidebar {
-        display: block;
-        position: fixed;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        width: 35%;
-        border-right: 2px solid #666;
-    }
 }
 
 @media all and (min-width: 750px) {
-    .libraryContent {
-        width: 70%;
-    }
-
-    .librarySidebar {
-        width: 30%;
-    }
 }
 
 @media all and (min-width: 1200px) {
-    .libraryContent {
-        width: 75%;
-    }
-
-    .librarySidebar {
-        width: 25%;
+    .ehsContent {
+        max-width: 800px;
     }
 }
 
 @media all and (min-width: 1440px) {
-    .libraryContent {
-        width: 80%;
-    }
-
-    .librarySidebar {
-        width: 20%;
-    }
 }
 
 @media all and (min-width: 1920px) {
-    .libraryContent {
-        width: 87.5%;
+    .ehsContent {
+        max-width: 1000px;
     }
-
-    .librarySidebar {
-        width: 12.5%;
-    }
-}*/
+}

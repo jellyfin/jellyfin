@@ -7,25 +7,30 @@
     <div id="indexPage" data-role="page" class="page type-home libraryPage" data-theme="a">
         <div data-role="content">
 
-            <div class="libraryContent">
-                <h1>What's New <a href="itemlist.html?SortBy=DateCreated&SortOrder=Descending&Recursive=true&Title=Recently Added" class="imageLink">
-                    <img src="css/images/rightarrow.png" /></a></h1>
+            <div class="ehsContent">
+                <h1 class="listHeader firstListHeader">Views</h1>
 
-                <div id="divWhatsNew"></div>
-
-                <div id="divResumable" style="display: none;">
-                    <h1>Resume <a href="itemlist.html?IsResumable=true&Recursive=true&Title=Resumable Items" class="imageLink">
-                        <img src="css/images/rightarrow.png" /></a></h1>
-
-                    <div id="divResumableItems"></div>
+                <div>
+                    <div class="posterViewItem">
+                        <a href="movies.html">
+                            <img style="background: #E12026;" src="css/images/items/list/chapter.png"><div class="posterViewItemText">Movies</div>
+                        </a>
+                    </div>
+                    <div class="posterViewItem">
+                        <a href="#">
+                            <img style="background: #FF870F;" src="css/images/items/list/collection.png"><div class="posterViewItemText">TV Shows</div>
+                        </a>
+                    </div>
+                    <div class="posterViewItem">
+                        <a href="#">
+                            <img style="background: #4BB3DD;" src="css/images/items/list/audiowide.png"><div class="posterViewItemText">Music</div>
+                        </a>
+                    </div>
                 </div>
 
-                <h1>Collections</h1>
+                <h1 class="listHeader">Collections</h1>
 
                 <div id="divCollections"></div>
-            </div>
-
-            <div class="librarySidebar">
             </div>
         </div>
     </div>

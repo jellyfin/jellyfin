@@ -744,17 +744,19 @@ var Dashboard = {
 
         var isLibraryPage = page.hasClass('libraryPage');
 
-        headerHtml += '<a class="logo" href="index.html">';
+        if (!page.hasClass('noLogoPage')) {
+            headerHtml += '<a class="logo" href="index.html">';
 
-        if (page.hasClass('standalonePage')) {
+            if (page.hasClass('standalonePage')) {
 
-            headerHtml += '<img class="imgLogoIcon" src="css/images/mblogoicon.png" /><img class="imgLogoText" src="css/images/mblogotextblack.png" />';
+                headerHtml += '<img class="imgLogoIcon" src="css/images/mblogoicon.png" /><img class="imgLogoText" src="css/images/mblogotextblack.png" />';
+            }
+            else if (isLibraryPage) {
+
+                headerHtml += '<img class="imgLogoIcon" src="css/images/mblogoicon.png" /><img class="imgLogoText" src="css/images/mblogotextwhite.png" />';
+            }
+            headerHtml += '</a>';
         }
-        else if (isLibraryPage) {
-
-            headerHtml += '<img class="imgLogoIcon" src="css/images/mblogoicon.png" /><img class="imgLogoText" src="css/images/mblogotextwhite.png" />';
-        }
-        headerHtml += '</a>';
 
         var imageColor = isLibraryPage ? "white" : "black";
 

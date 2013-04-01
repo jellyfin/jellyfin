@@ -86,11 +86,6 @@ pre, textarea.pre {
     background-attachment: fixed;
 }
 
-.libraryPage, .itemListContent {
-    background: #262626!important;
-    background-attachment: fixed!important;
-}
-
 /*
     Header
     */
@@ -149,10 +144,6 @@ pre, textarea.pre {
     top: 4px;
 }
 
-.libraryPage .currentUsername {
-    color: #fff;
-}
-
 h1 .imageLink {
     margin-left: 15px;
 }
@@ -163,18 +154,6 @@ h1 .imageLink {
 
 .imageLink:hover {
     opacity: .5;
-}
-
-.type-home h1, .listHeader {
-    margin-top: 1.25em;
-    margin-bottom: 10px;
-    padding-bottom: 5px;
-    font-weight: normal;
-    border-bottom: 1px solid #777;
-}
-
-.libraryPage .ui-content > h1:first-child {
-    margin-top: 0;
 }
 
 .pageTitle {
@@ -298,11 +277,6 @@ form, .readOnlyContent {
     .headerButtons {
         top: 20px;
         right: 30px;
-    }
-
-    .libraryPage .ui-content {
-        padding-right: 40px;
-        padding-left: 40px;
     }
 
     .type-interior > .ui-content {
