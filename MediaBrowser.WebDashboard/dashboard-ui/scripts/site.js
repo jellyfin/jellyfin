@@ -472,11 +472,11 @@ var Dashboard = {
             }
             else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
 
-                html += "<img style='background:" + Dashboard.getRandomMetroColor() + ";' src='css/images/items/list/audio.png' />";
+                html += "<img style='background:" + Dashboard.getMetroColor(item.Id) + ";' src='css/images/items/list/audio.png' />";
             }
             else {
 
-                html += "<img style='background:" + Dashboard.getRandomMetroColor() + ";' src='css/images/items/list/collection.png' />";
+                html += "<img style='background:" + Dashboard.getMetroColor(item.Id) + ";' src='css/images/items/list/collection.png' />";
             }
 
             if (showText) {
@@ -1148,6 +1148,19 @@ var Dashboard = {
         var index = Math.floor(Math.random() * (Dashboard.metroColors.length - 1));
 
         return Dashboard.metroColors[index];
+    },
+
+    getMetroColor: function (str) {
+
+        if (str) {
+            var char = str.substr(0,1).charCodeAt();
+            var index = String(char).substr(char.length,1);
+
+            return Dashboard.metroColors[index];
+        }else {
+            return Dashboard.getRandomMetroColor();
+        }
+
     }
 
 };
