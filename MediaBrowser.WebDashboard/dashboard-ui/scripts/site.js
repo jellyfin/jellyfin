@@ -1172,7 +1172,7 @@ var Dashboard = {
         }
 
     }
-
+    
 };
 
 var ApiClient = MediaBrowser.ApiClient.create("Dashboard");
