@@ -138,7 +138,7 @@
             audioCodec: 'aac'
         }));
 
-        var webmUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.webma', $.extend({}, baseParams, {
+        var webmUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
             audioCodec: 'Vorbis'
         }));
 

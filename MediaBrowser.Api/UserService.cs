@@ -142,6 +142,8 @@ namespace MediaBrowser.Api
         /// Initializes a new instance of the <see cref="UserService" /> class.
         /// </summary>
         /// <param name="xmlSerializer">The XML serializer.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
         /// <exception cref="System.ArgumentNullException">xmlSerializer</exception>
         public UserService(IXmlSerializer xmlSerializer, IUserManager userManager, ILibraryManager libraryManager)
             : base()
@@ -163,7 +165,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetUsers request)
         {
-            var dtoBuilder = new DtoBuilder(Logger, _libraryManager);
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userManager);
 
             var tasks = _userManager.Users.OrderBy(u => u.Name).Select(dtoBuilder.GetUserDto).ToArray();
 
@@ -186,7 +188,7 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
-            var result = new DtoBuilder(Logger, _libraryManager).GetUserDto(user).Result;
+            var result = new DtoBuilder(Logger, _libraryManager, _userManager).GetUserDto(user).Result;
 
             return ToOptimizedResult(result);
         }
@@ -300,7 +302,7 @@ namespace MediaBrowser.Api
 
             newUser.UpdateConfiguration(dtoUser.Configuration, _xmlSerializer);
 
-            var result = new DtoBuilder(Logger, _libraryManager).GetUserDto(newUser).Result;
+            var result = new DtoBuilder(Logger, _libraryManager, _userManager).GetUserDto(newUser).Result;
 
             return ToOptimizedResult(result);
         }

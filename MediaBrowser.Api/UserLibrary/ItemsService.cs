@@ -179,7 +179,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var fields = GetItemFields(request).ToList();
 
-            var dtoBuilder = new DtoBuilder(Logger, _libraryManager);
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userManager);
 
             var returnItems = await Task.WhenAll(pagedItems.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields))).ConfigureAwait(false);
 
@@ -241,12 +241,15 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{BaseItem}.</returns>
         private IEnumerable<BaseItem> ApplyFilter(IEnumerable<BaseItem> items, ItemFilter filter, User user)
         {
+            // Avoids implicitly captured closure
+            var currentUser = user;
+
             switch (filter)
             {
                 case ItemFilter.Likes:
                     return items.Where(item =>
                     {
-                        var userdata = item.GetUserData(user, false);
+                        var userdata = _userManager.GetUserData(user.Id, item.UserDataId).Result;
 
                         return userdata != null && userdata.Likes.HasValue && userdata.Likes.Value;
                     });
@@ -254,7 +257,7 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.Dislikes:
                     return items.Where(item =>
                     {
-                        var userdata = item.GetUserData(user, false);
+                        var userdata = _userManager.GetUserData(user.Id, item.UserDataId).Result;
 
                         return userdata != null && userdata.Likes.HasValue && !userdata.Likes.Value;
                     });
@@ -262,18 +265,18 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.IsFavorite:
                     return items.Where(item =>
                     {
-                        var userdata = item.GetUserData(user, false);
+                        var userdata = _userManager.GetUserData(user.Id, item.UserDataId).Result;
 
                         return userdata != null && userdata.IsFavorite;
                     });
 
                 case ItemFilter.IsRecentlyAdded:
-                    return items.Where(item => item.IsRecentlyAdded(user));
+                    return items.Where(item => item.IsRecentlyAdded(currentUser));
 
                 case ItemFilter.IsResumable:
                     return items.Where(item =>
                     {
-                        var userdata = item.GetUserData(user, false);
+                        var userdata = _userManager.GetUserData(user.Id, item.UserDataId).Result;
 
                         return userdata != null && userdata.PlaybackPositionTicks > 0;
                     });
@@ -281,7 +284,7 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.IsPlayed:
                     return items.Where(item =>
                     {
-                        var userdata = item.GetUserData(user, false);
+                        var userdata = _userManager.GetUserData(user.Id, item.UserDataId).Result;
 
                         return userdata != null && userdata.PlayCount > 0;
                     });
@@ -289,7 +292,7 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.IsUnplayed:
                     return items.Where(item =>
                     {
-                        var userdata = item.GetUserData(user, false);
+                        var userdata = _userManager.GetUserData(user.Id, item.UserDataId).Result;
 
                         return userdata == null || userdata.PlayCount == 0;
                     });

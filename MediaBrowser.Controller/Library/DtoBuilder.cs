@@ -28,11 +28,13 @@ namespace MediaBrowser.Controller.Library
 
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
+        private readonly IUserManager _userManager;
 
-        public DtoBuilder(ILogger logger, ILibraryManager libraryManager)
+        public DtoBuilder(ILogger logger, ILibraryManager libraryManager, IUserManager userManager)
         {
             _logger = logger;
             _libraryManager = libraryManager;
+            _userManager = userManager;
         }
 
         /// <summary>
@@ -141,9 +143,9 @@ namespace MediaBrowser.Controller.Library
                 tasks.Add(AttachPeople(dto, item));
             }
 
-            AttachBasicFields(dto, item, fields);
+            tasks.Add(AttachUserSpecificInfo(dto, item, user, fields));
 
-            AttachUserSpecificInfo(dto, item, user, fields);
+            AttachBasicFields(dto, item, fields);
 
             // Make sure all the tasks we kicked off have completed.
             if (tasks.Count > 0)
@@ -161,21 +163,20 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <param name="fields">The fields.</param>
-        private void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, List<ItemFields> fields)
+        private async Task AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, List<ItemFields> fields)
         {
             if (fields.Contains(ItemFields.UserData))
             {
-                var userData = item.GetUserData(user, false);
+                var userData = await _userManager.GetUserData(user.Id, item.UserDataId).ConfigureAwait(false);
 
-                if (userData != null)
-                {
-                    dto.UserData = GetUserItemDataDto(userData);
-                }
+                dto.UserData = GetUserItemDataDto(userData);
             }
 
             if (item.IsFolder && fields.Contains(ItemFields.DisplayPreferences))
             {
-                dto.DisplayPreferences = ((Folder)item).GetDisplayPreferences(user, false) ?? new DisplayPreferences { UserId = user.Id };
+                var displayPreferencesId = ((Folder) item).DisplayPreferencesId;
+
+                dto.DisplayPreferences = await _userManager.GetDisplayPreferences(user.Id, displayPreferencesId).ConfigureAwait(false);
             }
 
             if (item.IsFolder)
@@ -187,11 +188,11 @@ namespace MediaBrowser.Controller.Library
                     // Skip sorting since all we want is a count
                     dto.ChildCount = folder.GetChildren(user).Count();
 
-                    SetSpecialCounts(folder, user, dto);
+                    await SetSpecialCounts(folder, user, dto, _userManager).ConfigureAwait(false);
                 }
             }
         }
-
+        
         /// <summary>
         /// Attaches the primary image aspect ratio.
         /// </summary>
@@ -484,7 +485,9 @@ namespace MediaBrowser.Controller.Library
         /// <param name="folder">The folder.</param>
         /// <param name="user">The user.</param>
         /// <param name="dto">The dto.</param>
-        private static void SetSpecialCounts(Folder folder, User user, BaseItemDto dto)
+        /// <param name="userManager">The user manager.</param>
+        /// <returns>Task.</returns>
+        private static async Task SetSpecialCounts(Folder folder, User user, BaseItemDto dto, IUserManager userManager)
         {
             var rcentlyAddedItemCount = 0;
             var recursiveItemCount = 0;
@@ -494,7 +497,7 @@ namespace MediaBrowser.Controller.Library
             // Loop through each recursive child
             foreach (var child in folder.GetRecursiveChildren(user).Where(i => !i.IsFolder))
             {
-                var userdata = child.GetUserData(user, false);
+                var userdata = await userManager.GetUserData(user.Id, child.UserDataId).ConfigureAwait(false);
 
                 recursiveItemCount++;
 

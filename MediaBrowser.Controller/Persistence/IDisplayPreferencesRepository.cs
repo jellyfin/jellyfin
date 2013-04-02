@@ -1,6 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Entities;
-using System.Collections.Generic;
+﻿using MediaBrowser.Model.Entities;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,16 +13,20 @@ namespace MediaBrowser.Controller.Persistence
         /// <summary>
         /// Saves display preferences for an item
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="userId">The user id.</param>
+        /// <param name="displayPreferencesId">The display preferences id.</param>
+        /// <param name="displayPreferences">The display preferences.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveDisplayPreferences(Folder item, CancellationToken cancellationToken);
+        Task SaveDisplayPreferences(Guid userId, Guid displayPreferencesId, DisplayPreferences displayPreferences,
+                                    CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets display preferences for an item
+        /// Gets the display preferences.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>IEnumerable{DisplayPreferences}.</returns>
-        IEnumerable<DisplayPreferences> RetrieveDisplayPreferences(Folder item);
+        /// <param name="userId">The user id.</param>
+        /// <param name="displayPreferencesId">The display preferences id.</param>
+        /// <returns>Task{DisplayPreferences}.</returns>
+        Task<DisplayPreferences> GetDisplayPreferences(Guid userId, Guid displayPreferencesId);
     }
 }

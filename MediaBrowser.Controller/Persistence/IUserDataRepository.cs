@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
-using System.Collections.Generic;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,18 +11,22 @@ namespace MediaBrowser.Controller.Persistence
     public interface IUserDataRepository : IRepository
     {
         /// <summary>
-        /// Saves user data for an item
+        /// Saves the user data.
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="userId">The user id.</param>
+        /// <param name="userDataId">The user data id.</param>
+        /// <param name="userData">The user data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveUserData(BaseItem item, CancellationToken cancellationToken);
+        Task SaveUserData(Guid userId, Guid userDataId, UserItemData userData,
+                                    CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets user data for an item
+        /// Gets the user data.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>IEnumerable{UserItemData}.</returns>
-        IEnumerable<UserItemData> RetrieveUserData(BaseItem item);
+        /// <param name="userId">The user id.</param>
+        /// <param name="userDataId">The user data id.</param>
+        /// <returns>Task{UserItemData}.</returns>
+        Task<UserItemData> GetUserData(Guid userId, Guid userDataId);
     }
 }
