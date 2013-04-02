@@ -1,10 +1,12 @@
-﻿using MediaBrowser.Common.Events;
+﻿using System.Collections.Concurrent;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Connectivity;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -98,6 +100,11 @@ namespace MediaBrowser.Server.Implementations.Library
         private IServerConfigurationManager ConfigurationManager { get; set; }
 
         /// <summary>
+        /// The _user data
+        /// </summary>
+        private readonly ConcurrentDictionary<string, Task<DisplayPreferences>> _displayPreferences = new ConcurrentDictionary<string, Task<DisplayPreferences>>();
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="UserManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
@@ -155,6 +162,62 @@ namespace MediaBrowser.Server.Implementations.Library
             EventHelper.QueueEventIfNotNull(UserDeleted, this, new GenericEventArgs<User> { Argument = user }, _logger);
         }
         #endregion
+
+        /// <summary>
+        /// Gets the display preferences.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="displayPreferencesId">The display preferences id.</param>
+        /// <returns>DisplayPreferences.</returns>
+        public Task<DisplayPreferences> GetDisplayPreferences(Guid userId, Guid displayPreferencesId)
+        {
+            var key = userId + displayPreferencesId.ToString();
+
+            return _displayPreferences.GetOrAdd(key, keyName => RetrieveDisplayPreferences(userId, displayPreferencesId));
+        }
+
+        /// <summary>
+        /// Retrieves the display preferences.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="displayPreferencesId">The display preferences id.</param>
+        /// <returns>DisplayPreferences.</returns>
+        private async Task<DisplayPreferences> RetrieveDisplayPreferences(Guid userId, Guid displayPreferencesId)
+        {
+            var displayPreferences = await Kernel.Instance.DisplayPreferencesRepository.GetDisplayPreferences(userId, displayPreferencesId).ConfigureAwait(false);
+
+            return displayPreferences ?? new DisplayPreferences();
+        }
+
+        /// <summary>
+        /// Saves display preferences for an item
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="displayPreferencesId">The display preferences id.</param>
+        /// <param name="displayPreferences">The display preferences.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public async Task SaveDisplayPreferences(Guid userId, Guid displayPreferencesId, DisplayPreferences displayPreferences, CancellationToken cancellationToken)
+        {
+            var key = userId + displayPreferencesId.ToString();
+            var newValue = Task.FromResult(displayPreferences);
+
+            try
+            {
+                await Kernel.Instance.DisplayPreferencesRepository.SaveDisplayPreferences(userId, displayPreferencesId,
+                                                                                        displayPreferences,
+                                                                                        cancellationToken).ConfigureAwait(false);
+
+                // Once it succeeds, put it into the dictionary to make it available to everyone else
+                _displayPreferences.AddOrUpdate(key, newValue, delegate { return newValue; });
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error saving display preferences", ex);
+
+                throw;
+            }
+        }
 
         /// <summary>
         /// Gets a User by Id
@@ -711,6 +774,5 @@ namespace MediaBrowser.Server.Implementations.Library
 
             return Kernel.UserDataRepository.SaveUserData(item, CancellationToken.None);
         }
-
     }
 }

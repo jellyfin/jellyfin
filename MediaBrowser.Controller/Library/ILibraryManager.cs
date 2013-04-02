@@ -108,15 +108,6 @@ namespace MediaBrowser.Controller.Library
         Task ValidateMediaLibrary(IProgress<double> progress, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Saves display preferences for a Folder
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="folder">The folder.</param>
-        /// <param name="data">The data.</param>
-        /// <returns>Task.</returns>
-        Task SaveDisplayPreferencesForFolder(User user, Folder folder, DisplayPreferences data);
-
-        /// <summary>
         /// Gets the default view.
         /// </summary>
         /// <returns>IEnumerable{VirtualFolderInfo}.</returns>

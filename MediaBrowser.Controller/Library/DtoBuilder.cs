@@ -28,11 +28,13 @@ namespace MediaBrowser.Controller.Library
 
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
+        private readonly IUserManager _userManager;
 
-        public DtoBuilder(ILogger logger, ILibraryManager libraryManager)
+        public DtoBuilder(ILogger logger, ILibraryManager libraryManager, IUserManager userManager)
         {
             _logger = logger;
             _libraryManager = libraryManager;
+            _userManager = userManager;
         }
 
         /// <summary>
@@ -141,9 +143,9 @@ namespace MediaBrowser.Controller.Library
                 tasks.Add(AttachPeople(dto, item));
             }
 
-            AttachBasicFields(dto, item, fields);
+            tasks.Add(AttachUserSpecificInfo(dto, item, user, fields));
 
-            AttachUserSpecificInfo(dto, item, user, fields);
+            AttachBasicFields(dto, item, fields);
 
             // Make sure all the tasks we kicked off have completed.
             if (tasks.Count > 0)
@@ -161,7 +163,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <param name="fields">The fields.</param>
-        private void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, List<ItemFields> fields)
+        private async Task AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, List<ItemFields> fields)
         {
             if (fields.Contains(ItemFields.UserData))
             {
@@ -175,7 +177,9 @@ namespace MediaBrowser.Controller.Library
 
             if (item.IsFolder && fields.Contains(ItemFields.DisplayPreferences))
             {
-                dto.DisplayPreferences = ((Folder)item).GetDisplayPreferences(user, false) ?? new DisplayPreferences { UserId = user.Id };
+                var displayPreferencesId = ((Folder) item).DisplayPreferencesId;
+
+                dto.DisplayPreferences = await _userManager.GetDisplayPreferences(user.Id, displayPreferencesId).ConfigureAwait(false);
             }
 
             if (item.IsFolder)
@@ -191,7 +195,7 @@ namespace MediaBrowser.Controller.Library
                 }
             }
         }
-
+        
         /// <summary>
         /// Attaches the primary image aspect ratio.
         /// </summary>

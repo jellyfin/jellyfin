@@ -160,7 +160,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                     if (exception != null)
                     {
-                        _logger.ErrorException("Error processing request", exception);
+                        _logger.ErrorException("Error processing request for {0}", exception, req.RawUrl);
 
                         if (!string.IsNullOrEmpty(exception.Message))
                         {

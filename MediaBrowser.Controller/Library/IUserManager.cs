@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -178,5 +179,24 @@ namespace MediaBrowser.Controller.Library
         /// <param name="newPassword">The new password.</param>
         /// <returns>Task.</returns>
         Task ChangePassword(User user, string newPassword);
+
+        /// <summary>
+        /// Gets the display preferences.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="displayPreferencesId">The display preferences id.</param>
+        /// <returns>DisplayPreferences.</returns>
+        Task<DisplayPreferences> GetDisplayPreferences(Guid userId, Guid displayPreferencesId);
+
+        /// <summary>
+        /// Saves display preferences for an item
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="displayPreferencesId">The display preferences id.</param>
+        /// <param name="displayPreferences">The display preferences.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SaveDisplayPreferences(Guid userId, Guid displayPreferencesId, DisplayPreferences displayPreferences,
+                                    CancellationToken cancellationToken);
     }
 }
