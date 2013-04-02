@@ -9,7 +9,7 @@
 			SortBy: "DateCreated",
 			SortOrder: "Descending",
 			IncludeItemTypes: "Episode",
-			Limit: 5,
+			Limit: 6,
 			Recursive: true,
 			Fields: "PrimaryImageAspectRatio"
 		};
@@ -30,7 +30,7 @@
 			SortOrder: "Descending",
 			IncludeItemTypes: "Episode",
 			Filters: "IsResumable",
-			Limit: 5,
+			Limit: 6,
 			Recursive: true,
 			Fields: "PrimaryImageAspectRatio"
 		};
