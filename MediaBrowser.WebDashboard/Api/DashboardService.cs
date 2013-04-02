@@ -479,6 +479,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "pluginupdatespage.js",
                                       "scheduledtaskpage.js",
                                       "scheduledtaskspage.js",
+                                      "tvrecommended.js",
                                       "updatepasswordpage.js",
                                       "userimagepage.js",
                                       "userprofilespage.js",
