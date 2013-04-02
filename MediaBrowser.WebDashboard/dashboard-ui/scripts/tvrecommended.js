@@ -16,7 +16,7 @@
 
 		ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
 
-			$('#recentlyAddedItems', page).html(Dashboard.getPosterViewHtml({
+			$('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
 				items: result.Items,
 				useAverageAspectRatio: true
 			}));
@@ -43,7 +43,7 @@
 				$('#resumableSection', page).hide();
 			}
 
-			$('#resumableItems', page).html(Dashboard.getPosterViewHtml({
+			$('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
 				items: result.Items,
 				useAverageAspectRatio: true
 			}));

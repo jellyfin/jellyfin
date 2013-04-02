@@ -151,7 +151,7 @@
 
         if (url) {
 
-            var style = useBackgroundColor ? "background-color:" + Dashboard.getMetroColor(item.Id) + ";" : "";
+            var style = useBackgroundColor ? "background-color:" + LibraryBrowser.getMetroColor(item.Id) + ";" : "";
 
             html += "<img class='itemDetailImage' src='" + url + "' style='" + style + "' />";
         }
@@ -700,7 +700,7 @@
 
                 html += '<img src="' + imgUrl + '" />';
             } else {
-                var style = "background-color:" + Dashboard.getMetroColor(cast.Name) + ";";
+                var style = "background-color:" + LibraryBrowser.getMetroColor(cast.Name) + ";";
 
                 html += '<img src="css/images/items/list/person.png" style="max-width:185px; '+style+'"/>';
             }

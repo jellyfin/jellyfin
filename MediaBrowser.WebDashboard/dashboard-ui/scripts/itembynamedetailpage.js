@@ -95,7 +95,7 @@
         }
 
         if (url) {
-            var style = useBackgroundColor ? "background-color:" + Dashboard.getMetroColor(item.Id) + ";" : "";
+            var style = useBackgroundColor ? "background-color:" + LibraryBrowser.getMetroColor(item.Id) + ";" : "";
 
             html += "<img class='itemDetailImage' src='" + url + "' style='" + style + "' />";
         }

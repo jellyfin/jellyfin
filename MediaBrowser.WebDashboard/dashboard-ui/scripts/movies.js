@@ -63,7 +63,7 @@
 
         }
         else {
-            html += '<img class="libraryGridImage" style="background:' + Dashboard.getMetroColor(item.Id) + ';" src="css/images/items/list/collection.png" />';
+            html += '<img class="libraryGridImage" style="background:' + LibraryBrowser.getMetroColor(item.Id) + ';" src="css/images/items/list/collection.png" />';
         }
 
         html += '</a></td>';
@@ -86,7 +86,7 @@
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
 
-            $('#items', page).html(Dashboard.getPosterViewHtml({
+            $('#items', page).html(LibraryBrowser.getPosterViewHtml({
 
                 items: result.Items,
                 useAverageAspectRatio: true

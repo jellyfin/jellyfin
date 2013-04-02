@@ -83,7 +83,7 @@
             showTitle: query.Recursive
         };
 
-        var html = Dashboard.getPosterViewHtml(renderOptions);
+        var html = LibraryBrowser.getPosterViewHtml(renderOptions);
 
         $('#listItems', $.mobile.activePage).html(html);
 

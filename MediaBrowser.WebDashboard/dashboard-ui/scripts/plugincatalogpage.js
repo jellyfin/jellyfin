@@ -54,7 +54,7 @@
                 }
             }
 
-            var color = plugin.tileColor || Dashboard.getMetroColor(plugin.name);
+            var color = plugin.tileColor || LibraryBrowser.getMetroColor(plugin.name);
 
             html += "<div class='posterViewItemText' style='background:" + color + "'>";
 

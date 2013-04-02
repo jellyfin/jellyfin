@@ -19,7 +19,7 @@
 
         apiClient.getItems(userId, options).done(function (result) {
 
-            $('#divCollections', page).html(Dashboard.getPosterViewHtml({
+            $('#divCollections', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 showTitle: true
             }));
