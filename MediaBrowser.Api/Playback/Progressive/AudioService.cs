@@ -14,14 +14,18 @@ namespace MediaBrowser.Api.Playback.Progressive
     [Route("/Audio/{Id}/stream.aac", "GET")]
     [Route("/Audio/{Id}/stream.flac", "GET")]
     [Route("/Audio/{Id}/stream.ogg", "GET")]
+    [Route("/Audio/{Id}/stream.oga", "GET")]
+    [Route("/Audio/{Id}/stream.webma", "GET")]
     [Route("/Audio/{Id}/stream", "GET")]
     [Route("/Audio/{Id}/stream.mp3", "HEAD")]
     [Route("/Audio/{Id}/stream.wma", "HEAD")]
     [Route("/Audio/{Id}/stream.aac", "HEAD")]
     [Route("/Audio/{Id}/stream.flac", "HEAD")]
     [Route("/Audio/{Id}/stream.ogg", "HEAD")]
+    [Route("/Audio/{Id}/stream.oga", "HEAD")]
+    [Route("/Audio/{Id}/stream.webma", "HEAD")]
     [Route("/Audio/{Id}/stream", "HEAD")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets an audio stream")]
+    [Api(Description = "Gets an audio stream")]
     public class GetAudioStream : StreamRequest
     {
 
