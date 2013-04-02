@@ -861,6 +861,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     var userComparer = (IUserBaseItemComparer)Activator.CreateInstance(comparer.GetType());
 
                     userComparer.User = user;
+                    userComparer.UserManager = _userManager;
 
                     return userComparer;
                 }

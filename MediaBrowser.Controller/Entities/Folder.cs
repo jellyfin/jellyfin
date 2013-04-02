@@ -799,6 +799,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
+        /// <param name="userManager">The user manager.</param>
         /// <returns>Task.</returns>
         public override async Task SetPlayedStatus(User user, bool wasPlayed, IUserManager userManager)
         {

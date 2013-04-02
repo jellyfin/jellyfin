@@ -797,109 +797,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// The _user data
-        /// </summary>
-        private IEnumerable<UserItemData> _userData;
-        /// <summary>
-        /// The _user data initialized
-        /// </summary>
-        private bool _userDataInitialized;
-        /// <summary>
-        /// The _user data sync lock
-        /// </summary>
-        private object _userDataSyncLock = new object();
-        /// <summary>
-        /// Gets the user data.
-        /// </summary>
-        /// <value>The user data.</value>
-        [IgnoreDataMember]
-        public IEnumerable<UserItemData> UserData
-        {
-            get
-            {
-                // Call ToList to exhaust the stream because we'll be iterating over this multiple times
-                LazyInitializer.EnsureInitialized(ref _userData, ref _userDataInitialized, ref _userDataSyncLock, () => Kernel.Instance.UserDataRepository.RetrieveUserData(this).ToList());
-                return _userData;
-            }
-            private set
-            {
-                _userData = value;
-
-                if (value == null)
-                {
-                    _userDataInitialized = false;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the user data.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="createIfNull">if set to <c>true</c> [create if null].</param>
-        /// <returns>UserItemData.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public UserItemData GetUserData(User user, bool createIfNull)
-        {
-            if (user == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            if (UserData == null)
-            {
-                if (!createIfNull)
-                {
-                    return null;
-                }
-
-                AddOrUpdateUserData(user, new UserItemData { UserId = user.Id });
-            }
-
-            var data = UserData.FirstOrDefault(u => u.UserId == user.Id);
-
-            if (data == null && createIfNull)
-            {
-                data = new UserItemData { UserId = user.Id };
-                AddOrUpdateUserData(user, data);
-            }
-
-            return data;
-        }
-
-        /// <summary>
-        /// Adds the or update user data.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="data">The data.</param>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public void AddOrUpdateUserData(User user, UserItemData data)
-        {
-            if (user == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            if (data == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            data.UserId = user.Id;
-
-            if (UserData == null)
-            {
-                UserData = new[] { data };
-            }
-            else
-            {
-                var list = UserData.Where(u => u.UserId != user.Id).ToList();
-                list.Add(data);
-                UserData = list;
-            }
-        }
-
-        /// <summary>
         /// The _user data id
         /// </summary>
         protected Guid _userDataId; //cache this so it doesn't have to be re-constructed on every reference
@@ -1205,16 +1102,17 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
+        /// <param name="userManager">The user manager.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public virtual Task SetPlayedStatus(User user, bool wasPlayed, IUserManager userManager)
+        public virtual async Task SetPlayedStatus(User user, bool wasPlayed, IUserManager userManager)
         {
             if (user == null)
             {
                 throw new ArgumentNullException();
             }
 
-            var data = GetUserData(user, true);
+            var data = await userManager.GetUserData(user.Id, UserDataId).ConfigureAwait(false);
 
             if (wasPlayed)
             {
@@ -1237,7 +1135,7 @@ namespace MediaBrowser.Controller.Entities
 
             data.Played = wasPlayed;
 
-            return userManager.SaveUserDataForItem(user, this, data);
+            await userManager.SaveUserData(user.Id, UserDataId, data, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>

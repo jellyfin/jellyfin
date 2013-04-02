@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.Controller.Sorting
 {
@@ -12,5 +13,11 @@ namespace MediaBrowser.Controller.Sorting
         /// </summary>
         /// <value>The user.</value>
         User User { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user manager.
+        /// </summary>
+        /// <value>The user manager.</value>
+        IUserManager UserManager { get; set; }
     }
 }

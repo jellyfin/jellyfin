@@ -503,12 +503,12 @@ namespace MediaBrowser.Api.UserLibrary
             var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
             // Get the user data for this item
-            var data = item.GetUserData(user, true);
+            var data = _userManager.GetUserData(user.Id, item.UserDataId).Result;
 
             // Set favorite status
             data.IsFavorite = true;
 
-            var task = _userManager.SaveUserDataForItem(user, item, data);
+            var task = _userManager.SaveUserData(user.Id, item.UserDataId, data, CancellationToken.None);
 
             Task.WaitAll(task);
         }
@@ -524,12 +524,12 @@ namespace MediaBrowser.Api.UserLibrary
             var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
             // Get the user data for this item
-            var data = item.GetUserData(user, true);
+            var data = _userManager.GetUserData(user.Id, item.UserDataId).Result;
 
             // Set favorite status
             data.IsFavorite = false;
 
-            var task = _userManager.SaveUserDataForItem(user, item, data);
+            var task = _userManager.SaveUserData(user.Id, item.UserDataId, data, CancellationToken.None);
 
             Task.WaitAll(task);
         }
@@ -545,11 +545,11 @@ namespace MediaBrowser.Api.UserLibrary
             var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
             // Get the user data for this item
-            var data = item.GetUserData(user, true);
+            var data = _userManager.GetUserData(user.Id, item.UserDataId).Result;
 
             data.Rating = null;
 
-            var task = _userManager.SaveUserDataForItem(user, item, data);
+            var task = _userManager.SaveUserData(user.Id, item.UserDataId, data, CancellationToken.None);
 
             Task.WaitAll(task);
         }
@@ -565,11 +565,11 @@ namespace MediaBrowser.Api.UserLibrary
             var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
             // Get the user data for this item
-            var data = item.GetUserData(user, true);
+            var data = _userManager.GetUserData(user.Id, item.UserDataId).Result;
 
             data.Likes = request.Likes;
 
-            var task = _userManager.SaveUserDataForItem(user, item, data);
+            var task = _userManager.SaveUserData(user.Id, item.UserDataId, data, CancellationToken.None);
 
             Task.WaitAll(task);
         }
