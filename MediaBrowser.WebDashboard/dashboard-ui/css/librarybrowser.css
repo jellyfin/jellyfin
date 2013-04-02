@@ -61,6 +61,10 @@
     text-align: left;
 }
 
+.libraryGridImage {
+    width: 50px;
+}
+
 @media all and (min-width: 650px) {
     .libraryPage .ui-content {
         padding: 15px 30px 100px;
@@ -79,13 +83,23 @@
     .ehsContent {
         max-width: 800px;
     }
+
+    .libraryItemsGridContainer {
+        padding: 0 10%;
+    }
 }
 
 @media all and (min-width: 1440px) {
+    .libraryItemsGridContainer {
+        padding: 0 20%;
+    }
 }
 
 @media all and (min-width: 1920px) {
     .ehsContent {
         max-width: 1000px;
+    }
+    .libraryItemsGridContainer {
+        padding: 0 25%;
     }
 }

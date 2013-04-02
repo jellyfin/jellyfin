@@ -12,15 +12,17 @@
 
     function getTableHtml(items) {
 
-        var html = '<table data-role="table" data-mode="reflow" class="ui-responsive table-stroke libraryItemsGrid">';
+        var html = '<div class="libraryItemsGridContainer"><table data-role="table" data-mode="reflow" class="ui-responsive table-stroke libraryItemsGrid">';
 
         html += '<thead>';
 
         html += '<tr>';
+        html += '<th>&nbsp;</th>';
         html += '<th>Name</th>';
         html += '<th>Year</th>';
         html += '<th>Official Rating</th>';
         html += '<th>Runtime</th>';
+        html += '<th>Community Rating</th>';
         html += '</tr>';
 
         html += '</thead>';
@@ -34,7 +36,7 @@
 
         html += '</tbody>';
 
-        html += '</table>';
+        html += '</table></div>';
 
         return html;
     }
@@ -43,12 +45,36 @@
 
         var html = '<tr>';
 
-        html += '<td>' + (item.Name || "") + '</td>';
+        html += '<td>';
+
+        var url = "itemdetails.html?id=" + item.Id;
+
+        var imageTags = item.ImageTags;
+
+        html += '<a href="' + url + '">';
+
+        if (imageTags.Primary) {
+
+            html += '<img class="libraryGridImage" src="' + ApiClient.getImageUrl(item.Id, {
+                type: "Primary",
+                height: 150,
+                tag: item.ImageTags.Primary
+            }) + '" />';
+
+        }
+        else {
+            html += '<img class="libraryGridImage" style="background:' + Dashboard.getMetroColor(item.Id) + ';" src="css/images/items/list/collection.png" />';
+        }
+
+        html += '</a></td>';
+
+        html += '<td><a href="' + url + '">' + item.Name + '</a></td>';
 
         html += '<td>' + (item.ProductionYear || "") + '</td>';
 
         html += '<td>' + (item.OfficialRating || "") + '</td>';
-        html += '<td>' + (item.OfficialRating || "") + '</td>';
+        html += '<td>' + (item.RunTimeTicks || "") + '</td>';
+        html += '<td>' + (item.CommunityRating || "") + '</td>';
 
         html += '</tr>';
         return html;
@@ -65,7 +91,7 @@
                 items: result.Items,
                 useAverageAspectRatio: true
 
-            })).html(getTableHtml(result.Items)).trigger('create');
+            }))/*.html(getTableHtml(result.Items)).trigger('create')*/;
 
             Dashboard.hideLoadingMsg();
         });
