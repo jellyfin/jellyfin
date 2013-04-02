@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿(function ($, document, apiClient) {
 
     $(document).on('pageshow', "#indexPage", function () {
 
@@ -17,7 +17,7 @@
             sortBy: "SortName"
         };
 
-        ApiClient.getItems(userId, options).done(function (result) {
+        apiClient.getItems(userId, options).done(function (result) {
 
             $('#divCollections', page).html(Dashboard.getPosterViewHtml({
                 items: result.Items,
@@ -48,4 +48,4 @@
         $('#views', page).html(html);
     });
 
-})(jQuery, document);
+})(jQuery, document, ApiClient);

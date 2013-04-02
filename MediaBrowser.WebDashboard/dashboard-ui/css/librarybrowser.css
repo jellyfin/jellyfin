@@ -25,7 +25,7 @@
     }
 
 .listHeader {
-    margin-top: 1.25em;
+    margin-top: 1em;
     margin-bottom: 5px;
     font-weight: normal;
 }
@@ -36,6 +36,7 @@
 
 .libraryViewNav {
     text-align: center;
+    margin-bottom: 1.5em!important;
 }
 
     .libraryViewNav .ui-btn-inner {
