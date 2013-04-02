@@ -79,8 +79,8 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             string[] queries = {
 
-                                "create table if not exists user_data (item_id GUID, user_id GUID, data BLOB)",
-                                "create unique index if not exists idx_user_data on user_data (item_id, user_id)",
+                                "create table if not exists userdata (id GUID, userId GUID, data BLOB)",
+                                "create unique index if not exists userdataindex on userdata (id, userId)",
                                 "create table if not exists schema_version (table_name primary key, version)",
                                 //pragmas
                                 "pragma temp_store = memory"
@@ -90,84 +90,101 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         }
 
         /// <summary>
-        /// Save the user specific data associated with an item in the repo
+        /// Saves the user data.
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="userId">The user id.</param>
+        /// <param name="userDataId">The user data id.</param>
+        /// <param name="userData">The user data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
-        public Task SaveUserData(BaseItem item, CancellationToken cancellationToken)
+        /// <exception cref="System.ArgumentNullException">
+        /// userData
+        /// or
+        /// cancellationToken
+        /// or
+        /// userId
+        /// or
+        /// userDataId
+        /// </exception>
+        public Task SaveUserData(Guid userId, Guid userDataId, UserItemData userData, CancellationToken cancellationToken)
         {
-            if (item == null)
+            if (userData == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException("userData");
             }
-
             if (cancellationToken == null)
             {
                 throw new ArgumentNullException("cancellationToken");
             }
-            
+            if (userId == Guid.Empty)
+            {
+                throw new ArgumentNullException("userId");
+            }
+            if (userDataId == Guid.Empty)
+            {
+                throw new ArgumentNullException("userDataId");
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             return Task.Run(() =>
             {
+                var serialized = _protobufSerializer.SerializeToBytes(userData);
+
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var cmd = connection.CreateCommand();
-
-                cmd.CommandText = "delete from user_data where item_id = @guid";
-                cmd.AddParam("@guid", item.UserDataId);
-
+                cmd.CommandText = "replace into userdata (id, userId, data) values (@1, @2, @3)";
+                cmd.AddParam("@1", userDataId);
+                cmd.AddParam("@2", userId);
+                cmd.AddParam("@3", serialized);
                 QueueCommand(cmd);
-
-                if (item.UserData != null)
-                {
-                    foreach (var data in item.UserData)
-                    {
-                        cmd = connection.CreateCommand();
-                        cmd.CommandText = "insert into user_data (item_id, user_id, data) values (@1, @2, @3)";
-                        cmd.AddParam("@1", item.UserDataId);
-                        cmd.AddParam("@2", data.UserId);
-
-                        cmd.AddParam("@3", _protobufSerializer.SerializeToBytes(data));
-
-                        QueueCommand(cmd);
-                    }
-                }
             });
         }
 
         /// <summary>
-        /// Gets user data for an item
+        /// Gets the user data.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>IEnumerable{UserItemData}.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
-        public IEnumerable<UserItemData> RetrieveUserData(BaseItem item)
+        /// <param name="userId">The user id.</param>
+        /// <param name="userDataId">The user data id.</param>
+        /// <returns>Task{UserItemData}.</returns>
+        /// <exception cref="System.ArgumentNullException">
+        /// userId
+        /// or
+        /// userDataId
+        /// </exception>
+        public async Task<UserItemData> GetUserData(Guid userId, Guid userDataId)
         {
-            if (item == null)
+            if (userId == Guid.Empty)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException("userId");
+            }
+            if (userDataId == Guid.Empty)
+            {
+                throw new ArgumentNullException("userDataId");
             }
 
             var cmd = connection.CreateCommand();
-            cmd.CommandText = "select data from user_data where item_id = @guid";
-            var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
-            guidParam.Value = item.UserDataId;
+            cmd.CommandText = "select data from userdata where id = @id and userId=@userId";
 
-            using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+            var idParam = cmd.Parameters.Add("@id", DbType.Guid);
+            idParam.Value = userDataId;
+
+            var userIdParam = cmd.Parameters.Add("@userId", DbType.Guid);
+            userIdParam.Value = userId;
+
+            using (var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow).ConfigureAwait(false))
             {
-                while (reader.Read())
+                if (reader.Read())
                 {
                     using (var stream = GetStream(reader, 0))
                     {
-                        var data = _protobufSerializer.DeserializeFromStream<UserItemData>(stream);
-                        if (data != null)
-                        {
-                            yield return data;
-                        }
+                        return _protobufSerializer.DeserializeFromStream<UserItemData>(stream);
                     }
                 }
             }
+
+            return null;
         }
     }
 }

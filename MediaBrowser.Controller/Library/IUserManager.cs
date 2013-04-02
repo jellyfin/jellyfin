@@ -1,11 +1,11 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Connectivity;
+using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -158,14 +158,6 @@ namespace MediaBrowser.Controller.Library
         Task OnPlaybackStopped(User user, BaseItem item, long? positionTicks, string clientType, string deviceId, string deviceName);
 
         /// <summary>
-        /// Saves user data for an item
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="data">The data.</param>
-        Task SaveUserDataForItem(User user, BaseItem item, UserItemData data);
-
-        /// <summary>
         /// Resets the password.
         /// </summary>
         /// <param name="user">The user.</param>
@@ -180,6 +172,25 @@ namespace MediaBrowser.Controller.Library
         /// <returns>Task.</returns>
         Task ChangePassword(User user, string newPassword);
 
+        /// <summary>
+        /// Saves display preferences for an item
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="userDataId">The user data id.</param>
+        /// <param name="userData">The user data.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SaveUserData(Guid userId, Guid userDataId, UserItemData userData,
+                                    CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the display preferences.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="userDataId">The user data id.</param>
+        /// <returns>Task{DisplayPreferences}.</returns>
+        Task<UserItemData> GetUserData(Guid userId, Guid userDataId);
+        
         /// <summary>
         /// Gets the display preferences.
         /// </summary>

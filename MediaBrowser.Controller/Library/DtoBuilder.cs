@@ -167,12 +167,9 @@ namespace MediaBrowser.Controller.Library
         {
             if (fields.Contains(ItemFields.UserData))
             {
-                var userData = item.GetUserData(user, false);
+                var userData = await _userManager.GetUserData(user.Id, item.UserDataId).ConfigureAwait(false);
 
-                if (userData != null)
-                {
-                    dto.UserData = GetUserItemDataDto(userData);
-                }
+                dto.UserData = GetUserItemDataDto(userData);
             }
 
             if (item.IsFolder && fields.Contains(ItemFields.DisplayPreferences))
@@ -191,7 +188,7 @@ namespace MediaBrowser.Controller.Library
                     // Skip sorting since all we want is a count
                     dto.ChildCount = folder.GetChildren(user).Count();
 
-                    SetSpecialCounts(folder, user, dto);
+                    await SetSpecialCounts(folder, user, dto, _userManager).ConfigureAwait(false);
                 }
             }
         }
@@ -488,7 +485,9 @@ namespace MediaBrowser.Controller.Library
         /// <param name="folder">The folder.</param>
         /// <param name="user">The user.</param>
         /// <param name="dto">The dto.</param>
-        private static void SetSpecialCounts(Folder folder, User user, BaseItemDto dto)
+        /// <param name="userManager">The user manager.</param>
+        /// <returns>Task.</returns>
+        private static async Task SetSpecialCounts(Folder folder, User user, BaseItemDto dto, IUserManager userManager)
         {
             var rcentlyAddedItemCount = 0;
             var recursiveItemCount = 0;
@@ -498,7 +497,7 @@ namespace MediaBrowser.Controller.Library
             // Loop through each recursive child
             foreach (var child in folder.GetRecursiveChildren(user).Where(i => !i.IsFolder))
             {
-                var userdata = child.GetUserData(user, false);
+                var userdata = await userManager.GetUserData(user.Id, child.UserDataId).ConfigureAwait(false);
 
                 recursiveItemCount++;
 

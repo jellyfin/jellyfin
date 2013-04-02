@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using MediaBrowser.Common.Events;
+﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -9,6 +8,7 @@ using MediaBrowser.Model.Connectivity;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -104,6 +104,8 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         private readonly ConcurrentDictionary<string, Task<DisplayPreferences>> _displayPreferences = new ConcurrentDictionary<string, Task<DisplayPreferences>>();
 
+        private readonly ConcurrentDictionary<string, Task<UserItemData>> _userData = new ConcurrentDictionary<string, Task<UserItemData>>();
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManager" /> class.
         /// </summary>
@@ -200,13 +202,14 @@ namespace MediaBrowser.Server.Implementations.Library
         public async Task SaveDisplayPreferences(Guid userId, Guid displayPreferencesId, DisplayPreferences displayPreferences, CancellationToken cancellationToken)
         {
             var key = userId + displayPreferencesId.ToString();
-            var newValue = Task.FromResult(displayPreferences);
-
+           
             try
             {
                 await Kernel.Instance.DisplayPreferencesRepository.SaveDisplayPreferences(userId, displayPreferencesId,
                                                                                         displayPreferences,
                                                                                         cancellationToken).ConfigureAwait(false);
+
+                var newValue = Task.FromResult(displayPreferences);
 
                 // Once it succeeds, put it into the dictionary to make it available to everyone else
                 _displayPreferences.AddOrUpdate(key, newValue, delegate { return newValue; });
@@ -651,10 +654,10 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (positionTicks.HasValue)
             {
-                var data = item.GetUserData(user, true);
+                var data = await GetUserData(user.Id, item.UserDataId).ConfigureAwait(false);
 
                 UpdatePlayState(item, data, positionTicks.Value, false);
-                await SaveUserDataForItem(user, item, data).ConfigureAwait(false);
+                await SaveUserData(user.Id, item.UserDataId, data, CancellationToken.None).ConfigureAwait(false);
             }
 
             EventHelper.QueueEventIfNotNull(PlaybackProgress, this, new PlaybackProgressEventArgs
@@ -689,7 +692,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             RemoveNowPlayingItemId(user, clientType, deviceId, deviceName, item);
 
-            var data = item.GetUserData(user, true);
+            var data = await GetUserData(user.Id, item.UserDataId).ConfigureAwait(false);
 
             if (positionTicks.HasValue)
             {
@@ -702,7 +705,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 data.Played = true;
             }
 
-            await SaveUserDataForItem(user, item, data).ConfigureAwait(false);
+            await SaveUserData(user.Id, item.UserDataId, data, CancellationToken.None).ConfigureAwait(false);
 
             EventHelper.QueueEventIfNotNull(PlaybackStopped, this, new PlaybackProgressEventArgs
             {
@@ -763,16 +766,57 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Saves user data for an item
+        /// Saves display preferences for an item
         /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="data">The data.</param>
-        public Task SaveUserDataForItem(User user, BaseItem item, UserItemData data)
+        /// <param name="userId">The user id.</param>
+        /// <param name="userDataId">The user data id.</param>
+        /// <param name="userData">The user data.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public async Task SaveUserData(Guid userId, Guid userDataId, UserItemData userData, CancellationToken cancellationToken)
         {
-            item.AddOrUpdateUserData(user, data);
+            var key = userId + userDataId.ToString();
+            try
+            {
+                await Kernel.Instance.UserDataRepository.SaveUserData(userId, userDataId, userData, cancellationToken).ConfigureAwait(false);
 
-            return Kernel.UserDataRepository.SaveUserData(item, CancellationToken.None);
+                var newValue = Task.FromResult(userData);
+
+                // Once it succeeds, put it into the dictionary to make it available to everyone else
+                _userData.AddOrUpdate(key, newValue, delegate { return newValue; });
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error saving user data", ex);
+
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Gets the display preferences.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="userDataId">The user data id.</param>
+        /// <returns>Task{DisplayPreferences}.</returns>
+        public Task<UserItemData> GetUserData(Guid userId, Guid userDataId)
+        {
+            var key = userId + userDataId.ToString();
+
+            return _userData.GetOrAdd(key, keyName => RetrieveUserData(userId, userDataId));
+        }
+
+        /// <summary>
+        /// Retrieves the display preferences.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="userDataId">The user data id.</param>
+        /// <returns>DisplayPreferences.</returns>
+        private async Task<UserItemData> RetrieveUserData(Guid userId, Guid userDataId)
+        {
+            var userdata = await Kernel.Instance.UserDataRepository.GetUserData(userId, userDataId).ConfigureAwait(false);
+
+            return userdata ?? new UserItemData();
         }
     }
 }
