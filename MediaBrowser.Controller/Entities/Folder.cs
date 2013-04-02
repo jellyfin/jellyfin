@@ -74,109 +74,6 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        /// <summary>
-        /// The _display prefs
-        /// </summary>
-        private IEnumerable<DisplayPreferences> _displayPreferences;
-        /// <summary>
-        /// The _display prefs initialized
-        /// </summary>
-        private bool _displayPreferencesInitialized;
-        /// <summary>
-        /// The _display prefs sync lock
-        /// </summary>
-        private object _displayPreferencesSyncLock = new object();
-        /// <summary>
-        /// Gets the display prefs.
-        /// </summary>
-        /// <value>The display prefs.</value>
-        [IgnoreDataMember]
-        public IEnumerable<DisplayPreferences> DisplayPreferences
-        {
-            get
-            {
-                // Call ToList to exhaust the stream because we'll be iterating over this multiple times
-                LazyInitializer.EnsureInitialized(ref _displayPreferences, ref _displayPreferencesInitialized, ref _displayPreferencesSyncLock, () => Kernel.Instance.DisplayPreferencesRepository.RetrieveDisplayPreferences(this).ToList());
-                return _displayPreferences;
-            }
-            private set
-            {
-                _displayPreferences = value;
-
-                if (value == null)
-                {
-                    _displayPreferencesInitialized = false;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the display prefs.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="createIfNull">if set to <c>true</c> [create if null].</param>
-        /// <returns>DisplayPreferences.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public DisplayPreferences GetDisplayPreferences(User user, bool createIfNull)
-        {
-            if (user == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            if (DisplayPreferences == null)
-            {
-                if (!createIfNull)
-                {
-                    return null;
-                }
-
-                AddOrUpdateDisplayPreferences(user, new DisplayPreferences { UserId = user.Id });
-            }
-
-            var data = DisplayPreferences.FirstOrDefault(u => u.UserId == user.Id);
-
-            if (data == null && createIfNull)
-            {
-                data = new DisplayPreferences { UserId = user.Id };
-                AddOrUpdateDisplayPreferences(user, data);
-            }
-
-            return data;
-        }
-
-        /// <summary>
-        /// Adds the or update display prefs.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="data">The data.</param>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public void AddOrUpdateDisplayPreferences(User user, DisplayPreferences data)
-        {
-            if (user == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            if (data == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            data.UserId = user.Id;
-
-            if (DisplayPreferences == null)
-            {
-                DisplayPreferences = new[] { data };
-            }
-            else
-            {
-                var list = DisplayPreferences.Where(u => u.UserId != user.Id).ToList();
-                list.Add(data);
-                DisplayPreferences = list;
-            }
-        }
-
         #region Indexing
 
         /// <summary>
@@ -902,6 +799,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
+        /// <param name="userManager">The user manager.</param>
         /// <returns>Task.</returns>
         public override async Task SetPlayedStatus(User user, bool wasPlayed, IUserManager userManager)
         {

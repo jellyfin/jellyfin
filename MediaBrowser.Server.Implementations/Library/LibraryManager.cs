@@ -124,15 +124,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 LazyInitializer.EnsureInitialized(ref _libraryItemsCache, ref _libraryItemsCacheInitialized, ref _libraryItemsCacheSyncLock, CreateLibraryItemsCache);
                 return _libraryItemsCache;
             }
-            set
-            {
-                _libraryItemsCache = value;
-
-                if (value == null)
-                {
-                    _libraryItemsCacheInitialized = false;
-                }
-            }
         }
 
         /// <summary>
@@ -267,10 +258,22 @@ namespace MediaBrowser.Server.Implementations.Library
             items.AddRange(specialFeatures);
             items.AddRange(localTrailers);
 
-            // Can't add these right now because there could be separate instances with the same id.
-            //items.AddRange(_userManager.Users.Select(i => i.RootFolder).Distinct().ToList());
+            // Need to use DistinctBy Id because there could be multiple instances with the same id
+            // due to sharing the default library
+            var userRootFolders = _userManager.Users.Select(i => i.RootFolder)
+                .DistinctBy(i => i.Id)
+                .ToList();
 
-            items.AddRange(_userManager.Users.SelectMany(i => i.RootFolder.Children).Where(i => !(i is BasePluginFolder)).Distinct().ToList());
+            items.AddRange(userRootFolders);
+
+            // Get all user collection folders
+            var userFolders =
+                _userManager.Users.SelectMany(i => i.RootFolder.Children)
+                            .Where(i => !(i is BasePluginFolder))
+                            .DistinctBy(i => i.Id)
+                            .ToList();
+
+            items.AddRange(userFolders);
 
             return new ConcurrentDictionary<Guid,BaseItem>(items.ToDictionary(i => i.Id));
         }
@@ -745,26 +748,6 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Saves display preferences for a Folder
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="folder">The folder.</param>
-        /// <param name="data">The data.</param>
-        /// <returns>Task.</returns>
-        public Task SaveDisplayPreferencesForFolder(User user, Folder folder, DisplayPreferences data)
-        {
-            // Need to update all items with the same DisplayPreferencesId
-            foreach (var child in RootFolder.GetRecursiveChildren(user)
-                .OfType<Folder>()
-                .Where(i => i.DisplayPreferencesId == folder.DisplayPreferencesId))
-            {
-                child.AddOrUpdateDisplayPreferences(user, data);
-            }
-
-            return Kernel.DisplayPreferencesRepository.SaveDisplayPreferences(folder, CancellationToken.None);
-        }
-
-        /// <summary>
         /// Gets the default view.
         /// </summary>
         /// <returns>IEnumerable{VirtualFolderInfo}.</returns>
@@ -878,6 +861,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     var userComparer = (IUserBaseItemComparer)Activator.CreateInstance(comparer.GetType());
 
                     userComparer.User = user;
+                    userComparer.UserManager = _userManager;
 
                     return userComparer;
                 }

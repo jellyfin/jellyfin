@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.Threading;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Connectivity;
@@ -385,7 +386,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var movie = (Movie)item;
 
-            var dtoBuilder = new DtoBuilder(Logger, _libraryManager);
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userManager);
 
             var items = movie.SpecialFeatures.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).AsParallel().Select(t => t.Result).ToList();
 
@@ -406,7 +407,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
 
-            var dtoBuilder = new DtoBuilder(Logger, _libraryManager);
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userManager);
 
             var items = item.LocalTrailers.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).AsParallel().Select(t => t.Result).ToList();
 
@@ -427,7 +428,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
 
-            var dtoBuilder = new DtoBuilder(Logger, _libraryManager);
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userManager);
 
             var result = dtoBuilder.GetBaseItemDto(item, user, fields).Result;
 
@@ -443,7 +444,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
 
-            var dtoBuilder = new DtoBuilder(Logger, _libraryManager);
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userManager);
 
             var result = dtoBuilder.GetBaseItemDto(item, user, fields).Result;
 
@@ -486,7 +487,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Serialize to json and then back so that the core doesn't see the request dto type
             var displayPreferences = _jsonSerializer.DeserializeFromString<DisplayPreferences>(_jsonSerializer.SerializeToString(request));
 
-            var task = _libraryManager.SaveDisplayPreferencesForFolder(user, folder, displayPreferences);
+            var task = _userManager.SaveDisplayPreferences(user.Id, folder.DisplayPreferencesId, displayPreferences, CancellationToken.None);
 
             Task.WaitAll(task);
         }
@@ -502,12 +503,12 @@ namespace MediaBrowser.Api.UserLibrary
             var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
             // Get the user data for this item
-            var data = item.GetUserData(user, true);
+            var data = _userManager.GetUserData(user.Id, item.UserDataId).Result;
 
             // Set favorite status
             data.IsFavorite = true;
 
-            var task = _userManager.SaveUserDataForItem(user, item, data);
+            var task = _userManager.SaveUserData(user.Id, item.UserDataId, data, CancellationToken.None);
 
             Task.WaitAll(task);
         }
@@ -523,12 +524,12 @@ namespace MediaBrowser.Api.UserLibrary
             var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
             // Get the user data for this item
-            var data = item.GetUserData(user, true);
+            var data = _userManager.GetUserData(user.Id, item.UserDataId).Result;
 
             // Set favorite status
             data.IsFavorite = false;
 
-            var task = _userManager.SaveUserDataForItem(user, item, data);
+            var task = _userManager.SaveUserData(user.Id, item.UserDataId, data, CancellationToken.None);
 
             Task.WaitAll(task);
         }
@@ -544,11 +545,11 @@ namespace MediaBrowser.Api.UserLibrary
             var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
             // Get the user data for this item
-            var data = item.GetUserData(user, true);
+            var data = _userManager.GetUserData(user.Id, item.UserDataId).Result;
 
             data.Rating = null;
 
-            var task = _userManager.SaveUserDataForItem(user, item, data);
+            var task = _userManager.SaveUserData(user.Id, item.UserDataId, data, CancellationToken.None);
 
             Task.WaitAll(task);
         }
@@ -564,11 +565,11 @@ namespace MediaBrowser.Api.UserLibrary
             var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
             // Get the user data for this item
-            var data = item.GetUserData(user, true);
+            var data = _userManager.GetUserData(user.Id, item.UserDataId).Result;
 
             data.Likes = request.Likes;
 
-            var task = _userManager.SaveUserDataForItem(user, item, data);
+            var task = _userManager.SaveUserData(user.Id, item.UserDataId, data, CancellationToken.None);
 
             Task.WaitAll(task);
         }
