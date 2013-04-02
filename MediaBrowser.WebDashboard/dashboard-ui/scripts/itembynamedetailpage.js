@@ -37,8 +37,11 @@
 
         Dashboard.setPageTitle(name);
 
+	    ItemByNameDetailPage.item = item;
+
         ItemByNameDetailPage.renderImage(item);
         ItemByNameDetailPage.renderOverviewBlock(item);
+	    ItemByNameDetailPage.renderFav(item);
 
         $('#itemName', page).html(name);
 
@@ -118,7 +121,84 @@
             $('#itemOverview', page).hide();
         }
 
-    }
+    },
+
+	renderFav: function (item) {
+		var html = '';
+		var page = $.mobile.activePage;
+
+		var userData = item.UserData || {};
+
+		if (typeof userData.Likes == "undefined") {
+			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="ItemByNameDetailPage.setDislike();" /></div>';
+			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="ItemByNameDetailPage.setLike();" /></div>';
+		} else if (userData.Likes) {
+			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="ItemByNameDetailPage.setDislike();" /></div>';
+			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_up_on.png" alt="Liked" title="Like" onclick="ItemByNameDetailPage.clearLike();" /></div>';
+		} else {
+			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" onclick="ItemByNameDetailPage.clearLike();" /></div>';
+			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="ItemByNameDetailPage.setLike();" /></div>';
+		}
+
+		if (userData.IsFavorite) {
+			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" onclick="ItemByNameDetailPage.setFavorite();" /></div>';
+		} else {
+			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" onclick="ItemByNameDetailPage.setFavorite();" /></div>';
+		}
+
+		$('#itemRatings', page).html(html);
+	},
+
+	setFavorite: function () {
+		var item = ItemByNameDetailPage.item;
+/*
+		item.UserData = item.UserData || {};
+
+		var setting = !item.UserData.IsFavorite;
+		item.UserData.IsFavorite = setting;
+
+		ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), item.Id, setting);
+*/
+		ItemByNameDetailPage.renderFav(item);
+	},
+
+	setLike: function () {
+
+		var item = ItemDetailPage.item;
+/*
+		item.UserData = item.UserData || {};
+
+		item.UserData.Likes = true;
+
+		ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), item.Id, true);
+*/
+		ItemByNameDetailPage.renderFav(item);
+	},
+
+	clearLike: function () {
+
+		var item = ItemDetailPage.item;
+/*
+		item.UserData = item.UserData || {};
+
+		item.UserData.Likes = undefined;
+
+		ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), item.Id);
+*/
+		ItemByNameDetailPage.renderFav(item);
+	},
+
+	setDislike: function () {
+		var item = ItemDetailPage.item;
+/*
+		item.UserData = item.UserData || {};
+
+		item.UserData.Likes = false;
+
+		ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), item.Id, false);
+*/
+		ItemByNameDetailPage.renderFav(item);
+	}
 
 };
 
