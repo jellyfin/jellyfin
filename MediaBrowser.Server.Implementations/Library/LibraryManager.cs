@@ -124,15 +124,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 LazyInitializer.EnsureInitialized(ref _libraryItemsCache, ref _libraryItemsCacheInitialized, ref _libraryItemsCacheSyncLock, CreateLibraryItemsCache);
                 return _libraryItemsCache;
             }
-            set
-            {
-                _libraryItemsCache = value;
-
-                if (value == null)
-                {
-                    _libraryItemsCacheInitialized = false;
-                }
-            }
         }
 
         /// <summary>
@@ -754,26 +745,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
             // Now validate the entire media library
             await RootFolder.ValidateChildren(progress, cancellationToken, recursive: true).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Saves display preferences for a Folder
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="folder">The folder.</param>
-        /// <param name="data">The data.</param>
-        /// <returns>Task.</returns>
-        public Task SaveDisplayPreferencesForFolder(User user, Folder folder, DisplayPreferences data)
-        {
-            // Need to update all items with the same DisplayPreferencesId
-            foreach (var child in RootFolder.GetRecursiveChildren(user)
-                .OfType<Folder>()
-                .Where(i => i.DisplayPreferencesId == folder.DisplayPreferencesId))
-            {
-                child.AddOrUpdateDisplayPreferences(user, data);
-            }
-
-            return Kernel.DisplayPreferencesRepository.SaveDisplayPreferences(folder, CancellationToken.None);
         }
 
         /// <summary>

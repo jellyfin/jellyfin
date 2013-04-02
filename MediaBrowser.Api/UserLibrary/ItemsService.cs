@@ -179,7 +179,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var fields = GetItemFields(request).ToList();
 
-            var dtoBuilder = new DtoBuilder(Logger, _libraryManager);
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userManager);
 
             var returnItems = await Task.WhenAll(pagedItems.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields))).ConfigureAwait(false);
 

@@ -163,7 +163,7 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var connections = userManager.RecentConnections.ToArray();
 
-            var dtoBuilder = new DtoBuilder(logger, libraryManager);
+            var dtoBuilder = new DtoBuilder(logger, libraryManager, userManager);
 
             var tasks = userManager.Users.Where(u => connections.Any(c => c.UserId == u.Id)).Select(dtoBuilder.GetUserDto);
             var users = await Task.WhenAll(tasks).ConfigureAwait(false);

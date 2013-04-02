@@ -1,11 +1,9 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Threading;
@@ -80,8 +78,8 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             string[] queries = {
 
-                                "create table if not exists display_prefs (item_id GUID, user_id GUID, data BLOB)",
-                                "create unique index if not exists idx_display_prefs on display_prefs (item_id, user_id)",
+                                "create table if not exists displaypreferences (id GUID, userId GUID, data BLOB)",
+                                "create unique index if not exists displaypreferencesindex on displaypreferences (id, userId)",
                                 "create table if not exists schema_version (table_name primary key, version)",
                                 //pragmas
                                 "pragma temp_store = memory"
@@ -93,82 +91,87 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <summary>
         /// Save the display preferences associated with an item in the repo
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="userId">The user id.</param>
+        /// <param name="displayPreferencesId">The display preferences id.</param>
+        /// <param name="displayPreferences">The display preferences.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public Task SaveDisplayPreferences(Folder item, CancellationToken cancellationToken)
+        public Task SaveDisplayPreferences(Guid userId, Guid displayPreferencesId, DisplayPreferences displayPreferences, CancellationToken cancellationToken)
         {
-            if (item == null)
+            if (displayPreferences == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException("displayPreferences");
             }
-
             if (cancellationToken == null)
             {
                 throw new ArgumentNullException("cancellationToken");
             }
+            if (userId == Guid.Empty)
+            {
+                throw new ArgumentNullException("userId");
+            }
+            if (displayPreferencesId == Guid.Empty)
+            {
+                throw new ArgumentNullException("displayPreferencesId");
+            }
 
             cancellationToken.ThrowIfCancellationRequested();
-
+            
             return Task.Run(() =>
             {
+                var serialized = _protobufSerializer.SerializeToBytes(displayPreferences);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var cmd = connection.CreateCommand();
-
-                cmd.CommandText = "delete from display_prefs where item_id = @guid";
-                cmd.AddParam("@guid", item.DisplayPreferencesId);
-
+                cmd.CommandText = "replace into displaypreferences (id, userId, data) values (@1, @2, @3)";
+                cmd.AddParam("@1", displayPreferencesId);
+                cmd.AddParam("@2", userId);
+                cmd.AddParam("@3", serialized);
                 QueueCommand(cmd);
-
-                if (item.DisplayPreferences != null)
-                {
-                    foreach (var data in item.DisplayPreferences)
-                    {
-                        cmd = connection.CreateCommand();
-                        cmd.CommandText = "insert into display_prefs (item_id, user_id, data) values (@1, @2, @3)";
-                        cmd.AddParam("@1", item.DisplayPreferencesId);
-                        cmd.AddParam("@2", data.UserId);
-
-                        cmd.AddParam("@3", _protobufSerializer.SerializeToBytes(data));
-
-                        QueueCommand(cmd);
-                    }
-                }
             });
         }
 
         /// <summary>
-        /// Gets display preferences for an item
+        /// Gets the display preferences.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>IEnumerable{DisplayPreferences}.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public IEnumerable<DisplayPreferences> RetrieveDisplayPreferences(Folder item)
+        /// <param name="userId">The user id.</param>
+        /// <param name="displayPreferencesId">The display preferences id.</param>
+        /// <returns>Task{DisplayPreferences}.</returns>
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        public async Task<DisplayPreferences> GetDisplayPreferences(Guid userId, Guid displayPreferencesId)
         {
-            if (item == null)
+            if (userId == Guid.Empty)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException("userId");
+            }
+            if (displayPreferencesId == Guid.Empty)
+            {
+                throw new ArgumentNullException("displayPreferencesId");
             }
 
             var cmd = connection.CreateCommand();
-            cmd.CommandText = "select data from display_prefs where item_id = @guid";
-            var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
-            guidParam.Value = item.DisplayPreferencesId;
+            cmd.CommandText = "select data from displaypreferences where id = @id and userId=@userId";
+            
+            var idParam = cmd.Parameters.Add("@id", DbType.Guid);
+            idParam.Value = displayPreferencesId;
 
-            using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+            var userIdParam = cmd.Parameters.Add("@userId", DbType.Guid);
+            userIdParam.Value = userId;
+
+            using (var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow).ConfigureAwait(false))
             {
-                while (reader.Read())
+                if (reader.Read())
                 {
                     using (var stream = GetStream(reader, 0))
                     {
-                        var data = _protobufSerializer.DeserializeFromStream<DisplayPreferences>(stream);
-                        if (data != null)
-                        {
-                            yield return data;
-                        }
+                        return _protobufSerializer.DeserializeFromStream<DisplayPreferences>(stream);
                     }
                 }
             }
+
+            return null;
         }
     }
 }
