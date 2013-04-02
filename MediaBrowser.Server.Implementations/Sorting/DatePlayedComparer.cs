@@ -41,7 +41,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
                 return userdata.LastPlayedDate.Value;
             }
 
-            return DateTime.MaxValue;
+            return DateTime.MinValue;
         }
 
         /// <summary>

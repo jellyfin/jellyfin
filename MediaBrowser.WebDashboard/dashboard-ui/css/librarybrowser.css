@@ -1,4 +1,9 @@
-﻿.libraryPage .header {
+﻿/* Fixes the issue of jqm panels altering the page background. */
+.ui-panel-content-wrap {
+    background: none!important;
+}
+
+.libraryPage .header {
     padding-bottom: 0;
 }
 
@@ -6,12 +11,12 @@
     margin: -5px 0 0;
 }
 
-.libraryPageHeader a {
-    margin-right: 20px;
-}
+    .libraryPageHeader a {
+        margin-right: 20px;
+    }
 
 .libraryPage .ui-content {
-    padding: 15px 30px 100px;
+    padding: 10px;
 }
 
 .libraryPage, .itemListContent {
@@ -31,12 +36,11 @@
 }
 
 .firstListHeader {
-    margin-top: .5em;
+    margin-top: .75em;
 }
 
 .libraryViewNav {
     text-align: center;
-    margin-bottom: 1.5em!important;
 }
 
     .libraryViewNav .ui-btn-inner {
@@ -48,13 +52,30 @@
     margin: 0 auto;
 }
 
+.viewSettings {
+    text-align: center;
+    margin: 1em 0;
+}
+
+.libraryItemsGrid th {
+    text-align: left;
+}
+
 @media all and (min-width: 650px) {
+    .libraryPage .ui-content {
+        padding: 15px 30px 100px;
+    }
 }
 
 @media all and (min-width: 750px) {
 }
 
 @media all and (min-width: 1200px) {
+
+    .libraryPage .ui-content {
+        padding-top: 0;
+    }
+
     .ehsContent {
         max-width: 800px;
     }

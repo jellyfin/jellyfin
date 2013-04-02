@@ -37,7 +37,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
             {
                 return new DateTime(x.ProductionYear.Value, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             }
-            return DateTime.MaxValue;
+            return DateTime.MinValue;
         }
 
         /// <summary>
