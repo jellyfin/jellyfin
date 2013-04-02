@@ -188,7 +188,7 @@
 
         var nowPlayingBar = $('#nowPlayingBar');
 
-        $('#mediaElement', nowPlayingBar).html(html).show();
+        $('#mediaElement', nowPlayingBar).addClass("video").html(html).show();
 
         _V_("videoWindow", { 'controls': true, 'autoplay': true, 'preload': 'auto' }, function () {
 
