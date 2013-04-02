@@ -267,10 +267,22 @@ namespace MediaBrowser.Server.Implementations.Library
             items.AddRange(specialFeatures);
             items.AddRange(localTrailers);
 
-            // Can't add these right now because there could be separate instances with the same id.
-            //items.AddRange(_userManager.Users.Select(i => i.RootFolder).Distinct().ToList());
+            // Need to use DistinctBy Id because there could be multiple instances with the same id
+            // due to sharing the default library
+            var userRootFolders = _userManager.Users.Select(i => i.RootFolder)
+                .DistinctBy(i => i.Id)
+                .ToList();
 
-            items.AddRange(_userManager.Users.SelectMany(i => i.RootFolder.Children).Where(i => !(i is BasePluginFolder)).Distinct().ToList());
+            items.AddRange(userRootFolders);
+
+            // Get all user collection folders
+            var userFolders =
+                _userManager.Users.SelectMany(i => i.RootFolder.Children)
+                            .Where(i => !(i is BasePluginFolder))
+                            .DistinctBy(i => i.Id)
+                            .ToList();
+
+            items.AddRange(userFolders);
 
             return new ConcurrentDictionary<Guid,BaseItem>(items.ToDictionary(i => i.Id));
         }
