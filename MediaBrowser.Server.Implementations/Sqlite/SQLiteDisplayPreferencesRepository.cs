@@ -48,10 +48,10 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
         /// <param name="protobufSerializer">The protobuf serializer.</param>
-        /// <param name="logger">The logger.</param>
+        /// <param name="logManager">The log manager.</param>
         /// <exception cref="System.ArgumentNullException">protobufSerializer</exception>
-        public SQLiteDisplayPreferencesRepository(IApplicationPaths appPaths, IProtobufSerializer protobufSerializer, ILogger logger)
-            : base(logger)
+        public SQLiteDisplayPreferencesRepository(IApplicationPaths appPaths, IProtobufSerializer protobufSerializer, ILogManager logManager)
+            : base(logManager)
         {
             if (protobufSerializer == null)
             {

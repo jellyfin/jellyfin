@@ -46,16 +46,16 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteRepository" /> class.
         /// </summary>
-        /// <param name="logger">The logger.</param>
+        /// <param name="logManager">The log manager.</param>
         /// <exception cref="System.ArgumentNullException">logger</exception>
-        protected SqliteRepository(ILogger logger)
+        protected SqliteRepository(ILogManager logManager)
         {
-            if (logger == null)
+            if (logManager == null)
             {
-                throw new ArgumentNullException("logger");
+                throw new ArgumentNullException("logManager");
             }
 
-            Logger = logger;
+            Logger = logManager.GetLogger(GetType().Name);
         }
 
         /// <summary>

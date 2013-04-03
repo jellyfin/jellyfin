@@ -300,9 +300,17 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var activityDate = DateTime.UtcNow;
 
+            var lastActivityDate = user.LastActivityDate;
+
             user.LastActivityDate = activityDate;
 
             LogConnection(user.Id, clientType, deviceId, deviceName, activityDate);
+
+            // Don't log in the db anymore frequently than 10 seconds
+            if (lastActivityDate.HasValue && (activityDate - lastActivityDate.Value).TotalSeconds < 10)
+            {
+                return Task.FromResult(true);
+            }
 
             // Save this directly. No need to fire off all the events for this.
             return Kernel.UserRepository.SaveUser(user, CancellationToken.None);

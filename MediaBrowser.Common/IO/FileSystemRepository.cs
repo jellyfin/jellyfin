@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.IO;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.IO
 {
@@ -17,11 +16,6 @@ namespace MediaBrowser.Common.IO
         /// The directory entry is created when the item is first added to the dictionary
         /// </summary>
         private readonly ConcurrentDictionary<string, string> _subFolderPaths = new ConcurrentDictionary<string, string>();
-
-        /// <summary>
-        /// The _file locks
-        /// </summary>
-        private readonly NamedLock _fileLocks = new NamedLock();
 
         /// <summary>
         /// Gets or sets the path.
@@ -171,24 +165,6 @@ namespace MediaBrowser.Common.IO
         }
 
         /// <summary>
-        /// Waits for lock.
-        /// </summary>
-        /// <param name="resourcePath">The resource path.</param>
-        public Task WaitForLockAsync(string resourcePath)
-        {
-            return _fileLocks.WaitAsync(resourcePath);
-        }
-
-        /// <summary>
-        /// Releases the lock.
-        /// </summary>
-        /// <param name="resourcePath">The resource path.</param>
-        public void ReleaseLock(string resourcePath)
-        {
-            _fileLocks.Release(resourcePath);
-        }
-
-        /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
         public void Dispose()
@@ -204,7 +180,6 @@ namespace MediaBrowser.Common.IO
         {
             if (dispose)
             {
-                _fileLocks.Dispose();
             }
         }
     }

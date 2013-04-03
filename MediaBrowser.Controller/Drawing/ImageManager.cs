@@ -15,6 +15,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Drawing
@@ -50,7 +51,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <summary>
         /// The cached imaged sizes
         /// </summary>
-        private readonly ConcurrentDictionary<string, Task<ImageSize>> _cachedImagedSizes = new ConcurrentDictionary<string, Task<ImageSize>>();
+        private readonly ConcurrentDictionary<string, ImageSize> _cachedImagedSizes = new ConcurrentDictionary<string, ImageSize>();
 
         /// <summary>
         /// The _logger
@@ -68,11 +69,17 @@ namespace MediaBrowser.Controller.Drawing
         private readonly Kernel _kernel;
 
         /// <summary>
+        /// The _locks
+        /// </summary>
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new ConcurrentDictionary<string, SemaphoreSlim>();
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ImageManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="protobufSerializer">The protobuf serializer.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="appPaths">The app paths.</param>
         public ImageManager(Kernel kernel, IProtobufSerializer protobufSerializer, ILogger logger, IServerApplicationPaths appPaths)
         {
             _protobufSerializer = protobufSerializer;
@@ -117,15 +124,7 @@ namespace MediaBrowser.Controller.Drawing
 
             if (cropWhitespace)
             {
-                try
-                {
-                    originalImagePath = await GetCroppedImage(originalImagePath, dateModified).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    // We have to have a catch-all here because some of the .net image methods throw a plain old Exception
-                    _logger.ErrorException("Error cropping image", ex);
-                }
+                originalImagePath = await GetCroppedImage(originalImagePath, dateModified).ConfigureAwait(false);
             }
 
             try
@@ -140,12 +139,12 @@ namespace MediaBrowser.Controller.Drawing
                     originalImagePath = ehnancedImagePath;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                _logger.Error("Error enhancing image");
+                _logger.Error("Error enhancing image", ex);
             }
 
-            var originalImageSize = await GetImageSize(originalImagePath, dateModified).ConfigureAwait(false);
+            var originalImageSize = GetImageSize(originalImagePath, dateModified);
 
             // Determine the output size based on incoming parameters
             var newSize = DrawingUtils.Resize(originalImageSize, width, height, maxWidth, maxHeight);
@@ -158,66 +157,101 @@ namespace MediaBrowser.Controller.Drawing
             var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality.Value, dateModified);
 
             // Grab the cache file if it already exists
-            try
+            if (File.Exists(cacheFilePath))
             {
                 using (var fileStream = new FileStream(cacheFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
                 {
                     await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
+                    return;
                 }
-                return;
-            }
-            catch (FileNotFoundException)
-            {
-                // Cache file doesn't exist. No biggie.
             }
 
-            using (var fileStream = File.OpenRead(originalImagePath))
+            var semaphore = GetLock(cacheFilePath);
+
+            await semaphore.WaitAsync().ConfigureAwait(false);
+
+            // Check again in case of lock contention
+            if (File.Exists(cacheFilePath))
             {
-                using (var originalImage = Bitmap.FromStream(fileStream, true, false))
+                try
                 {
-                    var newWidth = Convert.ToInt32(newSize.Width);
-                    var newHeight = Convert.ToInt32(newSize.Height);
-
-                    // Graphics.FromImage will throw an exception if the PixelFormat is Indexed, so we need to handle that here
-                    var thumbnail = !ImageExtensions.IsPixelFormatSupportedByGraphicsObject(originalImage.PixelFormat) ? new Bitmap(originalImage, newWidth, newHeight) : new Bitmap(newWidth, newHeight, originalImage.PixelFormat);
-
-                    // Preserve the original resolution
-                    thumbnail.SetResolution(originalImage.HorizontalResolution, originalImage.VerticalResolution);
-
-                    var thumbnailGraph = Graphics.FromImage(thumbnail);
-
-                    thumbnailGraph.CompositingQuality = CompositingQuality.HighQuality;
-                    thumbnailGraph.SmoothingMode = SmoothingMode.HighQuality;
-                    thumbnailGraph.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                    thumbnailGraph.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                    thumbnailGraph.CompositingMode = CompositingMode.SourceOver;
-
-                    thumbnailGraph.DrawImage(originalImage, 0, 0, newWidth, newHeight);
-
-                    var outputFormat = originalImage.RawFormat;
-
-                    using (var memoryStream = new MemoryStream { })
+                    using (var fileStream = new FileStream(cacheFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
                     {
-                        // Save to the memory stream
-                        thumbnail.Save(outputFormat, memoryStream, quality.Value);
+                        await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
+                        return;
+                    }
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+            }
 
-                        var bytes = memoryStream.ToArray();
+            try
+            {
+                using (var fileStream = File.OpenRead(originalImagePath))
+                {
+                    using (var originalImage = Image.FromStream(fileStream, true, false))
+                    {
+                        var newWidth = Convert.ToInt32(newSize.Width);
+                        var newHeight = Convert.ToInt32(newSize.Height);
 
-                        var outputTask = Task.Run(async () => await toStream.WriteAsync(bytes, 0, bytes.Length));
+                        // Graphics.FromImage will throw an exception if the PixelFormat is Indexed, so we need to handle that here
+                        var thumbnail = !ImageExtensions.IsPixelFormatSupportedByGraphicsObject(originalImage.PixelFormat) ? new Bitmap(originalImage, newWidth, newHeight) : new Bitmap(newWidth, newHeight, originalImage.PixelFormat);
 
-                        // Save to the cache location
-                        using (var cacheFileStream = new FileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                        // Preserve the original resolution
+                        thumbnail.SetResolution(originalImage.HorizontalResolution, originalImage.VerticalResolution);
+
+                        var thumbnailGraph = Graphics.FromImage(thumbnail);
+
+                        thumbnailGraph.CompositingQuality = CompositingQuality.HighQuality;
+                        thumbnailGraph.SmoothingMode = SmoothingMode.HighQuality;
+                        thumbnailGraph.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                        thumbnailGraph.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                        thumbnailGraph.CompositingMode = CompositingMode.SourceOver;
+
+                        thumbnailGraph.DrawImage(originalImage, 0, 0, newWidth, newHeight);
+
+                        var outputFormat = originalImage.RawFormat;
+
+                        using (var memoryStream = new MemoryStream { })
                         {
-                            // Save to the filestream
-                            await cacheFileStream.WriteAsync(bytes, 0, bytes.Length);
+                            // Save to the memory stream
+                            thumbnail.Save(outputFormat, memoryStream, quality.Value);
+
+                            var bytes = memoryStream.ToArray();
+
+                            var outputTask = toStream.WriteAsync(bytes, 0, bytes.Length);
+
+                            // kick off a task to cache the result
+                            Task.Run(() => CacheResizedImage(cacheFilePath, bytes));
+
+                            await outputTask.ConfigureAwait(false);
                         }
 
-                        await outputTask.ConfigureAwait(false);
+                        thumbnailGraph.Dispose();
+                        thumbnail.Dispose();
                     }
-
-                    thumbnailGraph.Dispose();
-                    thumbnail.Dispose();
                 }
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        }
+
+        /// <summary>
+        /// Caches the resized image.
+        /// </summary>
+        /// <param name="cacheFilePath">The cache file path.</param>
+        /// <param name="bytes">The bytes.</param>
+        private async void CacheResizedImage(string cacheFilePath, byte[] bytes)
+        {
+            // Save to the cache location
+            using (var cacheFileStream = new FileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+            {
+                // Save to the filestream
+                await cacheFileStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
             }
         }
 
@@ -252,7 +286,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="dateModified">The date modified.</param>
         /// <returns>Task{ImageSize}.</returns>
         /// <exception cref="System.ArgumentNullException">imagePath</exception>
-        public Task<ImageSize> GetImageSize(string imagePath, DateTime dateModified)
+        public ImageSize GetImageSize(string imagePath, DateTime dateModified)
         {
             if (string.IsNullOrEmpty(imagePath))
             {
@@ -261,18 +295,7 @@ namespace MediaBrowser.Controller.Drawing
 
             var name = imagePath + "datemodified=" + dateModified.Ticks;
 
-            return _cachedImagedSizes.GetOrAdd(name, keyName => GetImageSizeTask(keyName, imagePath));
-        }
-
-        /// <summary>
-        /// Gets cached image dimensions, or results null if non-existant
-        /// </summary>
-        /// <param name="keyName">Name of the key.</param>
-        /// <param name="imagePath">The image path.</param>
-        /// <returns>Task{ImageSize}.</returns>
-        private Task<ImageSize> GetImageSizeTask(string keyName, string imagePath)
-        {
-            return Task.Run(() => GetImageSize(keyName, imagePath));
+            return _cachedImagedSizes.GetOrAdd(name, keyName => GetImageSize(keyName, imagePath));
         }
 
         /// <summary>
@@ -297,27 +320,14 @@ namespace MediaBrowser.Controller.Drawing
                 // Cache file doesn't exist no biggie
             }
 
+            _logger.Debug("Getting image size for {0}", imagePath);
+
             var size = ImageHeader.GetDimensions(imagePath, _logger);
 
-            var imageSize = new ImageSize { Width = size.Width, Height = size.Height };
-
             // Update the file system cache
-            CacheImageSize(fullCachePath, size.Width, size.Height);
+            Task.Run(() => _protobufSerializer.SerializeToFile(new[] { size.Width, size.Height }, fullCachePath));
 
-            return imageSize;
-        }
-
-        /// <summary>
-        /// Caches image dimensions
-        /// </summary>
-        /// <param name="cachePath">The cache path.</param>
-        /// <param name="width">The width.</param>
-        /// <param name="height">The height.</param>
-        private void CacheImageSize(string cachePath, int width, int height)
-        {
-            var output = new[] { width, height };
-
-            _protobufSerializer.SerializeToFile(output, cachePath);
+            return new ImageSize { Width = size.Width, Height = size.Height };
         }
 
         /// <summary>
@@ -367,7 +377,7 @@ namespace MediaBrowser.Controller.Drawing
 
                 return video.Chapters[imageIndex].ImagePath;
             }
-            
+
             return item.GetImage(imageType);
         }
 
@@ -409,7 +419,7 @@ namespace MediaBrowser.Controller.Drawing
             {
                 throw new ArgumentNullException("imagePath");
             }
-            
+
             var metaFileEntry = item.ResolveArgs.GetMetaFileByPath(imagePath);
 
             // If we didn't the metafile entry, check the Season
@@ -440,38 +450,53 @@ namespace MediaBrowser.Controller.Drawing
 
             var croppedImagePath = CroppedImageCache.GetResourcePath(name, Path.GetExtension(originalImagePath));
 
-            if (!CroppedImageCache.ContainsFilePath(croppedImagePath))
+            if (CroppedImageCache.ContainsFilePath(croppedImagePath))
+            {
+                return croppedImagePath;
+            }
+
+            var semaphore = GetLock(croppedImagePath);
+
+            await semaphore.WaitAsync().ConfigureAwait(false);
+
+            // Check again in case of contention
+            if (CroppedImageCache.ContainsFilePath(croppedImagePath))
+            {
+                semaphore.Release();
+                return croppedImagePath;
+            }
+            
+            try
             {
                 using (var fileStream = File.OpenRead(originalImagePath))
                 {
-                    using (var originalImage = (Bitmap)Bitmap.FromStream(fileStream, true, false))
+                    using (var originalImage = (Bitmap)Image.FromStream(fileStream, true, false))
                     {
                         var outputFormat = originalImage.RawFormat;
 
                         using (var croppedImage = originalImage.CropWhitespace())
                         {
-                            await SaveImageToFile(croppedImage, outputFormat, croppedImagePath).ConfigureAwait(false);
+                            using (var outputStream = new FileStream(croppedImagePath, FileMode.Create, FileAccess.Write, FileShare.Read))
+                            {
+                                croppedImage.Save(outputFormat, outputStream, 100);
+                            }
                         }
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                // We have to have a catch-all here because some of the .net image methods throw a plain old Exception
+                _logger.ErrorException("Error cropping image {0}", ex, originalImagePath);
+
+                return originalImagePath;
+            }
+            finally
+            {
+                semaphore.Release();
+            }
 
             return croppedImagePath;
-        }
-
-        private async Task SaveImageToFile(Image image, ImageFormat outputFormat, string file)
-        {
-            using (var memoryStream = new MemoryStream())
-            {
-                image.Save(outputFormat, memoryStream, 100);
-
-                memoryStream.Position = 0;
-
-                using (var cacheFileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
-                {
-                    await memoryStream.CopyToAsync(cacheFileStream).ConfigureAwait(false);
-                }
-            }
         }
 
         /// <summary>
@@ -509,7 +534,23 @@ namespace MediaBrowser.Controller.Drawing
             // All enhanced images are saved as png to allow transparency
             var enhancedImagePath = EnhancedImageCache.GetResourcePath(cacheGuid + ".png");
 
-            if (!EnhancedImageCache.ContainsFilePath(enhancedImagePath))
+            if (EnhancedImageCache.ContainsFilePath(enhancedImagePath))
+            {
+                return enhancedImagePath;
+            }
+            
+            var semaphore = GetLock(enhancedImagePath);
+
+            await semaphore.WaitAsync().ConfigureAwait(false);
+
+            // Check again in case of contention
+            if (EnhancedImageCache.ContainsFilePath(enhancedImagePath))
+            {
+                semaphore.Release();
+                return enhancedImagePath;
+            }
+
+            try
             {
                 using (var fileStream = File.OpenRead(originalImagePath))
                 {
@@ -519,10 +560,17 @@ namespace MediaBrowser.Controller.Drawing
                         using (var newImage = await ExecuteImageEnhancers(supportedEnhancers, originalImage, item, imageType, imageIndex).ConfigureAwait(false))
                         {
                             //And then save it in the cache
-                            await SaveImageToFile(newImage, ImageFormat.Png, enhancedImagePath).ConfigureAwait(false);
+                            using (var outputStream = new FileStream(enhancedImagePath, FileMode.Create, FileAccess.Write, FileShare.Read))
+                            {
+                                newImage.Save(ImageFormat.Png, outputStream, 100);
+                            }
                         }
                     }
                 }
+            }
+            finally
+            {
+                semaphore.Release();
             }
 
             return enhancedImagePath;
@@ -547,7 +595,7 @@ namespace MediaBrowser.Controller.Drawing
             {
                 throw new ArgumentNullException("imagePath");
             }
-            
+
             var dateModified = GetImageDateModified(item, imagePath);
 
             var supportedEnhancers = _kernel.ImageEnhancers.Where(i => i.Supports(item, imageType));
@@ -624,6 +672,19 @@ namespace MediaBrowser.Controller.Drawing
             return result;
         }
 
+        /// <summary>
+        /// Gets the lock.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <returns>System.Object.</returns>
+        private SemaphoreSlim GetLock(string filename)
+        {
+            return _locks.GetOrAdd(filename, key => new SemaphoreSlim(1, 1));
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);

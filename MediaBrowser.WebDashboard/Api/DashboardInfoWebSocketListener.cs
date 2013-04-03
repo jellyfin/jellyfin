@@ -40,9 +40,11 @@ namespace MediaBrowser.WebDashboard.Api
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardInfoWebSocketListener" /> class.
         /// </summary>
+        /// <param name="appHost">The app host.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="taskManager">The task manager.</param>
         /// <param name="userManager">The user manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
         public DashboardInfoWebSocketListener(IServerApplicationHost appHost, ILogger logger, ITaskManager taskManager, IUserManager userManager, ILibraryManager libraryManager)
             : base(logger)
         {
@@ -59,7 +61,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>Task{IEnumerable{TaskInfo}}.</returns>
         protected override Task<DashboardInfo> GetDataToSend(object state)
         {
-            return DashboardService.GetDashboardInfo(_appHost, Logger, _taskManager, _userManager, _libraryManager);
+            return Task.FromResult(DashboardService.GetDashboardInfo(_appHost, Logger, _taskManager, _userManager, _libraryManager));
         }
     }
 }

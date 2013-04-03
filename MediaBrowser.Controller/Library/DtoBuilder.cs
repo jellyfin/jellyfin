@@ -59,19 +59,6 @@ namespace MediaBrowser.Controller.Library
 
             var tasks = new List<Task>();
 
-            if (fields.Contains(ItemFields.PrimaryImageAspectRatio))
-            {
-                try
-                {
-                    tasks.Add(AttachPrimaryImageAspectRatio(dto, item));
-                }
-                catch (Exception ex)
-                {
-                    // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
-                    _logger.ErrorException("Error generating PrimaryImageAspectRatio for {0}", ex, item.Name);
-                }
-            }
-
             if (fields.Contains(ItemFields.Studios))
             {
                 dto.Studios = item.Studios;
@@ -80,6 +67,19 @@ namespace MediaBrowser.Controller.Library
             if (fields.Contains(ItemFields.People))
             {
                 tasks.Add(AttachPeople(dto, item));
+            }
+
+            if (fields.Contains(ItemFields.PrimaryImageAspectRatio))
+            {
+                try
+                {
+                    AttachPrimaryImageAspectRatio(dto, item);
+                }
+                catch (Exception ex)
+                {
+                    // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
+                    _logger.ErrorException("Error generating PrimaryImageAspectRatio for {0}", ex, item.Name);
+                }
             }
 
             AttachBasicFields(dto, item, fields);
@@ -120,19 +120,6 @@ namespace MediaBrowser.Controller.Library
 
             var tasks = new List<Task>();
 
-            if (fields.Contains(ItemFields.PrimaryImageAspectRatio))
-            {
-                try
-                {
-                    tasks.Add(AttachPrimaryImageAspectRatio(dto, item));
-                }
-                catch (Exception ex)
-                {
-                    // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
-                    _logger.ErrorException("Error generating PrimaryImageAspectRatio for {0}", ex, item.Name);
-                }
-            }
-
             if (fields.Contains(ItemFields.Studios))
             {
                 dto.Studios = item.Studios;
@@ -144,6 +131,19 @@ namespace MediaBrowser.Controller.Library
             }
 
             tasks.Add(AttachUserSpecificInfo(dto, item, user, fields));
+
+            if (fields.Contains(ItemFields.PrimaryImageAspectRatio))
+            {
+                try
+                {
+                    AttachPrimaryImageAspectRatio(dto, item);
+                }
+                catch (Exception ex)
+                {
+                    // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
+                    _logger.ErrorException("Error generating PrimaryImageAspectRatio for {0}", ex, item.Name);
+                }
+            }
 
             AttachBasicFields(dto, item, fields);
 
@@ -199,7 +199,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
         /// <returns>Task.</returns>
-        private async Task AttachPrimaryImageAspectRatio(IItemDto dto, BaseItem item)
+        private void AttachPrimaryImageAspectRatio(IItemDto dto, BaseItem item)
         {
             var path = item.PrimaryImagePath;
 
@@ -217,7 +217,7 @@ namespace MediaBrowser.Controller.Library
 
             try
             {
-                size = await Kernel.Instance.ImageManager.GetImageSize(path, dateModified).ConfigureAwait(false);
+                size = Kernel.Instance.ImageManager.GetImageSize(path, dateModified);
             }
             catch (FileNotFoundException)
             {
@@ -771,7 +771,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <returns>DtoUser.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        public async Task<UserDto> GetUserDto(User user)
+        public UserDto GetUserDto(User user)
         {
             if (user == null)
             {
@@ -796,7 +796,7 @@ namespace MediaBrowser.Controller.Library
 
                 try
                 {
-                    await AttachPrimaryImageAspectRatio(dto, user).ConfigureAwait(false);
+                    AttachPrimaryImageAspectRatio(dto, user);
                 }
                 catch (Exception ex)
                 {

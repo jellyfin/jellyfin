@@ -50,10 +50,10 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
-        /// <param name="logger">The logger.</param>
+        /// <param name="logManager">The log manager.</param>
         /// <exception cref="System.ArgumentNullException">appPaths</exception>
-        public SQLiteUserRepository(IApplicationPaths appPaths, IJsonSerializer jsonSerializer, ILogger logger)
-            : base(logger)
+        public SQLiteUserRepository(IApplicationPaths appPaths, IJsonSerializer jsonSerializer, ILogManager logManager)
+            : base(logManager)
         {
             if (appPaths == null)
             {
