@@ -139,7 +139,7 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The level.</value>
         [ProtoMember(19)]
-        public double Level { get; set; }
+        public double? Level { get; set; }
     }
 
     /// <summary>

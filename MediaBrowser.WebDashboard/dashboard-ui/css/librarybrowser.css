@@ -81,7 +81,7 @@
     }
 
     .ehsContent {
-        max-width: 800px;
+        max-width: 900px;
     }
 
     .libraryItemsGridContainer {
@@ -97,7 +97,7 @@
 
 @media all and (min-width: 1920px) {
     .ehsContent {
-        max-width: 1000px;
+        max-width: 1300px;
     }
     .libraryItemsGridContainer {
         padding: 0 25%;
