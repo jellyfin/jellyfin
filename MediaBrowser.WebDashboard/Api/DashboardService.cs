@@ -454,7 +454,9 @@ namespace MediaBrowser.WebDashboard.Api
                                   {
                                       "extensions.js",
                                       "site.js",
+                                      "videojsextensions.js",
                                       "librarybrowser.js",
+
                                       "aboutpage.js",
                                       "addpluginpage.js",
                                       "advancedconfigurationpage.js",

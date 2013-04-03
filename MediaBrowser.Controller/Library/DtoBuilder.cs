@@ -537,7 +537,6 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
-        /// <param name="libraryManager">The library manager.</param>
         /// <returns>Task.</returns>
         private async Task AttachPeople(BaseItemDto dto, BaseItem item)
         {
@@ -549,7 +548,7 @@ namespace MediaBrowser.Controller.Library
             // Attach People by transforming them into BaseItemPerson (DTO)
             dto.People = new BaseItemPerson[item.People.Count];
 
-            var entities = await Task.WhenAll(item.People.Select(c =>
+            var entities = await Task.WhenAll(item.People.OrderBy(i => i.Type).Select(c =>
 
                     Task.Run(async () =>
                     {
