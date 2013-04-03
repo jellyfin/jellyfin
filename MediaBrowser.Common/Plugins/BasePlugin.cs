@@ -299,7 +299,6 @@ namespace MediaBrowser.Common.Plugins
             var info = new PluginInfo
             {
                 Name = Name,
-                DownloadToUI = this is IUIPlugin,
                 Version = Version.ToString(),
                 AssemblyFileName = AssemblyFileName,
                 ConfigurationDateLastModified = ConfigurationDateLastModified,
@@ -309,13 +308,6 @@ namespace MediaBrowser.Common.Plugins
                 UpdateClass = Configuration.UpdateClass,
                 ConfigurationFileName = ConfigurationFileName
             };
-
-            var uiPlugin = this as IUIPlugin;
-
-            if (uiPlugin != null)
-            {
-                info.MinimumRequiredUIVersion = uiPlugin.MinimumRequiredUIVersion.ToString();
-            }
 
             return info;
         }

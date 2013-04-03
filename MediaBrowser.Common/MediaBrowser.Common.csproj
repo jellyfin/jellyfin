@@ -85,7 +85,6 @@
     <Compile Include="Net\MimeTypes.cs" />
     <Compile Include="Net\WebSocketConnectEventArgs.cs" />
     <Compile Include="Plugins\IPlugin.cs" />
-    <Compile Include="Plugins\IUIPlugin.cs" />
     <Compile Include="Progress\ActionableProgress.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

@@ -30,7 +30,7 @@ namespace MediaBrowser.Api
     /// Class GetPackages
     /// </summary>
     [Route("/Packages", "GET")]
-    [ServiceStack.ServiceHost.Api(("Gets available packages"))]
+    [Api(("Gets available packages"))]
     public class GetPackages : IReturn<List<PackageInfo>>
     {
         /// <summary>
@@ -39,13 +39,16 @@ namespace MediaBrowser.Api
         /// <value>The name.</value>
         [ApiMember(Name = "PackageType", Description = "Optional package type filter (System/UserInstalled)", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public PackageType? PackageType { get; set; }
+
+        [ApiMember(Name = "Applications", Description = "Optional. Filter by target system type. Allows multiple, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET", AllowMultiple = true)]
+        public string Applications { get; set; }
     }
 
     /// <summary>
     /// Class GetPackageVersionUpdates
     /// </summary>
     [Route("/Packages/Updates", "GET")]
-    [ServiceStack.ServiceHost.Api(("Gets available package updates for currently installed packages"))]
+    [Api(("Gets available package updates for currently installed packages"))]
     public class GetPackageVersionUpdates : IReturn<List<PackageVersionInfo>>
     {
         /// <summary>
@@ -60,7 +63,7 @@ namespace MediaBrowser.Api
     /// Class InstallPackage
     /// </summary>
     [Route("/Packages/Installed/{Name}", "POST")]
-    [ServiceStack.ServiceHost.Api(("Installs a package"))]
+    [Api(("Installs a package"))]
     public class InstallPackage : IReturnVoid
     {
         /// <summary>
@@ -89,7 +92,7 @@ namespace MediaBrowser.Api
     /// Class CancelPackageInstallation
     /// </summary>
     [Route("/Packages/Installing/{Id}", "DELETE")]
-    [ServiceStack.ServiceHost.Api(("Cancels a package installation"))]
+    [Api(("Cancels a package installation"))]
     public class CancelPackageInstallation : IReturnVoid
     {
         /// <summary>
@@ -164,6 +167,13 @@ namespace MediaBrowser.Api
         public object Get(GetPackages request)
         {
             var packages = _installationManager.GetAvailablePackages(CancellationToken.None, request.PackageType, _appHost.ApplicationVersion).Result;
+
+            if (!string.IsNullOrEmpty(request.Applications))
+            {
+                var apps = request.Applications.Split(',').Select(i => (PackageTargetSystem)Enum.Parse(typeof(PackageTargetSystem), i, true));
+
+                packages = packages.Where(p => apps.Contains(p.targetSystem));
+            }
 
             return ToOptimizedResult(packages.ToList());
         }
