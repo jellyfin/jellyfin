@@ -761,7 +761,7 @@ var Dashboard = {
         }, {
             name: "Media Library",
             href: "library.html",
-            selected: pageElem.id == "mediaLibraryPage"
+            selected: pageElem.id == "mediaLibraryPage" && !getParameterByName('userId')
         }, {
             name: "Metadata",
             href: "metadata.html",
@@ -773,7 +773,7 @@ var Dashboard = {
         }, {
             name: "User Profiles",
             href: "userprofiles.html",
-            selected: page.hasClass("userProfilesConfigurationPage")
+            selected: page.hasClass("userProfilesConfigurationPage") || (pageElem.id == "mediaLibraryPage" && getParameterByName('userId'))
         }, {
             name: "Display Settings",
             href: "uisettings.html",
