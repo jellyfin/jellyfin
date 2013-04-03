@@ -29,6 +29,7 @@
                 if (user.Configuration.UseCustomLibrary) {
 
                     ApiClient.getVirtualFolders(userId).done(MediaLibraryPage.reloadVirtualFolders);
+	                $(".editing_default").hide();
                     $('#divMediaLibrary', page).show();
                 } else {
                     $('#divMediaLibrary', page).hide();
@@ -118,6 +119,8 @@
             user.Configuration.UseCustomLibrary = !useDefaultLibrary;
 
             ApiClient.updateUser(user).done(MediaLibraryPage.reloadLibrary);
+
+	        $(".editing_default").hide();
         });
     },
 

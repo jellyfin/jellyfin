@@ -145,16 +145,18 @@
             audioCodec: 'Vorbis'
         }));
 
+	    /* ffmpeg always says the ogg stream is corrupt after conversion
         var oggUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.oga', $.extend({}, baseParams, {
             audioCodec: 'Vorbis'
         }));
+        */
 
         var html = '';
         html += '<audio class="itemAudio" preload="none" controls autoplay>';
         html += '<source type="audio/mpeg" src="' + mp3Url + '" />';
         html += '<source type="audio/aac" src="' + aacUrl + '" />';
         html += '<source type="audio/webm" src="' + webmUrl + '" />';
-        html += '<source type="audio/ogg" src="' + oggUrl + '" />';
+        //html += '<source type="audio/ogg" src="' + oggUrl + '" />';
         html += '</audio';
 
         var nowPlayingBar = $('#nowPlayingBar').show();
