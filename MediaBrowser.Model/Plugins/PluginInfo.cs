@@ -18,13 +18,6 @@ namespace MediaBrowser.Model.Plugins
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [download to UI].
-        /// </summary>
-        /// <value><c>true</c> if [download to UI]; otherwise, <c>false</c>.</value>
-        [ProtoMember(2)]
-        public bool DownloadToUI { get; set; }
-
-        /// <summary>
         /// Gets or sets the configuration date last modified.
         /// </summary>
         /// <value>The configuration date last modified.</value>
