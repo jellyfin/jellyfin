@@ -40,8 +40,8 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "PackageType", Description = "Optional package type filter (System/UserInstalled)", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public PackageType? PackageType { get; set; }
 
-        [ApiMember(Name = "Applications", Description = "Optional. Filter by target system type. Allows multiple, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET", AllowMultiple = true)]
-        public string Applications { get; set; }
+        [ApiMember(Name = "TargetSystems", Description = "Optional. Filter by target system type. Allows multiple, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET", AllowMultiple = true)]
+        public string TargetSystems { get; set; }
     }
 
     /// <summary>
@@ -168,9 +168,9 @@ namespace MediaBrowser.Api
         {
             var packages = _installationManager.GetAvailablePackages(CancellationToken.None, request.PackageType, _appHost.ApplicationVersion).Result;
 
-            if (!string.IsNullOrEmpty(request.Applications))
+            if (!string.IsNullOrEmpty(request.TargetSystems))
             {
-                var apps = request.Applications.Split(',').Select(i => (PackageTargetSystem)Enum.Parse(typeof(PackageTargetSystem), i, true));
+                var apps = request.TargetSystems.Split(',').Select(i => (PackageTargetSystem)Enum.Parse(typeof(PackageTargetSystem), i, true));
 
                 packages = packages.Where(p => apps.Contains(p.targetSystem));
             }
