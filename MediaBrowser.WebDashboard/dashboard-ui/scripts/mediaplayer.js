@@ -169,6 +169,8 @@
     },
 
     playVideo: function (items, startPosition) {
+		//stop/kill videoJS
+	    if (MediaPlayer.mediaElement) MediaPlayer.stop();
 
         var item = items[0];
 
@@ -248,7 +250,7 @@
                 localStorage.setItem("volume", (this).volume());
             });
 
-            (this).addEvent("play", MediaPlayer.updateProgress);
+	        (this).addEvent("play", MediaPlayer.updateProgress);
 
             ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id);
         });
