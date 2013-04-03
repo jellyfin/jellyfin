@@ -133,6 +133,13 @@ namespace MediaBrowser.Model.Entities
         /// <value>The filename.</value>
         [ProtoMember(18)]
         public string Path { get; set; }
+
+        /// <summary>
+        /// Gets or sets the level.
+        /// </summary>
+        /// <value>The level.</value>
+        [ProtoMember(19)]
+        public double Level { get; set; }
     }
 
     /// <summary>

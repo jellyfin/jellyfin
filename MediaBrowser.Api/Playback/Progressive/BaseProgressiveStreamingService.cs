@@ -90,8 +90,9 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// </summary>
         /// <param name="state">The state.</param>
         /// <param name="responseHeaders">The response headers.</param>
+        /// <param name="isStaticallyStreamed">if set to <c>true</c> [is statically streamed].</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private void AddDlnaHeaders(StreamState state, IDictionary<string, string> responseHeaders)
+        private void AddDlnaHeaders(StreamState state, IDictionary<string, string> responseHeaders, bool isStaticallyStreamed)
         {
             var timeSeek = RequestContext.GetHeader("TimeSeekRange.dlna.org");
 
@@ -107,46 +108,56 @@ namespace MediaBrowser.Api.Playback.Progressive
             var contentFeatures = string.Empty;
             var extension = GetOutputFileExtension(state);
 
+            // first bit means Time based seek supported, second byte range seek supported (not sure about the order now), so 01 = only byte seek, 10 = time based, 11 = both, 00 = none
+            var org_op = isStaticallyStreamed ? ";DLNA.ORG_OP=01" : ";DLNA.ORG_OP=00";
+
+            // 0 = native, 1 = transcoded
+            var org_ci = isStaticallyStreamed ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
+
+            var dlnaflags = ";DLNA.ORG_FLAGS=01500000000000000000000000000000";
+
             if (string.Equals(extension, ".mp3", StringComparison.OrdinalIgnoreCase))
             {
-                contentFeatures = "DLNA.ORG_PN=MP3;DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000";
+                contentFeatures = "DLNA.ORG_PN=MP3";
             }
             else if (string.Equals(extension, ".aac", StringComparison.OrdinalIgnoreCase))
             {
-                contentFeatures = "DLNA.ORG_PN=AAC_ISO;DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000";
+                contentFeatures = "DLNA.ORG_PN=AAC_ISO";
             }
             else if (string.Equals(extension, ".wma", StringComparison.OrdinalIgnoreCase))
             {
-                contentFeatures = "DLNA.ORG_PN=WMABASE;DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000";
+                contentFeatures = "DLNA.ORG_PN=WMABASE";
             }
             else if (string.Equals(extension, ".avi", StringComparison.OrdinalIgnoreCase))
             {
-                contentFeatures = "DLNA.ORG_PN=AVI;DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000";
+                contentFeatures = "DLNA.ORG_PN=AVI";
             }
             else if (string.Equals(extension, ".mp4", StringComparison.OrdinalIgnoreCase))
             {
-                contentFeatures = "DLNA.ORG_PN=MPEG4_P2_SP_AAC;DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000";
+                contentFeatures = "DLNA.ORG_PN=AVC_MP4_BL_L3_SD_AAC";
             }
             else if (string.Equals(extension, ".mpeg", StringComparison.OrdinalIgnoreCase))
             {
-                contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL;DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000";
+                contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL";
             }
             else if (string.Equals(extension, ".wmv", StringComparison.OrdinalIgnoreCase))
             {
-                contentFeatures = "DLNA.ORG_PN=WMVHIGH_BASE;DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000";
+                contentFeatures = "DLNA.ORG_PN=WMVHIGH_BASE";
             }
             else if (string.Equals(extension, ".asf", StringComparison.OrdinalIgnoreCase))
             {
-                contentFeatures = "DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000";
+                // ??
+                contentFeatures = "DLNA.ORG_PN=WMVHIGH_BASE";
             }
             else if (string.Equals(extension, ".mkv", StringComparison.OrdinalIgnoreCase))
             {
-                contentFeatures = "DLNA.ORG_OP=01;DLNA.ORG_CI=0";
+                // ??
+                contentFeatures = "";
             }
 
             if (!string.IsNullOrEmpty(contentFeatures))
             {
-                responseHeaders["ContentFeatures.DLNA.ORG"] = contentFeatures;
+                responseHeaders["ContentFeatures.DLNA.ORG"] = (contentFeatures + org_op + org_ci + dlnaflags).Trim(';');
             }
         }
 
@@ -176,16 +187,20 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var responseHeaders = new Dictionary<string, string>();
 
-            AddDlnaHeaders(state, responseHeaders);
+            var outputPath = GetOutputFilePath(state);
+            var outputPathExists = File.Exists(outputPath);
+
+            var isStatic = request.Static ||
+                           (outputPathExists && !ApiEntryPoint.Instance.HasActiveTranscodingJob(outputPath, TranscodingJobType.Progressive));
+
+            AddDlnaHeaders(state, responseHeaders, isStatic);
 
             if (request.Static)
             {
                 return ResultFactory.GetStaticFileResult(RequestContext, state.Item.Path, responseHeaders, isHeadRequest);
             }
 
-            var outputPath = GetOutputFilePath(state);
-
-            if (File.Exists(outputPath) && !ApiEntryPoint.Instance.HasActiveTranscodingJob(outputPath, TranscodingJobType.Progressive))
+            if (outputPathExists && !ApiEntryPoint.Instance.HasActiveTranscodingJob(outputPath, TranscodingJobType.Progressive))
             {
                 return ResultFactory.GetStaticFileResult(RequestContext, outputPath, responseHeaders, isHeadRequest);
             }

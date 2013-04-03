@@ -195,6 +195,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
                 Codec = streamInfo.codec_name,
                 Language = GetDictionaryValue(streamInfo.tags, "language"),
                 Profile = streamInfo.profile,
+                Level = streamInfo.level,
                 Index = streamInfo.index
             };
 
