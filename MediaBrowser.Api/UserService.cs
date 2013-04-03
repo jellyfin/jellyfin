@@ -167,11 +167,9 @@ namespace MediaBrowser.Api
         {
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userManager);
 
-            var tasks = _userManager.Users.OrderBy(u => u.Name).Select(dtoBuilder.GetUserDto).ToArray();
+            var users = _userManager.Users.OrderBy(u => u.Name).Select(dtoBuilder.GetUserDto).ToArray();
 
-            var task = Task.WhenAll(tasks);
-
-            return ToOptimizedResult(task.Result);
+            return ToOptimizedResult(users);
         }
 
         /// <summary>
@@ -188,7 +186,7 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
-            var result = new DtoBuilder(Logger, _libraryManager, _userManager).GetUserDto(user).Result;
+            var result = new DtoBuilder(Logger, _libraryManager, _userManager).GetUserDto(user);
 
             return ToOptimizedResult(result);
         }
@@ -302,7 +300,7 @@ namespace MediaBrowser.Api
 
             newUser.UpdateConfiguration(dtoUser.Configuration, _xmlSerializer);
 
-            var result = new DtoBuilder(Logger, _libraryManager, _userManager).GetUserDto(newUser).Result;
+            var result = new DtoBuilder(Logger, _libraryManager, _userManager).GetUserDto(newUser);
 
             return ToOptimizedResult(result);
         }
