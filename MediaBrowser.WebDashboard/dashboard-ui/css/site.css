@@ -407,11 +407,6 @@ form, .readOnlyContent {
     padding-bottom: 56px;
 }
 
-    .posterViewItemWithDualText .posterViewItemText {
-        text-align: left;
-        color: #fff;
-    }
-
 .posterViewItemWithNoText {
     padding-bottom: 0!important;
 }
@@ -445,7 +440,7 @@ form, .readOnlyContent {
     text-wrap: none;
     white-space: nowrap;
     margin: 0;
-    padding: 4px 4px 0;
+    padding: 4px 5px 0;
     position: absolute;
     bottom: 0;
     left: 0;
@@ -453,6 +448,14 @@ form, .readOnlyContent {
     height: 24px;
     background: #181818;
     text-shadow: none;
+}
+
+
+.posterViewItemWithDualText .posterViewItemText {
+    text-align: left;
+    color: #fff;
+    padding-top: 5px;
+    height: 23px;
 }
 
 .posterViewItemPrimaryText {
@@ -467,18 +470,6 @@ form, .readOnlyContent {
 
 @media all and (min-width: 750px) {
 
-    .posterViewItemWithDualText {
-        padding-bottom: 58px;
-    }
-
-    .posterViewItemText {
-        padding-top: 5px;
-    }
-
-    .posterViewItemPrimaryText {
-        bottom: 29px;
-    }
-
     .posterViewItem img {
         max-width: 190px;
         max-height: 160px;
@@ -489,36 +480,35 @@ form, .readOnlyContent {
 
     .posterViewItem {
         font-size: 16px;
-        padding-bottom: 29px;
     }
 
-    .posterViewItem img {
-        max-width: 250px;
-        max-height: 200px;
-    }
+        .posterViewItem img {
+            max-width: 270px;
+            max-height: 220px;
+        }
 }
 
 @media all and (min-width: 1920px) {
 
+    .posterViewItemText {
+        height: 25px!important;
+    }
+
     .posterViewItem {
         font-size: 18px;
-        padding-bottom: 33px;
+        padding-bottom: 29px;
     }
 
     .posterViewItemWithDualText {
-        padding-bottom: 66px;
+        padding-bottom: 60px;
     }
 
     .posterViewItemPrimaryText {
-        bottom: 33px;
-    }
-
-    .posterViewItemText {
-        height: 28px;
+        bottom: 30px;
     }
 
     .posterViewItem img {
-        max-width: 300px;
+        max-width: 310px;
         max-height: 250px;
     }
 }
@@ -702,20 +692,21 @@ progress {
 }
 
 .userItemRating {
-	height: 24px;
-	width: 24px;
-	margin-right: 1em;
-	overflow: hidden;
-	display: inline-block;
+    height: 24px;
+    width: 24px;
+    margin-right: 1em;
+    overflow: hidden;
+    display: inline-block;
 }
+
 .imgUserItemRating {
     height: 24px;
     cursor: pointer;
 }
 
-.imgUserItemRating:hover {
-    opacity: .5;
-}
+    .imgUserItemRating:hover {
+        opacity: .5;
+    }
 
 @media all and (min-width: 650px) {
     .itemImageBlock {
@@ -788,9 +779,10 @@ progress {
     display: inline-block;
     position: relative;
 }
-#mediaElement.video {
-	width: 270px;
-}
+
+    #mediaElement.video {
+        width: 270px;
+    }
 
 #nowPlayingBar #mediaInfo, #nowPlayingBar #mediaInfo div {
     margin-left: 10px;
