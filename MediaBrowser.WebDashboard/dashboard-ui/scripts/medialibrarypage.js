@@ -20,6 +20,13 @@
             $('#userProfileNavigation', page).show();
 
             ApiClient.getUser(userId).done(function (user) {
+	            //I don't really like this hack - Craig
+	            $("div.sidebarLinks a").removeClass("selectedSidebarLink");
+	            $("div.sidebarLinks a").each(function(){
+		           if ($(this).attr("href")=="userprofiles.html") {
+			           $(this).addClass("selectedSidebarLink");
+		           }
+	            });
 
                 Dashboard.setPageTitle(user.Name);
 

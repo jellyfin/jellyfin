@@ -11,12 +11,12 @@
 			IncludeItemTypes: "Episode",
 			Limit: 6,
 			Recursive: true,
-			Fields: "PrimaryImageAspectRatio"
+			Fields: "PrimaryImageAspectRatio,SeriesInfo"
 		};
 
 		ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
 
-			$('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
+			$('#recentlyAddedItems', page).html(LibraryBrowser.getEpisodePosterViewHtml({
 				items: result.Items,
 				useAverageAspectRatio: true
 			}));
@@ -32,7 +32,7 @@
 			Filters: "IsResumable",
 			Limit: 6,
 			Recursive: true,
-			Fields: "PrimaryImageAspectRatio"
+			Fields: "PrimaryImageAspectRatio,SeriesInfo"
 		};
 
 		ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
@@ -43,7 +43,7 @@
 				$('#resumableSection', page).hide();
 			}
 
-			$('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
+			$('#resumableItems', page).html(LibraryBrowser.getEpisodePosterViewHtml({
 				items: result.Items,
 				useAverageAspectRatio: true
 			}));
