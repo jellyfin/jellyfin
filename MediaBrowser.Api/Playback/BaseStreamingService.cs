@@ -286,7 +286,7 @@ namespace MediaBrowser.Api.Playback
                 return string.Empty;
             }
 
-            var param = string.Format(",ass={0}", path);
+            var param = string.Format(",ass={0}", path.Replace('\\', '/').Replace(":/", "\\:/"));
 
             if (startTimeTicks.HasValue)
             {

@@ -35,7 +35,7 @@ namespace MediaBrowser.Api.Playback.Progressive
     [Route("/Videos/{Id}/stream.avi", "HEAD")]
     [Route("/Videos/{Id}/stream.m2ts", "HEAD")]
     [Route("/Videos/{Id}/stream", "HEAD")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets a video stream")]
+    [Api(Description = "Gets a video stream")]
     public class GetVideoStream : VideoStreamRequest
     {
 
