@@ -116,24 +116,31 @@ namespace MediaBrowser.Model.Updates
         public float price { get; set; }
 
         /// <summary>
+        /// Gets or sets the target system for this plug-in (Server, MBTheater, MBClassic).
+        /// </summary>
+        /// <value>The target system.</value>
+        [ProtoMember(16)]
+        public PackageTargetSystem targetSystem { get; set; }
+
+        /// <summary>
         /// Gets or sets whether or not this package is registered.
         /// </summary>
         /// <value>True if registered.</value>
-        [ProtoMember(16)]
+        [ProtoMember(17)]
         public bool isRegistered { get; set; }
 
         /// <summary>
         /// Gets or sets the expiration date for this package.
         /// </summary>
         /// <value>Expiration Date.</value>
-        [ProtoMember(17)]
+        [ProtoMember(18)]
         public DateTime expDate { get; set; }
 
         /// <summary>
         /// Gets or sets the versions.
         /// </summary>
         /// <value>The versions.</value>
-        [ProtoMember(18)]
+        [ProtoMember(19)]
         public List<PackageVersionInfo> versions { get; set; }
     }
 }
