@@ -118,6 +118,8 @@ namespace MediaBrowser.Installer
                 {
                     // wasn't running
                 }
+
+                Thread.Sleep(500); // give it just another sec to be sure its really gone
             }
 
             //MessageBox.Show(string.Format("Called with args: product: {0} archive: {1} caller: {2}", product, Archive, callerId));
@@ -168,7 +170,7 @@ namespace MediaBrowser.Installer
                         client.UploadString("http://localhost:8096/mediabrowser/System/Shutdown", "");
                         try
                         {
-                            server.WaitForExit();
+                            server.WaitForExit(30000); //don't hang indefinitely
                         }
                         catch (ArgumentException)
                         {
