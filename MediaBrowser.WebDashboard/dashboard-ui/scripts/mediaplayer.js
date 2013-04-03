@@ -160,6 +160,8 @@
         html += '</audio';
 
         var nowPlayingBar = $('#nowPlayingBar').show();
+	    //show stop button
+	    $('#stopButton', nowPlayingBar).show();
 
         $('#mediaElement', nowPlayingBar).html(html);
 
@@ -192,6 +194,8 @@
         var html = '<video id="videoWindow" class="itemVideo video-js vjs-default-skin"></video>';
 
         var nowPlayingBar = $('#nowPlayingBar');
+	    //hide stop button
+	    $('#stopButton', nowPlayingBar).hide();
 
         $('#mediaElement', nowPlayingBar).addClass("video").html(html).show();
 
