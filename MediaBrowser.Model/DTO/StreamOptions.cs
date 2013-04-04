@@ -169,6 +169,11 @@
         H264,
 
         /// <summary>
+        /// The mpeg4
+        /// </summary>
+        Mpeg4,
+
+        /// <summary>
         /// The theora
         /// </summary>
         Theora,
