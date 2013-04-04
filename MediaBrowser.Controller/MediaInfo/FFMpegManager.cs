@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Text;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Entities;
@@ -286,6 +287,32 @@ namespace MediaBrowser.Controller.MediaInfo
         }
 
         /// <summary>
+        /// The _media tools path
+        /// </summary>
+        private string _mediaToolsPath;
+        /// <summary>
+        /// Gets the folder path to tools
+        /// </summary>
+        /// <value>The media tools path.</value>
+        private string MediaToolsPath
+        {
+            get
+            {
+                if (_mediaToolsPath == null)
+                {
+                    _mediaToolsPath = Path.Combine(_appPaths.ProgramDataPath, "ffmpeg");
+
+                    if (!Directory.Exists(_mediaToolsPath))
+                    {
+                        Directory.CreateDirectory(_mediaToolsPath);
+                    }
+                }
+
+                return _mediaToolsPath;
+            }
+        }
+
+        /// <summary>
         /// Gets the versioned directory path.
         /// </summary>
         /// <returns>System.String.</returns>
@@ -300,7 +327,7 @@ namespace MediaBrowser.Controller.MediaInfo
 
             var filename = resource.Substring(resource.IndexOf(prefix, StringComparison.OrdinalIgnoreCase) + prefix.Length);
 
-            var versionedDirectoryPath = Path.Combine(_appPaths.MediaToolsPath, Path.GetFileNameWithoutExtension(filename));
+            var versionedDirectoryPath = Path.Combine(MediaToolsPath, Path.GetFileNameWithoutExtension(filename));
 
             if (!Directory.Exists(versionedDirectoryPath))
             {
@@ -323,6 +350,71 @@ namespace MediaBrowser.Controller.MediaInfo
             using (var resourceStream = assembly.GetManifestResourceStream(zipFileResourcePath))
             {
                 _zipClient.ExtractAll(resourceStream, targetPath, false);
+            }
+
+            ExtractFonts(assembly, targetPath);
+        }
+
+        /// <summary>
+        /// Extracts the fonts.
+        /// </summary>
+        /// <param name="assembly">The assembly.</param>
+        /// <param name="targetPath">The target path.</param>
+        private async void ExtractFonts(Assembly assembly, string targetPath)
+        {
+            var fontsDirectory = Path.Combine(targetPath, "fonts");
+
+            if (!Directory.Exists(fontsDirectory))
+            {
+                Directory.CreateDirectory(fontsDirectory);
+            }
+
+            const string fontFilename = "ARIALUNI.TTF";
+
+            var fontFile = Path.Combine(fontsDirectory, fontFilename);
+
+            if (!File.Exists(fontFile))
+            {
+                using (var stream = assembly.GetManifestResourceStream("MediaBrowser.Controller.MediaInfo.fonts." + fontFilename))
+                {
+                    using (var fileStream = new FileStream(fontFile, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                    {
+                        await stream.CopyToAsync(fileStream).ConfigureAwait(false);
+                    }
+                }
+            }
+
+            await ExtractFontConfigFile(assembly, fontsDirectory).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Extracts the font config file.
+        /// </summary>
+        /// <param name="assembly">The assembly.</param>
+        /// <param name="fontsDirectory">The fonts directory.</param>
+        private async Task ExtractFontConfigFile(Assembly assembly, string fontsDirectory)
+        {
+            const string fontConfigFilename = "fonts.conf";
+            var fontConfigFile = Path.Combine(fontsDirectory, fontConfigFilename);
+
+            if (!File.Exists(fontConfigFile))
+            {
+                using (var stream = assembly.GetManifestResourceStream("MediaBrowser.Controller.MediaInfo.fonts." + fontConfigFilename))
+                {
+                    using (var streamReader = new StreamReader(stream))
+                    {
+                        var contents = await streamReader.ReadToEndAsync().ConfigureAwait(false);
+
+                        contents = contents.Replace("<dir></dir>", "<dir>" + fontsDirectory + "</dir>");
+
+                        var bytes = Encoding.UTF8.GetBytes(contents);
+
+                        using (var fileStream = new FileStream(fontConfigFile, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                        {
+                            await fileStream.WriteAsync(bytes, 0, bytes.Length);
+                        }
+                    }
+                }
             }
         }
 

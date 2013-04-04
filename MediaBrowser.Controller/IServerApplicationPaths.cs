@@ -76,13 +76,6 @@ namespace MediaBrowser.Controller
         /// <value>The FF MPEG stream cache path.</value>
         string EncodedMediaCachePath { get; }
 
-        /// <summary>
-        /// Gets the folder path to tools
-        /// </summary>
-        /// <value>The media tools path.</value>
-        string MediaToolsPath { get; }
-
-        /// <summary>
         /// Gets the downloaded images data path.
         /// </summary>
         /// <value>The downloaded images data path.</value>

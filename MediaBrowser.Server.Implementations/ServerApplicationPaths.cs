@@ -321,32 +321,6 @@ namespace MediaBrowser.Server.Implementations
         }
 
         /// <summary>
-        /// The _media tools path
-        /// </summary>
-        private string _mediaToolsPath;
-        /// <summary>
-        /// Gets the folder path to tools
-        /// </summary>
-        /// <value>The media tools path.</value>
-        public string MediaToolsPath
-        {
-            get
-            {
-                if (_mediaToolsPath == null)
-                {
-                    _mediaToolsPath = Path.Combine(ProgramDataPath, "MediaTools");
-
-                    if (!Directory.Exists(_mediaToolsPath))
-                    {
-                        Directory.CreateDirectory(_mediaToolsPath);
-                    }
-                }
-
-                return _mediaToolsPath;
-            }
-        }
-
-        /// <summary>
         /// The _images data path
         /// </summary>
         private string _downloadedImagesDataPath;
