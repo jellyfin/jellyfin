@@ -202,6 +202,8 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MediaInfo\ffmpeg20130327.zip" />
+    <EmbeddedResource Include="MediaInfo\fonts\ARIALUNI.TTF" />
+    <EmbeddedResource Include="MediaInfo\fonts\fonts.conf" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
