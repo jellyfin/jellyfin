@@ -127,6 +127,23 @@
             reloadItems(page);
         });
 
+
+        $('.chkVideoTypeFilter', this).on('change', function () {
+
+            var filterName = this.getAttribute('data-filter');
+            var filters = query.VideoTypes || "";
+
+            filters = (',' + filters).replace(',' + filterName, '').substring(1);
+
+            if (this.checked) {
+                filters = filters ? (filters + ',' + filterName) : filterName;
+            }
+
+            query.VideoTypes = filters;
+
+            reloadItems(page);
+        });
+
     }).on('pageshow', "#moviesPage", function () {
 
         reloadItems(this);
@@ -147,6 +164,15 @@
         $('.chkStandardFilter', this).each(function () {
 
             var filters = "," + (query.Filters || "");
+            var filterName = this.getAttribute('data-filter');
+
+            this.checked = filters.indexOf(',' + filterName) != -1;
+
+        }).checkboxradio('refresh');
+
+        $('.chkVideoTypeFilter', this).each(function () {
+
+            var filters = "," + (query.VideoTypes || "");
             var filterName = this.getAttribute('data-filter');
 
             this.checked = filters.indexOf(',' + filterName) != -1;
