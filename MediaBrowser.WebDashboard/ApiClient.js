@@ -572,9 +572,12 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         /**
          * Gets a list of plugins that are available to be installed
          */
-        self.getAvailablePlugins = function () {
+        self.getAvailablePlugins = function (options) {
 
-            var url = self.getUrl("Packages", { PackageType: "UserInstalled" });
+            options = $.extend({}, options || {});
+            options.PackageType = "UserInstalled";
+
+            var url = self.getUrl("Packages", options);
 
             return self.ajax({
                 type: "GET",
