@@ -30,6 +30,14 @@
 
         Dashboard.setPageTitle(pkg.name);
 
+	    if (pkg.targetSystem == 'Server') {
+		    $("#btnInstallDiv", page).show();
+		    $("#nonServerMsg", page).hide();
+	    }else {
+		    $("#btnInstallDiv", page).hide();
+		    $("#nonServerMsg", page).html("This plugin must be installed from "+pkg.targetSystem).show();
+	    }
+
         if (pkg.shortDescription) {
             $('#tagline', page).show().html(pkg.shortDescription);
         } else {
