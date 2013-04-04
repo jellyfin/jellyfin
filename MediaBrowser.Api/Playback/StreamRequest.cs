@@ -70,7 +70,7 @@ namespace MediaBrowser.Api.Playback
         /// Gets or sets the video codec.
         /// </summary>
         /// <value>The video codec.</value>
-        [ApiMember(Name = "VideoCodec", Description = "Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h264, theora, vpx, wmv.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "VideoCodec", Description = "Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h264, mpeg4, theora, vpx, wmv.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public VideoCodecs? VideoCodec { get; set; }
 
         /// <summary>
