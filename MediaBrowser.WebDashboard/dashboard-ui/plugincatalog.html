@@ -8,44 +8,44 @@
 
         <div data-role="content">
             <div class="content-primary">
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                <div data-role="controlgroup" data-type="horizontal" data-mini="true">
                     <a href="plugins.html" data-role="button">Installed Plugins</a>
                     <a href="plugincatalog.html" data-role="button" class="ui-btn-active">Plugin Catalog</a>
                     <a href="pluginupdates.html" data-role="button">Automatic Updates</a>
                 </div>
-	            <div class="viewSettings">
-		            <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $.mobile.activePage).panel( 'toggle' );">Filter</button>
-	            </div>
+                <div class="viewSettings">
+                    <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $.mobile.activePage).panel( 'toggle' );">Filter</button>
+                </div>
 
                 <div id="pluginTiles"></div>
             </div>
         </div>
 
-	    <div data-role="panel" id="filterPanel" data-position="right" data-display="overlay" data-theme="b" data-position-fixed="true">
-		    <form>
-			    <fieldset data-role="controlgroup">
-				    <legend>
-					    <h3>Application:</h3>
-				    </legend>
-				    <input class="chkStandardFilter" type="checkbox" name="chkServer" id="chkServer" data-theme="c" data-filter="Server">
-				    <label for="chkServer">Media Browser Server</label>
+        <div data-role="panel" id="filterPanel" data-position="right" data-display="overlay" data-theme="b" data-position-fixed="true">
+            <form>
+                <fieldset data-role="controlgroup">
+                    <legend>
+                        <h3>Application:</h3>
+                    </legend>
+                    <input class="chkStandardFilter" type="checkbox" name="chkServer" id="chkServer" data-theme="c" data-filter="Server">
+                    <label for="chkServer">MB Server</label>
 
-				    <input class="chkStandardFilter" type="checkbox" name="chkTheatre" id="chkTheatre" data-theme="c" data-filter="MBTheatre">
-				    <label for="chkTheatre">Media Browser Theatre</label>
+                    <input class="chkStandardFilter" type="checkbox" name="chkTheatre" id="chkTheatre" data-theme="c" data-filter="MBTheatre">
+                    <label for="chkTheatre">MB Theater</label>
 
-				    <input class="chkStandardFilter" type="checkbox" name="chkClassic" id="chkClassic" data-theme="c" data-filter="MBClassic">
-				    <label for="chkClassic">Media Browser Classic</label>
-			    </fieldset>
+                    <input class="chkStandardFilter" type="checkbox" name="chkClassic" id="chkClassic" data-theme="c" data-filter="MBClassic">
+                    <label for="chkClassic">MB Classic</label>
+                </fieldset>
 
-			    <fieldset data-role="controlgroup">
-				    <legend>
-					    <h3> </h3>
-				    </legend>
-				    <input class="chkPremiumFilter" type="checkbox" name="chkPremium" id="chkPremium" data-theme="c" data-filter="IsPremium">
-				    <label for="chkPremium">Premium</label>
-				</fieldset>
-		    </form>
-	    </div>
+                <fieldset data-role="controlgroup">
+                    <legend>
+                        <h3></h3>
+                    </legend>
+                    <input class="chkPremiumFilter" type="checkbox" name="chkPremium" id="chkPremium" data-theme="c" data-filter="IsPremium">
+                    <label for="chkPremium">Premium</label>
+                </fieldset>
+            </form>
+        </div>
     </div>
 </body>
 </html>
