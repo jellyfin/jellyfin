@@ -42,6 +42,9 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "TargetSystems", Description = "Optional. Filter by target system type. Allows multiple, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET", AllowMultiple = true)]
         public string TargetSystems { get; set; }
+
+        [ApiMember(Name = "IsPremium", Description = "Optiona. Filter by premium status", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        public bool? IsPremium { get; set; }
     }
 
     /// <summary>
@@ -173,6 +176,11 @@ namespace MediaBrowser.Api
                 var apps = request.TargetSystems.Split(',').Select(i => (PackageTargetSystem)Enum.Parse(typeof(PackageTargetSystem), i, true));
 
                 packages = packages.Where(p => apps.Contains(p.targetSystem));
+            }
+
+            if (request.IsPremium.HasValue)
+            {
+                packages = packages.Where(p => p.isPremium == request.IsPremium.Value);
             }
 
             return ToOptimizedResult(packages.ToList());
