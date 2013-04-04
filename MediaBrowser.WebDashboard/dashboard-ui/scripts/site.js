@@ -1009,7 +1009,7 @@ var Dashboard = {
                     type: "Primary"
                 });
 
-                if (!item.Id || !data.icon) {
+                if (!item.Id || !data.icon || data.icon == "undefined") {
                     alert("bad image url: " + JSON.stringify(item));
                     console.log("bad image url: " + JSON.stringify(item));
 
