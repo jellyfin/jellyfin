@@ -2,8 +2,6 @@
 
     // The base query options
     var query = {
-        IsPremium: false,
-        TargetSystems: ""
     };
 
     function reloadList(page) {
@@ -102,7 +100,7 @@
             if (this.checked) {
                 query.IsPremium = true;
             } else {
-                query.IsPremium = false;
+                query.IsPremium = null;
             }
 
             reloadList(page);
