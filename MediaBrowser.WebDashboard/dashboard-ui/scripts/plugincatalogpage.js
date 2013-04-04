@@ -9,11 +9,9 @@
         Dashboard.showLoadingMsg();
 
         var promise1 = ApiClient.getAvailablePlugins();
-
         var promise2 = ApiClient.getInstalledPlugins();
 
         $.when(promise1, promise2).done(function (response1, response2) {
-
             PluginCatalogPage.populateList(response1[0], response2[0]);
         });
     },
@@ -21,20 +19,18 @@
     populateList: function (availablePlugins, installedPlugins) {
 
         var page = $($.mobile.activePage);
-
         availablePlugins = availablePlugins.filter(function (p) {
-
             return p.type == "UserInstalled";
-
         }).sort(function (a, b) {
-
             return a.name > b.name ? 1 : -1;
-
         });
 
-        var html = "";
 
+		var serverHtml = '';
+	    var theatreHtml = '';
+	    var classicHtml = '';
         for (var i = 0, length = availablePlugins.length; i < length; i++) {
+	        var html = "";
 
             var plugin = availablePlugins[i];
 
@@ -64,7 +60,6 @@
 
             html += "<div>";
             if (installedPlugin) {
-
                 html += plugin.name + " (Installed)";
             } else {
                 html += plugin.name;
@@ -75,9 +70,22 @@
 
             html += "</a></div>";
 
+	        if (plugin.targetSystem == 'Server') {
+		        serverHtml += html;
+	        }else if (plugin.targetSystem == 'MBTheater') {
+		        theatreHtml += html;
+	        }else if (plugin.targetSystem == 'MBClassic') {
+		        classicHtml += html;
+	        }
         }
 
-        $('#pluginTiles', page).html(html);
+	    $('#pluginServerTiles', page).html(serverHtml);
+	    $('#pluginMBTheatreTiles', page).html(theatreHtml);
+	    $('#pluginMBClassicTiles', page).html(classicHtml);
+
+        if (serverHtml) $('#pluginServer', page).show();
+	    if (theatreHtml) $('#pluginMBTheatre', page).show();
+	    if (classicHtml) $('#pluginMBClassic', page).show();
 
         Dashboard.hideLoadingMsg();
     }
