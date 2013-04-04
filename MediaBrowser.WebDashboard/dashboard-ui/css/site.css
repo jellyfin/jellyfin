@@ -818,15 +818,29 @@ progress {
     }
 }
 
+.userProfileIcon {
+	width: 36px;
+}
+
+
+/* VideoJS overrides */
+.vjs-default-skin .vjs-menu-button {
+	width: 1.5em;
+	border: 0;
+	background: none;
+}
+.vjs-default-skin .vjs-play-control {
+	width: 2em;
+}
+
 .vjs-quality-button {
     padding: 0 0.6em !important;
     width: auto !important;
 }
 
-    .vjs-quality-button div {
-        width: auto !important;
-        background: none !important;
-    }
+.vjs-quality-button div {
+    background: red !important;
+}
 
 .vjs-chapter-button div {
     background-position: -100px -75px !important;
@@ -838,12 +852,12 @@ progress {
     overflow-y: scroll;
 }
 
-    .vjs-chapter-button.vjs-menu-button ul li {
-        width: auto;
-        white-space: nowrap;
-        font-size: 1.1em;
-        padding-right: 10px;
-    }
+.vjs-chapter-button.vjs-menu-button ul li {
+    width: auto;
+    white-space: nowrap;
+    font-size: 1.1em;
+    padding-right: 10px;
+}
 
 .vjs-default-skin .vjs-menu-button.vjs-stop-button {
     float: left;
@@ -851,13 +865,43 @@ progress {
     border: 0;
 }
 
-    .vjs-default-skin .vjs-menu-button.vjs-stop-button div {
-        background: url("images/media/stop.png");
-        height: 26px;
-        width: 26px;
-        margin: -.7em .5em auto 0;
-    }
+.vjs-default-skin .vjs-menu-button.vjs-stop-button div {
+    background: url("images/media/stop.png");
+    height: 26px;
+    width: 26px;
+    margin: -.7em .5em auto 0;
+}
 
-.userProfileIcon {
-    width: 36px;
+.vjs-subtitle-button div {
+	background: green !important;
+}
+
+.vjs-subtitle-button.vjs-menu-button ul {
+	width: auto;
+	max-width: 25em;
+	overflow-y: scroll;
+}
+
+.vjs-subtitle-button.vjs-menu-button ul li {
+	width: auto;
+	white-space: nowrap;
+	font-size: 1.1em;
+	padding-right: 10px;
+}
+
+.vjs-language-button div {
+	background: yellow !important;
+}
+
+.vjs-language-button.vjs-menu-button ul {
+	width: auto;
+	max-width: 25em;
+	overflow-y: scroll;
+}
+
+.vjs-language-button.vjs-menu-button ul li {
+	width: auto;
+	white-space: nowrap;
+	font-size: 1.1em;
+	padding-right: 10px;
 }

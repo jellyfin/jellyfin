@@ -66,6 +66,56 @@ var videoJSextension = {
 			_V_.merge(_V_.ControlBar.prototype.options.components, { ChapterSelectorButton: {} });
 		}
 
+
+		//chceck if langauges exist and add language selector
+		if (item.Chapters && item.Chapters.length) {
+			// Put together the videojs source arrays for each available chapter
+			$.each(item.Chapters, function (i, chapter) {
+
+				vjs_chapters[i] = [];
+
+				vjs_chapter = {};
+				vjs_chapter.Name = chapter.Name + " (" + ticks_to_human(chapter.StartPositionTicks) + ")";
+				vjs_chapter.StartPositionTicks = chapter.StartPositionTicks;
+
+				vjs_chapters[i].push(vjs_chapter);
+
+			});
+
+			_V_.LanguageSelectorButton = _V_.LanguageSelector.extend({
+				buttonText: '',
+				Chapters: vjs_chapters
+			});
+
+			// Add the chapter selector button.
+			_V_.merge(_V_.ControlBar.prototype.options.components, { LanguageSelectorButton: {} });
+		}
+
+
+		//chceck if subtitles exist and add subtitle selector
+		if (item.Chapters && item.Chapters.length) {
+			// Put together the videojs source arrays for each available chapter
+			$.each(item.Chapters, function (i, chapter) {
+
+				vjs_chapters[i] = [];
+
+				vjs_chapter = {};
+				vjs_chapter.Name = chapter.Name + " (" + ticks_to_human(chapter.StartPositionTicks) + ")";
+				vjs_chapter.StartPositionTicks = chapter.StartPositionTicks;
+
+				vjs_chapters[i].push(vjs_chapter);
+
+			});
+
+			_V_.SubtitleSelectorButton = _V_.SubtitleSelector.extend({
+				buttonText: '',
+				Chapters: vjs_chapters
+			});
+
+			// Add the chapter selector button.
+			_V_.merge(_V_.ControlBar.prototype.options.components, { SubtitleSelectorButton: {} });
+		}
+
 	}
 };
 
@@ -129,7 +179,7 @@ _V_.ResolutionSelector = _V_.Button.extend({
 		// Add standard Aria and Tabindex info
 		attrs = _V_.merge({
 			className: this.buildCSSClass(),
-			innerHTML: '<div><span class="vjs-quality-text">' + this.buttonText + '</span></div>',
+			//innerHTML: '<div><span class="vjs-quality-text">' + this.buttonText + '</span></div>',
 			role: "button",
 			tabIndex: 0
 		}, attrs);
@@ -318,7 +368,7 @@ _V_.ChapterSelector = _V_.Button.extend({
 		// Add standard Aria and Tabindex info
 		attrs = _V_.merge({
 			className: this.buildCSSClass(),
-			innerHTML: '<div><span class="vjs-chapter-text">' + this.buttonText + '</span></div>',
+			//innerHTML: '<div><span class="vjs-chapter-text">' + this.buttonText + '</span></div>',
 			role: "button",
 			tabIndex: 0
 		}, attrs);
@@ -482,3 +532,360 @@ _V_.StopButton = _V_.Button.extend({
 	}
 });
 
+/*
+ JS for the subtitle selector in video.js player
+ */
+
+/*
+ Define the base class for the subtitle selector button.
+ */
+_V_.SubtitleSelector = _V_.Button.extend({
+
+	kind: "subtitle",
+	className: "vjs-subtitle-button",
+
+	init: function (player, options) {
+
+		this._super(player, options);
+
+		this.menu = this.createMenu();
+
+		if (this.items.length === 0) {
+			this.hide();
+		}
+	},
+
+	createMenu: function () {
+
+		var menu = new _V_.Menu(this.player);
+
+		// Add a title list item to the top
+		menu.el.appendChild(_V_.createElement("li", {
+			className: "vjs-menu-title",
+			innerHTML: _V_.uc(this.kind)
+		}));
+
+		this.items = this.createItems();
+
+		// Add menu items to the menu
+		this.each(this.items, function (item) {
+			menu.addItem(item);
+		});
+
+		// Add list to element
+		this.addComponent(menu);
+
+		return menu;
+	},
+
+	// Override the default _V_.Button createElement so the button text isn't hidden
+	createElement: function (type, attrs) {
+
+		// Add standard Aria and Tabindex info
+		attrs = _V_.merge({
+			className: this.buildCSSClass(),
+			//innerHTML: '<div><span class="vjs-chapter-text">' + this.buttonText + '</span></div>',
+			role: "button",
+			tabIndex: 0
+		}, attrs);
+
+		return this._super(type, attrs);
+	},
+
+	// Create a menu item for each subtitle
+	createItems: function () {
+
+		var items = [];
+
+		this.each(this.Subtitles, function (subtitle) {
+
+			items.push(new _V_.SubtitleMenuItem(this.player, {
+				label: subtitle[0].Name,
+				src: subtitle
+			}));
+		});
+
+		return items;
+	},
+
+	buildCSSClass: function () {
+
+		return this.className + " vjs-menu-button " + this._super();
+	},
+
+	// Focus - Add keyboard functionality to element
+	onFocus: function () {
+
+		// Show the menu, and keep showing when the menu items are in focus
+		this.menu.lockShowing();
+		this.menu.el.style.display = "block";
+
+		// When tabbing through, the menu should hide when focus goes from the last menu item to the next tabbed element.
+		_V_.one(this.menu.el.childNodes[this.menu.el.childNodes.length - 1], "blur", this.proxy(function () {
+
+			this.menu.unlockShowing();
+		}));
+	},
+
+
+	// Can't turn off list display that we turned on with focus, because list would go away.
+	onBlur: function () { },
+
+	onClick: function () {
+
+		/*
+		 When you click the button it adds focus, which will show the menu indefinitely.
+		 So we'll remove focus when the mouse leaves the button.
+		 Focus is needed for tab navigation.
+		 */
+		this.one('mouseout', this.proxy(function () {
+
+			this.menu.unlockShowing();
+			this.el.blur();
+		}));
+	}
+});
+
+/*
+ Define the base class for the subtitle menu items
+ */
+_V_.SubtitleMenuItem = _V_.MenuItem.extend({
+
+	init: function (player, options) {
+
+		// Modify options for parent MenuItem class's init.
+		//options.selected = ( options.label === player.options.currentResolution );
+		this._super(player, options);
+
+		this.player.addEvent('changeSubtitle', _V_.proxy(this, this.update));
+	},
+
+	onClick: function () {
+
+		// Check that we are changing to a new subtitle (not the one we are already on)
+		if (this.options.label === this.player.options.currentSubtitle)
+			return;
+
+		var current_time = this.player.currentTime();
+
+		// Set the button text to the newly chosen quality
+		jQuery(this.player.controlBar.el).find('.vjs-quality-text').html(this.options.label);
+
+		// Change the source and make sure we don't start the video over
+		var currentSrc = this.player.tag.src;
+		var src = parse_src_url(currentSrc);
+
+
+		var newSrc = "/mediabrowser/" + src.Type + "/" + src.item_id + "/stream." + src.stream + "?audioChannels=" + src.audioChannels + "&audioBitrate=" + src.audioBitrate +
+			"&videoBitrate=" + src.videoBitrate + "&maxWidth=" + src.maxWidth + "&maxHeight=" + src.maxHeight +
+			"&videoCodec=" + src.videoCodec + "&audioCodec=" + src.audioCodec;
+
+		if (this.player.duration() == "Infinity") {
+			if (currentSrc.indexOf("StartTimeTicks") >= 0) {
+				var startTimeTicks = currentSrc.match(new RegExp("StartTimeTicks=[0-9]+", "g"));
+				var start_time = startTimeTicks[0].replace("StartTimeTicks=", "");
+
+				newSrc += "&StartTimeTicks=" + Math.floor(parseInt(start_time) + (10000000 * current_time));
+			} else {
+				newSrc += "&StartTimeTicks=" + Math.floor(10000000 * current_time);
+			}
+
+			this.player.src(newSrc).one('loadedmetadata', function () {
+				this.play();
+			});
+		} else {
+			this.player.src(newSrc).one('loadedmetadata', function () {
+				this.currentTime(current_time);
+				this.play();
+			});
+		}
+
+
+		// Save the newly selected subtitle in our player options property
+		this.player.options.currentSubtitle = this.options.label;
+
+		// Update the classes to reflect the currently selected subtitle
+		this.player.triggerEvent('changeSubtitle');
+	},
+
+	update: function () {
+		if (this.options.label === this.player.options.currentSubtitle) {
+			this.selected(true);
+		} else {
+			this.selected(false);
+		}
+	}
+});
+
+/*
+ JS for the language selector in video.js player
+ */
+
+/*
+ Define the base class for the language selector button.
+ */
+_V_.LanguageSelector = _V_.Button.extend({
+
+	kind: "language",
+	className: "vjs-language-button",
+
+	init: function (player, options) {
+
+		this._super(player, options);
+
+		this.menu = this.createMenu();
+
+		if (this.items.length === 0) {
+			this.hide();
+		}
+	},
+
+	createMenu: function () {
+
+		var menu = new _V_.Menu(this.player);
+
+		// Add a title list item to the top
+		menu.el.appendChild(_V_.createElement("li", {
+			className: "vjs-menu-title",
+			innerHTML: _V_.uc(this.kind)
+		}));
+
+		this.items = this.createItems();
+
+		// Add menu items to the menu
+		this.each(this.items, function (item) {
+			menu.addItem(item);
+		});
+
+		// Add list to element
+		this.addComponent(menu);
+
+		return menu;
+	},
+
+	// Override the default _V_.Button createElement so the button text isn't hidden
+	createElement: function (type, attrs) {
+
+		// Add standard Aria and Tabindex info
+		attrs = _V_.merge({
+			className: this.buildCSSClass(),
+			//innerHTML: '<div><span class="vjs-chapter-text">' + this.buttonText + '</span></div>',
+			role: "button",
+			tabIndex: 0
+		}, attrs);
+
+		return this._super(type, attrs);
+	},
+
+	// Create a menu item for each subtitle
+	createItems: function () {
+
+		var items = [];
+
+		this.each(this.Languages, function (language) {
+
+			items.push(new _V_.LanguageMenuItem(this.player, {
+				label: language[0].Name,
+				src: language
+			}));
+		});
+
+		return items;
+	},
+
+	buildCSSClass: function () {
+
+		return this.className + " vjs-menu-button " + this._super();
+	},
+
+	// Focus - Add keyboard functionality to element
+	onFocus: function () {
+
+		// Show the menu, and keep showing when the menu items are in focus
+		this.menu.lockShowing();
+		this.menu.el.style.display = "block";
+
+		// When tabbing through, the menu should hide when focus goes from the last menu item to the next tabbed element.
+		_V_.one(this.menu.el.childNodes[this.menu.el.childNodes.length - 1], "blur", this.proxy(function () {
+
+			this.menu.unlockShowing();
+		}));
+	},
+
+
+	// Can't turn off list display that we turned on with focus, because list would go away.
+	onBlur: function () { },
+
+	onClick: function () {
+
+		/*
+		 When you click the button it adds focus, which will show the menu indefinitely.
+		 So we'll remove focus when the mouse leaves the button.
+		 Focus is needed for tab navigation.
+		 */
+		this.one('mouseout', this.proxy(function () {
+
+			this.menu.unlockShowing();
+			this.el.blur();
+		}));
+	}
+});
+
+/*
+ Define the base class for the language menu items
+ */
+_V_.LanguageMenuItem = _V_.MenuItem.extend({
+
+	init: function (player, options) {
+
+		// Modify options for parent MenuItem class's init.
+		//options.selected = ( options.label === player.options.currentResolution );
+		this._super(player, options);
+
+		this.player.addEvent('changeLanguage', _V_.proxy(this, this.update));
+	},
+
+	onClick: function () {
+		// Check that we are changing to a new subtitle (not the one we are already on)
+		if (this.options.label === this.player.options.currentLanguage)
+			return;
+
+		var newSrc = "/mediabrowser/" + src.Type + "/" + src.item_id + "/stream." + src.stream + "?audioChannels=" + src.audioChannels + "&audioBitrate=" + src.audioBitrate +
+			"&videoBitrate=" + src.videoBitrate + "&maxWidth=" + src.maxWidth + "&maxHeight=" + src.maxHeight +
+			"&videoCodec=" + src.videoCodec + "&audioCodec=" + src.audioCodec;
+
+		if (this.player.duration() == "Infinity") {
+			if (currentSrc.indexOf("StartTimeTicks") >= 0) {
+				var startTimeTicks = currentSrc.match(new RegExp("StartTimeTicks=[0-9]+", "g"));
+				var start_time = startTimeTicks[0].replace("StartTimeTicks=", "");
+
+				newSrc += "&StartTimeTicks=" + Math.floor(parseInt(start_time) + (10000000 * current_time));
+			} else {
+				newSrc += "&StartTimeTicks=" + Math.floor(10000000 * current_time);
+			}
+
+			this.player.src(newSrc).one('loadedmetadata', function () {
+				this.play();
+			});
+		} else {
+			this.player.src(newSrc).one('loadedmetadata', function () {
+				this.currentTime(current_time);
+				this.play();
+			});
+		}
+
+		// Save the newly selected language in our player options property
+		this.player.options.currentLanguage = this.options.label;
+
+		// Update the classes to reflect the currently selected language
+		this.player.triggerEvent('changeLanguage');
+	},
+
+	update: function () {
+		if (this.options.label === this.player.options.currentLanguage) {
+			this.selected(true);
+		} else {
+			this.selected(false);
+		}
+	}
+});
