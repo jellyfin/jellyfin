@@ -721,6 +721,13 @@
 
         var userData = item.UserData || {};
 
+        //played/unplayed
+        if (userData.Played) {
+            html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/played.png" alt="Played" title="Played" onclick="ItemDetailPage.setPlayed();" /></div>';
+        } else {
+            html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/unplayed.png" alt="Played" title="Played" onclick="ItemDetailPage.setPlayed();" /></div>';
+        }
+
         if (typeof userData.Likes == "undefined") {
             html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.setDislike();" /></div>';
             html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="ItemDetailPage.setLike();" /></div>';
@@ -737,13 +744,6 @@
         } else {
             html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" onclick="ItemDetailPage.setFavorite();" /></div>';
         }
-
-	    //played/unplayed
-	    if (userData.Played) {
-		    html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/played.png" alt="Played" title="Played" onclick="ItemDetailPage.setPlayed();" /></div>';
-	    } else {
-		    html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/unplayed.png" alt="Unplayed" title="Unplayed" onclick="ItemDetailPage.setPlayed();" /></div>';
-	    }
 
         $('#itemRatings', page).html(html);
     },

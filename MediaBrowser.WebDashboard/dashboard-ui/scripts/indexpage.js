@@ -1,5 +1,18 @@
 ﻿(function ($, document, apiClient) {
 
+    function getViewHtml(view) {
+
+        var html = '';
+
+        html += '<div class="posterViewItem">';
+        html += '<a href="' + view.url + '">';
+        html += '<img style="background: ' + view.background + ';" src="' + view.img + '"><div class="posterViewItemText">' + view.name + '</div>';
+        html += '</a>';
+        html += '</div>';
+
+        return html;
+    }
+
     $(document).on('pageshow', "#indexPage", function () {
 
         var page = this;
@@ -9,8 +22,6 @@
         if (!userId) {
             return;
         }
-
-        page = $(page);
 
         var options = {
 
@@ -26,26 +37,34 @@
 
         });
 
+        // Kick this off now. Just see if there are any games in the library
+        var gamesPromise = ApiClient.getItems(userId, { Recursive: true, limit: 0, MediaTypes: "Game" });
+
         var views = [
-            { name: "Movies", url: "moviesrecommended.html", img: "css/images/items/list/chapter.png", background: "#E12026" },
+            { name: "Movies", url: "moviesrecommended.html", img: "css/images/items/list/chapter.png", background: "#0094FF" },
             { name: "TV Shows", url: "tvrecommended.html", img: "css/images/items/list/collection.png", background: "#FF870F" },
-            { name: "Music", url: "musicrecommended.html", img: "css/images/items/list/audiowide.png", background: "#4BB3DD" }
+            { name: "Music", url: "musicrecommended.html", img: "css/images/items/list/audiocollection.png", background: "#6FBD45" }
         ];
 
         var html = '';
 
         for (var i = 0, length = views.length; i < length; i++) {
 
-            var view = views[i];
-
-            html += '<div class="posterViewItem">';
-            html += '<a href="' + view.url + '">';
-            html += '<img style="background: ' + view.background + ';" src="' + view.img + '"><div class="posterViewItemText">' + view.name + '</div>';
-            html += '</a>';
-            html += '</div>';
+            html += getViewHtml(views[i]);
         }
 
         $('#views', page).html(html);
+
+        gamesPromise.done(function (result) {
+
+            if (result.TotalRecordCount) {
+
+                var view = { name: "Games", url: "#", img: "css/images/items/list/gamecollection.png", background: "#E12026" };
+
+                $('#views', page).append(getViewHtml(view));
+            }
+
+        });
     });
 
 })(jQuery, document, ApiClient);

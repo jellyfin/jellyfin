@@ -47,10 +47,16 @@
                     width: 352,
                     tag: item.BackdropImageTags[0]
                 }) + "' />";
-            } else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
+            }
+            else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
 
                 html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/audio.png' />";
-            } else {
+            }
+            else if (item.MediaType == "Video") {
+
+                html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/video.png' />";
+            }
+            else {
 
                 html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/collection.png' />";
             }
@@ -190,7 +196,7 @@
 					tag: item.BackdropImageTags[0]
 				}) + "' />";
 			} else {
-				html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/collection.png' />";
+				html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/video.png' />";
 			}
 
 			if (showText) {

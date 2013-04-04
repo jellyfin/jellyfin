@@ -63,7 +63,7 @@
 
         }
         else {
-            html += '<img class="libraryGridImage" style="background:' + LibraryBrowser.getMetroColor(item.Id) + ';" src="css/images/items/list/collection.png" />';
+            html += '<img class="libraryGridImage" style="background:' + LibraryBrowser.getMetroColor(item.Id) + ';" src="css/images/items/list/video.png" />';
         }
 
         html += '</a></td>';
