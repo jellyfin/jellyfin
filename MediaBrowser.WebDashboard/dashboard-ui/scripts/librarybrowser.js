@@ -257,8 +257,12 @@
     getMetroColor: function (str) {
 
         if (str) {
-            var char = str.substr(0, 1).charCodeAt();
-            var index = String(char).substr(char.length, 1);
+            var char = String(str.substr(0, 1).charCodeAt());
+	        var sum = 0;
+	        for (var i = 0; i < char.length; i++) {
+		        sum += parseInt(char.charAt(i));
+	        }
+            var index = String(sum).substr(-1);
 
             return LibraryBrowser.metroColors[index];
         } else {
