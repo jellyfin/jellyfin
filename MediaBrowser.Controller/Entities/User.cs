@@ -397,31 +397,6 @@ namespace MediaBrowser.Controller.Entities
             {
                 _rootFolderPath = null;
                 RootFolder = null;
-
-                if (config.UseCustomLibrary)
-                {
-                    CopyDefaultLibraryPathsIfNeeded();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Copies the default library paths if needed.
-        /// </summary>
-        private void CopyDefaultLibraryPathsIfNeeded()
-        {
-            var userPath = RootFolderPath;
-
-            var defaultPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
-
-            if (userPath.Equals(defaultPath, StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            if (!Directory.EnumerateFileSystemEntries(userPath, "*.lnk", SearchOption.AllDirectories).Any())
-            {
-                FileSystem.CopyAll(defaultPath, userPath);
             }
         }
     }
