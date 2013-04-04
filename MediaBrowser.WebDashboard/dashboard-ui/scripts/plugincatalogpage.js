@@ -1,94 +1,139 @@
-﻿var PluginCatalogPage = {
+﻿(function ($, document) {
 
-    onPageShow: function () {
-        PluginCatalogPage.reloadList();
-    },
+	// The base query options
+	var query = {
+		IsPremium: false,
+		TargetSystems: ""
+	};
 
-    reloadList: function () {
+	function reloadList() {
 
-        Dashboard.showLoadingMsg();
+		Dashboard.showLoadingMsg();
 
-        var promise1 = ApiClient.getAvailablePlugins();
-        var promise2 = ApiClient.getInstalledPlugins();
+		var promise1 = ApiClient.getAvailablePlugins(query);
+		var promise2 = ApiClient.getInstalledPlugins();
 
-        $.when(promise1, promise2).done(function (response1, response2) {
-            PluginCatalogPage.populateList(response1[0], response2[0]);
-        });
-    },
+		$.when(promise1, promise2).done(function (response1, response2) {
+			populateList(response1[0], response2[0]);
+		});
 
-    populateList: function (availablePlugins, installedPlugins) {
+		Dashboard.hideLoadingMsg();
+	}
 
-        var page = $($.mobile.activePage);
-        availablePlugins = availablePlugins.filter(function (p) {
-            return p.type == "UserInstalled";
-        }).sort(function (a, b) {
-            return a.name > b.name ? 1 : -1;
-        });
+	function populateList(availablePlugins, installedPlugins) {
+
+		var page = $($.mobile.activePage);
+		availablePlugins = availablePlugins.filter(function (p) {
+			return p.type == "UserInstalled";
+		}).sort(function (a, b) {
+				return a.name > b.name ? 1 : -1;
+			});
+
+		var html = "";
+
+		for (var i = 0, length = availablePlugins.length; i < length; i++) {
+
+			var plugin = availablePlugins[i];
+
+			html += "<div class='posterViewItem'><a href='addPlugin.html?name=" + encodeURIComponent(plugin.name) + "'>";
+
+			if (plugin.thumbImage) {
+				html += "<img src='" + plugin.thumbImage + "' />";
+			} else {
+				html += "<img style='background:#444444;' src='css/images/items/list/collection.png' />";
+			}
+
+			if (plugin.isPremium) {
+				if (plugin.price > 0) {
+					html += "<div class='premiumBanner'><img src='css/images/supporter/premiumflag.png' /></div>";
+				} else {
+					html += "<div class='premiumBanner'><img src='css/images/supporter/supporterflag.png' /></div>";
+				}
+			}
+
+			var color = plugin.tileColor || LibraryBrowser.getMetroColor(plugin.name);
+
+			html += "<div class='posterViewItemText' style='background:" + color + "'>";
+
+			var installedPlugin = installedPlugins.filter(function (ip) {
+				return ip.Name == plugin.name;
+			})[0];
+
+			html += "<div>";
+			if (installedPlugin) {
+				html += plugin.name + " (Installed)";
+			} else {
+				html += plugin.name;
+			}
+			html += "</div>";
+
+			html += "</div>";
+
+			html += "</a></div>";
+
+		}
+
+		$('#pluginTiles', page).html(html);
+
+		Dashboard.hideLoadingMsg();
+	}
+
+	$(document).on('pageinit', "#pluginCatalogPage", function () {
+
+		var page = this;
 
 
-		var serverHtml = '';
-	    var theatreHtml = '';
-	    var classicHtml = '';
-        for (var i = 0, length = availablePlugins.length; i < length; i++) {
-	        var html = "";
+		$('.chkStandardFilter', this).on('change', function () {
 
-            var plugin = availablePlugins[i];
+			var filterName = this.getAttribute('data-filter');
+			var filters = query.TargetSystems || "";
 
-            html += "<div class='posterViewItem'><a href='addPlugin.html?name=" + encodeURIComponent(plugin.name) + "'>";
+			filters = (',' + filters).replace(',' + filterName, '').substring(1);
 
-            if (plugin.thumbImage) {
-                html += "<img src='" + plugin.thumbImage + "' />";
-            } else {
-                html += "<img style='background:#444444;' src='css/images/items/list/collection.png' />";
-            }
+			if (this.checked) {
+				filters = filters ? (filters + ',' + filterName) : filterName;
+			}
 
-            if (plugin.isPremium) {
-                if (plugin.price > 0) {
-                    html += "<div class='premiumBanner'><img src='css/images/supporter/premiumflag.png' /></div>";
-                } else {
-                    html += "<div class='premiumBanner'><img src='css/images/supporter/supporterflag.png' /></div>";
-                }
-            }
+			query.TargetSystems = filters;
 
-            var color = plugin.tileColor || LibraryBrowser.getMetroColor(plugin.name);
+			reloadList();
+		});
 
-            html += "<div class='posterViewItemText' style='background:" + color + "'>";
+		$('.chkPremiumFilter', this).on('change', function () {
 
-            var installedPlugin = installedPlugins.filter(function (ip) {
-                return ip.Name == plugin.name;
-            })[0];
+			var filterName = this.getAttribute('data-filter');
 
-            html += "<div>";
-            if (installedPlugin) {
-                html += plugin.name + " (Installed)";
-            } else {
-                html += plugin.name;
-            }
-            html += "</div>";
+			if (this.checked) {
+				query.IsPremium = true;
+			}else {
+				query.IsPremium = false;
+			}
 
-            html += "</div>";
+			reloadList();
+		});
 
-            html += "</a></div>";
+	}).on('pageshow', "#pluginCatalogPage", function () {
 
-	        if (plugin.targetSystem == 'Server') {
-		        serverHtml += html;
-	        }else if (plugin.targetSystem == 'MBTheater') {
-		        theatreHtml += html;
-	        }else if (plugin.targetSystem == 'MBClassic') {
-		        classicHtml += html;
-	        }
-        }
+			reloadList();
 
-	    $('#pluginServerTiles', page).html(serverHtml);
-	    $('#pluginMBTheatreTiles', page).html(theatreHtml);
-	    $('#pluginMBClassicTiles', page).html(classicHtml);
+			// Reset form values using the last used query
 
-        if (serverHtml) $('#pluginServer', page).show();
-	    if (theatreHtml) $('#pluginMBTheatre', page).show();
-	    if (classicHtml) $('#pluginMBClassic', page).show();
+			$('.chkStandardFilter', this).each(function () {
 
-        Dashboard.hideLoadingMsg();
-    }
-};
+				var filters = "," + (query.TargetSystems || "");
+				var filterName = this.getAttribute('data-filter');
 
-$(document).on('pageshow', "#pluginCatalogPage", PluginCatalogPage.onPageShow);
+				this.checked = filters.indexOf(',' + filterName) != -1;
+
+			}).checkboxradio('refresh');
+
+			$('.chkPremiumFilter', this).each(function () {
+
+				var filters = query.IsPremium || false;
+
+				this.checked = filters;
+
+			}).checkboxradio('refresh');
+		});
+
+})(jQuery, document);
