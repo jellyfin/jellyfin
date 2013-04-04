@@ -250,7 +250,11 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 args = "-preset superfast";
             }
-
+            else if (videoCodec.Equals("mpeg4", StringComparison.OrdinalIgnoreCase))
+            {
+                args = "-mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -bf 2";
+            } 
+            
             if (request.VideoBitRate.HasValue)
             {
                 args += " -b:v " + request.VideoBitRate;
