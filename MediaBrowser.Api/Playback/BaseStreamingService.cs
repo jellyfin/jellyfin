@@ -428,6 +428,8 @@ namespace MediaBrowser.Api.Playback
                 {
                     return "wmav2";
                 }
+
+                return codec.ToString().ToLower();
             }
 
             return "copy";
@@ -460,6 +462,8 @@ namespace MediaBrowser.Api.Playback
                 {
                     return "libtheora";
                 }
+
+                return codec.ToString().ToLower();
             }
 
             return "copy";
