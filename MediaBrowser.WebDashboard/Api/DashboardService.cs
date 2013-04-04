@@ -461,6 +461,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "addpluginpage.js",
                                       "advancedconfigurationpage.js",
                                       "advancedmetadataconfigurationpage.js",
+                                      "boxset.js",
                                       "boxsets.js",
                                       "plugincatalogpage.js",
                                       "dashboardpage.js",
