@@ -58,6 +58,24 @@ namespace MediaBrowser.Model.Querying
         public ItemFields[] Fields { get; set; }
 
         /// <summary>
+        /// Gets or sets the media types.
+        /// </summary>
+        /// <value>The media types.</value>
+        public string[] MediaTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the video formats.
+        /// </summary>
+        /// <value>The video formats.</value>
+        public VideoFormat[] VideoFormats { get; set; }
+
+        /// <summary>
+        /// Gets or sets the video types.
+        /// </summary>
+        /// <value>The video types.</value>
+        public VideoType[] VideoTypes { get; set; }
+        
+        /// <summary>
         /// Whether or not to perform the query recursively
         /// </summary>
         /// <value><c>true</c> if recursive; otherwise, <c>false</c>.</value>

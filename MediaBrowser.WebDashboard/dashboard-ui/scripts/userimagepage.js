@@ -67,7 +67,7 @@
         
         Dashboard.hideLoadingMsg();
 
-        Dashboard.validateCurrentUser();
+        Dashboard.validateCurrentUser($.mobile.activePage);
         UserImagePage.reloadUser();
     },
 

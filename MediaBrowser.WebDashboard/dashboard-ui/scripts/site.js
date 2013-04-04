@@ -47,19 +47,19 @@ var Dashboard = {
         return Dashboard.getUserPromise;
     },
 
-    validateCurrentUser: function () {
+    validateCurrentUser: function (page) {
         Dashboard.getUserPromise = null;
 
         if (Dashboard.getCurrentUserId()) {
             Dashboard.getCurrentUser();
         }
 
-        var header = $('.header', $.mobile.activePage);
+        var header = $('.header', page);
 
         if (header.length) {
             // Re-render the header
             header.remove();
-            Dashboard.ensureHeader($.mobile.activePage);
+            Dashboard.ensureHeader(page);
         }
     },
 

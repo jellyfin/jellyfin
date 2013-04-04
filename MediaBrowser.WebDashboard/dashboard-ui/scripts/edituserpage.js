@@ -147,7 +147,7 @@
 
         var userId = getParameterByName("userId");
 
-        Dashboard.validateCurrentUser();
+        Dashboard.validateCurrentUser($.mobile.activePage);
 
         if (userId) {
             Dashboard.alert("Settings saved.");

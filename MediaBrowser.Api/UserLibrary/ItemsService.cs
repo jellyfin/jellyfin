@@ -106,6 +106,27 @@ namespace MediaBrowser.Api.UserLibrary
         /// <value>The item ids.</value>
         [ApiMember(Name = "Ids", Description = "Optional. If specific items are needed, specify a list of item id's to retrieve. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Ids { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media types.
+        /// </summary>
+        /// <value>The media types.</value>
+        [ApiMember(Name = "MediaTypes", Description = "Optional filter by MediaType. Allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string MediaTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the video types.
+        /// </summary>
+        /// <value>The video types.</value>
+        [ApiMember(Name = "VideoTypes", Description = "Optional filter by VideoType (videofile, dvd, bluray, iso). Allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string VideoTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the video formats.
+        /// </summary>
+        /// <value>The video formats.</value>
+        [ApiMember(Name = "VideoFormats", Description = "Optional filter by VideoFormat (Standard, Digital3D, Sbs3D). Allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string VideoFormats { get; set; }
     }
 
     /// <summary>
@@ -315,6 +336,27 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{BaseItem}.</returns>
         private IEnumerable<BaseItem> ApplyAdditionalFilters(GetItems request, IEnumerable<BaseItem> items)
         {
+            if (!string.IsNullOrEmpty(request.VideoFormats))
+            {
+                var formats = request.VideoFormats.Split(',');
+
+                items = items.OfType<Video>().Where(i => formats.Contains(i.VideoFormat.ToString(), StringComparer.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrEmpty(request.VideoTypes))
+            {
+                var types = request.VideoTypes.Split(',');
+
+                items = items.OfType<Video>().Where(i => types.Contains(i.VideoType.ToString(), StringComparer.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrEmpty(request.MediaTypes))
+            {
+                var types = request.MediaTypes.Split(',');
+
+                items = items.Where(i => !string.IsNullOrEmpty(i.MediaType) && types.Contains(i.MediaType, StringComparer.OrdinalIgnoreCase));
+            }
+            
             var imageTypes = GetImageTypes(request).ToArray();
             if (imageTypes.Length > 0)
             {
