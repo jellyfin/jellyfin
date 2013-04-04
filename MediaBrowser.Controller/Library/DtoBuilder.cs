@@ -548,6 +548,9 @@ namespace MediaBrowser.Controller.Library
             // Attach People by transforming them into BaseItemPerson (DTO)
             dto.People = new BaseItemPerson[item.People.Count];
 
+            // Ordering by person type to ensure actors and artists are at the front.
+            // This is taking advantage of the fact that they both begin with A
+            // This should be improved in the future
             var entities = await Task.WhenAll(item.People.OrderBy(i => i.Type).Select(c =>
 
                     Task.Run(async () =>
