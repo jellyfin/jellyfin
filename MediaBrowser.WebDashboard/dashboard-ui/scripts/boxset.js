@@ -255,28 +255,28 @@
 
         var userData = item.UserData || {};
 
-	    //played/unplayed
-	    if (userData.Played) {
-		    html += '<img class="imgUserItemRating" src="css/images/userdata/played.png" alt="Played" title="Played" onclick="BoxsetPage.setPlayed();" />';
-	    } else {
-		    html += '<img class="imgUserItemRating" src="css/images/userdata/unplayed.png" alt="Unplayed" title="Unplayed" onclick="BoxsetPage.setPlayed();" />';
-	    }
-
-	    if (typeof userData.Likes == "undefined") {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="BoxsetPage.setDislike();" />';
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="BoxsetPage.setLike();" />';
+        if (typeof userData.Likes == "undefined") {
+            html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="BoxsetPage.setDislike();" /></div>';
+            html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="BoxsetPage.setLike();" /></div>';
         } else if (userData.Likes) {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="BoxsetPage.setDislike();" />';
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_on.png" alt="Liked" title="Like" onclick="BoxsetPage.clearLike();" />';
+            html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="BoxsetPage.setDislike();" /></div>';
+            html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_up_on.png" alt="Liked" title="Like" onclick="BoxsetPage.clearLike();" /></div>';
         } else {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" onclick="BoxsetPage.clearLike();" />';
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="BoxsetPage.setLike();" />';
+            html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" onclick="BoxsetPage.clearLike();" /></div>';
+            html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="BoxsetPage.setLike();" /></div>';
         }
 
         if (userData.IsFavorite) {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" onclick="BoxsetPage.setFavorite();" />';
+            html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" onclick="BoxsetPage.setFavorite();" /></div>';
         } else {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" onclick="BoxsetPage.setFavorite();" />';
+            html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" onclick="BoxsetPage.setFavorite();" /></div>';
+        }
+
+        //played/unplayed
+        if (userData.Played) {
+            html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/played.png" alt="Played" title="Played" onclick="BoxsetPage.setPlayed();" /></div>';
+        } else {
+            html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/unplayed.png" alt="Unplayed" title="Unplayed" onclick="BoxsetPage.setPlayed();" /></div>';
         }
 
         $('#itemRatings', page).html(html);
