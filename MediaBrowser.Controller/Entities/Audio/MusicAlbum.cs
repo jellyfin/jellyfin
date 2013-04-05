@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -50,30 +51,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         public override Folder IndexContainer
         {
             get { return Parent as MusicArtist ?? UnknwonArtist; }
-        }
-
-        /// <summary>
-        /// Override to point to first child (song) if not explicitly defined
-        /// </summary>
-        /// <value>The primary image path.</value>
-        [IgnoreDataMember]
-        public override string PrimaryImagePath
-        {
-            get
-            {
-                if (base.PrimaryImagePath == null)
-                {
-                    var child = Children.FirstOrDefault();
-
-                    return child == null ? base.PrimaryImagePath : child.PrimaryImagePath;
-                }
-
-                return base.PrimaryImagePath;
-            }
-            set
-            {
-                base.PrimaryImagePath = value;
-            }
         }
 
         /// <summary>
@@ -127,6 +104,39 @@ namespace MediaBrowser.Controller.Entities.Audio
             set
             {
                 base.Studios = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the images.
+        /// </summary>
+        /// <value>The images.</value>
+        public override Dictionary<string, string> Images
+        {
+            get
+            {
+                var images = base.Images;
+                string primaryImagePath;
+
+                if (images == null || !images.TryGetValue(ImageType.Primary.ToString(), out primaryImagePath))
+                {
+                    var image = Children.Select(c => c.PrimaryImagePath).FirstOrDefault(c => !string.IsNullOrEmpty(c));
+
+                    if (!string.IsNullOrEmpty(image))
+                    {
+                        if (images == null)
+                        {
+                            images = new Dictionary<string, string>();
+                        }
+                        images[ImageType.Primary.ToString()] = image;
+                    }
+                }
+
+                return images;
+            }
+            set
+            {
+                base.Images = value;
             }
         }
 
