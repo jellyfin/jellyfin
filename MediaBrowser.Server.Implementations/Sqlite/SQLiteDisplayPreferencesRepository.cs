@@ -95,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public Task SaveDisplayPreferences(DisplayPreferences displayPreferences, CancellationToken cancellationToken)
+        public async Task SaveDisplayPreferences(DisplayPreferences displayPreferences, CancellationToken cancellationToken)
         {
             if (displayPreferences == null)
             {
@@ -111,19 +111,36 @@ namespace MediaBrowser.Server.Implementations.Sqlite
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-            
-            return Task.Run(() =>
+
+            var serialized = _protobufSerializer.SerializeToBytes(displayPreferences);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = "replace into displaypreferences (id, data) values (@1, @2)";
+            cmd.AddParam("@1", displayPreferences.Id);
+            cmd.AddParam("@2", serialized);
+
+            using (var tran = connection.BeginTransaction())
             {
-                var serialized = _protobufSerializer.SerializeToBytes(displayPreferences);
+                try
+                {
+                    cmd.Transaction = tran;
 
-                cancellationToken.ThrowIfCancellationRequested();
+                    await cmd.ExecuteNonQueryAsync(cancellationToken);
 
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = "replace into displaypreferences (id, data) values (@1, @3)";
-                cmd.AddParam("@1", displayPreferences.Id);
-                cmd.AddParam("@2", serialized);
-                QueueCommand(cmd);
-            });
+                    tran.Commit();
+                }
+                catch (OperationCanceledException)
+                {
+                    tran.Rollback();
+                }
+                catch (Exception e)
+                {
+                    Logger.ErrorException("Failed to commit transaction.", e);
+                    tran.Rollback();
+                }
+            }
         }
 
         /// <summary>
