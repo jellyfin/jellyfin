@@ -179,6 +179,37 @@
 		var screenHeight = Math.min(screen.height, screen.width);
 
 		var volume = localStorage.getItem("volume") || 0.5;
+		var user = Dashboard.getCurrentUser();
+		var defaults = {languageIndex: null, subtitleIndex: null};
+
+		var user_config = user.Configuration || {};
+		if (item.MediaStreams && item.MediaStreams.length) {
+			$.each(item.MediaStreams, function (i, stream) {
+				//get default subtitle stream
+				if (stream.Type == "Subtitle") {
+					if (user_config.UseForcedSubtitlesOnly == true && user_config.SubtitleLanguagePreference && !defaults.subtitleIndex) {
+						if (stream.Language == user_config.SubtitleLanguagePreference && stream.IsForced == true) {
+							defaults.subtitleIndex = i;
+						}
+					}else if (user_config.SubtitleLanguagePreference && !defaults.subtitleIndex) {
+						if (stream.Language == user_config.SubtitleLanguagePreference) {
+							defaults.subtitleIndex = i;
+						}
+					}else if (user_config.UseForcedSubtitlesOnly == true && !defaults.subtitleIndex) {
+						if (stream.IsForced == true) {
+							defaults.subtitleIndex = i;
+						}
+					}
+				}else if (stream.Type == "Audio") {
+					//get default language stream
+					if (user_config.AudioLanguagePreference && !defaults.languageIndex) {
+						if (stream.Language == user_config.AudioLanguagePreference) {
+							defaults.languageIndex = i;
+						}
+					}
+				}
+			});
+		}
 
 		var baseParams = {
 			audioChannels: 2,
@@ -186,7 +217,9 @@
 			videoBitrate: 1500000,
 			maxWidth: screenWidth,
 			maxHeight: screenHeight,
-			StartTimeTicks: 0
+			StartTimeTicks: 0,
+			SubtitleStreamIndex: null,
+			AudioStreamIndex: null
 		};
 
 		if (typeof (startPosition) != "undefined") {
@@ -235,7 +268,7 @@
 				{ type: "video/ogg", src: ogvVideoUrl }]
 			).volume(volume);
 
-			videoJSextension.setup_video($('#videoWindow'), item);
+			videoJSextension.setup_video($('#videoWindow'), item, defaults);
 
 			(this).addEvent("loadstart", function () {
 				$(".vjs-remaining-time-display").hide();
@@ -276,7 +309,7 @@
 
 			ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), item_id, positionTicks);
 
-			clearTimeout(progressInterval);
+			clearTimeout(MediaPlayer.progressInterval);
 
 			if (player.techName == "html5") {
 				player.tag.src = "";
@@ -302,7 +335,7 @@
 	},
 
 	updateProgress: function () {
-		progressInterval = setInterval(function () {
+		MediaPlayer.progressInterval = setInterval(function () {
 			var player = _V_("videoWindow");
 
 			var startTimeTicks = player.tag.src.match(new RegExp("StartTimeTicks=[0-9]+", "g"));

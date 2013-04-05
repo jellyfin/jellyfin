@@ -161,7 +161,7 @@
 
 			var hasPrimaryImage = item.ImageTags && item.ImageTags.Primary;
 
-			var href = item.url || (item.IsFolder ? (item.Id ? "itemList.html?parentId=" + item.Id : "#") : "itemdetails.html?id=" + item.Id);
+			var href = item.url || ("boxset.html?id=" + item.Id);
 
 			var showText = options.showTitle || !hasPrimaryImage || (item.Type !== 'Movie' && item.Type !== 'Series' && item.Type !== 'Season' && item.Type !== 'Trailer');
 
@@ -257,8 +257,12 @@
     getMetroColor: function (str) {
 
         if (str) {
-            var char = str.substr(0, 1).charCodeAt();
-            var index = String(char).substr(char.length, 1);
+            var char = String(str.substr(0, 1).charCodeAt());
+	        var sum = 0;
+	        for (var i = 0; i < char.length; i++) {
+		        sum += parseInt(char.charAt(i));
+	        }
+            var index = String(sum).substr(-1);
 
             return LibraryBrowser.metroColors[index];
         } else {

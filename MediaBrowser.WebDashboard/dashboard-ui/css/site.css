@@ -832,8 +832,10 @@ progress {
     width: auto !important;
 }
 
-.vjs-quality-button div {
-    background: red !important;
+.vjs-default-skin .vjs-menu-button.vjs-quality-button div {
+	background: url("images/media/quality.png");
+	height: 16px;
+	width: 16px;
 }
 
 .vjs-chapter-button div {
@@ -867,7 +869,7 @@ progress {
 }
 
 .vjs-subtitle-button div {
-	background: green !important;
+	background-position: -25px -75px !important;
 }
 
 .vjs-subtitle-button.vjs-menu-button ul {
@@ -883,8 +885,10 @@ progress {
 	padding-right: 10px;
 }
 
-.vjs-language-button div {
-	background: yellow !important;
+.vjs-default-skin .vjs-menu-button.vjs-language-button div {
+	background: url("images/media/language.png") !important;
+	height: 16px;
+	width: 16px;
 }
 
 .vjs-language-button.vjs-menu-button ul {
