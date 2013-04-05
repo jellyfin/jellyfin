@@ -5,7 +5,7 @@
 
 		SortBy: "SortName",
 		SortOrder: "Ascending",
-		IncludeItemTypes: "Episode",
+		IncludeItemTypes: "Series",
 		Recursive: true,
 		Fields: "PrimaryImageAspectRatio,SeriesInfo"
 	};
