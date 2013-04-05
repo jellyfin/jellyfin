@@ -34,6 +34,18 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         }
 
         /// <summary>
+        /// Gets a value indicating whether [enable delayed commands].
+        /// </summary>
+        /// <value><c>true</c> if [enable delayed commands]; otherwise, <c>false</c>.</value>
+        protected override bool EnableDelayedCommands
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// The _protobuf serializer
         /// </summary>
         private readonly IProtobufSerializer _protobufSerializer;
