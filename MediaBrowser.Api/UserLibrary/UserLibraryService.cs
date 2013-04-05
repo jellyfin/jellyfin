@@ -1,17 +1,13 @@
-﻿using System.Threading;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Connectivity;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
 using ServiceStack.ServiceHost;
-using ServiceStack.Text.Controller;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.UserLibrary
@@ -20,7 +16,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class GetItem
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}", "GET")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets an item from a user's library")]
+    [Api(Description = "Gets an item from a user's library")]
     public class GetItem : IReturn<BaseItemDto>
     {
         /// <summary>
@@ -42,7 +38,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class GetItem
     /// </summary>
     [Route("/Users/{UserId}/Items/Root", "GET")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets the root folder from a user's library")]
+    [Api(Description = "Gets the root folder from a user's library")]
     public class GetRootFolder : IReturn<BaseItemDto>
     {
         /// <summary>
@@ -57,7 +53,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class GetIntros
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/Intros", "GET")]
-    [ServiceStack.ServiceHost.Api(("Gets intros to play before the main media item plays"))]
+    [Api(("Gets intros to play before the main media item plays"))]
     public class GetIntros : IReturn<List<string>>
     {
         /// <summary>
@@ -72,21 +68,6 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The item id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Id { get; set; }
-    }
-
-    /// <summary>
-    /// Class UpdateDisplayPreferences
-    /// </summary>
-    [Route("/Users/{UserId}/Items/{Id}/DisplayPreferences", "POST")]
-    [Api(("Updates a user's display preferences for an item"))]
-    public class UpdateDisplayPreferences : DisplayPreferences, IReturnVoid
-    {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Id { get; set; }
     }
 
@@ -138,7 +119,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class ClearUserItemRating
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/Rating", "DELETE")]
-    [ServiceStack.ServiceHost.Api(Description = "Deletes a user's saved personal rating for an item")]
+    [Api(Description = "Deletes a user's saved personal rating for an item")]
     public class DeleteUserItemRating : IReturnVoid
     {
         /// <summary>
@@ -160,7 +141,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class UpdateUserItemRating
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/Rating", "POST")]
-    [ServiceStack.ServiceHost.Api(Description = "Updates a user's rating for an item")]
+    [Api(Description = "Updates a user's rating for an item")]
     public class UpdateUserItemRating : IReturnVoid
     {
         /// <summary>
@@ -189,7 +170,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class MarkPlayedItem
     /// </summary>
     [Route("/Users/{UserId}/PlayedItems/{Id}", "POST")]
-    [ServiceStack.ServiceHost.Api(Description = "Marks an item as played")]
+    [Api(Description = "Marks an item as played")]
     public class MarkPlayedItem : IReturnVoid
     {
         /// <summary>
@@ -211,7 +192,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class MarkUnplayedItem
     /// </summary>
     [Route("/Users/{UserId}/PlayedItems/{Id}", "DELETE")]
-    [ServiceStack.ServiceHost.Api(Description = "Marks an item as unplayed")]
+    [Api(Description = "Marks an item as unplayed")]
     public class MarkUnplayedItem : IReturnVoid
     {
         /// <summary>
@@ -230,7 +211,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     [Route("/Users/{UserId}/PlayingItems/{Id}", "POST")]
-    [ServiceStack.ServiceHost.Api(Description = "Reports that a user has begun playing an item")]
+    [Api(Description = "Reports that a user has begun playing an item")]
     public class OnPlaybackStart : IReturnVoid
     {
         /// <summary>
@@ -249,7 +230,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     [Route("/Users/{UserId}/PlayingItems/{Id}/Progress", "POST")]
-    [ServiceStack.ServiceHost.Api(Description = "Reports a user's playback progress")]
+    [Api(Description = "Reports a user's playback progress")]
     public class OnPlaybackProgress : IReturnVoid
     {
         /// <summary>
@@ -275,7 +256,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     [Route("/Users/{UserId}/PlayingItems/{Id}", "DELETE")]
-    [ServiceStack.ServiceHost.Api(Description = "Reports that a user has stopped playing an item")]
+    [Api(Description = "Reports that a user has stopped playing an item")]
     public class OnPlaybackStopped : IReturnVoid
     {
         /// <summary>
@@ -304,7 +285,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class GetLocalTrailers
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/LocalTrailers", "GET")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets local trailers for an item")]
+    [Api(Description = "Gets local trailers for an item")]
     public class GetLocalTrailers : IReturn<List<BaseItemDto>>
     {
         /// <summary>
@@ -326,7 +307,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class GetSpecialFeatures
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/SpecialFeatures", "GET")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets special features for a movie")]
+    [Api(Description = "Gets special features for a movie")]
     public class GetSpecialFeatures : IReturn<List<BaseItemDto>>
     {
         /// <summary>
@@ -356,18 +337,16 @@ namespace MediaBrowser.Api.UserLibrary
         private readonly IUserManager _userManager;
 
         private readonly ILibraryManager _libraryManager;
-        private readonly IJsonSerializer _jsonSerializer;
         
         /// <summary>
         /// Initializes a new instance of the <see cref="UserLibraryService" /> class.
         /// </summary>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
-        public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager, IJsonSerializer jsonSerializer)
+        public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager)
             : base()
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
-            _jsonSerializer = jsonSerializer;
         }
 
         /// <summary>
@@ -465,31 +444,6 @@ namespace MediaBrowser.Api.UserLibrary
             var result = _libraryManager.GetIntros(item, user);
 
             return ToOptimizedResult(result);
-        }
-
-        /// <summary>
-        /// Posts the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        public void Post(UpdateDisplayPreferences request)
-        {
-            // We need to parse this manually because we told service stack not to with IRequiresRequestStream
-            // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
-            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
-            var userId = new Guid(pathInfo.GetArgumentValue<string>(1));
-            var itemId = pathInfo.GetArgumentValue<string>(3);
-
-            var user = _userManager.GetUserById(userId);
-
-            var item = string.IsNullOrEmpty(itemId) ? user.RootFolder : DtoBuilder.GetItemByClientId(itemId, _userManager, _libraryManager, user.Id);
-            var folder = (Folder)item;
-
-            // Serialize to json and then back so that the core doesn't see the request dto type
-            var displayPreferences = _jsonSerializer.DeserializeFromString<DisplayPreferences>(_jsonSerializer.SerializeToString(request));
-
-            var task = _userManager.SaveDisplayPreferences(user.Id, folder.DisplayPreferencesId, displayPreferences, CancellationToken.None);
-
-            Task.WaitAll(task);
         }
 
         /// <summary>
