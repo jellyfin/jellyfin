@@ -161,7 +161,7 @@
 
 			var hasPrimaryImage = item.ImageTags && item.ImageTags.Primary;
 
-			var href = item.url || (item.IsFolder ? (item.Id ? "itemList.html?parentId=" + item.Id : "#") : "itemdetails.html?id=" + item.Id);
+			var href = item.url || ("boxset.html?id=" + item.Id);
 
 			var showText = options.showTitle || !hasPrimaryImage || (item.Type !== 'Movie' && item.Type !== 'Series' && item.Type !== 'Season' && item.Type !== 'Trailer');
 
