@@ -125,7 +125,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _rootFolder, ref _userRootFolderInitialized, ref _userRootFolderSyncLock, () => (UserRootFolder)LibraryManager.ResolvePath(RootFolderPath));
+                LazyInitializer.EnsureInitialized(ref _rootFolder, ref _userRootFolderInitialized, ref _userRootFolderSyncLock, () => LibraryManager.GetUserRootFolder(RootFolderPath));
                 return _rootFolder;
             }
             private set
@@ -216,22 +216,6 @@ namespace MediaBrowser.Controller.Entities
             cancellationToken.ThrowIfCancellationRequested();
 
             await RootFolder.ValidateChildren(progress, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Validates only the collection folders for a User and goes no further
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        public async Task ValidateCollectionFolders(IProgress<double> progress, CancellationToken cancellationToken)
-        {
-            Logger.Info("Validating collection folders for {0}", Name);
-            await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await RootFolder.ValidateChildren(progress, cancellationToken, recursive: false).ConfigureAwait(false);
         }
 
         /// <summary>

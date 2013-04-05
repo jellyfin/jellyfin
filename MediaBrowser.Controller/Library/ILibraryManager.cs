@@ -163,5 +163,12 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item"></param>
         /// <returns>The proper instance to the item</returns>
         BaseItem GetOrAddByReferenceItem(BaseItem item);
+
+        /// <summary>
+        /// Gets the user root folder.
+        /// </summary>
+        /// <param name="userRootPath">The user root path.</param>
+        /// <returns>UserRootFolder.</returns>
+        UserRootFolder GetUserRootFolder(string userRootPath);
     }
 }
