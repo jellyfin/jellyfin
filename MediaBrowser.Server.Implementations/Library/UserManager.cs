@@ -25,8 +25,8 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <summary>
         /// The _active connections
         /// </summary>
-        private readonly List<ClientConnectionInfo> _activeConnections =
-            new List<ClientConnectionInfo>();
+        private readonly ConcurrentDictionary<string, ClientConnectionInfo> _activeConnections =
+            new ConcurrentDictionary<string, ClientConnectionInfo>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// The _users
@@ -69,7 +69,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <value>All connections.</value>
         public IEnumerable<ClientConnectionInfo> AllConnections
         {
-            get { return _activeConnections.Where(c => GetUserById(c.UserId) != null).OrderByDescending(c => c.LastActivityDate); }
+            get { return _activeConnections.Values.OrderByDescending(c => c.LastActivityDate); }
         }
 
         /// <summary>
@@ -313,29 +313,19 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>ClientConnectionInfo.</returns>
         private ClientConnectionInfo GetConnection(Guid userId, string clientType, string deviceId, string deviceName)
         {
-            lock (_activeConnections)
+            var key = clientType + deviceId;
+
+            var connection = _activeConnections.GetOrAdd(key, keyName => new ClientConnectionInfo
             {
-                var conn = _activeConnections.FirstOrDefault(c => string.Equals(c.Client, clientType, StringComparison.OrdinalIgnoreCase) && string.Equals(deviceId, c.DeviceId));
+                UserId = userId,
+                Client = clientType,
+                DeviceName = deviceName,
+                DeviceId = deviceId
+            });
 
-                if (conn == null)
-                {
-                    conn = new ClientConnectionInfo
-                    {
-                        UserId = userId,
-                        Client = clientType,
-                        DeviceName = deviceName,
-                        DeviceId = deviceId
-                    };
-
-                    _activeConnections.Add(conn);
-                }
-                else
-                {
-                    conn.UserId = userId;
-                }
-
-                return conn;
-            }
+            connection.UserId = userId;
+            
+            return connection;
         }
 
         /// <summary>
