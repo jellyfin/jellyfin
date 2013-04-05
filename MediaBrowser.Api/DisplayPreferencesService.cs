@@ -32,7 +32,7 @@ namespace MediaBrowser.Api
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public Guid Id { get; set; }
     }
     
@@ -42,23 +42,23 @@ namespace MediaBrowser.Api
     public class DisplayPreferencesService : BaseApiService
     {
         /// <summary>
-        /// The _user manager
+        /// The _display preferences manager
         /// </summary>
-        private readonly IUserManager _userManager;
+        private readonly IDisplayPreferencesManager _displayPreferencesManager;
         /// <summary>
         /// The _json serializer
         /// </summary>
         private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DisplayPreferencesService"/> class.
+        /// Initializes a new instance of the <see cref="DisplayPreferencesService" /> class.
         /// </summary>
-        /// <param name="userManager">The user manager.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
-        public DisplayPreferencesService(IUserManager userManager, IJsonSerializer jsonSerializer)
+        /// <param name="displayPreferencesManager">The display preferences manager.</param>
+        public DisplayPreferencesService(IJsonSerializer jsonSerializer, IDisplayPreferencesManager displayPreferencesManager)
         {
-            _userManager = userManager;
             _jsonSerializer = jsonSerializer;
+            _displayPreferencesManager = displayPreferencesManager;
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public object Get(GetDisplayPreferences request)
         {
-            var task = _userManager.GetDisplayPreferences(request.Id);
+            var task = _displayPreferencesManager.GetDisplayPreferences(request.Id);
 
             return ToOptimizedResult(task.Result);
         }
@@ -86,7 +86,7 @@ namespace MediaBrowser.Api
             // Serialize to json and then back so that the core doesn't see the request dto type
             var displayPreferences = _jsonSerializer.DeserializeFromString<DisplayPreferences>(_jsonSerializer.SerializeToString(request));
 
-            var task = _userManager.SaveDisplayPreferences(displayPreferences, CancellationToken.None);
+            var task = _displayPreferencesManager.SaveDisplayPreferences(displayPreferences, CancellationToken.None);
 
             Task.WaitAll(task);
         }

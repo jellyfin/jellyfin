@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Connectivity;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
@@ -99,11 +98,6 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <value>The configuration manager.</value>
         private IServerConfigurationManager ConfigurationManager { get; set; }
 
-        /// <summary>
-        /// The _user data
-        /// </summary>
-        private readonly ConcurrentDictionary<Guid, Task<DisplayPreferences>> _displayPreferences = new ConcurrentDictionary<Guid, Task<DisplayPreferences>>();
-
         private readonly ConcurrentDictionary<string, Task<UserItemData>> _userData = new ConcurrentDictionary<string, Task<UserItemData>>();
         
         /// <summary>
@@ -164,63 +158,6 @@ namespace MediaBrowser.Server.Implementations.Library
             EventHelper.QueueEventIfNotNull(UserDeleted, this, new GenericEventArgs<User> { Argument = user }, _logger);
         }
         #endregion
-
-        /// <summary>
-        /// Gets the display preferences.
-        /// </summary>
-        /// <param name="displayPreferencesId">The display preferences id.</param>
-        /// <returns>DisplayPreferences.</returns>
-        public Task<DisplayPreferences> GetDisplayPreferences(Guid displayPreferencesId)
-        {
-            return _displayPreferences.GetOrAdd(displayPreferencesId, keyName => RetrieveDisplayPreferences(displayPreferencesId));
-        }
-
-        /// <summary>
-        /// Retrieves the display preferences.
-        /// </summary>
-        /// <param name="displayPreferencesId">The display preferences id.</param>
-        /// <returns>DisplayPreferences.</returns>
-        private async Task<DisplayPreferences> RetrieveDisplayPreferences(Guid displayPreferencesId)
-        {
-            var displayPreferences = await Kernel.Instance.DisplayPreferencesRepository.GetDisplayPreferences(displayPreferencesId).ConfigureAwait(false);
-
-            return displayPreferences ?? new DisplayPreferences { Id = displayPreferencesId };
-        }
-
-        /// <summary>
-        /// Saves display preferences for an item
-        /// </summary>
-        /// <param name="displayPreferences">The display preferences.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public async Task SaveDisplayPreferences(DisplayPreferences displayPreferences, CancellationToken cancellationToken)
-        {
-            if (displayPreferences == null)
-            {
-                throw new ArgumentNullException("displayPreferences");
-            }
-            if (displayPreferences.Id == Guid.Empty)
-            {
-                throw new ArgumentNullException("displayPreferences.Id");
-            }
-
-            try
-            {
-                await Kernel.Instance.DisplayPreferencesRepository.SaveDisplayPreferences(displayPreferences,
-                                                                                        cancellationToken).ConfigureAwait(false);
-
-                var newValue = Task.FromResult(displayPreferences);
-
-                // Once it succeeds, put it into the dictionary to make it available to everyone else
-                _displayPreferences.AddOrUpdate(displayPreferences.Id, newValue, delegate { return newValue; });
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error saving display preferences", ex);
-
-                throw;
-            }
-        }
 
         /// <summary>
         /// Gets a User by Id
@@ -802,11 +739,11 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Gets the display preferences.
+        /// Gets the user data.
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <param name="userDataId">The user data id.</param>
-        /// <returns>Task{DisplayPreferences}.</returns>
+        /// <returns>Task{UserItemData}.</returns>
         public Task<UserItemData> GetUserData(Guid userId, Guid userDataId)
         {
             var key = userId + userDataId.ToString();
@@ -815,11 +752,11 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Retrieves the display preferences.
+        /// Retrieves the user data.
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <param name="userDataId">The user data id.</param>
-        /// <returns>DisplayPreferences.</returns>
+        /// <returns>Task{UserItemData}.</returns>
         private async Task<UserItemData> RetrieveUserData(Guid userId, Guid userDataId)
         {
             var userdata = await Kernel.Instance.UserDataRepository.GetUserData(userId, userDataId).ConfigureAwait(false);
