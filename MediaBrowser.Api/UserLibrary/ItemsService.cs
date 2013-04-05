@@ -181,6 +181,8 @@ namespace MediaBrowser.Api.UserLibrary
 
             var items = GetItemsToSerialize(request, user);
 
+            items = items.AsParallel();
+
             // Apply filters
             // Run them starting with the ones that are likely to reduce the list the most
             foreach (var filter in GetFilters(request).OrderByDescending(f => (int)f))
@@ -189,6 +191,8 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             items = ApplyAdditionalFilters(request, items);
+
+            items = items.AsEnumerable();
 
             items = ApplySearchTerm(request, items);
 
