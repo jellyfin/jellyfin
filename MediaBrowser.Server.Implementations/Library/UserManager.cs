@@ -102,7 +102,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <summary>
         /// The _user data
         /// </summary>
-        private readonly ConcurrentDictionary<string, Task<DisplayPreferences>> _displayPreferences = new ConcurrentDictionary<string, Task<DisplayPreferences>>();
+        private readonly ConcurrentDictionary<Guid, Task<DisplayPreferences>> _displayPreferences = new ConcurrentDictionary<Guid, Task<DisplayPreferences>>();
 
         private readonly ConcurrentDictionary<string, Task<UserItemData>> _userData = new ConcurrentDictionary<string, Task<UserItemData>>();
         
@@ -168,51 +168,51 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <summary>
         /// Gets the display preferences.
         /// </summary>
-        /// <param name="userId">The user id.</param>
         /// <param name="displayPreferencesId">The display preferences id.</param>
         /// <returns>DisplayPreferences.</returns>
-        public Task<DisplayPreferences> GetDisplayPreferences(Guid userId, Guid displayPreferencesId)
+        public Task<DisplayPreferences> GetDisplayPreferences(Guid displayPreferencesId)
         {
-            var key = userId + displayPreferencesId.ToString();
-
-            return _displayPreferences.GetOrAdd(key, keyName => RetrieveDisplayPreferences(userId, displayPreferencesId));
+            return _displayPreferences.GetOrAdd(displayPreferencesId, keyName => RetrieveDisplayPreferences(displayPreferencesId));
         }
 
         /// <summary>
         /// Retrieves the display preferences.
         /// </summary>
-        /// <param name="userId">The user id.</param>
         /// <param name="displayPreferencesId">The display preferences id.</param>
         /// <returns>DisplayPreferences.</returns>
-        private async Task<DisplayPreferences> RetrieveDisplayPreferences(Guid userId, Guid displayPreferencesId)
+        private async Task<DisplayPreferences> RetrieveDisplayPreferences(Guid displayPreferencesId)
         {
-            var displayPreferences = await Kernel.Instance.DisplayPreferencesRepository.GetDisplayPreferences(userId, displayPreferencesId).ConfigureAwait(false);
+            var displayPreferences = await Kernel.Instance.DisplayPreferencesRepository.GetDisplayPreferences(displayPreferencesId).ConfigureAwait(false);
 
-            return displayPreferences ?? new DisplayPreferences();
+            return displayPreferences ?? new DisplayPreferences { Id = displayPreferencesId };
         }
 
         /// <summary>
         /// Saves display preferences for an item
         /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="displayPreferencesId">The display preferences id.</param>
         /// <param name="displayPreferences">The display preferences.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task SaveDisplayPreferences(Guid userId, Guid displayPreferencesId, DisplayPreferences displayPreferences, CancellationToken cancellationToken)
+        public async Task SaveDisplayPreferences(DisplayPreferences displayPreferences, CancellationToken cancellationToken)
         {
-            var key = userId + displayPreferencesId.ToString();
-           
+            if (displayPreferences == null)
+            {
+                throw new ArgumentNullException("displayPreferences");
+            }
+            if (displayPreferences.Id == Guid.Empty)
+            {
+                throw new ArgumentNullException("displayPreferences.Id");
+            }
+
             try
             {
-                await Kernel.Instance.DisplayPreferencesRepository.SaveDisplayPreferences(userId, displayPreferencesId,
-                                                                                        displayPreferences,
+                await Kernel.Instance.DisplayPreferencesRepository.SaveDisplayPreferences(displayPreferences,
                                                                                         cancellationToken).ConfigureAwait(false);
 
                 var newValue = Task.FromResult(displayPreferences);
 
                 // Once it succeeds, put it into the dictionary to make it available to everyone else
-                _displayPreferences.AddOrUpdate(key, newValue, delegate { return newValue; });
+                _displayPreferences.AddOrUpdate(displayPreferences.Id, newValue, delegate { return newValue; });
             }
             catch (Exception ex)
             {
@@ -232,7 +232,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             if (id == Guid.Empty)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("id");
             }
 
             return Users.FirstOrDefault(u => u.Id == id);

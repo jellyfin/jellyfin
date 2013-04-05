@@ -78,8 +78,8 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             string[] queries = {
 
-                                "create table if not exists displaypreferences (id GUID, userId GUID, data BLOB)",
-                                "create unique index if not exists displaypreferencesindex on displaypreferences (id, userId)",
+                                "create table if not exists displaypreferences (id GUID, data BLOB)",
+                                "create unique index if not exists displaypreferencesindex on displaypreferences (id)",
                                 "create table if not exists schema_version (table_name primary key, version)",
                                 //pragmas
                                 "pragma temp_store = memory"
@@ -91,29 +91,23 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <summary>
         /// Save the display preferences associated with an item in the repo
         /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="displayPreferencesId">The display preferences id.</param>
         /// <param name="displayPreferences">The display preferences.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public Task SaveDisplayPreferences(Guid userId, Guid displayPreferencesId, DisplayPreferences displayPreferences, CancellationToken cancellationToken)
+        public Task SaveDisplayPreferences(DisplayPreferences displayPreferences, CancellationToken cancellationToken)
         {
             if (displayPreferences == null)
             {
                 throw new ArgumentNullException("displayPreferences");
             }
+            if (displayPreferences.Id == Guid.Empty)
+            {
+                throw new ArgumentNullException("displayPreferences.Id");
+            }
             if (cancellationToken == null)
             {
                 throw new ArgumentNullException("cancellationToken");
-            }
-            if (userId == Guid.Empty)
-            {
-                throw new ArgumentNullException("userId");
-            }
-            if (displayPreferencesId == Guid.Empty)
-            {
-                throw new ArgumentNullException("displayPreferencesId");
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -125,10 +119,9 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var cmd = connection.CreateCommand();
-                cmd.CommandText = "replace into displaypreferences (id, userId, data) values (@1, @2, @3)";
-                cmd.AddParam("@1", displayPreferencesId);
-                cmd.AddParam("@2", userId);
-                cmd.AddParam("@3", serialized);
+                cmd.CommandText = "replace into displaypreferences (id, data) values (@1, @3)";
+                cmd.AddParam("@1", displayPreferences.Id);
+                cmd.AddParam("@2", serialized);
                 QueueCommand(cmd);
             });
         }
@@ -136,29 +129,21 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <summary>
         /// Gets the display preferences.
         /// </summary>
-        /// <param name="userId">The user id.</param>
         /// <param name="displayPreferencesId">The display preferences id.</param>
         /// <returns>Task{DisplayPreferences}.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public async Task<DisplayPreferences> GetDisplayPreferences(Guid userId, Guid displayPreferencesId)
+        public async Task<DisplayPreferences> GetDisplayPreferences(Guid displayPreferencesId)
         {
-            if (userId == Guid.Empty)
-            {
-                throw new ArgumentNullException("userId");
-            }
             if (displayPreferencesId == Guid.Empty)
             {
                 throw new ArgumentNullException("displayPreferencesId");
             }
 
             var cmd = connection.CreateCommand();
-            cmd.CommandText = "select data from displaypreferences where id = @id and userId=@userId";
+            cmd.CommandText = "select data from displaypreferences where id = @id";
             
             var idParam = cmd.Parameters.Add("@id", DbType.Guid);
             idParam.Value = displayPreferencesId;
-
-            var userIdParam = cmd.Parameters.Add("@userId", DbType.Guid);
-            userIdParam.Value = userId;
 
             using (var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow).ConfigureAwait(false))
             {

@@ -190,23 +190,20 @@ namespace MediaBrowser.Controller.Library
         /// <param name="userDataId">The user data id.</param>
         /// <returns>Task{DisplayPreferences}.</returns>
         Task<UserItemData> GetUserData(Guid userId, Guid userDataId);
-        
+
         /// <summary>
         /// Gets the display preferences.
         /// </summary>
-        /// <param name="userId">The user id.</param>
         /// <param name="displayPreferencesId">The display preferences id.</param>
         /// <returns>DisplayPreferences.</returns>
-        Task<DisplayPreferences> GetDisplayPreferences(Guid userId, Guid displayPreferencesId);
+        Task<DisplayPreferences> GetDisplayPreferences(Guid displayPreferencesId);
 
         /// <summary>
         /// Saves display preferences for an item
         /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="displayPreferencesId">The display preferences id.</param>
         /// <param name="displayPreferences">The display preferences.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveDisplayPreferences(Guid userId, Guid displayPreferencesId, DisplayPreferences displayPreferences, CancellationToken cancellationToken);
+        Task SaveDisplayPreferences(DisplayPreferences displayPreferences, CancellationToken cancellationToken);
     }
 }
