@@ -21,7 +21,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     /// </summary>
     public class FFProbeVideoInfoProvider : BaseFFProbeProvider<Video>
     {
-        public FFProbeVideoInfoProvider(IIsoManager isoManager, IBlurayExaminer blurayExaminer, IProtobufSerializer protobufSerializer, ILogManager logManager, IServerConfigurationManager configurationManager) 
+        public FFProbeVideoInfoProvider(IIsoManager isoManager, IBlurayExaminer blurayExaminer, IProtobufSerializer protobufSerializer, ILogManager logManager, IServerConfigurationManager configurationManager)
             : base(logManager, configurationManager)
         {
             if (isoManager == null)
@@ -253,16 +253,23 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
                 if (string.Equals(extension, ".srt", StringComparison.OrdinalIgnoreCase))
                 {
+                    if (video.VideoType == VideoType.VideoFile)
+                    {
+                        // For video files the subtitle filename must match video filename
+                        if (!string.Equals(Path.GetFileNameWithoutExtension(video.Path), Path.GetFileNameWithoutExtension(file.Path)))
+                        {
+                            continue;
+                        }
+                    }
+
                     streams.Add(new MediaStream
                     {
-                        Index = startIndex,
+                        Index = startIndex++,
                         Type = MediaStreamType.Subtitle,
                         IsExternal = true,
                         Path = file.Path,
                         Codec = "srt"
                     });
-
-                    startIndex++;
                 }
             }
 
