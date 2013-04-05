@@ -130,20 +130,20 @@
 		var userData = item.UserData || {};
 
 		if (typeof userData.Likes == "undefined") {
-			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="ItemByNameDetailPage.setDislike();" /></div>';
-			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="ItemByNameDetailPage.setLike();" /></div>';
+		    html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.setDislike();" />';
+		    html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="ItemDetailPage.setLike();" />';
 		} else if (userData.Likes) {
-			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="ItemByNameDetailPage.setDislike();" /></div>';
-			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_up_on.png" alt="Liked" title="Like" onclick="ItemByNameDetailPage.clearLike();" /></div>';
+		    html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.setDislike();" />';
+		    html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_on.png" alt="Liked" title="Like" onclick="ItemDetailPage.clearLike();" />';
 		} else {
-			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" onclick="ItemByNameDetailPage.clearLike();" /></div>';
-			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="ItemByNameDetailPage.setLike();" /></div>';
+		    html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.clearLike();" />';
+		    html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="ItemDetailPage.setLike();" />';
 		}
 
 		if (userData.IsFavorite) {
-			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" onclick="ItemByNameDetailPage.setFavorite();" /></div>';
+		    html += '<img class="imgUserItemRating" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" onclick="ItemDetailPage.setFavorite();" />';
 		} else {
-			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" onclick="ItemByNameDetailPage.setFavorite();" /></div>';
+		    html += '<img class="imgUserItemRating" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" onclick="ItemDetailPage.setFavorite();" />';
 		}
 
 		$('#itemRatings', page).html(html);

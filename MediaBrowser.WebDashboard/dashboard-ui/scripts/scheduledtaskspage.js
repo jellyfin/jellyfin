@@ -146,8 +146,6 @@
 
     startTask: function (id) {
 
-        Dashboard.showLoadingMsg();
-
         ApiClient.startScheduledTask(id).done(function (result) {
 
             ScheduledTasksPage.reloadList();
@@ -156,8 +154,6 @@
     },
 
     stopTask: function (id) {
-
-        Dashboard.showLoadingMsg();
 
         ApiClient.stopScheduledTask(id).done(function (result) {
 

@@ -1,5 +1,7 @@
 ﻿(function ($, document) {
 
+    var view = "Poster";
+    
     // The base query options
     var query = {
 
@@ -7,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Movie",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio"
+        Fields: "PrimaryImageAspectRatio,UserData"
     };
 
     function getTableHtml(items) {
@@ -18,11 +20,12 @@
 
         html += '<tr>';
         html += '<th>&nbsp;</th>';
-        html += '<th>Name</th>';
+        html += '<th class="thName">Name</th>';
         html += '<th>Year</th>';
-        html += '<th>Official Rating</th>';
+        html += '<th>Rating</th>';
         html += '<th>Runtime</th>';
         html += '<th>Community Rating</th>';
+        html += '<th></th>';
         html += '</tr>';
 
         html += '</thead>';
@@ -57,7 +60,7 @@
 
             html += '<img class="libraryGridImage" src="' + ApiClient.getImageUrl(item.Id, {
                 type: "Primary",
-                height: 150,
+                height: 100,
                 tag: item.ImageTags.Primary
             }) + '" />';
 
@@ -68,13 +71,47 @@
 
         html += '</a></td>';
 
-        html += '<td><a href="' + url + '">' + item.Name + '</a></td>';
+        html += '<td class="tdName"><a href="' + url + '">' + item.Name + '</a></td>';
 
         html += '<td>' + (item.ProductionYear || "") + '</td>';
 
         html += '<td>' + (item.OfficialRating || "") + '</td>';
-        html += '<td>' + (item.RunTimeTicks || "") + '</td>';
+
+        var minutes = (item.RunTimeTicks || 0) / 600000000;
+
+        minutes = minutes || 1;
+
+        html += '<td>' + parseInt(minutes) + 'min</td>';
         html += '<td>' + (item.CommunityRating || "") + '</td>';
+
+        html += '<td>';
+
+        var userData = item.UserData || {};
+
+        if (userData.Played) {
+            html += '<img class="imgUserItemRating" src="css/images/userdata/played.png" alt="Played" title="Played" />';
+        } else {
+            html += '<img class="imgUserItemRating" src="css/images/userdata/unplayed.png" alt="Played" title="Played" />';
+        }
+
+        if (typeof userData.Likes == "undefined") {
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" />';
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" />';
+        } else if (userData.Likes) {
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" />';
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_on.png" alt="Liked" title="Like" />';
+        } else {
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" />';
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" />';
+        }
+
+        if (userData.IsFavorite) {
+            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" />';
+        } else {
+            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" />';
+        }
+
+        html += '</td>';
 
         html += '</tr>';
         return html;
@@ -86,12 +123,15 @@
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
 
-            $('#items', page).html(LibraryBrowser.getPosterViewHtml({
-
-                items: result.Items,
-                useAverageAspectRatio: true
-
-            }))/*.html(getTableHtml(result.Items)).trigger('create')*/;
+            if (view == "Poster") {
+                $('#items', page).html(LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    useAverageAspectRatio: true
+                }));
+            }
+            else if (view == "Grid") {
+                $('#items', page).html(getTableHtml(result.Items)).trigger('create');
+            }
 
             Dashboard.hideLoadingMsg();
         });
@@ -140,6 +180,13 @@
             }
 
             query.VideoTypes = filters;
+
+            reloadItems(page);
+        });
+        
+        $('#selectView', this).on('change', function () {
+
+            view = this.value;
 
             reloadItems(page);
         });

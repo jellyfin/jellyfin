@@ -11,7 +11,8 @@
             IncludeItemTypes: "Movie",
             Limit: 5,
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio"
+            Fields: "PrimaryImageAspectRatio",
+            Filters: "IsUnplayed"
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
@@ -44,6 +45,33 @@
             }
             
             $('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
+                items: result.Items,
+                useAverageAspectRatio: true
+            }));
+
+        });
+
+
+        options = {
+
+            SortBy: "DateCreated",
+            SortOrder: "Descending",
+            IncludeItemTypes: "Trailer",
+            Limit: 5,
+            Recursive: true,
+            Fields: "PrimaryImageAspectRatio",
+            Filters: "IsUnplayed"
+        };
+
+        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+
+            if (result.Items.length) {
+                $('#trailerSection', page).show();
+            } else {
+                $('#trailerSection', page).hide();
+            }
+
+            $('#trailerItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 useAverageAspectRatio: true
             }));

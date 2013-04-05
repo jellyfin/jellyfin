@@ -65,13 +65,23 @@
     width: 50px;
 }
 
+.thName, .tdName {
+    max-width: 300px;
+}
+
+.libraryItemsGrid .imgUserItemRating {
+    width: 20px;
+    height: 20px;
+}
+
+.libraryItemsGrid a {
+    text-shadow: none;
+}
+
 @media all and (min-width: 650px) {
     .libraryPage .ui-content {
         padding: 15px 30px 100px;
     }
-}
-
-@media all and (min-width: 750px) {
 }
 
 @media all and (min-width: 1200px) {
@@ -81,7 +91,7 @@
     }
 
     .ehsContent {
-        max-width: 900px;
+        max-width: 850px;
     }
 
     .libraryItemsGridContainer {
@@ -90,6 +100,10 @@
 }
 
 @media all and (min-width: 1440px) {
+    .ehsContent {
+        max-width: 900px;
+    }
+
     .libraryItemsGridContainer {
         padding: 0 20%;
     }
@@ -97,8 +111,9 @@
 
 @media all and (min-width: 1920px) {
     .ehsContent {
-        max-width: 1300px;
+        max-width: 1000px;
     }
+
     .libraryItemsGridContainer {
         padding: 0 25%;
     }

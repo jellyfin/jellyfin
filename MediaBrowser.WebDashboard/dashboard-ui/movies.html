@@ -17,6 +17,12 @@
                 <a href="#" data-role="button">Directors</a>
             </div>
             <div class="viewSettings">
+                <div style="display: inline-block;">
+                    <select data-mini="true" data-inline="true" id="selectView" name="selectView">
+                        <option value="Poster">Poster</option>
+                        <option value="Grid">Grid</option>
+                    </select>
+                </div>
                 <button data-mini="true" data-icon="sort" data-inline="true" onclick="$('#sortPanel', $.mobile.activePage).panel( 'toggle' );">Sort</button>
                 <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $.mobile.activePage).panel( 'toggle' );">Filter</button>
             </div>
@@ -77,10 +83,13 @@
                         <h3 onclick="Dashboard.selectDirectory();">Filters:</h3>
                     </legend>
                     <input class="chkStandardFilter" type="checkbox" name="chkPlayed" id="chkPlayed" data-theme="c" data-filter="IsPlayed">
-                    <label for="chkPlayed">Played</label>
+                    <label for="chkPlayed">Watched</label>
 
                     <input class="chkStandardFilter" type="checkbox" name="chkUnplayed" id="chkUnplayed" data-theme="c" data-filter="IsUnPlayed">
-                    <label for="chkUnplayed">Unplayed</label>
+                    <label for="chkUnplayed">Unwatched</label>
+
+                    <input class="chkStandardFilter" type="checkbox" name="chkResumable" id="chkResumable" data-theme="c" data-filter="IsResumable">
+                    <label for="chkResumable">Resumable</label>
 
                     <input class="chkStandardFilter" type="checkbox" name="chkIsFavorite" id="chkIsFavorite" data-theme="c" data-filter="IsFavorite">
                     <label for="chkIsFavorite">Favorite</label>
@@ -90,14 +99,10 @@
 
                     <input class="chkStandardFilter" type="checkbox" name="chkDislikes" id="chkDislikes" data-theme="c" data-filter="Dislikes">
                     <label for="chkDislikes">Dislikes</label>
-
-                    <input class="chkStandardFilter" type="checkbox" name="chkResumable" id="chkResumable" data-theme="c" data-filter="IsResumable">
-                    <label for="chkResumable">Resumable</label>
                 </fieldset>
                 <br />
                 <fieldset data-role="controlgroup">
-                    <legend>
-                    </legend>
+                    <legend></legend>
 
                     <input class="chkVideoTypeFilter" type="checkbox" name="chkBluray" id="chkBluray" data-theme="c" data-filter="Bluray">
                     <label for="chkBluray">Bluray</label>

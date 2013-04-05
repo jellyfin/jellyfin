@@ -11,7 +11,8 @@
 			IncludeItemTypes: "Episode",
 			Limit: 6,
 			Recursive: true,
-			Fields: "PrimaryImageAspectRatio,SeriesInfo"
+			Fields: "PrimaryImageAspectRatio,SeriesInfo",
+			Filters: "IsUnplayed"
 		};
 
 		ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
