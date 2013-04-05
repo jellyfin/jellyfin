@@ -149,7 +149,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             // There's several values in tags may or may not be present
             FetchStudios(audio, tags, "organization");
             FetchStudios(audio, tags, "ensemble");
-            FetchPublishers(audio, tags, "publisher");
+            FetchStudios(audio, tags, "publisher");
         }
 
         /// <summary>
@@ -165,22 +165,6 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             if (!string.IsNullOrEmpty(val))
             {
                 audio.AddStudios(val.Split(new[] { '/', '|' }, StringSplitOptions.RemoveEmptyEntries));
-            }
-        }
-
-        /// <summary>
-        /// Fetches the publishers.
-        /// </summary>
-        /// <param name="audio">The audio.</param>
-        /// <param name="tags">The tags.</param>
-        /// <param name="tagName">Name of the tag.</param>
-        private void FetchPublishers(Audio audio, Dictionary<string, string> tags, string tagName)
-        {
-            var val = GetDictionaryValue(tags, tagName);
-
-            if (!string.IsNullOrEmpty(val))
-            {
-                audio.AddPublishers(val.Split(new[] { '/', '|' }, StringSplitOptions.RemoveEmptyEntries));
             }
         }
 

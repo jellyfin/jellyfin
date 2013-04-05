@@ -547,12 +547,6 @@ namespace MediaBrowser.Controller.Entities
         public virtual List<string> Studios { get; set; }
 
         /// <summary>
-        /// Gets or sets the publishers.
-        /// </summary>
-        /// <value>The publishers.</value>
-        public virtual List<string> Publishers { get; set; }
-        
-        /// <summary>
         /// Gets or sets the genres.
         /// </summary>
         /// <value>The genres.</value>
@@ -1013,47 +1007,6 @@ namespace MediaBrowser.Controller.Entities
             if (!Studios.Contains(name, StringComparer.OrdinalIgnoreCase))
             {
                 Studios.Add(name);
-            }
-        }
-
-        /// <summary>
-        /// Adds the publishers.
-        /// </summary>
-        /// <param name="publishers">The publishers.</param>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public void AddPublishers(IEnumerable<string> publishers)
-        {
-            if (publishers == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            foreach (var name in publishers)
-            {
-                AddPublisher(name);
-            }
-        }
-
-        /// <summary>
-        /// Adds the publisher.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <exception cref="System.ArgumentNullException">name</exception>
-        public void AddPublisher(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentNullException("name");
-            }
-
-            if (Publishers == null)
-            {
-                Publishers = new List<string>();
-            }
-
-            if (!Publishers.Contains(name, StringComparer.OrdinalIgnoreCase))
-            {
-                Publishers.Add(name);
             }
         }
 
