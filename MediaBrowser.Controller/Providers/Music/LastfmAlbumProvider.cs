@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Providers.Music
 {
     public class LastfmAlbumProvider : LastfmBaseProvider
     {
-        private static readonly Task<string> BlankId = Task.FromResult("0000");
+        private static readonly Task<string> BlankId = Task.FromResult("");
 
         private readonly IProviderManager _providerManager;
         
