@@ -29,7 +29,7 @@ namespace MediaBrowser.Model.Querying
         /// <summary>
         /// Item display preferences
         /// </summary>
-        DisplayPreferences,
+        DisplayPreferencesId,
 
         /// <summary>
         /// Genres

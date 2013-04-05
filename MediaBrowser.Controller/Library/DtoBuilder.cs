@@ -172,11 +172,9 @@ namespace MediaBrowser.Controller.Library
                 dto.UserData = GetUserItemDataDto(userData);
             }
 
-            if (item.IsFolder && fields.Contains(ItemFields.DisplayPreferences))
+            if (item.IsFolder && fields.Contains(ItemFields.DisplayPreferencesId))
             {
-                var displayPreferencesId = ((Folder) item).DisplayPreferencesId;
-
-                dto.DisplayPreferences = await _userManager.GetDisplayPreferences(user.Id, displayPreferencesId).ConfigureAwait(false);
+                dto.DisplayPreferencesId = ((Folder)item).DisplayPreferencesId.ToString();
             }
 
             if (item.IsFolder)

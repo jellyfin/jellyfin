@@ -62,6 +62,7 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="BaseApiService.cs" />
+    <Compile Include="DisplayPreferencesService.cs" />
     <Compile Include="EnvironmentService.cs" />
     <Compile Include="Images\ImageRequest.cs" />
     <Compile Include="Images\ImageService.cs" />

@@ -267,11 +267,11 @@ namespace MediaBrowser.Model.Dto
         public int? SpecialFeatureCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the display preferences.
+        /// Gets or sets the display preferences id.
         /// </summary>
-        /// <value>The display preferences.</value>
+        /// <value>The display preferences id.</value>
         [ProtoMember(49)]
-        public DisplayPreferences DisplayPreferences { get; set; }
+        public string DisplayPreferencesId { get; set; }
 
         /// <summary>
         /// Gets or sets the status.
