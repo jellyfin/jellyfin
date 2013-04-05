@@ -91,7 +91,7 @@ namespace MediaBrowser.ServerApplication
                                         var currentFolder = folder;
                                        Task.Factory.StartNew(() =>
                                         {
-                                            var prefs = ddlProfile.SelectedItem != null ? _userManager.GetDisplayPreferences((ddlProfile.SelectedItem as User).Id, currentFolder.DisplayPreferencesId).Result ?? new DisplayPreferences { SortBy = ItemSortBy.SortName } : new DisplayPreferences { SortBy = ItemSortBy.SortName };
+                                            var prefs = ddlProfile.SelectedItem != null ? _userManager.GetDisplayPreferences(currentFolder.GetDisplayPreferencesId((ddlProfile.SelectedItem as User).Id)).Result ?? new DisplayPreferences { SortBy = ItemSortBy.SortName } : new DisplayPreferences { SortBy = ItemSortBy.SortName };
                                             var node = new TreeViewItem { Tag = currentFolder };
 
                                             var subChildren = currentFolder.GetChildren(CurrentUser, prefs.IndexBy);
@@ -144,7 +144,7 @@ namespace MediaBrowser.ServerApplication
                 var subFolder = item as Folder;
                 if (subFolder != null)
                 {
-                    var prefs = _userManager.GetDisplayPreferences(user.Id, subFolder.DisplayPreferencesId).Result;
+                    var prefs = _userManager.GetDisplayPreferences(subFolder.GetDisplayPreferencesId(user.Id)).Result;
                     
                     AddChildren(node, OrderBy(subFolder.GetChildren(user), user, prefs.SortBy), user);
                     node.Header = item.Name + " (" + node.Items.Count + ")";
@@ -201,8 +201,8 @@ namespace MediaBrowser.ServerApplication
 
                     var prefs =
                         await
-                        _userManager.GetDisplayPreferences((ddlProfile.SelectedItem as User).Id,
-                                                           folder.DisplayPreferencesId);
+                        _userManager.GetDisplayPreferences(folder.GetDisplayPreferencesId((ddlProfile.SelectedItem as User).Id));
+
                     ddlIndexBy.SelectedItem = prefs != null
                                                   ? prefs.IndexBy ?? LocalizedStrings.Instance.GetString("NoneDispPref")
                                                   : LocalizedStrings.Instance.GetString("NoneDispPref");
@@ -360,7 +360,7 @@ namespace MediaBrowser.ServerApplication
                 var folder = treeItem != null
                                  ? treeItem.Tag as Folder
                                  : null;
-                var prefs = folder != null ? _userManager.GetDisplayPreferences(CurrentUser.Id, folder.DisplayPreferencesId).Result : new DisplayPreferences {SortBy = ItemSortBy.SortName};
+                var prefs = folder != null ? _userManager.GetDisplayPreferences(folder.GetDisplayPreferencesId(CurrentUser.Id)).Result : new DisplayPreferences {SortBy = ItemSortBy.SortName};
                 if (folder != null && prefs.IndexBy != ddlIndexBy.SelectedItem as string)
                 {
                     //grab UI context so we can update within the below task
@@ -401,7 +401,7 @@ namespace MediaBrowser.ServerApplication
                 var folder = treeItem != null
                                  ? treeItem.Tag as Folder
                                  : null;
-                var prefs = folder != null ? _userManager.GetDisplayPreferences(CurrentUser.Id, folder.DisplayPreferencesId).Result : new DisplayPreferences();
+                var prefs = folder != null ? _userManager.GetDisplayPreferences(folder.GetDisplayPreferencesId(CurrentUser.Id)).Result : new DisplayPreferences();
                 if (folder != null && prefs.SortBy != ddlSortBy.SelectedItem as string)
                 {
                     //grab UI context so we can update within the below task

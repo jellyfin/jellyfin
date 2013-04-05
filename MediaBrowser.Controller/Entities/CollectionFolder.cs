@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -35,7 +34,7 @@ namespace MediaBrowser.Controller.Entities
         /// Allow different display preferences for each collection folder
         /// </summary>
         /// <value>The display prefs id.</value>
-        public override Guid DisplayPreferencesId
+        protected override Guid DisplayPreferencesId
         {
             get
             {

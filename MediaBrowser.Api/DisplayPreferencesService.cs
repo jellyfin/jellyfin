@@ -12,7 +12,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class UpdateDisplayPreferences
     /// </summary>
-    [Route("/Users/{UserId}/DisplayPreferences/{Id}", "POST")]
+    [Route("/DisplayPreferences/{DisplayPreferencesId}", "POST")]
     [Api(("Updates a user's display preferences for an item"))]
     public class UpdateDisplayPreferences : DisplayPreferences, IReturnVoid
     {
@@ -20,17 +20,14 @@ namespace MediaBrowser.Api
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public Guid Id { get; set; }
+        [ApiMember(Name = "DisplayPreferencesId", Description = "DisplayPreferences Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public Guid DisplayPreferencesId { get; set; }
     }
 
-    [Route("/Users/{UserId}/DisplayPreferences/{Id}", "GET")]
+    [Route("/DisplayPreferences/{Id}", "GET")]
     [Api(("Gets a user's display preferences for an item"))]
     public class GetDisplayPreferences : IReturn<DisplayPreferences>
     {
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public Guid UserId { get; set; }
-        
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
@@ -70,7 +67,7 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public object Get(GetDisplayPreferences request)
         {
-            var task = _userManager.GetDisplayPreferences(request.UserId, request.Id);
+            var task = _userManager.GetDisplayPreferences(request.Id);
 
             return ToOptimizedResult(task.Result);
         }
@@ -84,15 +81,12 @@ namespace MediaBrowser.Api
             // We need to parse this manually because we told service stack not to with IRequiresRequestStream
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
             var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
-            var userId = new Guid(pathInfo.GetArgumentValue<string>(1));
-            var displayPreferencesId = new Guid(pathInfo.GetArgumentValue<string>(3));
-
-            var user = _userManager.GetUserById(userId);
+            var displayPreferencesId = new Guid(pathInfo.GetArgumentValue<string>(1));
 
             // Serialize to json and then back so that the core doesn't see the request dto type
             var displayPreferences = _jsonSerializer.DeserializeFromString<DisplayPreferences>(_jsonSerializer.SerializeToString(request));
 
-            var task = _userManager.SaveDisplayPreferences(user.Id, displayPreferencesId, displayPreferences, CancellationToken.None);
+            var task = _userManager.SaveDisplayPreferences(displayPreferences, CancellationToken.None);
 
             Task.WaitAll(task);
         }

@@ -65,13 +65,23 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The display prefs id.</value>
         [IgnoreDataMember]
-        public virtual Guid DisplayPreferencesId
+        protected virtual Guid DisplayPreferencesId
         {
             get
             {
                 var thisType = GetType();
                 return thisType == typeof(Folder) ? Id : thisType.FullName.GetMD5();
             }
+        }
+
+        /// <summary>
+        /// Gets the display preferences id.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <returns>Guid.</returns>
+        public Guid GetDisplayPreferencesId(Guid userId)
+        {
+            return (userId + DisplayPreferencesId.ToString()).GetMD5();
         }
 
         #region Indexing
