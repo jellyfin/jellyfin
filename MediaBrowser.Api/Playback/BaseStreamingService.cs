@@ -362,7 +362,7 @@ namespace MediaBrowser.Api.Playback
                 outputSizeParam = "," + outputSizeParam.Substring(outputSizeParam.IndexOf("scale", StringComparison.OrdinalIgnoreCase));
             }
 
-            return string.Format(" -filter_complex \"[0:{0}]format=yuva444p,lut=u=128:v=128:y=gammaval(.3)[sub] ; [0:0] [sub] overlay{1}\"", state.SubtitleStream.Index, outputSizeParam);
+            return string.Format(" -filter_complex \"[0:{0}]format=yuva444p,lut=u=128:v=128:y=gammaval(.3)[sub] ; [0:{1}] [sub] overlay{2}\"", state.SubtitleStream.Index, state.VideoStream.Index, outputSizeParam);
         }
 
         /// <summary>
