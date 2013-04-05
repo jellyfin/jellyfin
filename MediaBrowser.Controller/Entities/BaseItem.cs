@@ -69,7 +69,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The primary image path.</value>
         [IgnoreDataMember]
-        public virtual string PrimaryImagePath
+        public string PrimaryImagePath
         {
             get { return GetImage(ImageType.Primary); }
             set { SetImage(ImageType.Primary, value); }
@@ -79,7 +79,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the images.
         /// </summary>
         /// <value>The images.</value>
-        public Dictionary<string, string> Images { get; set; }
+        public virtual Dictionary<string, string> Images { get; set; }
 
         /// <summary>
         /// Gets or sets the date created.
@@ -547,6 +547,12 @@ namespace MediaBrowser.Controller.Entities
         public virtual List<string> Studios { get; set; }
 
         /// <summary>
+        /// Gets or sets the publishers.
+        /// </summary>
+        /// <value>The publishers.</value>
+        public virtual List<string> Publishers { get; set; }
+        
+        /// <summary>
         /// Gets or sets the genres.
         /// </summary>
         /// <value>The genres.</value>
@@ -996,7 +1002,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("name");
             }
 
             if (Studios == null)
@@ -1011,6 +1017,47 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
+        /// Adds the publishers.
+        /// </summary>
+        /// <param name="publishers">The publishers.</param>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        public void AddPublishers(IEnumerable<string> publishers)
+        {
+            if (publishers == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            foreach (var name in publishers)
+            {
+                AddPublisher(name);
+            }
+        }
+
+        /// <summary>
+        /// Adds the publisher.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <exception cref="System.ArgumentNullException">name</exception>
+        public void AddPublisher(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentNullException("name");
+            }
+
+            if (Publishers == null)
+            {
+                Publishers = new List<string>();
+            }
+
+            if (!Publishers.Contains(name, StringComparer.OrdinalIgnoreCase))
+            {
+                Publishers.Add(name);
+            }
+        }
+
+        /// <summary>
         /// Adds a tagline to the item
         /// </summary>
         /// <param name="name">The name.</param>
@@ -1019,7 +1066,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("name");
             }
 
             if (Taglines == null)
@@ -1042,7 +1089,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (string.IsNullOrWhiteSpace(url))
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("url");
             }
 
             if (TrailerUrls == null)
