@@ -432,13 +432,6 @@ namespace MediaBrowser.Model.Dto
         /// <value>The overview HTML.</value>
         [ProtoMember(70)]
         public string OverviewHtml { get; set; }
-
-        /// <summary>
-        /// Gets or sets the publishers.
-        /// </summary>
-        /// <value>The publishers.</value>
-        [ProtoMember(71)]
-        public List<string> Publishers { get; set; }
         
         /// <summary>
         /// Gets a value indicating whether this instance can resume.
