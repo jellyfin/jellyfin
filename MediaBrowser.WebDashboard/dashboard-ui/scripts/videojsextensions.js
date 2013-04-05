@@ -6,7 +6,7 @@ var videoJSextension = {
 	 a mandatory jQuery object of the <video> element we are setting up the
 	 videojs video for.
 	 */
-	setup_video: function ($video, item) {
+	setup_video: function ($video, item, defaults) {
 
 		// Add the stop button.
 		_V_.merge(_V_.ControlBar.prototype.options.components, { StopButton: {} });
@@ -18,6 +18,10 @@ var videoJSextension = {
 			vjs_source = {},
 			vjs_chapters = [], // This will be an array of arrays of objects, see the video.js api documentation for myPlayer.src()
 			vjs_chapter = {};
+			vjs_languages = [], // This will be an array of arrays of objects, see the video.js api documentation for myPlayer.src()
+			vjs_language = {};
+			vjs_subtitles = [], // This will be an array of arrays of objects, see the video.js api documentation for myPlayer.src()
+			vjs_subtitle = {};
 
 		// Determine this video's default res (it might not have the globally determined default available)
 		default_res = available_res[0];
@@ -67,53 +71,63 @@ var videoJSextension = {
 		}
 
 
-		//chceck if langauges exist and add language selector
-		if (item.Chapters && item.Chapters.length) {
-			// Put together the videojs source arrays for each available chapter
-			$.each(item.Chapters, function (i, chapter) {
+		//chceck if langauges exist and add language selector also subtitles
+		if (item.MediaStreams && item.MediaStreams.length) {
+			var subCount = 1;
+			var langCount = 1;
+			var defaultLanguageIndex = defaults.languageIndex || 1;
+			var defaultSubtitleIndex = defaults.subtitleIndex || 0;
 
-				vjs_chapters[i] = [];
+			// Put together the videojs source arrays for each available language and subtitle
+			$.each(item.MediaStreams, function (i, stream) {
+				var language = stream.Language || '';
 
-				vjs_chapter = {};
-				vjs_chapter.Name = chapter.Name + " (" + ticks_to_human(chapter.StartPositionTicks) + ")";
-				vjs_chapter.StartPositionTicks = chapter.StartPositionTicks;
+				if (stream.Type == "Audio") {
+					vjs_languages[i] = [];
+					vjs_language = {};
 
-				vjs_chapters[i].push(vjs_chapter);
+					vjs_language.Name = langCount + ": " + language + " " + stream.Codec + " " + stream.Channels + "ch";
+					vjs_language.index = i;
 
+					vjs_languages[i].push(vjs_language);
+
+					langCount++;
+				}else if (stream.Type == "Subtitle") {
+					vjs_subtitles[i] = [];
+					vjs_subtitle = {};
+
+					vjs_subtitle.Name = subCount + ": " + language;
+					vjs_subtitle.index = i;
+
+					vjs_subtitles[i].push(vjs_subtitle);
+
+					subCount++;
+				}
 			});
 
-			_V_.LanguageSelectorButton = _V_.LanguageSelector.extend({
-				buttonText: '',
-				Chapters: vjs_chapters
-			});
+			if (vjs_languages.length) {
 
-			// Add the chapter selector button.
-			_V_.merge(_V_.ControlBar.prototype.options.components, { LanguageSelectorButton: {} });
-		}
+				_V_.LanguageSelectorButton = _V_.LanguageSelector.extend({
+					buttonText: vjs_languages[defaultLanguageIndex][0].Name,
+					Languages: vjs_languages
+				});
 
+				// Add the language selector button.
+				_V_.merge(_V_.ControlBar.prototype.options.components, { LanguageSelectorButton: {} });
+			}
 
-		//chceck if subtitles exist and add subtitle selector
-		if (item.Chapters && item.Chapters.length) {
-			// Put together the videojs source arrays for each available chapter
-			$.each(item.Chapters, function (i, chapter) {
+			if (vjs_subtitles.length) {
+				vjs_subtitles[0] = [];
+				vjs_subtitles[0].push({Name: "Off", index: ''});
+				_V_.SubtitleSelectorButton = _V_.SubtitleSelector.extend({
+					buttonText: vjs_subtitles[defaultSubtitleIndex][0].Name,
+					Subtitles: vjs_subtitles
+				});
 
-				vjs_chapters[i] = [];
+				// Add the subtitle selector button.
+				_V_.merge(_V_.ControlBar.prototype.options.components, { SubtitleSelectorButton: {} });
+			}
 
-				vjs_chapter = {};
-				vjs_chapter.Name = chapter.Name + " (" + ticks_to_human(chapter.StartPositionTicks) + ")";
-				vjs_chapter.StartPositionTicks = chapter.StartPositionTicks;
-
-				vjs_chapters[i].push(vjs_chapter);
-
-			});
-
-			_V_.SubtitleSelectorButton = _V_.SubtitleSelector.extend({
-				buttonText: '',
-				Chapters: vjs_chapters
-			});
-
-			// Add the chapter selector button.
-			_V_.merge(_V_.ControlBar.prototype.options.components, { SubtitleSelectorButton: {} });
 		}
 
 	}
@@ -292,6 +306,7 @@ _V_.ResolutionMenuItem = _V_.MenuItem.extend({
 				this.play();
 			});
 		} else {
+			newSrc += "&StartTimeTicks=0";
 			this.player.src(newSrc).one('loadedmetadata', function () {
 				this.currentTime(current_time);
 				this.play();
@@ -548,6 +563,9 @@ _V_.SubtitleSelector = _V_.Button.extend({
 
 		this._super(player, options);
 
+		// Save the starting subtitle track as a property of the player object
+		player.options.currentSubtitle = this.buttonText;
+
 		this.menu = this.createMenu();
 
 		if (this.items.length === 0) {
@@ -598,11 +616,12 @@ _V_.SubtitleSelector = _V_.Button.extend({
 		var items = [];
 
 		this.each(this.Subtitles, function (subtitle) {
-
-			items.push(new _V_.SubtitleMenuItem(this.player, {
-				label: subtitle[0].Name,
-				src: subtitle
-			}));
+			if (subtitle && subtitle.length) {
+				items.push(new _V_.SubtitleMenuItem(this.player, {
+					label: subtitle[0].Name,
+					src: subtitle
+				}));
+			}
 		});
 
 		return items;
@@ -654,7 +673,7 @@ _V_.SubtitleMenuItem = _V_.MenuItem.extend({
 	init: function (player, options) {
 
 		// Modify options for parent MenuItem class's init.
-		//options.selected = ( options.label === player.options.currentResolution );
+		options.selected = ( options.label === player.options.currentSubtitle );
 		this._super(player, options);
 
 		this.player.addEvent('changeSubtitle', _V_.proxy(this, this.update));
@@ -668,17 +687,17 @@ _V_.SubtitleMenuItem = _V_.MenuItem.extend({
 
 		var current_time = this.player.currentTime();
 
-		// Set the button text to the newly chosen quality
+		// Set the button text to the newly chosen subtitle
 		jQuery(this.player.controlBar.el).find('.vjs-quality-text').html(this.options.label);
 
 		// Change the source and make sure we don't start the video over
 		var currentSrc = this.player.tag.src;
 		var src = parse_src_url(currentSrc);
 
-
 		var newSrc = "/mediabrowser/" + src.Type + "/" + src.item_id + "/stream." + src.stream + "?audioChannels=" + src.audioChannels + "&audioBitrate=" + src.audioBitrate +
 			"&videoBitrate=" + src.videoBitrate + "&maxWidth=" + src.maxWidth + "&maxHeight=" + src.maxHeight +
-			"&videoCodec=" + src.videoCodec + "&audioCodec=" + src.audioCodec;
+			"&videoCodec=" + src.videoCodec + "&audioCodec=" + src.audioCodec +
+			"&AudioStreamIndex=" + src.AudioStreamIndex + "&SubtitleStreamIndex=" + this.options.src[0].index;
 
 		if (this.player.duration() == "Infinity") {
 			if (currentSrc.indexOf("StartTimeTicks") >= 0) {
@@ -694,6 +713,7 @@ _V_.SubtitleMenuItem = _V_.MenuItem.extend({
 				this.play();
 			});
 		} else {
+			newSrc += "&StartTimeTicks=0";
 			this.player.src(newSrc).one('loadedmetadata', function () {
 				this.currentTime(current_time);
 				this.play();
@@ -732,6 +752,9 @@ _V_.LanguageSelector = _V_.Button.extend({
 	init: function (player, options) {
 
 		this._super(player, options);
+
+		// Save the starting language as a property of the player object
+		player.options.currentLanguage = this.buttonText;
 
 		this.menu = this.createMenu();
 
@@ -783,11 +806,12 @@ _V_.LanguageSelector = _V_.Button.extend({
 		var items = [];
 
 		this.each(this.Languages, function (language) {
-
-			items.push(new _V_.LanguageMenuItem(this.player, {
-				label: language[0].Name,
-				src: language
-			}));
+			if (language && language.length) {
+				items.push(new _V_.LanguageMenuItem(this.player, {
+					label: language[0].Name,
+					src: language
+				}));
+			}
 		});
 
 		return items;
@@ -839,20 +863,26 @@ _V_.LanguageMenuItem = _V_.MenuItem.extend({
 	init: function (player, options) {
 
 		// Modify options for parent MenuItem class's init.
-		//options.selected = ( options.label === player.options.currentResolution );
+		options.selected = ( options.label === player.options.currentLanguage );
 		this._super(player, options);
 
 		this.player.addEvent('changeLanguage', _V_.proxy(this, this.update));
 	},
 
 	onClick: function () {
-		// Check that we are changing to a new subtitle (not the one we are already on)
+
+		// Check that we are changing to a new language (not the one we are already on)
 		if (this.options.label === this.player.options.currentLanguage)
 			return;
 
+		// Change the source and make sure we don't start the video over
+		var currentSrc = this.player.tag.src;
+		var src = parse_src_url(currentSrc);
+
 		var newSrc = "/mediabrowser/" + src.Type + "/" + src.item_id + "/stream." + src.stream + "?audioChannels=" + src.audioChannels + "&audioBitrate=" + src.audioBitrate +
 			"&videoBitrate=" + src.videoBitrate + "&maxWidth=" + src.maxWidth + "&maxHeight=" + src.maxHeight +
-			"&videoCodec=" + src.videoCodec + "&audioCodec=" + src.audioCodec;
+			"&videoCodec=" + src.videoCodec + "&audioCodec=" + src.audioCodec +
+			"&AudioStreamIndex=" + this.options.src[0].index + "&SubtitleStreamIndex=" + src.SubtitleStreamIndex;
 
 		if (this.player.duration() == "Infinity") {
 			if (currentSrc.indexOf("StartTimeTicks") >= 0) {
@@ -868,6 +898,7 @@ _V_.LanguageMenuItem = _V_.MenuItem.extend({
 				this.play();
 			});
 		} else {
+			newSrc += "&StartTimeTicks=0";
 			this.player.src(newSrc).one('loadedmetadata', function () {
 				this.currentTime(current_time);
 				this.play();
