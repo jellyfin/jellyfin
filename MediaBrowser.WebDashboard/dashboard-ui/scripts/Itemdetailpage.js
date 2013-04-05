@@ -89,6 +89,7 @@
         }
 
         ItemDetailPage.renderFav(item);
+	    LibraryBrowser.renderLinks(item);
 
         Dashboard.hideLoadingMsg();
     },

@@ -48,6 +48,7 @@
         }
 
         BoxsetPage.renderFav(item);
+	    LibraryBrowser.renderLinks(item);
 
         Dashboard.hideLoadingMsg();
     },
