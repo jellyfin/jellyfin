@@ -200,9 +200,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="MediaInfo\ffmpeg20130327.zip" />
     <EmbeddedResource Include="MediaInfo\fonts\ARIALUNI.TTF" />
     <EmbeddedResource Include="MediaInfo\fonts\fonts.conf" />
+    <EmbeddedResource Include="MediaInfo\ffmpeg20130405.zip" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
