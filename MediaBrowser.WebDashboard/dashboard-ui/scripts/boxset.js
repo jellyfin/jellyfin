@@ -1,350 +1,350 @@
 ﻿var BoxsetPage = {
 
-	onPageShow: function () {
+    onPageShow: function () {
 
-		BoxsetPage.reload();
-	},
+        BoxsetPage.reload();
+    },
 
-	onPageHide: function () {
+    onPageHide: function () {
 
-		BoxsetPage.item = null;
-	},
+        BoxsetPage.item = null;
+    },
 
-	reload: function () {
-		var id = getParameterByName('id');
+    reload: function () {
+        var id = getParameterByName('id');
 
-		Dashboard.showLoadingMsg();
+        Dashboard.showLoadingMsg();
 
-		ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(BoxsetPage.renderItem);
-	},
+        ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(BoxsetPage.renderItem);
+    },
 
-	renderItem: function (item) {
+    renderItem: function (item) {
 
-		BoxsetPage.item = item;
+        BoxsetPage.item = item;
 
-		var page = $.mobile.activePage;
+        var page = $.mobile.activePage;
 
-		BoxsetPage.item = item;
+        BoxsetPage.item = item;
 
-		var name = item.Name;
+        var name = item.Name;
 
-		if (item.IndexNumber != null) {
-			name = item.IndexNumber + " - " + name;
-		}
-		if (item.ParentIndexNumber != null) {
-			name = item.ParentIndexNumber + "." + name;
-		}
+        if (item.IndexNumber != null) {
+            name = item.IndexNumber + " - " + name;
+        }
+        if (item.ParentIndexNumber != null) {
+            name = item.ParentIndexNumber + "." + name;
+        }
 
-		Dashboard.setPageTitle(name);
+        Dashboard.setPageTitle(name);
 
-		BoxsetPage.renderImage(item);
-		BoxsetPage.renderOverviewBlock(item);
+        BoxsetPage.renderImage(item);
+        BoxsetPage.renderOverviewBlock(item);
 
-		$('#itemName', page).html(name);
+        $('#itemName', page).html(name);
 
-		if (item.SeriesName || item.Album) {
-			var series_name = item.SeriesName || item.Album;
-			$('#seriesName', page).html(series_name).show();
-		}
+        if (item.SeriesName || item.Album) {
+            var series_name = item.SeriesName || item.Album;
+            $('#seriesName', page).html(series_name).show();
+        }
 
-		BoxsetPage.renderFav(item);
+        BoxsetPage.renderFav(item);
 
-		Dashboard.hideLoadingMsg();
-	},
+        Dashboard.hideLoadingMsg();
+    },
 
-	renderImage: function (item) {
+    renderImage: function (item) {
 
-		var page = $.mobile.activePage;
+        var page = $.mobile.activePage;
 
-		var imageTags = item.ImageTags || {};
+        var imageTags = item.ImageTags || {};
 
-		var html = '';
+        var html = '';
 
-		var url;
-		var useBackgroundColor;
+        var url;
+        var useBackgroundColor;
 
-		if (imageTags.Primary) {
+        if (imageTags.Primary) {
 
-			url = ApiClient.getImageUrl(item.Id, {
-				type: "Primary",
-				width: 800,
-				tag: item.ImageTags.Primary
-			});
-		}
-		else if (item.BackdropImageTags && item.BackdropImageTags.length) {
+            url = ApiClient.getImageUrl(item.Id, {
+                type: "Primary",
+                width: 800,
+                tag: item.ImageTags.Primary
+            });
+        }
+        else if (item.BackdropImageTags && item.BackdropImageTags.length) {
 
-			url = ApiClient.getImageUrl(item.Id, {
-				type: "Backdrop",
-				width: 800,
-				tag: item.BackdropImageTags[0]
-			});
-		}
-		else if (imageTags.Thumb) {
+            url = ApiClient.getImageUrl(item.Id, {
+                type: "Backdrop",
+                width: 800,
+                tag: item.BackdropImageTags[0]
+            });
+        }
+        else if (imageTags.Thumb) {
 
-			url = ApiClient.getImageUrl(item.Id, {
-				type: "Thumb",
-				width: 800,
-				tag: item.ImageTags.Thumb
-			});
-		}
-		else if (imageTags.Disc) {
+            url = ApiClient.getImageUrl(item.Id, {
+                type: "Thumb",
+                width: 800,
+                tag: item.ImageTags.Thumb
+            });
+        }
+        else if (imageTags.Disc) {
 
-			url = ApiClient.getImageUrl(item.Id, {
-				type: "Disc",
-				width: 800,
-				tag: item.ImageTags.Disc
-			});
-		}
-		else if (item.MediaType == "Audio") {
-			url = "css/images/items/detail/audio.png";
-			useBackgroundColor = true;
-		}
-		else if (item.MediaType == "Game") {
-			url = "css/images/items/detail/game.png";
-			useBackgroundColor = true;
-		}
-		else {
-			url = "css/images/items/detail/video.png";
-			useBackgroundColor = true;
-		}
+            url = ApiClient.getImageUrl(item.Id, {
+                type: "Disc",
+                width: 800,
+                tag: item.ImageTags.Disc
+            });
+        }
+        else if (item.MediaType == "Audio") {
+            url = "css/images/items/detail/audio.png";
+            useBackgroundColor = true;
+        }
+        else if (item.MediaType == "Game") {
+            url = "css/images/items/detail/game.png";
+            useBackgroundColor = true;
+        }
+        else {
+            url = "css/images/items/detail/video.png";
+            useBackgroundColor = true;
+        }
 
-		if (url) {
+        if (url) {
 
-			var style = useBackgroundColor ? "background-color:" + LibraryBrowser.getMetroColor(item.Id) + ";" : "";
+            var style = useBackgroundColor ? "background-color:" + LibraryBrowser.getMetroColor(item.Id) + ";" : "";
 
-			html += "<img class='itemDetailImage' src='" + url + "' style='" + style + "' />";
-		}
+            html += "<img class='itemDetailImage' src='" + url + "' style='" + style + "' />";
+        }
 
-		$('#itemImage', page).html(html);
-	},
+        $('#itemImage', page).html(html);
+    },
 
-	renderOverviewBlock: function (item) {
+    renderOverviewBlock: function (item) {
 
-		var page = $.mobile.activePage;
+        var page = $.mobile.activePage;
 
-		if (item.Taglines && item.Taglines.length) {
-			$('#itemTagline', page).html(item.Taglines[0]).show();
-		} else {
-			$('#itemTagline', page).hide();
-		}
+        if (item.Taglines && item.Taglines.length) {
+            $('#itemTagline', page).html(item.Taglines[0]).show();
+        } else {
+            $('#itemTagline', page).hide();
+        }
 
-		if (item.Overview || item.OverviewHtml) {
-			var overview = item.OverviewHtml || item.Overview;
+        if (item.Overview || item.OverviewHtml) {
+            var overview = item.OverviewHtml || item.Overview;
 
-			$('#itemOverview', page).html(overview).show();
-			$('#itemOverview a').each(function () {
-				$(this).attr("target", "_blank");
-			});
-		} else {
-			$('#itemOverview', page).hide();
-		}
+            $('#itemOverview', page).html(overview).show();
+            $('#itemOverview a').each(function () {
+                $(this).attr("target", "_blank");
+            });
+        } else {
+            $('#itemOverview', page).hide();
+        }
 
-		if (item.CommunityRating) {
-			$('#itemCommunityRating', page).html(BoxsetPage.getStarRating(item)).show().attr('title', item.CommunityRating);
-		} else {
-			$('#itemCommunityRating', page).hide();
-		}
+        if (item.CommunityRating) {
+            $('#itemCommunityRating', page).html(BoxsetPage.getStarRating(item)).show().attr('title', item.CommunityRating);
+        } else {
+            $('#itemCommunityRating', page).hide();
+        }
 
-		var miscInfo = [];
+        var miscInfo = [];
 
-		if (item.ProductionYear) {
-			miscInfo.push(item.ProductionYear);
-		}
+        if (item.ProductionYear) {
+            miscInfo.push(item.ProductionYear);
+        }
 
-		if (item.OfficialRating) {
-			miscInfo.push(item.OfficialRating);
-		}
+        if (item.OfficialRating) {
+            miscInfo.push(item.OfficialRating);
+        }
 
-		if (item.RunTimeTicks) {
+        if (item.RunTimeTicks) {
 
-			var minutes = item.RunTimeTicks / 600000000;
+            var minutes = item.RunTimeTicks / 600000000;
 
-			minutes = minutes || 1;
+            minutes = minutes || 1;
 
-			miscInfo.push(parseInt(minutes) + "min");
-		}
+            miscInfo.push(parseInt(minutes) + "min");
+        }
 
-		if (item.DisplayMediaType) {
-			miscInfo.push(item.DisplayMediaType);
-		}
+        if (item.DisplayMediaType) {
+            miscInfo.push(item.DisplayMediaType);
+        }
 
-		if (item.VideoFormat && item.VideoFormat !== 'Standard') {
-			miscInfo.push(item.VideoFormat);
-		}
+        if (item.VideoFormat && item.VideoFormat !== 'Standard') {
+            miscInfo.push(item.VideoFormat);
+        }
 
-		$('#itemMiscInfo', page).html(miscInfo.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'));
+        $('#itemMiscInfo', page).html(miscInfo.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'));
 
-		BoxsetPage.renderGenres(item);
-		BoxsetPage.renderStudios(item);
-	},
+        BoxsetPage.renderGenres(item);
+        BoxsetPage.renderStudios(item);
+    },
 
-	renderGenres: function (item) {
+    renderGenres: function (item) {
 
-		var page = $.mobile.activePage;
+        var page = $.mobile.activePage;
 
-		if (item.Genres && item.Genres.length) {
-			var elem = $('#itemGenres', page).show();
+        if (item.Genres && item.Genres.length) {
+            var elem = $('#itemGenres', page).show();
 
-			var html = 'Genres:&nbsp;&nbsp;';
+            var html = 'Genres:&nbsp;&nbsp;';
 
-			for (var i = 0, length = item.Genres.length; i < length; i++) {
+            for (var i = 0, length = item.Genres.length; i < length; i++) {
 
-				if (i > 0) {
-					html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
-				}
+                if (i > 0) {
+                    html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
+                }
 
-				html += '<a href="itembynamedetails.html?genre=' + item.Genres[i] + '">' + item.Genres[i] + '</a>';
-			}
+                html += '<a href="itembynamedetails.html?genre=' + item.Genres[i] + '">' + item.Genres[i] + '</a>';
+            }
 
-			elem.html(html).trigger('create');
+            elem.html(html).trigger('create');
 
 
-		} else {
-			$('#itemGenres', page).hide();
-		}
-	},
+        } else {
+            $('#itemGenres', page).hide();
+        }
+    },
 
-	renderStudios: function (item) {
+    renderStudios: function (item) {
 
-		var page = $.mobile.activePage;
+        var page = $.mobile.activePage;
 
-		if (item.Studios && item.Studios.length) {
-			var elem = $('#itemStudios', page).show();
+        if (item.Studios && item.Studios.length) {
+            var elem = $('#itemStudios', page).show();
 
-			var html = 'Studios:&nbsp;&nbsp;';
+            var html = 'Studios:&nbsp;&nbsp;';
 
-			for (var i = 0, length = item.Studios.length; i < length; i++) {
+            for (var i = 0, length = item.Studios.length; i < length; i++) {
 
-				if (i > 0) {
-					html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
-				}
+                if (i > 0) {
+                    html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
+                }
 
-				html += '<a href="itembynamedetails.html?studio=' + item.Studios[i] + '">' + item.Studios[i] + '</a>';
-			}
+                html += '<a href="itembynamedetails.html?studio=' + item.Studios[i] + '">' + item.Studios[i] + '</a>';
+            }
 
-			elem.html(html).trigger('create');
+            elem.html(html).trigger('create');
 
 
-		} else {
-			$('#itemStudios', page).hide();
-		}
-	},
+        } else {
+            $('#itemStudios', page).hide();
+        }
+    },
 
-	getStarRating: function (item) {
-		var rating = item.CommunityRating;
+    getStarRating: function (item) {
+        var rating = item.CommunityRating;
 
-		var html = "";
-		for (var i = 1; i <= 10; i++) {
-			if (rating < i - 1) {
-				html += "<div class='starRating emptyStarRating'></div>";
-			}
-			else if (rating < i) {
-				html += "<div class='starRating halfStarRating'></div>";
-			}
-			else {
-				html += "<div class='starRating'></div>";
-			}
-		}
+        var html = "";
+        for (var i = 1; i <= 10; i++) {
+            if (rating < i - 1) {
+                html += "<div class='starRating emptyStarRating'></div>";
+            }
+            else if (rating < i) {
+                html += "<div class='starRating halfStarRating'></div>";
+            }
+            else {
+                html += "<div class='starRating'></div>";
+            }
+        }
 
-		return html;
-	},
+        return html;
+    },
 
-	renderFav: function (item) {
-		var html = '';
-		var page = $.mobile.activePage;
+    renderFav: function (item) {
+        var html = '';
+        var page = $.mobile.activePage;
 
-		var userData = item.UserData || {};
+        var userData = item.UserData || {};
 
-		if (typeof userData.Likes == "undefined") {
-			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="BoxsetPage.setDislike();" /></div>';
-			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="BoxsetPage.setLike();" /></div>';
-		} else if (userData.Likes) {
-			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="BoxsetPage.setDislike();" /></div>';
-			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_up_on.png" alt="Liked" title="Like" onclick="BoxsetPage.clearLike();" /></div>';
-		} else {
-			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" onclick="BoxsetPage.clearLike();" /></div>';
-			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="BoxsetPage.setLike();" /></div>';
-		}
+	    //played/unplayed
+	    if (userData.Played) {
+		    html += '<img class="imgUserItemRating" src="css/images/userdata/played.png" alt="Played" title="Played" onclick="BoxsetPage.setPlayed();" />';
+	    } else {
+		    html += '<img class="imgUserItemRating" src="css/images/userdata/unplayed.png" alt="Unplayed" title="Unplayed" onclick="BoxsetPage.setPlayed();" />';
+	    }
 
-		if (userData.IsFavorite) {
-			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" onclick="BoxsetPage.setFavorite();" /></div>';
-		} else {
-			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" onclick="BoxsetPage.setFavorite();" /></div>';
-		}
+	    if (typeof userData.Likes == "undefined") {
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="BoxsetPage.setDislike();" />';
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="BoxsetPage.setLike();" />';
+        } else if (userData.Likes) {
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="BoxsetPage.setDislike();" />';
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_on.png" alt="Liked" title="Like" onclick="BoxsetPage.clearLike();" />';
+        } else {
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" onclick="BoxsetPage.clearLike();" />';
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="BoxsetPage.setLike();" />';
+        }
 
-		//played/unplayed
-		if (userData.Played) {
-			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/played.png" alt="Played" title="Played" onclick="BoxsetPage.setPlayed();" /></div>';
-		} else {
-			html += '<div class="userItemRating"><img class="imgUserItemRating" src="css/images/userdata/unplayed.png" alt="Unplayed" title="Unplayed" onclick="BoxsetPage.setPlayed();" /></div>';
-		}
+        if (userData.IsFavorite) {
+            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" onclick="BoxsetPage.setFavorite();" />';
+        } else {
+            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" onclick="BoxsetPage.setFavorite();" />';
+        }
 
-		$('#itemRatings', page).html(html);
-	},
+        $('#itemRatings', page).html(html);
+    },
 
-	setFavorite: function () {
-		var item = BoxsetPage.item;
+    setFavorite: function () {
+        var item = BoxsetPage.item;
 
-		item.UserData = item.UserData || {};
+        item.UserData = item.UserData || {};
 
-		var setting = !item.UserData.IsFavorite;
-		item.UserData.IsFavorite = setting;
+        var setting = !item.UserData.IsFavorite;
+        item.UserData.IsFavorite = setting;
 
-		ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), item.Id, setting);
+        ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), item.Id, setting);
 
-		BoxsetPage.renderFav(item);
-	},
+        BoxsetPage.renderFav(item);
+    },
 
-	setLike: function () {
+    setLike: function () {
 
-		var item = BoxsetPage.item;
+        var item = BoxsetPage.item;
 
-		item.UserData = item.UserData || {};
+        item.UserData = item.UserData || {};
 
-		item.UserData.Likes = true;
+        item.UserData.Likes = true;
 
-		ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), item.Id, true);
+        ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), item.Id, true);
 
-		BoxsetPage.renderFav(item);
-	},
+        BoxsetPage.renderFav(item);
+    },
 
-	clearLike: function () {
+    clearLike: function () {
 
-		var item = BoxsetPage.item;
+        var item = BoxsetPage.item;
 
-		item.UserData = item.UserData || {};
+        item.UserData = item.UserData || {};
 
-		item.UserData.Likes = undefined;
+        item.UserData.Likes = undefined;
 
-		ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), item.Id);
+        ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), item.Id);
 
-		BoxsetPage.renderFav(item);
-	},
+        BoxsetPage.renderFav(item);
+    },
 
-	setDislike: function () {
-		var item = BoxsetPage.item;
+    setDislike: function () {
+        var item = BoxsetPage.item;
 
-		item.UserData = item.UserData || {};
+        item.UserData = item.UserData || {};
 
-		item.UserData.Likes = false;
+        item.UserData.Likes = false;
 
-		ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), item.Id, false);
+        ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), item.Id, false);
 
-		BoxsetPage.renderFav(item);
-	},
+        BoxsetPage.renderFav(item);
+    },
 
-	setPlayed: function () {
-		var item = BoxsetPage.item;
+    setPlayed: function () {
+        var item = BoxsetPage.item;
 
-		item.UserData = item.UserData || {};
+        item.UserData = item.UserData || {};
 
-		var setting = !item.UserData.Played;
-		item.UserData.Played = setting;
+        var setting = !item.UserData.Played;
+        item.UserData.Played = setting;
 
-		ApiClient.updatePlayedStatus(Dashboard.getCurrentUserId(), item.Id, setting);
+        ApiClient.updatePlayedStatus(Dashboard.getCurrentUserId(), item.Id, setting);
 
-		BoxsetPage.renderFav(item);
-	}
+        BoxsetPage.renderFav(item);
+    }
 
 };
 
