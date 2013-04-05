@@ -75,7 +75,7 @@ var videoJSextension = {
 		if (item.MediaStreams && item.MediaStreams.length) {
 			var subCount = 1;
 			var langCount = 1;
-			var defaultLanguageIndex = defaults.languageIndex || 1;
+			var defaultLanguageIndex = defaults.languageIndex || null;
 			var defaultSubtitleIndex = defaults.subtitleIndex || 0;
 
 			// Put together the videojs source arrays for each available language and subtitle
@@ -90,6 +90,8 @@ var videoJSextension = {
 					vjs_language.index = i;
 
 					vjs_languages[i].push(vjs_language);
+
+					if (!defaultLanguageIndex) defaultLanguageIndex = stream.Index;
 
 					langCount++;
 				}else if (stream.Type == "Subtitle") {
