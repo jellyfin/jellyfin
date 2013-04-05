@@ -138,7 +138,7 @@ namespace MediaBrowser.Controller.Providers.Music
         protected virtual async Task FetchData(BaseItem item, CancellationToken cancellationToken)
         {
             var id = item.GetProviderId(MetadataProviders.Musicbrainz) ?? await FindId(item, cancellationToken).ConfigureAwait(false);
-            if (id != null)
+            if (!string.IsNullOrWhiteSpace(id))
             {
                 Logger.Debug("LastfmProvider - getting info for {0}", item.Name);
 
