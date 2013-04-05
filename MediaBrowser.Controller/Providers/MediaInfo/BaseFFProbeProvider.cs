@@ -214,6 +214,10 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             {
                 stream.Type = MediaStreamType.Subtitle;
             }
+            else if (streamInfo.codec_type.Equals("data", StringComparison.OrdinalIgnoreCase))
+            {
+                stream.Type = MediaStreamType.Data;
+            }
             else
             {
                 stream.Type = MediaStreamType.Video;
