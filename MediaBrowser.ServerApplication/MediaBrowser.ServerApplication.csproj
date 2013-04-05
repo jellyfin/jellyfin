@@ -436,6 +436,6 @@ del "$(SolutionDir)..\Deploy\MBServer.zip"
     <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
       <Output TaskParameter="Assemblies" ItemName="CurrentAssembly" />
     </GetAssemblyIdentity>
-    <Exec Command="copy $(SolutionDir)..\Deploy\MBServer.zip  $(SolutionDir)..\Deploy\MBServer_%(CurrentAssembly.Version).zip /y" Condition="'$(ConfigurationName)' == 'Release'" />
+    <Exec Command="copy &quot;$(SolutionDir)..\Deploy\MBServer.zip&quot;  &quot;$(SolutionDir)..\Deploy\MBServer_%(CurrentAssembly.Version).zip&quot; /y" Condition="'$(ConfigurationName)' == 'Release'" />
   </Target>
 </Project>
