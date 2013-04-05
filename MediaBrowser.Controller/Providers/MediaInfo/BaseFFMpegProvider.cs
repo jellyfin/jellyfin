@@ -2,9 +2,9 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Providers.MediaInfo
 {

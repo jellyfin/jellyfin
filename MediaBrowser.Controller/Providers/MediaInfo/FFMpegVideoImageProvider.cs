@@ -13,7 +13,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     /// <summary>
     /// Uses ffmpeg to create video images
     /// </summary>
-    public class FfMpegVideoImageProvider : BaseFFMpegImageProvider<Video>
+    public class FfMpegVideoImageProvider : BaseFFMpegProvider<Video>
     {
         /// <summary>
         /// The _iso manager
@@ -30,6 +30,15 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             : base(logManager, configurationManager)
         {
             _isoManager = isoManager;
+        }        
+        
+        /// <summary>
+        /// Gets the priority.
+        /// </summary>
+        /// <value>The priority.</value>
+        public override MetadataProviderPriority Priority
+        {
+            get { return MetadataProviderPriority.Last; }
         }
 
         /// <summary>
@@ -80,7 +89,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// <returns>Task{System.Boolean}.</returns>
         public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(item.PrimaryImagePath))
+            if (force || string.IsNullOrEmpty(item.PrimaryImagePath))
             {
                 var video = (Video)item;
 

@@ -146,7 +146,6 @@
     <Compile Include="Providers\FanartBaseProvider.cs" />
     <Compile Include="Providers\IImageEnhancer.cs" />
     <Compile Include="Providers\ImagesByNameProvider.cs" />
-    <Compile Include="Providers\MediaInfo\BaseFFMpegImageProvider.cs" />
     <Compile Include="Providers\MediaInfo\BaseFFMpegProvider.cs" />
     <Compile Include="Providers\MediaInfo\FFMpegAudioImageProvider.cs" />
     <Compile Include="Providers\MediaInfo\BaseFFProbeProvider.cs" />

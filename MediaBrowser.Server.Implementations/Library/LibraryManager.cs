@@ -126,6 +126,9 @@ namespace MediaBrowser.Server.Implementations.Library
             }
         }
 
+        private ConcurrentDictionary<string, UserRootFolder> _userRootFolders =
+            new ConcurrentDictionary<string, UserRootFolder>();
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryManager" /> class.
         /// </summary>
@@ -485,6 +488,16 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
+        /// Gets the user root folder.
+        /// </summary>
+        /// <param name="userRootPath">The user root path.</param>
+        /// <returns>UserRootFolder.</returns>
+        public UserRootFolder GetUserRootFolder(string userRootPath)
+        {
+            return _userRootFolders.GetOrAdd(userRootPath, key => Kernel.ItemRepository.RetrieveItem(userRootPath.GetMBId(typeof(UserRootFolder))) as UserRootFolder ?? (UserRootFolder)ResolvePath(userRootPath));
+        }
+        
+        /// <summary>
         /// Gets a Person
         /// </summary>
         /// <param name="name">The name.</param>
@@ -739,12 +752,29 @@ namespace MediaBrowser.Server.Implementations.Library
             // Start by just validating the children of the root, but go no further
             await RootFolder.ValidateChildren(new Progress<double> { }, cancellationToken, recursive: false);
 
-            // Validate only the collection folders for each user, just to make them available as quickly as possible
-            var userCollectionFolderTasks = _userManager.Users.AsParallel().Select(user => user.ValidateCollectionFolders(new Progress<double> { }, cancellationToken));
-            await Task.WhenAll(userCollectionFolderTasks).ConfigureAwait(false);
+            foreach (var folder in _userManager.Users.Select(u => u.RootFolder).Distinct())
+            {
+                await ValidateCollectionFolders(folder, cancellationToken).ConfigureAwait(false);
+            }
 
             // Now validate the entire media library
             await RootFolder.ValidateChildren(progress, cancellationToken, recursive: true).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Validates only the collection folders for a User and goes no further
+        /// </summary>
+        /// <param name="userRootFolder">The user root folder.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        private async Task ValidateCollectionFolders(UserRootFolder userRootFolder, CancellationToken cancellationToken)
+        {
+            _logger.Info("Validating collection folders within {0}", userRootFolder.Path);
+            await userRootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await userRootFolder.ValidateChildren(new Progress<double> { }, cancellationToken, recursive: false).ConfigureAwait(false);
         }
 
         /// <summary>
