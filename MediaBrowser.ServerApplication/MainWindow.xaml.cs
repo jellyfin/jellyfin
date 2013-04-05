@@ -43,6 +43,7 @@ namespace MediaBrowser.ServerApplication
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IJsonSerializer _jsonSerializer;
+        private readonly IDisplayPreferencesManager _displayPreferencesManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow" /> class.
@@ -51,7 +52,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="logger">The logger.</param>
         /// <param name="appHost">The app host.</param>
         /// <exception cref="System.ArgumentNullException">logger</exception>
-        public MainWindow(ILogManager logManager, IApplicationHost appHost, IServerConfigurationManager configurationManager, IUserManager userManager, ILibraryManager libraryManager, IJsonSerializer jsonSerializer)
+        public MainWindow(ILogManager logManager, IApplicationHost appHost, IServerConfigurationManager configurationManager, IUserManager userManager, ILibraryManager libraryManager, IJsonSerializer jsonSerializer, IDisplayPreferencesManager displayPreferencesManager)
         {
             if (logManager == null)
             {
@@ -73,6 +74,7 @@ namespace MediaBrowser.ServerApplication
             _userManager = userManager;
             _libraryManager = libraryManager;
             _jsonSerializer = jsonSerializer;
+            _displayPreferencesManager = displayPreferencesManager;
 
             InitializeComponent();
 
@@ -223,7 +225,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void cmOpenExplorer_click(object sender, RoutedEventArgs e)
         {
-            new LibraryExplorer(_jsonSerializer, _logger, _appHost, _userManager, _libraryManager).Show();
+            new LibraryExplorer(_jsonSerializer, _logger, _appHost, _userManager, _libraryManager, _displayPreferencesManager).Show();
         }
 
         /// <summary>

@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Connectivity;
-using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -9,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Library
 {
+    /// <summary>
+    /// Interface IUserManager
+    /// </summary>
     public interface IUserManager
     {
         /// <summary>
@@ -173,7 +175,7 @@ namespace MediaBrowser.Controller.Library
         Task ChangePassword(User user, string newPassword);
 
         /// <summary>
-        /// Saves display preferences for an item
+        /// Saves the user data.
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <param name="userDataId">The user data id.</param>
@@ -184,26 +186,11 @@ namespace MediaBrowser.Controller.Library
                                     CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the display preferences.
+        /// Gets the user data.
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <param name="userDataId">The user data id.</param>
-        /// <returns>Task{DisplayPreferences}.</returns>
+        /// <returns>Task{UserItemData}.</returns>
         Task<UserItemData> GetUserData(Guid userId, Guid userDataId);
-
-        /// <summary>
-        /// Gets the display preferences.
-        /// </summary>
-        /// <param name="displayPreferencesId">The display preferences id.</param>
-        /// <returns>DisplayPreferences.</returns>
-        Task<DisplayPreferences> GetDisplayPreferences(Guid displayPreferencesId);
-
-        /// <summary>
-        /// Saves display preferences for an item
-        /// </summary>
-        /// <param name="displayPreferences">The display preferences.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task SaveDisplayPreferences(DisplayPreferences displayPreferences, CancellationToken cancellationToken);
     }
 }
