@@ -294,8 +294,12 @@
 			}
 			if (item.ProviderIds.Tvdb)
 				links.push('<a class="ui-link" href="http://thetvdb.com/index.php?tab=series&id=' + item.ProviderIds.Tvdb + '" target="_blank">TVDB</a>');
-			if (item.ProviderIds.Tvcom)
-				links.push('<a class="ui-link" href="http://www.tv.com/shows/' + item.ProviderIds.Tvcom + '" target="_blank">TV.com</a>');
+			if (item.ProviderIds.Tvcom) {
+				if (item.Type == "Episode")
+					links.push('<a class="ui-link" href="http://www.tv.com/shows/' + item.ProviderIds.Tvcom + '" target="_blank">TV.com</a>');
+				else if (item.Type == "Person")
+					links.push('<a class="ui-link" href="http://www.tv.com/people/' + item.ProviderIds.Tvcom + '" target="_blank">TV.com</a>');
+			}
 			if (item.ProviderIds.Musicbrainz)
 				links.push('<a class="ui-link" href="http://musicbrainz.org/release/' + item.ProviderIds.Musicbrainz + '" target="_blank">MusicBrainz</a>');
 			if (item.ProviderIds.Gamesdb)
