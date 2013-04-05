@@ -136,26 +136,24 @@ namespace MediaBrowser.Server.Implementations.Providers
             }
 
             var supportedProvidersHash = string.Join("+", supportedProviders.Select(i => i.GetType().Name)).GetMD5();
-            bool providersChanged;
+            bool providersChanged = false;
 
             item.ProviderData.TryGetValue(SupportedProvidersKey, out supportedProvidersInfo);
-            if (supportedProvidersInfo == null)
-            {
-                // First time
-                supportedProvidersInfo = new BaseProviderInfo { ProviderId = SupportedProvidersKey, FileSystemStamp = supportedProvidersHash };
-                providersChanged = force = true;
-            }
-            else
+            if (supportedProvidersInfo != null)
             {
                 // Force refresh if the supported providers have changed
                 providersChanged = force = force || supportedProvidersInfo.FileSystemStamp != supportedProvidersHash;
+
+                // If providers have changed, clear provider info and update the supported providers hash
+                if (providersChanged)
+                {
+                    _logger.Debug("Providers changed for {0}. Clearing and forcing refresh.", item.Name);
+                    item.ProviderData.Clear();
+                }
             }
 
-            // If providers have changed, clear provider info and update the supported providers hash
             if (providersChanged)
             {
-                _logger.Debug("Providers changed for {0}. Clearing and forcing refresh.", item.Name);
-                item.ProviderData.Clear();
                 supportedProvidersInfo.FileSystemStamp = supportedProvidersHash;
             }
 

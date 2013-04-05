@@ -735,16 +735,16 @@ namespace MediaBrowser.Controller.MediaInfo
         /// <summary>
         /// Extracts an image from an Audio file and returns a Task whose result indicates whether it was successful or not
         /// </summary>
-        /// <param name="input">The input.</param>
+        /// <param name="inputPath">The input path.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
         /// <exception cref="System.ArgumentNullException">input</exception>
-        public async Task<bool> ExtractImage(Audio input, string outputPath, CancellationToken cancellationToken)
+        public async Task<bool> ExtractAudioImage(string inputPath, string outputPath, CancellationToken cancellationToken)
         {
-            if (input == null)
+            if (string.IsNullOrEmpty(inputPath))
             {
-                throw new ArgumentNullException("input");
+                throw new ArgumentNullException("inputPath");
             }
 
             if (string.IsNullOrEmpty(outputPath))
@@ -759,7 +759,7 @@ namespace MediaBrowser.Controller.MediaInfo
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     FileName = FFMpegPath,
-                    Arguments = string.Format("-i {0} -threads 0 -v quiet -f image2 \"{1}\"", GetInputArgument(input), outputPath),
+                    Arguments = string.Format("-i {0} -threads 0 -v quiet -f image2 \"{1}\"", GetFileInputArgument(inputPath), outputPath),
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false
                 }
@@ -780,7 +780,7 @@ namespace MediaBrowser.Controller.MediaInfo
                 return true;
             }
 
-            _logger.Error("ffmpeg audio image extraction failed for {0}", input.Path);
+            _logger.Error("ffmpeg audio image extraction failed for {0}", inputPath);
             return false;
         }
 
@@ -1037,6 +1037,16 @@ namespace MediaBrowser.Controller.MediaInfo
             }
 
             return string.Format("file:\"{0}\"", item.Path);
+        }
+
+        /// <summary>
+        /// Gets the file input argument.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>System.String.</returns>
+        private string GetFileInputArgument(string path)
+        {
+            return string.Format("file:\"{0}\"", path);
         }
 
         /// <summary>
