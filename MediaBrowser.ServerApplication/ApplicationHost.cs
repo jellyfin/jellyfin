@@ -220,6 +220,7 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<ILibrarySearchEngine>(() => new LuceneSearchEngine());
 
+            await ConfigureRepositories().ConfigureAwait(false);
             SetKernelProperties();
             SetStaticProperties();
         }
@@ -235,12 +236,26 @@ namespace MediaBrowser.ServerApplication
             Parallel.Invoke(
                 () => ServerKernel.UserDataRepositories = GetExports<IUserDataRepository>(),
                 () => ServerKernel.UserRepositories = GetExports<IUserRepository>(),
-                () => ServerKernel.DisplayPreferencesRepositories = GetExports<IDisplayPreferencesRepository>(),
                 () => ServerKernel.ItemRepositories = GetExports<IItemRepository>(),
                 () => ServerKernel.WeatherProviders = GetExports<IWeatherProvider>(),
                 () => ServerKernel.ImageEnhancers = GetExports<IImageEnhancer>().OrderBy(e => e.Priority).ToArray(),
                 () => ServerKernel.StringFiles = GetExports<LocalizedStringData>()
                 );
+        }
+
+        /// <summary>
+        /// Configures the repositories.
+        /// </summary>
+        /// <returns>Task.</returns>
+        private async Task ConfigureRepositories()
+        {
+            var displayPreferencesRepositories = GetExports<IDisplayPreferencesRepository>();
+
+            var repo = GetRepository(displayPreferencesRepositories, ServerConfigurationManager.Configuration.DisplayPreferencesRepository);
+
+            await repo.Initialize().ConfigureAwait(false);
+
+            ((DisplayPreferencesManager)DisplayPreferencesManager).Repository = repo;
         }
 
         /// <summary>
@@ -455,6 +470,22 @@ namespace MediaBrowser.ServerApplication
             {
                 process.WaitForExit();
             }
+        }
+
+        /// <summary>
+        /// Gets the repository.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="repositories">The repositories.</param>
+        /// <param name="name">The name.</param>
+        /// <returns>``0.</returns>
+        private T GetRepository<T>(IEnumerable<T> repositories, string name)
+            where T : class, IRepository
+        {
+            var enumerable = repositories as T[] ?? repositories.ToArray();
+
+            return enumerable.FirstOrDefault(r => string.Equals(r.Name, name, StringComparison.OrdinalIgnoreCase)) ??
+                   enumerable.FirstOrDefault();
         }
     }
 }
