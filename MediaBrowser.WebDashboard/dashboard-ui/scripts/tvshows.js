@@ -86,7 +86,7 @@
 
 		ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
 
-			$('#items', page).html(LibraryBrowser.getEpisodePosterViewHtml({
+			$('#items', page).html(LibraryBrowser.getPosterViewHtml({
 
 				items: result.Items,
 				useAverageAspectRatio: true
