@@ -269,5 +269,48 @@
             return LibraryBrowser.getRandomMetroColor();
         }
 
-    }
+    },
+
+	renderLinks: function (item) {
+		var page = $.mobile.activePage;
+//console.log(item);
+		if (item.ProviderIds) {
+			var elem = $('#itemLink', page).show();
+
+			var html = 'Links:&nbsp;&nbsp;';
+			var links = [];
+
+			if (item.ProviderIds.Imdb) {
+				if (item.Type == "Movie" || item.Type == "Episode")
+					links.push('<a class="ui-link" href="http://www.imdb.com/title/' + item.ProviderIds.Imdb + '" target="_blank">IMDB</a>');
+				else if (item.Type == "Person")
+					links.push('<a class="ui-link" href="http://www.imdb.com/name/' + item.ProviderIds.Imdb + '" target="_blank">IMDB</a>');
+			}
+			if (item.ProviderIds.Tmdb) {
+				if (item.Type == "Movie")
+					links.push('<a class="ui-link" href="http://www.themoviedb.org/movie/' + item.ProviderIds.Tmdb + '" target="_blank">TMDB</a>');
+				else if (item.Type == "Person")
+					links.push('<a class="ui-link" href="http://www.themoviedb.org/person/' + item.ProviderIds.Tmdb + '" target="_blank">TMDB</a>');
+			}
+			if (item.ProviderIds.Tvdb)
+				links.push('<a class="ui-link" href="http://thetvdb.com/index.php?tab=series&id=' + item.ProviderIds.Tvdb + '" target="_blank">TVDB</a>');
+			if (item.ProviderIds.Tvcom) {
+				if (item.Type == "Episode")
+					links.push('<a class="ui-link" href="http://www.tv.com/shows/' + item.ProviderIds.Tvcom + '" target="_blank">TV.com</a>');
+				else if (item.Type == "Person")
+					links.push('<a class="ui-link" href="http://www.tv.com/people/' + item.ProviderIds.Tvcom + '" target="_blank">TV.com</a>');
+			}
+			if (item.ProviderIds.Musicbrainz)
+				links.push('<a class="ui-link" href="http://musicbrainz.org/release/' + item.ProviderIds.Musicbrainz + '" target="_blank">MusicBrainz</a>');
+			if (item.ProviderIds.Gamesdb)
+				links.push('<a class="ui-link" href="http://www.games-db.com/Game/' + item.ProviderIds.Gamesdb + '" target="_blank">GamesDB</a>');
+
+			html += links.join('&nbsp;&nbsp;/&nbsp;&nbsp;');
+
+			$('#itemLinks', page).html(html);
+
+		} else {
+			$('#itemLinks', page).hide();
+		}
+	}
 };

@@ -42,6 +42,7 @@
         ItemByNameDetailPage.renderImage(item);
         ItemByNameDetailPage.renderOverviewBlock(item);
 	    ItemByNameDetailPage.renderFav(item);
+	    LibraryBrowser.renderLinks(item);
 
         $('#itemName', page).html(name);
 
