@@ -82,6 +82,11 @@ namespace MediaBrowser.Model.Querying
         PrimaryImageAspectRatio,
 
         /// <summary>
+        /// The publishers
+        /// </summary>
+        Publishers,
+        
+        /// <summary>
         /// AirDays, status, SeriesName, etc
         /// </summary>
         SeriesInfo,

@@ -64,6 +64,11 @@ namespace MediaBrowser.Controller.Library
                 dto.Studios = item.Studios;
             }
 
+            if (fields.Contains(ItemFields.Publishers))
+            {
+                dto.Publishers = item.Publishers;
+            }
+            
             if (fields.Contains(ItemFields.People))
             {
                 tasks.Add(AttachPeople(dto, item));
