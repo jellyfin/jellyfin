@@ -89,12 +89,6 @@ namespace MediaBrowser.Controller
         public IUserRepository UserRepository { get; set; }
 
         /// <summary>
-        /// Gets the active user repository
-        /// </summary>
-        /// <value>The display preferences repository.</value>
-        public IDisplayPreferencesRepository DisplayPreferencesRepository { get; set; }
-
-        /// <summary>
         /// Gets the list of available item repositories
         /// </summary>
         /// <value>The item repositories.</value>
@@ -105,12 +99,6 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The item repository.</value>
         public IItemRepository ItemRepository { get; set; }
-
-        /// <summary>
-        /// Gets the list of available DisplayPreferencesRepositories
-        /// </summary>
-        /// <value>The display preferences repositories.</value>
-        public IEnumerable<IDisplayPreferencesRepository> DisplayPreferencesRepositories { get; set; }
 
         /// <summary>
         /// Gets the list of available item repositories
@@ -155,11 +143,7 @@ namespace MediaBrowser.Controller
             UserDataRepository = GetRepository(UserDataRepositories, configurationManager.Configuration.UserDataRepository);
             var userDataRepoTask = UserDataRepository.Initialize();
 
-            // Get the current display preferences repository
-            DisplayPreferencesRepository = GetRepository(DisplayPreferencesRepositories, configurationManager.Configuration.DisplayPreferencesRepository);
-            var displayPreferencesRepoTask = DisplayPreferencesRepository.Initialize();
-
-            return Task.WhenAll(itemRepoTask, userRepoTask, userDataRepoTask, displayPreferencesRepoTask);
+            return Task.WhenAll(itemRepoTask, userRepoTask, userDataRepoTask);
         }
 
         /// <summary>

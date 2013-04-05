@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Controller;
-using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -23,6 +23,12 @@ namespace MediaBrowser.Server.Implementations.Library
         /// The _display preferences
         /// </summary>
         private readonly ConcurrentDictionary<Guid, Task<DisplayPreferences>> _displayPreferences = new ConcurrentDictionary<Guid, Task<DisplayPreferences>>();
+
+        /// <summary>
+        /// Gets the active user repository
+        /// </summary>
+        /// <value>The display preferences repository.</value>
+        public IDisplayPreferencesRepository Repository { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DisplayPreferencesManager"/> class.
@@ -50,7 +56,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>DisplayPreferences.</returns>
         private async Task<DisplayPreferences> RetrieveDisplayPreferences(Guid displayPreferencesId)
         {
-            var displayPreferences = await Kernel.Instance.DisplayPreferencesRepository.GetDisplayPreferences(displayPreferencesId).ConfigureAwait(false);
+            var displayPreferences = await Repository.GetDisplayPreferences(displayPreferencesId).ConfigureAwait(false);
 
             return displayPreferences ?? new DisplayPreferences { Id = displayPreferencesId };
         }
@@ -74,7 +80,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             try
             {
-                await Kernel.Instance.DisplayPreferencesRepository.SaveDisplayPreferences(displayPreferences,
+                await Repository.SaveDisplayPreferences(displayPreferences,
                                                                                         cancellationToken).ConfigureAwait(false);
 
                 var newValue = Task.FromResult(displayPreferences);
