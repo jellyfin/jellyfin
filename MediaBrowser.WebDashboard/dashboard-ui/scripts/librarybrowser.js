@@ -275,20 +275,19 @@
 		var page = $.mobile.activePage;
 //console.log(item);
 		if (item.ProviderIds) {
-			var elem = $('#itemLink', page).show();
 
 			var html = 'Links:&nbsp;&nbsp;';
 			var links = [];
 
 			if (item.ProviderIds.Imdb) {
 				if (item.Type == "Movie" || item.Type == "Episode")
-					links.push('<a class="ui-link" href="http://www.imdb.com/title/' + item.ProviderIds.Imdb + '" target="_blank">IMDB</a>');
+				    links.push('<a class="ui-link" href="http://www.imdb.com/title/' + item.ProviderIds.Imdb + '" target="_blank">IMDb</a>');
 				else if (item.Type == "Person")
-					links.push('<a class="ui-link" href="http://www.imdb.com/name/' + item.ProviderIds.Imdb + '" target="_blank">IMDB</a>');
+				    links.push('<a class="ui-link" href="http://www.imdb.com/name/' + item.ProviderIds.Imdb + '" target="_blank">IMDb</a>');
 			}
 			if (item.ProviderIds.Tmdb) {
 				if (item.Type == "Movie")
-					links.push('<a class="ui-link" href="http://www.themoviedb.org/movie/' + item.ProviderIds.Tmdb + '" target="_blank">TMDB</a>');
+				    links.push('<a class="ui-link" href="http://www.themoviedb.org/movie/' + item.ProviderIds.Tmdb + '" target="_blank">TMDB</a>');
 				else if (item.Type == "Person")
 					links.push('<a class="ui-link" href="http://www.themoviedb.org/person/' + item.ProviderIds.Tmdb + '" target="_blank">TMDB</a>');
 			}

@@ -187,44 +187,41 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// <param name="data">The data.</param>
         /// <param name="isoMount">The iso mount.</param>
         /// <returns>Task.</returns>
-        protected override Task Fetch(Video video, CancellationToken cancellationToken, FFProbeResult data, IIsoMount isoMount)
+        protected override void Fetch(Video video, CancellationToken cancellationToken, FFProbeResult data, IIsoMount isoMount)
         {
-            return Task.Run(() =>
+            if (data.format != null)
             {
-                if (data.format != null)
+                // For dvd's this may not always be accurate, so don't set the runtime if the item already has one
+                var needToSetRuntime = video.VideoType != VideoType.Dvd || video.RunTimeTicks == null || video.RunTimeTicks.Value == 0;
+
+                if (needToSetRuntime && !string.IsNullOrEmpty(data.format.duration))
                 {
-                    // For dvd's this may not always be accurate, so don't set the runtime if the item already has one
-                    var needToSetRuntime = video.VideoType != VideoType.Dvd || video.RunTimeTicks == null || video.RunTimeTicks.Value == 0;
-
-                    if (needToSetRuntime && !string.IsNullOrEmpty(data.format.duration))
-                    {
-                        video.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(data.format.duration, UsCulture)).Ticks;
-                    }
+                    video.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(data.format.duration, UsCulture)).Ticks;
                 }
+            }
 
-                if (data.streams != null)
-                {
-                    video.MediaStreams = data.streams.Select(s => GetMediaStream(s, data.format)).ToList();
-                }
+            if (data.streams != null)
+            {
+                video.MediaStreams = data.streams.Select(s => GetMediaStream(s, data.format)).ToList();
+            }
 
-                if (data.Chapters != null)
-                {
-                    video.Chapters = data.Chapters;
-                }
+            if (data.Chapters != null)
+            {
+                video.Chapters = data.Chapters;
+            }
 
-                if (video.Chapters == null || video.Chapters.Count == 0)
-                {
-                    AddDummyChapters(video);
-                }
+            if (video.Chapters == null || video.Chapters.Count == 0)
+            {
+                AddDummyChapters(video);
+            }
 
-                if (video.VideoType == VideoType.BluRay || (video.IsoType.HasValue && video.IsoType.Value == IsoType.BluRay))
-                {
-                    var inputPath = isoMount != null ? isoMount.MountedPath : video.Path;
-                    FetchBdInfo(video, inputPath, BdInfoCache, cancellationToken);
-                }
+            if (video.VideoType == VideoType.BluRay || (video.IsoType.HasValue && video.IsoType.Value == IsoType.BluRay))
+            {
+                var inputPath = isoMount != null ? isoMount.MountedPath : video.Path;
+                FetchBdInfo(video, inputPath, BdInfoCache, cancellationToken);
+            }
 
-                AddExternalSubtitles(video);
-            });
+            AddExternalSubtitles(video);
         }
 
         /// <summary>

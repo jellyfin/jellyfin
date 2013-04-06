@@ -130,6 +130,7 @@
     <Compile Include="HttpServer\SwaggerService.cs" />
     <Compile Include="IO\DirectoryWatchers.cs" />
     <Compile Include="Library\CoreResolutionIgnoreRule.cs" />
+    <Compile Include="Library\DisplayPreferencesManager.cs" />
     <Compile Include="Library\LibraryManager.cs" />
     <Compile Include="Library\LuceneSearchEngine.cs" />
     <Compile Include="Library\ResolverHelper.cs" />

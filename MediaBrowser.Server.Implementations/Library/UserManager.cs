@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Connectivity;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
@@ -26,8 +25,8 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <summary>
         /// The _active connections
         /// </summary>
-        private readonly List<ClientConnectionInfo> _activeConnections =
-            new List<ClientConnectionInfo>();
+        private readonly ConcurrentDictionary<string, ClientConnectionInfo> _activeConnections =
+            new ConcurrentDictionary<string, ClientConnectionInfo>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// The _users
@@ -70,7 +69,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <value>All connections.</value>
         public IEnumerable<ClientConnectionInfo> AllConnections
         {
-            get { return _activeConnections.Where(c => GetUserById(c.UserId) != null).OrderByDescending(c => c.LastActivityDate); }
+            get { return _activeConnections.Values.OrderByDescending(c => c.LastActivityDate); }
         }
 
         /// <summary>
@@ -98,11 +97,6 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         /// <value>The configuration manager.</value>
         private IServerConfigurationManager ConfigurationManager { get; set; }
-
-        /// <summary>
-        /// The _user data
-        /// </summary>
-        private readonly ConcurrentDictionary<string, Task<DisplayPreferences>> _displayPreferences = new ConcurrentDictionary<string, Task<DisplayPreferences>>();
 
         private readonly ConcurrentDictionary<string, Task<UserItemData>> _userData = new ConcurrentDictionary<string, Task<UserItemData>>();
         
@@ -166,63 +160,6 @@ namespace MediaBrowser.Server.Implementations.Library
         #endregion
 
         /// <summary>
-        /// Gets the display preferences.
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="displayPreferencesId">The display preferences id.</param>
-        /// <returns>DisplayPreferences.</returns>
-        public Task<DisplayPreferences> GetDisplayPreferences(Guid userId, Guid displayPreferencesId)
-        {
-            var key = userId + displayPreferencesId.ToString();
-
-            return _displayPreferences.GetOrAdd(key, keyName => RetrieveDisplayPreferences(userId, displayPreferencesId));
-        }
-
-        /// <summary>
-        /// Retrieves the display preferences.
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="displayPreferencesId">The display preferences id.</param>
-        /// <returns>DisplayPreferences.</returns>
-        private async Task<DisplayPreferences> RetrieveDisplayPreferences(Guid userId, Guid displayPreferencesId)
-        {
-            var displayPreferences = await Kernel.Instance.DisplayPreferencesRepository.GetDisplayPreferences(userId, displayPreferencesId).ConfigureAwait(false);
-
-            return displayPreferences ?? new DisplayPreferences();
-        }
-
-        /// <summary>
-        /// Saves display preferences for an item
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="displayPreferencesId">The display preferences id.</param>
-        /// <param name="displayPreferences">The display preferences.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public async Task SaveDisplayPreferences(Guid userId, Guid displayPreferencesId, DisplayPreferences displayPreferences, CancellationToken cancellationToken)
-        {
-            var key = userId + displayPreferencesId.ToString();
-           
-            try
-            {
-                await Kernel.Instance.DisplayPreferencesRepository.SaveDisplayPreferences(userId, displayPreferencesId,
-                                                                                        displayPreferences,
-                                                                                        cancellationToken).ConfigureAwait(false);
-
-                var newValue = Task.FromResult(displayPreferences);
-
-                // Once it succeeds, put it into the dictionary to make it available to everyone else
-                _displayPreferences.AddOrUpdate(key, newValue, delegate { return newValue; });
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error saving display preferences", ex);
-
-                throw;
-            }
-        }
-
-        /// <summary>
         /// Gets a User by Id
         /// </summary>
         /// <param name="id">The id.</param>
@@ -232,7 +169,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             if (id == Guid.Empty)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("id");
             }
 
             return Users.FirstOrDefault(u => u.Id == id);
@@ -376,29 +313,19 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>ClientConnectionInfo.</returns>
         private ClientConnectionInfo GetConnection(Guid userId, string clientType, string deviceId, string deviceName)
         {
-            lock (_activeConnections)
+            var key = clientType + deviceId;
+
+            var connection = _activeConnections.GetOrAdd(key, keyName => new ClientConnectionInfo
             {
-                var conn = _activeConnections.FirstOrDefault(c => string.Equals(c.Client, clientType, StringComparison.OrdinalIgnoreCase) && string.Equals(deviceId, c.DeviceId));
+                UserId = userId,
+                Client = clientType,
+                DeviceName = deviceName,
+                DeviceId = deviceId
+            });
 
-                if (conn == null)
-                {
-                    conn = new ClientConnectionInfo
-                    {
-                        UserId = userId,
-                        Client = clientType,
-                        DeviceName = deviceName,
-                        DeviceId = deviceId
-                    };
-
-                    _activeConnections.Add(conn);
-                }
-                else
-                {
-                    conn.UserId = userId;
-                }
-
-                return conn;
-            }
+            connection.UserId = userId;
+            
+            return connection;
         }
 
         /// <summary>
@@ -802,11 +729,11 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Gets the display preferences.
+        /// Gets the user data.
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <param name="userDataId">The user data id.</param>
-        /// <returns>Task{DisplayPreferences}.</returns>
+        /// <returns>Task{UserItemData}.</returns>
         public Task<UserItemData> GetUserData(Guid userId, Guid userDataId)
         {
             var key = userId + userDataId.ToString();
@@ -815,11 +742,11 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Retrieves the display preferences.
+        /// Retrieves the user data.
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <param name="userDataId">The user data id.</param>
-        /// <returns>DisplayPreferences.</returns>
+        /// <returns>Task{UserItemData}.</returns>
         private async Task<UserItemData> RetrieveUserData(Guid userId, Guid userDataId)
         {
             var userdata = await Kernel.Instance.UserDataRepository.GetUserData(userId, userDataId).ConfigureAwait(false);

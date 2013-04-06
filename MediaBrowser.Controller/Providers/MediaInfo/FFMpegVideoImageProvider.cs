@@ -57,12 +57,6 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
             if (video != null)
             {
-                // Can't extract images if there are no video streams
-                if (video.MediaStreams == null || video.MediaStreams.All(m => m.Type != MediaStreamType.Video))
-                {
-                    return false;
-                }
-
                 if (video.VideoType == VideoType.Iso && video.IsoType.HasValue && _isoManager.CanMount(item.Path))
                 {
                     return true;
@@ -93,17 +87,21 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             {
                 var video = (Video)item;
 
-                var filename = item.Id + "_" + item.DateModified.Ticks + "_primary";
-
-                var path = Kernel.Instance.FFMpegManager.VideoImageCache.GetResourcePath(filename, ".jpg");
-
-                if (!Kernel.Instance.FFMpegManager.VideoImageCache.ContainsFilePath(path))
+                // We can only extract images from videos if we know there's an embedded video stream
+                if (video.MediaStreams != null && video.MediaStreams.Any(m => m.Type == MediaStreamType.Video))
                 {
-                    return ExtractImage(video, path, cancellationToken);
-                }
+                    var filename = item.Id + "_" + item.DateModified.Ticks + "_primary";
 
-                // Image is already in the cache
-                item.PrimaryImagePath = path;
+                    var path = Kernel.Instance.FFMpegManager.VideoImageCache.GetResourcePath(filename, ".jpg");
+
+                    if (!Kernel.Instance.FFMpegManager.VideoImageCache.ContainsFilePath(path))
+                    {
+                        return ExtractImage(video, path, cancellationToken);
+                    }
+
+                    // Image is already in the cache
+                    item.PrimaryImagePath = path;
+                }
             }
 
             SetLastRefreshed(item, DateTime.UtcNow);
