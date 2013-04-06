@@ -261,10 +261,11 @@
 				audioCodec: 'Vorbis'
 			}));
 
-			(this).src([{ type: "video/webm", src: webmVideoUrl },
+		    (this).src([
+				{ type: "application/x-mpegURL", src: hlsVideoUrl },
+		        { type: "video/webm", src: webmVideoUrl },
 				{ type: "video/mp4", src: mp4VideoUrl },
 				{ type: "video/mp2t; codecs='h264, aac'", src: tsVideoUrl },
-				{ type: "application/x-mpegURL", src: hlsVideoUrl },
 				{ type: "video/ogg", src: ogvVideoUrl }]
 			).volume(volume);
 
@@ -316,6 +317,13 @@
 				player.tech.removeTriggers();
 				player.load();
 			}
+
+			//remove custom buttons
+			delete _V_.ControlBar.prototype.options.components.ResolutionSelectorButton;
+			delete _V_.ControlBar.prototype.options.components.SubtitleSelectorButton;
+			delete _V_.ControlBar.prototype.options.components.LanguageSelectorButton;
+			delete _V_.ControlBar.prototype.options.components.ChapterSelectorButton;
+
 			//player.tech.destroy();
 			player.destroy();
 		} else {

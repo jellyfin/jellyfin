@@ -93,7 +93,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await Fetch(myItem, cancellationToken, result, isoMount).ConfigureAwait(false);
+                Fetch(myItem, cancellationToken, result, isoMount);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -180,7 +180,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// <param name="result">The result.</param>
         /// <param name="isoMount">The iso mount.</param>
         /// <returns>Task.</returns>
-        protected abstract Task Fetch(T item, CancellationToken cancellationToken, FFProbeResult result, IIsoMount isoMount);
+        protected abstract void Fetch(T item, CancellationToken cancellationToken, FFProbeResult result, IIsoMount isoMount);
 
         /// <summary>
         /// Converts ffprobe stream info to our MediaStream class
