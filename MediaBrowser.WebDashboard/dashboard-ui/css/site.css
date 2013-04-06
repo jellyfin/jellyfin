@@ -716,7 +716,7 @@ progress {
         display: inline-block;
         width: 45%;
         padding-left: 20px;
-        max-width: 800px;
+        max-width: 1000px;
     }
 
     .galleryImage {
