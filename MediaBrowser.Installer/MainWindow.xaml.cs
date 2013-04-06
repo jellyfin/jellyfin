@@ -31,6 +31,8 @@ namespace MediaBrowser.Installer
         protected bool InstallPismo = true;
         protected string RootPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "MediaBrowser-Server");
 
+        protected bool IsUpdate = false;
+
         protected bool SystemClosing = false;
 
         protected string TempLocation = Path.Combine(Path.GetTempPath(), "MediaBrowser");
@@ -119,7 +121,7 @@ namespace MediaBrowser.Installer
                     // wasn't running
                 }
 
-                Thread.Sleep(500); // give it just another sec to be sure its really gone
+                IsUpdate = true;
             }
 
             //MessageBox.Show(string.Format("Called with args: product: {0} archive: {1} caller: {2}", product, Archive, callerId));
@@ -160,7 +162,7 @@ namespace MediaBrowser.Installer
             // Now try and shut down the server if that is what we are installing and it is running
             var procs = Process.GetProcessesByName("mediabrowser.serverapplication");
             var server = procs.Length > 0 ? procs[0] : null;
-            if (PackageName == "MBServer" && server != null)
+            if (!IsUpdate && PackageName == "MBServer" && server != null)
             {
                 lblStatus.Text = "Shutting Down Media Browser Server...";
                 using (var client = new WebClient())
@@ -187,7 +189,7 @@ namespace MediaBrowser.Installer
             }
             else
             {
-                if (PackageName == "MBTheater")
+                if (!IsUpdate && PackageName == "MBTheater")
                 {
                     // Uninstalling MBT - shut it down if it is running
                     var processes = Process.GetProcessesByName("mediabrowser.ui");
