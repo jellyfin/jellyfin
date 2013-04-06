@@ -55,6 +55,10 @@
 
             html += "</li>";
         }
+	    
+	    if (plugins.length == 0 || !plugins.length) {
+		    html += "<li>You have no plugins installed. Click on the Plugin Catalog to view available plugins.</li>";
+	    }
 
         $('#ulInstalledPlugins', page).html(html).listview('refresh');
 
