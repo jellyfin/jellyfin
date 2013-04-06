@@ -191,9 +191,12 @@
             reloadItems(page);
         });
 
+    }).on('pagebeforeshow', "#moviesPage", function() {
+        
+        reloadItems(this);
+        
     }).on('pageshow', "#moviesPage", function () {
 
-        reloadItems(this);
 
         // Reset form values using the last used query
         $('.radioSortBy', this).each(function () {

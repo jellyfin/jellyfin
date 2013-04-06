@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    $(document).on('pageshow', "#moviesRecommendedPage", function () {
+    $(document).on('pagebeforeshow', "#moviesRecommendedPage", function () {
 
         var page = this;
         

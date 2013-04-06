@@ -13,7 +13,7 @@
         return html;
     }
 
-    $(document).on('pageshow', "#indexPage", function () {
+    $(document).on('pagebeforeshow', "#indexPage", function () {
 
         var page = this;
 

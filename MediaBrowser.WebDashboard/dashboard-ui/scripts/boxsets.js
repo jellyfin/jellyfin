@@ -58,9 +58,11 @@
 			reloadItems(page);
 		});
 
-	}).on('pageshow', "#boxsetsPage", function () {
+	}).on('pagebeforeshow', "#boxsetsPage", function () {
 
-			reloadItems(this);
+	    reloadItems(this);
+
+	}).on('pageshow', "#boxsetsPage", function () {
 
 			// Reset form values using the last used query
 			$('.radioSortBy', this).each(function () {

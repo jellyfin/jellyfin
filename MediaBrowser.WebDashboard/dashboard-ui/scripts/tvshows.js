@@ -127,9 +127,11 @@
 			reloadItems(page);
 		});
 
-	}).on('pageshow', "#tvShowsPage", function () {
+	}).on('pagebeforeshow', "#tvShowsPage", function () {
 
-			reloadItems(this);
+	    reloadItems(this);
+
+	}).on('pageshow', "#tvShowsPage", function () {
 
 			// Reset form values using the last used query
 			$('.radioSortBy', this).each(function () {
