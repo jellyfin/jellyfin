@@ -268,7 +268,14 @@ namespace MediaBrowser.Model.Configuration
         /// <value><c>true</c> if [enable dashboard response caching]; otherwise, <c>false</c>.</value>
         [ProtoMember(61)]
         public bool EnableDashboardResponseCaching { get; set; }
-        
+
+        /// <summary>
+        /// Allows the dashboard to be served from a custom path.
+        /// </summary>
+        /// <value>The dashboard source path.</value>
+        [ProtoMember(62)]
+        public string DashboardSourcePath { get; set; }
+
         // Next Proto number ====> 62
 
         /// <summary>
