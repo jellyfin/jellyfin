@@ -46,6 +46,18 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         private readonly IApplicationPaths _appPaths;
 
         /// <summary>
+        /// Gets a value indicating whether [enable delayed commands].
+        /// </summary>
+        /// <value><c>true</c> if [enable delayed commands]; otherwise, <c>false</c>.</value>
+        protected override bool EnableDelayedCommands
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SQLiteUserDataRepository" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
@@ -97,7 +109,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        public Task SaveUser(User user, CancellationToken cancellationToken)
+        public async Task SaveUser(User user, CancellationToken cancellationToken)
         {
             if (user == null)
             {
@@ -109,20 +121,37 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 throw new ArgumentNullException("cancellationToken");
             }
 
-            return Task.Run(() =>
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var serialized = _jsonSerializer.SerializeToBytes(user);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = "replace into users (guid, data) values (@1, @2)";
+            cmd.AddParam("@1", user.Id);
+            cmd.AddParam("@2", serialized);
+
+            using (var tran = connection.BeginTransaction())
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                try
+                {
+                    cmd.Transaction = tran;
 
-                var serialized = _jsonSerializer.SerializeToBytes(user);
+                    await cmd.ExecuteNonQueryAsync(cancellationToken);
 
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = "replace into users (guid, data) values (@1, @2)";
-                cmd.AddParam("@1", user.Id);
-                cmd.AddParam("@2", serialized);
-                QueueCommand(cmd);
-            });
+                    tran.Commit();
+                }
+                catch (OperationCanceledException)
+                {
+                    tran.Rollback();
+                }
+                catch (Exception e)
+                {
+                    Logger.ErrorException("Failed to commit transaction.", e);
+                    tran.Rollback();
+                }
+            }
         }
 
         /// <summary>

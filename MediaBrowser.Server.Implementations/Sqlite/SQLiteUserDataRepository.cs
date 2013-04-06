@@ -35,6 +35,18 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         }
 
         /// <summary>
+        /// Gets a value indicating whether [enable delayed commands].
+        /// </summary>
+        /// <value><c>true</c> if [enable delayed commands]; otherwise, <c>false</c>.</value>
+        protected override bool EnableDelayedCommands
+        {
+            get
+            {
+                return false;
+            }
+        }
+        
+        /// <summary>
         /// The _protobuf serializer
         /// </summary>
         private readonly IProtobufSerializer _protobufSerializer;
@@ -106,7 +118,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// or
         /// userDataId
         /// </exception>
-        public Task SaveUserData(Guid userId, Guid userDataId, UserItemData userData, CancellationToken cancellationToken)
+        public async Task SaveUserData(Guid userId, Guid userDataId, UserItemData userData, CancellationToken cancellationToken)
         {
             if (userData == null)
             {
@@ -127,19 +139,36 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            return Task.Run(() =>
+            var serialized = _protobufSerializer.SerializeToBytes(userData);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = "replace into userdata (id, userId, data) values (@1, @2, @3)";
+            cmd.AddParam("@1", userDataId);
+            cmd.AddParam("@2", userId);
+            cmd.AddParam("@3", serialized);
+
+            using (var tran = connection.BeginTransaction())
             {
-                var serialized = _protobufSerializer.SerializeToBytes(userData);
+                try
+                {
+                    cmd.Transaction = tran;
 
-                cancellationToken.ThrowIfCancellationRequested();
+                    await cmd.ExecuteNonQueryAsync(cancellationToken);
 
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = "replace into userdata (id, userId, data) values (@1, @2, @3)";
-                cmd.AddParam("@1", userDataId);
-                cmd.AddParam("@2", userId);
-                cmd.AddParam("@3", serialized);
-                QueueCommand(cmd);
-            });
+                    tran.Commit();
+                }
+                catch (OperationCanceledException)
+                {
+                    tran.Rollback();
+                }
+                catch (Exception e)
+                {
+                    Logger.ErrorException("Failed to commit transaction.", e);
+                    tran.Rollback();
+                }
+            }
         }
 
         /// <summary>
