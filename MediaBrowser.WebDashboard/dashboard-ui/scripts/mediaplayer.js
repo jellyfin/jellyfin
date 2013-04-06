@@ -318,7 +318,7 @@
 			}
 
 			//remove custom buttons
-			_V_.ControlBar.prototype.options.components.ResolutionSelectorButton;
+			delete _V_.ControlBar.prototype.options.components.ResolutionSelectorButton;
 			delete _V_.ControlBar.prototype.options.components.SubtitleSelectorButton;
 			delete _V_.ControlBar.prototype.options.components.LanguageSelectorButton;
 			delete _V_.ControlBar.prototype.options.components.ChapterSelectorButton;
