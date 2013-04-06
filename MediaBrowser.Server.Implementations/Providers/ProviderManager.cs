@@ -104,7 +104,7 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <param name="providers">The providers.</param>
         public void AddMetadataProviders(IEnumerable<BaseMetadataProvider> providers)
         {
-            MetadataProviders = providers.ToArray();
+            MetadataProviders = providers.OrderBy(e => e.Priority).ToArray();
         }
 
         /// <summary>
