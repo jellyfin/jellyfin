@@ -56,7 +56,13 @@
             html += "</li>";
         }
 
-        $('#ulInstalledPlugins', page).html(html).listview('refresh');
+	    if (plugins.length == 0 || !plugins.length) {
+		    html += '<li style="padding:5px;">You have no plugins installed. Browse our <a href="plugincatalog.html">plugin catalog</a> to view available plugins.</li>';
+	        $('#ulInstalledPlugins', page).html(html);
+	    }else {
+	        $('#ulInstalledPlugins', page).html(html).listview('refresh');
+        }
+
 
         Dashboard.hideLoadingMsg();
     },
