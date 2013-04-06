@@ -228,6 +228,8 @@
             this.checked = filters.indexOf(',' + filterName) != -1;
 
         }).checkboxradio('refresh');
+
+        $('#selectView', this).val(view).selectmenu('refresh');
     });
 
 })(jQuery, document);
