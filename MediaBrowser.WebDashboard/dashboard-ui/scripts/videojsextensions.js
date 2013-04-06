@@ -17,9 +17,9 @@ var videoJSextension = {
 			vjs_sources = [], // This will be an array of arrays of objects, see the video.js api documentation for myPlayer.src()
 			vjs_source = {},
 			vjs_chapters = [], // This will be an array of arrays of objects, see the video.js api documentation for myPlayer.src()
-			vjs_chapter = {};
+			vjs_chapter = {},
 			vjs_languages = [], // This will be an array of arrays of objects, see the video.js api documentation for myPlayer.src()
-			vjs_language = {};
+			vjs_language = {},
 			vjs_subtitles = [], // This will be an array of arrays of objects, see the video.js api documentation for myPlayer.src()
 			vjs_subtitle = {};
 
