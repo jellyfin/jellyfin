@@ -53,18 +53,31 @@
 
         var url = "itemdetails.html?id=" + item.Id;
 
-        var imageTags = item.ImageTags;
-
         html += '<a href="' + url + '">';
 
-        if (imageTags.Primary) {
+        if (item.BackdropImageTags && item.BackdropImageTags.length) {
 
             html += '<img class="libraryGridImage" src="' + ApiClient.getImageUrl(item.Id, {
-                type: "Primary",
-                height: 100,
-                tag: item.ImageTags.Primary
+                type: "Backdrop",
+                width: 240,
+                tag: item.BackdropImageTags[0],
+                index: 0
             }) + '" />';
 
+        }
+        else if (item.ImageTags && item.ImageTags.Thumb) {
+            html += '<img class="libraryGridImage" src="' + ApiClient.getImageUrl(item.Id, {
+                type: "Thumb",
+                width: 240,
+                tag: item.ImageTags.Thumb
+            }) + '" />';
+        }
+        else if (item.ImageTags && item.ImageTags.Primary) {
+            html += '<img class="libraryGridImage" src="' + ApiClient.getImageUrl(item.Id, {
+                type: "Primary",
+                width: 240,
+                tag: item.ImageTags.Primary
+            }) + '" />';
         }
         else {
             html += '<img class="libraryGridImage" style="background:' + LibraryBrowser.getMetroColor(item.Id) + ';" src="css/images/items/list/video.png" />';

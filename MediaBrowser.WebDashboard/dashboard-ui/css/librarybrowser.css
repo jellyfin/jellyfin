@@ -62,7 +62,7 @@
 }
 
 .libraryGridImage {
-    width: 50px;
+    width: 120px;
 }
 
 .thName, .tdName {
@@ -83,11 +83,12 @@
     .libraryItemsGrid th, .libraryItemsGrid td {
         vertical-align: top;
         text-align: left;
-        padding: 10px;
+        padding: 10px 10px 5px;
     }
 
     .libraryItemsGrid th {
         padding-bottom: 1em;
+        padding-top: 0;
     }
 
     .libraryItemsGrid td {
