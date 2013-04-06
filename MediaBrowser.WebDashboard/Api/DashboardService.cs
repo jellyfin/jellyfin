@@ -141,6 +141,35 @@ namespace MediaBrowser.WebDashboard.Api
         }
 
         /// <summary>
+        /// Gets the dashboard UI path.
+        /// </summary>
+        /// <value>The dashboard UI path.</value>
+        public string DashboardUIPath
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(_serverConfigurationManager.Configuration.DashboardSourcePath))
+                {
+                    return _serverConfigurationManager.Configuration.DashboardSourcePath;
+                }
+
+                var runningDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+
+                return Path.Combine(runningDirectory, "dashboard-ui");
+            }
+        }
+
+        /// <summary>
+        /// Gets the dashboard resource path.
+        /// </summary>
+        /// <param name="virtualPath">The virtual path.</param>
+        /// <returns>System.String.</returns>
+        private string GetDashboardResourcePath(string virtualPath)
+        {
+            return Path.Combine(DashboardUIPath, virtualPath.Replace('/', '\\'));
+        }
+
+        /// <summary>
         /// Gets the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -290,11 +319,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>Task{Stream}.</returns>
         private Stream GetRawResourceStream(string path)
         {
-            var runningDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
-
-            path = Path.Combine(runningDirectory, "dashboard-ui", path.Replace('/', '\\'));
-
-            return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, StreamDefaults.DefaultFileStreamBufferSize, true);
+            return new FileStream(GetDashboardResourcePath(path), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, StreamDefaults.DefaultFileStreamBufferSize, true);
 
             // This code is used when the files are embedded resources
             //return GetType().Assembly.GetManifestResourceStream("MediaBrowser.WebDashboard.Html." + ConvertUrlToResourcePath(path));
@@ -564,9 +589,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>Task.</returns>
         private async Task AppendResource(Stream outputStream, string path, byte[] newLineBytes)
         {
-            var runningDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
-
-            path = Path.Combine(runningDirectory, "dashboard-ui", path.Replace('/', '\\'));
+            path = GetDashboardResourcePath(path);
 
             using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, StreamDefaults.DefaultFileStreamBufferSize, true))
             {
