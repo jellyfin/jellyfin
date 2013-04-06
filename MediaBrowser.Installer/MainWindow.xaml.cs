@@ -475,13 +475,22 @@ namespace MediaBrowser.Installer
         /// <param name="targetExe"></param>
         private void CreateUninstaller(string uninstallPath, string targetExe)
         {
-            using (var parent = Registry.CurrentUser.OpenSubKey(
-                         @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", true))
+            var parent = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", true);
             {
                 if (parent == null)
                 {
-                    MessageBox.Show("Uninstall registry key not found.");
-                    return;
+                    var rootParent = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion", true);
+                    {
+                        if (rootParent != null)
+                        {
+                            parent = rootParent.CreateSubKey("Uninstall");
+                            if (parent == null)
+                            {
+                                MessageBox.Show("Unable to create Uninstall registry key.  Program is still installed sucessfully.");
+                                return;
+                            }
+                        }
+                    }
                 }
                 try
                 {
@@ -495,7 +504,7 @@ namespace MediaBrowser.Installer
 
                         if (key == null)
                         {
-                            MessageBox.Show(String.Format("Unable to create uninstaller entry'{0}\\{1}'", @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", guidText));
+                            MessageBox.Show(String.Format("Unable to create uninstaller entry'{0}\\{1}'.  Program is still installed successfully.", @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", guidText));
                             return;
                         }
 
