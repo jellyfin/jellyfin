@@ -9,23 +9,24 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Movie",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio,UserData"
+        Fields: "PrimaryImageAspectRatio,UserData,DisplayMediaType"
     };
 
     function getTableHtml(items) {
 
-        var html = '<div class="libraryItemsGridContainer"><table data-role="table" data-mode="reflow" class="ui-responsive table-stroke libraryItemsGrid">';
+        var html = '<table class="libraryItemsGrid">';
 
         html += '<thead>';
 
         html += '<tr>';
         html += '<th>&nbsp;</th>';
         html += '<th class="thName">Name</th>';
-        html += '<th>Year</th>';
-        html += '<th>Rating</th>';
-        html += '<th>Runtime</th>';
-        html += '<th>Community Rating</th>';
-        html += '<th></th>';
+        html += '<th class="desktopColumn">Type</th>';
+        html += '<th class="tabletColumn">Year</th>';
+        html += '<th class="tabletColumn">Rating</th>';
+        html += '<th class="tabletColumn">Runtime</th>';
+        html += '<th class="tabletColumn">Community Rating</th>';
+        html += '<th class="tabletColumn"></th>';
         html += '</tr>';
 
         html += '</thead>';
@@ -39,7 +40,7 @@
 
         html += '</tbody>';
 
-        html += '</table></div>';
+        html += '</table>';
 
         return html;
     }
@@ -73,18 +74,20 @@
 
         html += '<td class="tdName"><a href="' + url + '">' + item.Name + '</a></td>';
 
-        html += '<td>' + (item.ProductionYear || "") + '</td>';
+        html += '<td class="desktopColumn">' + (item.VideoType == "VideoFile" ? item.DisplayMediaType : item.VideoType) + '</td>';
 
-        html += '<td>' + (item.OfficialRating || "") + '</td>';
+        html += '<td class="tabletColumn">' + (item.ProductionYear || "") + '</td>';
+
+        html += '<td class="tabletColumn">' + (item.OfficialRating || "") + '</td>';
 
         var minutes = (item.RunTimeTicks || 0) / 600000000;
 
         minutes = minutes || 1;
 
-        html += '<td>' + parseInt(minutes) + 'min</td>';
-        html += '<td>' + (item.CommunityRating || "") + '</td>';
+        html += '<td class="tabletColumn">' + parseInt(minutes) + 'min</td>';
+        html += '<td class="tabletColumn">' + (item.CommunityRating || "") + '</td>';
 
-        html += '<td>';
+        html += '<td class="tabletColumn">';
 
         var userData = item.UserData || {};
 
