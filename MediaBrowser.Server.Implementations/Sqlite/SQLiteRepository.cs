@@ -30,7 +30,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <summary>
         /// The flush interval
         /// </summary>
-        private const int FlushInterval = 5000;
+        private const int FlushInterval = 2000;
 
         /// <summary>
         /// The flush timer

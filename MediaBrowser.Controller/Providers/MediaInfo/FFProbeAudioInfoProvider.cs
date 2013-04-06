@@ -42,41 +42,38 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// <param name="data">The data.</param>
         /// <param name="isoMount">The iso mount.</param>
         /// <returns>Task.</returns>
-        protected override Task Fetch(Audio audio, CancellationToken cancellationToken, FFProbeResult data, IIsoMount isoMount)
+        protected override void Fetch(Audio audio, CancellationToken cancellationToken, FFProbeResult data, IIsoMount isoMount)
         {
-            return Task.Run(() =>
+            if (data.streams == null)
             {
-                if (data.streams == null)
-                {
-                    Logger.Error("Audio item has no streams: " + audio.Path);
-                    return;
-                }
+                Logger.Error("Audio item has no streams: " + audio.Path);
+                return;
+            }
 
-                audio.MediaStreams = data.streams.Select(s => GetMediaStream(s, data.format)).ToList();
+            audio.MediaStreams = data.streams.Select(s => GetMediaStream(s, data.format)).ToList();
 
-                // Get the first audio stream
-                var stream = data.streams.First(s => s.codec_type.Equals("audio", StringComparison.OrdinalIgnoreCase));
+            // Get the first audio stream
+            var stream = data.streams.First(s => s.codec_type.Equals("audio", StringComparison.OrdinalIgnoreCase));
 
-                // Get duration from stream properties
-                var duration = stream.duration;
+            // Get duration from stream properties
+            var duration = stream.duration;
 
-                // If it's not there go into format properties
-                if (string.IsNullOrEmpty(duration))
-                {
-                    duration = data.format.duration;
-                }
+            // If it's not there go into format properties
+            if (string.IsNullOrEmpty(duration))
+            {
+                duration = data.format.duration;
+            }
 
-                // If we got something, parse it
-                if (!string.IsNullOrEmpty(duration))
-                {
-                    audio.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(duration, UsCulture)).Ticks;
-                }
+            // If we got something, parse it
+            if (!string.IsNullOrEmpty(duration))
+            {
+                audio.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(duration, UsCulture)).Ticks;
+            }
 
-                if (data.format.tags != null)
-                {
-                    FetchDataFromTags(audio, data.format.tags);
-                }
-            });
+            if (data.format.tags != null)
+            {
+                FetchDataFromTags(audio, data.format.tags);
+            }
         }
 
         /// <summary>

@@ -298,7 +298,7 @@ namespace MediaBrowser.ServerApplication
 
                 () => LibraryManager.AddParts(GetExports<IResolverIgnoreRule>(), GetExports<IVirtualFolderCreator>(), GetExports<IItemResolver>(), GetExports<IIntroProvider>(), GetExports<IBaseItemComparer>()),
 
-                () => ProviderManager.AddMetadataProviders(GetExports<BaseMetadataProvider>().OrderBy(e => e.Priority).ToArray())
+                () => ProviderManager.AddMetadataProviders(GetExports<BaseMetadataProvider>().ToArray())
                 );
 
             UdpServer = new UdpServer(Logger, NetworkManager, ServerConfigurationManager);
