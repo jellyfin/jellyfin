@@ -32,7 +32,7 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The user id.</value>
         [ProtoMember(1)]
-        public Guid UserId { get; set; }
+        public Guid Id { get; set; }
         /// <summary>
         /// Gets or sets the type of the view.
         /// </summary>

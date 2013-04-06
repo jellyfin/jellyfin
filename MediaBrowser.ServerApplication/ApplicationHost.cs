@@ -1,8 +1,4 @@
-﻿using System.Diagnostics;
-using System.Net.Cache;
-using System.Net.Http;
-using System.Net.Sockets;
-using MediaBrowser.Api;
+﻿using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Constants;
@@ -46,8 +42,10 @@ using MediaBrowser.ServerApplication.Implementations;
 using MediaBrowser.WebDashboard.Api;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -140,6 +138,11 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         /// <value>The UDP server.</value>
         private UdpServer UdpServer { get; set; }
+        /// <summary>
+        /// Gets or sets the display preferences manager.
+        /// </summary>
+        /// <value>The display preferences manager.</value>
+        internal IDisplayPreferencesManager DisplayPreferencesManager { get; set; }
 
         /// <summary>
         /// The full path to our startmenu shortcut
@@ -212,8 +215,12 @@ namespace MediaBrowser.ServerApplication
             ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, DirectoryWatchers, LogManager);
             RegisterSingleInstance(ProviderManager);
 
+            DisplayPreferencesManager = new DisplayPreferencesManager(LogManager.GetLogger("DisplayPreferencesManager"));
+            RegisterSingleInstance(DisplayPreferencesManager);
+
             RegisterSingleInstance<ILibrarySearchEngine>(() => new LuceneSearchEngine());
-            
+
+            await ConfigureRepositories().ConfigureAwait(false);
             SetKernelProperties();
             SetStaticProperties();
         }
@@ -229,12 +236,26 @@ namespace MediaBrowser.ServerApplication
             Parallel.Invoke(
                 () => ServerKernel.UserDataRepositories = GetExports<IUserDataRepository>(),
                 () => ServerKernel.UserRepositories = GetExports<IUserRepository>(),
-                () => ServerKernel.DisplayPreferencesRepositories = GetExports<IDisplayPreferencesRepository>(),
                 () => ServerKernel.ItemRepositories = GetExports<IItemRepository>(),
                 () => ServerKernel.WeatherProviders = GetExports<IWeatherProvider>(),
                 () => ServerKernel.ImageEnhancers = GetExports<IImageEnhancer>().OrderBy(e => e.Priority).ToArray(),
                 () => ServerKernel.StringFiles = GetExports<LocalizedStringData>()
                 );
+        }
+
+        /// <summary>
+        /// Configures the repositories.
+        /// </summary>
+        /// <returns>Task.</returns>
+        private async Task ConfigureRepositories()
+        {
+            var displayPreferencesRepositories = GetExports<IDisplayPreferencesRepository>();
+
+            var repo = GetRepository(displayPreferencesRepositories, ServerConfigurationManager.Configuration.DisplayPreferencesRepository);
+
+            await repo.Initialize().ConfigureAwait(false);
+
+            ((DisplayPreferencesManager)DisplayPreferencesManager).Repository = repo;
         }
 
         /// <summary>
@@ -277,7 +298,7 @@ namespace MediaBrowser.ServerApplication
 
                 () => LibraryManager.AddParts(GetExports<IResolverIgnoreRule>(), GetExports<IVirtualFolderCreator>(), GetExports<IItemResolver>(), GetExports<IIntroProvider>(), GetExports<IBaseItemComparer>()),
 
-                () => ProviderManager.AddMetadataProviders(GetExports<BaseMetadataProvider>().OrderBy(e => e.Priority).ToArray())
+                () => ProviderManager.AddMetadataProviders(GetExports<BaseMetadataProvider>().ToArray())
                 );
 
             UdpServer = new UdpServer(Logger, NetworkManager, ServerConfigurationManager);
@@ -409,8 +430,8 @@ namespace MediaBrowser.ServerApplication
         public override void Shutdown()
         {
             App.Instance.Dispatcher.Invoke(App.Instance.Shutdown);
-        }			        
-        
+        }
+
         /// <summary>
         /// Registers the server with administrator access.
         /// </summary>
@@ -449,6 +470,22 @@ namespace MediaBrowser.ServerApplication
             {
                 process.WaitForExit();
             }
+        }
+
+        /// <summary>
+        /// Gets the repository.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="repositories">The repositories.</param>
+        /// <param name="name">The name.</param>
+        /// <returns>``0.</returns>
+        private T GetRepository<T>(IEnumerable<T> repositories, string name)
+            where T : class, IRepository
+        {
+            var enumerable = repositories as T[] ?? repositories.ToArray();
+
+            return enumerable.FirstOrDefault(r => string.Equals(r.Name, name, StringComparison.OrdinalIgnoreCase)) ??
+                   enumerable.FirstOrDefault();
         }
     }
 }

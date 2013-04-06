@@ -30,7 +30,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <summary>
         /// The flush interval
         /// </summary>
-        private const int FlushInterval = 5000;
+        private const int FlushInterval = 2000;
 
         /// <summary>
         /// The flush timer
@@ -42,6 +42,18 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// </summary>
         /// <value>The logger.</value>
         protected ILogger Logger { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether [enable delayed commands].
+        /// </summary>
+        /// <value><c>true</c> if [enable delayed commands]; otherwise, <c>false</c>.</value>
+        protected virtual bool EnableDelayedCommands
+        {
+            get
+            {
+                return true;
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteRepository" /> class.
@@ -85,8 +97,11 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             await connection.OpenAsync().ConfigureAwait(false);
 
-            // Run once
-            FlushTimer = new Timer(Flush, null, TimeSpan.FromMilliseconds(FlushInterval), TimeSpan.FromMilliseconds(-1));
+            if (EnableDelayedCommands)
+            {
+                // Run once
+                FlushTimer = new Timer(Flush, null, TimeSpan.FromMilliseconds(FlushInterval), TimeSpan.FromMilliseconds(-1));
+            }
         }
 
         /// <summary>
@@ -147,16 +162,9 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 {
                     if (connection != null)
                     {
-                        // If we're not already flushing, do it now
-                        if (!IsFlushing)
+                        if (EnableDelayedCommands)
                         {
-                            Flush(null);
-                        }
-
-                        // Don't dispose in the middle of a flush
-                        while (IsFlushing)
-                        {
-                            Thread.Sleep(25);
+                            FlushOnDispose();
                         }
                         
                         if (connection.IsOpen())
@@ -178,6 +186,24 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 {
                     Logger.ErrorException("Error disposing database", ex);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Flushes the on dispose.
+        /// </summary>
+        private void FlushOnDispose()
+        {
+            // If we're not already flushing, do it now
+            if (!IsFlushing)
+            {
+                Flush(null);
+            }
+
+            // Don't dispose in the middle of a flush
+            while (IsFlushing)
+            {
+                Thread.Sleep(25);
             }
         }
 
