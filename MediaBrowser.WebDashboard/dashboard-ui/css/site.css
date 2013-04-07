@@ -279,7 +279,7 @@ form, .readOnlyContent {
         right: 30px;
     }
 
-    .type-interior > .ui-content {
+    .type-interior > .ui-content, .type-interior > .ui-panel-content-wrap > .ui-content {
         padding-right: 0;
         padding-left: 0;
         padding-top: 0;

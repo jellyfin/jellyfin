@@ -207,6 +207,13 @@
             reloadItems(page);
         });
 
+        $('#chk3D', this).on('change', function () {
+
+            query.VideoFormats = this.checked ? this.getAttribute('data-filter') : null;
+
+            reloadItems(page);
+        });
+
     }).on('pagebeforeshow', "#moviesPage", function() {
         
         reloadItems(this);
@@ -246,6 +253,8 @@
         }).checkboxradio('refresh');
 
         $('#selectView', this).val(view).selectmenu('refresh');
+        
+        $('#chk3D', this).checked(query.VideoFormats == "Digital3D,Sbs3D").checkboxradio('refresh');
     });
 
 })(jQuery, document);
