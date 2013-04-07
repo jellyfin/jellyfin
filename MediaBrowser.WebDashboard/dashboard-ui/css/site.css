@@ -859,6 +859,7 @@ progress {
     float: left;
     background: none;
     border: 0;
+    width: 2.5em;
 }
 
 .vjs-default-skin .vjs-menu-button.vjs-stop-button div {
