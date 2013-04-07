@@ -1,8 +1,10 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers.MediaInfo;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -47,18 +49,26 @@ namespace MediaBrowser.Api.Playback
         protected IIsoManager IsoManager { get; set; }
 
         /// <summary>
+        /// Gets or sets the media encoder.
+        /// </summary>
+        /// <value>The media encoder.</value>
+        protected IMediaEncoder MediaEncoder { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
         /// <param name="userManager">The user manager.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="isoManager">The iso manager.</param>
-        protected BaseStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager)
+        /// <param name="mediaEncoder">The media encoder.</param>
+        protected BaseStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder)
         {
             ApplicationPaths = appPaths;
             UserManager = userManager;
             LibraryManager = libraryManager;
             IsoManager = isoManager;
+            MediaEncoder = mediaEncoder;
         }
 
         /// <summary>
@@ -309,9 +319,17 @@ namespace MediaBrowser.Api.Playback
 
             if (!File.Exists(path))
             {
-                var success = Kernel.Instance.FFMpegManager.ExtractTextSubtitle(video, subtitleStream.Index, path, CancellationToken.None).Result;
+                InputType type;
 
-                if (!success)
+                var inputPath = MediaEncoderHelpers.GetInputArgument(video, null, out type);
+
+                try
+                {
+                    var task = MediaEncoder.ExtractTextSubtitle(inputPath, type, subtitleStream.Index, path, CancellationToken.None);
+
+                    Task.WaitAll(task);
+                }
+                catch
                 {
                     return null;
                 }
@@ -332,9 +350,13 @@ namespace MediaBrowser.Api.Playback
 
             if (!File.Exists(path))
             {
-                var success = Kernel.Instance.FFMpegManager.ConvertTextSubtitle(subtitleStream, path, CancellationToken.None).Result;
+                try
+                {
+                    var task = MediaEncoder.ConvertTextSubtitleToAss(subtitleStream.Path, path, CancellationToken.None);
 
-                if (!success)
+                    Task.WaitAll(task);
+                }
+                catch
                 {
                     return null;
                 }
@@ -363,6 +385,16 @@ namespace MediaBrowser.Api.Playback
             }
 
             return string.Format(" -filter_complex \"[0:{0}]format=yuva444p,lut=u=128:v=128:y=gammaval(.3)[sub] ; [0:{1}] [sub] overlay{2}\"", state.SubtitleStream.Index, state.VideoStream.Index, outputSizeParam);
+        }
+
+        /// <summary>
+        /// Gets the probe size argument.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>System.String.</returns>
+        protected string GetProbeSizeArgument(BaseItem item)
+        {
+            return MediaEncoder.GetProbeSizeArgument(MediaEncoderHelpers.GetInputType(item));
         }
 
         /// <summary>
@@ -477,9 +509,18 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected string GetInputArgument(BaseItem item, IIsoMount isoMount)
         {
-            return isoMount == null ?
-                Kernel.Instance.FFMpegManager.GetInputArgument(item) :
-                Kernel.Instance.FFMpegManager.GetInputArgument(item as Video, isoMount);
+            var type = InputType.AudioFile;
+
+            var inputPath = new[] { item.Path };
+
+            var video = item as Video;
+
+            if (video != null)
+            {
+                inputPath = MediaEncoderHelpers.GetInputArgument(video, isoMount, out type);
+            }
+
+            return MediaEncoder.GetInputArgument(inputPath, type);
         }
 
         /// <summary>
@@ -508,8 +549,8 @@ namespace MediaBrowser.Api.Playback
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
 
-                    FileName = Kernel.Instance.FFMpegManager.FFMpegPath,
-                    WorkingDirectory = Path.GetDirectoryName(Kernel.Instance.FFMpegManager.FFMpegPath),
+                    FileName = MediaEncoder.EncoderPath,
+                    WorkingDirectory = Path.GetDirectoryName(MediaEncoder.EncoderPath),
                     Arguments = GetCommandLineArguments(outputPath, state),
 
                     WindowStyle = ProcessWindowStyle.Hidden,
@@ -655,7 +696,7 @@ namespace MediaBrowser.Api.Playback
             }
 
             state.AudioStream = GetMediaStream(media.MediaStreams, null, MediaStreamType.Audio, true);
-            
+
             return state;
         }
 

@@ -1,16 +1,17 @@
 ﻿using MediaBrowser.Api.Images;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
@@ -19,8 +20,8 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// </summary>
     public abstract class BaseProgressiveStreamingService : BaseStreamingService
     {
-        protected BaseProgressiveStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager) :
-            base(appPaths, userManager, libraryManager, isoManager)
+        protected BaseProgressiveStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder) :
+            base(appPaths, userManager, libraryManager, isoManager, mediaEncoder)
         {
         }
 

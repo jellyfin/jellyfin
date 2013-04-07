@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Entities;
 using System;
 
 namespace MediaBrowser.Model.Querying
@@ -141,6 +140,18 @@ namespace MediaBrowser.Model.Querying
         /// <value>The image types.</value>
         public ImageType[] ImageTypes { get; set; }
 
+        /// <summary>
+        /// Gets or sets the air days.
+        /// </summary>
+        /// <value>The air days.</value>
+        public DayOfWeek[] AirDays { get; set; }
+
+        /// <summary>
+        /// Gets or sets the series status.
+        /// </summary>
+        /// <value>The series status.</value>
+        public SeriesStatus[] SeriesStatuses { get; set; }
+        
         /// <summary>
         /// Gets or sets the ids, which are specific items to retrieve
         /// </summary>

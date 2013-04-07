@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -127,6 +128,20 @@ namespace MediaBrowser.Api.UserLibrary
         /// <value>The video formats.</value>
         [ApiMember(Name = "VideoFormats", Description = "Optional filter by VideoFormat (Standard, Digital3D, Sbs3D). Allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string VideoFormats { get; set; }
+
+        /// <summary>
+        /// Gets or sets the series status.
+        /// </summary>
+        /// <value>The series status.</value>
+        [ApiMember(Name = "SeriesStatus", Description = "Optional filter by Series Status. Allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string SeriesStatus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the air days.
+        /// </summary>
+        /// <value>The air days.</value>
+        [ApiMember(Name = "AirDays", Description = "Optional filter by Series Air Days. Allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string AirDays { get; set; }
     }
 
     /// <summary>
@@ -340,6 +355,23 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{BaseItem}.</returns>
         private IEnumerable<BaseItem> ApplyAdditionalFilters(GetItems request, IEnumerable<BaseItem> items)
         {
+            // Filter by Series Status
+            if (!string.IsNullOrEmpty(request.SeriesStatus))
+            {
+                var vals = request.SeriesStatus.Split(',');
+
+                items = items.OfType<Series>().Where(i => i.Status.HasValue && vals.Contains(i.Status.Value.ToString(), StringComparer.OrdinalIgnoreCase));
+            }
+
+            // Filter by Series AirDays
+            if (!string.IsNullOrEmpty(request.AirDays))
+            {
+                var days = request.AirDays.Split(',').Select(d => (DayOfWeek)Enum.Parse(typeof(DayOfWeek), d, true));
+
+                items = items.OfType<Series>().Where(i => i.AirDays != null && days.Any(d => i.AirDays.Contains(d)));
+            }
+
+            // Filter by VideoFormat
             if (!string.IsNullOrEmpty(request.VideoFormats))
             {
                 var formats = request.VideoFormats.Split(',');
@@ -347,6 +379,7 @@ namespace MediaBrowser.Api.UserLibrary
                 items = items.OfType<Video>().Where(i => formats.Contains(i.VideoFormat.ToString(), StringComparer.OrdinalIgnoreCase));
             }
 
+            // Filter by VideoType
             if (!string.IsNullOrEmpty(request.VideoTypes))
             {
                 var types = request.VideoTypes.Split(',');

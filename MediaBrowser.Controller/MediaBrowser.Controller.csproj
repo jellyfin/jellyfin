@@ -53,8 +53,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="protobuf-net, Version=2.0.0.621, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="protobuf-net">
       <HintPath>..\packages\protobuf-net.2.0.0.621\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -111,6 +110,7 @@
     <Compile Include="Library\ChildrenChangedEventArgs.cs" />
     <Compile Include="Library\DtoBuilder.cs" />
     <Compile Include="Providers\IProviderManager.cs" />
+    <Compile Include="Providers\MediaInfo\MediaEncoderHelpers.cs" />
     <Compile Include="Providers\MetadataProviderPriority.cs" />
     <Compile Include="Providers\Music\LastfmAlbumProvider.cs" />
     <Compile Include="Providers\Music\FanArtAlbumProvider.cs" />
@@ -134,7 +134,6 @@
     <Compile Include="Localization\RatingsDefinition.cs" />
     <Compile Include="Localization\USRatingsDictionary.cs" />
     <Compile Include="MediaInfo\FFMpegManager.cs" />
-    <Compile Include="MediaInfo\FFProbeResult.cs" />
     <Compile Include="Persistence\IDisplayPreferencesRepository.cs" />
     <Compile Include="Persistence\IItemRepository.cs" />
     <Compile Include="Persistence\IRepository.cs" />
@@ -201,15 +200,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="MediaInfo\fonts\ARIALUNI.TTF" />
-    <EmbeddedResource Include="MediaInfo\fonts\fonts.conf" />
-    <EmbeddedResource Include="MediaInfo\ffmpeg20130405.zip" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="MediaInfo\readme.txt" />
-  </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == Release (

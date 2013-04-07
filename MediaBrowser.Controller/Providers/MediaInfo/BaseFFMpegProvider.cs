@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
@@ -15,8 +16,11 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     public abstract class BaseFFMpegProvider<T> : BaseMetadataProvider
         where T : BaseItem
     {
-        protected BaseFFMpegProvider(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
+        protected readonly IMediaEncoder MediaEncoder;
+
+        protected BaseFFMpegProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder) : base(logManager, configurationManager)
         {
+            MediaEncoder = mediaEncoder;
         }
 
         /// <summary>
@@ -53,7 +57,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         {
             get
             {
-                return Kernel.Instance.FFMpegManager.FFMpegVersion;
+                return MediaEncoder.Version;
             }
         }
 

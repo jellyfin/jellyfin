@@ -23,7 +23,7 @@ namespace MediaBrowser.Controller.Drawing
     /// <summary>
     /// Class ImageManager
     /// </summary>
-    public class ImageManager : IDisposable
+    public class ImageManager
     {
         /// <summary>
         /// Gets the image size cache.
@@ -680,29 +680,6 @@ namespace MediaBrowser.Controller.Drawing
         private SemaphoreSlim GetLock(string filename)
         {
             return _locks.GetOrAdd(filename, key => new SemaphoreSlim(1, 1));
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected void Dispose(bool dispose)
-        {
-            if (dispose)
-            {
-                ImageSizeCache.Dispose();
-                ResizedImageCache.Dispose();
-                CroppedImageCache.Dispose();
-                EnhancedImageCache.Dispose();
-            }
         }
     }
 }

@@ -1,10 +1,11 @@
-﻿using System.Linq;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,12 +27,12 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// <param name="isoManager">The iso manager.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        public FfMpegVideoImageProvider(IIsoManager isoManager, ILogManager logManager, IServerConfigurationManager configurationManager)
-            : base(logManager, configurationManager)
+        public FfMpegVideoImageProvider(IIsoManager isoManager, ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder)
+            : base(logManager, configurationManager, mediaEncoder)
         {
             _isoManager = isoManager;
-        }        
-        
+        }
+
         /// <summary>
         /// Gets the priority.
         /// </summary>
@@ -57,7 +58,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
             if (video != null)
             {
-                if (video.VideoType == VideoType.Iso && video.IsoType.HasValue && _isoManager.CanMount(item.Path))
+                if (video.VideoType == VideoType.Iso && _isoManager.CanMount(item.Path))
                 {
                     return true;
                 }
@@ -139,25 +140,23 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             {
                 // If we know the duration, grab it from 10% into the video. Otherwise just 10 seconds in.
                 // Always use 10 seconds for dvd because our duration could be out of whack
-                var imageOffset = video.VideoType != VideoType.Dvd && video.RunTimeTicks.HasValue && video.RunTimeTicks.Value > 0
-                                           ? TimeSpan.FromTicks(Convert.ToInt64(video.RunTimeTicks.Value * .1))
-                                           : TimeSpan.FromSeconds(10);
+                var imageOffset = video.VideoType != VideoType.Dvd && video.RunTimeTicks.HasValue &&
+                                  video.RunTimeTicks.Value > 0
+                                      ? TimeSpan.FromTicks(Convert.ToInt64(video.RunTimeTicks.Value * .1))
+                                      : TimeSpan.FromSeconds(10);
 
-                var inputPath = isoMount == null ?
-                    Kernel.Instance.FFMpegManager.GetInputArgument(video) :
-                    Kernel.Instance.FFMpegManager.GetInputArgument(video, isoMount);
+                InputType type;
 
-                var success = await Kernel.Instance.FFMpegManager.ExtractImage(inputPath, imageOffset, path, cancellationToken).ConfigureAwait(false);
+                var inputPath = MediaEncoderHelpers.GetInputArgument(video, isoMount, out type);
 
-                if (success)
-                {
-                    video.PrimaryImagePath = path;
-                    SetLastRefreshed(video, DateTime.UtcNow);
-                }
-                else
-                {
-                    SetLastRefreshed(video, DateTime.UtcNow, ProviderRefreshStatus.Failure);
-                }
+                await MediaEncoder.ExtractImage(inputPath, type, imageOffset, path, cancellationToken).ConfigureAwait(false);
+
+                video.PrimaryImagePath = path;
+                SetLastRefreshed(video, DateTime.UtcNow);
+            }
+            catch
+            {
+                SetLastRefreshed(video, DateTime.UtcNow, ProviderRefreshStatus.Failure);
             }
             finally
             {

@@ -1,15 +1,15 @@
 ﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Providers.MediaInfo
 {
@@ -18,7 +18,8 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     /// </summary>
     public class FFProbeAudioInfoProvider : BaseFFProbeProvider<Audio>
     {
-        public FFProbeAudioInfoProvider(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
+        public FFProbeAudioInfoProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder, IProtobufSerializer protobufSerializer)
+            : base(logManager, configurationManager, mediaEncoder, protobufSerializer)
         {
         }
 
@@ -42,7 +43,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// <param name="data">The data.</param>
         /// <param name="isoMount">The iso mount.</param>
         /// <returns>Task.</returns>
-        protected override void Fetch(Audio audio, CancellationToken cancellationToken, FFProbeResult data, IIsoMount isoMount)
+        protected override void Fetch(Audio audio, CancellationToken cancellationToken, MediaInfoResult data, IIsoMount isoMount)
         {
             if (data.streams == null)
             {

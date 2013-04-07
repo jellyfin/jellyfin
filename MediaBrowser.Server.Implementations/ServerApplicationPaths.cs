@@ -308,7 +308,7 @@ namespace MediaBrowser.Server.Implementations
             {
                 if (_fFMpegStreamCachePath == null)
                 {
-                    _fFMpegStreamCachePath = Path.Combine(CachePath, "ffmpeg-streams");
+                    _fFMpegStreamCachePath = Path.Combine(CachePath, "encoded-media");
 
                     if (!Directory.Exists(_fFMpegStreamCachePath))
                     {
