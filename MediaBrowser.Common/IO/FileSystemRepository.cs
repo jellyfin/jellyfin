@@ -9,7 +9,7 @@ namespace MediaBrowser.Common.IO
     /// This is a wrapper for storing large numbers of files within a directory on a file system.
     /// Simply pass a filename into GetResourcePath and it will return a full path location of where the file should be stored.
     /// </summary>
-    public class FileSystemRepository : IDisposable
+    public class FileSystemRepository
     {
         /// <summary>
         /// Contains the list of subfolders under the main directory
@@ -162,25 +162,6 @@ namespace MediaBrowser.Common.IO
             }
             
             return File.Exists(path);
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (dispose)
-            {
-            }
         }
     }
 }

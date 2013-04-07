@@ -6,6 +6,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -33,6 +34,7 @@ using MediaBrowser.Server.Implementations.Configuration;
 using MediaBrowser.Server.Implementations.HttpServer;
 using MediaBrowser.Server.Implementations.IO;
 using MediaBrowser.Server.Implementations.Library;
+using MediaBrowser.Server.Implementations.MediaEncoder;
 using MediaBrowser.Server.Implementations.Providers;
 using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Udp;
@@ -144,6 +146,8 @@ namespace MediaBrowser.ServerApplication
         /// <value>The display preferences manager.</value>
         internal IDisplayPreferencesManager DisplayPreferencesManager { get; set; }
 
+        private IMediaEncoder MediaEncoder { get; set; }
+        
         /// <summary>
         /// The full path to our startmenu shortcut
         /// </summary>
@@ -220,6 +224,9 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<ILibrarySearchEngine>(() => new LuceneSearchEngine());
 
+            MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ZipClient, ApplicationPaths, JsonSerializer);
+            RegisterSingleInstance(MediaEncoder);
+
             await ConfigureRepositories().ConfigureAwait(false);
             SetKernelProperties();
             SetStaticProperties();
@@ -230,7 +237,7 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         private void SetKernelProperties()
         {
-            ServerKernel.FFMpegManager = new FFMpegManager(ServerKernel, ZipClient, JsonSerializer, ProtobufSerializer, LogManager, ApplicationPaths);
+            ServerKernel.FFMpegManager = new FFMpegManager(ServerKernel, ApplicationPaths, MediaEncoder);
             ServerKernel.ImageManager = new ImageManager(ServerKernel, ProtobufSerializer, LogManager.GetLogger("ImageManager"), ApplicationPaths);
 
             Parallel.Invoke(

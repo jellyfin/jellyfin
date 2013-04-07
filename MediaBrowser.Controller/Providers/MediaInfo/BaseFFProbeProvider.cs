@@ -1,12 +1,13 @@
-﻿using System.Globalization;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,13 +18,17 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     /// Provides a base class for extracting media information through ffprobe
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class BaseFFProbeProvider<T> : BaseFFMpegProvider<T>, IDisposable
+    public abstract class BaseFFProbeProvider<T> : BaseFFMpegProvider<T>
         where T : BaseItem
     {
-        protected BaseFFProbeProvider(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
+        protected BaseFFProbeProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder, IProtobufSerializer protobufSerializer)
+            : base(logManager, configurationManager, mediaEncoder)
         {
+            ProtobufSerializer = protobufSerializer;
         }
 
+        protected readonly IProtobufSerializer ProtobufSerializer;
+        
         /// <summary>
         /// Gets or sets the FF probe cache.
         /// </summary>
@@ -81,11 +86,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             {
                 OnPreFetch(myItem, isoMount);
 
-                var inputPath = isoMount == null ? 
-                    Kernel.Instance.FFMpegManager.GetInputArgument(myItem) :
-                    Kernel.Instance.FFMpegManager.GetInputArgument((Video)item, isoMount);
-
-                var result = await Kernel.Instance.FFMpegManager.RunFFProbe(item, inputPath, item.DateModified, FFProbeCache, cancellationToken).ConfigureAwait(false);
+                var result = await GetMediaInfo(item, isoMount, item.DateModified, FFProbeCache, cancellationToken).ConfigureAwait(false);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -108,6 +109,61 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Gets the media info.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="isoMount">The iso mount.</param>
+        /// <param name="lastDateModified">The last date modified.</param>
+        /// <param name="cache">The cache.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{MediaInfoResult}.</returns>
+        /// <exception cref="System.ArgumentNullException">inputPath
+        /// or
+        /// cache</exception>
+        private async Task<MediaInfoResult> GetMediaInfo(BaseItem item, IIsoMount isoMount, DateTime lastDateModified, FileSystemRepository cache, CancellationToken cancellationToken)
+        {
+            if (cache == null)
+            {
+                throw new ArgumentNullException("cache");
+            }
+
+            // Put the ffmpeg version into the cache name so that it's unique per-version
+            // We don't want to try and deserialize data based on an old version, which could potentially fail
+            var resourceName = item.Id + "_" + lastDateModified.Ticks + "_" + MediaEncoder.Version;
+
+            // Forumulate the cache file path
+            var cacheFilePath = cache.GetResourcePath(resourceName, ".pb");
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Avoid File.Exists by just trying to deserialize
+            try
+            {
+                return ProtobufSerializer.DeserializeFromFile<MediaInfoResult>(cacheFilePath);
+            }
+            catch (FileNotFoundException)
+            {
+                // Cache file doesn't exist
+            }
+
+            var type = InputType.AudioFile;
+            var inputPath = isoMount == null ? new[] { item.Path } : new[] { isoMount.MountedPath };
+
+            var video = item as Video;
+
+            if (video != null)
+            {
+                inputPath = MediaEncoderHelpers.GetInputArgument(video, isoMount, out type);
+            }
+
+            var info = await MediaEncoder.GetMediaInfo(inputPath, type, cancellationToken).ConfigureAwait(false);
+
+            ProtobufSerializer.SerializeToFile(info, cacheFilePath);
+
+            return info;
         }
 
         /// <summary>
@@ -147,7 +203,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// Normalizes the FF probe result.
         /// </summary>
         /// <param name="result">The result.</param>
-        private void NormalizeFFProbeResult(FFProbeResult result)
+        private void NormalizeFFProbeResult(MediaInfoResult result)
         {
             if (result.format != null && result.format.tags != null)
             {
@@ -180,7 +236,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// <param name="result">The result.</param>
         /// <param name="isoMount">The iso mount.</param>
         /// <returns>Task.</returns>
-        protected abstract void Fetch(T item, CancellationToken cancellationToken, FFProbeResult result, IIsoMount isoMount);
+        protected abstract void Fetch(T item, CancellationToken cancellationToken, MediaInfoResult result, IIsoMount isoMount);
 
         /// <summary>
         /// Converts ffprobe stream info to our MediaStream class
@@ -188,7 +244,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// <param name="streamInfo">The stream info.</param>
         /// <param name="formatInfo">The format info.</param>
         /// <returns>MediaStream.</returns>
-        protected MediaStream GetMediaStream(FFProbeMediaStreamInfo streamInfo, FFProbeMediaFormatInfo formatInfo)
+        protected MediaStream GetMediaStream(MediaStreamInfo streamInfo, MediaFormatInfo formatInfo)
         {
             var stream = new MediaStream
             {
@@ -359,23 +415,6 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         private Dictionary<string, string> ConvertDictionaryToCaseInSensitive(Dictionary<string, string> dict)
         {
             return new Dictionary<string, string>(dict, StringComparer.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (dispose)
-            {
-                FFProbeCache.Dispose();
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
         }
     }
 }

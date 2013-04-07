@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Playback.Hls
@@ -18,8 +18,8 @@ namespace MediaBrowser.Api.Playback.Hls
         /// </summary>
         public const string SegmentFilePrefix = "segment-";
 
-        protected BaseHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager) 
-            : base(appPaths, userManager, libraryManager, isoManager)
+        protected BaseHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder) 
+            : base(appPaths, userManager, libraryManager, isoManager, mediaEncoder)
         {
         }
 
@@ -176,7 +176,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             segmentOutputPath = Path.Combine(segmentOutputPath, segmentOutputName + "%03d." + GetSegmentFileExtension(state).TrimStart('.'));
 
-            var probeSize = Kernel.Instance.FFMpegManager.GetProbeSizeArgument(state.Item);
+            var probeSize = GetProbeSizeArgument(state.Item);
 
             return string.Format("{0} {1} -i {2}{3} -threads 0 {4} {5} {6} -f ssegment -segment_list_flags +live -segment_time 10 -segment_list \"{7}\" \"{8}\"",
                 probeSize,

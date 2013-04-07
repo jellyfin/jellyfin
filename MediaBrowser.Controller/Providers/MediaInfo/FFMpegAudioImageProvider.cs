@@ -1,10 +1,11 @@
-﻿using System.Collections.Concurrent;
+﻿using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,8 +17,8 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     /// </summary>
     public class FFMpegAudioImageProvider : BaseFFMpegProvider<Audio>
     {
-        public FFMpegAudioImageProvider(ILogManager logManager, IServerConfigurationManager configurationManager)
-            : base(logManager, configurationManager)
+        public FFMpegAudioImageProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder)
+            : base(logManager, configurationManager, mediaEncoder)
         {
         }
 
@@ -94,12 +95,11 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
                             {
                                 try
                                 {
-                                    var imageSucceeded = await Kernel.Instance.FFMpegManager.ExtractAudioImage(audio.Path, path, cancellationToken).ConfigureAwait(false);
-
-                                    if (!imageSucceeded)
-                                    {
-                                        success = ProviderRefreshStatus.Failure;
-                                    }
+                                    await MediaEncoder.ExtractImage(new[] { audio.Path }, InputType.AudioFile, null, path, cancellationToken).ConfigureAwait(false);
+                                }
+                                catch
+                                {
+                                    success = ProviderRefreshStatus.Failure;
                                 }
                                 finally
                                 {

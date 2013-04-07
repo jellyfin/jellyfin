@@ -1,8 +1,8 @@
 ﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
@@ -21,8 +21,8 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     /// </summary>
     public class FFProbeVideoInfoProvider : BaseFFProbeProvider<Video>
     {
-        public FFProbeVideoInfoProvider(IIsoManager isoManager, IBlurayExaminer blurayExaminer, IProtobufSerializer protobufSerializer, ILogManager logManager, IServerConfigurationManager configurationManager)
-            : base(logManager, configurationManager)
+        public FFProbeVideoInfoProvider(IIsoManager isoManager, IBlurayExaminer blurayExaminer, IProtobufSerializer protobufSerializer, ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder)
+            : base(logManager, configurationManager, mediaEncoder, protobufSerializer)
         {
             if (isoManager == null)
             {
@@ -39,7 +39,6 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
             _blurayExaminer = blurayExaminer;
             _isoManager = isoManager;
-            _protobufSerializer = protobufSerializer;
 
             BdInfoCache = new FileSystemRepository(Path.Combine(ConfigurationManager.ApplicationPaths.CachePath, "bdinfo"));
         }
@@ -60,11 +59,6 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// The _iso manager
         /// </summary>
         private readonly IIsoManager _isoManager;
-
-        /// <summary>
-        /// The _protobuf serializer
-        /// </summary>
-        private readonly IProtobufSerializer _protobufSerializer;
 
         /// <summary>
         /// Returns true or false indicating if the provider should refresh when the contents of it's directory changes
@@ -187,7 +181,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// <param name="data">The data.</param>
         /// <param name="isoMount">The iso mount.</param>
         /// <returns>Task.</returns>
-        protected override void Fetch(Video video, CancellationToken cancellationToken, FFProbeResult data, IIsoMount isoMount)
+        protected override void Fetch(Video video, CancellationToken cancellationToken, MediaInfoResult data, IIsoMount isoMount)
         {
             if (data.format != null)
             {
@@ -335,13 +329,13 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
             try
             {
-                result = _protobufSerializer.DeserializeFromFile<BlurayDiscInfo>(cacheFile);
+                result = ProtobufSerializer.DeserializeFromFile<BlurayDiscInfo>(cacheFile);
             }
             catch (FileNotFoundException)
             {
                 result = GetBDInfo(inputPath);
 
-                _protobufSerializer.SerializeToFile(result, cacheFile);
+                ProtobufSerializer.SerializeToFile(result, cacheFile);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -421,20 +415,6 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         private BlurayDiscInfo GetBDInfo(string path)
         {
             return _blurayExaminer.GetDiscInfo(path);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected override void Dispose(bool dispose)
-        {
-            if (dispose)
-            {
-                BdInfoCache.Dispose();
-            }
-
-            base.Dispose(dispose);
         }
     }
 }

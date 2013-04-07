@@ -2,30 +2,32 @@
 using ProtoBuf;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Controller.MediaInfo
+namespace MediaBrowser.Common.MediaInfo
 {
     /// <summary>
-    /// Provides a class that we can use to deserialize the ffprobe json output
-    /// Sample output:
-    /// http://stackoverflow.com/questions/7708373/get-ffmpeg-information-in-friendly-way
+    /// Class MediaInfoResult
     /// </summary>
     [ProtoContract]
-    public class FFProbeResult
+    public class MediaInfoResult
     {
         /// <summary>
         /// Gets or sets the streams.
         /// </summary>
         /// <value>The streams.</value>
         [ProtoMember(1)]
-        public FFProbeMediaStreamInfo[] streams { get; set; }
+        public MediaStreamInfo[] streams { get; set; }
 
         /// <summary>
         /// Gets or sets the format.
         /// </summary>
         /// <value>The format.</value>
         [ProtoMember(2)]
-        public FFProbeMediaFormatInfo format { get; set; }
+        public MediaFormatInfo format { get; set; }
 
+        /// <summary>
+        /// Gets or sets the chapters.
+        /// </summary>
+        /// <value>The chapters.</value>
         [ProtoMember(3)]
         public List<ChapterInfo> Chapters { get; set; }
     }
@@ -34,7 +36,7 @@ namespace MediaBrowser.Controller.MediaInfo
     /// Represents a stream within the output
     /// </summary>
     [ProtoContract]
-    public class FFProbeMediaStreamInfo
+    public class MediaStreamInfo
     {
         /// <summary>
         /// Gets or sets the index.
@@ -286,7 +288,7 @@ namespace MediaBrowser.Controller.MediaInfo
     /// Class MediaFormat
     /// </summary>
     [ProtoContract]
-    public class FFProbeMediaFormatInfo
+    public class MediaFormatInfo
     {
         /// <summary>
         /// Gets or sets the filename.

@@ -1,13 +1,12 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Controller.Entities;
-using System;
+﻿using MediaBrowser.Controller.Entities;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Providers
 {
-    public interface IProviderManager : IDisposable
+    public interface IProviderManager
     {
         /// <summary>
         /// Downloads the and save image.
