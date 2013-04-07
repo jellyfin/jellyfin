@@ -18,8 +18,8 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     /// </summary>
     public class FFProbeAudioInfoProvider : BaseFFProbeProvider<Audio>
     {
-        public FFProbeAudioInfoProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder, IProtobufSerializer protobufSerializer)
-            : base(logManager, configurationManager, mediaEncoder, protobufSerializer)
+        public FFProbeAudioInfoProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder, IJsonSerializer jsonSerializer)
+            : base(logManager, configurationManager, mediaEncoder, jsonSerializer)
         {
         }
 

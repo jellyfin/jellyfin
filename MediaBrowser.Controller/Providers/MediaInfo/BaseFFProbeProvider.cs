@@ -21,13 +21,13 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     public abstract class BaseFFProbeProvider<T> : BaseFFMpegProvider<T>
         where T : BaseItem
     {
-        protected BaseFFProbeProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder, IProtobufSerializer protobufSerializer)
+        protected BaseFFProbeProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder, IJsonSerializer jsonSerializer)
             : base(logManager, configurationManager, mediaEncoder)
         {
-            ProtobufSerializer = protobufSerializer;
+            JsonSerializer = jsonSerializer;
         }
 
-        protected readonly IProtobufSerializer ProtobufSerializer;
+        protected readonly IJsonSerializer JsonSerializer;
         
         /// <summary>
         /// Gets or sets the FF probe cache.
@@ -135,14 +135,14 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             var resourceName = item.Id + "_" + lastDateModified.Ticks + "_" + MediaEncoder.Version;
 
             // Forumulate the cache file path
-            var cacheFilePath = cache.GetResourcePath(resourceName, ".pb");
+            var cacheFilePath = cache.GetResourcePath(resourceName, ".js");
 
             cancellationToken.ThrowIfCancellationRequested();
 
             // Avoid File.Exists by just trying to deserialize
             try
             {
-                return ProtobufSerializer.DeserializeFromFile<MediaInfoResult>(cacheFilePath);
+                return JsonSerializer.DeserializeFromFile<MediaInfoResult>(cacheFilePath);
             }
             catch (FileNotFoundException)
             {
@@ -161,7 +161,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
             var info = await MediaEncoder.GetMediaInfo(inputPath, type, cancellationToken).ConfigureAwait(false);
 
-            ProtobufSerializer.SerializeToFile(info, cacheFilePath);
+            JsonSerializer.SerializeToFile(info, cacheFilePath);
 
             return info;
         }
