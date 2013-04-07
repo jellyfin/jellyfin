@@ -21,8 +21,8 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     /// </summary>
     public class FFProbeVideoInfoProvider : BaseFFProbeProvider<Video>
     {
-        public FFProbeVideoInfoProvider(IIsoManager isoManager, IBlurayExaminer blurayExaminer, IProtobufSerializer protobufSerializer, ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder)
-            : base(logManager, configurationManager, mediaEncoder, protobufSerializer)
+        public FFProbeVideoInfoProvider(IIsoManager isoManager, IBlurayExaminer blurayExaminer, IJsonSerializer jsonSerializer, ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder)
+            : base(logManager, configurationManager, mediaEncoder, jsonSerializer)
         {
             if (isoManager == null)
             {
@@ -31,10 +31,6 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             if (blurayExaminer == null)
             {
                 throw new ArgumentNullException("blurayExaminer");
-            }
-            if (protobufSerializer == null)
-            {
-                throw new ArgumentNullException("protobufSerializer");
             }
 
             _blurayExaminer = blurayExaminer;
@@ -323,19 +319,19 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             // Get the path to the cache file
             var cacheName = item.Id + "_" + item.DateModified.Ticks;
 
-            var cacheFile = bdInfoCache.GetResourcePath(cacheName, ".pb");
+            var cacheFile = bdInfoCache.GetResourcePath(cacheName, ".js");
 
             BlurayDiscInfo result;
 
             try
             {
-                result = ProtobufSerializer.DeserializeFromFile<BlurayDiscInfo>(cacheFile);
+                result = JsonSerializer.DeserializeFromFile<BlurayDiscInfo>(cacheFile);
             }
             catch (FileNotFoundException)
             {
                 result = GetBDInfo(inputPath);
 
-                ProtobufSerializer.SerializeToFile(result, cacheFile);
+                JsonSerializer.SerializeToFile(result, cacheFile);
             }
 
             cancellationToken.ThrowIfCancellationRequested();

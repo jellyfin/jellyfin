@@ -117,37 +117,6 @@ namespace MediaBrowser.Common.Implementations
         public bool IsFirstRun { get; private set; }
 
         /// <summary>
-        /// The _protobuf serializer initialized
-        /// </summary>
-        private bool _protobufSerializerInitialized;
-        /// <summary>
-        /// The _protobuf serializer sync lock
-        /// </summary>
-        private object _protobufSerializerSyncLock = new object();
-        /// <summary>
-        /// Gets a dynamically compiled generated serializer that can serialize protocontracts without reflection
-        /// </summary>
-        private IProtobufSerializer _protobufSerializer;
-        /// <summary>
-        /// Gets the protobuf serializer.
-        /// </summary>
-        /// <value>The protobuf serializer.</value>
-        protected IProtobufSerializer ProtobufSerializer
-        {
-            get
-            {
-                // Lazy load
-                LazyInitializer.EnsureInitialized(ref _protobufSerializer, ref _protobufSerializerInitialized, ref _protobufSerializerSyncLock, () => Serialization.ProtobufSerializer.Create(AllTypes));
-                return _protobufSerializer;
-            }
-            private set
-            {
-                _protobufSerializer = value;
-                _protobufSerializerInitialized = value != null;
-            }
-        }
-
-        /// <summary>
         /// Gets the kernel.
         /// </summary>
         /// <value>The kernel.</value>
@@ -299,7 +268,6 @@ namespace MediaBrowser.Common.Implementations
                 RegisterSingleInstance(Logger);
 
                 RegisterSingleInstance(TaskManager);
-                RegisterSingleInstance(ProtobufSerializer);
 
                 HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger);
 
@@ -372,6 +340,8 @@ namespace MediaBrowser.Common.Implementations
         protected void RegisterSingleInstance<T>(T obj, bool manageLifetime = true)
             where T : class
         {
+            Logger.Info("Registering " + obj.GetType().Name);
+
             Container.RegisterSingle(obj);
 
             if (manageLifetime)
@@ -380,8 +350,6 @@ namespace MediaBrowser.Common.Implementations
 
                 if (disposable != null)
                 {
-                    Logger.Info("Registering " + disposable.GetType().Name);
-
                     DisposableParts.Add(disposable);
                 }
             }

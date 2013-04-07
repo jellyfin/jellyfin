@@ -198,7 +198,7 @@ namespace MediaBrowser.ServerApplication
             ZipClient = new DotNetZipClient();
             RegisterSingleInstance(ZipClient);
 
-            HttpServer = ServerFactory.CreateServer(this, ProtobufSerializer, Logger, "Media Browser", "index.html");
+            HttpServer = ServerFactory.CreateServer(this, Logger, "Media Browser", "index.html");
             RegisterSingleInstance(HttpServer, false);
 
             ServerManager = new ServerManager(this, JsonSerializer, Logger, ServerConfigurationManager, ServerKernel);
@@ -238,7 +238,7 @@ namespace MediaBrowser.ServerApplication
         private void SetKernelProperties()
         {
             ServerKernel.FFMpegManager = new FFMpegManager(ServerKernel, ApplicationPaths, MediaEncoder);
-            ServerKernel.ImageManager = new ImageManager(ServerKernel, ProtobufSerializer, LogManager.GetLogger("ImageManager"), ApplicationPaths);
+            ServerKernel.ImageManager = new ImageManager(ServerKernel, LogManager.GetLogger("ImageManager"), ApplicationPaths);
 
             Parallel.Invoke(
                 () => ServerKernel.UserDataRepositories = GetExports<IUserDataRepository>(),

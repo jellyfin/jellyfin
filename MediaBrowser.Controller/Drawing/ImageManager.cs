@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.Globalization;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -59,11 +60,6 @@ namespace MediaBrowser.Controller.Drawing
         private readonly ILogger _logger;
 
         /// <summary>
-        /// The _protobuf serializer
-        /// </summary>
-        private readonly IProtobufSerializer _protobufSerializer;
-
-        /// <summary>
         /// The _kernel
         /// </summary>
         private readonly Kernel _kernel;
@@ -77,12 +73,10 @@ namespace MediaBrowser.Controller.Drawing
         /// Initializes a new instance of the <see cref="ImageManager" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        /// <param name="protobufSerializer">The protobuf serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="appPaths">The app paths.</param>
-        public ImageManager(Kernel kernel, IProtobufSerializer protobufSerializer, ILogger logger, IServerApplicationPaths appPaths)
+        public ImageManager(Kernel kernel, ILogger logger, IServerApplicationPaths appPaths)
         {
-            _protobufSerializer = protobufSerializer;
             _logger = logger;
             _kernel = kernel;
 
@@ -298,6 +292,8 @@ namespace MediaBrowser.Controller.Drawing
             return _cachedImagedSizes.GetOrAdd(name, keyName => GetImageSize(keyName, imagePath));
         }
 
+        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        
         /// <summary>
         /// Gets the size of the image.
         /// </summary>
@@ -307,11 +303,11 @@ namespace MediaBrowser.Controller.Drawing
         private ImageSize GetImageSize(string keyName, string imagePath)
         {
             // Now check the file system cache
-            var fullCachePath = ImageSizeCache.GetResourcePath(keyName, ".pb");
+            var fullCachePath = ImageSizeCache.GetResourcePath(keyName, ".txt");
 
             try
             {
-                var result = _protobufSerializer.DeserializeFromFile<int[]>(fullCachePath);
+                var result = File.ReadAllText(fullCachePath).Split('|').Select(i => double.Parse(i, UsCulture)).ToArray();
 
                 return new ImageSize { Width = result[0], Height = result[1] };
             }
@@ -325,7 +321,7 @@ namespace MediaBrowser.Controller.Drawing
             var size = ImageHeader.GetDimensions(imagePath, _logger);
 
             // Update the file system cache
-            Task.Run(() => _protobufSerializer.SerializeToFile(new[] { size.Width, size.Height }, fullCachePath));
+            Task.Run(() => File.WriteAllText(fullCachePath, size.Width.ToString(UsCulture) + @"|" + size.Height.ToString(UsCulture)));
 
             return new ImageSize { Width = size.Width, Height = size.Height };
         }

@@ -48,7 +48,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <summary>
         /// The _protobuf serializer
         /// </summary>
-        private readonly IProtobufSerializer _protobufSerializer;
+        private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
         /// The _app paths
@@ -59,22 +59,22 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// Initializes a new instance of the <see cref="SQLiteUserDataRepository" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
-        /// <param name="protobufSerializer">The protobuf serializer.</param>
+        /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logManager">The log manager.</param>
         /// <exception cref="System.ArgumentNullException">protobufSerializer</exception>
-        public SQLiteDisplayPreferencesRepository(IApplicationPaths appPaths, IProtobufSerializer protobufSerializer, ILogManager logManager)
+        public SQLiteDisplayPreferencesRepository(IApplicationPaths appPaths, IJsonSerializer jsonSerializer, ILogManager logManager)
             : base(logManager)
         {
-            if (protobufSerializer == null)
+            if (jsonSerializer == null)
             {
-                throw new ArgumentNullException("protobufSerializer");
+                throw new ArgumentNullException("jsonSerializer");
             }
             if (appPaths == null)
             {
                 throw new ArgumentNullException("appPaths");
             }
 
-            _protobufSerializer = protobufSerializer;
+            _jsonSerializer = jsonSerializer;
             _appPaths = appPaths;
         }
 
@@ -124,7 +124,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var serialized = _protobufSerializer.SerializeToBytes(displayPreferences);
+            var serialized = _jsonSerializer.SerializeToBytes(displayPreferences);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -180,7 +180,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 {
                     using (var stream = GetStream(reader, 0))
                     {
-                        return _protobufSerializer.DeserializeFromStream<DisplayPreferences>(stream);
+                        return _jsonSerializer.DeserializeFromStream<DisplayPreferences>(stream);
                     }
                 }
             }

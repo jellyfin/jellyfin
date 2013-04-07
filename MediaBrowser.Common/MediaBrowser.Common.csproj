@@ -38,10 +38,6 @@
     </ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="protobuf-net, Version=2.0.0.621, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\protobuf-net.2.0.0.621\lib\net40\protobuf-net.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.Common, Version=3.9.43.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\ServiceStack.Common.3.9.43\lib\net35\ServiceStack.Common.dll</HintPath>

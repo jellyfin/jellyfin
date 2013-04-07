@@ -62,12 +62,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         private IDisposable HttpListener { get; set; }
 
         /// <summary>
-        /// Gets or sets the protobuf serializer.
-        /// </summary>
-        /// <value>The protobuf serializer.</value>
-        private IProtobufSerializer ProtobufSerializer { get; set; }
-
-        /// <summary>
         /// Occurs when [web socket connected].
         /// </summary>
         public event EventHandler<WebSocketConnectEventArgs> WebSocketConnected;
@@ -88,18 +82,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// Initializes a new instance of the <see cref="HttpServer" /> class.
         /// </summary>
         /// <param name="applicationHost">The application host.</param>
-        /// <param name="protobufSerializer">The protobuf serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="serverName">Name of the server.</param>
         /// <param name="defaultRedirectpath">The default redirectpath.</param>
         /// <exception cref="System.ArgumentNullException">urlPrefix</exception>
-        public HttpServer(IApplicationHost applicationHost, IProtobufSerializer protobufSerializer, ILogger logger, string serverName, string defaultRedirectpath)
+        public HttpServer(IApplicationHost applicationHost, ILogger logger, string serverName, string defaultRedirectpath)
             : base()
         {
-            if (protobufSerializer == null)
-            {
-                throw new ArgumentNullException("protobufSerializer");
-            }
             if (logger == null)
             {
                 throw new ArgumentNullException("logger");
@@ -119,7 +108,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             ServerName = serverName;
             DefaultRedirectPath = defaultRedirectpath;
-            ProtobufSerializer = protobufSerializer;
             _logger = logger;
             ApplicationHost = applicationHost;
 
@@ -561,9 +549,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             _logger.Info("Calling EndpointHost.ConfigureHost");
             EndpointHost.ConfigureHost(this, ServerName, CreateServiceManager());
-
-            _logger.Info("Registering protobuf as a content type filter");
-            ContentTypeFilters.Register(ContentType.ProtoBuf, (reqCtx, res, stream) => ProtobufSerializer.SerializeToStream(res, stream), (type, stream) => ProtobufSerializer.DeserializeFromStream(stream, type));
 
             _logger.Info("Calling ServiceStack AppHost.Init");
             Init();
