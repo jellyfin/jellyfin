@@ -717,6 +717,10 @@ namespace MediaBrowser.Controller.MediaInfo
                             chapter.ImagePath = path;
                             changesMade = true;
                         }
+                        else
+                        {
+                            break;
+                        }
                     }
                 }
                 else if (!string.Equals(path, chapter.ImagePath, StringComparison.OrdinalIgnoreCase))
