@@ -124,7 +124,7 @@ namespace MediaBrowser.Api
     {
     }
 
-    [Route("/Plugins/RegistrationRecord/{Name}", "GET")]
+    [Route("/Plugins/RegistrationRecords/{Name}", "GET")]
     [Api("Gets registration status for a feature")]
     [Restrict(VisibilityTo = EndpointAttributes.None)]
     public class GetRegistrationStatus
