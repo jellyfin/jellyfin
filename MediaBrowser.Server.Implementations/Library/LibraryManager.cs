@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Configuration;
@@ -61,6 +62,12 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <value>The comparers.</value>
         private IEnumerable<IBaseItemComparer> Comparers { get; set; }
 
+        /// <summary>
+        /// Gets the active item repository
+        /// </summary>
+        /// <value>The item repository.</value>
+        public IItemRepository ItemRepository { get; set; }
+
         #region LibraryChanged Event
         /// <summary>
         /// Fires whenever any validation routine adds or removes items.  The added and removed items are properties of the args.
@@ -96,12 +103,6 @@ namespace MediaBrowser.Server.Implementations.Library
         private readonly IUserManager _userManager;
 
         /// <summary>
-        /// Gets or sets the kernel.
-        /// </summary>
-        /// <value>The kernel.</value>
-        private Kernel Kernel { get; set; }
-
-        /// <summary>
         /// Gets or sets the configuration manager.
         /// </summary>
         /// <value>The configuration manager.</value>
@@ -126,27 +127,25 @@ namespace MediaBrowser.Server.Implementations.Library
             }
         }
 
-        private ConcurrentDictionary<string, UserRootFolder> _userRootFolders =
+        private readonly ConcurrentDictionary<string, UserRootFolder> _userRootFolders =
             new ConcurrentDictionary<string, UserRootFolder>();
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryManager" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="taskManager">The task manager.</param>
         /// <param name="userManager">The user manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        public LibraryManager(Kernel kernel, ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager)
+        public LibraryManager(ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager)
         {
-            Kernel = kernel;
             _logger = logger;
             _taskManager = taskManager;
             _userManager = userManager;
             ConfigurationManager = configurationManager;
             ByReferenceItems = new ConcurrentDictionary<Guid, BaseItem>();
 
-            ConfigurationManager.ConfigurationUpdated += kernel_ConfigurationUpdated;
+            ConfigurationManager.ConfigurationUpdated += ConfigurationUpdated;
 
             RecordConfigurationValues(configurationManager.Configuration);
         }
@@ -159,7 +158,11 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="resolvers">The resolvers.</param>
         /// <param name="introProviders">The intro providers.</param>
         /// <param name="itemComparers">The item comparers.</param>
-        public void AddParts(IEnumerable<IResolverIgnoreRule> rules, IEnumerable<IVirtualFolderCreator> pluginFolders, IEnumerable<IItemResolver> resolvers, IEnumerable<IIntroProvider> introProviders, IEnumerable<IBaseItemComparer> itemComparers)
+        public void AddParts(IEnumerable<IResolverIgnoreRule> rules,
+            IEnumerable<IVirtualFolderCreator> pluginFolders,
+            IEnumerable<IItemResolver> resolvers,
+            IEnumerable<IIntroProvider> introProviders,
+            IEnumerable<IBaseItemComparer> itemComparers)
         {
             EntityResolutionIgnoreRules = rules;
             PluginFolderCreators = pluginFolders;
@@ -212,11 +215,11 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Handles the ConfigurationUpdated event of the kernel control.
+        /// Configurations the updated.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void kernel_ConfigurationUpdated(object sender, EventArgs e)
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void ConfigurationUpdated(object sender, EventArgs e)
         {
             var config = ConfigurationManager.Configuration;
 
@@ -476,7 +479,7 @@ namespace MediaBrowser.Server.Implementations.Library
         public AggregateFolder CreateRootFolder()
         {
             var rootFolderPath = ConfigurationManager.ApplicationPaths.RootFolderPath;
-            var rootFolder = Kernel.ItemRepository.RetrieveItem(rootFolderPath.GetMBId(typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(rootFolderPath);
+            var rootFolder = RetrieveItem(rootFolderPath.GetMBId(typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(rootFolderPath);
 
             // Add in the plug-in folders
             foreach (var child in PluginFolderCreators)
@@ -494,7 +497,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>UserRootFolder.</returns>
         public UserRootFolder GetUserRootFolder(string userRootPath)
         {
-            return _userRootFolders.GetOrAdd(userRootPath, key => Kernel.ItemRepository.RetrieveItem(userRootPath.GetMBId(typeof(UserRootFolder))) as UserRootFolder ?? (UserRootFolder)ResolvePath(userRootPath));
+            return _userRootFolders.GetOrAdd(userRootPath, key => RetrieveItem(userRootPath.GetMBId(typeof(UserRootFolder))) as UserRootFolder ?? (UserRootFolder)ResolvePath(userRootPath));
         }
         
         /// <summary>
@@ -639,7 +642,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var id = path.GetMBId(typeof(T));
 
-            var item = Kernel.ItemRepository.RetrieveItem(id) as T;
+            var item = RetrieveItem(id) as T;
             if (item == null)
             {
                 item = new T
@@ -898,6 +901,49 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             return comparer;
+        }
+
+        /// <summary>
+        /// Saves the item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task SaveItem(BaseItem item, CancellationToken cancellationToken)
+        {
+            return ItemRepository.SaveItem(item, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the item.
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns>Task{BaseItem}.</returns>
+        public BaseItem RetrieveItem(Guid id)
+        {
+            return ItemRepository.RetrieveItem(id);
+        }
+
+        /// <summary>
+        /// Saves the children.
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <param name="children">The children.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task SaveChildren(Guid id, IEnumerable<BaseItem> children, CancellationToken cancellationToken)
+        {
+            return ItemRepository.SaveChildren(id, children, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the children.
+        /// </summary>
+        /// <param name="parent">The parent.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        public IEnumerable<BaseItem> RetrieveChildren(Folder parent)
+        {
+            return ItemRepository.RetrieveChildren(parent);
         }
     }
 }

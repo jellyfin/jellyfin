@@ -163,6 +163,8 @@
     /// </summary>
     public enum VideoCodecs
     {
+        H263,
+
         /// <summary>
         /// The H264
         /// </summary>
