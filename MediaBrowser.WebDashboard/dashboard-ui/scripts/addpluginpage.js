@@ -34,7 +34,8 @@
 		    $("#btnInstallDiv", page).show();
 		    $("#nonServerMsg", page).hide();
 	    }else {
-		    $("#btnInstallDiv", page).hide();
+	        $("#btnInstallDiv", page).hide();
+	        $("#pSelectVersion", page).hide();
 		    $("#nonServerMsg", page).html("This plugin must be installed from "+pkg.targetSystem).show();
 	    }
 
