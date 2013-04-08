@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers.MediaInfo;
 using MediaBrowser.Model.Entities;
 using System;
@@ -34,31 +35,23 @@ namespace MediaBrowser.Controller.MediaInfo
         /// <value>The subtitle cache.</value>
         internal FileSystemRepository SubtitleCache { get; set; }
 
-        /// <summary>
-        /// The _logger
-        /// </summary>
-        private readonly Kernel _kernel;
-
+        private readonly ILibraryManager _libraryManager;
+        
         private readonly IServerApplicationPaths _appPaths;
         private readonly IMediaEncoder _encoder;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FFMpegManager" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
         /// <param name="appPaths">The app paths.</param>
         /// <param name="encoder">The encoder.</param>
+        /// <param name="libraryManager">The library manager.</param>
         /// <exception cref="System.ArgumentNullException">zipClient</exception>
-        public FFMpegManager(Kernel kernel, IServerApplicationPaths appPaths, IMediaEncoder encoder)
+        public FFMpegManager(IServerApplicationPaths appPaths, IMediaEncoder encoder, ILibraryManager libraryManager)
         {
-            if (kernel == null)
-            {
-                throw new ArgumentNullException("kernel");
-            }
-
-            _kernel = kernel;
             _appPaths = appPaths;
             _encoder = encoder;
+            _libraryManager = libraryManager;
 
             VideoImageCache = new FileSystemRepository(VideoImagesDataPath);
             AudioImageCache = new FileSystemRepository(AudioImagesDataPath);
@@ -216,7 +209,7 @@ namespace MediaBrowser.Controller.MediaInfo
 
             if (saveItem && changesMade)
             {
-                await _kernel.ItemRepository.SaveItem(video, CancellationToken.None).ConfigureAwait(false);
+                await _libraryManager.SaveItem(video, CancellationToken.None).ConfigureAwait(false);
             }
         }
 

@@ -146,8 +146,12 @@ namespace MediaBrowser.ServerApplication
         /// <value>The display preferences manager.</value>
         internal IDisplayPreferencesManager DisplayPreferencesManager { get; set; }
 
+        /// <summary>
+        /// Gets or sets the media encoder.
+        /// </summary>
+        /// <value>The media encoder.</value>
         private IMediaEncoder MediaEncoder { get; set; }
-        
+
         /// <summary>
         /// The full path to our startmenu shortcut
         /// </summary>
@@ -156,20 +160,31 @@ namespace MediaBrowser.ServerApplication
             get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), "Media Browser 3", "Media Browser Server.lnk"); }
         }
 
+        private Task<IHttpServer> _httpServerCreationTask;
+
         /// <summary>
         /// Runs the startup tasks.
         /// </summary>
         /// <returns>Task.</returns>
         protected override async Task RunStartupTasks()
         {
-            // Do these before allowing the base method to run, which will invoke startup scheduled tasks
-            await ServerKernel.LoadRepositories(ServerConfigurationManager).ConfigureAwait(false);
-
             await base.RunStartupTasks().ConfigureAwait(false);
 
             DirectoryWatchers.Start();
 
+            Logger.Info("Core startup complete");
+
             Parallel.ForEach(GetExports<IServerEntryPoint>(), entryPoint => entryPoint.Run());
+        }
+
+        /// <summary>
+        /// Called when [logger loaded].
+        /// </summary>
+        protected override void OnLoggerLoaded()
+        {
+            base.OnLoggerLoaded();
+
+            _httpServerCreationTask = Task.Run(() => ServerFactory.CreateServer(this, Logger, "Media Browser", "index.html"));
         }
 
         /// <summary>
@@ -192,22 +207,16 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
 
-            RegisterSingleInstance<IIsoManager>(new PismoIsoManager(Logger));
-            RegisterSingleInstance<IBlurayExaminer>(new BdInfoExaminer());
+            RegisterSingleInstance<IIsoManager>(() => new PismoIsoManager(Logger));
+            RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
 
             ZipClient = new DotNetZipClient();
             RegisterSingleInstance(ZipClient);
 
-            HttpServer = ServerFactory.CreateServer(this, Logger, "Media Browser", "index.html");
-            RegisterSingleInstance(HttpServer, false);
-
-            ServerManager = new ServerManager(this, JsonSerializer, Logger, ServerConfigurationManager, ServerKernel);
-            RegisterSingleInstance(ServerManager);
-
-            UserManager = new UserManager(ServerKernel, Logger, ServerConfigurationManager);
+            UserManager = new UserManager(Logger, ServerConfigurationManager);
             RegisterSingleInstance(UserManager);
 
-            LibraryManager = new LibraryManager(ServerKernel, Logger, TaskManager, UserManager, ServerConfigurationManager);
+            LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager);
             RegisterSingleInstance(LibraryManager);
 
             InstallationManager = new InstallationManager(HttpClient, PackageManager, JsonSerializer, Logger, this);
@@ -227,9 +236,20 @@ namespace MediaBrowser.ServerApplication
             MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ZipClient, ApplicationPaths, JsonSerializer);
             RegisterSingleInstance(MediaEncoder);
 
-            await ConfigureRepositories().ConfigureAwait(false);
+            HttpServer = await _httpServerCreationTask.ConfigureAwait(false);
+            RegisterSingleInstance(HttpServer, false);
+
+            ServerManager = new ServerManager(this, JsonSerializer, Logger, ServerConfigurationManager, ServerKernel);
+            RegisterSingleInstance(ServerManager);
+
+            var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));
+            var itemsTask = Task.Run(async () => await ConfigureItemRepositories().ConfigureAwait(false));
+            var userdataTask = Task.Run(async () => await ConfigureUserDataRepositories().ConfigureAwait(false));
+            var userTask = Task.Run(async () => await ConfigureUserRepositories().ConfigureAwait(false));
+
+            await Task.WhenAll(itemsTask, userTask, displayPreferencesTask, userdataTask).ConfigureAwait(false);
+
             SetKernelProperties();
-            SetStaticProperties();
         }
 
         /// <summary>
@@ -237,16 +257,13 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         private void SetKernelProperties()
         {
-            ServerKernel.FFMpegManager = new FFMpegManager(ServerKernel, ApplicationPaths, MediaEncoder);
-            ServerKernel.ImageManager = new ImageManager(ServerKernel, LogManager.GetLogger("ImageManager"), ApplicationPaths);
-
             Parallel.Invoke(
-                () => ServerKernel.UserDataRepositories = GetExports<IUserDataRepository>(),
-                () => ServerKernel.UserRepositories = GetExports<IUserRepository>(),
-                () => ServerKernel.ItemRepositories = GetExports<IItemRepository>(),
+                () => ServerKernel.FFMpegManager = new FFMpegManager(ApplicationPaths, MediaEncoder, LibraryManager),
+                () => ServerKernel.ImageManager = new ImageManager(ServerKernel, LogManager.GetLogger("ImageManager"), ApplicationPaths),
                 () => ServerKernel.WeatherProviders = GetExports<IWeatherProvider>(),
                 () => ServerKernel.ImageEnhancers = GetExports<IImageEnhancer>().OrderBy(e => e.Priority).ToArray(),
-                () => ServerKernel.StringFiles = GetExports<LocalizedStringData>()
+                () => ServerKernel.StringFiles = GetExports<LocalizedStringData>(),
+                SetStaticProperties
                 );
         }
 
@@ -254,15 +271,56 @@ namespace MediaBrowser.ServerApplication
         /// Configures the repositories.
         /// </summary>
         /// <returns>Task.</returns>
-        private async Task ConfigureRepositories()
+        private async Task ConfigureDisplayPreferencesRepositories()
         {
-            var displayPreferencesRepositories = GetExports<IDisplayPreferencesRepository>();
+            var repositories = GetExports<IDisplayPreferencesRepository>();
 
-            var repo = GetRepository(displayPreferencesRepositories, ServerConfigurationManager.Configuration.DisplayPreferencesRepository);
+            var repository = GetRepository(repositories, ServerConfigurationManager.Configuration.DisplayPreferencesRepository);
 
-            await repo.Initialize().ConfigureAwait(false);
+            await repository.Initialize().ConfigureAwait(false);
 
-            ((DisplayPreferencesManager)DisplayPreferencesManager).Repository = repo;
+            ((DisplayPreferencesManager)DisplayPreferencesManager).Repository = repository;
+        }
+
+        /// <summary>
+        /// Configures the item repositories.
+        /// </summary>
+        /// <returns>Task.</returns>
+        private async Task ConfigureItemRepositories()
+        {
+            var repositories = GetExports<IItemRepository>();
+
+            var repository = GetRepository(repositories, ServerConfigurationManager.Configuration.ItemRepository);
+
+            await repository.Initialize().ConfigureAwait(false);
+
+            ((LibraryManager)LibraryManager).ItemRepository = repository;
+        }
+
+        /// <summary>
+        /// Configures the user data repositories.
+        /// </summary>
+        /// <returns>Task.</returns>
+        private async Task ConfigureUserDataRepositories()
+        {
+            var repositories = GetExports<IUserDataRepository>();
+
+            var repository = GetRepository(repositories, ServerConfigurationManager.Configuration.UserDataRepository);
+
+            await repository.Initialize().ConfigureAwait(false);
+
+            ((UserManager)UserManager).UserDataRepository = repository;
+        }
+
+        private async Task ConfigureUserRepositories()
+        {
+            var repositories = GetExports<IUserRepository>();
+
+            var repository = GetRepository(repositories, ServerConfigurationManager.Configuration.UserRepository);
+
+            await repository.Initialize().ConfigureAwait(false);
+
+            ((UserManager)UserManager).UserRepository = repository;
         }
 
         /// <summary>
@@ -286,14 +344,14 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         protected override void FindParts()
         {
-            base.FindParts();
-
             if (IsFirstRun)
             {
                 RegisterServerWithAdministratorAccess();
             }
 
             Parallel.Invoke(
+
+                () => base.FindParts(),
 
                 () =>
                 {
@@ -305,19 +363,22 @@ namespace MediaBrowser.ServerApplication
 
                 () => LibraryManager.AddParts(GetExports<IResolverIgnoreRule>(), GetExports<IVirtualFolderCreator>(), GetExports<IItemResolver>(), GetExports<IIntroProvider>(), GetExports<IBaseItemComparer>()),
 
-                () => ProviderManager.AddMetadataProviders(GetExports<BaseMetadataProvider>().ToArray())
+                () => ProviderManager.AddMetadataProviders(GetExports<BaseMetadataProvider>().ToArray()),
+
+                () =>
+                {
+                    UdpServer = new UdpServer(Logger, NetworkManager, ServerConfigurationManager);
+
+                    try
+                    {
+                        UdpServer.Start(UdpServerPort);
+                    }
+                    catch (SocketException ex)
+                    {
+                        Logger.ErrorException("Failed to start UDP Server", ex);
+                    }
+                }
                 );
-
-            UdpServer = new UdpServer(Logger, NetworkManager, ServerConfigurationManager);
-
-            try
-            {
-                UdpServer.Start(UdpServerPort);
-            }
-            catch (SocketException ex)
-            {
-                Logger.ErrorException("Failed to start UDP Server", ex);
-            }
         }
 
         /// <summary>

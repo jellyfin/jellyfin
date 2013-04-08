@@ -171,6 +171,7 @@ namespace MediaBrowser.Common.Implementations
             Logger = LogManager.GetLogger("App");
 
             LogManager.ReloadLogger(ConfigurationManager.CommonConfiguration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info);
+            OnLoggerLoaded();
 
             DiscoverTypes();
 
@@ -181,6 +182,11 @@ namespace MediaBrowser.Common.Implementations
             FindParts();
 
             await RunStartupTasks().ConfigureAwait(false);
+        }
+
+        protected virtual void OnLoggerLoaded()
+        {
+            
         }
 
         /// <summary>
@@ -194,8 +200,6 @@ namespace MediaBrowser.Common.Implementations
                 Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
 
                 Task.Run(() => ConfigureAutoRunAtStartup());
-
-                Task.Run(() => SecurityManager.LoadAllRegistrationInfo());
 
                 ConfigurationManager.ConfigurationUpdated += ConfigurationManager_ConfigurationUpdated;
             });
@@ -236,11 +240,6 @@ namespace MediaBrowser.Common.Implementations
 
             var assemblies = GetComposablePartAssemblies().ToArray();
 
-            foreach (var assembly in assemblies)
-            {
-                Logger.Info("Loading {0}", assembly.FullName);
-            }
-
             AllTypes = assemblies.SelectMany(GetTypes).ToArray();
 
             AllConcreteTypes = AllTypes.Where(t => t.IsClass && !t.IsAbstract && !t.IsInterface && !t.IsGenericType).ToArray();
@@ -270,19 +269,15 @@ namespace MediaBrowser.Common.Implementations
                 RegisterSingleInstance(TaskManager);
 
                 HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger);
-
                 RegisterSingleInstance(HttpClient);
 
                 NetworkManager = new NetworkManager();
-
                 RegisterSingleInstance(NetworkManager);
 
                 SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths);
-
                 RegisterSingleInstance(SecurityManager);
 
                 PackageManager = new PackageManager(SecurityManager, NetworkManager, HttpClient, ApplicationPaths, JsonSerializer, Logger);
-
                 RegisterSingleInstance(PackageManager);
             });
         }

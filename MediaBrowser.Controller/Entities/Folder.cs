@@ -602,14 +602,14 @@ namespace MediaBrowser.Controller.Entities
                         _children.Add(item);
                     }
 
-                    saveTasks.Add(Kernel.Instance.ItemRepository.SaveItem(item, CancellationToken.None));
+                    saveTasks.Add(LibraryManager.SaveItem(item, CancellationToken.None));
                 }
 
                 await Task.WhenAll(saveTasks).ConfigureAwait(false);
 
                 //and save children in repo...
                 Logger.Debug("*** Saving " + newChildren.Count + " children for " + Name);
-                await Kernel.Instance.ItemRepository.SaveChildren(Id, newChildren, CancellationToken.None).ConfigureAwait(false);
+                await LibraryManager.SaveChildren(Id, newChildren, CancellationToken.None).ConfigureAwait(false);
             }
 
             if (changedArgs.HasChange)
@@ -726,7 +726,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected virtual IEnumerable<BaseItem> GetCachedChildren()
         {
-            return Kernel.Instance.ItemRepository.RetrieveChildren(this).Select(i => i is IByReferenceItem ? LibraryManager.GetOrAddByReferenceItem(i) : i);
+            return LibraryManager.RetrieveChildren(this).Select(i => i is IByReferenceItem ? LibraryManager.GetOrAddByReferenceItem(i) : i);
         }
 
         /// <summary>

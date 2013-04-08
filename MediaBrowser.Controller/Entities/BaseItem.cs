@@ -668,7 +668,7 @@ namespace MediaBrowser.Controller.Entities
             return LibraryManager.ResolvePaths<Video>(files, null).Select(video =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
-                var dbItem = Kernel.Instance.ItemRepository.RetrieveItem(video.Id) as Video;
+                var dbItem = LibraryManager.RetrieveItem(video.Id) as Video;
 
                 if (dbItem != null)
                 {
@@ -721,7 +721,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await Kernel.Instance.ItemRepository.SaveItem(this, cancellationToken).ConfigureAwait(false);
+                await LibraryManager.SaveItem(this, cancellationToken).ConfigureAwait(false);
             }
 
             return changed;
@@ -868,7 +868,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             //not found - load from repo
-            return Kernel.Instance.ItemRepository.RetrieveItem(id);
+            return LibraryManager.RetrieveItem(id);
         }
 
         /// <summary>

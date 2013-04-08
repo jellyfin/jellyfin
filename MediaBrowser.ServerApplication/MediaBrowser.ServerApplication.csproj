@@ -181,6 +181,7 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EntryPoints\LoadRegistrations.cs" />
     <Compile Include="EntryPoints\NewItemNotifier.cs" />
     <Compile Include="EntryPoints\RefreshUsersMetadata.cs" />
     <Compile Include="EntryPoints\StartupWizard.cs" />

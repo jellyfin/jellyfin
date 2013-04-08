@@ -4,6 +4,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Connectivity;
 using MediaBrowser.Model.Logging;
 using System;
@@ -87,29 +88,33 @@ namespace MediaBrowser.Server.Implementations.Library
         private readonly ILogger _logger;
 
         /// <summary>
-        /// Gets or sets the kernel.
-        /// </summary>
-        /// <value>The kernel.</value>
-        private Kernel Kernel { get; set; }
-
-        /// <summary>
         /// Gets or sets the configuration manager.
         /// </summary>
         /// <value>The configuration manager.</value>
         private IServerConfigurationManager ConfigurationManager { get; set; }
 
         private readonly ConcurrentDictionary<string, Task<UserItemData>> _userData = new ConcurrentDictionary<string, Task<UserItemData>>();
-        
+
+        /// <summary>
+        /// Gets the active user data repository
+        /// </summary>
+        /// <value>The user data repository.</value>
+        public IUserDataRepository UserDataRepository { get; set; }
+
+        /// <summary>
+        /// Gets the active user repository
+        /// </summary>
+        /// <value>The user repository.</value>
+        public IUserRepository UserRepository { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManager" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        public UserManager(Kernel kernel, ILogger logger, IServerConfigurationManager configurationManager)
+        public UserManager(ILogger logger, IServerConfigurationManager configurationManager)
         {
             _logger = logger;
-            Kernel = kernel;
             ConfigurationManager = configurationManager;
         }
 
@@ -250,7 +255,7 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             // Save this directly. No need to fire off all the events for this.
-            return Kernel.UserRepository.SaveUser(user, CancellationToken.None);
+            return UserRepository.SaveUser(user, CancellationToken.None);
         }
 
         /// <summary>
@@ -334,7 +339,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>IEnumerable{User}.</returns>
         private IEnumerable<User> LoadUsers()
         {
-            var users = Kernel.UserRepository.RetrieveAllUsers().ToList();
+            var users = UserRepository.RetrieveAllUsers().ToList();
 
             // There always has to be at least one user.
             if (users.Count == 0)
@@ -343,7 +348,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 var user = InstantiateNewUser(name);
 
-                var task = Kernel.UserRepository.SaveUser(user, CancellationToken.None);
+                var task = UserRepository.SaveUser(user, CancellationToken.None);
 
                 // Hate having to block threads
                 Task.WaitAll(task);
@@ -422,7 +427,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             user.DateModified = DateTime.UtcNow;
 
-            await Kernel.UserRepository.SaveUser(user, CancellationToken.None).ConfigureAwait(false);
+            await UserRepository.SaveUser(user, CancellationToken.None).ConfigureAwait(false);
 
             OnUserUpdated(user);
         }
@@ -452,7 +457,7 @@ namespace MediaBrowser.Server.Implementations.Library
             list.Add(user);
             Users = list;
 
-            await Kernel.UserRepository.SaveUser(user, CancellationToken.None).ConfigureAwait(false);
+            await UserRepository.SaveUser(user, CancellationToken.None).ConfigureAwait(false);
 
             return user;
         }
@@ -481,7 +486,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentException(string.Format("The user '{0}' be deleted because there must be at least one user in the system.", user.Name));
             }
 
-            await Kernel.UserRepository.DeleteUser(user, CancellationToken.None).ConfigureAwait(false);
+            await UserRepository.DeleteUser(user, CancellationToken.None).ConfigureAwait(false);
 
             OnUserDeleted(user);
 
@@ -713,7 +718,7 @@ namespace MediaBrowser.Server.Implementations.Library
             var key = userId + userDataId.ToString();
             try
             {
-                await Kernel.Instance.UserDataRepository.SaveUserData(userId, userDataId, userData, cancellationToken).ConfigureAwait(false);
+                await UserDataRepository.SaveUserData(userId, userDataId, userData, cancellationToken).ConfigureAwait(false);
 
                 var newValue = Task.FromResult(userData);
 
@@ -749,7 +754,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task{UserItemData}.</returns>
         private async Task<UserItemData> RetrieveUserData(Guid userId, Guid userDataId)
         {
-            var userdata = await Kernel.Instance.UserDataRepository.GetUserData(userId, userDataId).ConfigureAwait(false);
+            var userdata = await UserDataRepository.GetUserData(userId, userDataId).ConfigureAwait(false);
 
             return userdata ?? new UserItemData();
         }
