@@ -166,7 +166,28 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
             // Try to eliminate menus and intros by skipping all files at the front of the list that are less than the minimum size
             // Once we reach a file that is at least the minimum, return all subsequent ones
-            video.PlayableStreamFileNames = Directory.EnumerateFiles(root, "*.vob", SearchOption.AllDirectories).SkipWhile(f => new FileInfo(f).Length < minPlayableSize).Select(Path.GetFileName).ToList();
+            var files = Directory.EnumerateFiles(root, "*.vob", SearchOption.AllDirectories).SkipWhile(f => new FileInfo(f).Length < minPlayableSize).ToList();
+
+            // Assuming they're named "vts_05_01", take all files whose second part matches that of the first file
+            if (files.Count > 0)
+            {
+                var parts = Path.GetFileNameWithoutExtension(files[0]).Split('_');
+
+                if (parts.Length == 3)
+                {
+                    var title = parts[1];
+
+                    files = files.TakeWhile(f =>
+                    {
+                        var fileParts = Path.GetFileNameWithoutExtension(f).Split('_');
+
+                        return fileParts.Length == 3 && string.Equals(title, fileParts[1], StringComparison.OrdinalIgnoreCase);
+
+                    }).ToList();
+                }
+            }
+
+            video.PlayableStreamFileNames = files.Select(Path.GetFileName).ToList();
         }
 
         /// <summary>
