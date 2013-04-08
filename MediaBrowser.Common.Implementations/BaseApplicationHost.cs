@@ -240,6 +240,11 @@ namespace MediaBrowser.Common.Implementations
 
             var assemblies = GetComposablePartAssemblies().ToArray();
 
+            foreach (var assembly in assemblies)
+            {
+                Logger.Info("Loading {0}", assembly.FullName);
+            }
+
             AllTypes = assemblies.SelectMany(GetTypes).ToArray();
 
             AllConcreteTypes = AllTypes.Where(t => t.IsClass && !t.IsAbstract && !t.IsInterface && !t.IsGenericType).ToArray();
