@@ -419,7 +419,7 @@ form, .readOnlyContent {
 
 .posterViewItem img {
     max-width: 155px;
-    max-height: 110px;
+    max-height: 125px;
     vertical-align: bottom;
 }
 
@@ -838,8 +838,10 @@ progress {
 	width: 16px;
 }
 
-.vjs-chapter-button div {
-    background-position: -100px -75px !important;
+.vjs-default-skin .vjs-chapter-button div {
+	background: url("images/media/chapter.png");
+	height: 16px;
+	width: 16px;
 }
 
 .vjs-chapter-button.vjs-menu-button ul {
