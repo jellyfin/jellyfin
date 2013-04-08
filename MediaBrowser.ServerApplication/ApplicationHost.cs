@@ -160,6 +160,8 @@ namespace MediaBrowser.ServerApplication
             get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), "Media Browser 3", "Media Browser Server.lnk"); }
         }
 
+        private Task<IHttpServer> _httpServerCreationTask;
+
         /// <summary>
         /// Runs the startup tasks.
         /// </summary>
@@ -176,18 +178,22 @@ namespace MediaBrowser.ServerApplication
         }
 
         /// <summary>
+        /// Called when [logger loaded].
+        /// </summary>
+        protected override void OnLoggerLoaded()
+        {
+            base.OnLoggerLoaded();
+
+            _httpServerCreationTask = Task.Run(() => ServerFactory.CreateServer(this, Logger, "Media Browser", "index.html"));
+        }
+
+        /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
         /// <returns>Task.</returns>
         protected override async Task RegisterResources()
         {
             ServerKernel = new Kernel(ServerConfigurationManager);
-
-            var httpServerTask = Task.Run(() =>
-            {
-                HttpServer = ServerFactory.CreateServer(this, Logger, "Media Browser", "index.html");
-                RegisterSingleInstance(HttpServer, false);
-            });
 
             await base.RegisterResources().ConfigureAwait(false);
 
@@ -230,6 +236,9 @@ namespace MediaBrowser.ServerApplication
             MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ZipClient, ApplicationPaths, JsonSerializer);
             RegisterSingleInstance(MediaEncoder);
 
+            HttpServer = await _httpServerCreationTask.ConfigureAwait(false);
+            RegisterSingleInstance(HttpServer, false);
+
             ServerManager = new ServerManager(this, JsonSerializer, Logger, ServerConfigurationManager, ServerKernel);
             RegisterSingleInstance(ServerManager);
 
@@ -238,7 +247,7 @@ namespace MediaBrowser.ServerApplication
             var userdataTask = Task.Run(async () => await ConfigureUserDataRepositories().ConfigureAwait(false));
             var userTask = Task.Run(async () => await ConfigureUserRepositories().ConfigureAwait(false));
 
-            await Task.WhenAll(httpServerTask, itemsTask, userTask, displayPreferencesTask, userdataTask).ConfigureAwait(false);
+            await Task.WhenAll(itemsTask, userTask, displayPreferencesTask, userdataTask).ConfigureAwait(false);
 
             SetKernelProperties();
         }

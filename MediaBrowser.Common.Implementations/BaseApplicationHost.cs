@@ -171,6 +171,7 @@ namespace MediaBrowser.Common.Implementations
             Logger = LogManager.GetLogger("App");
 
             LogManager.ReloadLogger(ConfigurationManager.CommonConfiguration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info);
+            OnLoggerLoaded();
 
             DiscoverTypes();
 
@@ -181,6 +182,11 @@ namespace MediaBrowser.Common.Implementations
             FindParts();
 
             await RunStartupTasks().ConfigureAwait(false);
+        }
+
+        protected virtual void OnLoggerLoaded()
+        {
+            
         }
 
         /// <summary>
