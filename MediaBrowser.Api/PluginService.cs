@@ -124,6 +124,18 @@ namespace MediaBrowser.Api
     {
     }
 
+    [Route("/Plugins/RegistrationRecord/{Name}", "GET")]
+    [Api("Gets registration status for a feature")]
+    [Restrict(VisibilityTo = EndpointAttributes.None)]
+    public class GetRegistrationStatus
+    {
+        [ApiMember(Name = "Name", Description = "Feature Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Name { get; set; }
+
+        [ApiMember(Name = "Mb2Equivalent", Description = "Optional. The equivalent feature name in MB2", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string Mb2Equivalent { get; set; }
+    }
+    
     /// <summary>
     /// Class PluginsService
     /// </summary>
@@ -164,6 +176,18 @@ namespace MediaBrowser.Api
             _jsonSerializer = jsonSerializer;
         }
 
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
+        public object Get(GetRegistrationStatus request)
+        {
+            var result = _securityManager.GetRegistrationStatus(request.Name, request.Mb2Equivalent).Result;
+
+            return ToOptimizedResult(result);
+        }
+        
         /// <summary>
         /// Gets the specified request.
         /// </summary>
