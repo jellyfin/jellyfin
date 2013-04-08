@@ -20,15 +20,15 @@ namespace MediaBrowser.Common.Implementations.Security
         /// <summary>
         /// The _is MB supporter
         /// </summary>
-        private bool? _isMBSupporter;
+        private bool? _isMbSupporter;
         /// <summary>
         /// The _is MB supporter initialized
         /// </summary>
-        private bool _isMBSupporterInitialized;
+        private bool _isMbSupporterInitialized;
         /// <summary>
         /// The _is MB supporter sync lock
         /// </summary>
-        private object _isMBSupporterSyncLock = new object();
+        private object _isMbSupporterSyncLock = new object();
 
         /// <summary>
         /// Gets a value indicating whether this instance is MB supporter.
@@ -38,14 +38,15 @@ namespace MediaBrowser.Common.Implementations.Security
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _isMBSupporter, ref _isMBSupporterInitialized, ref _isMBSupporterSyncLock, () => GetRegistrationStatus("MBSupporter").Result.IsRegistered);
-                return _isMBSupporter.Value;
+                LazyInitializer.EnsureInitialized(ref _isMbSupporter, ref _isMbSupporterInitialized, ref _isMbSupporterSyncLock, () => GetRegistrationStatus("MBSupporter").Result.IsRegistered);
+                return _isMbSupporter.Value;
             }
         }
 
-        private IHttpClient _httpClient;
-        private IJsonSerializer _jsonSerializer;
-        private IApplicationHost _appHost;
+        private readonly IHttpClient _httpClient;
+        private readonly IJsonSerializer _jsonSerializer;
+        private readonly IApplicationHost _appHost;
+        private readonly IApplicationPaths _applciationPaths;
         private IEnumerable<IRequiresRegistration> _registeredEntities; 
         protected IEnumerable<IRequiresRegistration> RegisteredEntities
         {
@@ -65,10 +66,10 @@ namespace MediaBrowser.Common.Implementations.Security
                 throw new ArgumentNullException("httpClient");
             }
 
+            _applciationPaths = appPaths;
             _appHost = appHost;
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
-            MBRegistration.Init(appPaths);
         }
 
         /// <summary>
@@ -92,6 +93,9 @@ namespace MediaBrowser.Common.Implementations.Security
         /// <returns>Task{MBRegistrationRecord}.</returns>
         public async Task<MBRegistrationRecord> GetRegistrationStatus(string feature, string mb2Equivalent = null)
         {
+            // Do this on demend instead of in the constructor to delay the external assembly load
+            // Todo: Refactor external methods to take app paths as a param
+            MBRegistration.Init(_applciationPaths);
             return await MBRegistration.GetRegistrationStatus(_httpClient, _jsonSerializer, feature, mb2Equivalent).ConfigureAwait(false);
         }
 
@@ -101,9 +105,18 @@ namespace MediaBrowser.Common.Implementations.Security
         /// <value>The supporter key.</value>
         public string SupporterKey
         {
-            get { return MBRegistration.SupporterKey; }
+            get
+            {
+                // Do this on demend instead of in the constructor to delay the external assembly load
+                // Todo: Refactor external methods to take app paths as a param
+                MBRegistration.Init(_applciationPaths);
+                return MBRegistration.SupporterKey;
+            }
             set
             {
+                // Do this on demend instead of in the constructor to delay the external assembly load
+                // Todo: Refactor external methods to take app paths as a param
+                MBRegistration.Init(_applciationPaths);
                 if (value != MBRegistration.SupporterKey)
                 {
                     MBRegistration.SupporterKey = value;
@@ -119,9 +132,18 @@ namespace MediaBrowser.Common.Implementations.Security
         /// <value>The legacy key.</value>
         public string LegacyKey
         {
-            get { return MBRegistration.LegacyKey; }
+            get
+            {
+                // Do this on demend instead of in the constructor to delay the external assembly load
+                // Todo: Refactor external methods to take app paths as a param
+                MBRegistration.Init(_applciationPaths);
+                return MBRegistration.LegacyKey;
+            }
             set
             {
+                // Do this on demend instead of in the constructor to delay the external assembly load
+                // Todo: Refactor external methods to take app paths as a param
+                MBRegistration.Init(_applciationPaths);
                 if (value != MBRegistration.LegacyKey)
                 {
                     MBRegistration.LegacyKey = value;
@@ -136,8 +158,8 @@ namespace MediaBrowser.Common.Implementations.Security
         /// </summary>
         private void ResetSupporterInfo()
         {
-            _isMBSupporter = null;
-            _isMBSupporterInitialized = false;
+            _isMbSupporter = null;
+            _isMbSupporterInitialized = false;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Entities;
@@ -143,8 +144,11 @@ namespace MediaBrowser.Controller.Library
         /// <param name="resolvers">The resolvers.</param>
         /// <param name="introProviders">The intro providers.</param>
         /// <param name="itemComparers">The item comparers.</param>
-        void AddParts(IEnumerable<IResolverIgnoreRule> rules, IEnumerable<IVirtualFolderCreator> pluginFolders,
-                      IEnumerable<IItemResolver> resolvers, IEnumerable<IIntroProvider> introProviders, IEnumerable<IBaseItemComparer> itemComparers);
+        void AddParts(IEnumerable<IResolverIgnoreRule> rules, 
+            IEnumerable<IVirtualFolderCreator> pluginFolders, 
+            IEnumerable<IItemResolver> resolvers, 
+            IEnumerable<IIntroProvider> introProviders, 
+            IEnumerable<IBaseItemComparer> itemComparers);
 
         /// <summary>
         /// Sorts the specified items.
@@ -170,5 +174,36 @@ namespace MediaBrowser.Controller.Library
         /// <param name="userRootPath">The user root path.</param>
         /// <returns>UserRootFolder.</returns>
         UserRootFolder GetUserRootFolder(string userRootPath);
+
+        /// <summary>
+        /// Saves the item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SaveItem(BaseItem item, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves the item.
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns>Task{BaseItem}.</returns>
+        BaseItem RetrieveItem(Guid id);
+
+        /// <summary>
+        /// Saves the children.
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <param name="children">The children.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SaveChildren(Guid id, IEnumerable<BaseItem> children, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves the children.
+        /// </summary>
+        /// <param name="parent">The parent.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        IEnumerable<BaseItem> RetrieveChildren(Folder parent);
     }
 }

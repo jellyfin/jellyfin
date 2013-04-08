@@ -50,12 +50,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         private readonly List<IRestfulService> _restServices = new List<IRestfulService>();
 
         /// <summary>
-        /// Gets or sets the application host.
-        /// </summary>
-        /// <value>The application host.</value>
-        private IApplicationHost ApplicationHost { get; set; }
-
-        /// <summary>
         /// This subscribes to HttpListener requests and finds the appropriate BaseHandler to process it
         /// </summary>
         /// <value>The HTTP listener.</value>
@@ -77,6 +71,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// </summary>
         /// <value>The name of the server.</value>
         private string ServerName { get; set; }
+
+        private ContainerAdapter _containerAdapter;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpServer" /> class.
@@ -109,10 +105,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             ServerName = serverName;
             DefaultRedirectPath = defaultRedirectpath;
             _logger = logger;
-            ApplicationHost = applicationHost;
 
             EndpointHostConfig.Instance.ServiceStackHandlerFactoryPath = null;
             EndpointHostConfig.Instance.MetadataRedirectPath = "metadata";
+
+            _containerAdapter = new ContainerAdapter(applicationHost);
         }
 
         protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
@@ -135,7 +132,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 WriteErrorsToResponse = false
             });
 
-            container.Adapter = new ContainerAdapter(ApplicationHost);
+            container.Adapter = _containerAdapter;
 
             Plugins.Add(new SwaggerFeature());
             Plugins.Add(new CorsFeature());
@@ -214,6 +211,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             if (Listener == null)
             {
+                _logger.Info("Creating HttpListner");
                 Listener = new HttpListener();
             }
 
@@ -221,11 +219,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             UrlPrefix = urlBase;
 
+            _logger.Info("Adding HttpListener Prefixes");
             Listener.Prefixes.Add(urlBase);
 
             IsStarted = true;
+            _logger.Info("Starting HttpListner");
             Listener.Start();
 
+            _logger.Info("Creating HttpListner observable stream");
             HttpListener = CreateObservableStream().Subscribe(ProcessHttpRequestAsync);
         }
 
@@ -548,6 +549,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             _restServices.AddRange(services);
 
             _logger.Info("Calling EndpointHost.ConfigureHost");
+
             EndpointHost.ConfigureHost(this, ServerName, CreateServiceManager());
 
             _logger.Info("Calling ServiceStack AppHost.Init");
