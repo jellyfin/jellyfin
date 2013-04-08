@@ -1,7 +1,7 @@
 ﻿(function ($, document) {
 
     var view = "Poster";
-    
+
     // The base query options
     var query = {
 
@@ -9,13 +9,18 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Movie",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio,UserData,DisplayMediaType"
+        Fields: "PrimaryImageAspectRatio,UserData,DisplayMediaType",
+        Limit: 100,
+        StartIndex: 0
     };
 
-    function getTableHtml(items) {
+    function getTableHtml(result) {
 
-        var html = '<table class="libraryItemsGrid">';
+        var items = result.Items;
 
+        var html = '';
+
+        html += '<table class="libraryItemsGrid">';
         html += '<thead>';
 
         html += '<tr>';
@@ -59,7 +64,7 @@
 
             html += '<img class="libraryGridImage" src="' + ApiClient.getImageUrl(item.Id, {
                 type: "Backdrop",
-                width: 240,
+                width: 220,
                 tag: item.BackdropImageTags[0],
                 index: 0
             }) + '" />';
@@ -68,14 +73,14 @@
         else if (item.ImageTags && item.ImageTags.Thumb) {
             html += '<img class="libraryGridImage" src="' + ApiClient.getImageUrl(item.Id, {
                 type: "Thumb",
-                width: 240,
+                width: 220,
                 tag: item.ImageTags.Thumb
             }) + '" />';
         }
         else if (item.ImageTags && item.ImageTags.Primary) {
             html += '<img class="libraryGridImage" src="' + ApiClient.getImageUrl(item.Id, {
                 type: "Primary",
-                width: 240,
+                width: 220,
                 tag: item.ImageTags.Primary
             }) + '" />';
         }
@@ -133,21 +138,70 @@
         return html;
     }
 
+    function getPagingHtml(result) {
+
+        var html = '';
+
+        var pageCount = Math.round(result.TotalRecordCount / query.Limit);
+        var pageNumber = (query.StartIndex / query.Limit) + 1;
+
+        var dropdownHtml = '<select data-enhance="false" data-role="none">';
+        for (var i = 1; i <= pageCount; i++) {
+            
+            if (i == pageNumber) {
+                dropdownHtml += '<option value="' + i + '" selected="selected">' + i + '</option>';
+            } else {
+                dropdownHtml += '<option value="' + i + '">' + i + '</option>';
+            }
+        }
+        dropdownHtml += '</select>';
+
+        html += '<div class="listPaging">';
+        html += 'Results ' + (query.StartIndex + 1) + '-' + (query.StartIndex + query.Limit) + ' of ' + result.TotalRecordCount + ', page ' + dropdownHtml + ' of ' + pageCount;
+        html += '</div>';
+
+        return html;
+    }
+
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
-
+        
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
 
+            var html = '';
+
+            var showPaging = result.TotalRecordCount > query.Limit;
+
+            if (showPaging) {
+                html += getPagingHtml(result);
+            }
+
             if (view == "Poster") {
-                $('#items', page).html(LibraryBrowser.getPosterViewHtml({
+                html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     useAverageAspectRatio: true
-                }));
+                });
             }
             else if (view == "Grid") {
-                $('#items', page).html(getTableHtml(result.Items)).trigger('create');
+                html += getTableHtml(result);
             }
+
+            if (showPaging) {
+                html += getPagingHtml(result);
+            }
+
+            var elem = $('#items', page);
+
+            // cleanup existing event handlers
+            $('select', elem).off('change');
+
+            elem.html(html).trigger('create');
+
+            $('select', elem).on('change', function() {
+                query.StartIndex = (parseInt(this.value) - 1) * query.Limit;
+                reloadItems(page);
+            });
 
             Dashboard.hideLoadingMsg();
         });
@@ -158,11 +212,13 @@
         var page = this;
 
         $('.radioSortBy', this).on('click', function () {
+            query.StartIndex = 0;
             query.SortBy = this.getAttribute('data-sortby');
             reloadItems(page);
         });
 
         $('.radioSortOrder', this).on('click', function () {
+            query.StartIndex = 0;
             query.SortOrder = this.getAttribute('data-sortorder');
             reloadItems(page);
         });
@@ -178,6 +234,7 @@
                 filters = filters ? (filters + ',' + filterName) : filterName;
             }
 
+            query.StartIndex = 0;
             query.Filters = filters;
 
             reloadItems(page);
@@ -195,11 +252,12 @@
                 filters = filters ? (filters + ',' + filterName) : filterName;
             }
 
+            query.StartIndex = 0;
             query.VideoTypes = filters;
 
             reloadItems(page);
         });
-        
+
         $('#selectView', this).on('change', function () {
 
             view = this.value;
@@ -209,15 +267,16 @@
 
         $('#chk3D', this).on('change', function () {
 
+            query.StartIndex = 0;
             query.VideoFormats = this.checked ? this.getAttribute('data-filter') : null;
 
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#moviesPage", function() {
-        
+    }).on('pagebeforeshow', "#moviesPage", function () {
+
         reloadItems(this);
-        
+
     }).on('pageshow', "#moviesPage", function () {
 
 
@@ -253,7 +312,7 @@
         }).checkboxradio('refresh');
 
         $('#selectView', this).val(view).selectmenu('refresh');
-        
+
         $('#chk3D', this).checked(query.VideoFormats == "Digital3D,Sbs3D").checkboxradio('refresh');
     });
 
