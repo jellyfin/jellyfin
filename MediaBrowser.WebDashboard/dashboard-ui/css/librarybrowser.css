@@ -32,7 +32,6 @@
 .listHeader {
     margin-top: 1em;
     margin-bottom: 5px;
-    font-weight: normal;
 }
 
 .firstListHeader {
@@ -54,7 +53,7 @@
 
 .viewSettings {
     text-align: center;
-    margin: 1.5em 0;
+    margin: 1em 0;
 }
 
 .libraryItemsGrid th {
@@ -62,7 +61,7 @@
 }
 
 .libraryGridImage {
-    width: 120px;
+    width: 110px;
 }
 
 .thName, .tdName {
@@ -87,13 +86,18 @@
     }
 
     .libraryItemsGrid th {
-        padding-bottom: 1em;
-        padding-top: 0;
+        padding-bottom: 10px;
     }
 
-    .libraryItemsGrid td {
+    .libraryItemsGrid td, .libraryItemsGrid th {
         border-top: 1px solid #555;
+        border-bottom: 1px solid #555;
     }
+
+.listPaging {
+    text-align: center;
+    margin: .5em 0 .75em;
+}
 
 .tabletColumn, .desktopColumn {
     display: none!important;
@@ -110,6 +114,12 @@
         display: table-cell!important;
     }
 }
+
+/*@media all and (min-width: 1000px) {
+    .libraryPage > .ui-content, .libraryPage > .ui-panel-content-wrap {
+        margin-top: -20px!important;
+    }
+}*/
 
 @media all and (min-width: 1200px) {
 
