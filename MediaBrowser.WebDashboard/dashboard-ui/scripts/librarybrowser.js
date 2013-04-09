@@ -52,7 +52,7 @@
 
                 html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/audio.png' />";
             }
-            else if (item.MediaType == "Video") {
+            else if (item.MediaType == "Video" || item.Type == "Season" || item.Type == "Series") {
 
                 html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/video.png' />";
             }
