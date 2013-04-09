@@ -386,6 +386,7 @@ _V_.ChapterSelector = _V_.Button.extend({
 		attrs = _V_.merge({
 			className: this.buildCSSClass(),
 			//innerHTML: '<div><span class="vjs-chapter-text">' + this.buttonText + '</span></div>',
+			innerHTML: '<div onmouseover="$(\'.vjs-chapter-button\').focus();$(\'.vjs-chapter-button\').click();"></div>',
 			role: "button",
 			tabIndex: 0
 		}, attrs);
