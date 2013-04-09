@@ -198,14 +198,14 @@ namespace MediaBrowser.Api.UserLibrary
 
             items = items.AsParallel();
 
+            items = ApplyAdditionalFilters(request, items);
+
             // Apply filters
             // Run them starting with the ones that are likely to reduce the list the most
             foreach (var filter in GetFilters(request).OrderByDescending(f => (int)f))
             {
                 items = ApplyFilter(items, filter, user);
             }
-
-            items = ApplyAdditionalFilters(request, items);
 
             items = items.AsEnumerable();
 

@@ -176,7 +176,7 @@ namespace MediaBrowser.Controller.MediaInfo
                     if (extractImages)
                     {
                         // Disable for now on folder rips
-                        if (video.VideoType != VideoType.VideoFile)
+                        if (video.VideoType != VideoType.VideoFile && video.VideoType != VideoType.Dvd)
                         {
                             continue;
                         }

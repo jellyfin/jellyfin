@@ -698,13 +698,14 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         {
             var resourcePool = type == InputType.AudioFile ? _audioImageResourcePool : _videoImageResourcePool;
 
-            return ExtractImageInternal(GetInputArgument(inputFiles, type), offset, outputPath, resourcePool, cancellationToken);
+            return ExtractImageInternal(GetInputArgument(inputFiles, type), type, offset, outputPath, resourcePool, cancellationToken);
         }
 
         /// <summary>
         /// Extracts the image.
         /// </summary>
         /// <param name="inputPath">The input path.</param>
+        /// <param name="type">The type.</param>
         /// <param name="offset">The offset.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="resourcePool">The resource pool.</param>
@@ -714,7 +715,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// or
         /// outputPath</exception>
         /// <exception cref="System.ApplicationException"></exception>
-        private async Task ExtractImageInternal(string inputPath, TimeSpan? offset, string outputPath, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
+        private async Task ExtractImageInternal(string inputPath, InputType type, TimeSpan? offset, string outputPath, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
@@ -727,7 +728,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             }
 
 
-            var args = string.Format("-i {0} -threads 0 -v quiet -vframes 1 -filter:v select=\\'eq(pict_type\\,I)\\' -f image2 \"{1}\"", inputPath, outputPath);
+            var args = type != InputType.Dvd ? string.Format("-i {0} -threads 0 -v quiet -vframes 1 -filter:v select=\\'eq(pict_type\\,I)\\' -f image2 \"{1}\"", inputPath, outputPath) :
+                string.Format("-i {0} -threads 0 -v quiet -vframes 1 -f image2 \"{1}\"", inputPath, outputPath);
 
             if (offset.HasValue)
             {
