@@ -143,6 +143,22 @@
             reloadItems(page);
         });
 
+        $('.chkAirDays', this).on('change', function () {
+
+            var filterName = this.getAttribute('data-filter');
+            var filters = query.AirDays || "";
+
+            filters = (',' + filters).replace(',' + filterName, '').substring(1);
+
+            if (this.checked) {
+                filters = filters ? (filters + ',' + filterName) : filterName;
+            }
+
+            query.AirDays = filters;
+
+            reloadItems(page);
+        });
+
     }).on('pagebeforeshow', "#tvShowsPage", function () {
 
         reloadItems(this);
@@ -174,6 +190,15 @@
         $('.chkStandardFilter', this).each(function () {
 
             var filters = "," + (query.Filters || "");
+            var filterName = this.getAttribute('data-filter');
+
+            this.checked = filters.indexOf(',' + filterName) != -1;
+
+        }).checkboxradio('refresh');
+
+        $('.chkAirDays', this).each(function () {
+
+            var filters = "," + (query.AirDays || "");
             var filterName = this.getAttribute('data-filter');
 
             this.checked = filters.indexOf(',' + filterName) != -1;
