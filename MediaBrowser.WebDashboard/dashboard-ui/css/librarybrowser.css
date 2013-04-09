@@ -43,7 +43,7 @@
 }
 
     .libraryViewNav .ui-btn-inner {
-        padding: .6em 20px;
+        padding: .6em 5px;
     }
 
 .ehsContent {
@@ -113,6 +113,11 @@
 @media all and (min-width: 750px) {
     .tabletColumn {
         display: table-cell!important;
+    }
+
+    .libraryViewNav .ui-btn-inner {
+        padding-left: 20px;
+        padding-right: 20px;
     }
 }
 
