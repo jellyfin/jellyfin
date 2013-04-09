@@ -505,13 +505,20 @@
             if (stream.Channels) {
                 html += '<li><span class="mediaInfoLabel">Channels</span> ' + stream.Channels + '</li>';
             }
-            
+            if (stream.SampleRate) {
+                html += '<li><span class="mediaInfoLabel">Sample Rate</span> ' + stream.SampleRate + '</li>';
+            }
+
             var framerate = stream.AverageFrameRate || stream.RealFrameRate;
             
             if (framerate) {
                 html += '<li><span class="mediaInfoLabel">Framerate</span> ' + framerate + '</li>';
             }
             
+            if (stream.PixelFormat) {
+                html += '<li><span class="mediaInfoLabel">Pixel Format</span> ' + stream.PixelFormat + '</li>';
+            }
+
             if (stream.IsDefault) {
                 html += '<li>Default</li>';
             }
