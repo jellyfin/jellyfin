@@ -10,7 +10,7 @@
         IncludeItemTypes: "Movie",
         Recursive: true,
         Fields: "PrimaryImageAspectRatio,UserData,DisplayMediaType",
-        Limit: 100,
+        Limit: LibraryBrowser.getDetaultPageSize(),
         StartIndex: 0
     };
 

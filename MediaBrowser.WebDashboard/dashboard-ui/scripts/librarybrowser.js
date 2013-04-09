@@ -1,5 +1,13 @@
 ﻿var LibraryBrowser = {
 
+    getDetaultPageSize: function() {
+
+        if (window.location.toString().toLowerCase().indexOf('localhost') != -1) {
+            return 100;
+        }
+        return 25;
+    },
+    
     getPosterViewHtml: function (options) {
 
         var items = options.items;
@@ -27,6 +35,7 @@
                     height: 198,
                     width: 352,
                     tag: item.BackdropImageTags[0]
+                    
                 }) + "' />";
             } else if (hasPrimaryImage) {
 
@@ -38,6 +47,7 @@
                     height: height,
                     width: width,
                     tag: item.ImageTags.Primary
+                    
                 }) + "' />";
 
             } else if (item.BackdropImageTags && item.BackdropImageTags.length) {
@@ -46,6 +56,7 @@
                     height: 198,
                     width: 352,
                     tag: item.BackdropImageTags[0]
+                    
                 }) + "' />";
             }
             else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {

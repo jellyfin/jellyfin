@@ -33,7 +33,7 @@ body {
 h1 {
     font-family: 'Segoe UI Light', 'Open Sans', Arial, Helvetica, sans-serif;
     font-weight: 200;
-    font-size: 28pt;
+    font-size: 22pt;
 }
 
 .toolsSidebar h1 {
@@ -48,7 +48,17 @@ h1 {
 h2 {
     font-family: 'Segoe UI Semiight', 'Open Sans', Arial, Helvetica, sans-serif;
     font-weight: 400;
-    font-size: 22pt;
+    font-size: 20pt;
+}
+
+@media all and (min-width: 750px) {
+    h1 {
+        font-size: 28pt;
+    }
+
+    h2 {
+        font-size: 22pt;
+    }
 }
 
 pre, textarea.pre {
@@ -813,18 +823,19 @@ progress {
 }
 
 .userProfileIcon {
-	width: 36px;
+    width: 36px;
 }
 
 
 /* VideoJS overrides */
 .vjs-default-skin .vjs-menu-button {
-	width: 1.5em;
-	border: 0;
-	background: none;
+    width: 1.5em;
+    border: 0;
+    background: none;
 }
+
 .vjs-default-skin .vjs-play-control {
-	width: 2em;
+    width: 2em;
 }
 
 .vjs-quality-button {
@@ -833,15 +844,15 @@ progress {
 }
 
 .vjs-default-skin .vjs-menu-button.vjs-quality-button div {
-	background: url("images/media/quality.png");
-	height: 16px;
-	width: 16px;
+    background: url("images/media/quality.png");
+    height: 16px;
+    width: 16px;
 }
 
 .vjs-default-skin .vjs-chapter-button div {
-	background: url("images/media/chapter.png");
-	height: 16px;
-	width: 16px;
+    background: url("images/media/chapter.png");
+    height: 16px;
+    width: 16px;
 }
 
 .vjs-chapter-button.vjs-menu-button ul {
@@ -850,12 +861,12 @@ progress {
     overflow-y: scroll;
 }
 
-.vjs-chapter-button.vjs-menu-button ul li {
-    width: auto;
-    white-space: nowrap;
-    font-size: 1.1em;
-    padding-right: 10px;
-}
+    .vjs-chapter-button.vjs-menu-button ul li {
+        width: auto;
+        white-space: nowrap;
+        font-size: 1.1em;
+        padding-right: 10px;
+    }
 
 .vjs-default-skin .vjs-menu-button.vjs-stop-button {
     float: left;
@@ -864,45 +875,45 @@ progress {
     width: 2.5em;
 }
 
-.vjs-default-skin .vjs-menu-button.vjs-stop-button div {
-    background: url("images/media/stop.png");
-    height: 26px;
-    width: 26px;
-    margin: -.7em .5em auto 0;
-}
+    .vjs-default-skin .vjs-menu-button.vjs-stop-button div {
+        background: url("images/media/stop.png");
+        height: 26px;
+        width: 26px;
+        margin: -.7em .5em auto 0;
+    }
 
 .vjs-subtitle-button div {
-	background-position: -25px -75px !important;
+    background-position: -25px -75px !important;
 }
 
 .vjs-subtitle-button.vjs-menu-button ul {
-	width: auto;
-	max-width: 25em;
-	overflow-y: scroll;
+    width: auto;
+    max-width: 25em;
+    overflow-y: scroll;
 }
 
-.vjs-subtitle-button.vjs-menu-button ul li {
-	width: auto;
-	white-space: nowrap;
-	font-size: 1.1em;
-	padding-right: 10px;
-}
+    .vjs-subtitle-button.vjs-menu-button ul li {
+        width: auto;
+        white-space: nowrap;
+        font-size: 1.1em;
+        padding-right: 10px;
+    }
 
 .vjs-default-skin .vjs-menu-button.vjs-language-button div {
-	background: url("images/media/language.png") !important;
-	height: 16px;
-	width: 16px;
+    background: url("images/media/language.png") !important;
+    height: 16px;
+    width: 16px;
 }
 
 .vjs-language-button.vjs-menu-button ul {
-	width: auto;
-	max-width: 25em;
-	overflow-y: scroll;
+    width: auto;
+    max-width: 25em;
+    overflow-y: scroll;
 }
 
-.vjs-language-button.vjs-menu-button ul li {
-	width: auto;
-	white-space: nowrap;
-	font-size: 1.1em;
-	padding-right: 10px;
-}
+    .vjs-language-button.vjs-menu-button ul li {
+        width: auto;
+        white-space: nowrap;
+        font-size: 1.1em;
+        padding-right: 10px;
+    }
