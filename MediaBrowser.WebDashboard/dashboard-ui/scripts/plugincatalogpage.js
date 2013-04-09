@@ -2,6 +2,7 @@
 
     // The base query options
     var query = {
+	    TargetSystems: 'Server'
     };
 
     function reloadList(page) {
@@ -70,30 +71,27 @@
 
         }
 
+	    if (!availablePlugins.length) {
+		    html = '<div style="text-align:center;margin: 10px;">No available plugins</div>';
+	    }
+
         $('#pluginTiles', page).html(html);
 
         Dashboard.hideLoadingMsg();
     }
 
+	function selectTab(elem) {
+		$("#pluginTabs a").removeClass("ui-btn-active");
+		$(elem).addClass("ui-btn-active");
+
+		query.TargetSystems = $(elem).attr("rel");
+
+		reloadList($.mobile.activePage);
+	}
+
     $(document).on('pageinit', "#pluginCatalogPage", function () {
 
         var page = this;
-
-        $('.chkStandardFilter', this).on('change', function () {
-
-            var filterName = this.getAttribute('data-filter');
-            var filters = query.TargetSystems || "";
-
-            filters = (',' + filters).replace(',' + filterName, '').substring(1);
-
-            if (this.checked) {
-                filters = filters ? (filters + ',' + filterName) : filterName;
-            }
-
-            query.TargetSystems = filters;
-
-            reloadList(page);
-        });
 
         $('.chkPremiumFilter', this).on('change', function () {
 
@@ -103,24 +101,18 @@
                 query.IsPremium = null;
             }
 
-            reloadList(page);
         });
 
-    }).on('pageshow', "#pluginCatalogPage", function () {
+	    $('#pluginTabs a', this).each(function(){
+		    $(this).on('click', function () {
+			    selectTab(this);
+		    });
+	    });
 
-        reloadList(this);
+    }).on('pageshow', "#pluginCatalogPage", function () {
+		selectTab($("#pluginTabs a.ui-btn-active"));
 
         // Reset form values using the last used query
-
-        $('.chkStandardFilter', this).each(function () {
-
-            var filters = "," + (query.TargetSystems || "");
-            var filterName = this.getAttribute('data-filter');
-
-            this.checked = filters.indexOf(',' + filterName) != -1;
-
-        }).checkboxradio('refresh');
-
         $('.chkPremiumFilter', this).each(function () {
 
             var filters = query.IsPremium || false;

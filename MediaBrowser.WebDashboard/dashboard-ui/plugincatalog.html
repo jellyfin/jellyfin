@@ -13,9 +13,14 @@
                     <a href="plugincatalog.html" data-role="button" class="ui-btn-active">Plugin Catalog</a>
                     <a href="pluginupdates.html" data-role="button">Automatic Updates</a>
                 </div>
-                <div class="viewSettings" style="margin: .5em 0;text-align:left;">
-                    <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $.mobile.activePage).panel( 'toggle' );">Filter</button>
-                </div>
+
+	            <h5>Displaying plugins for:</h5>
+	            <fieldset data-role="controlgroup" data-type="horizontal" style="margin:auto;text-align: center;" id="pluginTabs">
+		            <a href="" data-role="button" data-mini="true" class="ui-btn-active" rel="Server">MB Server</a>
+		            <a href="" data-role="button" data-mini="true" rel="MBTheater">MB Theatre</a>
+		            <a href="" data-role="button" data-mini="true" rel="MBClassic">MB Classic</a>
+		            <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $.mobile.activePage).panel( 'toggle' );">Filter</button>
+		        </fieldset>
 
                 <div id="pluginTiles"></div>
             </div>
@@ -23,20 +28,6 @@
 
         <div data-role="panel" id="filterPanel" data-position="right" data-display="overlay" data-theme="b" data-position-fixed="true">
             <form>
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        <h3>Application:</h3>
-                    </legend>
-                    <input class="chkStandardFilter" type="checkbox" name="chkServer" id="chkServer" data-theme="c" data-filter="Server">
-                    <label for="chkServer">MB Server</label>
-
-                    <input class="chkStandardFilter" type="checkbox" name="chkTheatre" id="chkTheatre" data-theme="c" data-filter="MBTheater">
-                    <label for="chkTheatre">MB Theater</label>
-
-                    <input class="chkStandardFilter" type="checkbox" name="chkClassic" id="chkClassic" data-theme="c" data-filter="MBClassic">
-                    <label for="chkClassic">MB Classic</label>
-                </fieldset>
-
                 <fieldset data-role="controlgroup">
                     <legend>
                         <h3>Pricing:</h3>
