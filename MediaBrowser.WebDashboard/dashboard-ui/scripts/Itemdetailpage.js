@@ -89,7 +89,7 @@
         }
 
         ItemDetailPage.renderFav(item);
-	    LibraryBrowser.renderLinks(item);
+        LibraryBrowser.renderLinks(item);
 
         Dashboard.hideLoadingMsg();
     },
@@ -456,21 +456,6 @@
 
         var page = $.mobile.activePage;
         var html = '';
-        var hasVideo = false;
-        var hasLanguage = false;
-
-        html += '<table class="ui-responsive table-stroke" id="mediaInfo-table" data-role="table" data-mode="reflow">';
-        html += '<thead><tr>';
-        html += '<th data-priority="1">Type</th>';
-        html += '<th data-priority="2">Codec</th>';
-        html += '<th data-priority="3" class="language">Language</th>';
-        html += '<th data-priority="4" class="resolution">Resolution</th>';
-        html += '<th data-priority="6">Channels</th>';
-        html += '<th data-priority="7">Bitrate</th>';
-        html += '<th data-priority="8" class="framerate">Framerate</th>';
-        html += '<th data-priority="9">Flags</th>';
-        html += '</tr></thead>';
-        html += '<tbody>';
 
         for (var i = 0, length = item.MediaStreams.length; i < length; i++) {
 
@@ -480,61 +465,73 @@
                 continue;
             }
 
-            if (stream.Type == "Video") {
-                hasVideo = true;
+            var type;
+            if (item.MediaType == "Audio" && stream.Type == "Video") {
+                type = "Embedded Image";
+            } else {
+                type = stream.Type;
             }
 
-            if (item.MediaType == "Audio" && stream.Type == "Video") var type = "Embedded Image";
-            else var type = stream.Type;
+            html += '<div class="mediaInfoStream">';
 
-            html += '<tr>';
-            html += '<td>' + type + '</td>';
-            html += '<td>' + stream.Codec + '</td>';
-
+            html += '<p class="mediaInfoStreamType">' + type + '</p>';
+            
+            html += '<ul class="mediaInfoDetails">';
+            
+            if (stream.Codec) {
+                html += '<li><span class="mediaInfoLabel">Codec</span> ' + stream.Codec + '</li>';
+            }
+            if (stream.Profile) {
+                html += '<li><span class="mediaInfoLabel">Profile</span> ' + stream.Profile + '</li>';
+            }
+            if (stream.Level) {
+                html += '<li><span class="mediaInfoLabel">Level</span> ' + stream.Level + '</li>';
+            }
             if (stream.Language) {
-                hasLanguage = true;
-                html += '<td class="language">' + stream.Language + '</td>';
-            } else html += '<td class="language"></td>';
-
-            if (stream.Type == "Video") {
-                html += '<td class="resolution">' + stream.Width + '/' + stream.Height + ' (' + stream.AspectRatio + ')</td>';
-            } else {
-                html += '<td class="resolution"></td>';
+                html += '<li><span class="mediaInfoLabel">Language</span> ' + stream.Language + '</li>';
             }
-
+            if (stream.Width) {
+                html += '<li><span class="mediaInfoLabel">Width</span> ' + stream.Width + '</li>';
+            }
+            if (stream.Height) {
+                html += '<li><span class="mediaInfoLabel">Height</span> ' + stream.Height + '</li>';
+            }
+            if (stream.AspectRatio) {
+                html += '<li><span class="mediaInfoLabel">Aspect Ratio</span> ' + stream.AspectRatio + '</li>';
+            }
+            if (stream.Bitrate) {
+                html += '<li><span class="mediaInfoLabel">Bitrate</span> ' + stream.Bitrate + '</li>';
+            }
             if (stream.Channels) {
-                html += '<td>' + stream.Channels + 'ch ' + stream.SampleRate + ' khz</td>';
-            } else {
-                html += '<td></td>';
+                html += '<li><span class="mediaInfoLabel">Channels</span> ' + stream.Channels + '</li>';
+            }
+            
+            var framerate = stream.AverageFrameRate || stream.RealFrameRate;
+            
+            if (framerate) {
+                html += '<li><span class="mediaInfoLabel">Framerate</span> ' + framerate + '</li>';
+            }
+            
+            if (stream.IsDefault) {
+                html += '<li>Default</li>';
+            }
+            if (stream.IsForced) {
+                html += '<li>Forced</li>';
+            }
+            if (stream.IsExternal) {
+                html += '<li>External</li>';
+            }
+            if (stream.Path) {
+                html += '<li><span class="mediaInfoLabel">Path</span> ' + stream.Path + '</li>';
             }
 
-            html += '<td>' + stream.BitRate + '</td>';
+            html += '</ul>';
 
-            if (stream.Type == "Video") {
-                var framerate = stream.AverageFrameRate || stream.RealFrameRate;
-                html += '<td class="framerate">' + framerate + '</td>';
-            } else {
-                html += '<td></td>';
-            }
-
-            var notes = new Array();
-            if (stream.IsExternal) notes.push("external file");
-            if (stream.IsDefault) notes.push("Default");
-            if (stream.IsForced) notes.push("Forced");
-
-            html += '<td>' + notes.join(', ') + '</td>';
-
-            html += '</tr>';
+            html += '</div>';
         }
-
-        html += '</tbody></table>';
 
         $('#mediaInfoContent', page).html(html).trigger('create');
-        if (!hasLanguage) $('#mediaInfoCollapsible #mediaInfo-table .language', page).hide();
-        if (!hasVideo) {
-            $('#mediaInfoCollapsible #mediaInfo-table .resolution', page).hide();
-            $('#mediaInfoCollapsible #mediaInfo-table .framerate', page).hide();
-        }
+
         $('#mediaInfoCollapsible', page).show();
     },
 
@@ -707,7 +704,7 @@
             } else {
                 var style = "background-color:" + LibraryBrowser.getMetroColor(cast.Name) + ";";
 
-                html += '<img src="css/images/items/list/person.png" style="max-width:185px; '+style+'"/>';
+                html += '<img src="css/images/items/list/person.png" style="max-width:185px; ' + style + '"/>';
             }
 
             html += '<div class="posterViewItemText posterViewItemPrimaryText">' + cast.Name + '</div>';
@@ -804,18 +801,18 @@
         ItemDetailPage.renderFav(item);
     },
 
-	setPlayed: function () {
-		var item = ItemDetailPage.item;
+    setPlayed: function () {
+        var item = ItemDetailPage.item;
 
-		item.UserData = item.UserData || {};
+        item.UserData = item.UserData || {};
 
-		var setting = !item.UserData.Played;
-		item.UserData.Played = setting;
+        var setting = !item.UserData.Played;
+        item.UserData.Played = setting;
 
-		ApiClient.updatePlayedStatus(Dashboard.getCurrentUserId(), item.Id, setting);
+        ApiClient.updatePlayedStatus(Dashboard.getCurrentUserId(), item.Id, setting);
 
-		ItemDetailPage.renderFav(item);
-	}
+        ItemDetailPage.renderFav(item);
+    }
 
 };
 

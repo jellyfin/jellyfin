@@ -148,3 +148,25 @@
         max-width: 1000px;
     }
 }
+
+.mediaInfoStream {
+    display: inline-block;
+    vertical-align: top;
+    margin-right: 2em;
+}
+
+.mediaInfoStreamType {
+    border-bottom: 1px solid #555;
+    padding-bottom: 5px;
+    margin-bottom: .5em;
+    font-weight: bold;
+}
+
+.mediaInfoDetails {
+    margin: 0 0 0 2em;
+    padding: 0;
+}
+
+.mediaInfoLabel {
+    color: #bbb;
+}
