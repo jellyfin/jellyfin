@@ -476,6 +476,10 @@
 
             var stream = item.MediaStreams[i];
 
+            if (stream.Type == "Data") {
+                continue;
+            }
+
             if (stream.Type == "Video") {
                 hasVideo = true;
             }
