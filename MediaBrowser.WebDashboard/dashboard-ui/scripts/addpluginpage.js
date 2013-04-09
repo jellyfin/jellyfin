@@ -33,6 +33,7 @@
 	    if (pkg.targetSystem == 'Server') {
 		    $("#btnInstallDiv", page).show();
 		    $("#nonServerMsg", page).hide();
+		    $("#pSelectVersion", page).show();
 	    }else {
 	        $("#btnInstallDiv", page).hide();
 	        $("#pSelectVersion", page).hide();
