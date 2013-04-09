@@ -72,7 +72,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <value>The name of the server.</value>
         private string ServerName { get; set; }
 
-        private ContainerAdapter _containerAdapter;
+        private readonly ContainerAdapter _containerAdapter;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpServer" /> class.
@@ -149,7 +149,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                         if (!string.IsNullOrEmpty(exception.Message))
                         {
-                            res.AddHeader("X-Application-Error-Code", exception.Message.Replace(Environment.NewLine, " "));
+                            var error = exception.Message.Replace(Environment.NewLine, " ");
+                            error = RemoveControlCharacters(error);
+
+                            res.AddHeader("X-Application-Error-Code", error);
                         }
                     }
 
@@ -186,6 +189,27 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                         }
                     }
                 });
+        }
+
+        /// <summary>
+        /// Removes the control characters.
+        /// </summary>
+        /// <param name="inString">The in string.</param>
+        /// <returns>System.String.</returns>
+        private static string RemoveControlCharacters(string inString)
+        {
+            if (inString == null) return null;
+
+            var newString = new StringBuilder();
+
+            foreach (var ch in inString)
+            {
+                if (!char.IsControl(ch))
+                {
+                    newString.Append(ch);
+                }
+            }
+            return newString.ToString();
         }
 
         /// <summary>

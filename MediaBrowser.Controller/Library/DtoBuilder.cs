@@ -836,17 +836,13 @@ namespace MediaBrowser.Controller.Library
 
             BaseItem item = null;
 
-            if (userId.HasValue)
-            {
-                item = libraryManager.GetItemById(new Guid(id));
-            }
-            else if (!isIndexFolder)
+            if (!isIndexFolder)
             {
                 item = libraryManager.GetItemById(new Guid(id));
             }
 
             // If we still don't find it, look within individual user views
-            if (item == null && !userId.HasValue)
+            if (item == null && !userId.HasValue && isIndexFolder)
             {
                 foreach (var user in userManager.Users)
                 {
