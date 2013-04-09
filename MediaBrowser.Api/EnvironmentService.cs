@@ -45,12 +45,6 @@ namespace MediaBrowser.Api
         /// <value><c>true</c> if [include hidden]; otherwise, <c>false</c>.</value>
         [ApiMember(Name = "IncludeHidden", Description = "An optional filter to include or exclude hidden files and folders. true/false", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool IncludeHidden { get; set; }
-
-        public GetDirectoryContents()
-        {
-            IncludeDirectories = true;
-            IncludeFiles = true;
-        }
     }
 
     /// <summary>
