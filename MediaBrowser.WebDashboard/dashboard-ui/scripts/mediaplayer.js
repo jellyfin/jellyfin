@@ -1,4 +1,4 @@
-﻿var MediaPlayer = (function (document, clearTimeout, screen, localStorage, _V_, $) {
+﻿var MediaPlayer = (function (document, clearTimeout, screen, localStorage, _V_, $, setInterval) {
 
     var testableAudioElement = document.createElement('audio');
     var testableVideoElement = document.createElement('video');
@@ -360,4 +360,4 @@
 
     return self;
 
-})(document, clearTimeout, screen, localStorage, _V_, $);
+})(document, clearTimeout, screen, localStorage, _V_, $, setInterval);

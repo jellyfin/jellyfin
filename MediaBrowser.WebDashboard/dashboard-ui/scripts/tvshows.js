@@ -1,159 +1,184 @@
 ﻿(function ($, document) {
 
-	// The base query options
-	var query = {
+    // The base query options
+    var query = {
 
-		SortBy: "SortName",
-		SortOrder: "Ascending",
-		IncludeItemTypes: "Series",
-		Recursive: true,
-		Fields: "PrimaryImageAspectRatio,SeriesInfo"
-	};
+        SortBy: "SortName",
+        SortOrder: "Ascending",
+        IncludeItemTypes: "Series",
+        Recursive: true,
+        Fields: "PrimaryImageAspectRatio,SeriesInfo"
+    };
 
-	function getTableHtml(items) {
+    function getTableHtml(items) {
 
-		var html = '<div class="libraryItemsGridContainer"><table data-role="table" data-mode="reflow" class="ui-responsive table-stroke libraryItemsGrid">';
+        var html = '<div class="libraryItemsGridContainer"><table data-role="table" data-mode="reflow" class="ui-responsive table-stroke libraryItemsGrid">';
 
-		html += '<thead>';
+        html += '<thead>';
 
-		html += '<tr>';
-		html += '<th>&nbsp;</th>';
-		html += '<th>Name</th>';
-		html += '<th>Year</th>';
-		html += '<th>Official Rating</th>';
-		html += '<th>Runtime</th>';
-		html += '<th>Community Rating</th>';
-		html += '</tr>';
+        html += '<tr>';
+        html += '<th>&nbsp;</th>';
+        html += '<th>Name</th>';
+        html += '<th>Year</th>';
+        html += '<th>Official Rating</th>';
+        html += '<th>Runtime</th>';
+        html += '<th>Community Rating</th>';
+        html += '</tr>';
 
-		html += '</thead>';
+        html += '</thead>';
 
-		html += '<tbody>';
+        html += '<tbody>';
 
-		for (var i = 0, length = items.length; i < length; i++) {
+        for (var i = 0, length = items.length; i < length; i++) {
 
-			html += getRowHtml(items[i]);
-		}
+            html += getRowHtml(items[i]);
+        }
 
-		html += '</tbody>';
+        html += '</tbody>';
 
-		html += '</table></div>';
+        html += '</table></div>';
 
-		return html;
-	}
+        return html;
+    }
 
-	function getRowHtml(item) {
+    function getRowHtml(item) {
 
-		var html = '<tr>';
+        var html = '<tr>';
 
-		html += '<td>';
+        html += '<td>';
 
-		var url = "itemdetails.html?id=" + item.Id;
+        var url = "itemdetails.html?id=" + item.Id;
 
-		var imageTags = item.ImageTags;
+        var imageTags = item.ImageTags;
 
-		html += '<a href="' + url + '">';
+        html += '<a href="' + url + '">';
 
-		if (imageTags.Primary) {
+        if (imageTags.Primary) {
 
-			html += '<img class="libraryGridImage" src="' + ApiClient.getImageUrl(item.Id, {
-				type: "Primary",
-				height: 150,
-				tag: item.ImageTags.Primary
-			}) + '" />';
+            html += '<img class="libraryGridImage" src="' + ApiClient.getImageUrl(item.Id, {
+                type: "Primary",
+                height: 150,
+                tag: item.ImageTags.Primary
+            }) + '" />';
 
-		}
-		else {
-			html += '<img class="libraryGridImage" style="background:' + LibraryBrowser.getMetroColor(item.Id) + ';" src="css/images/items/list/collection.png" />';
-		}
+        }
+        else {
+            html += '<img class="libraryGridImage" style="background:' + LibraryBrowser.getMetroColor(item.Id) + ';" src="css/images/items/list/collection.png" />';
+        }
 
-		html += '</a></td>';
+        html += '</a></td>';
 
-		html += '<td><a href="' + url + '">' + item.Name + '</a></td>';
+        html += '<td><a href="' + url + '">' + item.Name + '</a></td>';
 
-		html += '<td>' + (item.ProductionYear || "") + '</td>';
+        html += '<td>' + (item.ProductionYear || "") + '</td>';
 
-		html += '<td>' + (item.OfficialRating || "") + '</td>';
-		html += '<td>' + (item.RunTimeTicks || "") + '</td>';
-		html += '<td>' + (item.CommunityRating || "") + '</td>';
+        html += '<td>' + (item.OfficialRating || "") + '</td>';
+        html += '<td>' + (item.RunTimeTicks || "") + '</td>';
+        html += '<td>' + (item.CommunityRating || "") + '</td>';
 
-		html += '</tr>';
-		return html;
-	}
+        html += '</tr>';
+        return html;
+    }
 
-	function reloadItems(page) {
+    function reloadItems(page) {
 
-		Dashboard.showLoadingMsg();
+        Dashboard.showLoadingMsg();
 
-		ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
+        ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
 
-			$('#items', page).html(LibraryBrowser.getPosterViewHtml({
+            $('#items', page).html(LibraryBrowser.getPosterViewHtml({
 
-				items: result.Items,
-				useAverageAspectRatio: true
+                items: result.Items,
+                useAverageAspectRatio: true
 
-			}))/*.html(getTableHtml(result.Items)).trigger('create')*/;
+            }))/*.html(getTableHtml(result.Items)).trigger('create')*/;
 
-			Dashboard.hideLoadingMsg();
-		});
-	}
+            Dashboard.hideLoadingMsg();
+        });
+    }
 
-	$(document).on('pageinit', "#tvShowsPage", function () {
+    $(document).on('pageinit', "#tvShowsPage", function () {
 
-		var page = this;
+        var page = this;
 
-		$('.radioSortBy', this).on('click', function () {
-			query.SortBy = this.getAttribute('data-sortby');
-			reloadItems(page);
-		});
+        $('.radioSortBy', this).on('click', function () {
+            query.SortBy = this.getAttribute('data-sortby');
+            reloadItems(page);
+        });
 
-		$('.radioSortOrder', this).on('click', function () {
-			query.SortOrder = this.getAttribute('data-sortorder');
-			reloadItems(page);
-		});
+        $('.radioSortOrder', this).on('click', function () {
+            query.SortOrder = this.getAttribute('data-sortorder');
+            reloadItems(page);
+        });
 
-		$('.chkStandardFilter', this).on('change', function () {
+        $('.chkStandardFilter', this).on('change', function () {
 
-			var filterName = this.getAttribute('data-filter');
-			var filters = query.Filters || "";
+            var filterName = this.getAttribute('data-filter');
+            var filters = query.Filters || "";
 
-			filters = (',' + filters).replace(',' + filterName, '').substring(1);
+            filters = (',' + filters).replace(',' + filterName, '').substring(1);
 
-			if (this.checked) {
-				filters = filters ? (filters + ',' + filterName) : filterName;
-			}
+            if (this.checked) {
+                filters = filters ? (filters + ',' + filterName) : filterName;
+            }
 
-			query.Filters = filters;
+            query.Filters = filters;
 
-			reloadItems(page);
-		});
+            reloadItems(page);
+        });
 
-	}).on('pagebeforeshow', "#tvShowsPage", function () {
+        $('.chkStatus', this).on('change', function () {
 
-	    reloadItems(this);
+            var filterName = this.getAttribute('data-filter');
+            var filters = query.SeriesStatus || "";
 
-	}).on('pageshow', "#tvShowsPage", function () {
+            filters = (',' + filters).replace(',' + filterName, '').substring(1);
 
-			// Reset form values using the last used query
-			$('.radioSortBy', this).each(function () {
+            if (this.checked) {
+                filters = filters ? (filters + ',' + filterName) : filterName;
+            }
 
-				this.checked = query.SortBy == this.getAttribute('data-sortby');
+            query.SeriesStatus = filters;
 
-			}).checkboxradio('refresh');
+            reloadItems(page);
+        });
 
-			$('.radioSortOrder', this).each(function () {
+    }).on('pagebeforeshow', "#tvShowsPage", function () {
 
-				this.checked = query.SortOrder == this.getAttribute('data-sortorder');
+        reloadItems(this);
 
-			}).checkboxradio('refresh');
+    }).on('pageshow', "#tvShowsPage", function () {
 
-			$('.chkStandardFilter', this).each(function () {
+        // Reset form values using the last used query
+        $('.radioSortBy', this).each(function () {
 
-				var filters = "," + (query.Filters || "");
-				var filterName = this.getAttribute('data-filter');
+            this.checked = query.SortBy == this.getAttribute('data-sortby');
 
-				this.checked = filters.indexOf(',' + filterName) != -1;
+        }).checkboxradio('refresh');
 
-			}).checkboxradio('refresh');
-		});
+        $('.chkStatus', this).each(function () {
+
+            var filters = "," + (query.SeriesStatus || "");
+            var filterName = this.getAttribute('data-filter');
+
+            this.checked = filters.indexOf(',' + filterName) != -1;
+
+        }).checkboxradio('refresh');
+
+        $('.radioSortOrder', this).each(function () {
+
+            this.checked = query.SortOrder == this.getAttribute('data-sortorder');
+
+        }).checkboxradio('refresh');
+
+        $('.chkStandardFilter', this).each(function () {
+
+            var filters = "," + (query.Filters || "");
+            var filterName = this.getAttribute('data-filter');
+
+            this.checked = filters.indexOf(',' + filterName) != -1;
+
+        }).checkboxradio('refresh');
+    });
 
 })(jQuery, document);

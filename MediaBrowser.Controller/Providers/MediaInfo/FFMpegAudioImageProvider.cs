@@ -52,6 +52,21 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         }
 
         /// <summary>
+        /// Needses the refresh internal.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="providerInfo">The provider info.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
+        {
+            if (!string.IsNullOrEmpty(item.PrimaryImagePath))
+            {
+                return false;
+            }
+            return base.NeedsRefreshInternal(item, providerInfo);
+        }
+
+        /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>
         /// <param name="item">The item.</param>

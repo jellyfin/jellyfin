@@ -288,7 +288,7 @@ namespace MediaBrowser.Server.Implementations.Updates
 
                 return latestPluginInfo != null && latestPluginInfo.version > p.Version ? latestPluginInfo : null;
 
-            }).Where(p => !CompletedInstallations.Any(i => i.Name.Equals(p.name, StringComparison.OrdinalIgnoreCase)))
+            }).Where(p => !CompletedInstallations.Any(i => string.Equals(i.Name, p.name, StringComparison.OrdinalIgnoreCase)))
             .Where(p => p != null && !string.IsNullOrWhiteSpace(p.sourceUrl));
         }
 
