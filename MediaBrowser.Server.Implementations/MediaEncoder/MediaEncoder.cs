@@ -727,9 +727,15 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 throw new ArgumentNullException("outputPath");
             }
 
-
             var args = type != InputType.Dvd ? string.Format("-i {0} -threads 0 -v quiet -vframes 1 -filter:v select=\\'eq(pict_type\\,I)\\' -f image2 \"{1}\"", inputPath, outputPath) :
                 string.Format("-i {0} -threads 0 -v quiet -vframes 1 -f image2 \"{1}\"", inputPath, outputPath);
+
+            var probeSize = GetProbeSizeArgument(type);
+
+            if (!string.IsNullOrEmpty(probeSize))
+            {
+                args = probeSize + " " + args;
+            }
 
             if (offset.HasValue)
             {
