@@ -138,31 +138,6 @@
         return html;
     }
 
-    function getPagingHtml(result) {
-
-        var html = '';
-
-        var pageCount = Math.round(result.TotalRecordCount / query.Limit);
-        var pageNumber = (query.StartIndex / query.Limit) + 1;
-
-        var dropdownHtml = '<select data-enhance="false" data-role="none">';
-        for (var i = 1; i <= pageCount; i++) {
-            
-            if (i == pageNumber) {
-                dropdownHtml += '<option value="' + i + '" selected="selected">' + i + '</option>';
-            } else {
-                dropdownHtml += '<option value="' + i + '">' + i + '</option>';
-            }
-        }
-        dropdownHtml += '</select>';
-
-        html += '<div class="listPaging">';
-        html += 'Results ' + (query.StartIndex + 1) + '-' + (query.StartIndex + query.Limit) + ' of ' + result.TotalRecordCount + ', page ' + dropdownHtml + ' of ' + pageCount;
-        html += '</div>';
-
-        return html;
-    }
-
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
@@ -174,7 +149,7 @@
             var showPaging = result.TotalRecordCount > query.Limit;
 
             if (showPaging) {
-                html += getPagingHtml(result);
+                html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
             }
 
             if (view == "Poster") {
@@ -188,7 +163,7 @@
             }
 
             if (showPaging) {
-                html += getPagingHtml(result);
+                html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
             }
 
             var elem = $('#items', page);

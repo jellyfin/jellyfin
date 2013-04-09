@@ -1,5 +1,5 @@
 ﻿var LibraryBrowser = {
-    
+
     getPosterViewHtml: function (options) {
 
         var items = options.items;
@@ -148,72 +148,72 @@
         return html;
     },
 
-	getBoxsetPosterViewHtml: function (options) {
+    getBoxsetPosterViewHtml: function (options) {
 
-		var items = options.items;
+        var items = options.items;
 
-		var primaryImageAspectRatio = options.useAverageAspectRatio ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
+        var primaryImageAspectRatio = options.useAverageAspectRatio ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
 
-		var html = "";
+        var html = "";
 
-		for (var i = 0, length = items.length; i < length; i++) {
-			var item = items[i];
+        for (var i = 0, length = items.length; i < length; i++) {
+            var item = items[i];
 
-			var hasPrimaryImage = item.ImageTags && item.ImageTags.Primary;
+            var hasPrimaryImage = item.ImageTags && item.ImageTags.Primary;
 
-			var href = item.url || ("boxset.html?id=" + item.Id);
+            var href = item.url || ("boxset.html?id=" + item.Id);
 
-			var showText = options.showTitle || !hasPrimaryImage || (item.Type !== 'Movie' && item.Type !== 'Series' && item.Type !== 'Season' && item.Type !== 'Trailer');
+            var showText = options.showTitle || !hasPrimaryImage || (item.Type !== 'Movie' && item.Type !== 'Series' && item.Type !== 'Season' && item.Type !== 'Trailer');
 
-			var cssClass = showText ? "posterViewItem posterViewItemWithDualText" : "posterViewItem posterViewItemWithNoText";
+            var cssClass = showText ? "posterViewItem posterViewItemWithDualText" : "posterViewItem posterViewItemWithNoText";
 
-			html += "<div class='" + cssClass + "'><a href='" + href + "'>";
+            html += "<div class='" + cssClass + "'><a href='" + href + "'>";
 
-			if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
-				html += "<img src='" + ApiClient.getImageUrl(item.Id, {
-					type: "Backdrop",
-					height: 198,
-					width: 352,
-					tag: item.BackdropImageTags[0]
-				}) + "' />";
-			} else if (hasPrimaryImage) {
+            if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
+                html += "<img src='" + ApiClient.getImageUrl(item.Id, {
+                    type: "Backdrop",
+                    height: 198,
+                    width: 352,
+                    tag: item.BackdropImageTags[0]
+                }) + "' />";
+            } else if (hasPrimaryImage) {
 
-				var height = 300;
-				var width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
+                var height = 300;
+                var width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
 
-				html += "<img src='" + ApiClient.getImageUrl(item.Id, {
-					type: "Primary",
-					height: height,
-					width: width,
-					tag: item.ImageTags.Primary
-				}) + "' />";
+                html += "<img src='" + ApiClient.getImageUrl(item.Id, {
+                    type: "Primary",
+                    height: height,
+                    width: width,
+                    tag: item.ImageTags.Primary
+                }) + "' />";
 
-			} else if (item.BackdropImageTags && item.BackdropImageTags.length) {
-				html += "<img src='" + ApiClient.getImageUrl(item.Id, {
-					type: "Backdrop",
-					height: 198,
-					width: 352,
-					tag: item.BackdropImageTags[0]
-				}) + "' />";
-			} else {
-				html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/video.png' />";
-			}
+            } else if (item.BackdropImageTags && item.BackdropImageTags.length) {
+                html += "<img src='" + ApiClient.getImageUrl(item.Id, {
+                    type: "Backdrop",
+                    height: 198,
+                    width: 352,
+                    tag: item.BackdropImageTags[0]
+                }) + "' />";
+            } else {
+                html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/video.png' />";
+            }
 
-			if (showText) {
-				html += "<div class='posterViewItemText posterViewItemPrimaryText'>";
-				html += item.Name;
-				html += "</div>";
-				html += "<div class='posterViewItemText'>";
-				html += item.ChildCount+" Movie";
-				if (item.ChildCount > 1) html += "s";
-				html += "</div>";
-			}
+            if (showText) {
+                html += "<div class='posterViewItemText posterViewItemPrimaryText'>";
+                html += item.Name;
+                html += "</div>";
+                html += "<div class='posterViewItemText'>";
+                html += item.ChildCount + " Movie";
+                if (item.ChildCount > 1) html += "s";
+                html += "</div>";
+            }
 
-			html += "</a></div>";
-		}
+            html += "</a></div>";
+        }
 
-		return html;
-	},
+        return html;
+    },
 
     getAveragePrimaryImageAspectRatio: function (items) {
 
@@ -258,10 +258,10 @@
 
         if (str) {
             var char = String(str.substr(0, 1).charCodeAt());
-	        var sum = 0;
-	        for (var i = 0; i < char.length; i++) {
-		        sum += parseInt(char.charAt(i));
-	        }
+            var sum = 0;
+            for (var i = 0; i < char.length; i++) {
+                sum += parseInt(char.charAt(i));
+            }
             var index = String(sum).substr(-1);
 
             return LibraryBrowser.metroColors[index];
@@ -271,45 +271,72 @@
 
     },
 
-	renderLinks: function (item) {
-		var page = $.mobile.activePage;
-//console.log(item);
-		if (item.ProviderIds) {
+    renderLinks: function (item) {
+        var page = $.mobile.activePage;
+        //console.log(item);
+        if (item.ProviderIds) {
 
-			var html = 'Links:&nbsp;&nbsp;';
-			var links = [];
+            var html = 'Links:&nbsp;&nbsp;';
+            var links = [];
 
-			if (item.ProviderIds.Imdb) {
-				if (item.Type == "Movie" || item.Type == "Episode")
-				    links.push('<a class="ui-link" href="http://www.imdb.com/title/' + item.ProviderIds.Imdb + '" target="_blank">IMDb</a>');
-				else if (item.Type == "Person")
-				    links.push('<a class="ui-link" href="http://www.imdb.com/name/' + item.ProviderIds.Imdb + '" target="_blank">IMDb</a>');
-			}
-			if (item.ProviderIds.Tmdb) {
-				if (item.Type == "Movie")
-				    links.push('<a class="ui-link" href="http://www.themoviedb.org/movie/' + item.ProviderIds.Tmdb + '" target="_blank">TMDB</a>');
-				else if (item.Type == "Person")
-					links.push('<a class="ui-link" href="http://www.themoviedb.org/person/' + item.ProviderIds.Tmdb + '" target="_blank">TMDB</a>');
-			}
-			if (item.ProviderIds.Tvdb)
-				links.push('<a class="ui-link" href="http://thetvdb.com/index.php?tab=series&id=' + item.ProviderIds.Tvdb + '" target="_blank">TVDB</a>');
-			if (item.ProviderIds.Tvcom) {
-				if (item.Type == "Episode")
-					links.push('<a class="ui-link" href="http://www.tv.com/shows/' + item.ProviderIds.Tvcom + '" target="_blank">TV.com</a>');
-				else if (item.Type == "Person")
-					links.push('<a class="ui-link" href="http://www.tv.com/people/' + item.ProviderIds.Tvcom + '" target="_blank">TV.com</a>');
-			}
-			if (item.ProviderIds.Musicbrainz)
-				links.push('<a class="ui-link" href="http://musicbrainz.org/release/' + item.ProviderIds.Musicbrainz + '" target="_blank">MusicBrainz</a>');
-			if (item.ProviderIds.Gamesdb)
-				links.push('<a class="ui-link" href="http://www.games-db.com/Game/' + item.ProviderIds.Gamesdb + '" target="_blank">GamesDB</a>');
+            if (item.ProviderIds.Imdb) {
+                if (item.Type == "Movie" || item.Type == "Episode")
+                    links.push('<a class="ui-link" href="http://www.imdb.com/title/' + item.ProviderIds.Imdb + '" target="_blank">IMDb</a>');
+                else if (item.Type == "Person")
+                    links.push('<a class="ui-link" href="http://www.imdb.com/name/' + item.ProviderIds.Imdb + '" target="_blank">IMDb</a>');
+            }
+            if (item.ProviderIds.Tmdb) {
+                if (item.Type == "Movie")
+                    links.push('<a class="ui-link" href="http://www.themoviedb.org/movie/' + item.ProviderIds.Tmdb + '" target="_blank">TMDB</a>');
+                else if (item.Type == "Person")
+                    links.push('<a class="ui-link" href="http://www.themoviedb.org/person/' + item.ProviderIds.Tmdb + '" target="_blank">TMDB</a>');
+            }
+            if (item.ProviderIds.Tvdb)
+                links.push('<a class="ui-link" href="http://thetvdb.com/index.php?tab=series&id=' + item.ProviderIds.Tvdb + '" target="_blank">TVDB</a>');
+            if (item.ProviderIds.Tvcom) {
+                if (item.Type == "Episode")
+                    links.push('<a class="ui-link" href="http://www.tv.com/shows/' + item.ProviderIds.Tvcom + '" target="_blank">TV.com</a>');
+                else if (item.Type == "Person")
+                    links.push('<a class="ui-link" href="http://www.tv.com/people/' + item.ProviderIds.Tvcom + '" target="_blank">TV.com</a>');
+            }
+            if (item.ProviderIds.Musicbrainz)
+                links.push('<a class="ui-link" href="http://musicbrainz.org/release/' + item.ProviderIds.Musicbrainz + '" target="_blank">MusicBrainz</a>');
+            if (item.ProviderIds.Gamesdb)
+                links.push('<a class="ui-link" href="http://www.games-db.com/Game/' + item.ProviderIds.Gamesdb + '" target="_blank">GamesDB</a>');
 
-			html += links.join('&nbsp;&nbsp;/&nbsp;&nbsp;');
+            html += links.join('&nbsp;&nbsp;/&nbsp;&nbsp;');
 
-			$('#itemLinks', page).html(html);
+            $('#itemLinks', page).html(html);
 
-		} else {
-			$('#itemLinks', page).hide();
-		}
-	}
+        } else {
+            $('#itemLinks', page).hide();
+        }
+    },
+
+    getPagingHtml: function (query, totalRecordCount) {
+
+        var html = '';
+
+        var pageCount = Math.ceil(totalRecordCount / query.Limit);
+        var pageNumber = (query.StartIndex / query.Limit) + 1;
+
+        var dropdownHtml = '<select data-enhance="false" data-role="none">';
+        for (var i = 1; i <= pageCount; i++) {
+
+            if (i == pageNumber) {
+                dropdownHtml += '<option value="' + i + '" selected="selected">' + i + '</option>';
+            } else {
+                dropdownHtml += '<option value="' + i + '">' + i + '</option>';
+            }
+        }
+        dropdownHtml += '</select>';
+
+        var recordsEnd = Math.min(query.StartIndex + query.Limit, totalRecordCount);
+
+        html += '<div class="listPaging">';
+        html += 'Results ' + (query.StartIndex + 1) + '-' + recordsEnd + ' of ' + totalRecordCount + ', page ' + dropdownHtml + ' of ' + pageCount;
+        html += '</div>';
+
+        return html;
+    }
 };
