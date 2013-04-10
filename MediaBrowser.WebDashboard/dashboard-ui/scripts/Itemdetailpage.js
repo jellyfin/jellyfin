@@ -1,60 +1,53 @@
-﻿var ItemDetailPage = {
+﻿(function ($, document, LibraryBrowser, window) {
 
-    onPageShow: function () {
+    var currentItem;
 
-        ItemDetailPage.reload();
+    function reload(page) {
 
-        $('#mediaInfoCollapsible', this).on('expand', ItemDetailPage.onMediaInfoExpand);
-        $('#scenesCollapsible', this).on('expand', ItemDetailPage.onScenesExpand);
-        $('#specialsCollapsible', this).on('expand', ItemDetailPage.onSpecialsExpand);
-        $('#trailersCollapsible', this).on('expand', ItemDetailPage.onTrailersExpand);
-        $('#castCollapsible', this).on('expand', ItemDetailPage.onCastExpand);
-        $('#galleryCollapsible', this).on('expand', ItemDetailPage.onGalleryExpand);
-    },
-
-    onPageHide: function () {
-
-        $('#mediaInfoCollapsible', this).off('expand', ItemDetailPage.onMediaInfoExpand);
-        $('#scenesCollapsible', this).off('expand', ItemDetailPage.onScenesExpand);
-        $('#specialsCollapsible', this).off('expand', ItemDetailPage.onSpecialsExpand);
-        $('#trailersCollapsible', this).off('expand', ItemDetailPage.onTrailersExpand);
-        $('#castCollapsible', this).off('expand', ItemDetailPage.onCastExpand);
-        $('#galleryCollapsible', this).off('expand', ItemDetailPage.onGalleryExpand);
-
-        ItemDetailPage.item = null;
-    },
-
-    reload: function () {
         var id = getParameterByName('id');
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(ItemDetailPage.renderItem);
-    },
+        ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
 
-    renderItem: function (item) {
+            currentItem = item;
 
-        ItemDetailPage.item = item;
+            var name = item.Name;
 
-        var page = $.mobile.activePage;
+            if (item.IndexNumber != null) {
+                name = item.IndexNumber + " - " + name;
+            }
+            if (item.ParentIndexNumber != null) {
+                name = item.ParentIndexNumber + "." + name;
+            }
 
-        ItemDetailPage.item = item;
+            $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item));
 
-        var name = item.Name;
+            Dashboard.setPageTitle(name);
 
-        if (item.IndexNumber != null) {
-            name = item.IndexNumber + " - " + name;
-        }
-        if (item.ParentIndexNumber != null) {
-            name = item.ParentIndexNumber + "." + name;
-        }
+            $('#itemName', page).html(name);
 
-        Dashboard.setPageTitle(name);
+            if (item.SeriesName || item.Album) {
+                var seriesName = item.SeriesName || item.Album;
+                $('#seriesName', page).html(seriesName).show();
+            }
 
-        ItemDetailPage.renderImage(item);
-        ItemDetailPage.renderOverviewBlock(item);
-        ItemDetailPage.renderGallery(item);
+            setInitialCollapsibleState(page, item);
+            renderDetails(page, item);
 
+            if (MediaPlayer.canPlay(item)) {
+                $('#btnPlayMenu', page).show();
+                $('#playButtonShadow', page).show();
+            } else {
+                $('#btnPlayMenu', page).hide();
+                $('#playButtonShadow', page).hide();
+            }
+
+            Dashboard.hideLoadingMsg();
+        });
+    }
+
+    function setInitialCollapsibleState(page, item) {
         if (!item.MediaStreams || !item.MediaStreams.length) {
             $('#mediaInfoCollapsible', page).hide();
         } else {
@@ -80,89 +73,9 @@
         } else {
             $('#castCollapsible', page).show();
         }
+    }
 
-        $('#itemName', page).html(name);
-
-        if (item.SeriesName || item.Album) {
-            var seriesName = item.SeriesName || item.Album;
-            $('#seriesName', page).html(seriesName).show();
-        }
-
-        ItemDetailPage.renderFav(item);
-        LibraryBrowser.renderLinks(item);
-
-        Dashboard.hideLoadingMsg();
-    },
-
-    renderImage: function (item) {
-
-        var page = $.mobile.activePage;
-
-        var imageTags = item.ImageTags || {};
-
-        var html = '';
-
-        var url;
-        var useBackgroundColor;
-
-        if (imageTags.Primary) {
-
-            url = ApiClient.getImageUrl(item.Id, {
-                type: "Primary",
-                width: 800,
-                tag: item.ImageTags.Primary
-            });
-        }
-        else if (item.BackdropImageTags && item.BackdropImageTags.length) {
-
-            url = ApiClient.getImageUrl(item.Id, {
-                type: "Backdrop",
-                width: 800,
-                tag: item.BackdropImageTags[0]
-            });
-        }
-        else if (imageTags.Thumb) {
-
-            url = ApiClient.getImageUrl(item.Id, {
-                type: "Thumb",
-                width: 800,
-                tag: item.ImageTags.Thumb
-            });
-        }
-        else if (imageTags.Disc) {
-
-            url = ApiClient.getImageUrl(item.Id, {
-                type: "Disc",
-                width: 800,
-                tag: item.ImageTags.Disc
-            });
-        }
-        else if (item.MediaType == "Audio") {
-            url = "css/images/items/detail/audio.png";
-            useBackgroundColor = true;
-        }
-        else if (item.MediaType == "Game") {
-            url = "css/images/items/detail/game.png";
-            useBackgroundColor = true;
-        }
-        else {
-            url = "css/images/items/detail/video.png";
-            useBackgroundColor = true;
-        }
-
-        if (url) {
-
-            var style = useBackgroundColor ? "background-color:" + LibraryBrowser.getMetroColor(item.Id) + ";" : "";
-
-            html += "<img class='itemDetailImage' src='" + url + "' style='" + style + "' />";
-        }
-
-        $('#itemImage', page).html(html);
-    },
-
-    renderOverviewBlock: function (item) {
-
-        var page = $.mobile.activePage;
+    function renderDetails(page, item) {
 
         if (item.Taglines && item.Taglines.length) {
             $('#itemTagline', page).html(item.Taglines[0]).show();
@@ -187,113 +100,31 @@
             $('#itemCommunityRating', page).hide();
         }
 
-        if (MediaPlayer.canPlay(item)) {
-            $('#btnPlay', page).show();
-            $('#playButtonShadow', page).show();
-        } else {
-            $('#btnPlay', page).hide();
-            $('#playButtonShadow', page).hide();
-        }
+        $('#itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
 
-        var miscInfo = [];
+        LibraryBrowser.renderGenres($('#itemGenres', page), item);
+        LibraryBrowser.renderStudios($('#itemStudios', page), item);
+        renderUserDataIcons(page, item);
+        renderLinks(page, item);
+    }
 
-        if (item.ProductionYear) {
-            miscInfo.push(item.ProductionYear);
-        }
+    function renderLinks(page, item) {
+        if (item.ProviderIds) {
 
-        if (item.OfficialRating) {
-            miscInfo.push(item.OfficialRating);
-        }
-
-        if (item.RunTimeTicks) {
-
-            var minutes = item.RunTimeTicks / 600000000;
-
-            minutes = minutes || 1;
-
-            miscInfo.push(parseInt(minutes) + "min");
-        }
-
-        if (item.DisplayMediaType) {
-            miscInfo.push(item.DisplayMediaType);
-        }
-
-        if (item.VideoFormat && item.VideoFormat !== 'Standard') {
-            miscInfo.push(item.VideoFormat);
-        }
-
-        $('#itemMiscInfo', page).html(miscInfo.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'));
-
-        ItemDetailPage.renderGenres(item);
-        ItemDetailPage.renderStudios(item);
-    },
-
-    renderGenres: function (item) {
-
-        var page = $.mobile.activePage;
-
-        if (item.Genres && item.Genres.length) {
-            var elem = $('#itemGenres', page).show();
-
-            var html = 'Genres:&nbsp;&nbsp;';
-
-            for (var i = 0, length = item.Genres.length; i < length; i++) {
-
-                if (i > 0) {
-                    html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
-                }
-
-                html += '<a href="itembynamedetails.html?genre=' + item.Genres[i] + '">' + item.Genres[i] + '</a>';
-            }
-
-            elem.html(html).trigger('create');
-
+            $('#itemLinks', page).html(LibraryBrowser.getLinksHtml(item));
 
         } else {
-            $('#itemGenres', page).hide();
+            $('#itemLinks', page).hide();
         }
-    },
+    }
 
-    renderStudios: function (item) {
+    function renderUserDataIcons(page, item) {
+        $('#itemRatings', page).html(LibraryBrowser.getUserDataIconsHtml(item));
+    }
 
-        var page = $.mobile.activePage;
-
-        if (item.Studios && item.Studios.length) {
-            var elem = $('#itemStudios', page).show();
-
-            var html = 'Studios:&nbsp;&nbsp;';
-
-            for (var i = 0, length = item.Studios.length; i < length; i++) {
-
-                if (i > 0) {
-                    html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
-                }
-
-                html += '<a href="itembynamedetails.html?studio=' + item.Studios[i] + '">' + item.Studios[i] + '</a>';
-            }
-
-            elem.html(html).trigger('create');
-
-
-        } else {
-            $('#itemStudios', page).hide();
-        }
-    },
-
-    onScenesExpand: function () {
-
-        if (ItemDetailPage.item) {
-
-            ItemDetailPage.renderScenes(ItemDetailPage.item);
-
-            $(this).off('expand', ItemDetailPage.onScenesExpand);
-        }
-    },
-
-    renderScenes: function (item) {
-
+    function renderScenes(page, item) {
         var html = '';
-        var page = $.mobile.activePage;
+
         var chapters = item.Chapters || {};
 
         for (var i = 0, length = chapters.length; i < length; i++) {
@@ -328,108 +159,55 @@
             html += '</a>';
 
             html += '</div>';
-
         }
 
         $('#scenesContent', page).html(html);
-    },
+    }
 
-    onPlayButtonClick: function () {
+    function renderGallery(page, item) {
 
-        var item = ItemDetailPage.item;
-
-        var userdata = item.UserData || {};
-
-        if (userdata.PlaybackPositionTicks) {
-
-            var page = $.mobile.activePage;
-
-            var pos = $('#playMenuAnchor', page).offset();
-
-            $('#playMenu', page).popup("open", {
-                
-                x: pos.left + 125,
-                y: pos.top + 20
-
-            });
-
-        } else {
-            ItemDetailPage.play();
-        }
-
-    },
-
-    play: function (startPosition) {
-
-        var page = $.mobile.activePage;
-        $('#playMenu', page).popup("close");
-        MediaPlayer.play([ItemDetailPage.item], startPosition);
-    },
-    
-    resume: function() {
-
-        var item = ItemDetailPage.item;
-
-        var userdata = item.UserData || {};
-
-        ItemDetailPage.play(userdata.PlaybackPositionTicks);
-    },
-
-    onGalleryExpand: function () {
-
-        if (ItemDetailPage.item) {
-
-            ItemDetailPage.renderGallery(ItemDetailPage.item);
-
-            $(this).off('expand', ItemDetailPage.onGalleryExpand);
-        }
-    },
-
-    renderGallery: function (item) {
-
-        var page = $.mobile.activePage;
         var imageTags = item.ImageTags || {};
         var html = '';
 
         if (imageTags.Logo) {
 
-            html += ItemDetailPage.createGalleryImage(item.Id, "Logo", item.ImageTags.Logo);
+            html += createGalleryImage(item.Id, "Logo", item.ImageTags.Logo);
         }
         if (imageTags.Thumb) {
 
-            html += ItemDetailPage.createGalleryImage(item.Id, "Thumb", item.ImageTags.Thumb);
+            html += createGalleryImage(item.Id, "Thumb", item.ImageTags.Thumb);
         }
         if (imageTags.Art) {
 
-            html += ItemDetailPage.createGalleryImage(item.Id, "Art", item.ImageTags.Art);
+            html += createGalleryImage(item.Id, "Art", item.ImageTags.Art);
 
         }
         if (imageTags.Menu) {
 
-            html += ItemDetailPage.createGalleryImage(item.Id, "Menu", item.ImageTags.Menu);
+            html += createGalleryImage(item.Id, "Menu", item.ImageTags.Menu);
 
         }
         if (imageTags.Disc) {
 
-            html += ItemDetailPage.createGalleryImage(item.Id, "Disc", item.ImageTags.Disc);
+            html += createGalleryImage(item.Id, "Disc", item.ImageTags.Disc);
         }
         if (imageTags.Box) {
 
-            html += ItemDetailPage.createGalleryImage(item.Id, "Box", item.ImageTags.Box);
+            html += createGalleryImage(item.Id, "Box", item.ImageTags.Box);
         }
 
         if (item.BackdropImageTags) {
 
             for (var i = 0, length = item.BackdropImageTags.length; i < length; i++) {
-                html += ItemDetailPage.createGalleryImage(item.Id, "Backdrop", item.BackdropImageTags[0], i);
+                html += createGalleryImage(item.Id, "Backdrop", item.BackdropImageTags[0], i);
             }
 
         }
 
         $('#galleryContent', page).html(html).trigger('create');
-    },
+    }
 
-    createGalleryImage: function (itemId, type, tag, index) {
+    function createGalleryImage(itemId, type, tag, index) {
 
         var downloadWidth = 400;
         var lightboxWidth = 800;
@@ -458,21 +236,10 @@
         html += '</div>';
 
         return html;
-    },
+    }
 
-    onMediaInfoExpand: function () {
+    function renderMediaInfo(page, item) {
 
-        if (ItemDetailPage.item) {
-
-            ItemDetailPage.renderMediaInfo(ItemDetailPage.item);
-
-            $(this).off('expand', ItemDetailPage.onMediaInfoExpand);
-        }
-    },
-
-    renderMediaInfo: function (item) {
-
-        var page = $.mobile.activePage;
         var html = '';
 
         for (var i = 0, length = item.MediaStreams.length; i < length; i++) {
@@ -558,95 +325,10 @@
         $('#mediaInfoContent', page).html(html).trigger('create');
 
         $('#mediaInfoCollapsible', page).show();
-    },
+    }
 
-    playTrailer: function (index) {
-        ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), ItemDetailPage.item.Id).done(function (trailers) {
-            MediaPlayer.play([trailers[index]]);
-        });
-    },
-
-    onTrailersExpand: function () {
-
-        if (ItemDetailPage.item) {
-
-            ItemDetailPage.renderTrailers(ItemDetailPage.item);
-
-            $(this).off('expand', ItemDetailPage.onTrailersExpand);
-        }
-    },
-
-    renderTrailers: function (item) {
-
+    function renderSpecials(page, item) {
         var html = '';
-        var page = $.mobile.activePage;
-
-        ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), item.Id).done(function (trailers) {
-
-            for (var i = 0, length = trailers.length; i < length; i++) {
-
-                var trailer = trailers[i];
-
-                html += '<div class="posterViewItem posterViewItemWithDualText">';
-                html += '<a href="#play-Trailer-' + i + '" onclick="ItemDetailPage.playTrailer(' + i + ');">';
-
-                var imageTags = trailer.ImageTags || {};
-
-                if (imageTags.Primary) {
-
-                    var imgUrl = ApiClient.getImageUrl(trailer.Id, {
-                        maxwidth: 500,
-                        tag: imageTags.Primary,
-                        type: "primary"
-                    });
-
-                    html += '<img src="' + imgUrl + '" />';
-                } else {
-                    html += '<img src="css/images/items/detail/video.png"/>';
-                }
-
-                html += '<div class="posterViewItemText posterViewItemPrimaryText">' + trailer.Name + '</div>';
-                html += '<div class="posterViewItemText">';
-
-                if (trailer.RunTimeTicks != "") {
-                    html += ticks_to_human(trailer.RunTimeTicks);
-                }
-                else {
-                    html += "&nbsp;";
-                }
-                html += '</div>';
-
-                html += '</a>';
-
-                html += '</div>';
-            }
-
-            $('#trailersContent', page).html(html);
-
-        });
-
-    },
-
-    playSpecial: function (index) {
-        ApiClient.getSpecialFeatures(Dashboard.getCurrentUserId(), ItemDetailPage.item.Id).done(function (specials) {
-            MediaPlayer.play([specials[index]]);
-        });
-    },
-
-    onSpecialsExpand: function () {
-
-        if (ItemDetailPage.item) {
-
-            ItemDetailPage.renderSpecials(ItemDetailPage.item);
-
-            $(this).off('expand', ItemDetailPage.onSpecialsExpand);
-        }
-    },
-
-    renderSpecials: function (item) {
-
-        var html = '';
-        var page = $.mobile.activePage;
 
         ApiClient.getSpecialFeatures(Dashboard.getCurrentUserId(), item.Id).done(function (specials) {
 
@@ -691,22 +373,59 @@
             $('#specialsContent', page).html(html);
 
         });
-    },
+    }
 
-    onCastExpand: function () {
-
-        if (ItemDetailPage.item) {
-
-            ItemDetailPage.renderCast(ItemDetailPage.item);
-
-            $(this).off('expand', ItemDetailPage.onCastExpand);
-        }
-    },
-
-    renderCast: function (item) {
-
+    function renderTrailers(page, item) {
         var html = '';
-        var page = $.mobile.activePage;
+
+        ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), item.Id).done(function (trailers) {
+
+            for (var i = 0, length = trailers.length; i < length; i++) {
+
+                var trailer = trailers[i];
+
+                html += '<div class="posterViewItem posterViewItemWithDualText">';
+                html += '<a href="#play-Trailer-' + i + '" onclick="ItemDetailPage.playTrailer(' + i + ');">';
+
+                var imageTags = trailer.ImageTags || {};
+
+                if (imageTags.Primary) {
+
+                    var imgUrl = ApiClient.getImageUrl(trailer.Id, {
+                        maxwidth: 500,
+                        tag: imageTags.Primary,
+                        type: "primary"
+                    });
+
+                    html += '<img src="' + imgUrl + '" />';
+                } else {
+                    html += '<img src="css/images/items/detail/video.png"/>';
+                }
+
+                html += '<div class="posterViewItemText posterViewItemPrimaryText">' + trailer.Name + '</div>';
+                html += '<div class="posterViewItemText">';
+
+                if (trailer.RunTimeTicks != "") {
+                    html += ticks_to_human(trailer.RunTimeTicks);
+                }
+                else {
+                    html += "&nbsp;";
+                }
+                html += '</div>';
+
+                html += '</a>';
+
+                html += '</div>';
+            }
+
+            $('#trailersContent', page).html(html);
+
+        });
+    }
+
+    function renderCast(page, item) {
+        var html = '';
+
         var casts = item.People || {};
 
         for (var i = 0, length = casts.length; i < length; i++) {
@@ -740,105 +459,131 @@
         }
 
         $('#castContent', page).html(html);
-    },
+    }
+    
+    function play(startPosition) {
 
-    renderFav: function (item) {
-        var html = '';
-        var page = $.mobile.activePage;
-
-        var userData = item.UserData || {};
-
-        //played/unplayed
-        if (userData.Played) {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/played.png" alt="Played" title="Played" onclick="ItemDetailPage.setPlayed();" />';
-        } else {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/unplayed.png" alt="Played" title="Played" onclick="ItemDetailPage.setPlayed();" />';
-        }
-
-        if (typeof userData.Likes == "undefined") {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.setDislike();" />';
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="ItemDetailPage.setLike();" />';
-        } else if (userData.Likes) {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.setDislike();" />';
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_on.png" alt="Liked" title="Like" onclick="ItemDetailPage.clearLike();" />';
-        } else {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.clearLike();" />';
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="ItemDetailPage.setLike();" />';
-        }
-
-        if (userData.IsFavorite) {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" onclick="ItemDetailPage.setFavorite();" />';
-        } else {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" onclick="ItemDetailPage.setFavorite();" />';
-        }
-
-        $('#itemRatings', page).html(html);
-    },
-
-    setFavorite: function () {
-        var item = ItemDetailPage.item;
-
-        item.UserData = item.UserData || {};
-
-        var setting = !item.UserData.IsFavorite;
-        item.UserData.IsFavorite = setting;
-
-        ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), item.Id, setting);
-
-        ItemDetailPage.renderFav(item);
-    },
-
-    setLike: function () {
-
-        var item = ItemDetailPage.item;
-
-        item.UserData = item.UserData || {};
-
-        item.UserData.Likes = true;
-
-        ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), item.Id, true);
-
-        ItemDetailPage.renderFav(item);
-    },
-
-    clearLike: function () {
-
-        var item = ItemDetailPage.item;
-
-        item.UserData = item.UserData || {};
-
-        item.UserData.Likes = undefined;
-
-        ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), item.Id);
-
-        ItemDetailPage.renderFav(item);
-    },
-
-    setDislike: function () {
-        var item = ItemDetailPage.item;
-
-        item.UserData = item.UserData || {};
-
-        item.UserData.Likes = false;
-
-        ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), item.Id, false);
-
-        ItemDetailPage.renderFav(item);
-    },
-
-    setPlayed: function () {
-        var item = ItemDetailPage.item;
-
-        item.UserData = item.UserData || {};
-
-        var setting = !item.UserData.Played;
-        item.UserData.Played = setting;
-
-        ApiClient.updatePlayedStatus(Dashboard.getCurrentUserId(), item.Id, setting);
-
-        ItemDetailPage.renderFav(item);
+        MediaPlayer.play([currentItem], startPosition);
     }
 
-};
+    $(document).on('pageinit', "#itemDetailPage", function () {
 
-$(document).on('pageshow', "#itemDetailPage", ItemDetailPage.onPageShow).on('pagehide', "#itemDetailPage", ItemDetailPage.onPageHide);
+        var page = this;
+
+        $('#btnPlayMenu', page).on('click', function () {
+
+            var userdata = currentItem.UserData || {};
+
+            if (userdata.PlaybackPositionTicks) {
+
+                var pos = $('#playMenuAnchor', page).offset();
+
+                $('#playMenu', page).popup("open", {
+                    x: pos.left + 125,
+                    y: pos.top + 20
+                });
+
+            }
+            else {
+                play();
+            }
+        });
+
+        $('#btnPlay', page).on('click', function () {
+
+            $('#playMenu', page).popup("close");
+            play();
+        });
+
+        $('#btnResume', page).on('click', function () {
+
+            $('#playMenu', page).popup("close");
+
+            var userdata = currentItem.UserData || {};
+            
+            play(userdata.PlaybackPositionTicks);
+        });
+
+    }).on('pageshow', "#itemDetailPage", function () {
+
+        var page = this;
+
+        reload(page);
+
+        $('#mediaInfoCollapsible', page).on('expand.lazyload', function () {
+            renderMediaInfo(page, currentItem);
+
+            $(this).off('expand.lazyload');
+        });
+
+        $('#scenesCollapsible', page).on('expand.lazyload', function () {
+
+            if (currentItem) {
+
+                renderScenes(page, currentItem);
+
+                $(this).off('expand.lazyload');
+            }
+        });
+
+        $('#specialsCollapsible', page).on('expand.lazyload', function () {
+            renderSpecials(page, currentItem);
+
+            $(this).off('expand.lazyload');
+        });
+
+        $('#trailersCollapsible', page).on('expand.lazyload', function () {
+            renderTrailers(page, currentItem);
+
+            $(this).off('expand.lazyload');
+        });
+
+        $('#castCollapsible', page).on('expand.lazyload', function () {
+            renderCast(page, currentItem);
+
+            $(this).off('expand.lazyload');
+        });
+
+        $('#galleryCollapsible', page).on('expand.lazyload', function () {
+
+            renderGallery(page, currentItem);
+
+            $(this).off('expand.lazyload');
+        });
+
+    }).on('pagehide', "#itemDetailPage", function () {
+
+        currentItem = null;
+        var page = this;
+
+        $('#mediaInfoCollapsible', page).off('expand.lazyload');
+        $('#scenesCollapsible', page).off('expand.lazyload');
+        $('#specialsCollapsible', page).off('expand.lazyload');
+        $('#trailersCollapsible', page).off('expand.lazyload');
+        $('#castCollapsible', page).off('expand.lazyload');
+        $('#galleryCollapsible', page).off('expand.lazyload');
+    });
+    
+    function itemDetailPage() {
+
+        var self = this;
+
+        self.play = play;
+
+        self.playTrailer = function (index) {
+            ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), currentItem.Id).done(function (trailers) {
+                MediaPlayer.play([trailers[index]]);
+            });
+        };
+
+        self.playSpecial = function (index) {
+            ApiClient.getSpecialFeatures(Dashboard.getCurrentUserId(), currentItem.Id).done(function (specials) {
+                MediaPlayer.play([specials[index]]);
+            });
+        };
+    }
+
+    window.ItemDetailPage = new itemDetailPage();
+
+
+})(jQuery, document, LibraryBrowser, window);
