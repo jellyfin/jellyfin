@@ -19,7 +19,8 @@
 
 			$('#recentlyAddedItems', page).html(LibraryBrowser.getEpisodePosterViewHtml({
 				items: result.Items,
-				useAverageAspectRatio: true
+				useAverageAspectRatio: true,
+			    showNewIndicator: false
 			}));
 
 		});
@@ -33,7 +34,7 @@
 			Filters: "IsResumable",
 			Limit: 6,
 			Recursive: true,
-			Fields: "PrimaryImageAspectRatio,SeriesInfo"
+			Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated"
 		};
 
 		ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {

@@ -7,7 +7,7 @@
 		SortOrder: "Ascending",
 		IncludeItemTypes: "BoxSet",
 		Recursive: true,
-		Fields: "PrimaryImageAspectRatio,ItemCounts"
+		Fields: "PrimaryImageAspectRatio,ItemCounts,ItemCounts,DateCreated"
 	};
 
 
