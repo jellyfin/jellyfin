@@ -836,7 +836,7 @@ namespace MediaBrowser.Controller.Library
 
             BaseItem item = null;
 
-            if (!isIndexFolder)
+            if (userId.HasValue || !isIndexFolder)
             {
                 item = libraryManager.GetItemById(new Guid(id));
             }
