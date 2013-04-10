@@ -36,6 +36,26 @@ namespace MediaBrowser.Controller.Localization
         private static readonly Dictionary<int, string> ratingsStrings = new Dictionary<int, string>();
 
         /// <summary>
+        /// Tries the add.
+        /// </summary>
+        /// <typeparam name="TKey">The type of the T key.</typeparam>
+        /// <typeparam name="TValue">The type of the T value.</typeparam>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        private static bool TryAdd<TKey, TValue>(Dictionary<TKey, TValue> dictionary, TKey key, TValue value)
+        {
+            if (dictionary.ContainsKey(key))
+            {
+                return false;
+            }
+
+            dictionary.Add(key, value);
+            return true;
+        }
+        
+        /// <summary>
         /// Initializes the specified block unrated.
         /// </summary>
         /// <param name="blockUnrated">if set to <c>true</c> [block unrated].</param>
@@ -48,19 +68,19 @@ namespace MediaBrowser.Controller.Localization
             var dict = new Dictionary<string, int> {{"None", -1}};
             foreach (var pair in ratingsDef.RatingsDict)
             {
-                dict.TryAdd(pair.Key, pair.Value);
+                TryAdd(dict, pair.Key, pair.Value);
             }
             if (configurationManager.Configuration.MetadataCountryCode.ToUpper() != "US")
             {
                 foreach (var pair in new USRatingsDictionary())
                 {
-                    dict.TryAdd(pair.Key, pair.Value);
+                    TryAdd(dict, pair.Key, pair.Value);
                 }
             }
             //global values of CS
-            dict.TryAdd("CS", 1000);
+            TryAdd(dict, "CS", 1000);
 
-            dict.TryAdd("", blockUnrated ? 1000 : 0);
+            TryAdd(dict, "", blockUnrated ? 1000 : 0);
 
             //and rating reverse lookup dictionary (non-redundant ones)
             ratingsStrings.Clear();
@@ -71,11 +91,11 @@ namespace MediaBrowser.Controller.Localization
                 if (pair.Value > lastLevel)
                 {
                     lastLevel = pair.Value;
-                    ratingsStrings.TryAdd(pair.Value, pair.Key);
+                    TryAdd(ratingsStrings, pair.Value, pair.Key);
                 }
             }
 
-            ratingsStrings.TryAdd(999, "CS");
+            TryAdd(ratingsStrings, 999, "CS");
 
             return dict;
         }

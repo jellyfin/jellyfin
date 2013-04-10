@@ -617,7 +617,20 @@ namespace MediaBrowser.Controller.Providers
 
             value = value.Trim().Trim(separator);
 
-            return string.IsNullOrWhiteSpace(value) ? new string[] { } : value.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+            return string.IsNullOrWhiteSpace(value) ? new string[] { } : Split(value, separator, StringSplitOptions.RemoveEmptyEntries);
         }
+
+        /// <summary>
+        /// Provides an additional overload for string.split
+        /// </summary>
+        /// <param name="val">The val.</param>
+        /// <param name="separator">The separator.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String[][].</returns>
+        private static string[] Split(string val, char separator, StringSplitOptions options)
+        {
+            return val.Split(new[] { separator }, options);
+        }
+
     }
 }

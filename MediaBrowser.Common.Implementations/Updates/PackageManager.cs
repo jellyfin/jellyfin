@@ -47,7 +47,7 @@ namespace MediaBrowser.Common.Implementations.Updates
         {
             var data = new Dictionary<string, string> { { "key", _securityManager.SupporterKey }, { "mac", _networkManager.GetMacAddress() } };
 
-            using (var json = await _httpClient.Post(Constants.Constants.MBAdminUrl + "service/package/retrieveall", data, cancellationToken).ConfigureAwait(false))
+            using (var json = await _httpClient.Post(Constants.Constants.MbAdminUrl + "service/package/retrieveall", data, cancellationToken).ConfigureAwait(false))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
