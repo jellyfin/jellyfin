@@ -51,7 +51,7 @@ namespace MediaBrowser.Api
     /// Class GetDrives
     /// </summary>
     [Route("/Environment/Drives", "GET")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets available drives from the server's file system")]
+    [Api(Description = "Gets available drives from the server's file system")]
     public class GetDrives : IReturn<List<FileSystemEntryInfo>>
     {
     }
@@ -60,7 +60,7 @@ namespace MediaBrowser.Api
     /// Class GetNetworkComputers
     /// </summary>
     [Route("/Environment/NetworkDevices", "GET")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets a list of devices on the network")]
+    [Api(Description = "Gets a list of devices on the network")]
     public class GetNetworkDevices : IReturn<List<FileSystemEntryInfo>>
     {
     }

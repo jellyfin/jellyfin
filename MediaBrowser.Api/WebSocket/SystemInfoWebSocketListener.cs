@@ -29,6 +29,7 @@ namespace MediaBrowser.Api.WebSocket
         /// Initializes a new instance of the <see cref="SystemInfoWebSocketListener" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
+        /// <param name="appHost">The app host.</param>
         public SystemInfoWebSocketListener(ILogger logger, IServerApplicationHost appHost)
             : base(logger)
         {

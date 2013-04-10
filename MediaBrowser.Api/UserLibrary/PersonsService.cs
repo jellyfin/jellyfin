@@ -13,7 +13,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     [Route("/Users/{UserId}/Items/{ParentId}/Persons", "GET")]
     [Route("/Users/{UserId}/Items/Root/Persons", "GET")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets all persons from a given item, folder, or the entire library")]
+    [Api(Description = "Gets all persons from a given item, folder, or the entire library")]
     public class GetPersons : GetItemsByName
     {
         /// <summary>

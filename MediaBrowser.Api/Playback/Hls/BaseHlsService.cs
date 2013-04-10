@@ -75,7 +75,7 @@ namespace MediaBrowser.Api.Playback.Hls
             if (!File.Exists(playlist))
             {
                 isPlaylistNewlyCreated = true;
-                await StartFFMpeg(state, playlist).ConfigureAwait(false);
+                await StartFfMpeg(state, playlist).ConfigureAwait(false);
             }
             else
             {

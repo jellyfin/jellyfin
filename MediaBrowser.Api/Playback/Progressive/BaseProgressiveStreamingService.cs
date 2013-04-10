@@ -110,12 +110,12 @@ namespace MediaBrowser.Api.Playback.Progressive
             var extension = GetOutputFileExtension(state);
 
             // first bit means Time based seek supported, second byte range seek supported (not sure about the order now), so 01 = only byte seek, 10 = time based, 11 = both, 00 = none
-            var org_op = isStaticallyStreamed ? ";DLNA.ORG_OP=01" : ";DLNA.ORG_OP=00";
+            var orgOp = isStaticallyStreamed ? ";DLNA.ORG_OP=01" : ";DLNA.ORG_OP=00";
 
             // 0 = native, 1 = transcoded
-            var org_ci = isStaticallyStreamed ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
+            var orgCi = isStaticallyStreamed ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
 
-            var dlnaflags = ";DLNA.ORG_FLAGS=01500000000000000000000000000000";
+            const string dlnaflags = ";DLNA.ORG_FLAGS=01500000000000000000000000000000";
 
             if (string.Equals(extension, ".mp3", StringComparison.OrdinalIgnoreCase))
             {
@@ -158,7 +158,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             if (!string.IsNullOrEmpty(contentFeatures))
             {
-                responseHeaders["ContentFeatures.DLNA.ORG"] = (contentFeatures + org_op + org_ci + dlnaflags).Trim(';');
+                responseHeaders["ContentFeatures.DLNA.ORG"] = (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
             }
         }
 
@@ -274,7 +274,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             if (!File.Exists(outputPath))
             {
-                await StartFFMpeg(state, outputPath).ConfigureAwait(false);
+                await StartFfMpeg(state, outputPath).ConfigureAwait(false);
             }
             else
             {

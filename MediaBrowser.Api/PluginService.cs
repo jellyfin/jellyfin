@@ -42,7 +42,7 @@ namespace MediaBrowser.Api
     /// Class UninstallPlugin
     /// </summary>
     [Route("/Plugins/{Id}", "DELETE")]
-    [ServiceStack.ServiceHost.Api(("Uninstalls a plugin"))]
+    [Api(("Uninstalls a plugin"))]
     public class UninstallPlugin : IReturnVoid
     {
         /// <summary>
@@ -161,6 +161,7 @@ namespace MediaBrowser.Api
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="appHost">The app host.</param>
         /// <param name="securityManager">The security manager.</param>
+        /// <param name="installationManager">The installation manager.</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
         public PluginService(IJsonSerializer jsonSerializer, IApplicationHost appHost, ISecurityManager securityManager, IInstallationManager installationManager)
             : base()

@@ -529,7 +529,7 @@ namespace MediaBrowser.Api.Playback
         /// <param name="state">The state.</param>
         /// <param name="outputPath">The output path.</param>
         /// <returns>Task.</returns>
-        protected async Task StartFFMpeg(StreamState state, string outputPath)
+        protected async Task StartFfMpeg(StreamState state, string outputPath)
         {
             var video = state.Item as Video;
 
@@ -569,7 +569,7 @@ namespace MediaBrowser.Api.Playback
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
             state.LogFileStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous);
 
-            process.Exited += (sender, args) => OnFFMpegProcessExited(process, state);
+            process.Exited += (sender, args) => OnFfMpegProcessExited(process, state);
 
             try
             {
@@ -604,7 +604,7 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="process">The process.</param>
         /// <param name="state">The state.</param>
-        protected void OnFFMpegProcessExited(Process process, StreamState state)
+        protected void OnFfMpegProcessExited(Process process, StreamState state)
         {
             if (state.IsoMount != null)
             {
@@ -691,9 +691,9 @@ namespace MediaBrowser.Api.Playback
                     videoRequest.VideoCodec = InferVideoCodec(url);
                 }
 
-                state.VideoStream = GetMediaStream(media.MediaStreams, videoRequest.VideoStreamIndex, MediaStreamType.Video, true);
+                state.VideoStream = GetMediaStream(media.MediaStreams, videoRequest.VideoStreamIndex, MediaStreamType.Video);
                 state.SubtitleStream = GetMediaStream(media.MediaStreams, videoRequest.SubtitleStreamIndex, MediaStreamType.Subtitle, false);
-                state.AudioStream = GetMediaStream(media.MediaStreams, videoRequest.AudioStreamIndex, MediaStreamType.Audio, true);
+                state.AudioStream = GetMediaStream(media.MediaStreams, videoRequest.AudioStreamIndex, MediaStreamType.Audio);
             }
             else
             {

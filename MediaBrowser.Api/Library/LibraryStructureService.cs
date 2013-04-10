@@ -144,13 +144,14 @@ namespace MediaBrowser.Api.Library
         /// The _library manager
         /// </summary>
         private readonly ILibraryManager _libraryManager;
-        
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="LibraryService" /> class.
+        /// Initializes a new instance of the <see cref="LibraryStructureService"/> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
         /// <param name="userManager">The user manager.</param>
-        /// <exception cref="System.ArgumentNullException">appHost</exception>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <exception cref="System.ArgumentNullException">appPaths</exception>
         public LibraryStructureService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager)
         {
             if (appPaths == null)

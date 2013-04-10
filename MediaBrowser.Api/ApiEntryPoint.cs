@@ -59,9 +59,9 @@ namespace MediaBrowser.Api
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool dispose)
         {
-            var jobCount = ActiveTranscodingJobs.Count;
+            var jobCount = _activeTranscodingJobs.Count;
 
-            Parallel.ForEach(ActiveTranscodingJobs, OnTranscodeKillTimerStopped);
+            Parallel.ForEach(_activeTranscodingJobs, OnTranscodeKillTimerStopped);
 
             // Try to allow for some time to kill the ffmpeg processes and delete the partial stream files
             if (jobCount > 0)
@@ -73,7 +73,7 @@ namespace MediaBrowser.Api
         /// <summary>
         /// The active transcoding jobs
         /// </summary>
-        private readonly List<TranscodingJob> ActiveTranscodingJobs = new List<TranscodingJob>();
+        private readonly List<TranscodingJob> _activeTranscodingJobs = new List<TranscodingJob>();
 
         /// <summary>
         /// Called when [transcode beginning].
@@ -83,9 +83,9 @@ namespace MediaBrowser.Api
         /// <param name="process">The process.</param>
         public void OnTranscodeBeginning(string path, TranscodingJobType type, Process process)
         {
-            lock (ActiveTranscodingJobs)
+            lock (_activeTranscodingJobs)
             {
-                ActiveTranscodingJobs.Add(new TranscodingJob
+                _activeTranscodingJobs.Add(new TranscodingJob
                 {
                     Type = type,
                     Path = path,
@@ -105,11 +105,11 @@ namespace MediaBrowser.Api
         /// <param name="type">The type.</param>
         public void OnTranscodeFailedToStart(string path, TranscodingJobType type)
         {
-            lock (ActiveTranscodingJobs)
+            lock (_activeTranscodingJobs)
             {
-                var job = ActiveTranscodingJobs.First(j => j.Type == type && j.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
+                var job = _activeTranscodingJobs.First(j => j.Type == type && j.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
 
-                ActiveTranscodingJobs.Remove(job);
+                _activeTranscodingJobs.Remove(job);
             }
         }
 
@@ -121,9 +121,9 @@ namespace MediaBrowser.Api
         /// <returns><c>true</c> if [has active transcoding job] [the specified path]; otherwise, <c>false</c>.</returns>
         public bool HasActiveTranscodingJob(string path, TranscodingJobType type)
         {
-            lock (ActiveTranscodingJobs)
+            lock (_activeTranscodingJobs)
             {
-                return ActiveTranscodingJobs.Any(j => j.Type == type && j.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
+                return _activeTranscodingJobs.Any(j => j.Type == type && j.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
             }
         }
 
@@ -134,9 +134,9 @@ namespace MediaBrowser.Api
         /// <param name="type">The type.</param>
         public void OnTranscodeBeginRequest(string path, TranscodingJobType type)
         {
-            lock (ActiveTranscodingJobs)
+            lock (_activeTranscodingJobs)
             {
-                var job = ActiveTranscodingJobs.FirstOrDefault(j => j.Type == type && j.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
+                var job = _activeTranscodingJobs.FirstOrDefault(j => j.Type == type && j.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
 
                 if (job == null)
                 {
@@ -160,9 +160,9 @@ namespace MediaBrowser.Api
         /// <param name="type">The type.</param>
         public void OnTranscodeEndRequest(string path, TranscodingJobType type)
         {
-            lock (ActiveTranscodingJobs)
+            lock (_activeTranscodingJobs)
             {
-                var job = ActiveTranscodingJobs.FirstOrDefault(j => j.Type == type && j.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
+                var job = _activeTranscodingJobs.FirstOrDefault(j => j.Type == type && j.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
 
                 if (job == null)
                 {
@@ -194,16 +194,16 @@ namespace MediaBrowser.Api
         /// <param name="type">The type.</param>
         public void OnTranscodingFinished(string path, TranscodingJobType type)
         {
-            lock (ActiveTranscodingJobs)
+            lock (_activeTranscodingJobs)
             {
-                var job = ActiveTranscodingJobs.FirstOrDefault(j => j.Type == type && j.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
+                var job = _activeTranscodingJobs.FirstOrDefault(j => j.Type == type && j.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
 
                 if (job == null)
                 {
                     return;
                 }
 
-                ActiveTranscodingJobs.Remove(job);
+                _activeTranscodingJobs.Remove(job);
 
                 if (job.KillTimer != null)
                 {
@@ -221,9 +221,9 @@ namespace MediaBrowser.Api
         {
             var job = (TranscodingJob)state;
 
-            lock (ActiveTranscodingJobs)
+            lock (_activeTranscodingJobs)
             {
-                ActiveTranscodingJobs.Remove(job);
+                _activeTranscodingJobs.Remove(job);
 
                 if (job.KillTimer != null)
                 {
@@ -305,10 +305,6 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The active request count.</value>
         public int ActiveRequestCount { get; set; }
-        /// <summary>
-        /// <summary>
-        /// Enum TranscodingJobType
-        /// </summary>
         /// <summary>
         /// Gets or sets the kill timer.
         /// </summary>
