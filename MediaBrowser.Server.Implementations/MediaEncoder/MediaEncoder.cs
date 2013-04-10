@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Globalization;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Model.Entities;
@@ -427,6 +428,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             return result;
         }
 
+        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        
         /// <summary>
         /// Adds the chapters.
         /// </summary>
@@ -459,7 +462,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
                     double seconds;
 
-                    if (double.TryParse(subString, out seconds))
+                    if (double.TryParse(subString, NumberStyles.Any, UsCulture, out seconds))
                     {
                         lastChapter = new ChapterInfo
                         {
