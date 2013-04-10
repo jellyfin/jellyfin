@@ -12,7 +12,7 @@ var videoJSextension = {
 		_V_.merge(_V_.ControlBar.prototype.options.components, { StopButton: {} });
 
 		var vid_id = $video.attr('id'),
-			available_res = ['high', 'medium', 'low'],
+			available_res = ['ultra', 'high', 'medium', 'low'],
 			default_res,
 			vjs_sources = [], // This will be an array of arrays of objects, see the video.js api documentation for myPlayer.src()
 			vjs_source = {},
@@ -24,7 +24,7 @@ var videoJSextension = {
 			vjs_subtitle = {};
 
 		// Determine this video's default res (it might not have the globally determined default available)
-		default_res = available_res[0];
+		default_res = available_res[1];
 
 		// Put together the videojs source arrays for each available resolution
 		$.each(available_res, function (i, res) {
@@ -278,6 +278,7 @@ _V_.ResolutionMenuItem = _V_.MenuItem.extend({
 			return;
 
 		var resolutions = new Array();
+		resolutions['ultra'] = new Array(2500000, 128000, 1920, 1080);
 		resolutions['high'] = new Array(1500000, 128000, 1920, 1080);
 		resolutions['medium'] = new Array(750000, 128000, 1280, 720);
 		resolutions['low'] = new Array(200000, 128000, 720, 480);
