@@ -26,7 +26,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("searchTerm");
             }
 
-            return items.Where(i => i.Name.StartsWith(searchTerm, StringComparison.OrdinalIgnoreCase));
+            return items.Where(i => i.Name.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) != -1);
         }
     }
 }

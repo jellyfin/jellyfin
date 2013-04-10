@@ -154,6 +154,10 @@
     }
 }
 
+.detailPagePrimaryInfo {
+    padding: 0 10px;
+}
+
 .mediaInfoStream {
     display: inline-block;
     vertical-align: top;
