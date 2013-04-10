@@ -84,8 +84,8 @@
         $('#itemName', page).html(name);
 
         if (item.SeriesName || item.Album) {
-            var series_name = item.SeriesName || item.Album;
-            $('#seriesName', page).html(series_name).show();
+            var seriesName = item.SeriesName || item.Album;
+            $('#seriesName', page).html(seriesName).show();
         }
 
         ItemDetailPage.renderFav(item);
@@ -299,7 +299,7 @@
         for (var i = 0, length = chapters.length; i < length; i++) {
 
             var chapter = chapters[i];
-            var chapter_name = chapter.Name || "Chapter " + i;
+            var chapterName = chapter.Name || "Chapter " + i;
 
             html += '<div class="posterViewItem posterViewItemWithDualText">';
             html += '<a href="#play-Chapter-' + i + '" onclick="ItemDetailPage.play(' + chapter.StartPositionTicks + ');">';
@@ -318,7 +318,7 @@
                 html += '<img src="css/images/items/list/chapter.png"/>';
             }
 
-            html += '<div class="posterViewItemText posterViewItemPrimaryText">' + chapter_name + '</div>';
+            html += '<div class="posterViewItemText posterViewItemPrimaryText">' + chapterName + '</div>';
             html += '<div class="posterViewItemText">';
 
             html += ticks_to_human(chapter.StartPositionTicks);

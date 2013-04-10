@@ -1,18 +1,25 @@
-﻿var PlayList = {
+﻿var Playlist = (function() {
 
-    queue: Array(),
+    var self = this;
 
-    addItem: function (item) {
-        PlayList.queue.push(item);
-    },
+    self.queue = [];
 
-    removeItem: function (index) {
-        PlayList.queue.splice(index, 1);
-    },
+    self.add = function(item) {
 
-    playItem: function (index) {
-        MediaPlayer.play(PlayList.queue[index]);
-        PlayList.queue.shift();
-    }
+        queue.push(item);
+    };
 
-};
+    self.remove = function (index) {
+
+        queue.splice(index, 1);
+    };
+
+    self.play = function (index) {
+        
+        MediaPlayer.play(queue[index]);
+        queue.shift();
+    };
+
+    return self;
+
+})();

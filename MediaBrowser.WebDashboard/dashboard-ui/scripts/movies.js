@@ -107,30 +107,7 @@
 
         html += '<td class="tabletColumn">';
 
-        var userData = item.UserData || {};
-
-        if (userData.Played) {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/played.png" alt="Played" title="Played" />';
-        } else {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/unplayed.png" alt="Played" title="Played" />';
-        }
-
-        if (typeof userData.Likes == "undefined") {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" />';
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" />';
-        } else if (userData.Likes) {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" />';
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_on.png" alt="Liked" title="Like" />';
-        } else {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" />';
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" />';
-        }
-
-        if (userData.IsFavorite) {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" />';
-        } else {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" />';
-        }
+        html += LibraryBrowser.getUserDataIconsHtml(item);
 
         html += '</td>';
 

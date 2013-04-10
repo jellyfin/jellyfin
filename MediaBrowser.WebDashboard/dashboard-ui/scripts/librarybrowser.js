@@ -410,42 +410,46 @@
 
     },
 
-    renderLinks: function (item) {
-        var page = $.mobile.activePage;
-        //console.log(item);
+    getLinksHtml: function (item) {
+
+        var html = 'Links:&nbsp;&nbsp;';
+        var links = [];
+
+        if (item.ProviderIds.Imdb) {
+            if (item.Type == "Movie" || item.Type == "Episode")
+                links.push('<a class="ui-link" href="http://www.imdb.com/title/' + item.ProviderIds.Imdb + '" target="_blank">IMDb</a>');
+            else if (item.Type == "Person")
+                links.push('<a class="ui-link" href="http://www.imdb.com/name/' + item.ProviderIds.Imdb + '" target="_blank">IMDb</a>');
+        }
+        if (item.ProviderIds.Tmdb) {
+            if (item.Type == "Movie")
+                links.push('<a class="ui-link" href="http://www.themoviedb.org/movie/' + item.ProviderIds.Tmdb + '" target="_blank">TMDB</a>');
+            else if (item.Type == "Person")
+                links.push('<a class="ui-link" href="http://www.themoviedb.org/person/' + item.ProviderIds.Tmdb + '" target="_blank">TMDB</a>');
+        }
+        if (item.ProviderIds.Tvdb)
+            links.push('<a class="ui-link" href="http://thetvdb.com/index.php?tab=series&id=' + item.ProviderIds.Tvdb + '" target="_blank">TVDB</a>');
+        if (item.ProviderIds.Tvcom) {
+            if (item.Type == "Episode")
+                links.push('<a class="ui-link" href="http://www.tv.com/shows/' + item.ProviderIds.Tvcom + '" target="_blank">TV.com</a>');
+            else if (item.Type == "Person")
+                links.push('<a class="ui-link" href="http://www.tv.com/people/' + item.ProviderIds.Tvcom + '" target="_blank">TV.com</a>');
+        }
+        if (item.ProviderIds.Musicbrainz)
+            links.push('<a class="ui-link" href="http://musicbrainz.org/release/' + item.ProviderIds.Musicbrainz + '" target="_blank">MusicBrainz</a>');
+        if (item.ProviderIds.Gamesdb)
+            links.push('<a class="ui-link" href="http://www.games-db.com/Game/' + item.ProviderIds.Gamesdb + '" target="_blank">GamesDB</a>');
+
+        html += links.join('&nbsp;&nbsp;/&nbsp;&nbsp;');
+
+        return html;
+    },
+
+    renderLinks: function (item, page) {
+
         if (item.ProviderIds) {
 
-            var html = 'Links:&nbsp;&nbsp;';
-            var links = [];
-
-            if (item.ProviderIds.Imdb) {
-                if (item.Type == "Movie" || item.Type == "Episode")
-                    links.push('<a class="ui-link" href="http://www.imdb.com/title/' + item.ProviderIds.Imdb + '" target="_blank">IMDb</a>');
-                else if (item.Type == "Person")
-                    links.push('<a class="ui-link" href="http://www.imdb.com/name/' + item.ProviderIds.Imdb + '" target="_blank">IMDb</a>');
-            }
-            if (item.ProviderIds.Tmdb) {
-                if (item.Type == "Movie")
-                    links.push('<a class="ui-link" href="http://www.themoviedb.org/movie/' + item.ProviderIds.Tmdb + '" target="_blank">TMDB</a>');
-                else if (item.Type == "Person")
-                    links.push('<a class="ui-link" href="http://www.themoviedb.org/person/' + item.ProviderIds.Tmdb + '" target="_blank">TMDB</a>');
-            }
-            if (item.ProviderIds.Tvdb)
-                links.push('<a class="ui-link" href="http://thetvdb.com/index.php?tab=series&id=' + item.ProviderIds.Tvdb + '" target="_blank">TVDB</a>');
-            if (item.ProviderIds.Tvcom) {
-                if (item.Type == "Episode")
-                    links.push('<a class="ui-link" href="http://www.tv.com/shows/' + item.ProviderIds.Tvcom + '" target="_blank">TV.com</a>');
-                else if (item.Type == "Person")
-                    links.push('<a class="ui-link" href="http://www.tv.com/people/' + item.ProviderIds.Tvcom + '" target="_blank">TV.com</a>');
-            }
-            if (item.ProviderIds.Musicbrainz)
-                links.push('<a class="ui-link" href="http://musicbrainz.org/release/' + item.ProviderIds.Musicbrainz + '" target="_blank">MusicBrainz</a>');
-            if (item.ProviderIds.Gamesdb)
-                links.push('<a class="ui-link" href="http://www.games-db.com/Game/' + item.ProviderIds.Gamesdb + '" target="_blank">GamesDB</a>');
-
-            html += links.join('&nbsp;&nbsp;/&nbsp;&nbsp;');
-
-            $('#itemLinks', page).html(html);
+            $('#itemLinks', page).html(LibraryBrowser.getLinksHtml(item));
 
         } else {
             $('#itemLinks', page).hide();
@@ -498,33 +502,136 @@
         return html;
     },
 
-    getUserRatingHtml: function (item) {
-        
+    getUserDataIconsHtml: function (item) {
+
         var html = '';
 
         var userData = item.UserData || {};
 
+        var itemId = item.Id;
+        var type = item.Type;
+
+        if (item.MediaType) {
+            if (userData.Played) {
+                html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayed" src="css/images/userdata/played.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);" />';
+            } else {
+                html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayedOff" src="css/images/userdata/unplayed.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);" />';
+            }
+        }
+
         if (typeof userData.Likes == "undefined") {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" />';
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" />';
-        } else if (userData.Likes) {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" />';
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_on.png" alt="Liked" title="Like" />';
-        } else {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" />';
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" />';
+            html += '<img onclick="LibraryBrowser.markDislike(this);" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgDislikeOff" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" />';
+            html += '<img onclick="LibraryBrowser.markLike(this);" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgLikeOff" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" />';
+        }
+        else if (userData.Likes) {
+            html += '<img onclick="LibraryBrowser.markDislike(this);" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgDislikeOff" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" />';
+            html += '<img onclick="LibraryBrowser.markLike(this);" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgLike" src="css/images/userdata/thumbs_up_on.png" alt="Like" title="Like" />';
+        }
+        else {
+            html += '<img onclick="LibraryBrowser.markDislike(this);" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgDislike" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" />';
+            html += '<img onclick="LibraryBrowser.markLike(this);" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgLikeOff" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" />';
         }
 
         if (userData.IsFavorite) {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" />';
+            html += '<img onclick="LibraryBrowser.markFavorite(this);" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgFavorite" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" />';
         } else {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" />';
+            html += '<img onclick="LibraryBrowser.markFavorite(this);" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgFavoriteOff" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" />';
         }
 
         return html;
     },
     
-    getDetailImageHtml: function(item) {
+    markPlayed: function (link) {
+
+        var id = link.getAttribute('data-itemid');
+
+        var $link = $(link);
+
+        var markAsPlayed = $link.hasClass('imgPlayedOff');
+
+        ApiClient.updatePlayedStatus(Dashboard.getCurrentUserId(), id, markAsPlayed);
+
+        if (markAsPlayed) {
+            link.src = "css/images/userdata/played.png";
+            $link.addClass('imgPlayed').removeClass('imgPlayedOff');
+        } else {
+            link.src = "css/images/userdata/unplayed.png";
+            $link.addClass('imgPlayedOff').removeClass('imgPlayed');
+        }
+    },
+
+    markFavorite: function (link) {
+
+        var id = link.getAttribute('data-itemid');
+        
+        var $link = $(link);
+        
+        var markAsFavorite = $link.hasClass('imgFavoriteOff');
+
+        ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
+
+        if (markAsFavorite) {
+            link.src = "css/images/userdata/heart_on.png";
+            $link.addClass('imgFavorite').removeClass('imgFavoriteOff');
+        } else {
+            link.src = "css/images/userdata/heart_off.png";
+            $link.addClass('imgFavoriteOff').removeClass('imgFavorite');
+        }
+    },
+    
+    markLike: function (link) {
+        
+        var id = link.getAttribute('data-itemid');
+
+        var $link = $(link);
+
+        if ($link.hasClass('imgLikeOff')) {
+            
+            ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, true);
+
+            link.src = "css/images/userdata/thumbs_up_on.png";
+            $link.addClass('imgLike').removeClass('imgLikeOff');
+
+        } else {
+            
+            ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
+
+            link.src = "css/images/userdata/thumbs_up_off.png";
+            $link.addClass('imgLikeOff').removeClass('imgLike');
+        }
+
+        $link.prev().removeClass('imgDislike').addClass('imgDislikeOff').each(function () {
+            this.src = "css/images/userdata/thumbs_down_off.png";
+        });
+    },
+
+    markDislike: function (link) {
+
+        var id = link.getAttribute('data-itemid');
+
+        var $link = $(link);
+
+        if ($link.hasClass('imgDislikeOff')) {
+
+            ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, false);
+
+            link.src = "css/images/userdata/thumbs_down_on.png";
+            $link.addClass('imgDislike').removeClass('imgDislikeOff');
+
+        } else {
+
+            ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
+
+            link.src = "css/images/userdata/thumbs_down_off.png";
+            $link.addClass('imgDislikeOff').removeClass('imgDislike');
+        }
+
+        $link.next().removeClass('imgLike').addClass('imgLikeOff').each(function () {
+            this.src = "css/images/userdata/thumbs_up_off.png";
+        });
+    },
+
+    getDetailImageHtml: function (item) {
         var imageTags = item.ImageTags || {};
 
         var html = '';
@@ -585,6 +692,38 @@
         }
 
         return html;
+    },
+
+    getMiscInfoHtml: function (item) {
+
+        var miscInfo = [];
+
+        if (item.ProductionYear) {
+            miscInfo.push(item.ProductionYear);
+        }
+
+        if (item.OfficialRating) {
+            miscInfo.push(item.OfficialRating);
+        }
+
+        if (item.RunTimeTicks) {
+
+            var minutes = item.RunTimeTicks / 600000000;
+
+            minutes = minutes || 1;
+
+            miscInfo.push(parseInt(minutes) + "min");
+        }
+
+        if (item.DisplayMediaType) {
+            miscInfo.push(item.DisplayMediaType);
+        }
+
+        if (item.VideoFormat && item.VideoFormat !== 'Standard') {
+            miscInfo.push(item.VideoFormat);
+        }
+
+        return miscInfo.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
     }
 
 };

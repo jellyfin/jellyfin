@@ -14,27 +14,20 @@
 
             var name = item.Name;
 
+            $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item));
+
             Dashboard.setPageTitle(name);
-
-            renderImage(page, item);
-
-            renderDetails(page, item);
 
             $('#itemName', page).html(name);
 
-            renderFavorites(page, item);
-            LibraryBrowser.renderLinks(item);
+            renderDetails(page, item);
 
             Dashboard.hideLoadingMsg();
         });
     }
 
-    function renderImage(page, item) {
-
-        $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item));
-    }
-
     function renderDetails(page, item) {
+        
         if (item.Taglines && item.Taglines.length) {
             $('#itemTagline', page).html(item.Taglines[0]).show();
         } else {
@@ -58,41 +51,28 @@
             $('#itemCommunityRating', page).hide();
         }
 
-        var miscInfo = [];
-
-        if (item.ProductionYear) {
-            miscInfo.push(item.ProductionYear);
-        }
-
-        if (item.OfficialRating) {
-            miscInfo.push(item.OfficialRating);
-        }
-
-        if (item.RunTimeTicks) {
-
-            var minutes = item.RunTimeTicks / 600000000;
-
-            minutes = minutes || 1;
-
-            miscInfo.push(parseInt(minutes) + "min");
-        }
-
-        if (item.DisplayMediaType) {
-            miscInfo.push(item.DisplayMediaType);
-        }
-
-        if (item.VideoFormat && item.VideoFormat !== 'Standard') {
-            miscInfo.push(item.VideoFormat);
-        }
-
-        $('#itemMiscInfo', page).html(miscInfo.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'));
+        $('#itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
 
         renderGenres(page, item);
         renderStudios(page, item);
+        renderUserDataIcons(page, item);
+        renderLinks(page, item);
+    }
+    
+    function renderLinks(page, item) {
+        if (item.ProviderIds) {
+
+            $('#itemLinks', page).html(LibraryBrowser.getLinksHtml(item));
+
+        } else {
+            $('#itemLinks', page).hide();
+        }
     }
 
     function renderStudios(page, item) {
+        
         if (item.Studios && item.Studios.length) {
+            
             var elem = $('#itemStudios', page).show();
 
             var html = 'Studios:&nbsp;&nbsp;';
@@ -138,8 +118,8 @@
         }
     }
     
-    function renderFavorites(page, item) {
-        $('#itemRatings', page).html(LibraryBrowser.getUserRatingHtml(item));
+    function renderUserDataIcons(page, item) {
+        $('#itemRatings', page).html(LibraryBrowser.getUserDataIconsHtml(item));
     }
 
     $(document).on('pageshow', "#tvSeriesPage", function () {
@@ -153,71 +133,3 @@
 
 
 })(jQuery, document, LibraryBrowser);
-
-var tvSeriesPage = {
-
-    setFavorite: function () {
-        var item = tvSeriesPage.item;
-
-        item.UserData = item.UserData || {};
-
-        var setting = !item.UserData.IsFavorite;
-        item.UserData.IsFavorite = setting;
-
-        ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), item.Id, setting);
-
-        renderFavorites(page, item);
-    },
-
-    setLike: function () {
-
-        var item = tvSeriesPage.item;
-
-        item.UserData = item.UserData || {};
-
-        item.UserData.Likes = true;
-
-        ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), item.Id, true);
-
-        renderFavorites(page, item);
-    },
-
-    clearLike: function () {
-
-        var item = tvSeriesPage.item;
-
-        item.UserData = item.UserData || {};
-
-        item.UserData.Likes = undefined;
-
-        ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), item.Id);
-
-        renderFavorites(page, item);
-    },
-
-    setDislike: function () {
-        var item = tvSeriesPage.item;
-
-        item.UserData = item.UserData || {};
-
-        item.UserData.Likes = false;
-
-        ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), item.Id, false);
-
-        renderFavorites(page, item);
-    },
-
-    setPlayed: function () {
-        var item = tvSeriesPage.item;
-
-        item.UserData = item.UserData || {};
-
-        var setting = !item.UserData.Played;
-        item.UserData.Played = setting;
-
-        ApiClient.updatePlayedStatus(Dashboard.getCurrentUserId(), item.Id, setting);
-
-        renderFavorites(page, item);
-    }
-
-};

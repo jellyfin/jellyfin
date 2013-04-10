@@ -1,5 +1,7 @@
 ﻿var MediaPlayer = (function (document, clearTimeout, screen, localStorage, _V_, $, setInterval) {
 
+    var self = this;
+    
     var testableAudioElement = document.createElement('audio');
     var testableVideoElement = document.createElement('video');
     var currentMediaElement;
