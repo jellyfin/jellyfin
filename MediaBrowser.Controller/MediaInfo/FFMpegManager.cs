@@ -175,10 +175,18 @@ namespace MediaBrowser.Controller.MediaInfo
                 {
                     if (extractImages)
                     {
-                        // Disable for now on folder rips
-                        if (video.VideoType != VideoType.VideoFile && video.VideoType != VideoType.Dvd)
+                        if (video.VideoType == VideoType.HdDvd || video.VideoType == VideoType.Iso)
                         {
                             continue;
+                        }
+
+                        if (video.VideoType == VideoType.BluRay)
+                        {
+                            // Can only extract reliably on single file blurays
+                            if (video.PlayableStreamFileNames == null || video.PlayableStreamFileNames.Count != 1)
+                            {
+                                continue;
+                            }
                         }
 
                         // Add some time for the first chapter to make sure we don't end up with a black image
