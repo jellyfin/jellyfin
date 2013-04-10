@@ -44,12 +44,6 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is first run.
-        /// </summary>
-        /// <value><c>true</c> if this instance is first run; otherwise, <c>false</c>.</value>
-        public bool IsFirstRun { get; private set; }
-
-        /// <summary>
         /// Gets the type of configuration this plugin uses
         /// </summary>
         /// <value>The type of the configuration.</value>

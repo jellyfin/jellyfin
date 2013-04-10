@@ -110,11 +110,5 @@ namespace MediaBrowser.Common.Plugins
         /// Called when just before the plugin is uninstalled from the server.
         /// </summary>
         void OnUninstalling();
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is first run.
-        /// </summary>
-        /// <value><c>true</c> if this instance is first run; otherwise, <c>false</c>.</value>
-        bool IsFirstRun { get; }
     }
 }

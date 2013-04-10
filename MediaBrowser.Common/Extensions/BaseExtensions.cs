@@ -12,37 +12,6 @@ namespace MediaBrowser.Common.Extensions
     /// </summary>
     public static class BaseExtensions
     {
-        /// <summary>
-        /// Tries the add.
-        /// </summary>
-        /// <typeparam name="TKey">The type of the T key.</typeparam>
-        /// <typeparam name="TValue">The type of the T value.</typeparam>
-        /// <param name="dictionary">The dictionary.</param>
-        /// <param name="key">The key.</param>
-        /// <param name="value">The value.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        public static bool TryAdd<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue value)
-        {
-            if (dictionary.ContainsKey(key))
-            {
-                return false;
-            }
-
-            dictionary.Add(key, value);
-            return true;
-        }
-
-        /// <summary>
-        /// Provides an additional overload for string.split
-        /// </summary>
-        /// <param name="val">The val.</param>
-        /// <param name="separator">The separator.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String[][].</returns>
-        public static string[] Split(this string val, char separator, StringSplitOptions options)
-        {
-            return val.Split(new[] { separator }, options);
-        }
 
         /// <summary>
         /// Strips the HTML.
@@ -54,17 +23,6 @@ namespace MediaBrowser.Common.Extensions
             // http://stackoverflow.com/questions/1349023/how-can-i-strip-html-from-text-in-net
             const string pattern = @"<(.|\n)*?>";
             return Regex.Replace(htmlString, pattern, string.Empty).Trim();
-        }
-        
-        /// <summary>
-        /// Shuffles an IEnumerable
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="list">The list.</param>
-        /// <returns>IEnumerable{``0}.</returns>
-        public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> list)
-        {
-            return list.OrderBy(x => Guid.NewGuid());
         }
 
         /// <summary>

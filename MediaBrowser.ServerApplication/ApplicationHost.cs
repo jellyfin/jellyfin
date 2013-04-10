@@ -424,7 +424,7 @@ namespace MediaBrowser.ServerApplication
         public async override Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
             var availablePackages = await PackageManager.GetAvailablePackages(CancellationToken.None).ConfigureAwait(false);
-            var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, Constants.MBServerPkgName, ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
+            var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, Constants.MbServerPkgName, ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
 
             return version != null ? new CheckForUpdateResult { AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version } :
                        new CheckForUpdateResult { AvailableVersion = ApplicationVersion, IsUpdateAvailable = false };

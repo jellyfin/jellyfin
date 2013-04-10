@@ -32,7 +32,7 @@ namespace MediaBrowser.ServerApplication
         {
             // Look for the existence of an update archive
             var appPaths = new ServerApplicationPaths();
-            var updateArchive = Path.Combine(appPaths.TempUpdatePath, Constants.MBServerPkgName + ".zip");
+            var updateArchive = Path.Combine(appPaths.TempUpdatePath, Constants.MbServerPkgName + ".zip");
             if (File.Exists(updateArchive))
             {
                 // Update is there - execute update
