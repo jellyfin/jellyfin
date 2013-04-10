@@ -49,8 +49,8 @@
 
         $('#itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
 
-        renderGenres(page, item);
-        renderStudios(page, item);
+        LibraryBrowser.renderGenres($('#itemGenres', page), item);
+        LibraryBrowser.renderStudios($('#itemStudios', page), item);
         renderUserDataIcons(page, item);
         renderLinks(page, item);
     }
@@ -62,55 +62,6 @@
 
         } else {
             $('#itemLinks', page).hide();
-        }
-    }
-
-    function renderStudios(page, item) {
-
-        if (item.Studios && item.Studios.length) {
-
-            var elem = $('#itemStudios', page).show();
-
-            var html = 'Studios:&nbsp;&nbsp;';
-
-            for (var i = 0, length = item.Studios.length; i < length; i++) {
-
-                if (i > 0) {
-                    html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
-                }
-
-                html += '<a href="itembynamedetails.html?studio=' + item.Studios[i] + '">' + item.Studios[i] + '</a>';
-            }
-
-            elem.html(html).trigger('create');
-
-
-        } else {
-            $('#itemStudios', page).hide();
-        }
-    }
-
-    function renderGenres(page, item) {
-
-        if (item.Genres && item.Genres.length) {
-            var elem = $('#itemGenres', page).show();
-
-            var html = 'Genres:&nbsp;&nbsp;';
-
-            for (var i = 0, length = item.Genres.length; i < length; i++) {
-
-                if (i > 0) {
-                    html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
-                }
-
-                html += '<a href="itembynamedetails.html?genre=' + item.Genres[i] + '">' + item.Genres[i] + '</a>';
-            }
-
-            elem.html(html).trigger('create');
-
-
-        } else {
-            $('#itemGenres', page).hide();
         }
     }
 

@@ -540,7 +540,7 @@
 
         return html;
     },
-    
+
     markPlayed: function (link) {
 
         var id = link.getAttribute('data-itemid');
@@ -563,9 +563,9 @@
     markFavorite: function (link) {
 
         var id = link.getAttribute('data-itemid');
-        
+
         var $link = $(link);
-        
+
         var markAsFavorite = $link.hasClass('imgFavoriteOff');
 
         ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
@@ -578,22 +578,22 @@
             $link.addClass('imgFavoriteOff').removeClass('imgFavorite');
         }
     },
-    
+
     markLike: function (link) {
-        
+
         var id = link.getAttribute('data-itemid');
 
         var $link = $(link);
 
         if ($link.hasClass('imgLikeOff')) {
-            
+
             ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, true);
 
             link.src = "css/images/userdata/thumbs_up_on.png";
             $link.addClass('imgLike').removeClass('imgLikeOff');
 
         } else {
-            
+
             ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
 
             link.src = "css/images/userdata/thumbs_up_off.png";
@@ -632,7 +632,7 @@
     },
 
     getDetailImageHtml: function (item) {
-        
+
         var imageTags = item.ImageTags || {};
 
         var html = '';
@@ -748,6 +748,51 @@
         }
 
         return miscInfo.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+    },
+
+    renderStudios: function (elem, item) {
+
+        if (item.Studios && item.Studios.length) {
+
+            var html = 'Studios:&nbsp;&nbsp;';
+
+            for (var i = 0, length = item.Studios.length; i < length; i++) {
+
+                if (i > 0) {
+                    html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
+                }
+
+                html += '<a href="itembynamedetails.html?studio=' + item.Studios[i] + '">' + item.Studios[i] + '</a>';
+            }
+
+            elem.show().html(html).trigger('create');
+
+
+        } else {
+            elem.hide();
+        }
+    },
+
+    renderGenres: function (elem, item) {
+
+        if (item.Genres && item.Genres.length) {
+            var html = 'Genres:&nbsp;&nbsp;';
+
+            for (var i = 0, length = item.Genres.length; i < length; i++) {
+
+                if (i > 0) {
+                    html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
+                }
+
+                html += '<a href="itembynamedetails.html?genre=' + item.Genres[i] + '">' + item.Genres[i] + '</a>';
+            }
+
+            elem.show().html(html).trigger('create');
+
+
+        } else {
+            elem.hide();
+        }
     }
 
 };
