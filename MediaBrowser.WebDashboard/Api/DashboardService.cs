@@ -518,7 +518,8 @@ namespace MediaBrowser.WebDashboard.Api
                                       "wizarduserpage.js",
                                       "supporterkeypage.js",
                                       "supporterpage.js",
-                                      "playlist.js"
+                                      "playlist.js",
+                                      "tvseries.js"
                                   };
 
             var memoryStream = new MemoryStream();

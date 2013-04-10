@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+<div id="tvSeriesPage" data-role="page" class="page libraryPage noLogoPage" data-theme="a">
+	<h1 class="libraryPageHeader"><a href="index.html" class="imageLink">
+		<img src="css/images/home.png"></a>Movies</h1>
+	<div data-role="content" style="padding-top: 0;">
+
+		<div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
+			<a href="tvrecommended.html" data-role="button">Suggested</a>
+			<a href="tvshows.html" data-role="button" class="ui-btn-active">Shows</a>
+			<a href="#" data-role="button">Genres</a>
+			<a href="#" data-role="button">Actors</a>
+		</div>
+
+		<h1 id="seriesName" style="padding-left: 10px; margin: 0;" class="hide"></h1>
+		<h1 id="itemName" style="padding-left: 10px; margin: 0;"></h1>
+
+		<div style="padding: 10px;">
+			<div class="itemImageBlock">
+				<div id="itemMedia" style="position: relative;">
+					<div id="itemImage"></div>
+				</div>
+			</div>
+
+			<div class="itemDetailBlock">
+
+				<p id="itemTagline" style="font-style: italic;"></p>
+				<p id="itemOverview"></p>
+				<p id="itemRatings"></p>
+				<p id="itemCommunityRating"></p>
+				<p id="itemMiscInfo" style="color: #ddd; font-size: 14px;"></p>
+
+				<p id="itemGenres"></p>
+				<p id="itemStudios"></p>
+				<p id="itemLinks"></p>
+			</div>
+		</div>
+
+	</div>
+</div>
+</body>
+</html>

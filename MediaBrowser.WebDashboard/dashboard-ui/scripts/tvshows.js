@@ -47,7 +47,7 @@
 
         html += '<td>';
 
-        var url = "itemdetails.html?id=" + item.Id;
+        var url = "tvseries.html?id=" + item.Id;
 
         var imageTags = item.ImageTags;
 
