@@ -16,10 +16,11 @@
                         <div id="itemImage"></div>
                         <div id="playButtonShadow" style="display: none; height: 48px; position: absolute; bottom: 0; left: 0; right: 0; background: black; opacity: .75;">
                         </div>
-                        <button id="btnPlay" type="button" class="imageButton" style="display: none; position: absolute; bottom: 5px; left: 10px;" data-role="none" title="Play" onclick="ItemDetailPage.play();">
+                        <button id="btnPlay" type="button" class="imageButton" style="display: none; position: absolute; bottom: 5px; left: 10px;" data-role="none" title="Play" onclick="ItemDetailPage.onPlayButtonClick();">
                             <img src="css/images/media/playCircle.png" style="height: 28px;" />
                         </button>
                     </div>
+                    <div id="playMenuAnchor"></div>
                 </div>
 
                 <div class="itemDetailBlock">
@@ -32,7 +33,7 @@
 
                     <p id="itemGenres"></p>
                     <p id="itemStudios"></p>
-	                <p id="itemLinks"></p>
+                    <p id="itemLinks"></p>
                 </div>
             </div>
 
@@ -59,6 +60,16 @@
             <div data-role="collapsible" id="galleryCollapsible" class="">
                 <h3>Gallery</h3>
                 <div id="galleryContent"></div>
+            </div>
+
+            <div data-role="popup" id="playMenu" data-corners="false" data-theme="c">
+                <ul data-role="listview" style="min-width: 150px;" data-theme="c">
+                    <li data-role="list-divider" data-theme="a">Play Menu</li>
+                    <li><a href="#" onclick="ItemDetailPage.play();">Play</a></li>
+                    <li><a href="#" onclick="ItemDetailPage.resume();">Resume</a>
+
+                    </li>
+                </ul>
             </div>
         </div>
     </div>

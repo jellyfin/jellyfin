@@ -353,8 +353,45 @@
         $('#scenesContent', page).html(html);
     },
 
+    onPlayButtonClick: function () {
+
+        var item = ItemDetailPage.item;
+
+        var userdata = item.UserData || {};
+
+        if (userdata.PlaybackPositionTicks) {
+
+            var page = $.mobile.activePage;
+
+            var pos = $('#playMenuAnchor', page).offset();
+
+            $('#playMenu', page).popup("open", {
+                
+                x: pos.left + 125,
+                y: pos.top + 20
+
+            });
+
+        } else {
+            ItemDetailPage.play();
+        }
+
+    },
+
     play: function (startPosition) {
+
+        var page = $.mobile.activePage;
+        $('#playMenu', page).popup("close");
         MediaPlayer.play([ItemDetailPage.item], startPosition);
+    },
+    
+    resume: function() {
+
+        var item = ItemDetailPage.item;
+
+        var userdata = item.UserData || {};
+
+        ItemDetailPage.play(userdata.PlaybackPositionTicks);
     },
 
     onGalleryExpand: function () {
@@ -475,9 +512,9 @@
             html += '<div class="mediaInfoStream">';
 
             html += '<p class="mediaInfoStreamType">' + type + '</p>';
-            
+
             html += '<ul class="mediaInfoDetails">';
-            
+
             if (stream.Codec) {
                 html += '<li><span class="mediaInfoLabel">Codec</span> ' + stream.Codec + '</li>';
             }
@@ -510,11 +547,11 @@
             }
 
             var framerate = stream.AverageFrameRate || stream.RealFrameRate;
-            
+
             if (framerate) {
                 html += '<li><span class="mediaInfoLabel">Framerate</span> ' + framerate + '</li>';
             }
-            
+
             if (stream.PixelFormat) {
                 html += '<li><span class="mediaInfoLabel">Pixel Format</span> ' + stream.PixelFormat + '</li>';
             }
