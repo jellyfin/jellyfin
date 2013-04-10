@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using System;
 
@@ -17,19 +16,12 @@ namespace MediaBrowser.Controller.Providers.Music
             artist.Overview = overview;
 
             var yearFormed = 0;
-            try
+
+            if (data.bio != null)
             {
-                yearFormed = Convert.ToInt32(data.bio.yearformed);
+                Int32.TryParse(data.bio.yearformed, out yearFormed);
             }
-            catch (FormatException)
-            {
-            }
-            catch (NullReferenceException)
-            {
-            }
-            catch (OverflowException)
-            {
-            }
+
             artist.PremiereDate = yearFormed > 0 ? new DateTime(yearFormed, 1,1) : DateTime.MinValue;
             artist.ProductionYear = yearFormed;
             if (data.tags != null)
@@ -46,7 +38,7 @@ namespace MediaBrowser.Controller.Providers.Music
 
             item.Overview = overview;
 
-            var release = DateTime.MinValue;
+            DateTime release;
             DateTime.TryParse(data.releasedate, out release);
             item.PremiereDate = release;
             item.ProductionYear = release.Year;

@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Providers.Music
 {
@@ -28,7 +24,7 @@ namespace MediaBrowser.Controller.Providers.Music
             LocalMetaFileName = LastfmHelper.LocalArtistMetaFileName;
         }
 
-        protected override async Task<string> FindId(Entities.BaseItem item, System.Threading.CancellationToken cancellationToken)
+        protected override async Task<string> FindId(BaseItem item, CancellationToken cancellationToken)
         {
             //Execute the Artist search against our name and assume first one is the one we want
             var url = RootUrl + string.Format("method=artist.search&artist={0}&api_key={1}&format=json", UrlEncode(item.Name), ApiKey);
@@ -99,7 +95,7 @@ namespace MediaBrowser.Controller.Providers.Music
             }
         }
 
-        public override bool Supports(Entities.BaseItem item)
+        public override bool Supports(BaseItem item)
         {
             return item is MusicArtist;
         }

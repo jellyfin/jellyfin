@@ -19,8 +19,6 @@ namespace MediaBrowser.Controller.Providers.Movies
     /// </summary>
     class FanArtMovieProvider : FanartBaseProvider, IDisposable
     {
-        internal static FanArtMovieProvider Current { get; private set; }
-
         /// <summary>
         /// Gets the HTTP client.
         /// </summary>
@@ -28,13 +26,14 @@ namespace MediaBrowser.Controller.Providers.Movies
         protected IHttpClient HttpClient { get; private set; }
 
         private readonly IProviderManager _providerManager;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FanArtMovieProvider" /> class.
         /// </summary>
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="providerManager">The provider manager.</param>
         /// <exception cref="System.ArgumentNullException">httpClient</exception>
         public FanArtMovieProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
             : base(logManager, configurationManager)

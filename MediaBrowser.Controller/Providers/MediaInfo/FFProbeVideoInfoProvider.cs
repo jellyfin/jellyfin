@@ -309,7 +309,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             long currentChapterTicks = 0;
             var index = 1;
 
-            var chapters = new List<ChapterInfo> { };
+            var chapters = new List<ChapterInfo>();
 
             while (currentChapterTicks < runtime)
             {
@@ -372,7 +372,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             }
 
             // Fill video properties from the BDInfo result
-            Fetch(video, inputPath, result);
+            Fetch(video, result);
 
             videoStream = video.MediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
 
@@ -399,9 +399,8 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// Fills video properties from the VideoStream of the largest playlist
         /// </summary>
         /// <param name="video">The video.</param>
-        /// <param name="inputPath">The input path.</param>
         /// <param name="stream">The stream.</param>
-        private void Fetch(Video video, string inputPath, BlurayDiscInfo stream)
+        private void Fetch(Video video, BlurayDiscInfo stream)
         {
             // Check all input for null/empty/zero
 

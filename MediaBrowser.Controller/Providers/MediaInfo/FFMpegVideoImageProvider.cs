@@ -27,6 +27,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// <param name="isoManager">The iso manager.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="mediaEncoder">The media encoder.</param>
         public FfMpegVideoImageProvider(IIsoManager isoManager, ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder)
             : base(logManager, configurationManager, mediaEncoder)
         {

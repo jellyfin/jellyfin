@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Entities;
@@ -20,9 +19,9 @@ namespace MediaBrowser.Controller.Library
         event EventHandler<ChildrenChangedEventArgs> LibraryChanged;
 
         /// <summary>
-        /// Raises the <see cref="E:LibraryChanged" /> event.
+        /// Reports the library changed.
         /// </summary>
-        /// <param name="args">The <see cref="ChildrenChangedEventArgs" /> instance containing the event data.</param>
+        /// <param name="args">The <see cref="ChildrenChangedEventArgs"/> instance containing the event data.</param>
         void ReportLibraryChanged(ChildrenChangedEventArgs args);
 
         /// <summary>

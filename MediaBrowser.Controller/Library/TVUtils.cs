@@ -277,9 +277,7 @@ namespace MediaBrowser.Controller.Library
                                };
                 }
 
-                return new List<DayOfWeek>
-                               {
-                               };
+                return new List<DayOfWeek>();
             }
             return null;
         }

@@ -1,12 +1,9 @@
-﻿using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Model.Logging;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Xml.Serialization;
 
 namespace MediaBrowser.Controller.Localization
 {
@@ -30,7 +27,7 @@ namespace MediaBrowser.Controller.Localization
         /// </summary>
         private static LocalizedStrings _instance;
 
-        private IServerApplicationPaths _appPaths;
+        private readonly IServerApplicationPaths _appPaths;
 
         /// <summary>
         /// Gets the instance.

@@ -5,7 +5,6 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -266,7 +265,7 @@ namespace MediaBrowser.Controller.Entities
             RootFolder = null;
 
             // Kick off a task to validate the media library
-            Task.Run(() => ValidateMediaLibrary(new Progress<double> { }, CancellationToken.None));
+            Task.Run(() => ValidateMediaLibrary(new Progress<double>(), CancellationToken.None));
 
             return RefreshMetadata(CancellationToken.None, forceSave: true, forceRefresh: true);
         }

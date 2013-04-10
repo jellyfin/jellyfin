@@ -118,14 +118,12 @@ namespace MediaBrowser.Controller.Entities.Movies
             cancellationToken.ThrowIfCancellationRequested();
 
             return result;
-        }      
-        
+        }
+
         /// <summary>
-        /// Loads special features from the file system
+        /// Loads the special features.
         /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns>List{Video}.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <returns>IEnumerable{Video}.</returns>
         private IEnumerable<Video> LoadSpecialFeatures()
         {
             WIN32_FIND_DATA? folder;
@@ -137,13 +135,13 @@ namespace MediaBrowser.Controller.Entities.Movies
             catch (IOException ex)
             {
                 Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
-                return new List<Video> { };
+                return new List<Video>();
             }
 
             // Path doesn't exist. No biggie
             if (folder == null)
             {
-                return new List<Video> { };
+                return new List<Video>();
             }
 
             IEnumerable<WIN32_FIND_DATA> files;
@@ -155,7 +153,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             catch (IOException ex)
             {
                 Logger.ErrorException("Error loading trailers for {0}", ex, Name);
-                return new List<Video> { };
+                return new List<Video>();
             }
 
             return LibraryManager.ResolvePaths<Video>(files, null).Select(video =>
