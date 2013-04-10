@@ -193,11 +193,10 @@
     }
 
     self.canPlay = function (item) {
-
+        var media;
+        
         if (item.MediaType === "Video") {
-
-            var media = testableVideoElement;
-
+            media = testableVideoElement;
             if (media.canPlayType) {
 
                 return media.canPlayType('video/mp4').replace(/no/, '') || media.canPlayType('video/mp2t').replace(/no/, '') || media.canPlayType('video/webm').replace(/no/, '') || media.canPlayType('application/x-mpegURL').replace(/no/, '') || media.canPlayType('video/ogv').replace(/no/, '');
@@ -207,9 +206,7 @@
         }
 
         if (item.MediaType === "Audio") {
-
-            var media = testableAudioElement;
-
+            media = testableAudioElement;
             if (media.canPlayType) {
 
                 return media.canPlayType('audio/mpeg').replace(/no/, '') || media.canPlayType('audio/webm').replace(/no/, '') || media.canPlayType('audio/aac').replace(/no/, '') || media.canPlayType('audio/ogg').replace(/no/, '');
