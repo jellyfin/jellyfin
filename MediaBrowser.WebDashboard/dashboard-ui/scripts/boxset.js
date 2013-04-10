@@ -1,127 +1,28 @@
-﻿var BoxsetPage = {
+﻿(function ($, document, LibraryBrowser) {
 
-    onPageShow: function () {
+    function reload(page) {
 
-        BoxsetPage.reload();
-    },
-
-    onPageHide: function () {
-
-        BoxsetPage.item = null;
-    },
-
-    reload: function () {
         var id = getParameterByName('id');
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(BoxsetPage.renderItem);
-    },
+        ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
 
-    renderItem: function (item) {
+            var name = item.Name;
 
-        BoxsetPage.item = item;
+            $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item));
 
-        var page = $.mobile.activePage;
+            Dashboard.setPageTitle(name);
 
-        BoxsetPage.item = item;
+            $('#itemName', page).html(name);
 
-        var name = item.Name;
+            renderDetails(page, item);
 
-        if (item.IndexNumber != null) {
-            name = item.IndexNumber + " - " + name;
-        }
-        if (item.ParentIndexNumber != null) {
-            name = item.ParentIndexNumber + "." + name;
-        }
+            Dashboard.hideLoadingMsg();
+        });
+    }
 
-        Dashboard.setPageTitle(name);
-
-        BoxsetPage.renderImage(item);
-        BoxsetPage.renderOverviewBlock(item);
-
-        $('#itemName', page).html(name);
-
-        if (item.SeriesName || item.Album) {
-            var series_name = item.SeriesName || item.Album;
-            $('#seriesName', page).html(series_name).show();
-        }
-
-        BoxsetPage.renderFav(item);
-	    LibraryBrowser.renderLinks(item);
-
-        Dashboard.hideLoadingMsg();
-    },
-
-    renderImage: function (item) {
-
-        var page = $.mobile.activePage;
-
-        var imageTags = item.ImageTags || {};
-
-        var html = '';
-
-        var url;
-        var useBackgroundColor;
-
-        if (imageTags.Primary) {
-
-            url = ApiClient.getImageUrl(item.Id, {
-                type: "Primary",
-                width: 800,
-                tag: item.ImageTags.Primary
-            });
-        }
-        else if (item.BackdropImageTags && item.BackdropImageTags.length) {
-
-            url = ApiClient.getImageUrl(item.Id, {
-                type: "Backdrop",
-                width: 800,
-                tag: item.BackdropImageTags[0]
-            });
-        }
-        else if (imageTags.Thumb) {
-
-            url = ApiClient.getImageUrl(item.Id, {
-                type: "Thumb",
-                width: 800,
-                tag: item.ImageTags.Thumb
-            });
-        }
-        else if (imageTags.Disc) {
-
-            url = ApiClient.getImageUrl(item.Id, {
-                type: "Disc",
-                width: 800,
-                tag: item.ImageTags.Disc
-            });
-        }
-        else if (item.MediaType == "Audio") {
-            url = "css/images/items/detail/audio.png";
-            useBackgroundColor = true;
-        }
-        else if (item.MediaType == "Game") {
-            url = "css/images/items/detail/game.png";
-            useBackgroundColor = true;
-        }
-        else {
-            url = "css/images/items/detail/video.png";
-            useBackgroundColor = true;
-        }
-
-        if (url) {
-
-            var style = useBackgroundColor ? "background-color:" + LibraryBrowser.getMetroColor(item.Id) + ";" : "";
-
-            html += "<img class='itemDetailImage' src='" + url + "' style='" + style + "' />";
-        }
-
-        $('#itemImage', page).html(html);
-    },
-
-    renderOverviewBlock: function (item) {
-
-        var page = $.mobile.activePage;
+    function renderDetails(page, item) {
 
         if (item.Taglines && item.Taglines.length) {
             $('#itemTagline', page).html(item.Taglines[0]).show();
@@ -146,42 +47,50 @@
             $('#itemCommunityRating', page).hide();
         }
 
-        var miscInfo = [];
+        $('#itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
 
-        if (item.ProductionYear) {
-            miscInfo.push(item.ProductionYear);
+        renderGenres(page, item);
+        renderStudios(page, item);
+        renderUserDataIcons(page, item);
+        renderLinks(page, item);
+    }
+
+    function renderLinks(page, item) {
+        if (item.ProviderIds) {
+
+            $('#itemLinks', page).html(LibraryBrowser.getLinksHtml(item));
+
+        } else {
+            $('#itemLinks', page).hide();
         }
+    }
 
-        if (item.OfficialRating) {
-            miscInfo.push(item.OfficialRating);
+    function renderStudios(page, item) {
+
+        if (item.Studios && item.Studios.length) {
+
+            var elem = $('#itemStudios', page).show();
+
+            var html = 'Studios:&nbsp;&nbsp;';
+
+            for (var i = 0, length = item.Studios.length; i < length; i++) {
+
+                if (i > 0) {
+                    html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
+                }
+
+                html += '<a href="itembynamedetails.html?studio=' + item.Studios[i] + '">' + item.Studios[i] + '</a>';
+            }
+
+            elem.html(html).trigger('create');
+
+
+        } else {
+            $('#itemStudios', page).hide();
         }
+    }
 
-        if (item.RunTimeTicks) {
-
-            var minutes = item.RunTimeTicks / 600000000;
-
-            minutes = minutes || 1;
-
-            miscInfo.push(parseInt(minutes) + "min");
-        }
-
-        if (item.DisplayMediaType) {
-            miscInfo.push(item.DisplayMediaType);
-        }
-
-        if (item.VideoFormat && item.VideoFormat !== 'Standard') {
-            miscInfo.push(item.VideoFormat);
-        }
-
-        $('#itemMiscInfo', page).html(miscInfo.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'));
-
-        BoxsetPage.renderGenres(item);
-        BoxsetPage.renderStudios(item);
-    },
-
-    renderGenres: function (item) {
-
-        var page = $.mobile.activePage;
+    function renderGenres(page, item) {
 
         if (item.Genres && item.Genres.length) {
             var elem = $('#itemGenres', page).show();
@@ -203,124 +112,15 @@
         } else {
             $('#itemGenres', page).hide();
         }
-    },
-
-    renderStudios: function (item) {
-
-        var page = $.mobile.activePage;
-
-        if (item.Studios && item.Studios.length) {
-            var elem = $('#itemStudios', page).show();
-
-            var html = 'Studios:&nbsp;&nbsp;';
-
-            for (var i = 0, length = item.Studios.length; i < length; i++) {
-
-                if (i > 0) {
-                    html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
-                }
-
-                html += '<a href="itembynamedetails.html?studio=' + item.Studios[i] + '">' + item.Studios[i] + '</a>';
-            }
-
-            elem.html(html).trigger('create');
-
-
-        } else {
-            $('#itemStudios', page).hide();
-        }
-    },
-
-    renderFav: function (item) {
-        var html = '';
-        var page = $.mobile.activePage;
-
-        var userData = item.UserData || {};
-
-        if (typeof userData.Likes == "undefined") {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.setDislike();" />';
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="ItemDetailPage.setLike();" />';
-        } else if (userData.Likes) {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.setDislike();" />';
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_on.png" alt="Liked" title="Like" onclick="ItemDetailPage.clearLike();" />';
-        } else {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.clearLike();" />';
-            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="ItemDetailPage.setLike();" />';
-        }
-
-        if (userData.IsFavorite) {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" onclick="ItemDetailPage.setFavorite();" />';
-        } else {
-            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" onclick="ItemDetailPage.setFavorite();" />';
-        }
-
-        $('#itemRatings', page).html(html);
-    },
-
-    setFavorite: function () {
-        var item = BoxsetPage.item;
-
-        item.UserData = item.UserData || {};
-
-        var setting = !item.UserData.IsFavorite;
-        item.UserData.IsFavorite = setting;
-
-        ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), item.Id, setting);
-
-        BoxsetPage.renderFav(item);
-    },
-
-    setLike: function () {
-
-        var item = BoxsetPage.item;
-
-        item.UserData = item.UserData || {};
-
-        item.UserData.Likes = true;
-
-        ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), item.Id, true);
-
-        BoxsetPage.renderFav(item);
-    },
-
-    clearLike: function () {
-
-        var item = BoxsetPage.item;
-
-        item.UserData = item.UserData || {};
-
-        item.UserData.Likes = undefined;
-
-        ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), item.Id);
-
-        BoxsetPage.renderFav(item);
-    },
-
-    setDislike: function () {
-        var item = BoxsetPage.item;
-
-        item.UserData = item.UserData || {};
-
-        item.UserData.Likes = false;
-
-        ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), item.Id, false);
-
-        BoxsetPage.renderFav(item);
-    },
-
-    setPlayed: function () {
-        var item = BoxsetPage.item;
-
-        item.UserData = item.UserData || {};
-
-        var setting = !item.UserData.Played;
-        item.UserData.Played = setting;
-
-        ApiClient.updatePlayedStatus(Dashboard.getCurrentUserId(), item.Id, setting);
-
-        BoxsetPage.renderFav(item);
     }
 
-};
+    function renderUserDataIcons(page, item) {
+        $('#itemRatings', page).html(LibraryBrowser.getUserDataIconsHtml(item));
+    }
 
-$(document).on('pageshow', "#boxsetPage", BoxsetPage.onPageShow).on('pagehide', "#boxsetPage", BoxsetPage.onPageHide);
+    $(document).on('pageshow', "#boxsetPage", function () {
+        reload(this);
+    });
+
+
+})(jQuery, document, LibraryBrowser);

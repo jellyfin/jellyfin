@@ -1,7 +1,5 @@
 (function ($, document, LibraryBrowser) {
 
-    var currentItem;
-
     function reload(page) {
 
         var id = getParameterByName('id');
@@ -9,8 +7,6 @@
         Dashboard.showLoadingMsg();
 
         ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
-
-            currentItem = item;
 
             var name = item.Name;
 
@@ -123,12 +119,7 @@
     }
 
     $(document).on('pageshow', "#tvSeriesPage", function () {
-
         reload(this);
-
-    }).on('pagehide', "#tvSeriesPage", function () {
-
-        currentItem = null;
     });
 
 

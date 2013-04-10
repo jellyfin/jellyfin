@@ -632,6 +632,7 @@
     },
 
     getDetailImageHtml: function (item) {
+        
         var imageTags = item.ImageTags || {};
 
         var html = '';
@@ -641,11 +642,34 @@
 
         if (imageTags.Primary) {
 
-            url = ApiClient.getImageUrl(item.Id, {
-                type: "Primary",
-                width: 800,
-                tag: item.ImageTags.Primary
-            });
+            if (item.Type == "Person") {
+                url = ApiClient.getPersonImageUrl(item.Name, {
+                    width: 800,
+                    tag: imageTags.Primary,
+                    type: "primary"
+                });
+            }
+            else if (item.Type == "Genre") {
+                url = ApiClient.getGenreImageUrl(item.Name, {
+                    width: 800,
+                    tag: imageTags.Primary,
+                    type: "primary"
+                });
+            }
+            else if (item.Type == "Studio") {
+                url = ApiClient.getStudioImageUrl(item.Name, {
+                    width: 800,
+                    tag: imageTags.Primary,
+                    type: "primary"
+                });
+            }
+            else {
+                url = ApiClient.getImageUrl(item.Id, {
+                    type: "Primary",
+                    width: 800,
+                    tag: item.ImageTags.Primary
+                });
+            }
         }
         else if (item.BackdropImageTags && item.BackdropImageTags.length) {
 
