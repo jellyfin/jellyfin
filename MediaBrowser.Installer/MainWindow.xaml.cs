@@ -241,7 +241,6 @@ namespace MediaBrowser.Installer
                 }
                 catch (Exception e)
                 {
-
                     SystemClose("Error Removing Archive - " + e.GetType().FullName + "\n\n" + e.Message);
                     return;
                 }
@@ -399,17 +398,12 @@ namespace MediaBrowser.Installer
         protected void ExtractPackage(string archive)
         {
             // Delete old content of system
-            var systemDir = Path.Combine(RootPath, "system");
+            var systemDir = Path.Combine(RootPath, "System");
+            var backupDir = Path.Combine(RootPath, "System.old");
             if (Directory.Exists(systemDir))
             {
-                try
-                {
-                    Directory.Delete(systemDir, true);
-                }
-                catch
-                {
-                    // we tried...
-                }
+                if (Directory.Exists(backupDir)) Directory.Delete(backupDir,true);
+                Directory.Move(systemDir, backupDir);
             }
 
             // And extract
@@ -437,6 +431,10 @@ namespace MediaBrowser.Installer
                     }
                     else
                     {
+                        //Rollback
+                        if (Directory.Exists(systemDir)) Directory.Delete(systemDir);
+                        Directory.Move(backupDir, systemDir);
+                        File.Delete(archive); // so we don't try again if its an update
                         throw;
                     }
                 }
