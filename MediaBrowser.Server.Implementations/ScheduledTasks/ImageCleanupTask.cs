@@ -139,7 +139,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <returns>IEnumerable{System.String}.</returns>
         private IEnumerable<string> GetPathsInUse(BaseItem item)
         {
-            IEnumerable<string> images = new List<string> { };
+            IEnumerable<string> images = new List<string>();
 
             if (item.Images != null)
             {

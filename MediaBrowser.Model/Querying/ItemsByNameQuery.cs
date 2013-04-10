@@ -24,7 +24,7 @@ namespace MediaBrowser.Model.Querying
         /// <value>The size of the page.</value>
         public int? Limit { get; set; }
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="GetItemsByName" /> is recursive.
+        /// Gets or sets a value indicating whether this <see cref="ItemsByNameQuery"/> is recursive.
         /// </summary>
         /// <value><c>true</c> if recursive; otherwise, <c>false</c>.</value>
         public bool Recursive { get; set; }

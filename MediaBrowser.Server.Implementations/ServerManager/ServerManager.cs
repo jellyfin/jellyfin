@@ -33,12 +33,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
-        /// This subscribes to HttpListener requests and finds the appropriate BaseHandler to process it
-        /// </summary>
-        /// <value>The HTTP listener.</value>
-        private IDisposable HttpListener { get; set; }
-
-        /// <summary>
         /// The web socket connections
         /// </summary>
         private readonly List<IWebSocketConnection> _webSocketConnections = new List<IWebSocketConnection>();
@@ -311,11 +305,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             {
                 HttpServer.WebSocketConnected -= HttpServer_WebSocketConnected;
                 HttpServer.Dispose();
-            }
-
-            if (HttpListener != null)
-            {
-                HttpListener.Dispose();
             }
 
             DisposeExternalWebSocketServer();

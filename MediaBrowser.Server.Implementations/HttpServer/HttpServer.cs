@@ -3,7 +3,6 @@ using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Serialization;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Common.Web;
 using ServiceStack.Configuration;

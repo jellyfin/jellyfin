@@ -298,7 +298,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <exception cref="System.ArgumentException">Unrecognized InputType</exception>
         public string GetInputArgument(string[] inputFiles, InputType type)
         {
-            string inputPath = null;
+            string inputPath;
 
             switch (type)
             {
@@ -439,7 +439,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         {
             var lines = standardError.Split('\n').Select(l => l.TrimStart());
 
-            var chapters = new List<ChapterInfo> { };
+            var chapters = new List<ChapterInfo>();
 
             ChapterInfo lastChapter = null;
 

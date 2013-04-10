@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -76,7 +75,7 @@ namespace MediaBrowser.Server.Implementations.Library
         public event EventHandler<ChildrenChangedEventArgs> LibraryChanged;
 
         /// <summary>
-        /// Raises the <see cref="E:LibraryChanged" /> event.
+        /// Reports the library changed.
         /// </summary>
         /// <param name="args">The <see cref="ChildrenChangedEventArgs" /> instance containing the event data.</param>
         public void ReportLibraryChanged(ChildrenChangedEventArgs args)
@@ -753,7 +752,7 @@ namespace MediaBrowser.Server.Implementations.Library
             await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
             // Start by just validating the children of the root, but go no further
-            await RootFolder.ValidateChildren(new Progress<double> { }, cancellationToken, recursive: false);
+            await RootFolder.ValidateChildren(new Progress<double>(), cancellationToken, recursive: false);
 
             foreach (var folder in _userManager.Users.Select(u => u.RootFolder).Distinct())
             {
@@ -777,7 +776,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await userRootFolder.ValidateChildren(new Progress<double> { }, cancellationToken, recursive: false).ConfigureAwait(false);
+            await userRootFolder.ValidateChildren(new Progress<double>(), cancellationToken, recursive: false).ConfigureAwait(false);
         }
 
         /// <summary>

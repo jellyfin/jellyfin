@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Updates;
 using MediaBrowser.Model.Weather;
 using ProtoBuf;
 using System;

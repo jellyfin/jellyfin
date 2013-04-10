@@ -335,7 +335,7 @@ namespace MediaBrowser.Server.Implementations.Updates
                 CurrentInstallations.Add(tuple);
             }
 
-            var innerProgress = new ActionableProgress<double> { };
+            var innerProgress = new ActionableProgress<double>();
 
             // Whenever the progress updates, update the outer progress object and InstallationInfo
             innerProgress.RegisterAction(percent =>
@@ -347,7 +347,7 @@ namespace MediaBrowser.Server.Implementations.Updates
 
             var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, innerCancellationTokenSource.Token).Token;
 
-            EventHelper.QueueEventIfNotNull(PackageInstalling, this, new GenericEventArgs<InstallationInfo>() { Argument = installationInfo }, _logger);
+            EventHelper.QueueEventIfNotNull(PackageInstalling, this, new GenericEventArgs<InstallationInfo> { Argument = installationInfo }, _logger);
 
             try
             {
@@ -360,7 +360,7 @@ namespace MediaBrowser.Server.Implementations.Updates
 
                 CompletedInstallations.Add(installationInfo);
 
-                EventHelper.QueueEventIfNotNull(PackageInstallationCompleted, this, new GenericEventArgs<InstallationInfo>() { Argument = installationInfo }, _logger);
+                EventHelper.QueueEventIfNotNull(PackageInstallationCompleted, this, new GenericEventArgs<InstallationInfo> { Argument = installationInfo }, _logger);
             }
             catch (OperationCanceledException)
             {
@@ -371,7 +371,7 @@ namespace MediaBrowser.Server.Implementations.Updates
 
                 _logger.Info("Package installation cancelled: {0} {1}", package.name, package.versionStr);
 
-                EventHelper.QueueEventIfNotNull(PackageInstallationCancelled, this, new GenericEventArgs<InstallationInfo>() { Argument = installationInfo }, _logger);
+                EventHelper.QueueEventIfNotNull(PackageInstallationCancelled, this, new GenericEventArgs<InstallationInfo> { Argument = installationInfo }, _logger);
 
                 throw;
             }
@@ -384,7 +384,7 @@ namespace MediaBrowser.Server.Implementations.Updates
                     CurrentInstallations.Remove(tuple);
                 }
 
-                EventHelper.QueueEventIfNotNull(PackageInstallationFailed, this, new GenericEventArgs<InstallationInfo>() { Argument = installationInfo }, _logger);
+                EventHelper.QueueEventIfNotNull(PackageInstallationFailed, this, new GenericEventArgs<InstallationInfo> { Argument = installationInfo }, _logger);
 
                 throw;
             }
