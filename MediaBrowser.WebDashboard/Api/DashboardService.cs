@@ -131,6 +131,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="userManager">The user manager.</param>
         /// <param name="appHost">The app host.</param>
         /// <param name="libraryManager">The library manager.</param>
+        /// <param name="serverConfigurationManager">The server configuration manager.</param>
         public DashboardService(ITaskManager taskManager, IUserManager userManager, IServerApplicationHost appHost, ILibraryManager libraryManager, IServerConfigurationManager serverConfigurationManager)
         {
             _taskManager = taskManager;
@@ -320,47 +321,6 @@ namespace MediaBrowser.WebDashboard.Api
         private Stream GetRawResourceStream(string path)
         {
             return new FileStream(GetDashboardResourcePath(path), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, StreamDefaults.DefaultFileStreamBufferSize, true);
-
-            // This code is used when the files are embedded resources
-            //return GetType().Assembly.GetManifestResourceStream("MediaBrowser.WebDashboard.Html." + ConvertUrlToResourcePath(path));
-        }
-
-        /// <summary>
-        /// Converts the URL to a manifest resource path.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <returns>System.String.</returns>
-        private string ConvertUrlToResourcePath(string url)
-        {
-            var parts = url.Split('/');
-            var normalizedParts = new string[parts.Length];
-
-            for (var i = 0; i < parts.Length; i++)
-            {
-                // We have to do some tricky string replacements for all parts of the path except the last
-                if (i < parts.Length - 1)
-                {
-                    // Find the index of the first period as well as the first dash
-                    var periodIndex = parts[i].IndexOf('.');
-                    var slashIndex = parts[i].IndexOf('-');
-
-                    // Replace all periods with "._" and dashes with "_"
-                    normalizedParts[i] = parts[i].Replace(".", "._").Replace("-", "_");
-
-                    // If the first period occurred before the first slash, change it back from "._" to just "."
-                    if (periodIndex < slashIndex)
-                    {
-                        var regex = new Regex("\\._");
-                        normalizedParts[i] = regex.Replace(normalizedParts[i], ".", 1);
-                    }
-                }
-                else
-                {
-                    normalizedParts[i] = parts[i];
-                }
-            }
-
-            return string.Join(".", normalizedParts);
         }
 
         /// <summary>
