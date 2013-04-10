@@ -78,6 +78,8 @@
 
         var html = "";
 
+        html += '<ul data-role="listview" data-inset="true" data-auto-enhanced="false" data-split-icon="Play">';
+
         var currentCategory;
 
         for (var i = 0, length = tasks.length; i < length; i++) {
@@ -141,7 +143,9 @@
             html += "</li>";
         }
 
-        $('#ulScheduledTasks', page).html(html).listview('refresh');
+        html += "</ul>";
+
+        $('#divScheduledTasks', page).html(html).trigger('create');
     },
 
     startTask: function (id) {
