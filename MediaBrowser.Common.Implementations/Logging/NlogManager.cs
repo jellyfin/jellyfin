@@ -52,10 +52,11 @@ namespace MediaBrowser.Common.Implementations.Logging
         /// <param name="level">The level.</param>
         private void AddFileTarget(string path, LogSeverity level)
         {
-            var logFile = new FileTarget();
-
-            logFile.FileName = path;
-            logFile.Layout = "${longdate}, ${level}, ${logger}, ${message}";
+            var logFile = new FileTarget
+            {
+                FileName = path,
+                Layout = "${longdate}, ${level}, ${logger}, ${message}"
+            };
 
             RemoveTarget("ApplicationLogFile");
             logFile.Name = "ApplicationLogFile";

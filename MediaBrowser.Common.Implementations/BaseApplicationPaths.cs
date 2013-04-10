@@ -45,7 +45,7 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// Gets the path to the system folder
         /// </summary>
-        public string ProgramSystemPath { get { return Path.Combine(ProgramDataPath, "System"); }}
+        public string ProgramSystemPath { get { return Path.Combine(ProgramDataPath, "System"); } }
 
         /// <summary>
         /// The _data directory
@@ -291,7 +291,7 @@ namespace MediaBrowser.Common.Implementations
         /// Gets the path to the application's ProgramDataFolder
         /// </summary>
         /// <returns>System.String.</returns>
-       private string GetProgramDataPath()
+        private string GetProgramDataPath()
         {
             var programDataPath = _useDebugPath ? ConfigurationManager.AppSettings["DebugProgramDataPath"] : Path.Combine(ConfigurationManager.AppSettings["ReleaseProgramDataPath"], ConfigurationManager.AppSettings["ProgramDataFolderName"]);
 
@@ -303,11 +303,16 @@ namespace MediaBrowser.Common.Implementations
                 var path = Assembly.GetExecutingAssembly().Location;
                 path = Path.GetDirectoryName(path);
 
+                if (string.IsNullOrEmpty(path))
+                {
+                    throw new ApplicationException("Unable to determine running assembly location");
+                }
+
                 programDataPath = Path.Combine(path, programDataPath);
 
                 programDataPath = Path.GetFullPath(programDataPath);
             }
-            
+
             if (!Directory.Exists(programDataPath))
             {
                 Directory.CreateDirectory(programDataPath);

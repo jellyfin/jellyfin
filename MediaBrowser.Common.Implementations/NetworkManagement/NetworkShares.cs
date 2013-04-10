@@ -45,8 +45,11 @@ namespace MediaBrowser.Common.Implementations.NetworkManagement
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="Server"></param>
-        /// <param name="shi"></param>
+        /// <param name="server">The server.</param>
+        /// <param name="netName">Name of the net.</param>
+        /// <param name="path">The path.</param>
+        /// <param name="shareType">Type of the share.</param>
+        /// <param name="remark">The remark.</param>
         public Share(string server, string netName, string path, ShareType shareType, string remark)
         {
             if (ShareType.Special == shareType && "IPC$" == netName)
@@ -423,9 +426,9 @@ namespace MediaBrowser.Common.Implementations.NetworkManagement
             int nRet = 0;
             ushort entriesRead, totalEntries;
 
-            Type t = typeof(SHARE_INFO_50);
-            int size = Marshal.SizeOf(t);
-            ushort cbBuffer = (ushort)(MAX_SI50_ENTRIES * size);
+            var t = typeof(SHARE_INFO_50);
+            var size = Marshal.SizeOf(t);
+            var cbBuffer = (ushort)(MAX_SI50_ENTRIES * size);
             //On Win9x, must allocate buffer before calling API
             IntPtr pBuffer = Marshal.AllocHGlobal(cbBuffer);
 
@@ -448,16 +451,16 @@ namespace MediaBrowser.Common.Implementations.NetworkManagement
                 {
                     for (int i = 0, lpItem = pBuffer.ToInt32(); i < entriesRead; i++, lpItem += size)
                     {
-                        IntPtr pItem = new IntPtr(lpItem);
+                        var pItem = new IntPtr(lpItem);
 
                         if (1 == level)
                         {
-                            SHARE_INFO_1_9x si = (SHARE_INFO_1_9x)Marshal.PtrToStructure(pItem, t);
+                            var si = (SHARE_INFO_1_9x)Marshal.PtrToStructure(pItem, t);
                             shares.Add(si.NetName, string.Empty, si.ShareType, si.Remark);
                         }
                         else
                         {
-                            SHARE_INFO_50 si = (SHARE_INFO_50)Marshal.PtrToStructure(pItem, t);
+                            var si = (SHARE_INFO_50)Marshal.PtrToStructure(pItem, t);
                             shares.Add(si.NetName, si.Path, si.ShareType, si.Remark);
                         }
                     }
@@ -542,7 +545,7 @@ namespace MediaBrowser.Common.Implementations.NetworkManagement
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="Server"></param>
+        /// <param name="server">The server.</param>
         public ShareCollection(string server)
         {
             _server = server;
@@ -598,9 +601,9 @@ namespace MediaBrowser.Common.Implementations.NetworkManagement
 
                 Share match = null;
 
-                for (int i = 0; i < InnerList.Count; i++)
+                foreach (object t in InnerList)
                 {
-                    Share s = (Share)InnerList[i];
+                    var s = (Share)t;
 
                     if (s.IsFileSystem && s.MatchesPath(path))
                     {
@@ -608,9 +611,9 @@ namespace MediaBrowser.Common.Implementations.NetworkManagement
                         if (null == match)
                             match = s;
 
-                        // If this has a longer path,
-                        // and this is a disk share or match is a special share, 
-                        // then this is a better match
+                            // If this has a longer path,
+                            // and this is a disk share or match is a special share, 
+                            // then this is a better match
                         else if (match.Path.Length < s.Path.Length)
                         {
                             if (ShareType.Disk == s.ShareType || ShareType.Disk != match.ShareType)

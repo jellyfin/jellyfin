@@ -56,7 +56,17 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <param name="taskManager">The task manager.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="serverManager">The server manager.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// scheduledTask
+        /// or
+        /// applicationPaths
+        /// or
+        /// taskManager
+        /// or
+        /// jsonSerializer
+        /// or
+        /// logger
+        /// </exception>
         public ScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, IJsonSerializer jsonSerializer, ILogger logger)
         {
             if (scheduledTask == null)
@@ -217,7 +227,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _triggers, ref _triggersInitialized, ref _triggersSyncLock, () => LoadTriggers());
+                LazyInitializer.EnsureInitialized(ref _triggers, ref _triggersInitialized, ref _triggersSyncLock, LoadTriggers);
 
                 return _triggers;
             }
