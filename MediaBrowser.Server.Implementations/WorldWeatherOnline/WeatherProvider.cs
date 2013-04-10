@@ -33,11 +33,12 @@ namespace MediaBrowser.Server.Implementations.WorldWeatherOnline
         /// The _HTTP client
         /// </summary>
         private IHttpClient HttpClient { get; set; }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="WeatherProvider" /> class.
         /// </summary>
         /// <param name="jsonSerializer">The json serializer.</param>
+        /// <param name="httpClient">The HTTP client.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">logger</exception>
         public WeatherProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogger logger)

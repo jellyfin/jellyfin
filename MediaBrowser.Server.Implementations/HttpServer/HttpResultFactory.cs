@@ -598,7 +598,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// </summary>
         /// <param name="hasOptions">The has options.</param>
         /// <param name="responseHeaders">The response headers.</param>
-        private void AddResponseHeaders(IHasOptions hasOptions, IDictionary<string, string> responseHeaders)
+        private void AddResponseHeaders(IHasOptions hasOptions, IEnumerable<KeyValuePair<string, string>> responseHeaders)
         {
             foreach (var item in responseHeaders)
             {

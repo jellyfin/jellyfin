@@ -25,12 +25,13 @@ namespace MediaBrowser.Server.Implementations.Udp
         private readonly INetworkManager _networkManager;
 
         private readonly IServerConfigurationManager _serverConfigurationManager;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpServer" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="networkManager">The network manager.</param>
+        /// <param name="serverConfigurationManager">The server configuration manager.</param>
         public UdpServer(ILogger logger, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager)
         {
             _logger = logger;
@@ -41,10 +42,10 @@ namespace MediaBrowser.Server.Implementations.Udp
         /// <summary>
         /// Raises the <see cref="E:MessageReceived" /> event.
         /// </summary>
-        /// <param name="e">The <see cref="UdpMessageReceivedEventArgs" /> instance containing the event data.</param>
+        /// <param name="e">The <see cref="UdpMessageReceivedEventArgs"/> instance containing the event data.</param>
         private async void OnMessageReceived(UdpMessageReceivedEventArgs e)
         {
-            var context = "Server";
+            const string context = "Server";
 
             var expectedMessage = String.Format("who is MediaBrowser{0}?", context);
             var expectedMessageBytes = Encoding.UTF8.GetBytes(expectedMessage);

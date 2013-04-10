@@ -84,6 +84,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
         /// Sets the provider id from path.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="path">The path.</param>
         private void SetProviderIdFromPath(Series item, string path)
         {
             var justName = Path.GetFileName(path);

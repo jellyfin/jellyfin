@@ -18,24 +18,19 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
     public class PluginUpdateTask : IScheduledTask
     {
         /// <summary>
-        /// The _kernel
-        /// </summary>
-        private readonly Kernel _kernel;
-        /// <summary>
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
 
-        private IInstallationManager _installationManager;
+        private readonly IInstallationManager _installationManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginUpdateTask" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
-        public PluginUpdateTask(Kernel kernel, ILogger logger, IInstallationManager installationManager)
+        /// <param name="installationManager">The installation manager.</param>
+        public PluginUpdateTask(ILogger logger, IInstallationManager installationManager)
         {
-            _kernel = kernel;
             _logger = logger;
             _installationManager = installationManager;
         }
@@ -78,7 +73,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
                 try
                 {
-                    await _installationManager.InstallPackage(i, new Progress<double> { }, cancellationToken).ConfigureAwait(false);
+                    await _installationManager.InstallPackage(i, new Progress<double>(), cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {

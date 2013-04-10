@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
@@ -86,10 +85,7 @@ namespace MediaBrowser.Server.Implementations.Providers
         void configurationManager_ConfigurationUpdated(object sender, EventArgs e)
         {
             // Validate currently executing providers, in the background
-            Task.Run(() =>
-            {
-                ValidateCurrentlyRunningProviders();
-            });
+            Task.Run(() => ValidateCurrentlyRunningProviders());
         }
 
         /// <summary>
