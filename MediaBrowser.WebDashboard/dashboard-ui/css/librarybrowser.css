@@ -183,5 +183,6 @@
     right: 0;
     text-align: center;
     background-color: #008FBB;
-    padding: 2px 10px;
+    padding: 3px 10px;
+    border-bottom-left-radius: 10px;
 }
