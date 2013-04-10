@@ -1,25 +1,28 @@
-﻿var Playlist = (function() {
+﻿(function (window) {
 
-    var self = this;
+    function playlist() {
+        var self = this;
 
-    self.queue = [];
+        self.queue = [];
 
-    self.add = function(item) {
+        self.add = function (item) {
 
-        queue.push(item);
-    };
+            queue.push(item);
+        };
 
-    self.remove = function (index) {
+        self.remove = function (index) {
 
-        queue.splice(index, 1);
-    };
+            queue.splice(index, 1);
+        };
 
-    self.play = function (index) {
-        
-        MediaPlayer.play(queue[index]);
-        queue.shift();
-    };
+        self.play = function (index) {
 
-    return self;
+            MediaPlayer.play(queue[index]);
+            queue.shift();
+        };
 
-})();
+        return self;
+    }
+
+    window.Playlist = new playlist();
+})(window);
