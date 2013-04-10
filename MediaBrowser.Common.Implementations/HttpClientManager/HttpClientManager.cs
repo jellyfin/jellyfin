@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-using System.Net.Http.Headers;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
@@ -8,6 +6,7 @@ using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Cache;
@@ -214,21 +213,20 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         {
             var tempFile = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".tmp");
 
-            return GetTempFile(options, tempFile, 0);
+            return GetTempFile(options, tempFile);
         }
 
         protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
+
         /// <summary>
         /// Gets the temp file.
         /// </summary>
         /// <param name="options">The options.</param>
         /// <param name="tempFile">The temp file.</param>
-        /// <param name="resumeCount">The resume count.</param>
         /// <returns>Task{System.String}.</returns>
         /// <exception cref="System.ArgumentNullException">progress</exception>
         /// <exception cref="HttpException"></exception>
-        private async Task<string> GetTempFile(HttpRequestOptions options, string tempFile, int resumeCount)
+        private async Task<string> GetTempFile(HttpRequestOptions options, string tempFile)
         {
             ValidateParams(options.Url, options.CancellationToken);
 

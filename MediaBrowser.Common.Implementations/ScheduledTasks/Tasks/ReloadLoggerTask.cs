@@ -19,11 +19,6 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// <value>The log manager.</value>
         private ILogManager LogManager { get; set; }
         /// <summary>
-        /// Gets or sets the logger.
-        /// </summary>
-        /// <value>The logger.</value>
-        private ILogger Logger { get; set; }
-        /// <summary>
         /// Gets or sets the configuration manager.
         /// </summary>
         /// <value>The configuration manager.</value>
@@ -33,12 +28,10 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// Initializes a new instance of the <see cref="ReloadLoggerFileTask" /> class.
         /// </summary>
         /// <param name="logManager">The logManager.</param>
-        /// <param name="logger">The logger.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        public ReloadLoggerFileTask(ILogManager logManager, ILogger logger, IConfigurationManager configurationManager)
+        public ReloadLoggerFileTask(ILogManager logManager, IConfigurationManager configurationManager)
         {
             LogManager = logManager;
-            Logger = logger;
             ConfigurationManager = configurationManager;
         }
 

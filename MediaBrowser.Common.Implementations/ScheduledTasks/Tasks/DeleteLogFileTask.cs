@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,21 +19,14 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// </summary>
         /// <value>The configuration manager.</value>
         private IConfigurationManager ConfigurationManager { get; set; }
-        /// <summary>
-        /// Gets or sets the logger.
-        /// </summary>
-        /// <value>The logger.</value>
-        private ILogger Logger { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeleteLogFileTask" /> class.
         /// </summary>
         /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="logger">The logger.</param>
-        public DeleteLogFileTask(IConfigurationManager configurationManager, ILogger logger)
+        public DeleteLogFileTask(IConfigurationManager configurationManager)
         {
             ConfigurationManager = configurationManager;
-            Logger = logger;
         }
 
         /// <summary>

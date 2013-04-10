@@ -308,11 +308,7 @@ namespace MediaBrowser.Common.Implementations.NetworkManagement
             //check if we have an IPv6 or ports
             if (values.Length <= 2) // ipv4 or hostname
             {
-                if (values.Length == 1)
-                    //no port is specified, default
-                    port = defaultport;
-                else
-                    port = GetPort(values[1]);
+                port = values.Length == 1 ? defaultport : GetPort(values[1]);
 
                 //try to use the address as IPv4, otherwise get hostname
                 if (!IPAddress.TryParse(values[0], out ipaddy))

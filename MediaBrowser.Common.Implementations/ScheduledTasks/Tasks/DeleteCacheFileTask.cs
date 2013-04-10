@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,21 +19,14 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// </summary>
         /// <value>The application paths.</value>
         private IApplicationPaths ApplicationPaths { get; set; }
-        /// <summary>
-        /// Gets or sets the logger.
-        /// </summary>
-        /// <value>The logger.</value>
-        private ILogger Logger { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeleteCacheFileTask" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
-        /// <param name="logger">The logger.</param>
-        public DeleteCacheFileTask(IApplicationPaths appPaths, ILogger logger)
+        public DeleteCacheFileTask(IApplicationPaths appPaths)
         {
             ApplicationPaths = appPaths;
-            Logger = logger;
         }
 
         /// <summary>

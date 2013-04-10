@@ -149,7 +149,7 @@ namespace MediaBrowser.Common.Implementations
         protected IConfigurationManager ConfigurationManager { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BaseApplicationHost" /> class.
+        /// Initializes a new instance of the <see cref="BaseApplicationHost{TApplicationPathsType}"/> class.
         /// </summary>
         protected BaseApplicationHost()
         {
