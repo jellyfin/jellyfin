@@ -82,6 +82,8 @@
                 html += LibraryBrowser.getNewIndicatorHtml(item);
             }
 
+            html += LibraryBrowser.getProgressBarHtml(item);
+
             html += "</a></div>";
         }
 
@@ -161,6 +163,8 @@
                 html += LibraryBrowser.getNewIndicatorHtml(item);
             }
 
+            html += LibraryBrowser.getProgressBarHtml(item);
+
             html += "</a></div>";
         }
 
@@ -238,102 +242,116 @@
         return html;
     },
 
-	getSeriesPosterViewHtml: function (options) {
+    getSeriesPosterViewHtml: function (options) {
 
-		var items = options.items;
+        var items = options.items;
 
-		var primaryImageAspectRatio = options.useAverageAspectRatio ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
+        var primaryImageAspectRatio = options.useAverageAspectRatio ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
 
-		var html = "";
+        var html = "";
 
-		for (var i = 0, length = items.length; i < length; i++) {
-			var item = items[i];
+        for (var i = 0, length = items.length; i < length; i++) {
+            var item = items[i];
 
-			var hasPrimaryImage = item.ImageTags && item.ImageTags.Primary;
+            var hasPrimaryImage = item.ImageTags && item.ImageTags.Primary;
 
-			var href = item.url || "tvseries.html?id=" + item.Id;
+            var href = item.url || "tvseries.html?id=" + item.Id;
 
-			var showText = options.showTitle || !hasPrimaryImage;
+            var showText = options.showTitle || !hasPrimaryImage;
 
-			var cssClass = showText ? "posterViewItem" : "posterViewItem posterViewItemWithNoText";
+            var cssClass = showText ? "posterViewItem" : "posterViewItem posterViewItemWithNoText";
 
-			html += "<div class='" + cssClass + "'><a href='" + href + "'>";
+            html += "<div class='" + cssClass + "'><a href='" + href + "'>";
 
-			if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
-				html += "<img src='" + ApiClient.getImageUrl(item.Id, {
-					type: "Backdrop",
-					height: 198,
-					width: 352,
-					tag: item.BackdropImageTags[0]
+            if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
+                html += "<img src='" + ApiClient.getImageUrl(item.Id, {
+                    type: "Backdrop",
+                    height: 198,
+                    width: 352,
+                    tag: item.BackdropImageTags[0]
 
-				}) + "' />";
-			} else if (hasPrimaryImage) {
+                }) + "' />";
+            } else if (hasPrimaryImage) {
 
-				var height = 300;
-				var width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
+                var height = 300;
+                var width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
 
-				html += "<img src='" + ApiClient.getImageUrl(item.Id, {
-					type: "Primary",
-					height: height,
-					width: width,
-					tag: item.ImageTags.Primary
+                html += "<img src='" + ApiClient.getImageUrl(item.Id, {
+                    type: "Primary",
+                    height: height,
+                    width: width,
+                    tag: item.ImageTags.Primary
 
-				}) + "' />";
+                }) + "' />";
 
-			} else if (item.BackdropImageTags && item.BackdropImageTags.length) {
-				html += "<img src='" + ApiClient.getImageUrl(item.Id, {
-					type: "Backdrop",
-					height: 198,
-					width: 352,
-					tag: item.BackdropImageTags[0]
+            } else if (item.BackdropImageTags && item.BackdropImageTags.length) {
+                html += "<img src='" + ApiClient.getImageUrl(item.Id, {
+                    type: "Backdrop",
+                    height: 198,
+                    width: 352,
+                    tag: item.BackdropImageTags[0]
 
-				}) + "' />";
-			}
-			else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
+                }) + "' />";
+            }
+            else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
 
-				html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/audio.png' />";
-			}
-			else if (item.MediaType == "Video" || item.Type == "Season" || item.Type == "Series") {
+                html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/audio.png' />";
+            }
+            else if (item.MediaType == "Video" || item.Type == "Season" || item.Type == "Series") {
 
-				html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/video.png' />";
-			}
-			else {
+                html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/video.png' />";
+            }
+            else {
 
-				html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/collection.png' />";
-			}
+                html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/collection.png' />";
+            }
 
-			if (showText) {
-				html += "<div class='posterViewItemText'>";
-				html += item.Name;
-				html += "</div>";
-			}
+            if (showText) {
+                html += "<div class='posterViewItemText'>";
+                html += item.Name;
+                html += "</div>";
+            }
 
-			if (options.showNewIndicator !== false) {
-				html += LibraryBrowser.getNewIndicatorHtml(item);
-			}
+            if (options.showNewIndicator !== false) {
+                html += LibraryBrowser.getNewIndicatorHtml(item);
+            }
 
-			html += "</a></div>";
-		}
+            html += LibraryBrowser.getProgressBarHtml(item);
 
-		return html;
-	},
+            html += "</a></div>";
+        }
+
+        return html;
+    },
 
     getNewIndicatorHtml: function (item) {
 
         if (item.RecentlyAddedItemCount) {
             return '<div class="posterRibbon">' + item.RecentlyAddedItemCount + ' New</div>';
         }
-        
+
         if (!item.IsFolder) {
 
             var date = item.DateCreated;
-            
+
             if (date && (new Date().getTime() - parseISO8601Date(date).getTime()) < 1209600000) {
                 return "<div class='posterRibbon'>New</div>";
             }
         }
-        
+
         return '';
+    },
+
+    getProgressBarHtml: function (item) {
+
+        return '';
+        var html = '';
+
+        if (item.PlayedPercentage && item.PlayedPercentage < 100) {
+            html += '<progress class="itemProgress" min="0" max="100" value="' + item.PlayedPercentage + '"></progress>';
+        }
+
+        return html;
     },
 
     getAveragePrimaryImageAspectRatio: function (items) {
@@ -459,5 +477,114 @@
         html += '</div>';
 
         return html;
+    },
+
+    getStarRatingHtml: function (item) {
+        var rating = item.CommunityRating;
+
+        var html = "";
+        for (var i = 1; i <= 10; i++) {
+            if (rating < i - 1) {
+                html += "<div class='starRating emptyStarRating'></div>";
+            }
+            else if (rating < i) {
+                html += "<div class='starRating halfStarRating'></div>";
+            }
+            else {
+                html += "<div class='starRating'></div>";
+            }
+        }
+
+        return html;
+    },
+
+    getUserRatingHtml: function (item) {
+        
+        var html = '';
+
+        var userData = item.UserData || {};
+
+        if (typeof userData.Likes == "undefined") {
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" />';
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" />';
+        } else if (userData.Likes) {
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" />';
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_on.png" alt="Liked" title="Like" />';
+        } else {
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" />';
+            html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" />';
+        }
+
+        if (userData.IsFavorite) {
+            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" />';
+        } else {
+            html += '<img class="imgUserItemRating" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" />';
+        }
+
+        return html;
+    },
+    
+    getDetailImageHtml: function(item) {
+        var imageTags = item.ImageTags || {};
+
+        var html = '';
+
+        var url;
+        var useBackgroundColor;
+
+        if (imageTags.Primary) {
+
+            url = ApiClient.getImageUrl(item.Id, {
+                type: "Primary",
+                width: 800,
+                tag: item.ImageTags.Primary
+            });
+        }
+        else if (item.BackdropImageTags && item.BackdropImageTags.length) {
+
+            url = ApiClient.getImageUrl(item.Id, {
+                type: "Backdrop",
+                width: 800,
+                tag: item.BackdropImageTags[0]
+            });
+        }
+        else if (imageTags.Thumb) {
+
+            url = ApiClient.getImageUrl(item.Id, {
+                type: "Thumb",
+                width: 800,
+                tag: item.ImageTags.Thumb
+            });
+        }
+        else if (imageTags.Disc) {
+
+            url = ApiClient.getImageUrl(item.Id, {
+                type: "Disc",
+                width: 800,
+                tag: item.ImageTags.Disc
+            });
+        }
+        else if (item.MediaType == "Audio") {
+            url = "css/images/items/detail/audio.png";
+            useBackgroundColor = true;
+        }
+        else if (item.MediaType == "Game") {
+            url = "css/images/items/detail/game.png";
+            useBackgroundColor = true;
+        }
+        else {
+            url = "css/images/items/detail/video.png";
+            useBackgroundColor = true;
+        }
+
+        if (url) {
+
+            var style = useBackgroundColor ? "background-color:" + LibraryBrowser.getMetroColor(item.Id) + ";" : "";
+
+            html += "<img class='itemDetailImage' src='" + url + "' style='" + style + "' />";
+        }
+
+        return html;
     }
+
 };

@@ -141,7 +141,7 @@
         }
 
         if (item.CommunityRating) {
-            $('#itemCommunityRating', page).html(BoxsetPage.getStarRating(item)).show().attr('title', item.CommunityRating);
+            $('#itemCommunityRating', page).html(LibraryBrowser.getStarRatingHtml(item)).show().attr('title', item.CommunityRating);
         } else {
             $('#itemCommunityRating', page).hide();
         }
@@ -229,25 +229,6 @@
         } else {
             $('#itemStudios', page).hide();
         }
-    },
-
-    getStarRating: function (item) {
-        var rating = item.CommunityRating;
-
-        var html = "";
-        for (var i = 1; i <= 10; i++) {
-            if (rating < i - 1) {
-                html += "<div class='starRating emptyStarRating'></div>";
-            }
-            else if (rating < i) {
-                html += "<div class='starRating halfStarRating'></div>";
-            }
-            else {
-                html += "<div class='starRating'></div>";
-            }
-        }
-
-        return html;
     },
 
     renderFav: function (item) {

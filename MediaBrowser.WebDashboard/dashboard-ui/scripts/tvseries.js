@@ -1,345 +1,223 @@
+(function ($, document, LibraryBrowser) {
+
+    var currentItem;
+
+    function reload(page) {
+
+        var id = getParameterByName('id');
+
+        Dashboard.showLoadingMsg();
+
+        ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
+
+            currentItem = item;
+
+            var name = item.Name;
+
+            Dashboard.setPageTitle(name);
+
+            renderImage(page, item);
+
+            renderDetails(page, item);
+
+            $('#itemName', page).html(name);
+
+            renderFavorites(page, item);
+            LibraryBrowser.renderLinks(item);
+
+            Dashboard.hideLoadingMsg();
+        });
+    }
+
+    function renderImage(page, item) {
+
+        $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item));
+    }
+
+    function renderDetails(page, item) {
+        if (item.Taglines && item.Taglines.length) {
+            $('#itemTagline', page).html(item.Taglines[0]).show();
+        } else {
+            $('#itemTagline', page).hide();
+        }
+
+        if (item.Overview || item.OverviewHtml) {
+            var overview = item.OverviewHtml || item.Overview;
+
+            $('#itemOverview', page).html(overview).show();
+            $('#itemOverview a').each(function () {
+                $(this).attr("target", "_blank");
+            });
+        } else {
+            $('#itemOverview', page).hide();
+        }
+
+        if (item.CommunityRating) {
+            $('#itemCommunityRating', page).html(LibraryBrowser.getStarRatingHtml(item)).show().attr('title', item.CommunityRating);
+        } else {
+            $('#itemCommunityRating', page).hide();
+        }
+
+        var miscInfo = [];
+
+        if (item.ProductionYear) {
+            miscInfo.push(item.ProductionYear);
+        }
+
+        if (item.OfficialRating) {
+            miscInfo.push(item.OfficialRating);
+        }
+
+        if (item.RunTimeTicks) {
+
+            var minutes = item.RunTimeTicks / 600000000;
+
+            minutes = minutes || 1;
+
+            miscInfo.push(parseInt(minutes) + "min");
+        }
+
+        if (item.DisplayMediaType) {
+            miscInfo.push(item.DisplayMediaType);
+        }
+
+        if (item.VideoFormat && item.VideoFormat !== 'Standard') {
+            miscInfo.push(item.VideoFormat);
+        }
+
+        $('#itemMiscInfo', page).html(miscInfo.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'));
+
+        renderGenres(page, item);
+        renderStudios(page, item);
+    }
+
+    function renderStudios(page, item) {
+        if (item.Studios && item.Studios.length) {
+            var elem = $('#itemStudios', page).show();
+
+            var html = 'Studios:&nbsp;&nbsp;';
+
+            for (var i = 0, length = item.Studios.length; i < length; i++) {
+
+                if (i > 0) {
+                    html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
+                }
+
+                html += '<a href="itembynamedetails.html?studio=' + item.Studios[i] + '">' + item.Studios[i] + '</a>';
+            }
+
+            elem.html(html).trigger('create');
+
+
+        } else {
+            $('#itemStudios', page).hide();
+        }
+    }
+
+    function renderGenres(page, item) {
+        
+        if (item.Genres && item.Genres.length) {
+            var elem = $('#itemGenres', page).show();
+
+            var html = 'Genres:&nbsp;&nbsp;';
+
+            for (var i = 0, length = item.Genres.length; i < length; i++) {
+
+                if (i > 0) {
+                    html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
+                }
+
+                html += '<a href="itembynamedetails.html?genre=' + item.Genres[i] + '">' + item.Genres[i] + '</a>';
+            }
+
+            elem.html(html).trigger('create');
+
+
+        } else {
+            $('#itemGenres', page).hide();
+        }
+    }
+    
+    function renderFavorites(page, item) {
+        $('#itemRatings', page).html(LibraryBrowser.getUserRatingHtml(item));
+    }
+
+    $(document).on('pageshow', "#tvSeriesPage", function () {
+
+        reload(this);
+
+    }).on('pagehide', "#tvSeriesPage", function () {
+
+        currentItem = null;
+    });
+
+
+})(jQuery, document, LibraryBrowser);
+
 var tvSeriesPage = {
 
-	onPageShow: function () {
+    setFavorite: function () {
+        var item = tvSeriesPage.item;
 
-		tvSeriesPage.reload();
-	},
+        item.UserData = item.UserData || {};
 
-	onPageHide: function () {
+        var setting = !item.UserData.IsFavorite;
+        item.UserData.IsFavorite = setting;
 
-		tvSeriesPage.item = null;
-	},
+        ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), item.Id, setting);
 
-	reload: function () {
-		var id = getParameterByName('id');
+        renderFavorites(page, item);
+    },
 
-		Dashboard.showLoadingMsg();
+    setLike: function () {
 
-		ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(tvSeriesPage.renderItem);
-	},
+        var item = tvSeriesPage.item;
 
-	renderItem: function (item) {
+        item.UserData = item.UserData || {};
 
-		tvSeriesPage.item = item;
+        item.UserData.Likes = true;
 
-		var page = $.mobile.activePage;
+        ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), item.Id, true);
 
-		tvSeriesPage.item = item;
+        renderFavorites(page, item);
+    },
 
-		var name = item.Name;
+    clearLike: function () {
 
-		if (item.IndexNumber != null) {
-			name = item.IndexNumber + " - " + name;
-		}
-		if (item.ParentIndexNumber != null) {
-			name = item.ParentIndexNumber + "." + name;
-		}
+        var item = tvSeriesPage.item;
 
-		Dashboard.setPageTitle(name);
+        item.UserData = item.UserData || {};
 
-		tvSeriesPage.renderImage(item);
-		tvSeriesPage.renderOverviewBlock(item);
+        item.UserData.Likes = undefined;
 
-		$('#itemName', page).html(name);
+        ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), item.Id);
 
-		if (item.SeriesName || item.Album) {
-			var series_name = item.SeriesName || item.Album;
-			$('#seriesName', page).html(series_name).show();
-		}
+        renderFavorites(page, item);
+    },
 
-		tvSeriesPage.renderFav(item);
-		LibraryBrowser.renderLinks(item);
+    setDislike: function () {
+        var item = tvSeriesPage.item;
 
-		Dashboard.hideLoadingMsg();
-	},
+        item.UserData = item.UserData || {};
 
-	renderImage: function (item) {
+        item.UserData.Likes = false;
 
-		var page = $.mobile.activePage;
+        ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), item.Id, false);
 
-		var imageTags = item.ImageTags || {};
+        renderFavorites(page, item);
+    },
 
-		var html = '';
+    setPlayed: function () {
+        var item = tvSeriesPage.item;
 
-		var url;
-		var useBackgroundColor;
+        item.UserData = item.UserData || {};
 
-		if (imageTags.Primary) {
+        var setting = !item.UserData.Played;
+        item.UserData.Played = setting;
 
-			url = ApiClient.getImageUrl(item.Id, {
-				type: "Primary",
-				width: 800,
-				tag: item.ImageTags.Primary
-			});
-		}
-		else if (item.BackdropImageTags && item.BackdropImageTags.length) {
+        ApiClient.updatePlayedStatus(Dashboard.getCurrentUserId(), item.Id, setting);
 
-			url = ApiClient.getImageUrl(item.Id, {
-				type: "Backdrop",
-				width: 800,
-				tag: item.BackdropImageTags[0]
-			});
-		}
-		else if (imageTags.Thumb) {
-
-			url = ApiClient.getImageUrl(item.Id, {
-				type: "Thumb",
-				width: 800,
-				tag: item.ImageTags.Thumb
-			});
-		}
-		else if (imageTags.Disc) {
-
-			url = ApiClient.getImageUrl(item.Id, {
-				type: "Disc",
-				width: 800,
-				tag: item.ImageTags.Disc
-			});
-		}
-		else if (item.MediaType == "Audio") {
-			url = "css/images/items/detail/audio.png";
-			useBackgroundColor = true;
-		}
-		else if (item.MediaType == "Game") {
-			url = "css/images/items/detail/game.png";
-			useBackgroundColor = true;
-		}
-		else {
-			url = "css/images/items/detail/video.png";
-			useBackgroundColor = true;
-		}
-
-		if (url) {
-
-			var style = useBackgroundColor ? "background-color:" + LibraryBrowser.getMetroColor(item.Id) + ";" : "";
-
-			html += "<img class='itemDetailImage' src='" + url + "' style='" + style + "' />";
-		}
-
-		$('#itemImage', page).html(html);
-	},
-
-	renderOverviewBlock: function (item) {
-
-		var page = $.mobile.activePage;
-
-		if (item.Taglines && item.Taglines.length) {
-			$('#itemTagline', page).html(item.Taglines[0]).show();
-		} else {
-			$('#itemTagline', page).hide();
-		}
-
-		if (item.Overview || item.OverviewHtml) {
-			var overview = item.OverviewHtml || item.Overview;
-
-			$('#itemOverview', page).html(overview).show();
-			$('#itemOverview a').each(function () {
-				$(this).attr("target", "_blank");
-			});
-		} else {
-			$('#itemOverview', page).hide();
-		}
-
-		if (item.CommunityRating) {
-			$('#itemCommunityRating', page).html(tvSeriesPage.getStarRating(item)).show().attr('title', item.CommunityRating);
-		} else {
-			$('#itemCommunityRating', page).hide();
-		}
-
-		var miscInfo = [];
-
-		if (item.ProductionYear) {
-			miscInfo.push(item.ProductionYear);
-		}
-
-		if (item.OfficialRating) {
-			miscInfo.push(item.OfficialRating);
-		}
-
-		if (item.RunTimeTicks) {
-
-			var minutes = item.RunTimeTicks / 600000000;
-
-			minutes = minutes || 1;
-
-			miscInfo.push(parseInt(minutes) + "min");
-		}
-
-		if (item.DisplayMediaType) {
-			miscInfo.push(item.DisplayMediaType);
-		}
-
-		if (item.VideoFormat && item.VideoFormat !== 'Standard') {
-			miscInfo.push(item.VideoFormat);
-		}
-
-		$('#itemMiscInfo', page).html(miscInfo.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'));
-
-		tvSeriesPage.renderGenres(item);
-		tvSeriesPage.renderStudios(item);
-	},
-
-	renderGenres: function (item) {
-
-		var page = $.mobile.activePage;
-
-		if (item.Genres && item.Genres.length) {
-			var elem = $('#itemGenres', page).show();
-
-			var html = 'Genres:&nbsp;&nbsp;';
-
-			for (var i = 0, length = item.Genres.length; i < length; i++) {
-
-				if (i > 0) {
-					html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
-				}
-
-				html += '<a href="itembynamedetails.html?genre=' + item.Genres[i] + '">' + item.Genres[i] + '</a>';
-			}
-
-			elem.html(html).trigger('create');
-
-
-		} else {
-			$('#itemGenres', page).hide();
-		}
-	},
-
-	renderStudios: function (item) {
-
-		var page = $.mobile.activePage;
-
-		if (item.Studios && item.Studios.length) {
-			var elem = $('#itemStudios', page).show();
-
-			var html = 'Studios:&nbsp;&nbsp;';
-
-			for (var i = 0, length = item.Studios.length; i < length; i++) {
-
-				if (i > 0) {
-					html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
-				}
-
-				html += '<a href="itembynamedetails.html?studio=' + item.Studios[i] + '">' + item.Studios[i] + '</a>';
-			}
-
-			elem.html(html).trigger('create');
-
-
-		} else {
-			$('#itemStudios', page).hide();
-		}
-	},
-
-	getStarRating: function (item) {
-		var rating = item.CommunityRating;
-
-		var html = "";
-		for (var i = 1; i <= 10; i++) {
-			if (rating < i - 1) {
-				html += "<div class='starRating emptyStarRating'></div>";
-			}
-			else if (rating < i) {
-				html += "<div class='starRating halfStarRating'></div>";
-			}
-			else {
-				html += "<div class='starRating'></div>";
-			}
-		}
-
-		return html;
-	},
-
-	renderFav: function (item) {
-		var html = '';
-		var page = $.mobile.activePage;
-
-		var userData = item.UserData || {};
-
-		if (typeof userData.Likes == "undefined") {
-			html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.setDislike();" />';
-			html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="ItemDetailPage.setLike();" />';
-		} else if (userData.Likes) {
-			html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.setDislike();" />';
-			html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_on.png" alt="Liked" title="Like" onclick="ItemDetailPage.clearLike();" />';
-		} else {
-			html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" onclick="ItemDetailPage.clearLike();" />';
-			html += '<img class="imgUserItemRating" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" onclick="ItemDetailPage.setLike();" />';
-		}
-
-		if (userData.IsFavorite) {
-			html += '<img class="imgUserItemRating" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" onclick="ItemDetailPage.setFavorite();" />';
-		} else {
-			html += '<img class="imgUserItemRating" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" onclick="ItemDetailPage.setFavorite();" />';
-		}
-
-		$('#itemRatings', page).html(html);
-	},
-
-	setFavorite: function () {
-		var item = tvSeriesPage.item;
-
-		item.UserData = item.UserData || {};
-
-		var setting = !item.UserData.IsFavorite;
-		item.UserData.IsFavorite = setting;
-
-		ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), item.Id, setting);
-
-		tvSeriesPage.renderFav(item);
-	},
-
-	setLike: function () {
-
-		var item = tvSeriesPage.item;
-
-		item.UserData = item.UserData || {};
-
-		item.UserData.Likes = true;
-
-		ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), item.Id, true);
-
-		tvSeriesPage.renderFav(item);
-	},
-
-	clearLike: function () {
-
-		var item = tvSeriesPage.item;
-
-		item.UserData = item.UserData || {};
-
-		item.UserData.Likes = undefined;
-
-		ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), item.Id);
-
-		tvSeriesPage.renderFav(item);
-	},
-
-	setDislike: function () {
-		var item = tvSeriesPage.item;
-
-		item.UserData = item.UserData || {};
-
-		item.UserData.Likes = false;
-
-		ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), item.Id, false);
-
-		tvSeriesPage.renderFav(item);
-	},
-
-	setPlayed: function () {
-		var item = tvSeriesPage.item;
-
-		item.UserData = item.UserData || {};
-
-		var setting = !item.UserData.Played;
-		item.UserData.Played = setting;
-
-		ApiClient.updatePlayedStatus(Dashboard.getCurrentUserId(), item.Id, setting);
-
-		tvSeriesPage.renderFav(item);
-	}
+        renderFavorites(page, item);
+    }
 
 };
-
-$(document).on('pageshow', "#tvSeriesPage", BoxsetPage.onPageShow).on('pagehide', "#tvSeriesPage", tvSeriesPage.onPageHide);
