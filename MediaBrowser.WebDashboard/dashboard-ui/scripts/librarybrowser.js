@@ -1,13 +1,13 @@
 ﻿var LibraryBrowser = {
 
-    getDetaultPageSize: function() {
+    getDetaultPageSize: function () {
 
         if (window.location.toString().toLowerCase().indexOf('localhost') != -1) {
             return 100;
         }
         return 25;
     },
-    
+
     getPosterViewHtml: function (options) {
 
         var items = options.items;
@@ -35,7 +35,7 @@
                     height: 198,
                     width: 352,
                     tag: item.BackdropImageTags[0]
-                    
+
                 }) + "' />";
             } else if (hasPrimaryImage) {
 
@@ -47,7 +47,7 @@
                     height: height,
                     width: width,
                     tag: item.ImageTags.Primary
-                    
+
                 }) + "' />";
 
             } else if (item.BackdropImageTags && item.BackdropImageTags.length) {
@@ -56,7 +56,7 @@
                     height: 198,
                     width: 352,
                     tag: item.BackdropImageTags[0]
-                    
+
                 }) + "' />";
             }
             else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
@@ -76,6 +76,10 @@
                 html += "<div class='posterViewItemText'>";
                 html += item.Name;
                 html += "</div>";
+            }
+
+            if (options.showNewIndicator !== false) {
+                html += LibraryBrowser.getNewIndicatorHtml(item);
             }
 
             html += "</a></div>";
@@ -153,6 +157,10 @@
                 html += "</div>";
             }
 
+            if (options.showNewIndicator !== false) {
+                html += LibraryBrowser.getNewIndicatorHtml(item);
+            }
+
             html += "</a></div>";
         }
 
@@ -220,10 +228,32 @@
                 html += "</div>";
             }
 
+            if (options.showNewIndicator !== false) {
+                html += LibraryBrowser.getNewIndicatorHtml(item);
+            }
+
             html += "</a></div>";
         }
 
         return html;
+    },
+
+    getNewIndicatorHtml: function (item) {
+
+        if (item.RecentlyAddedItemCount) {
+            return '<div class="posterRibbon">' + item.RecentlyAddedItemCount + ' New</div>';
+        }
+        
+        if (!item.IsFolder) {
+
+            var date = item.DateCreated;
+            
+            if (date && (new Date().getTime() - parseISO8601Date(date).getTime()) < 1209600000) {
+                return "<div class='posterRibbon'>New</div>";
+            }
+        }
+        
+        return '';
     },
 
     getAveragePrimaryImageAspectRatio: function (items) {

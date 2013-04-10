@@ -175,3 +175,13 @@
 .mediaInfoLabel {
     color: #bbb;
 }
+
+.posterRibbon {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    text-align: center;
+    background-color: #008FBB;
+    padding: 2px 10px;
+}

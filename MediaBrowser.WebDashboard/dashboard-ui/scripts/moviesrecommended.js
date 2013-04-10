@@ -19,7 +19,8 @@
 
             $('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: true
+                useAverageAspectRatio: true,
+                showNewIndicator: false
             }));
 
         });
@@ -59,7 +60,7 @@
             IncludeItemTypes: "Trailer",
             Limit: 5,
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio",
+            Fields: "PrimaryImageAspectRatio,DateCreated",
             Filters: "IsUnplayed"
         };
 

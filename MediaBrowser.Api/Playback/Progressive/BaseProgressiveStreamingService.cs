@@ -135,7 +135,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
             else if (string.Equals(extension, ".mp4", StringComparison.OrdinalIgnoreCase))
             {
-                contentFeatures = "DLNA.ORG_PN=AVC_MP4_BL_L3_SD_AAC";
+                contentFeatures = "DLNA.ORG_PN=MPEG4_P2_SP_AAC";
             }
             else if (string.Equals(extension, ".mpeg", StringComparison.OrdinalIgnoreCase))
             {

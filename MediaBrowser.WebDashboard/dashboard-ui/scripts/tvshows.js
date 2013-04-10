@@ -7,7 +7,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Series",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio,SeriesInfo"
+        Fields: "PrimaryImageAspectRatio,SeriesInfo,ItemCounts,DateCreated"
     };
 
     function getTableHtml(items) {
