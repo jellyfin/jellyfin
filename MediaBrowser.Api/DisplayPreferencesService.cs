@@ -2,7 +2,6 @@
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
 using ServiceStack.ServiceHost;
-using ServiceStack.Text.Controller;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -78,11 +77,6 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Post(UpdateDisplayPreferences request)
         {
-            // We need to parse this manually because we told service stack not to with IRequiresRequestStream
-            // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
-            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
-            var displayPreferencesId = new Guid(pathInfo.GetArgumentValue<string>(1));
-
             // Serialize to json and then back so that the core doesn't see the request dto type
             var displayPreferences = _jsonSerializer.DeserializeFromString<DisplayPreferences>(_jsonSerializer.SerializeToString(request));
 

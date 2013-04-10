@@ -15,7 +15,7 @@ namespace MediaBrowser.Api
     /// Class GetSystemInfo
     /// </summary>
     [Route("/System/Info", "GET")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets information about the server")]
+    [Api(Description = "Gets information about the server")]
     public class GetSystemInfo : IReturn<SystemInfo>
     {
 
@@ -25,13 +25,13 @@ namespace MediaBrowser.Api
     /// Class RestartApplication
     /// </summary>
     [Route("/System/Restart", "POST")]
-    [ServiceStack.ServiceHost.Api(("Restarts the application, if needed"))]
+    [Api(("Restarts the application, if needed"))]
     public class RestartApplication
     {
     }
 
     [Route("/System/Shutdown", "POST")]
-    [ServiceStack.ServiceHost.Api(("Shuts down the application"))]
+    [Api(("Shuts down the application"))]
     public class ShutdownApplication
     {
     }
@@ -40,7 +40,7 @@ namespace MediaBrowser.Api
     /// Class GetConfiguration
     /// </summary>
     [Route("/System/Configuration", "GET")]
-    [ServiceStack.ServiceHost.Api(("Gets application configuration"))]
+    [Api(("Gets application configuration"))]
     public class GetConfiguration : IReturn<ServerConfiguration>
     {
 
@@ -50,7 +50,7 @@ namespace MediaBrowser.Api
     /// Class UpdateConfiguration
     /// </summary>
     [Route("/System/Configuration", "POST")]
-    [ServiceStack.ServiceHost.Api(("Updates application configuration"))]
+    [Api(("Updates application configuration"))]
     public class UpdateConfiguration : ServerConfiguration, IReturnVoid
     {
     }

@@ -13,7 +13,7 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// Class GetScheduledTask
     /// </summary>
     [Route("/ScheduledTasks/{Id}", "GET")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets a scheduled task, by Id")]
+    [Api(Description = "Gets a scheduled task, by Id")]
     public class GetScheduledTask : IReturn<TaskInfo>
     {
         /// <summary>
@@ -28,7 +28,7 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// Class GetScheduledTasks
     /// </summary>
     [Route("/ScheduledTasks", "GET")]
-    [ServiceStack.ServiceHost.Api(Description = "Gets scheduled tasks")]
+    [Api(Description = "Gets scheduled tasks")]
     public class GetScheduledTasks : IReturn<List<TaskInfo>>
     {
 
@@ -38,7 +38,7 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// Class StartScheduledTask
     /// </summary>
     [Route("/ScheduledTasks/Running/{Id}", "POST")]
-    [ServiceStack.ServiceHost.Api(Description = "Starts a scheduled task")]
+    [Api(Description = "Starts a scheduled task")]
     public class StartScheduledTask : IReturnVoid
     {
         /// <summary>
@@ -53,7 +53,7 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// Class StopScheduledTask
     /// </summary>
     [Route("/ScheduledTasks/Running/{Id}", "DELETE")]
-    [ServiceStack.ServiceHost.Api(Description = "Stops a scheduled task")]
+    [Api(Description = "Stops a scheduled task")]
     public class StopScheduledTask : IReturnVoid
     {
         /// <summary>
@@ -68,7 +68,7 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// Class UpdateScheduledTaskTriggers
     /// </summary>
     [Route("/ScheduledTasks/{Id}/Triggers", "POST")]
-    [ServiceStack.ServiceHost.Api(Description = "Updates the triggers for a scheduled task")]
+    [Api(Description = "Updates the triggers for a scheduled task")]
     public class UpdateScheduledTaskTriggers : List<TaskTriggerInfo>, IReturnVoid
     {
         /// <summary>

@@ -137,7 +137,7 @@ namespace MediaBrowser.Api
 
             else if (request.PackageType == PackageType.System || request.PackageType == PackageType.All)
             {
-                var updateCheckResult = _appHost.CheckForApplicationUpdate(CancellationToken.None, new Progress<double> { }).Result;
+                var updateCheckResult = _appHost.CheckForApplicationUpdate(CancellationToken.None, new Progress<double>()).Result;
 
                 if (updateCheckResult.IsUpdateAvailable)
                 {
@@ -202,7 +202,7 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException(string.Format("Package not found: {0}", request.Name));
             }
 
-            Task.Run(() => _installationManager.InstallPackage(package, new Progress<double> { }, CancellationToken.None));
+            Task.Run(() => _installationManager.InstallPackage(package, new Progress<double>(), CancellationToken.None));
         }
 
         /// <summary>
