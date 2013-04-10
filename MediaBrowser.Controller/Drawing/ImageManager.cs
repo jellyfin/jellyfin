@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -7,13 +6,13 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -208,7 +207,7 @@ namespace MediaBrowser.Controller.Drawing
 
                         var outputFormat = originalImage.RawFormat;
 
-                        using (var memoryStream = new MemoryStream { })
+                        using (var memoryStream = new MemoryStream())
                         {
                             // Save to the memory stream
                             thumbnail.Save(outputFormat, memoryStream, quality.Value);

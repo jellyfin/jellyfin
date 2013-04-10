@@ -60,6 +60,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="httpClient">The HTTP client.</param>
+        /// <param name="providerManager">The provider manager.</param>
         public MovieDbProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IHttpClient httpClient, IProviderManager providerManager)
             : base(logManager, configurationManager)
         {
@@ -157,7 +158,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         {
             try
             {
-                using (var json = await httpClient.Get(String.Format(TmdbConfigUrl, ApiKey), MovieDbProvider.Current.MovieDbResourcePool, CancellationToken.None).ConfigureAwait(false))
+                using (var json = await httpClient.Get(String.Format(TmdbConfigUrl, ApiKey), Current.MovieDbResourcePool, CancellationToken.None).ConfigureAwait(false))
                 {
                     return jsonSerializer.DeserializeFromStream<TmdbSettingsResult>(json);
                 }

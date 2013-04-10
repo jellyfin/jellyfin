@@ -1,6 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Controller.Configuration;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -44,17 +42,16 @@ namespace MediaBrowser.Controller.Localization
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private static bool TryAdd<TKey, TValue>(Dictionary<TKey, TValue> dictionary, TKey key, TValue value)
+        private static void TryAdd<TKey, TValue>(Dictionary<TKey, TValue> dictionary, TKey key, TValue value)
         {
             if (dictionary.ContainsKey(key))
             {
-                return false;
+                return;
             }
 
             dictionary.Add(key, value);
-            return true;
         }
-        
+
         /// <summary>
         /// Initializes the specified block unrated.
         /// </summary>
@@ -65,7 +62,7 @@ namespace MediaBrowser.Controller.Localization
             //build our ratings dictionary from the combined local one and us one
             ratingsDef = new RatingsDefinition(Path.Combine(configurationManager.ApplicationPaths.LocalizationPath, "Ratings-" + configurationManager.Configuration.MetadataCountryCode + ".txt"), configurationManager);
             //global value of None
-            var dict = new Dictionary<string, int> {{"None", -1}};
+            var dict = new Dictionary<string, int> { { "None", -1 } };
             foreach (var pair in ratingsDef.RatingsDict)
             {
                 TryAdd(dict, pair.Key, pair.Value);
@@ -85,7 +82,7 @@ namespace MediaBrowser.Controller.Localization
             //and rating reverse lookup dictionary (non-redundant ones)
             ratingsStrings.Clear();
             var lastLevel = -10;
-            ratingsStrings.Add(-1,LocalizedStrings.Instance.GetString("Any"));
+            ratingsStrings.Add(-1, LocalizedStrings.Instance.GetString("Any"));
             foreach (var pair in ratingsDef.RatingsDict.OrderBy(p => p.Value))
             {
                 if (pair.Value > lastLevel)
@@ -147,7 +144,7 @@ namespace MediaBrowser.Controller.Localization
         public static string ToString(int level)
         {
             //return the closest one
-            while (level > 0) 
+            while (level > 0)
             {
                 if (ratingsStrings.ContainsKey(level))
                     return ratingsStrings[level];

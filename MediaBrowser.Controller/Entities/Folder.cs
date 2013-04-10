@@ -4,7 +4,6 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Concurrent;
@@ -714,7 +713,7 @@ namespace MediaBrowser.Controller.Entities
             catch (IOException ex)
             {
                 Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
-                return new List<BaseItem> { };
+                return new List<BaseItem>();
             }
 
             return LibraryManager.ResolvePaths<BaseItem>(fileSystemChildren, this);
@@ -754,12 +753,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // If indexed is false or the indexing function is null
-            if (result == null)
-            {
-                result = ActualChildren.Where(c => c.IsVisible(user));
-            }
-
-            return result;
+            return result ?? (ActualChildren.Where(c => c.IsVisible(user)));
         }
 
         /// <summary>
@@ -799,7 +793,7 @@ namespace MediaBrowser.Controller.Entities
         {
             await base.ChangedExternally().ConfigureAwait(false);
 
-            var progress = new Progress<double> { };
+            var progress = new Progress<double>();
 
             await ValidateChildren(progress, CancellationToken.None).ConfigureAwait(false);
         }

@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,7 +14,6 @@ namespace MediaBrowser.Controller.Localization
         /// Initializes a new instance of the <see cref="RatingsDefinition" /> class.
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="logger">The logger.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         public RatingsDefinition(string file, IServerConfigurationManager configurationManager)
         {

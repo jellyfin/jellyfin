@@ -148,6 +148,7 @@ namespace MediaBrowser.Controller.Providers.TV
         /// </summary>
         /// <param name="episode">The episode.</param>
         /// <param name="seriesId">The series id.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
         private async Task<bool> FetchEpisodeData(Episode episode, string seriesId, CancellationToken cancellationToken)
         {

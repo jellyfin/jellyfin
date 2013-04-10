@@ -36,7 +36,7 @@ namespace MediaBrowser.Controller.Providers.Music
             // Get albu info using artist and album name
             var url = RootUrl + string.Format("method=album.getInfo&artist={0}&album={1}&api_key={2}&format=json", UrlEncode(item.Parent.Name), UrlEncode(item.Name), ApiKey);
 
-            LastfmGetAlbumResult result = null;
+            LastfmGetAlbumResult result;
 
             try
             {

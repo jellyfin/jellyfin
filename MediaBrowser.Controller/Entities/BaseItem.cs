@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -313,7 +312,7 @@ namespace MediaBrowser.Controller.Entities
             var path = Path;
 
             // non file-system entries will not have a path
-            if (this.LocationType != LocationType.FileSystem || string.IsNullOrEmpty(path))
+            if (LocationType != LocationType.FileSystem || string.IsNullOrEmpty(path))
             {
                 return new ItemResolveArgs(ConfigurationManager.ApplicationPaths)
                 {
@@ -637,12 +636,12 @@ namespace MediaBrowser.Controller.Entities
             catch (IOException ex)
             {
                 Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
-                return new List<Video> { };
+                return new List<Video>();
             }
 
             if (!resolveArgs.IsDirectory)
             {
-                return new List<Video> { };
+                return new List<Video>();
             }
 
             var folder = resolveArgs.GetFileSystemEntryByName(TrailerFolderName);
@@ -650,7 +649,7 @@ namespace MediaBrowser.Controller.Entities
             // Path doesn't exist. No biggie
             if (folder == null)
             {
-                return new List<Video> { };
+                return new List<Video>();
             }
 
             IEnumerable<WIN32_FIND_DATA> files;
@@ -662,7 +661,7 @@ namespace MediaBrowser.Controller.Entities
             catch (IOException ex)
             {
                 Logger.ErrorException("Error loading trailers for {0}", ex, Name);
-                return new List<Video> { };
+                return new List<Video>();
             }
 
             return LibraryManager.ResolvePaths<Video>(files, null).Select(video =>

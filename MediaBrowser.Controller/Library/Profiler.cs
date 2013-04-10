@@ -12,16 +12,16 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// The name
         /// </summary>
-        readonly string name;
+        readonly string _name;
         /// <summary>
         /// The stopwatch
         /// </summary>
-        readonly Stopwatch stopwatch;
+        readonly Stopwatch _stopwatch;
 
         /// <summary>
         /// The _logger
         /// </summary>
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Profiler" /> class.
@@ -30,12 +30,12 @@ namespace MediaBrowser.Controller.Library
         /// <param name="logger">The logger.</param>
         public Profiler(string name, ILogger logger)
         {
-            this.name = name;
+            this._name = name;
 
             _logger = logger;
 
-            stopwatch = new Stopwatch();
-            stopwatch.Start();
+            _stopwatch = new Stopwatch();
+            _stopwatch.Start();
         }
         #region IDisposable Members
 
@@ -56,17 +56,17 @@ namespace MediaBrowser.Controller.Library
         {
             if (dispose)
             {
-                stopwatch.Stop();
+                _stopwatch.Stop();
                 string message;
-                if (stopwatch.ElapsedMilliseconds > 300000)
+                if (_stopwatch.ElapsedMilliseconds > 300000)
                 {
                     message = string.Format("{0} took {1} minutes.",
-                        name, ((float)stopwatch.ElapsedMilliseconds / 60000).ToString("F"));
+                        _name, ((float)_stopwatch.ElapsedMilliseconds / 60000).ToString("F"));
                 }
                 else
                 {
                     message = string.Format("{0} took {1} seconds.",
-                        name, ((float)stopwatch.ElapsedMilliseconds / 1000).ToString("#0.000"));
+                        _name, ((float)_stopwatch.ElapsedMilliseconds / 1000).ToString("#0.000"));
                 }
                 _logger.Info(message);
             }
