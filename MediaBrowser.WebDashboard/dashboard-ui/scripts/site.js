@@ -1062,6 +1062,7 @@ $(function () {
 
     var footerHtml = '<div id="footer" class="ui-bar-a">';
     footerHtml += '<div id="nowPlayingBar" style="display:none;">';
+	footerHtml += '<a href="playlist.html"><img src="css/images/media/queue.png" class="imageButton mediaButton" style="height:34px;margin-bottom:2px;vertical-align:bottom;" /></a>';
     footerHtml += '<button id="previousTrackButton" class="imageButton mediaButton" title="Previous Track" type="button"><img src="css/images/media/previoustrack.png" /></button>';
     footerHtml += '<button id="stopButton" class="imageButton mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();"><img src="css/images/media/stop.png" /></button>';
     footerHtml += '<button id="nextTrackButton" class="imageButton mediaButton" title="Next Track" type="button"><img src="css/images/media/nexttrack.png" /></button>';

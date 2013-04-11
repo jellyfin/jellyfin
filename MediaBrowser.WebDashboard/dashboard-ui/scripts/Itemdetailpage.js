@@ -474,7 +474,8 @@
 
             var userdata = currentItem.UserData || {};
 
-            if (userdata.PlaybackPositionTicks) {
+	        //always pop menu now so we can have a queue link
+            //if (userdata.PlaybackPositionTicks) {
 
                 var pos = $('#playMenuAnchor', page).offset();
 
@@ -483,10 +484,10 @@
                     y: pos.top + 20
                 });
 
-            }
-            else {
-                play();
-            }
+            //}
+            //else {
+            //    play();
+            //}
         });
 
         $('#btnPlay', page).on('click', function () {
@@ -503,6 +504,12 @@
             
             play(userdata.PlaybackPositionTicks);
         });
+
+	    $('#btnQueue', page).on('click', function () {
+
+		    $('#playMenu', page).popup("close");
+		    Playlist.add(currentItem);
+	    });
 
     }).on('pageshow', "#itemDetailPage", function () {
 
