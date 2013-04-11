@@ -14,107 +14,6 @@
         StartIndex: 0
     };
 
-    function getTableHtml(result) {
-
-        var items = result.Items;
-
-        var html = '';
-
-        html += '<table class="libraryItemsGrid">';
-        html += '<thead>';
-
-        html += '<tr>';
-        html += '<th>&nbsp;</th>';
-        html += '<th class="thName">Name</th>';
-        html += '<th class="desktopColumn">Type</th>';
-        html += '<th class="tabletColumn">Year</th>';
-        html += '<th class="tabletColumn">Rating</th>';
-        html += '<th class="tabletColumn">Runtime</th>';
-        html += '<th class="tabletColumn">Community Rating</th>';
-        html += '<th class="tabletColumn"></th>';
-        html += '</tr>';
-
-        html += '</thead>';
-
-        html += '<tbody>';
-
-        for (var i = 0, length = items.length; i < length; i++) {
-
-            html += getRowHtml(items[i]);
-        }
-
-        html += '</tbody>';
-
-        html += '</table>';
-
-        return html;
-    }
-
-    function getRowHtml(item) {
-
-        var html = '<tr>';
-
-        html += '<td>';
-
-        var url = "itemdetails.html?id=" + item.Id;
-
-        html += '<a href="' + url + '">';
-
-        if (item.BackdropImageTags && item.BackdropImageTags.length) {
-
-            html += '<img class="libraryGridImage" src="' + ApiClient.getImageUrl(item.Id, {
-                type: "Backdrop",
-                width: 220,
-                tag: item.BackdropImageTags[0],
-                index: 0
-            }) + '" />';
-
-        }
-        else if (item.ImageTags && item.ImageTags.Thumb) {
-            html += '<img class="libraryGridImage" src="' + ApiClient.getImageUrl(item.Id, {
-                type: "Thumb",
-                width: 220,
-                tag: item.ImageTags.Thumb
-            }) + '" />';
-        }
-        else if (item.ImageTags && item.ImageTags.Primary) {
-            html += '<img class="libraryGridImage" src="' + ApiClient.getImageUrl(item.Id, {
-                type: "Primary",
-                width: 220,
-                tag: item.ImageTags.Primary
-            }) + '" />';
-        }
-        else {
-            html += '<img class="libraryGridImage" style="background:' + LibraryBrowser.getMetroColor(item.Id) + ';" src="css/images/items/list/video.png" />';
-        }
-
-        html += '</a></td>';
-
-        html += '<td class="tdName"><a href="' + url + '">' + item.Name + '</a></td>';
-
-        html += '<td class="desktopColumn">' + (item.VideoType == "VideoFile" ? item.DisplayMediaType : item.VideoType) + '</td>';
-
-        html += '<td class="tabletColumn">' + (item.ProductionYear || "") + '</td>';
-
-        html += '<td class="tabletColumn">' + (item.OfficialRating || "") + '</td>';
-
-        var minutes = (item.RunTimeTicks || 0) / 600000000;
-
-        minutes = minutes || 1;
-
-        html += '<td class="tabletColumn">' + parseInt(minutes) + 'min</td>';
-        html += '<td class="tabletColumn">' + (item.CommunityRating || "") + '</td>';
-
-        html += '<td class="tabletColumn">';
-
-        html += LibraryBrowser.getUserDataIconsHtml(item);
-
-        html += '</td>';
-
-        html += '</tr>';
-        return html;
-    }
-
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
@@ -137,13 +36,10 @@
                 });
             }
             else if (view == "Poster") {
-                html += LibraryBrowser.getPosterViewHtml({
+                html += LibraryBrowser.getPosterDetailViewHtml({
                     items: result.Items,
                     useAverageAspectRatio: true
                 });
-            }
-            else if (view == "Grid") {
-                html += getTableHtml(result);
             }
 
             if (showPaging) {

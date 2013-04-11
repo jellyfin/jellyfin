@@ -103,8 +103,15 @@
                 if (item.CommunityRating) {
                     html += '<p>' + LibraryBrowser.getFiveStarRatingHtml(item) + '</p>';
                 }
+                
+                if (item.Type == "BoxSet") {
 
-                html += '<p class="itemMiscInfo">' + LibraryBrowser.getMiscInfoHtml(item, false) + '</p>';
+                    var movies = item.ChildCount == 1 ? "1 Movie" : item.ChildCount + " Movies";
+                    
+                    html += '<p class="itemMiscInfo">' + movies + '</p>';
+                } else {
+                    html += '<p class="itemMiscInfo">' + LibraryBrowser.getMiscInfoHtml(item, false) + '</p>';
+                }
 
                 html += '<p class="userDataIcons">' + LibraryBrowser.getUserDataIconsHtml(item) + '</p>';
 
@@ -281,75 +288,6 @@
                     }
 
                     html += " " + item.Name;
-                    html += "</div>";
-                }
-
-                if (options.showNewIndicator !== false) {
-                    html += LibraryBrowser.getNewIndicatorHtml(item);
-                }
-
-                html += "</a></div>";
-            }
-
-            return html;
-        },
-
-        getBoxsetPosterViewHtml: function (options) {
-
-            var items = options.items;
-
-            var primaryImageAspectRatio = options.useAverageAspectRatio ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
-
-            var html = "";
-
-            for (var i = 0, length = items.length; i < length; i++) {
-                var item = items[i];
-
-                var hasPrimaryImage = item.ImageTags && item.ImageTags.Primary;
-
-                var showText = options.showTitle || !hasPrimaryImage || (item.Type !== 'Movie' && item.Type !== 'Series' && item.Type !== 'Season' && item.Type !== 'Trailer');
-
-                var cssClass = showText ? "posterViewItem posterViewItemWithDualText" : "posterViewItem posterViewItemWithNoText";
-
-                html += "<div class='" + cssClass + "'><a href='" + LibraryBrowser.getHref(item) + "'>";
-
-                if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
-                    html += "<img src='" + ApiClient.getImageUrl(item.Id, {
-                        type: "Backdrop",
-                        height: 198,
-                        width: 352,
-                        tag: item.BackdropImageTags[0]
-                    }) + "' />";
-                } else if (hasPrimaryImage) {
-
-                    var height = 300;
-                    var width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
-
-                    html += "<img src='" + ApiClient.getImageUrl(item.Id, {
-                        type: "Primary",
-                        height: height,
-                        width: width,
-                        tag: item.ImageTags.Primary
-                    }) + "' />";
-
-                } else if (item.BackdropImageTags && item.BackdropImageTags.length) {
-                    html += "<img src='" + ApiClient.getImageUrl(item.Id, {
-                        type: "Backdrop",
-                        height: 198,
-                        width: 352,
-                        tag: item.BackdropImageTags[0]
-                    }) + "' />";
-                } else {
-                    html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/video.png' />";
-                }
-
-                if (showText) {
-                    html += "<div class='posterViewItemText posterViewItemPrimaryText'>";
-                    html += item.Name;
-                    html += "</div>";
-                    html += "<div class='posterViewItemText'>";
-                    html += item.ChildCount + " Movie";
-                    if (item.ChildCount > 1) html += "s";
                     html += "</div>";
                 }
 

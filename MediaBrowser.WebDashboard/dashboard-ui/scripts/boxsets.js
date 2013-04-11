@@ -7,7 +7,9 @@
 		SortOrder: "Ascending",
 		IncludeItemTypes: "BoxSet",
 		Recursive: true,
-		Fields: "PrimaryImageAspectRatio,ItemCounts,ItemCounts,DateCreated"
+		Fields: "PrimaryImageAspectRatio,ItemCounts,ItemCounts,DateCreated",
+		Limit: LibraryBrowser.getDetaultPageSize(),
+		StartIndex: 0
 	};
 
 
@@ -17,14 +19,36 @@
 
 		ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
 
-			$('#items', page).html(LibraryBrowser.getBoxsetPosterViewHtml({
+		    var html = '';
 
-				items: result.Items,
-				useAverageAspectRatio: true
+		    var showPaging = result.TotalRecordCount > query.Limit;
 
-			}));
+		    if (showPaging) {
+		        html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true);
+		    }
 
-			Dashboard.hideLoadingMsg();
+		    html += LibraryBrowser.getPosterDetailViewHtml({
+		        items: result.Items,
+		        useAverageAspectRatio: true
+		    });
+
+		    if (showPaging) {
+		        html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
+		    }
+
+		    var elem = $('#items', page);
+
+		    // cleanup existing event handlers
+		    $('select', elem).off('change');
+
+		    elem.html(html).trigger('create');
+
+		    $('select', elem).on('change', function () {
+		        query.StartIndex = (parseInt(this.value) - 1) * query.Limit;
+		        reloadItems(page);
+		    });
+
+		    Dashboard.hideLoadingMsg();
 		});
 	}
 

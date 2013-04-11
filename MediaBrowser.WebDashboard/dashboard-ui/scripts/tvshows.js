@@ -36,13 +36,10 @@
                 });
             }
             else if (view == "Poster") {
-                html += LibraryBrowser.getPosterViewHtml({
+                html += LibraryBrowser.getPosterDetailViewHtml({
                     items: result.Items,
                     useAverageAspectRatio: true
                 });
-            }
-            else if (view == "Grid") {
-                html += getTableHtml(result);
             }
 
             if (showPaging) {
