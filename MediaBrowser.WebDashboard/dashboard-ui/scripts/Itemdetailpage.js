@@ -38,9 +38,13 @@
             if (MediaPlayer.canPlay(item)) {
                 $('#btnPlayMenu', page).show();
                 $('#playButtonShadow', page).show();
+	            //$('#btnQueueMenu', page).show();
+	            //$('#queueButtonShadow', page).show();
             } else {
                 $('#btnPlayMenu', page).hide();
                 $('#playButtonShadow', page).hide();
+	            $('#btnQueueMenu', page).hide();
+	            $('#queueButtonShadow', page).hide();
             }
 
             Dashboard.hideLoadingMsg();
@@ -474,8 +478,7 @@
 
             var userdata = currentItem.UserData || {};
 
-	        //always pop menu now so we can have a queue link
-            //if (userdata.PlaybackPositionTicks) {
+            if (userdata.PlaybackPositionTicks) {
 
                 var pos = $('#playMenuAnchor', page).offset();
 
@@ -484,11 +487,21 @@
                     y: pos.top + 20
                 });
 
-            //}
-            //else {
-            //    play();
-            //}
+            }
+            else {
+                play();
+            }
         });
+
+	    $('#btnQueueMenu', page).on('click', function () {
+		    var pos = $('#queueMenuAnchor', page).offset();
+
+		    $('#queueMenu', page).popup("open", {
+			    x: pos.left + 165,
+			    y: pos.top + 20
+		    });
+	    });
+
 
         $('#btnPlay', page).on('click', function () {
 
@@ -507,7 +520,7 @@
 
 	    $('#btnQueue', page).on('click', function () {
 
-		    $('#playMenu', page).popup("close");
+		    $('#queueMenu', page).popup("close");
 		    Playlist.add(currentItem);
 	    });
 
