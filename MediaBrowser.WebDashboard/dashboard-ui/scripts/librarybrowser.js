@@ -150,6 +150,15 @@
             if (item.Type == "BoxSet") {
                 return "boxset.html?id=" + item.Id;
             }
+            if (item.Type == "Genre") {
+                return "itembynamedetails.html?genre=" + item.Name;
+            }
+            if (item.Type == "Studio") {
+                return "itembynamedetails.html?studio=" + item.Name;
+            }
+            if (item.Type == "Person") {
+                return "itembynamedetails.html?person=" + item.Name;
+            }
 
             return item.IsFolder ? (item.Id ? "itemList.html?parentId=" + item.Id : "#") : "itemdetails.html?id=" + item.Id;
 

@@ -106,6 +106,10 @@
     }
 }
 
+.detailPageName {
+    margin: 0 0 5px;
+}
+
 .detailPagePrimaryInfo {
     padding: 0 10px;
 }

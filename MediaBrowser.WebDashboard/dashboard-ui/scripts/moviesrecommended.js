@@ -74,7 +74,8 @@
 
             $('#trailerItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: true
+                useAverageAspectRatio: true,
+                showNewIndicator: false
             }));
 
         });

@@ -47,14 +47,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="items">The items.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<Tuple<string, Func<int>>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items, User user)
+        protected override IEnumerable<Tuple<string, Func<IEnumerable<BaseItem>>>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items, User user)
         {
             var itemsList = items.Where(i => i.Studios != null).ToList();
 
             return itemsList
                 .SelectMany(i => i.Studios)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(name => new Tuple<string, Func<int>>(name, () => itemsList.Count(i => i.Studios.Contains(name, StringComparer.OrdinalIgnoreCase))));
+                .Select(name => new Tuple<string, Func<IEnumerable<BaseItem>>>(name, () => itemsList.Where(i => i.Studios.Contains(name, StringComparer.OrdinalIgnoreCase))));
         }
 
         /// <summary>
