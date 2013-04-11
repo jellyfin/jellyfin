@@ -298,7 +298,7 @@ namespace MediaBrowser.Model.Configuration
 
             FileWatcherDelay = 8;
 
-            RecentItemDays = 14;
+            RecentItemDays = 10;
 
             EnableInternetProviders = true; //initial installs will need these
             InternetProviderExcludeTypes = new string[] { };

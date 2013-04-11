@@ -472,7 +472,7 @@ form, .readOnlyContent {
     bottom: 28px;
 }
 
-.posterViewItem:hover, .userItem:hover {
+.posterViewItem:hover, .userItem:hover, .posterDetailViewItem:hover {
     -moz-box-shadow: 0 0 20px 3px #2572EB;
     -webkit-box-shadow: 0 0 20px 3px #2572EB;
     box-shadow: 0 0 20px 3px #2572EB;

@@ -4,7 +4,7 @@
     <title>Media Browser</title>
 </head>
 <body>
-    <div id="moviesPage" data-role="page" class="page libraryPage noLogoPage" data-theme="a">
+    <div id="moviesPage" data-role="page" class="page libraryPage noLogoPage listPage" data-theme="a">
         <h1 class="libraryPageHeader"><a href="index.html" class="imageLink">
             <img src="css/images/home.png"></a>Movies</h1>
         <div data-role="content">
@@ -19,6 +19,7 @@
             <div class="viewSettings">
                 <div style="display: inline-block;">
                     <select data-mini="true" data-inline="true" id="selectView" name="selectView">
+                        <option value="Tile">Tile</option>
                         <option value="Poster">Poster</option>
                         <option value="Grid">Grid</option>
                     </select>

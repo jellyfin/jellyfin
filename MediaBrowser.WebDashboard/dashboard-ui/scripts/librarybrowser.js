@@ -10,6 +10,135 @@
             return 25;
         },
 
+        getPosterDetailViewHtml: function (options) {
+
+            var items = options.items;
+
+            var primaryImageAspectRatio = options.useAverageAspectRatio ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
+
+            var html = '';
+
+            for (var i = 0, length = items.length; i < length; i++) {
+
+                var item = items[i];
+
+                html += '<a class="posterDetailViewItem" href="' + LibraryBrowser.getHref(item) + '">';
+
+                if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
+
+                    html += "<img class='posterDetailViewImage' src='" + ApiClient.getImageUrl(item.Id, {
+                        type: "Backdrop",
+                        height: 198,
+                        width: 352,
+                        tag: item.BackdropImageTags[0]
+
+                    }) + "' />";
+
+                }
+                else if (options.preferBackdrop && item.ImageTags && item.ImageTags.Thumb) {
+
+                    html += "<img class='posterDetailViewImage' src='" + ApiClient.getImageUrl(item.Id, {
+                        type: "Thumb",
+                        height: 198,
+                        width: 352,
+                        tag: item.ImageTags.Thumb
+
+                    }) + "' />";
+
+                }
+                else if (item.ImageTags && item.ImageTags.Primary) {
+
+                    var height = 300;
+                    var width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
+
+                    html += "<img class='posterDetailViewImage' src='" + ApiClient.getImageUrl(item.Id, {
+                        type: "Primary",
+                        height: height,
+                        width: width,
+                        tag: item.ImageTags.Primary
+
+                    }) + "' />";
+
+                }
+                else if (item.BackdropImageTags && item.BackdropImageTags.length) {
+                    html += "<img class='posterDetailViewImage' src='" + ApiClient.getImageUrl(item.Id, {
+                        type: "Backdrop",
+                        height: 198,
+                        width: 352,
+                        tag: item.BackdropImageTags[0]
+
+                    }) + "' />";
+                }
+                else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
+
+                    html += "<img class='posterDetailViewImage' style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/audio.png' />";
+                }
+                else if (item.MediaType == "Video" || item.Type == "Season" || item.Type == "Series") {
+
+                    html += "<img class='posterDetailViewImage' style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/video.png' />";
+                }
+                else {
+
+                    html += "<img class='posterDetailViewImage' style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/collection.png' />";
+                }
+
+                html += '<div class="posterDetailViewContentContainer">';
+
+                if (item.SeriesName || item.Album) {
+                    var seriesName = item.SeriesName || item.Album;
+                    html += '<div class="posterDetailViewName">' + seriesName + '</div>';
+                }
+
+                var name = item.Name;
+
+                if (item.IndexNumber != null) {
+                    name = item.IndexNumber + " - " + name;
+                }
+                if (item.ParentIndexNumber != null) {
+                    name = item.ParentIndexNumber + "." + name;
+                }
+
+                html += '<div class="posterDetailViewName">' + name + '</div>';
+
+                if (item.CommunityRating) {
+                    html += '<p>' + LibraryBrowser.getFiveStarRatingHtml(item) + '</p>';
+                }
+
+                html += '<p class="itemMiscInfo">' + LibraryBrowser.getMiscInfoHtml(item, false) + '</p>';
+
+                html += '<p class="userDataIcons">' + LibraryBrowser.getUserDataIconsHtml(item) + '</p>';
+
+                if (item.PlayedPercentage || (item.UserData && item.UserData.PlaybackPositionTicks)) {
+                    html += '<p>' + LibraryBrowser.getProgressBarHtml(item) + '</p>';
+                }
+
+                html += '</div>';
+
+                html += LibraryBrowser.getNewIndicatorHtml(item);
+
+                html += "</a>";
+            }
+
+            return html;
+        },
+
+        getHref: function (item) {
+
+            if (item.url) {
+                return item.url;
+            }
+
+            if (item.Type == "Series") {
+                return "tvseries.html?id=" + item.Id;
+            }
+            if (item.Type == "BoxSet") {
+                return "boxset.html?id=" + item.Id;
+            }
+
+            return item.IsFolder ? (item.Id ? "itemList.html?parentId=" + item.Id : "#") : "itemdetails.html?id=" + item.Id;
+
+        },
+
         getPosterViewHtml: function (options) {
 
             var items = options.items;
@@ -23,13 +152,11 @@
 
                 var hasPrimaryImage = item.ImageTags && item.ImageTags.Primary;
 
-                var href = item.url || (item.IsFolder ? (item.Id ? "itemList.html?parentId=" + item.Id : "#") : "itemdetails.html?id=" + item.Id);
-
                 var showText = options.showTitle || !hasPrimaryImage;
 
                 var cssClass = showText ? "posterViewItem" : "posterViewItem posterViewItemWithNoText";
 
-                html += "<div class='" + cssClass + "'><a href='" + href + "'>";
+                html += "<div class='" + cssClass + "'><a href='" + LibraryBrowser.getHref(item) + "'>";
 
                 if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
                     html += "<img src='" + ApiClient.getImageUrl(item.Id, {
@@ -84,8 +211,6 @@
                     html += LibraryBrowser.getNewIndicatorHtml(item);
                 }
 
-                html += LibraryBrowser.getProgressBarHtml(item);
-
                 html += "</a></div>";
             }
 
@@ -105,13 +230,11 @@
 
                 var hasPrimaryImage = item.ImageTags && item.ImageTags.Primary;
 
-                var href = item.url || (item.IsFolder ? (item.Id ? "itemList.html?parentId=" + item.Id : "#") : "itemdetails.html?id=" + item.Id);
-
                 var showText = options.showTitle || !hasPrimaryImage || (item.Type !== 'Movie' && item.Type !== 'Series' && item.Type !== 'Season' && item.Type !== 'Trailer');
 
                 var cssClass = showText ? "posterViewItem posterViewItemWithDualText" : "posterViewItem posterViewItemWithNoText";
 
-                html += "<div class='" + cssClass + "'><a href='" + href + "'>";
+                html += "<div class='" + cssClass + "'><a href='" + LibraryBrowser.getHref(item) + "'>";
 
                 if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
                     html += "<img src='" + ApiClient.getImageUrl(item.Id, {
@@ -165,8 +288,6 @@
                     html += LibraryBrowser.getNewIndicatorHtml(item);
                 }
 
-                html += LibraryBrowser.getProgressBarHtml(item);
-
                 html += "</a></div>";
             }
 
@@ -186,13 +307,11 @@
 
                 var hasPrimaryImage = item.ImageTags && item.ImageTags.Primary;
 
-                var href = item.url || ("boxset.html?id=" + item.Id);
-
                 var showText = options.showTitle || !hasPrimaryImage || (item.Type !== 'Movie' && item.Type !== 'Series' && item.Type !== 'Season' && item.Type !== 'Trailer');
 
                 var cssClass = showText ? "posterViewItem posterViewItemWithDualText" : "posterViewItem posterViewItemWithNoText";
 
-                html += "<div class='" + cssClass + "'><a href='" + href + "'>";
+                html += "<div class='" + cssClass + "'><a href='" + LibraryBrowser.getHref(item) + "'>";
 
                 if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
                     html += "<img src='" + ApiClient.getImageUrl(item.Id, {
@@ -244,88 +363,6 @@
             return html;
         },
 
-        getSeriesPosterViewHtml: function (options) {
-
-            var items = options.items;
-
-            var primaryImageAspectRatio = options.useAverageAspectRatio ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
-
-            var html = "";
-
-            for (var i = 0, length = items.length; i < length; i++) {
-                var item = items[i];
-
-                var hasPrimaryImage = item.ImageTags && item.ImageTags.Primary;
-
-                var href = item.url || "tvseries.html?id=" + item.Id;
-
-                var showText = options.showTitle || !hasPrimaryImage;
-
-                var cssClass = showText ? "posterViewItem" : "posterViewItem posterViewItemWithNoText";
-
-                html += "<div class='" + cssClass + "'><a href='" + href + "'>";
-
-                if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
-                    html += "<img src='" + ApiClient.getImageUrl(item.Id, {
-                        type: "Backdrop",
-                        height: 198,
-                        width: 352,
-                        tag: item.BackdropImageTags[0]
-
-                    }) + "' />";
-                } else if (hasPrimaryImage) {
-
-                    var height = 300;
-                    var width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
-
-                    html += "<img src='" + ApiClient.getImageUrl(item.Id, {
-                        type: "Primary",
-                        height: height,
-                        width: width,
-                        tag: item.ImageTags.Primary
-
-                    }) + "' />";
-
-                } else if (item.BackdropImageTags && item.BackdropImageTags.length) {
-                    html += "<img src='" + ApiClient.getImageUrl(item.Id, {
-                        type: "Backdrop",
-                        height: 198,
-                        width: 352,
-                        tag: item.BackdropImageTags[0]
-
-                    }) + "' />";
-                }
-                else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
-
-                    html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/audio.png' />";
-                }
-                else if (item.MediaType == "Video" || item.Type == "Season" || item.Type == "Series") {
-
-                    html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/video.png' />";
-                }
-                else {
-
-                    html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/collection.png' />";
-                }
-
-                if (showText) {
-                    html += "<div class='posterViewItemText'>";
-                    html += item.Name;
-                    html += "</div>";
-                }
-
-                if (options.showNewIndicator !== false) {
-                    html += LibraryBrowser.getNewIndicatorHtml(item);
-                }
-
-                html += LibraryBrowser.getProgressBarHtml(item);
-
-                html += "</a></div>";
-            }
-
-            return html;
-        },
-
         getNewIndicatorHtml: function (item) {
 
             if (item.RecentlyAddedItemCount) {
@@ -346,11 +383,20 @@
 
         getProgressBarHtml: function (item) {
 
-            return '';
             var html = '';
 
-            if (item.PlayedPercentage && item.PlayedPercentage < 100) {
-                html += '<progress class="itemProgress" min="0" max="100" value="' + item.PlayedPercentage + '"></progress>';
+            var tooltip;
+
+            if (item.PlayedPercentage) {
+
+                tooltip = parseInt(item.PlayedPercentage) + '% watched';
+                html += '<progress class="itemProgress" min="0" max="100" value="' + item.PlayedPercentage + '" title="' + tooltip + '"></progress>';
+            }
+            else if (item.UserData && item.UserData.PlaybackPositionTicks && item.RunTimeTicks) {
+
+                tooltip = DashboardPage.getDisplayText(item.UserData.PlaybackPositionTicks) + " / " + DashboardPage.getDisplayText(item.RunTimeTicks);
+
+                html += '<progress class="itemProgress" min="0" max="100" value="' + (item.UserData.PlaybackPositionTicks / item.RunTimeTicks) + '" title="' + tooltip + '"></progress>';
             }
 
             return html;
@@ -504,6 +550,26 @@
             return html;
         },
 
+        getFiveStarRatingHtml: function (item) {
+
+            var rating = item.CommunityRating / 2;
+
+            var html = "";
+            for (var i = 1; i <= 5; i++) {
+                if (rating < i - 1) {
+                    html += "<div class='starRating emptyStarRating'></div>";
+                }
+                else if (rating < i) {
+                    html += "<div class='starRating halfStarRating'></div>";
+                }
+                else {
+                    html += "<div class='starRating'></div>";
+                }
+            }
+
+            return html;
+        },
+
         getUserDataIconsHtml: function (item) {
 
             var html = '';
@@ -515,29 +581,29 @@
 
             if (item.MediaType) {
                 if (userData.Played) {
-                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayed" src="css/images/userdata/played.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);" />';
+                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayed" src="css/images/userdata/played.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);return false;" />';
                 } else {
-                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayedOff" src="css/images/userdata/unplayed.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);" />';
+                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayedOff" src="css/images/userdata/unplayed.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);return false;" />';
                 }
             }
 
             if (typeof userData.Likes == "undefined") {
-                html += '<img onclick="LibraryBrowser.markDislike(this);" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgDislikeOff" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" />';
-                html += '<img onclick="LibraryBrowser.markLike(this);" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgLikeOff" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" />';
+                html += '<img onclick="LibraryBrowser.markDislike(this);return false;" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgDislikeOff" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" />';
+                html += '<img onclick="LibraryBrowser.markLike(this);return false;" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgLikeOff" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" />';
             }
             else if (userData.Likes) {
-                html += '<img onclick="LibraryBrowser.markDislike(this);" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgDislikeOff" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" />';
-                html += '<img onclick="LibraryBrowser.markLike(this);" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgLike" src="css/images/userdata/thumbs_up_on.png" alt="Like" title="Like" />';
+                html += '<img onclick="LibraryBrowser.markDislike(this);return false;" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgDislikeOff" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" />';
+                html += '<img onclick="LibraryBrowser.markLike(this);return false;" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgLike" src="css/images/userdata/thumbs_up_on.png" alt="Like" title="Like" />';
             }
             else {
-                html += '<img onclick="LibraryBrowser.markDislike(this);" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgDislike" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" />';
-                html += '<img onclick="LibraryBrowser.markLike(this);" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgLikeOff" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" />';
+                html += '<img onclick="LibraryBrowser.markDislike(this);return false;" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgDislike" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" />';
+                html += '<img onclick="LibraryBrowser.markLike(this);return false;" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgLikeOff" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" />';
             }
 
             if (userData.IsFavorite) {
-                html += '<img onclick="LibraryBrowser.markFavorite(this);" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgFavorite" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" />';
+                html += '<img onclick="LibraryBrowser.markFavorite(this);return false;" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgFavorite" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" />';
             } else {
-                html += '<img onclick="LibraryBrowser.markFavorite(this);" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgFavoriteOff" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" />';
+                html += '<img onclick="LibraryBrowser.markFavorite(this);return false;" data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgFavoriteOff" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" />';
             }
 
             return html;
@@ -720,7 +786,7 @@
             return html;
         },
 
-        getMiscInfoHtml: function (item) {
+        getMiscInfoHtml: function (item, includeMediaInfo) {
 
             var miscInfo = [];
 
@@ -741,13 +807,16 @@
                 miscInfo.push(parseInt(minutes) + "min");
             }
 
-            if (item.DisplayMediaType) {
-                miscInfo.push(item.DisplayMediaType);
+            if (includeMediaInfo !== false) {
+                if (item.DisplayMediaType) {
+                    miscInfo.push(item.DisplayMediaType);
+                }
+
+                if (item.VideoFormat && item.VideoFormat !== 'Standard') {
+                    miscInfo.push(item.VideoFormat);
+                }
             }
 
-            if (item.VideoFormat && item.VideoFormat !== 'Standard') {
-                miscInfo.push(item.VideoFormat);
-            }
 
             return miscInfo.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
         },

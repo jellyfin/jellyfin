@@ -4,7 +4,7 @@
     <title>Media Browser</title>
 </head>
 <body>
-    <div id="tvShowsPage" data-role="page" class="page libraryPage noLogoPage" data-theme="a">
+    <div id="tvShowsPage" data-role="page" class="page libraryPage noLogoPage listPage" data-theme="a">
         <h1 class="libraryPageHeader"><a href="index.html" class="imageLink">
             <img src="css/images/home.png"></a>TV Shows</h1>
         <div data-role="content">
@@ -15,6 +15,12 @@
                 <a href="#" data-role="button">Actors</a>
             </div>
             <div class="viewSettings">
+                <div style="display: inline-block;">
+                    <select data-mini="true" data-inline="true" id="selectView" name="selectView">
+                        <option value="Tile">Tile</option>
+                        <option value="Poster">Poster</option>
+                    </select>
+                </div>
                 <button data-mini="true" data-icon="sort" data-inline="true" onclick="$('#sortPanel', $.mobile.activePage).panel( 'toggle' );">Sort</button>
                 <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $.mobile.activePage).panel( 'toggle' );">Filter</button>
             </div>
