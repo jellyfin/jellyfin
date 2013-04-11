@@ -20,7 +20,6 @@
 }
 
 .libraryPage, .itemListContent {
-    background: #262626!important;
     background: #494949 url(images/bgflip.png) repeat-x!important;
     background-attachment: fixed!important;
 }
@@ -28,6 +27,10 @@
     .libraryPage .currentUsername {
         color: #fff;
     }
+
+.listPage {
+    background: #262626!important;
+}
 
 .listHeader {
     margin-top: 1em;
@@ -106,7 +109,7 @@
 
 @media all and (min-width: 650px) {
     .libraryPage .ui-content {
-        padding: 15px 30px 100px;
+        padding: 10px 15px 100px;
     }
 }
 
@@ -158,6 +161,11 @@
     padding: 0 10px;
 }
 
+.itemMiscInfo {
+    color: #ddd;
+    font-size: 14px;
+}
+
 .mediaInfoStream {
     display: inline-block;
     vertical-align: top;
@@ -189,6 +197,7 @@
     background-color: #008FBB;
     padding: 3px 10px;
     border-bottom-left-radius: 10px;
+    color: #fff;
 }
 
 /* Firefox and Polyfill */
@@ -196,13 +205,8 @@
     border: solid #222222 1px;
     background: #444444 !important; /* !important only needed in polyfill */
     border-radius: 0!important;
-    height: 12px;
+    height: 14px;
     opacity: .7;
-    position: absolute;
-    left: 10%;
-    right: 10%;
-    bottom: 61px;
-    width: 80%;
 }
 
     /* Chrome */
@@ -235,3 +239,91 @@
         background-image: -ms-linear-gradient( center bottom, rgb(43,194,83) 37%, rgb(84,240,84) 69% );
         background-image: -o-linear-gradient( center bottom, rgb(43,194,83) 37%, rgb(84,240,84) 69% );
     }
+
+.posterDetailViewItem {
+    background: #333;
+    padding: 10px 10px 3px;
+    margin: 3px 0;
+    text-shadow: none;
+    cursor: pointer;
+    font-weight: normal!important;
+    display: block;
+    font-size: 14px;
+    position: relative;
+}
+
+    .posterDetailViewItem .starRating {
+        width: 15px;
+        height: 13px;
+    }
+
+.posterDetailViewImage {
+    max-height: 90px;
+    max-width: 47%;
+}
+
+.posterDetailViewItem p {
+    margin: .75em 0;
+}
+
+.posterDetailViewItem .imgUserItemRating {
+    height: 18px;
+    width: 18px;
+}
+
+.posterDetailViewContentContainer {
+    display: inline-block;
+    width: 50%;
+    padding-left: 10px;
+    color: #fff;
+    text-align: left;
+    vertical-align: top;
+}
+
+.posterDetailViewName {
+    font-weight: bold;
+}
+
+.posterDetailViewItem .userDataIcons {
+    display: none;
+}
+
+@media all and (min-width: 850px) {
+    .posterDetailViewItem {
+        width: 46%;
+        display: inline-block;
+        margin-left: 3px;
+        margin-right: 3px;
+    }
+
+    .posterDetailViewImage {
+        max-height: 140px;
+    }
+}
+
+@media all and (min-width: 1200px) {
+    .posterDetailViewItem {
+        width: 31%;
+    }
+
+        .posterDetailViewItem .userDataIcons {
+            display: block;
+        }
+}
+
+@media all and (min-width: 1440px) {
+    .posterDetailViewImage {
+        max-height: 170px;
+    }
+}
+
+
+@media all and (min-width: 1920px) {
+    .posterDetailViewItem {
+        width: 31.5%;
+    }
+
+    .posterDetailViewImage {
+        max-height: 200px;
+    }
+}

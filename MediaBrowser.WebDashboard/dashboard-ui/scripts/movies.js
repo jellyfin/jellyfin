@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = "Poster";
+    var view = "Tile";
 
     // The base query options
     var query = {
@@ -118,7 +118,7 @@
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
-        
+
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
 
             var html = '';
@@ -129,7 +129,14 @@
                 html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
             }
 
-            if (view == "Poster") {
+            if (view == "Tile") {
+                html += LibraryBrowser.getPosterDetailViewHtml({
+                    items: result.Items,
+                    useAverageAspectRatio: true,
+                    preferBackdrop: true
+                });
+            }
+            else if (view == "Poster") {
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     useAverageAspectRatio: true
@@ -150,7 +157,7 @@
 
             elem.html(html).trigger('create');
 
-            $('select', elem).on('change', function() {
+            $('select', elem).on('change', function () {
                 query.StartIndex = (parseInt(this.value) - 1) * query.Limit;
                 reloadItems(page);
             });
