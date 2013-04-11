@@ -35,6 +35,12 @@ namespace MediaBrowser.Common.Plugins
         public abstract string Name { get; }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is first run.
+        /// </summary>
+        /// <value><c>true</c> if this instance is first run; otherwise, <c>false</c>.</value>
+        public bool IsFirstRun { get; private set; }
+
+        /// <summary>
         /// Gets the description.
         /// </summary>
         /// <value>The description.</value>
@@ -257,7 +263,6 @@ namespace MediaBrowser.Common.Plugins
         /// <summary>
         /// Saves the current configuration to the file system
         /// </summary>
-        /// <exception cref="System.InvalidOperationException">Cannot call Plugin.SaveConfiguration from the UI.</exception>
         public virtual void SaveConfiguration()
         {
             lock (_configurationSaveLock)
