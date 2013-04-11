@@ -504,7 +504,7 @@
             }
         },
 
-        getPagingHtml: function (query, totalRecordCount) {
+        getPagingHtml: function (query, totalRecordCount, isTop) {
 
             var html = '';
 
@@ -524,7 +524,7 @@
 
             var recordsEnd = Math.min(query.StartIndex + query.Limit, totalRecordCount);
 
-            html += '<div class="listPaging">';
+            html += isTop ? '<div class="listPaging topListPaging">' : '<div class="listPaging">';
             html += 'Results ' + (query.StartIndex + 1) + '-' + recordsEnd + ' of ' + totalRecordCount + ', page ' + dropdownHtml + ' of ' + pageCount;
             html += '</div>';
 

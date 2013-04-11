@@ -460,7 +460,6 @@ form, .readOnlyContent {
     text-shadow: none;
 }
 
-
 .posterViewItemWithDualText .posterViewItemText {
     text-align: left;
     color: #fff;
@@ -489,7 +488,7 @@ form, .readOnlyContent {
 @media all and (min-width: 1200px) {
 
     .posterViewItem {
-        font-size: 16px;
+        font-size: 15px;
     }
 
         .posterViewItem img {
@@ -505,7 +504,7 @@ form, .readOnlyContent {
     }
 
     .posterViewItem {
-        font-size: 18px;
+        font-size: 17px;
         padding-bottom: 29px;
     }
 

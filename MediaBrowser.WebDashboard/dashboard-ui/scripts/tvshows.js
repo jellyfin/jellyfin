@@ -25,7 +25,7 @@
             var showPaging = result.TotalRecordCount > query.Limit;
 
             if (showPaging) {
-                html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
+                html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true);
             }
 
             if (view == "Tile") {
@@ -71,11 +71,13 @@
 
         $('.radioSortBy', this).on('click', function () {
             query.SortBy = this.getAttribute('data-sortby');
+            query.StartIndex = 0;
             reloadItems(page);
         });
 
         $('.radioSortOrder', this).on('click', function () {
             query.SortOrder = this.getAttribute('data-sortorder');
+            query.StartIndex = 0;
             reloadItems(page);
         });
 
@@ -91,7 +93,7 @@
             }
 
             query.Filters = filters;
-
+            query.StartIndex = 0;
             reloadItems(page);
         });
 
@@ -107,7 +109,7 @@
             }
 
             query.SeriesStatus = filters;
-
+            query.StartIndex = 0;
             reloadItems(page);
         });
 
@@ -123,7 +125,7 @@
             }
 
             query.AirDays = filters;
-
+            query.StartIndex = 0;
             reloadItems(page);
         });
 

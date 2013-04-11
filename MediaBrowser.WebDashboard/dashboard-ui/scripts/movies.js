@@ -126,7 +126,7 @@
             var showPaging = result.TotalRecordCount > query.Limit;
 
             if (showPaging) {
-                html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
+                html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true);
             }
 
             if (view == "Tile") {
