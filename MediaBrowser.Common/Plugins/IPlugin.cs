@@ -45,6 +45,12 @@ namespace MediaBrowser.Common.Plugins
         string AssemblyFileName { get; }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is first run.
+        /// </summary>
+        /// <value><c>true</c> if this instance is first run; otherwise, <c>false</c>.</value>
+        bool IsFirstRun { get; }
+
+        /// <summary>
         /// Gets the last date modified of the configuration
         /// </summary>
         /// <value>The configuration date last modified.</value>
