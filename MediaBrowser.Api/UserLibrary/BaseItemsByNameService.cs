@@ -68,7 +68,7 @@ namespace MediaBrowser.Api.UserLibrary
             
             var ibnItemsArray = GetAllItems(request, items, user).ToArray();
       
-            IEnumerable<Tuple<string, Func<int>>> ibnItems = ibnItemsArray;
+            IEnumerable<Tuple<string, Func<IEnumerable<BaseItem>>>> ibnItems = ibnItemsArray;
 
             var result = new ItemsResult
             {
@@ -132,7 +132,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="items">The items.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected abstract IEnumerable<Tuple<string, Func<int>>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items, User user);
+        protected abstract IEnumerable<Tuple<string, Func<IEnumerable<BaseItem>>>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items, User user);
 
         /// <summary>
         /// Gets the entity.
@@ -148,7 +148,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="user">The user.</param>
         /// <param name="fields">The fields.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
-        private async Task<BaseItemDto> GetDto(Tuple<string, Func<int>> stub, User user, List<ItemFields> fields)
+        private async Task<BaseItemDto> GetDto(Tuple<string, Func<IEnumerable<BaseItem>>> stub, User user, List<ItemFields> fields)
         {
             BaseItem item;
 
@@ -164,7 +164,13 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dto = await new DtoBuilder(Logger, LibraryManager, UserManager).GetBaseItemDto(item, user, fields).ConfigureAwait(false);
 
-            dto.ChildCount = stub.Item2();
+            if (fields.Contains(ItemFields.ItemCounts))
+            {
+                var items = stub.Item2().ToList();
+
+                dto.ChildCount = items.Count;
+                dto.RecentlyAddedItemCount = items.Count(i => i.IsRecentlyAdded(user));
+            }
 
             return dto;
         }
