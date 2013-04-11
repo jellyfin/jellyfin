@@ -461,12 +461,18 @@ namespace MediaBrowser.WebDashboard.Api
                                       "mediaplayer.js",
                                       "metadataconfigurationpage.js",
                                       "metadataimagespage.js",
+                                      "moviegenres.js",
                                       "movies.js",
                                       "moviesrecommended.js",
+                                      "playlist.js",
                                       "pluginspage.js",
                                       "pluginupdatespage.js",
                                       "scheduledtaskpage.js",
                                       "scheduledtaskspage.js",
+                                      "supporterkeypage.js",
+                                      "supporterpage.js",
+                                      "tvgenres.js",
+                                      "tvseries.js",
                                       "tvrecommended.js",
                                       "tvshows.js",
                                       "updatepasswordpage.js",
@@ -474,11 +480,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "userprofilespage.js",
                                       "wizardfinishpage.js",
                                       "wizardstartpage.js",
-                                      "wizarduserpage.js",
-                                      "supporterkeypage.js",
-                                      "supporterpage.js",
-                                      "playlist.js",
-                                      "tvseries.js"
+                                      "wizarduserpage.js"
                                   };
 
             var memoryStream = new MemoryStream();

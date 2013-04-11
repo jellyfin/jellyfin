@@ -46,20 +46,6 @@ namespace MediaBrowser.Api.UserLibrary
         public string IndexBy { get; set; }
 
         /// <summary>
-        /// What to sort the results by
-        /// </summary>
-        /// <value>The sort by.</value>
-        [ApiMember(Name = "SortBy", Description = "Optional. Specify one or more sort orders, comma delimeted. Options: Album, AlbumArtist, Artist, CommunityRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Runtime", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string SortBy { get; set; }
-
-        /// <summary>
-        /// Filters to apply to the results
-        /// </summary>
-        /// <value>The filters.</value>
-        [ApiMember(Name = "Filters", Description = "Optional. Specify additional filters to apply. This allows multiple, comma delimeted. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsRecentlyAdded, IsResumable, Likes, Dislikes", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string Filters { get; set; }
-
-        /// <summary>
         /// Limit results to items containing specific genres
         /// </summary>
         /// <value>The genres.</value>
@@ -72,20 +58,6 @@ namespace MediaBrowser.Api.UserLibrary
         /// <value>The studios.</value>
         [ApiMember(Name = "Studios", Description = "Optional. If specified, results will be filtered based on studio. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Studios { get; set; }
-
-        /// <summary>
-        /// Gets or sets the exclude item types.
-        /// </summary>
-        /// <value>The exclude item types.</value>
-        [ApiMember(Name = "ExcludeItemTypes", Description = "Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string ExcludeItemTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the include item types.
-        /// </summary>
-        /// <value>The include item types.</value>
-        [ApiMember(Name = "IncludeItemTypes", Description = "Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string IncludeItemTypes { get; set; }
 
         /// <summary>
         /// Limit results to items containing specific years
@@ -202,22 +174,22 @@ namespace MediaBrowser.Api.UserLibrary
 
             // Apply filters
             // Run them starting with the ones that are likely to reduce the list the most
-            foreach (var filter in GetFilters(request).OrderByDescending(f => (int)f))
+            foreach (var filter in request.GetFilters().OrderByDescending(f => (int)f))
             {
-                items = ApplyFilter(items, filter, user);
+                items = ApplyFilter(items, filter, user, _userManager);
             }
 
             items = items.AsEnumerable();
 
             items = ApplySearchTerm(request, items);
 
-            items = ApplySortOrder(request, items, user);
+            items = ApplySortOrder(request, items, user, _libraryManager);
 
             var itemsArray = items.ToArray();
 
             var pagedItems = ApplyPaging(request, itemsArray);
 
-            var fields = GetItemFields(request).ToList();
+            var fields = request.GetItemFields().ToList();
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userManager);
 
@@ -264,12 +236,13 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <param name="user">The user.</param>
+        /// <param name="libraryManager">The library manager.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        private IEnumerable<BaseItem> ApplySortOrder(GetItems request, IEnumerable<BaseItem> items, User user)
+        internal static IEnumerable<BaseItem> ApplySortOrder(BaseItemsRequest request, IEnumerable<BaseItem> items, User user, ILibraryManager libraryManager)
         {
-            var orderBy = GetOrderBy(request).ToArray();
+            var orderBy = request.GetOrderBy().ToArray();
 
-            return orderBy.Length == 0 ? items : _libraryManager.Sort(items, user, orderBy, request.SortOrder ?? SortOrder.Ascending);
+            return orderBy.Length == 0 ? items : libraryManager.Sort(items, user, orderBy, request.SortOrder ?? SortOrder.Ascending);
         }
 
         /// <summary>
@@ -278,8 +251,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="items">The items.</param>
         /// <param name="filter">The filter.</param>
         /// <param name="user">The user.</param>
+        /// <param name="userManager">The user manager.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        private IEnumerable<BaseItem> ApplyFilter(IEnumerable<BaseItem> items, ItemFilter filter, User user)
+        internal static IEnumerable<BaseItem> ApplyFilter(IEnumerable<BaseItem> items, ItemFilter filter, User user, IUserManager userManager)
         {
             // Avoids implicitly captured closure
             var currentUser = user;
@@ -289,7 +263,7 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.Likes:
                     return items.Where(item =>
                     {
-                        var userdata = _userManager.GetUserData(user.Id, item.UserDataId).Result;
+                        var userdata = userManager.GetUserData(user.Id, item.UserDataId).Result;
 
                         return userdata != null && userdata.Likes.HasValue && userdata.Likes.Value;
                     });
@@ -297,7 +271,7 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.Dislikes:
                     return items.Where(item =>
                     {
-                        var userdata = _userManager.GetUserData(user.Id, item.UserDataId).Result;
+                        var userdata = userManager.GetUserData(user.Id, item.UserDataId).Result;
 
                         return userdata != null && userdata.Likes.HasValue && !userdata.Likes.Value;
                     });
@@ -305,7 +279,7 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.IsFavorite:
                     return items.Where(item =>
                     {
-                        var userdata = _userManager.GetUserData(user.Id, item.UserDataId).Result;
+                        var userdata = userManager.GetUserData(user.Id, item.UserDataId).Result;
 
                         return userdata != null && userdata.IsFavorite;
                     });
@@ -316,7 +290,7 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.IsResumable:
                     return items.Where(item =>
                     {
-                        var userdata = _userManager.GetUserData(user.Id, item.UserDataId).Result;
+                        var userdata = userManager.GetUserData(user.Id, item.UserDataId).Result;
 
                         return userdata != null && userdata.PlaybackPositionTicks > 0;
                     });
@@ -324,7 +298,7 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.IsPlayed:
                     return items.Where(item =>
                     {
-                        var userdata = _userManager.GetUserData(user.Id, item.UserDataId).Result;
+                        var userdata = userManager.GetUserData(user.Id, item.UserDataId).Result;
 
                         return userdata != null && userdata.PlayCount > 0;
                     });
@@ -332,7 +306,7 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.IsUnplayed:
                     return items.Where(item =>
                     {
-                        var userdata = _userManager.GetUserData(user.Id, item.UserDataId).Result;
+                        var userdata = userManager.GetUserData(user.Id, item.UserDataId).Result;
 
                         return userdata == null || userdata.PlayCount == 0;
                     });
@@ -350,11 +324,32 @@ namespace MediaBrowser.Api.UserLibrary
         /// <summary>
         /// Applies the additional filters.
         /// </summary>
-        /// <param name="request">The request.</param>
+        /// <param name="itemsRequest">The items request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        private IEnumerable<BaseItem> ApplyAdditionalFilters(GetItems request, IEnumerable<BaseItem> items)
+        internal static IEnumerable<BaseItem> ApplyAdditionalFilters(BaseItemsRequest itemsRequest, IEnumerable<BaseItem> items)
         {
+            // Exclude item types
+            if (!string.IsNullOrEmpty(itemsRequest.ExcludeItemTypes))
+            {
+                var vals = itemsRequest.ExcludeItemTypes.Split(',');
+                items = items.Where(f => !vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
+            }
+
+            // Include item types
+            if (!string.IsNullOrEmpty(itemsRequest.IncludeItemTypes))
+            {
+                var vals = itemsRequest.IncludeItemTypes.Split(',');
+                items = items.Where(f => vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
+            }
+            
+            var request = itemsRequest as GetItems;
+
+            if (request == null)
+            {
+                return items;
+            }
+
             // Filter by Series Status
             if (!string.IsNullOrEmpty(request.SeriesStatus))
             {
@@ -398,21 +393,6 @@ namespace MediaBrowser.Api.UserLibrary
             if (imageTypes.Length > 0)
             {
                 items = items.Where(item => imageTypes.Any(imageType => HasImage(item, imageType)));
-            }
-
-            // Exclude item types
-            var excludeItemTypes = request.ExcludeItemTypes;
-            if (!string.IsNullOrEmpty(excludeItemTypes))
-            {
-                var vals = excludeItemTypes.Split(',');
-                items = items.Where(f => !vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
-            }
-
-            var includeItemTypes = request.IncludeItemTypes;
-            if (!string.IsNullOrEmpty(includeItemTypes))
-            {
-                var vals = includeItemTypes.Split(',');
-                items = items.Where(f => vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
             }
 
             var genres = request.Genres;
@@ -463,7 +443,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="item">The item.</param>
         /// <param name="imageType">Type of the image.</param>
         /// <returns><c>true</c> if the specified item has image; otherwise, <c>false</c>.</returns>
-        private bool HasImage(BaseItem item, ImageType imageType)
+        private static bool HasImage(BaseItem item, ImageType imageType)
         {
             if (imageType == ImageType.Backdrop)
             {
@@ -532,62 +512,11 @@ namespace MediaBrowser.Api.UserLibrary
         }
 
         /// <summary>
-        /// Gets the filters.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>IEnumerable{ItemFilter}.</returns>
-        private IEnumerable<ItemFilter> GetFilters(GetItems request)
-        {
-            var val = request.Filters;
-
-            if (string.IsNullOrEmpty(val))
-            {
-                return new ItemFilter[] { };
-            }
-
-            return val.Split(',').Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true));
-        }
-
-        /// <summary>
-        /// Gets the item fields.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>IEnumerable{ItemFields}.</returns>
-        private IEnumerable<ItemFields> GetItemFields(GetItems request)
-        {
-            var val = request.Fields;
-
-            if (string.IsNullOrEmpty(val))
-            {
-                return new ItemFields[] { };
-            }
-
-            return val.Split(',').Select(v => (ItemFields)Enum.Parse(typeof(ItemFields), v, true));
-        }
-
-        /// <summary>
-        /// Gets the order by.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>IEnumerable{ItemSortBy}.</returns>
-        private IEnumerable<string> GetOrderBy(GetItems request)
-        {
-            var val = request.SortBy;
-
-            if (string.IsNullOrEmpty(val))
-            {
-                return new string[] { };
-            }
-
-            return val.Split(',');
-        }
-
-        /// <summary>
         /// Gets the image types.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>IEnumerable{ImageType}.</returns>
-        private IEnumerable<ImageType> GetImageTypes(GetItems request)
+        private static IEnumerable<ImageType> GetImageTypes(GetItems request)
         {
             var val = request.ImageTypes;
 

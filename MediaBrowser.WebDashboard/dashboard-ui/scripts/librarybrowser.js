@@ -103,13 +103,22 @@
                 if (item.CommunityRating) {
                     html += '<p>' + LibraryBrowser.getFiveStarRatingHtml(item) + '</p>';
                 }
+
+                var childText;
                 
                 if (item.Type == "BoxSet") {
 
-                    var movies = item.ChildCount == 1 ? "1 Movie" : item.ChildCount + " Movies";
+                    childText = item.ChildCount == 1 ? "1 Movie" : item.ChildCount + " Movies";
                     
-                    html += '<p class="itemMiscInfo">' + movies + '</p>';
-                } else {
+                    html += '<p class="itemMiscInfo">' + childText + '</p>';
+                }
+                else if (item.Type == "Genre" || item.Type == "Studio" || item.Type == "Person") {
+
+                    childText = item.ChildCount == 1 ? "1 " + options.countNameSingular : item.ChildCount + " " + options.countNamePlural;
+
+                    html += '<p class="itemMiscInfo">' + childText + '</p>';
+                }
+                else {
                     html += '<p class="itemMiscInfo">' + LibraryBrowser.getMiscInfoHtml(item, false) + '</p>';
                 }
 

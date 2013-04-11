@@ -62,7 +62,12 @@ namespace MediaBrowser.Api.UserLibrary
                 items = new[] { item };
             }
 
+            items = FilterItems(request, items, user);
+
+            items = ItemsService.ApplySortOrder(request, items, user, LibraryManager);
+            
             var ibnItemsArray = GetAllItems(request, items, user).ToArray();
+      
             IEnumerable<Tuple<string, Func<int>>> ibnItems = ibnItemsArray;
 
             var result = new ItemsResult
@@ -84,7 +89,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             }
 
-            var fields = GetItemFields(request).ToList();
+            var fields = request.GetItemFields().ToList();
 
             var tasks = ibnItems.Select(i => GetDto(i, user, fields));
 
@@ -96,20 +101,28 @@ namespace MediaBrowser.Api.UserLibrary
         }
 
         /// <summary>
-        /// Gets the item fields.
+        /// Filters the items.
         /// </summary>
         /// <param name="request">The request.</param>
-        /// <returns>IEnumerable{ItemFields}.</returns>
-        private IEnumerable<ItemFields> GetItemFields(GetItemsByName request)
+        /// <param name="items">The items.</param>
+        /// <param name="user">The user.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        private IEnumerable<BaseItem> FilterItems(GetItemsByName request, IEnumerable<BaseItem> items, User user)
         {
-            var val = request.Fields;
+            items = items.AsParallel();
 
-            if (string.IsNullOrEmpty(val))
+            items = ItemsService.ApplyAdditionalFilters(request, items);
+
+            // Apply filters
+            // Run them starting with the ones that are likely to reduce the list the most
+            foreach (var filter in request.GetFilters().OrderByDescending(f => (int)f))
             {
-                return new ItemFields[] { };
+                items = ItemsService.ApplyFilter(items, filter, user, UserManager);
             }
 
-            return val.Split(',').Select(v => (ItemFields)Enum.Parse(typeof(ItemFields), v, true));
+            items = items.AsEnumerable();
+
+            return items;
         }
 
         /// <summary>

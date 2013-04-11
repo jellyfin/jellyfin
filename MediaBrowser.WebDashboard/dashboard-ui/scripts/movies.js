@@ -46,12 +46,7 @@
                 html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
             }
 
-            var elem = $('#items', page);
-
-            // cleanup existing event handlers
-            $('select', elem).off('change');
-
-            elem.html(html).trigger('create');
+            var elem = $('#items', page).html(html).trigger('create');
 
             $('select', elem).on('change', function () {
                 query.StartIndex = (parseInt(this.value) - 1) * query.Limit;
