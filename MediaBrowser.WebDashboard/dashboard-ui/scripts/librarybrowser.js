@@ -325,7 +325,7 @@
                 return '<div class="posterRibbon">' + item.RecentlyAddedItemCount + ' New</div>';
             }
 
-            if (!item.IsFolder) {
+            if (!item.IsFolder && item.Type !== "Genre" && item.Type !== "Studio" && item.Type !== "Person") {
 
                 var date = item.DateCreated;
 
