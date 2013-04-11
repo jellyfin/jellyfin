@@ -38,13 +38,11 @@
             if (MediaPlayer.canPlay(item)) {
                 $('#btnPlayMenu', page).show();
                 $('#playButtonShadow', page).show();
-	            //$('#btnQueueMenu', page).show();
-	            //$('#queueButtonShadow', page).show();
+                $('#btnQueueMenu', page).hide();
             } else {
                 $('#btnPlayMenu', page).hide();
                 $('#playButtonShadow', page).hide();
 	            $('#btnQueueMenu', page).hide();
-	            $('#queueButtonShadow', page).hide();
             }
 
             Dashboard.hideLoadingMsg();
