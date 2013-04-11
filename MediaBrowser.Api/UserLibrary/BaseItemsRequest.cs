@@ -1,4 +1,7 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using System.Collections.Generic;
+using System.Linq;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
 using System;
 
@@ -12,6 +15,13 @@ namespace MediaBrowser.Api.UserLibrary
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public Guid UserId { get; set; }
+
+        /// <summary>
+        /// What to sort the results by
+        /// </summary>
+        /// <value>The sort by.</value>
+        [ApiMember(Name = "SortBy", Description = "Optional. Specify one or more sort orders, comma delimeted. Options: Album, AlbumArtist, Artist, CommunityRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Runtime", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string SortBy { get; set; }
 
         /// <summary>
         /// Skips over a given number of items within the results. Use for paging.
@@ -54,5 +64,74 @@ namespace MediaBrowser.Api.UserLibrary
         /// <value>The fields.</value>
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: AudioInfo, Chapters, DateCreated, DisplayMediaType, DisplayPreferences, Genres, ItemCounts, IndexOptions, MediaStreams, Overview, OverviewHtml, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, SeriesInfo, SortName, Studios, Taglines, TrailerUrls, UserData", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Fields { get; set; }
+
+        /// <summary>
+        /// Gets or sets the exclude item types.
+        /// </summary>
+        /// <value>The exclude item types.</value>
+        [ApiMember(Name = "ExcludeItemTypes", Description = "Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string ExcludeItemTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the include item types.
+        /// </summary>
+        /// <value>The include item types.</value>
+        [ApiMember(Name = "IncludeItemTypes", Description = "Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string IncludeItemTypes { get; set; }
+
+        /// <summary>
+        /// Filters to apply to the results
+        /// </summary>
+        /// <value>The filters.</value>
+        [ApiMember(Name = "Filters", Description = "Optional. Specify additional filters to apply. This allows multiple, comma delimeted. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsRecentlyAdded, IsResumable, Likes, Dislikes", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string Filters { get; set; }
+        
+        /// <summary>
+        /// Gets the filters.
+        /// </summary>
+        /// <returns>IEnumerable{ItemFilter}.</returns>
+        public IEnumerable<ItemFilter> GetFilters()
+        {
+            var val = Filters;
+
+            if (string.IsNullOrEmpty(val))
+            {
+                return new ItemFilter[] { };
+            }
+
+            return val.Split(',').Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true));
+        }
+
+        /// <summary>
+        /// Gets the item fields.
+        /// </summary>
+        /// <returns>IEnumerable{ItemFields}.</returns>
+        public IEnumerable<ItemFields> GetItemFields()
+        {
+            var val = Fields;
+
+            if (string.IsNullOrEmpty(val))
+            {
+                return new ItemFields[] { };
+            }
+
+            return val.Split(',').Select(v => (ItemFields)Enum.Parse(typeof(ItemFields), v, true));
+        }
+
+        /// <summary>
+        /// Gets the order by.
+        /// </summary>
+        /// <returns>IEnumerable{ItemSortBy}.</returns>
+        public IEnumerable<string> GetOrderBy()
+        {
+            var val = SortBy;
+
+            if (string.IsNullOrEmpty(val))
+            {
+                return new string[] { };
+            }
+
+            return val.Split(',');
+        }
     }
 }

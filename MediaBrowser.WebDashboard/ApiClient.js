@@ -1498,7 +1498,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         };
 
         /**
-         * Gets items based on a query, typicall for children of a folder
+         * Gets items based on a query, typically for children of a folder
          * @param {String} userId
          * @param {Object} options
          * Options accepts the following properties:
@@ -1521,6 +1521,52 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             }
 
             var url = self.getUrl("Users/" + userId + "/Items", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        /**
+            Gets genres from an item
+        */
+        self.getGenres = function (userId, options) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            var parentId = options.parentId || "root";
+
+            // Don't put these on the query string
+            delete options.parentId;
+
+            var url = self.getUrl("Users/" + userId + "/Items/" + parentId + "/Genres", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        /**
+            Gets studios from an item
+        */
+        self.getStudios = function (userId, options) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            var parentId = options.parentId || "root";
+
+            // Don't put these on the query string
+            delete options.parentId;
+
+            var url = self.getUrl("Users/" + userId + "/Items/" + parentId + "/Studios", options);
 
             return self.ajax({
                 type: "GET",
