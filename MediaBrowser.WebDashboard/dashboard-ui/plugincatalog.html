@@ -14,13 +14,15 @@
                     <a href="pluginupdates.html" data-role="button">Automatic Updates</a>
                 </div>
 
-	            <h5 style="margin-bottom:4px;">Displaying plugins for:</h5>
-	            <fieldset data-role="controlgroup" data-type="horizontal" style="margin:auto;text-align: center;" id="pluginTabs">
-		            <a href="" data-role="button" data-mini="true" class="ui-btn-active" rel="Server">MB Server</a>
-		            <a href="" data-role="button" data-mini="true" rel="MBTheater">MB Theatre</a>
-		            <a href="" data-role="button" data-mini="true" rel="MBClassic">MB Classic</a>
-		            <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $.mobile.activePage).panel( 'toggle' );">Filter</button>
-		        </fieldset>
+                <div style="display: inline-block; margin: .75em 0;">
+                    <fieldset data-role="controlgroup" data-type="horizontal" id="pluginTabs">
+                        <a href="" data-role="button" data-mini="true" class="ui-btn-active" rel="Server">MB Server</a>
+                        <a href="" data-role="button" data-mini="true" rel="MBTheater">MB Theatre</a>
+                        <a href="" data-role="button" data-mini="true" rel="MBClassic">MB Classic</a>
+                    </fieldset>
+                </div>
+
+                <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $.mobile.activePage).panel( 'toggle' );">Filter</button>
 
                 <div id="pluginTiles"></div>
             </div>

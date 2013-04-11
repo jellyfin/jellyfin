@@ -80,40 +80,44 @@
         Dashboard.hideLoadingMsg();
     }
 
-	function selectTab(elem) {
+    function selectTab(elem, page) {
+        
 		$("#pluginTabs a").removeClass("ui-btn-active");
 		$(elem).addClass("ui-btn-active");
 
 		query.TargetSystems = $(elem).attr("rel");
 
-		reloadList($.mobile.activePage);
+		reloadList(page);
 	}
 
     $(document).on('pageinit', "#pluginCatalogPage", function () {
 
         var page = this;
 
-        $('.chkPremiumFilter', this).on('change', function () {
+        $('.chkPremiumFilter', page).on('change', function () {
 
             if (this.checked) {
                 query.IsPremium = true;
             } else {
                 query.IsPremium = null;
             }
-
+            reloadList(page);
         });
 
-	    $('#pluginTabs a', this).each(function(){
+        $('#pluginTabs a', page).each(function () {
 		    $(this).on('click', function () {
-			    selectTab(this);
+		        selectTab(this, page);
 		    });
 	    });
 
     }).on('pageshow', "#pluginCatalogPage", function () {
-		selectTab($("#pluginTabs a.ui-btn-active"));
+        
+        var page = this;
+
+        selectTab($("#pluginTabs a.ui-btn-active"), page);
 
         // Reset form values using the last used query
-        $('.chkPremiumFilter', this).each(function () {
+        $('.chkPremiumFilter', page).each(function () {
 
             var filters = query.IsPremium || false;
 
