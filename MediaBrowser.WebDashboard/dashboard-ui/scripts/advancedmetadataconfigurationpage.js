@@ -33,7 +33,7 @@
 
             var checkedAttribute = configuration.InternetProviderExcludeTypes.indexOf(type) != -1 ? ' checked="checked"' : '';
 
-            html += '<input' + checkedAttribute + ' class="chkItemType" data-itemtype="' + type + '" type="checkbox" name="' + id + '" id="' + id + '" onchange="AdvancedMetadataConfigurationPage.submit();" />';
+            html += '<input' + checkedAttribute + ' class="chkItemType" data-mini="true" data-itemtype="' + type + '" type="checkbox" name="' + id + '" id="' + id + '" onchange="AdvancedMetadataConfigurationPage.submit();" />';
             html += '<label for="' + id + '">' + type + '</label>';
         }
 
