@@ -2,7 +2,7 @@
 
     // The base query options
     var query = {
-	    TargetSystems: 'Server'
+	    TargetSystems: 'Server,MBTheater,MBClassic'
     };
 
     function reloadList(page) {
@@ -21,24 +21,28 @@
 
     function populateList(page, availablePlugins, installedPlugins) {
 
+	    Dashboard.showLoadingMsg();
+
         availablePlugins = availablePlugins.filter(function (p) {
             return p.type == "UserInstalled";
         }).sort(function (a, b) {
             return a.name > b.name ? 1 : -1;
         });
 
-        var html = "";
+        var serverhtml = '';
+	    var theatrehtml = '';
+	    var classichtml = "";
 
         for (var i = 0, length = availablePlugins.length; i < length; i++) {
-
+			var html = '';
             var plugin = availablePlugins[i];
 
             html += "<div class='posterViewItem'><a href='addPlugin.html?name=" + encodeURIComponent(plugin.name) + "'>";
 
             if (plugin.thumbImage) {
-                html += "<img src='" + plugin.thumbImage + "' />";
+                html += "<img src='" + plugin.thumbImage + "' style='max-width:185px;' />";
             } else {
-                html += "<img style='background:#444444;' src='css/images/items/list/collection.png' />";
+                html += "<img style='background:#444444;max-width:185px;' src='css/images/items/list/collection.png' />";
             }
 
             if (plugin.isPremium) {
@@ -69,30 +73,51 @@
 
             html += "</a></div>";
 
+	        if (plugin.targetSystem == "Server") {
+		        serverhtml += html;
+	        }else if (plugin.targetSystem == "MBTheater") {
+		        theatrehtml += html;
+	        }else if (plugin.targetSystem == "MBClassic") {
+		        classichtml += html;
+	        }
+
         }
 
 	    if (!availablePlugins.length) {
-		    html = '<div style="text-align:center;margin: 10px;">No available plugins</div>';
+		    $("#noPlugins", page).hide();
 	    }
 
-        $('#pluginTiles', page).html(html);
+	    $('#pluginServerTiles', page).html(serverhtml);
+	    $('#pluginTheatreTiles', page).html(theatrehtml);
+	    $('#pluginClassicTiles', page).html(classichtml);
+
+	    if (serverhtml) {
+            $('#pluginServerCollapsible', page).show();
+	    }else {
+		    $('#pluginServerCollapsible', page).hide();
+	    }
+
+	    if (theatrehtml) {
+		   $('#pluginTheatreCollapsible', page).show();
+	    }else {
+		    $('#pluginTheatreCollapsible', page).hide();
+	    }
+
+	    if (classichtml) {
+		   $('#pluginClassicCollapsible', page).show();
+	    }else {
+		    $('#pluginClassicCollapsible', page).hide();
+	    }
 
         Dashboard.hideLoadingMsg();
     }
 
-    function selectTab(elem, page) {
-        
-		$("#pluginTabs a").removeClass("ui-btn-active");
-		$(elem).addClass("ui-btn-active");
-
-		query.TargetSystems = $(elem).attr("rel");
-
-		reloadList(page);
-	}
 
     $(document).on('pageinit', "#pluginCatalogPage", function () {
 
         var page = this;
+
+	    reloadList(page);
 
         $('.chkPremiumFilter', page).on('change', function () {
 
@@ -104,17 +129,9 @@
             reloadList(page);
         });
 
-        $('#pluginTabs a', page).each(function () {
-		    $(this).on('click', function () {
-		        selectTab(this, page);
-		    });
-	    });
-
     }).on('pageshow', "#pluginCatalogPage", function () {
         
         var page = this;
-
-        selectTab($("#pluginTabs a.ui-btn-active"), page);
 
         // Reset form values using the last used query
         $('.chkPremiumFilter', page).each(function () {
