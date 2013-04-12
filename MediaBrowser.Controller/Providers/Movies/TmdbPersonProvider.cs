@@ -231,12 +231,12 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             if (DateTime.TryParseExact(searchResult.Birthday, "yyyy-MM-dd", new CultureInfo("en-US"), DateTimeStyles.None, out date))
             {
-                person.PremiereDate = date;
+                person.PremiereDate = date.ToUniversalTime();
             }
 
             if (DateTime.TryParseExact(searchResult.Deathday, "yyyy-MM-dd", new CultureInfo("en-US"), DateTimeStyles.None, out date))
             {
-                person.EndDate = date;
+                person.EndDate = date.ToUniversalTime();
             }
 
             if (!string.IsNullOrEmpty(searchResult.Homepage))

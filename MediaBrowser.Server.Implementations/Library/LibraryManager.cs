@@ -569,7 +569,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <summary>
         /// The images by name item cache
         /// </summary>
-        private readonly ConcurrentDictionary<string, object> ImagesByNameItemCache = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, object> _imagesByNameItemCache = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Generically retrieves an IBN item
@@ -596,7 +596,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var key = Path.Combine(path, FileSystem.GetValidFilename(name));
 
-            var obj = ImagesByNameItemCache.GetOrAdd(key, keyname => CreateImagesByNameItem<T>(path, name, cancellationToken, allowSlowProviders));
+            var obj = _imagesByNameItemCache.GetOrAdd(key, keyname => CreateImagesByNameItem<T>(path, name, cancellationToken, allowSlowProviders));
 
             return obj as Task<T>;
         }
@@ -677,7 +677,7 @@ namespace MediaBrowser.Server.Implementations.Library
         public async Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
         {
             // Clear the IBN cache
-            ImagesByNameItemCache.Clear();
+            _imagesByNameItemCache.Clear();
 
             const int maxTasks = 250;
 

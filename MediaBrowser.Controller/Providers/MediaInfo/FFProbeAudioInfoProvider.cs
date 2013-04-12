@@ -139,7 +139,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             // If we don't have a ProductionYear try and get it from PremiereDate
             if (audio.PremiereDate.HasValue && !audio.ProductionYear.HasValue)
             {
-                audio.ProductionYear = audio.PremiereDate.Value.Year;
+                audio.ProductionYear = audio.PremiereDate.Value.ToLocalTime().Year;
             }
 
             FetchGenres(audio, tags);
