@@ -26,10 +26,12 @@ namespace MediaBrowser.Installer
         protected string PackageName = "MBServer";
         protected string RootSuffix = "-Server";
         protected string TargetExe = "MediaBrowser.ServerApplication.exe";
+        protected string TargetArgs = "";
         protected string FriendlyName = "Media Browser Server";
         protected string Archive = null;
         protected bool InstallPismo = true;
         protected string RootPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "MediaBrowser-Server");
+        protected string EndInstallPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "MediaBrowser-Server");
 
         protected bool IsUpdate = false;
 
@@ -133,6 +135,18 @@ namespace MediaBrowser.Installer
                     RootSuffix = "-Theater";
                     TargetExe = "MediaBrowser.UI.exe";
                     FriendlyName = "Media Browser Theater";
+                    RootPath = EndInstallPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "MediaBrowser" + RootSuffix);
+                    EndInstallPath = Path.Combine(RootPath, "system");
+                    break;
+
+                case "mbc":
+                    PackageName = "MBClassic";
+                    RootSuffix = "-WMC";
+                    TargetExe = "ehshell.exe";
+                    TargetArgs = @"/nostartupanimation /entrypoint:{CE32C570-4BEC-4aeb-AD1D-CF47B91DE0B2}\{FC9ABCCC-36CB-47ac-8BAB-03E8EF5F6F22}";
+                    FriendlyName = "Media Browser Classic";
+                    RootPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "MediaBrowser" + RootSuffix);
+                    EndInstallPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "ehome");
                     break;
 
                 default:
@@ -140,10 +154,11 @@ namespace MediaBrowser.Installer
                     RootSuffix = "-Server";
                     TargetExe = "MediaBrowser.ServerApplication.exe";
                     FriendlyName = "Media Browser Server";
+                    RootPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "MediaBrowser" + RootSuffix);
+                    EndInstallPath = Path.Combine(RootPath, "system");
                     break;
             }
 
-            RootPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "MediaBrowser" + RootSuffix);
 
         }
 
@@ -274,8 +289,7 @@ namespace MediaBrowser.Installer
                 }
                 catch (Exception e)
                 {
-                    SystemClose("Error Installing Pismo - "+e.GetType().FullName+"\n\n"+e.Message);
-                    return;
+                    SystemClose("Error Installing ISO support - "+e.GetType().FullName+"\n\n"+e.Message);
                 }
             }
 
@@ -286,11 +300,11 @@ namespace MediaBrowser.Installer
             lblStatus.Text = string.Format("Starting {0}...", FriendlyName);
             try
             {
-                Process.Start(fullPath);
+                Process.Start(Path.Combine(EndInstallPath, TargetExe), TargetArgs);
             }
             catch (Exception e)
             {
-                SystemClose("Error Executing - "+fullPath+ " "+e.GetType().FullName+"\n\n"+e.Message);
+                SystemClose("Error Executing - "+Path.Combine(EndInstallPath, TargetExe) + " " + TargetArgs + "\n\n" +e.GetType().FullName+"\n\n"+e.Message);
                 return;
             }
 
@@ -432,12 +446,20 @@ namespace MediaBrowser.Installer
                     else
                     {
                         //Rollback
-                        if (Directory.Exists(systemDir)) Directory.Delete(systemDir);
-                        Directory.Move(backupDir, systemDir);
+                        RollBack(systemDir, backupDir);
                         File.Delete(archive); // so we don't try again if its an update
                         throw;
                     }
                 }
+            }
+        }
+
+        protected void RollBack(string systemDir, string backupDir)
+        {
+            if (Directory.Exists(backupDir))
+            {
+                if (Directory.Exists(systemDir)) Directory.Delete(systemDir);
+                Directory.Move(backupDir, systemDir);
             }
         }
 
