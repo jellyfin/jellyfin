@@ -17,13 +17,6 @@ namespace MediaBrowser.Api.UserLibrary
         public Guid UserId { get; set; }
 
         /// <summary>
-        /// What to sort the results by
-        /// </summary>
-        /// <value>The sort by.</value>
-        [ApiMember(Name = "SortBy", Description = "Optional. Specify one or more sort orders, comma delimeted. Options: Album, AlbumArtist, Artist, CommunityRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Runtime", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string SortBy { get; set; }
-
-        /// <summary>
         /// Skips over a given number of items within the results. Use for paging.
         /// </summary>
         /// <value>The start index.</value>
@@ -116,22 +109,6 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             return val.Split(',').Select(v => (ItemFields)Enum.Parse(typeof(ItemFields), v, true));
-        }
-
-        /// <summary>
-        /// Gets the order by.
-        /// </summary>
-        /// <returns>IEnumerable{ItemSortBy}.</returns>
-        public IEnumerable<string> GetOrderBy()
-        {
-            var val = SortBy;
-
-            if (string.IsNullOrEmpty(val))
-            {
-                return new string[] { };
-            }
-
-            return val.Split(',');
         }
     }
 }

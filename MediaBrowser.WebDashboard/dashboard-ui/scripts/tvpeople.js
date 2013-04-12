@@ -15,8 +15,8 @@
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
-        
-        ApiClient.getGenres(Dashboard.getCurrentUserId(), query).done(function (result) {
+
+        ApiClient.getPeople(Dashboard.getCurrentUserId(), query).done(function (result) {
 
             var html = '';
 
@@ -48,7 +48,7 @@
         });
     }
 
-    $(document).on('pageinit', "#tvGenresPage", function () {
+    $(document).on('pageinit', "#tvPeoplePage", function () {
 
         var page = this;
 
@@ -80,11 +80,11 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#tvGenresPage", function () {
+    }).on('pagebeforeshow', "#tvPeoplePage", function () {
 
         reloadItems(this);
 
-    }).on('pageshow', "#tvGenresPage", function () {
+    }).on('pageshow', "#tvPeoplePage", function () {
 
         // Reset form values using the last used query
         $('.radioSortBy', this).each(function () {

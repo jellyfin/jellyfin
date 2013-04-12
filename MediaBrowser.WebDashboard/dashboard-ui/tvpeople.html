@@ -4,17 +4,16 @@
     <title>Media Browser</title>
 </head>
 <body>
-    <div id="movieStudiosPage" data-role="page" class="page libraryPage noLogoPage listPage" data-theme="a">
+    <div id="tvPeoplePage" data-role="page" class="page libraryPage noLogoPage listPage" data-theme="a">
         <h1 class="libraryPageHeader"><a href="index.html" class="imageLink">
-            <img src="css/images/home.png"></a>Movies</h1>
+            <img src="css/images/home.png"></a>TV Shows</h1>
         <div data-role="content">
             <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
-                <a href="moviesrecommended.html" data-role="button">Suggested</a>
-                <a href="movies.html" data-role="button">Movies</a>
-                <a href="boxsets.html" data-role="button">Box Sets</a>
-                <a href="moviegenres.html" data-role="button">Genres</a>
-                <a href="moviepeople.html" data-role="button">People</a>
-                <a href="moviestudios.html" data-role="button" class="ui-btn-active">Studios</a>
+                <a href="tvrecommended.html" data-role="button">Suggested</a>
+                <a href="tvshows.html" data-role="button">Shows</a>
+                <a href="tvgenres.html" data-role="button">Genres</a>
+                <a href="tvpeople.html" data-role="button" class="ui-btn-active">Actors</a>
+                <a href="tvstudios.html" data-role="button">Networks</a>
             </div>
             <div class="viewSettings">
                 <button data-mini="true" data-icon="sort" data-inline="true" onclick="$('#sortPanel', $.mobile.activePage).panel( 'toggle' );">Sort</button>
@@ -64,6 +63,7 @@
                 </fieldset>
             </form>
         </div>
+
     </div>
 </body>
 </html>

@@ -51,11 +51,9 @@
                     var height = 300;
                     var width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
 
-                    html += "<img class='posterDetailViewImage' src='" + ApiClient.getImageUrl(item.Id, {
-                        type: "Primary",
+                    html += "<img class='posterDetailViewImage' src='" + LibraryBrowser.getPrimaryImageUrl(item, {
                         height: height,
-                        width: width,
-                        tag: item.ImageTags.Primary
+                        width: width
 
                     }) + "' />";
 
@@ -76,6 +74,10 @@
                 else if (item.MediaType == "Video" || item.Type == "Season" || item.Type == "Series") {
 
                     html += "<img class='posterDetailViewImage' style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/video.png' />";
+                }
+                else if (item.Type == "Person") {
+
+                    html += "<img class='posterDetailViewImage' style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/person.png' />";
                 }
                 else {
 
@@ -161,6 +163,29 @@
             }
 
             return item.IsFolder ? (item.Id ? "itemList.html?parentId=" + item.Id : "#") : "itemdetails.html?id=" + item.Id;
+
+        },
+        
+        getPrimaryImageUrl: function (item, options) {
+
+            options = options || {};
+            options.type = "Primary";
+            options.tag = item.ImageTags.Primary;
+            
+            if (item.Type == "Studio") {
+
+                return ApiClient.getStudioImageUrl(item.Name, options);
+            }
+            if (item.Type == "Person") {
+
+                return ApiClient.getPersonImageUrl(item.Name, options);
+            }
+            if (item.Type == "Genre") {
+
+                return ApiClient.getGenreImageUrl(item.Name, options);
+            }
+
+            return ApiClient.getImageUrl(item.Id, options);
 
         },
 

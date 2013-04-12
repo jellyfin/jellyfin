@@ -48,13 +48,56 @@
         });
     }
 
-    $(document).on('pagebeforeshow', "#movieGenresPage", function () {
+    $(document).on('pageinit', "#movieGenresPage", function () {
+
+        var page = this;
+
+        $('.radioSortBy', this).on('click', function () {
+            query.SortBy = this.getAttribute('data-sortby');
+            query.StartIndex = 0;
+            reloadItems(page);
+        });
+
+        $('.radioSortOrder', this).on('click', function () {
+            query.SortOrder = this.getAttribute('data-sortorder');
+            query.StartIndex = 0;
+            reloadItems(page);
+        });
+
+        $('.chkStandardFilter', this).on('change', function () {
+
+            var filterName = this.getAttribute('data-filter');
+            var filters = query.Filters || "";
+
+            filters = (',' + filters).replace(',' + filterName, '').substring(1);
+
+            if (this.checked) {
+                filters = filters ? (filters + ',' + filterName) : filterName;
+            }
+
+            query.Filters = filters;
+
+            reloadItems(page);
+        });
+
+    }).on('pagebeforeshow', "#movieGenresPage", function () {
 
         reloadItems(this);
 
     }).on('pageshow', "#movieGenresPage", function () {
 
+        // Reset form values using the last used query
+        $('.radioSortBy', this).each(function () {
 
+            this.checked = query.SortBy == this.getAttribute('data-sortby');
+
+        }).checkboxradio('refresh');
+
+        $('.radioSortOrder', this).each(function () {
+
+            this.checked = query.SortOrder == this.getAttribute('data-sortorder');
+
+        }).checkboxradio('refresh');
     });
 
 })(jQuery, document);
