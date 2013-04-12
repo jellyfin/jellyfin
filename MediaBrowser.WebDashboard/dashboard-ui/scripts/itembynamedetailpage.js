@@ -75,7 +75,7 @@
 
             var gmap = '<a target="_blank" href="https://maps.google.com/maps?q=' + item.ProductionLocations[0] + '">' + item.ProductionLocations[0] + '</a>';
 
-            $('#itemBirthLocation', page).show().html("Birth place:&nbsp;&nbsp;" + gmap).trigger('create');
+            $('#itemBirthLocation', page).show().html("Birthplace:&nbsp;&nbsp;" + gmap).trigger('create');
         } else {
             $('#itemBirthLocation', page).hide();
         }

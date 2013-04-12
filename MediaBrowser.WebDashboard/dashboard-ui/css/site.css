@@ -740,6 +740,10 @@ progress {
     }
 
     .itemDetailBlock {
+        width: 55%;
+    }
+
+    .itemDetailBlock {
         padding-left: 30px;
     }
 }
@@ -752,7 +756,7 @@ progress {
     }
 
     .itemDetailBlock {
-        width: 55%;
+        width: 60%;
     }
 
     .galleryImage {
