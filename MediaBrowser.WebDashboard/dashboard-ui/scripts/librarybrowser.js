@@ -107,11 +107,11 @@
                 }
 
                 var childText;
-                
+
                 if (item.Type == "BoxSet") {
 
                     childText = item.ChildCount == 1 ? "1 Movie" : item.ChildCount + " Movies";
-                    
+
                     html += '<p class="itemMiscInfo">' + childText + '</p>';
                 }
                 else if (item.Type == "Genre" || item.Type == "Studio" || item.Type == "Person") {
@@ -165,13 +165,13 @@
             return item.IsFolder ? (item.Id ? "itemList.html?parentId=" + item.Id : "#") : "itemdetails.html?id=" + item.Id;
 
         },
-        
+
         getPrimaryImageUrl: function (item, options) {
 
             options = options || {};
             options.type = "Primary";
             options.tag = item.ImageTags.Primary;
-            
+
             if (item.Type == "Studio") {
 
                 return ApiClient.getStudioImageUrl(item.Name, options);
@@ -443,6 +443,10 @@
 
             var html = 'Links:&nbsp;&nbsp;';
             var links = [];
+
+            if (item.HomePageUrl) {
+                links.push('<a class="ui-link" href="' + item.HomePageUrl + '" target="_blank">Website</a>');
+            }
 
             if (item.ProviderIds.Imdb) {
                 if (item.Type == "Movie" || item.Type == "Episode")

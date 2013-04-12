@@ -12,6 +12,11 @@ namespace MediaBrowser.Model.Querying
         AudioInfo,
 
         /// <summary>
+        /// The budget
+        /// </summary>
+        Budget,
+
+        /// <summary>
         /// The chapters
         /// </summary>
         Chapters,
@@ -32,9 +37,19 @@ namespace MediaBrowser.Model.Querying
         DisplayPreferencesId,
 
         /// <summary>
+        /// The end date
+        /// </summary>
+        EndDate,
+
+        /// <summary>
         /// Genres
         /// </summary>
         Genres,
+
+        /// <summary>
+        /// The home page URL
+        /// </summary>
+        HomePageUrl,
 
         /// <summary>
         /// Child count, recursive child count, etc
@@ -70,6 +85,11 @@ namespace MediaBrowser.Model.Querying
         /// The list of people for the item
         /// </summary>
         People,
+
+        /// <summary>
+        /// The production locations
+        /// </summary>
+        ProductionLocations,
 
         /// <summary>
         /// Imdb, tmdb, etc

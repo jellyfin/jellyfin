@@ -897,6 +897,9 @@ namespace MediaBrowser.Controller.Providers.Movies
                 movie.Name = movieData.title ?? movieData.original_title ?? movie.Name;
                 movie.Overview = movieData.overview;
                 movie.Overview = movie.Overview != null ? movie.Overview.Replace("\n\n", "\n") : null;
+                movie.HomePageUrl = movieData.homepage;
+                movie.Budget = movieData.budget;
+
                 if (!string.IsNullOrEmpty(movieData.tagline)) movie.AddTagline(movieData.tagline);
                 movie.SetProviderId(MetadataProviders.Imdb, movieData.imdb_id);
                 float rating;
