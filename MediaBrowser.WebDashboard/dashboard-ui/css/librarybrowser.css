@@ -251,11 +251,6 @@
 
     .posterDetailViewImage {
         max-height: 140px;
-        max-width: 50%;
-    }
-
-    .posterDetailViewContentContainer {
-        width: 47%;
     }
 
     .posterDetailViewItem .userDataIcons {

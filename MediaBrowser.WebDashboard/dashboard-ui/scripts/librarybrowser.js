@@ -849,6 +849,14 @@
             } else {
                 elem.hide();
             }
+        },
+        
+        renderBudget: function (elem, item) {
+            if (item.Budget) {
+                elem.show().html('Budget:&nbsp;&nbsp;$' + item.Budget);
+            } else {
+                elem.hide();
+            }
         }
 
     };

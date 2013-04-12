@@ -50,6 +50,7 @@
     }
 
     function setInitialCollapsibleState(page, item) {
+        
         if (!item.MediaStreams || !item.MediaStreams.length) {
             $('#mediaInfoCollapsible', page).hide();
         } else {
@@ -101,6 +102,8 @@
         } else {
             $('#itemCommunityRating', page).hide();
         }
+
+        LibraryBrowser.renderBudget($('#itemBudget', page), item);
 
         $('#itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
 
