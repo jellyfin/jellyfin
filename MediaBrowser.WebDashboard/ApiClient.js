@@ -1553,6 +1553,29 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         };
 
         /**
+            Gets people from an item
+        */
+        self.getPeople = function (userId, options) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            var parentId = options.parentId || "root";
+
+            // Don't put these on the query string
+            delete options.parentId;
+
+            var url = self.getUrl("Users/" + userId + "/Items/" + parentId + "/Persons", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        /**
             Gets studios from an item
         */
         self.getStudios = function (userId, options) {

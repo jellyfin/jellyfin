@@ -64,9 +64,8 @@ namespace MediaBrowser.Api.UserLibrary
 
             items = FilterItems(request, items, user);
 
-            items = ItemsService.ApplySortOrder(request, items, user, LibraryManager);
-            
-            var ibnItemsArray = GetAllItems(request, items, user).ToArray();
+            var extractedItems = GetAllItems(request, items, user);
+            var ibnItemsArray = SortItems(request, extractedItems).ToArray();
       
             IEnumerable<Tuple<string, Func<IEnumerable<BaseItem>>>> ibnItems = ibnItemsArray;
 
@@ -98,6 +97,29 @@ namespace MediaBrowser.Api.UserLibrary
             result.Items = resultItems.Where(i => i != null).ToArray();
 
             return result;
+        }
+
+        /// <summary>
+        /// Sorts the items.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="items">The items.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        private IEnumerable<Tuple<string, Func<IEnumerable<BaseItem>>>> SortItems(GetItemsByName request, IEnumerable<Tuple<string, Func<IEnumerable<BaseItem>>>> items)
+        {
+            if (string.Equals(request.SortBy, "SortName", StringComparison.OrdinalIgnoreCase))
+            {
+                if (request.SortOrder.HasValue && request.SortOrder.Value == Model.Entities.SortOrder.Descending)
+                {
+                    items = items.OrderByDescending(i => i.Item1);
+                }
+                else
+                {
+                    items = items.OrderBy(i => i.Item1);
+                }
+            }
+
+            return items;
         }
 
         /// <summary>
@@ -181,5 +203,11 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     public class GetItemsByName : BaseItemsRequest, IReturn<ItemsResult>
     {
+        /// <summary>
+        /// What to sort the results by
+        /// </summary>
+        /// <value>The sort by.</value>
+        [ApiMember(Name = "SortBy", Description = "Optional. Options: SortName", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string SortBy { get; set; }
     }
 }

@@ -474,6 +474,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "supporterkeypage.js",
                                       "supporterpage.js",
                                       "tvgenres.js",
+                                      "tvpeople.js",
                                       "tvseries.js",
                                       "tvrecommended.js",
                                       "tvshows.js",
