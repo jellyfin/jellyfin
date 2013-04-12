@@ -234,6 +234,21 @@ namespace MediaBrowser.Controller.Providers.Movies
                 person.PremiereDate = date;
             }
 
+            if (DateTime.TryParseExact(searchResult.Deathday, "yyyy-MM-dd", new CultureInfo("en-US"), DateTimeStyles.None, out date))
+            {
+                person.EndDate = date;
+            }
+
+            if (!string.IsNullOrEmpty(searchResult.Homepage))
+            {
+                person.HomePageUrl = searchResult.Homepage;
+            }
+
+            if (!string.IsNullOrEmpty(searchResult.Place_Of_Birth))
+            {
+                person.AddProductionLocation(searchResult.Place_Of_Birth);
+            }
+            
             person.SetProviderId(MetadataProviders.Tmdb, searchResult.Id.ToString());
         }
 

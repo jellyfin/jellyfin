@@ -478,6 +478,12 @@ namespace MediaBrowser.Controller.Entities
         public DateTime? PremiereDate { get; set; }
 
         /// <summary>
+        /// Gets or sets the end date.
+        /// </summary>
+        /// <value>The end date.</value>
+        public DateTime? EndDate { get; set; }
+        
+        /// <summary>
         /// Gets or sets the display type of the media.
         /// </summary>
         /// <value>The display type of the media.</value>
@@ -551,6 +557,24 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The genres.</value>
         public virtual List<string> Genres { get; set; }
 
+        /// <summary>
+        /// Gets or sets the home page URL.
+        /// </summary>
+        /// <value>The home page URL.</value>
+        public string HomePageUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the budget.
+        /// </summary>
+        /// <value>The budget.</value>
+        public double Budget { get; set; }
+
+        /// <summary>
+        /// Gets or sets the production locations.
+        /// </summary>
+        /// <value>The production locations.</value>
+        public List<string> ProductionLocations { get; set; }
+        
         /// <summary>
         /// Gets or sets the community rating.
         /// </summary>
@@ -1064,7 +1088,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("name");
             }
 
             if (Genres == null)
@@ -1075,6 +1099,29 @@ namespace MediaBrowser.Controller.Entities
             if (!Genres.Contains(name, StringComparer.OrdinalIgnoreCase))
             {
                 Genres.Add(name);
+            }
+        }
+
+        /// <summary>
+        /// Adds the production location.
+        /// </summary>
+        /// <param name="location">The location.</param>
+        /// <exception cref="System.ArgumentNullException">location</exception>
+        public void AddProductionLocation(string location)
+        {
+            if (string.IsNullOrWhiteSpace(location))
+            {
+                throw new ArgumentNullException("location");
+            }
+
+            if (ProductionLocations == null)
+            {
+                ProductionLocations = new List<string>();
+            }
+
+            if (!ProductionLocations.Contains(location, StringComparer.OrdinalIgnoreCase))
+            {
+                ProductionLocations.Add(location);
             }
         }
 

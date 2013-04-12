@@ -121,6 +121,18 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
 
+                case "Website":
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            item.HomePageUrl = val;
+                        }
+
+                        break;
+                    }
+
                 case "TagLines":
                     {
                         FetchFromTaglinesNode(reader.ReadSubtree(), item);

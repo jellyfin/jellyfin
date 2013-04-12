@@ -432,6 +432,34 @@ namespace MediaBrowser.Model.Dto
         /// <value>The overview HTML.</value>
         [ProtoMember(70)]
         public string OverviewHtml { get; set; }
+
+        /// <summary>
+        /// Gets or sets the end date.
+        /// </summary>
+        /// <value>The end date.</value>
+        [ProtoMember(71)]
+        public DateTime? EndDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the home page URL.
+        /// </summary>
+        /// <value>The home page URL.</value>
+        [ProtoMember(72)]
+        public string HomePageUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the production locations.
+        /// </summary>
+        /// <value>The production locations.</value>
+        [ProtoMember(73)]
+        public List<string> ProductionLocations { get; set; }
+
+        /// <summary>
+        /// Gets or sets the budget.
+        /// </summary>
+        /// <value>The budget.</value>
+        [ProtoMember(73)]
+        public double? Budget { get; set; }
         
         /// <summary>
         /// Gets a value indicating whether this instance can resume.

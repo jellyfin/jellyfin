@@ -256,6 +256,26 @@ namespace MediaBrowser.Controller.Library
                 dto.DisplayMediaType = item.DisplayMediaType;
             }
 
+            if (fields.Contains(ItemFields.Budget))
+            {
+                dto.Budget = item.Budget;
+            }
+
+            if (fields.Contains(ItemFields.EndDate))
+            {
+                dto.EndDate = item.EndDate;
+            }
+
+            if (fields.Contains(ItemFields.HomePageUrl))
+            {
+                dto.HomePageUrl = item.HomePageUrl;
+            }
+
+            if (fields.Contains(ItemFields.ProductionLocations))
+            {
+                dto.ProductionLocations = item.ProductionLocations;
+            }
+            
             dto.AspectRatio = item.AspectRatio;
 
             dto.BackdropImageTags = GetBackdropImageTags(item);
