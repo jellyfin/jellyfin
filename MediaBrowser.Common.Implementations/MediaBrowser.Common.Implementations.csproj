@@ -35,9 +35,6 @@
     <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Mediabrowser.PluginSecurity">
-      <HintPath>..\ThirdParty\PluginSecurity\Mediabrowser.PluginSecurity.dll</HintPath>
-    </Reference>
     <Reference Include="NLog">
       <HintPath>..\packages\NLog.2.0.0.2000\lib\net40\NLog.dll</HintPath>
     </Reference>
@@ -79,6 +76,8 @@
     <Compile Include="ScheduledTasks\Tasks\DeleteLogFileTask.cs" />
     <Compile Include="ScheduledTasks\Tasks\ReloadLoggerTask.cs" />
     <Compile Include="ScheduledTasks\Tasks\SystemUpdateTask.cs" />
+    <Compile Include="Security\MBLicenseFile.cs" />
+    <Compile Include="Security\MBRegistration.cs" />
     <Compile Include="Security\PluginSecurityManager.cs" />
     <Compile Include="Serialization\JsonSerializer.cs" />
     <Compile Include="Serialization\XmlSerializer.cs" />
@@ -104,7 +103,6 @@
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == Release (
 xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\" /y /d /r /i
-xcopy "$(TargetDir)Mediabrowser.PluginSecurity.dll" "$(SolutionDir)\Nuget\dlls\" /y /d /r /i
 )</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

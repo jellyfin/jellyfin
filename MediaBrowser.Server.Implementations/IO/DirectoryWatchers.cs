@@ -39,6 +39,11 @@ namespace MediaBrowser.Server.Implementations.IO
         private readonly ConcurrentDictionary<string,string> _tempIgnoredPaths = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
+        /// Any file name ending in any of these will be ignored by the watchers
+        /// </summary>
+        private readonly List<string> _alwaysIgnoreFiles = new List<string> {"thumbs.db","small.jpg","albumart.jpg"}; 
+
+        /// <summary>
         /// The timer lock
         /// </summary>
         private readonly object _timerLock = new object();
@@ -313,10 +318,18 @@ namespace MediaBrowser.Server.Implementations.IO
         /// <param name="e">The <see cref="FileSystemEventArgs" /> instance containing the event data.</param>
         void watcher_Changed(object sender, FileSystemEventArgs e)
         {
+            // Ignore when someone manually creates a new folder
             if (e.ChangeType == WatcherChangeTypes.Created && e.Name == "New folder")
             {
                 return;
             }
+
+            // Ignore certain files
+            if (_alwaysIgnoreFiles.Any(f => e.Name.EndsWith(f, StringComparison.OrdinalIgnoreCase)))
+            {
+                return;
+            }
+
             if (_tempIgnoredPaths.ContainsKey(e.FullPath))
             {
                 Logger.Info("Watcher requested to ignore change to " + e.FullPath);
