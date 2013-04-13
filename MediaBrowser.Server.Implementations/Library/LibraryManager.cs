@@ -516,10 +516,11 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="name">The name.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
+        /// <param name="forceCreation">if set to <c>true</c> [force creation].</param>
         /// <returns>Task{Person}.</returns>
-        private Task<Person> GetPerson(string name, CancellationToken cancellationToken, bool allowSlowProviders = false)
+        private Task<Person> GetPerson(string name, CancellationToken cancellationToken, bool allowSlowProviders = false, bool forceCreation = false)
         {
-            return GetImagesByNameItem<Person>(ConfigurationManager.ApplicationPaths.PeoplePath, name, cancellationToken, allowSlowProviders);
+            return GetImagesByNameItem<Person>(ConfigurationManager.ApplicationPaths.PeoplePath, name, cancellationToken, allowSlowProviders, forceCreation);
         }
 
         /// <summary>
@@ -569,7 +570,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <summary>
         /// The images by name item cache
         /// </summary>
-        private readonly ConcurrentDictionary<string, object> ImagesByNameItemCache = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, object> _imagesByNameItemCache = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Generically retrieves an IBN item
@@ -579,9 +580,11 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="name">The name.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
+        /// <param name="forceCreation">if set to <c>true</c> [force creation].</param>
         /// <returns>Task{``0}.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        private Task<T> GetImagesByNameItem<T>(string path, string name, CancellationToken cancellationToken, bool allowSlowProviders = true)
+        /// <exception cref="System.ArgumentNullException">
+        /// </exception>
+        private Task<T> GetImagesByNameItem<T>(string path, string name, CancellationToken cancellationToken, bool allowSlowProviders = true, bool forceCreation = false)
             where T : BaseItem, new()
         {
             if (string.IsNullOrEmpty(path))
@@ -596,7 +599,16 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var key = Path.Combine(path, FileSystem.GetValidFilename(name));
 
-            var obj = ImagesByNameItemCache.GetOrAdd(key, keyname => CreateImagesByNameItem<T>(path, name, cancellationToken, allowSlowProviders));
+            if (forceCreation)
+            {
+                var task = CreateImagesByNameItem<T>(path, name, cancellationToken, allowSlowProviders);
+
+                _imagesByNameItemCache.AddOrUpdate(key, task, (keyName, oldValue) => task);
+
+                return task;
+            }
+
+            var obj = _imagesByNameItemCache.GetOrAdd(key, keyname => CreateImagesByNameItem<T>(path, name, cancellationToken, allowSlowProviders));
 
             return obj as Task<T>;
         }
@@ -676,9 +688,6 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public async Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            // Clear the IBN cache
-            ImagesByNameItemCache.Clear();
-
             const int maxTasks = 250;
 
             var tasks = new List<Task>();
@@ -713,7 +722,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                     try
                     {
-                        await GetPerson(currentPerson.Name, cancellationToken, allowSlowProviders: true).ConfigureAwait(false);
+                        await GetPerson(currentPerson.Name, cancellationToken, true, true).ConfigureAwait(false);
                     }
                     catch (IOException ex)
                     {

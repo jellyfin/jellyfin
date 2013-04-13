@@ -109,7 +109,7 @@ function humane_date(date_str) {
     ];
 
     var dt = new Date;
-    var date = parseISO8601Date(date_str, true);
+    var date = parseISO8601Date(date_str, { toLocal: true });
 
     var seconds = ((dt - date) / 1000);
     var token = ' ago';
@@ -173,7 +173,9 @@ function getParameterByName(name) {
         return decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
-function parseISO8601Date(s, toLocal) {
+function parseISO8601Date(s, options) {
+
+    options = options || {};
 
     // parenthese matches:
     // year month day    hours minutes seconds
@@ -181,8 +183,7 @@ function parseISO8601Date(s, toLocal) {
     // tzstring plusminus hours minutes
     var re = /(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)(\.\d+)?(Z|([+-])(\d\d):(\d\d))/;
 
-    var d = [];
-    d = s.match(re);
+    var d = s.match(re);
 
     // "2010-12-07T11:00:00.000-09:00" parses to:
     //  ["2010-12-07T11:00:00.000-09:00", "2010", "12", "07", "11",
@@ -192,6 +193,7 @@ function parseISO8601Date(s, toLocal) {
     //     "00", "00", ".000", "Z", undefined, undefined, undefined]
 
     if (!d) {
+
         throw "Couldn't parse ISO 8601 date string '" + s + "'";
     }
 
@@ -223,7 +225,7 @@ function parseISO8601Date(s, toLocal) {
         } else {
             ms += offset;
         }
-    } else if (!toLocal) {
+    } else if (!options.toLocal) {
         ms += new Date().getTimezoneOffset() * 60000;
     }
 
@@ -334,19 +336,19 @@ function parseISO8601Date(s, toLocal) {
 //convert Ticks to human hr:min:sec format
 function ticks_to_human(str) {
 
-	var in_seconds = (str / 10000000);
-	var hours = Math.floor(in_seconds / 3600);
-	var minutes = Math.floor((in_seconds - (hours * 3600)) / 60);
-	var seconds = '0' + Math.round(in_seconds - (hours * 3600) - (minutes * 60));
+    var in_seconds = (str / 10000000);
+    var hours = Math.floor(in_seconds / 3600);
+    var minutes = Math.floor((in_seconds - (hours * 3600)) / 60);
+    var seconds = '0' + Math.round(in_seconds - (hours * 3600) - (minutes * 60));
 
-	var time = '';
+    var time = '';
 
-	if (hours > 0) time += hours + ":";
-	if (minutes < 10 && hours == 0) time += minutes;
-	else time += ('0' + minutes).substr(-2);
-	time += ":" + seconds.substr(-2);
+    if (hours > 0) time += hours + ":";
+    if (minutes < 10 && hours == 0) time += minutes;
+    else time += ('0' + minutes).substr(-2);
+    time += ":" + seconds.substr(-2);
 
-	return time;
+    return time;
 };
 
 //parse video player src URL

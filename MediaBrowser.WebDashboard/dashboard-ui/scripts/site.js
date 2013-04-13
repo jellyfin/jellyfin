@@ -1,7 +1,7 @@
 ﻿$.ajaxSetup({
     crossDomain: true,
 
-    error: function (event, jqxhr, settings, exception) {
+    error: function (event) {
         Dashboard.hideLoadingMsg();
 
         if (!Dashboard.suppressAjaxErrors) {
@@ -22,8 +22,6 @@ $(document).one('click', WebNotifications.requestPermission);
 
 var Dashboard = {
     jQueryMobileInit: function () {
-
-        //$.mobile.defaultPageTransition = 'slide';
 
         // Page
         //$.mobile.page.prototype.options.theme = "a";

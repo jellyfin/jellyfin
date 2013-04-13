@@ -198,7 +198,6 @@
     padding: 10px 10px 3px;
     margin: 3px 0;
     text-shadow: none;
-    cursor: pointer;
     font-weight: normal!important;
     display: block;
     font-size: 14px;
@@ -251,11 +250,6 @@
 
     .posterDetailViewImage {
         max-height: 140px;
-        max-width: 50%;
-    }
-
-    .posterDetailViewContentContainer {
-        width: 47%;
     }
 
     .posterDetailViewItem .userDataIcons {

@@ -538,8 +538,12 @@ namespace MediaBrowser.Controller.Entities
             var validChildren = new ConcurrentBag<Tuple<BaseItem, bool>>();
 
             cancellationToken.ThrowIfCancellationRequested();
-            
-            Parallel.ForEach(nonCachedChildren, child =>
+
+            var options = new ParallelOptions
+            {
+            };
+
+            Parallel.ForEach(nonCachedChildren, options, child =>
             {
                 BaseItem currentChild;
 
