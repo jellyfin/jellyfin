@@ -161,7 +161,7 @@ namespace MediaBrowser.Api.UserLibrary
         public string Id { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="UpdateUserItemRating" /> is likes.
+        /// Gets or sets a value indicating whether this <see cref="UpdateUserItemRating"/> is likes.
         /// </summary>
         /// <value><c>true</c> if likes; otherwise, <c>false</c>.</value>
         [ApiMember(Name = "Likes", Description = "Whether the user likes the item or not. true/false", IsRequired = true, DataType = "boolean", ParameterType = "query", Verb = "POST")]
