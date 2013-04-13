@@ -927,19 +927,19 @@ namespace MediaBrowser.Controller.Providers.Movies
                     movie.OfficialRating = ourRelease.certification ?? usRelease.certification;
                     if (ourRelease.release_date > new DateTime(1900, 1, 1))
                     {
-                        movie.PremiereDate = ourRelease.release_date;
+                        movie.PremiereDate = ourRelease.release_date.ToUniversalTime();
                         movie.ProductionYear = ourRelease.release_date.Year;
                     }
                     else
                     {
-                        movie.PremiereDate = usRelease.release_date;
+                        movie.PremiereDate = usRelease.release_date.ToUniversalTime();
                         movie.ProductionYear = usRelease.release_date.Year;
                     }
                 }
                 else
                 {
                     //no specific country release info at all
-                    movie.PremiereDate = movieData.release_date;
+                    movie.PremiereDate = movieData.release_date.ToUniversalTime();
                     movie.ProductionYear = movieData.release_date.Year;
                 }
 

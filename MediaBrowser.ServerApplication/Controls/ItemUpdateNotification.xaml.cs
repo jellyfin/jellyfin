@@ -206,7 +206,7 @@ namespace MediaBrowser.ServerApplication.Controls
             else
             {
                 txtPremeireDate.Visibility = Visibility.Visible;
-                txtPremeireDate.Text = "Premiered " + item.PremiereDate.Value.ToShortDateString();
+                txtPremeireDate.Text = "Premiered " + item.PremiereDate.Value.ToLocalTime().ToShortDateString();
             }
         }
 
