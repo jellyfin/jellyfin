@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.UserLibrary
@@ -202,30 +201,6 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             return dto;
-        }
-
-        /// <summary>
-        /// Marks the favorite.
-        /// </summary>
-        /// <param name="getItem">The get item.</param>
-        /// <param name="userId">The user id.</param>
-        /// <param name="isFavorite">if set to <c>true</c> [is favorite].</param>
-        /// <returns>Task.</returns>
-        protected async Task MarkFavorite(Func<Task<TItemType>> getItem, Guid userId, bool isFavorite)
-        {
-            var user = UserManager.GetUserById(userId);
-
-            var item = await getItem().ConfigureAwait(false);
-
-            var key = item.GetUserDataKey();
-
-            // Get the user data for this item
-            var data = await UserDataRepository.GetUserData(user.Id, key).ConfigureAwait(false);
-
-            // Set favorite status
-            data.IsFavorite = isFavorite;
-
-            await UserDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None).ConfigureAwait(false);
         }
     }
 

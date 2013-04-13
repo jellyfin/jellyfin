@@ -90,6 +90,7 @@
     <Compile Include="UserLibrary\BaseItemsByNameService.cs" />
     <Compile Include="UserLibrary\BaseItemsRequest.cs" />
     <Compile Include="UserLibrary\GenresService.cs" />
+    <Compile Include="UserLibrary\ItemByNameUserDataService.cs" />
     <Compile Include="UserLibrary\ItemsService.cs" />
     <Compile Include="UserLibrary\PersonsService.cs" />
     <Compile Include="UserLibrary\StudiosService.cs" />
