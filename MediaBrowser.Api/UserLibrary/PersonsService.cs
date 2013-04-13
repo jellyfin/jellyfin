@@ -53,7 +53,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="items">The items.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<Tuple<string, Func<IEnumerable<BaseItem>>>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items, User user)
+        protected override IEnumerable<IbnStub<Person>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items, User user)
         {
             var inputPersonTypes = ((GetPersons) request).PersonTypes;
             var personTypes = string.IsNullOrEmpty(inputPersonTypes) ? new string[] { } : inputPersonTypes.Split(',');
@@ -67,7 +67,7 @@ namespace MediaBrowser.Api.UserLibrary
                 .Select(i => i.Name)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
 
-                .Select(name => new Tuple<string, Func<IEnumerable<BaseItem>>>(name, () =>
+                .Select(name => new IbnStub<Person>(name, () =>
                 {
                     if (personTypes.Length == 0)
                     {
@@ -75,7 +75,7 @@ namespace MediaBrowser.Api.UserLibrary
                     }
 
                     return itemsList.Where(i => i.People.Any(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && personTypes.Contains(p.Type ?? string.Empty, StringComparer.OrdinalIgnoreCase)));
-                })
+                }, GetEntity)
             );
         }
 
@@ -102,7 +102,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{Genre}.</returns>
-        protected override Task<Person> GetEntity(string name)
+        protected Task<Person> GetEntity(string name)
         {
             return LibraryManager.GetPerson(name);
         }

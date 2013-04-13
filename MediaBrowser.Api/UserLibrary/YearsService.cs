@@ -54,14 +54,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="items">The items.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<Tuple<string, Func<IEnumerable<BaseItem>>>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items, User user)
+        protected override IEnumerable<IbnStub<Year>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items, User user)
         {
             var itemsList = items.Where(i => i.ProductionYear != null).ToList();
 
             return itemsList
                 .Select(i => i.ProductionYear.Value)
                 .Distinct()
-                .Select(year => new Tuple<string, Func<IEnumerable<BaseItem>>>(year.ToString(UsCulture), () => itemsList.Where(i => i.ProductionYear.HasValue && i.ProductionYear.Value == year)));
+                .Select(year => new IbnStub<Year>(year.ToString(UsCulture), () => itemsList.Where(i => i.ProductionYear.HasValue && i.ProductionYear.Value == year), GetEntity));
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{Studio}.</returns>
-        protected override Task<Year> GetEntity(string name)
+        protected Task<Year> GetEntity(string name)
         {
             return LibraryManager.GetYear(int.Parse(name, UsCulture));
         }
