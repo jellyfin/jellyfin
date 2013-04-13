@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
@@ -28,9 +29,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// The us culture
         /// </summary>
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
-        public YearsService(IUserManager userManager, ILibraryManager libraryManager)
-            : base(userManager, libraryManager)
+
+        public YearsService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository)
+            : base(userManager, libraryManager, userDataRepository)
         {
         }
 

@@ -3,6 +3,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
@@ -174,7 +175,7 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         /// <param name="e">The e.</param>
         void userManager_UserUpdated(object sender, GenericEventArgs<User> e)
         {
-            var dto = new DtoBuilder(_logger, _libraryManager, _userManager).GetUserDto(e.Argument);
+            var dto = new UserDtoBuilder(_logger).GetUserDto(e.Argument);
 
             _serverManager.SendWebSocketMessage("UserUpdated", dto);
         }

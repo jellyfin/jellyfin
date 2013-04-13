@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -52,14 +53,15 @@ namespace MediaBrowser.Controller.Providers.Music
 
             //Look at our parent for our album cover
             var artist = (MusicArtist)item.Parent;
-            var cover = artist.AlbumCovers != null ? artist.AlbumCovers.GetValueOrDefault(mbid, null) : null;
+
+            var cover = artist.AlbumCovers != null ? GetValueOrDefault(artist.AlbumCovers, mbid, null) : null;
             if (cover == null)
             {
                 // Not there - maybe it is new since artist last refreshed so refresh it and try again
                 await artist.RefreshMetadata(cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
 
-                cover = artist.AlbumCovers != null ? artist.AlbumCovers.GetValueOrDefault(mbid, null) : null;
+                cover = artist.AlbumCovers != null ? GetValueOrDefault(artist.AlbumCovers, mbid, null) : null;
             }
             if (cover == null)
             {
@@ -70,6 +72,26 @@ namespace MediaBrowser.Controller.Providers.Music
 
             item.SetImage(ImageType.Primary, await _providerManager.DownloadAndSaveImage(item, cover, "folder.jpg", FanArtResourcePool, cancellationToken).ConfigureAwait(false));
             return true;
+        }
+
+        /// <summary>
+        /// Helper method for Dictionaries since they throw on not-found keys
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <returns>``1.</returns>
+        private static U GetValueOrDefault<T, U>(Dictionary<T, U> dictionary, T key, U defaultValue)
+        {
+            U val;
+            if (!dictionary.TryGetValue(key, out val))
+            {
+                val = defaultValue;
+            }
+            return val;
+
         }
     }
 }

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -53,26 +51,6 @@ namespace MediaBrowser.Common.Extensions
             }
             
             return (aType.FullName + str.ToLower()).GetMD5();
-        }
-
-        /// <summary>
-        /// Helper method for Dictionaries since they throw on not-found keys
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="dictionary">The dictionary.</param>
-        /// <param name="key">The key.</param>
-        /// <param name="defaultValue">The default value.</param>
-        /// <returns>``1.</returns>
-        public static U GetValueOrDefault<T, U>(this Dictionary<T, U> dictionary, T key, U defaultValue)
-        {
-            U val;
-            if (!dictionary.TryGetValue(key, out val))
-            {
-                val = defaultValue;
-            }
-            return val;
-
         }
 
         /// <summary>

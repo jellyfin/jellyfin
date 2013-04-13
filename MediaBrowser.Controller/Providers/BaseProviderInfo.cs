@@ -8,11 +8,6 @@ namespace MediaBrowser.Controller.Providers
     public class BaseProviderInfo
     {
         /// <summary>
-        /// Gets or sets the provider id.
-        /// </summary>
-        /// <value>The provider id.</value>
-        public Guid ProviderId { get; set; }
-        /// <summary>
         /// Gets or sets the last refreshed.
         /// </summary>
         /// <value>The last refreshed.</value>
@@ -21,7 +16,7 @@ namespace MediaBrowser.Controller.Providers
         /// Gets or sets the file system stamp.
         /// </summary>
         /// <value>The file system stamp.</value>
-        public Guid FileSystemStamp { get; set; }
+        public string FileSystemStamp { get; set; }
         /// <summary>
         /// Gets or sets the last refresh status.
         /// </summary>
@@ -32,11 +27,6 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <value>The provider version.</value>
         public string ProviderVersion { get; set; }
-        /// <summary>
-        /// Gets or sets the data hash.
-        /// </summary>
-        /// <value>The data hash.</value>
-        public Guid DataHash { get; set; }
     }
 
     /// <summary>

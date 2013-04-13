@@ -29,19 +29,7 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// The _id
         /// </summary>
-        protected Guid _id;
-        /// <summary>
-        /// Gets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        public virtual Guid Id
-        {
-            get
-            {
-                if (_id == Guid.Empty) _id = GetType().FullName.GetMD5();
-                return _id;
-            }
-        }
+        protected readonly Guid Id;
 
         /// <summary>
         /// Supportses the specified item.
@@ -105,6 +93,7 @@ namespace MediaBrowser.Controller.Providers
             Logger = logManager.GetLogger(GetType().Name);
             LogManager = logManager;
             ConfigurationManager = configurationManager;
+            Id = GetType().FullName.GetMD5();
 
             Initialize();
         }
@@ -130,8 +119,14 @@ namespace MediaBrowser.Controller.Providers
             {
                 throw new ArgumentNullException("item");
             }
-            
-            var data = item.ProviderData.GetValueOrDefault(Id, new BaseProviderInfo { ProviderId = Id });
+
+            BaseProviderInfo data;
+
+            if (!item.ProviderData.TryGetValue(Id, out data))
+            {
+                data = new BaseProviderInfo();
+            }
+
             data.LastRefreshed = value;
             data.LastRefreshStatus = status;
             data.ProviderVersion = providerVersion;
@@ -155,7 +150,7 @@ namespace MediaBrowser.Controller.Providers
         {
             SetLastRefreshed(item, value, ProviderVersion, status);
         }
-        
+
         /// <summary>
         /// Returns whether or not this provider should be re-fetched.  Default functionality can
         /// compare a provided date with a last refresh time.  This can be overridden for more complex
@@ -171,9 +166,14 @@ namespace MediaBrowser.Controller.Providers
                 throw new ArgumentNullException();
             }
 
-            var providerInfo = item.ProviderData.GetValueOrDefault(Id, new BaseProviderInfo());
+            BaseProviderInfo data;
 
-            return NeedsRefreshInternal(item, providerInfo);
+            if (!item.ProviderData.TryGetValue(Id, out data))
+            {
+                data = new BaseProviderInfo();
+            }
+
+            return NeedsRefreshInternal(item, data);
         }
 
         /// <summary>
@@ -194,7 +194,7 @@ namespace MediaBrowser.Controller.Providers
             {
                 throw new ArgumentNullException("providerInfo");
             }
-            
+
             if (CompareDate(item) > providerInfo.LastRefreshed)
             {
                 return true;
@@ -209,7 +209,7 @@ namespace MediaBrowser.Controller.Providers
             {
                 return true;
             }
-            
+
             return false;
         }
 
@@ -221,7 +221,7 @@ namespace MediaBrowser.Controller.Providers
         /// <returns><c>true</c> if [has file system stamp changed] [the specified item]; otherwise, <c>false</c>.</returns>
         protected bool HasFileSystemStampChanged(BaseItem item, BaseProviderInfo providerInfo)
         {
-            return GetCurrentFileSystemStamp(item) != providerInfo.FileSystemStamp;
+            return !string.Equals(GetCurrentFileSystemStamp(item), providerInfo.FileSystemStamp);
         }
 
         /// <summary>
@@ -279,7 +279,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>Guid.</returns>
-        private Guid GetCurrentFileSystemStamp(BaseItem item)
+        private string GetCurrentFileSystemStamp(BaseItem item)
         {
             if (UseParentFileSystemStamp(item) && item.Parent != null)
             {

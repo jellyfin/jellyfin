@@ -67,27 +67,18 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         /// <summary>
-        /// Override to use the provider Ids + season number so it will be portable
+        /// Gets the user data key.
         /// </summary>
-        /// <value>The user data id.</value>
-        [IgnoreDataMember]
-        public override Guid UserDataId
+        /// <returns>System.String.</returns>
+        public override string GetUserDataKey()
         {
-            get
+            if (Series != null)
             {
-                if (_userDataId == Guid.Empty)
-                {
-                    var baseId = Series != null ? Series.GetProviderId(MetadataProviders.Tvdb) ?? Series.GetProviderId(MetadataProviders.Tvcom) : null;
-                    if (baseId != null)
-                    {
-                        var seasonNo = IndexNumber ?? 0;
-                        baseId =  baseId + seasonNo.ToString("000");
-                    }
-        
-                    _userDataId = baseId != null ? baseId.GetMD5() : Id;
-                }
-                return _userDataId;
+                var seasonNo = IndexNumber ?? 0;
+                return Series.GetUserDataKey() + seasonNo.ToString("000");
             }
+
+            return base.GetUserDataKey();
         }
 
         /// <summary>

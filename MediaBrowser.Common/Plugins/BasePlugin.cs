@@ -302,7 +302,7 @@ namespace MediaBrowser.Common.Plugins
                 AssemblyFileName = AssemblyFileName,
                 ConfigurationDateLastModified = ConfigurationDateLastModified,
                 Description = Description,
-                Id = Id,
+                Id = Id.ToString(),
                 EnableAutoUpdate = Configuration.EnableAutoUpdate,
                 UpdateClass = Configuration.UpdateClass,
                 ConfigurationFileName = ConfigurationFileName
