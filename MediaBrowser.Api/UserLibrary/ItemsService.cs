@@ -357,6 +357,20 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{BaseItem}.</returns>
         internal static IEnumerable<BaseItem> ApplyAdditionalFilters(GetItems request, IEnumerable<BaseItem> items)
         {
+            // Exclude item types
+            if (!string.IsNullOrEmpty(request.ExcludeItemTypes))
+            {
+                var vals = request.ExcludeItemTypes.Split(',');
+                items = items.Where(f => !vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
+            }
+
+            // Include item types
+            if (!string.IsNullOrEmpty(request.IncludeItemTypes))
+            {
+                var vals = request.IncludeItemTypes.Split(',');
+                items = items.Where(f => vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
+            }
+            
             // Filter by Series Status
             if (!string.IsNullOrEmpty(request.SeriesStatus))
             {
