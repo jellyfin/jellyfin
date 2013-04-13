@@ -60,7 +60,15 @@ namespace MediaBrowser.Controller.Providers.TV
             cancellationToken.ThrowIfCancellationRequested();
 
             var series = (Series)item;
-            if (ShouldFetch(series, series.ProviderData.GetValueOrDefault(Id, new BaseProviderInfo { ProviderId = Id })))
+
+            BaseProviderInfo providerData;
+
+            if (!item.ProviderData.TryGetValue(Id, out providerData))
+            {
+                providerData = new BaseProviderInfo();
+            }
+
+            if (ShouldFetch(series, providerData))
             {
                 string language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
                 string url = string.Format(FanArtBaseUrl, APIKey, series.GetProviderId(MetadataProviders.Tvdb));

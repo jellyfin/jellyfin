@@ -101,6 +101,8 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         private readonly IUserManager _userManager;
 
+        private readonly IUserDataRepository _userDataRepository;
+        
         /// <summary>
         /// Gets or sets the configuration manager.
         /// </summary>
@@ -136,12 +138,14 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="taskManager">The task manager.</param>
         /// <param name="userManager">The user manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        public LibraryManager(ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager)
+        /// <param name="userDataRepository">The user data repository.</param>
+        public LibraryManager(ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager, IUserDataRepository userDataRepository)
         {
             _logger = logger;
             _taskManager = taskManager;
             _userManager = userManager;
             ConfigurationManager = configurationManager;
+            _userDataRepository = userDataRepository;
             ByReferenceItems = new ConcurrentDictionary<Guid, BaseItem>();
 
             ConfigurationManager.ConfigurationUpdated += ConfigurationUpdated;
@@ -903,6 +907,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                     userComparer.User = user;
                     userComparer.UserManager = _userManager;
+                    userComparer.UserDataRepository = _userDataRepository;
 
                     return userComparer;
                 }

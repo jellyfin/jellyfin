@@ -1,7 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.IO;
+﻿using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Entities;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -30,21 +28,12 @@ namespace MediaBrowser.Controller.Entities.Movies
         }
 
         /// <summary>
-        /// Override to use tmdb or imdb id so it will stick if the item moves physical locations
+        /// Gets the user data key.
         /// </summary>
-        /// <value>The user data id.</value>
-        [IgnoreDataMember]
-        public override Guid UserDataId
+        /// <returns>System.String.</returns>
+        public override string GetUserDataKey()
         {
-            get
-            {
-                if (_userDataId == Guid.Empty)
-                {
-                    var baseId = this.GetProviderId(MetadataProviders.Tmdb) ?? this.GetProviderId(MetadataProviders.Imdb);
-                    _userDataId = baseId != null ? baseId.GetMD5() : Id;
-                }
-                return _userDataId;
-            }
+            return this.GetProviderId(MetadataProviders.Tmdb) ?? this.GetProviderId(MetadataProviders.Imdb) ?? base.GetUserDataKey();
         }
 
         /// <summary>

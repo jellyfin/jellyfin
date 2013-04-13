@@ -1,6 +1,8 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
@@ -148,6 +150,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// The _user manager
         /// </summary>
         private readonly IUserManager _userManager;
+        private readonly IUserDataRepository _userDataRepository;
 
         /// <summary>
         /// The _library manager
@@ -161,11 +164,13 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="userManager">The user manager.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="searchEngine">The search engine.</param>
-        public ItemsService(IUserManager userManager, ILibraryManager libraryManager, ILibrarySearchEngine searchEngine)
+        /// <param name="userDataRepository">The user data repository.</param>
+        public ItemsService(IUserManager userManager, ILibraryManager libraryManager, ILibrarySearchEngine searchEngine, IUserDataRepository userDataRepository)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
             _searchEngine = searchEngine;
+            _userDataRepository = userDataRepository;
         }
 
         /// <summary>
@@ -199,7 +204,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Run them starting with the ones that are likely to reduce the list the most
             foreach (var filter in request.GetFilters().OrderByDescending(f => (int)f))
             {
-                items = ApplyFilter(items, filter, user, _userManager);
+                items = ApplyFilter(items, filter, user, _userDataRepository);
             }
 
             items = items.AsEnumerable();
@@ -214,7 +219,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var fields = request.GetItemFields().ToList();
 
-            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userManager);
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
 
             var returnItems = await Task.WhenAll(pagedItems.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields))).ConfigureAwait(false);
 
@@ -274,9 +279,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="items">The items.</param>
         /// <param name="filter">The filter.</param>
         /// <param name="user">The user.</param>
-        /// <param name="userManager">The user manager.</param>
+        /// <param name="repository">The repository.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        internal static IEnumerable<BaseItem> ApplyFilter(IEnumerable<BaseItem> items, ItemFilter filter, User user, IUserManager userManager)
+        internal static IEnumerable<BaseItem> ApplyFilter(IEnumerable<BaseItem> items, ItemFilter filter, User user, IUserDataRepository repository)
         {
             // Avoids implicitly captured closure
             var currentUser = user;
@@ -286,7 +291,7 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.Likes:
                     return items.Where(item =>
                     {
-                        var userdata = userManager.GetUserData(user.Id, item.UserDataId).Result;
+                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey()).Result;
 
                         return userdata != null && userdata.Likes.HasValue && userdata.Likes.Value;
                     });
@@ -294,7 +299,7 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.Dislikes:
                     return items.Where(item =>
                     {
-                        var userdata = userManager.GetUserData(user.Id, item.UserDataId).Result;
+                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey()).Result;
 
                         return userdata != null && userdata.Likes.HasValue && !userdata.Likes.Value;
                     });
@@ -302,7 +307,7 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.IsFavorite:
                     return items.Where(item =>
                     {
-                        var userdata = userManager.GetUserData(user.Id, item.UserDataId).Result;
+                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey()).Result;
 
                         return userdata != null && userdata.IsFavorite;
                     });
@@ -313,7 +318,7 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.IsResumable:
                     return items.Where(item =>
                     {
-                        var userdata = userManager.GetUserData(user.Id, item.UserDataId).Result;
+                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey()).Result;
 
                         return userdata != null && userdata.PlaybackPositionTicks > 0;
                     });
@@ -321,7 +326,7 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.IsPlayed:
                     return items.Where(item =>
                     {
-                        var userdata = userManager.GetUserData(user.Id, item.UserDataId).Result;
+                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey()).Result;
 
                         return userdata != null && userdata.PlayCount > 0;
                     });
@@ -329,7 +334,7 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.IsUnplayed:
                     return items.Where(item =>
                     {
-                        var userdata = userManager.GetUserData(user.Id, item.UserDataId).Result;
+                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey()).Result;
 
                         return userdata == null || userdata.PlayCount == 0;
                     });
@@ -347,32 +352,11 @@ namespace MediaBrowser.Api.UserLibrary
         /// <summary>
         /// Applies the additional filters.
         /// </summary>
-        /// <param name="itemsRequest">The items request.</param>
+        /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        internal static IEnumerable<BaseItem> ApplyAdditionalFilters(BaseItemsRequest itemsRequest, IEnumerable<BaseItem> items)
+        internal static IEnumerable<BaseItem> ApplyAdditionalFilters(GetItems request, IEnumerable<BaseItem> items)
         {
-            // Exclude item types
-            if (!string.IsNullOrEmpty(itemsRequest.ExcludeItemTypes))
-            {
-                var vals = itemsRequest.ExcludeItemTypes.Split(',');
-                items = items.Where(f => !vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
-            }
-
-            // Include item types
-            if (!string.IsNullOrEmpty(itemsRequest.IncludeItemTypes))
-            {
-                var vals = itemsRequest.IncludeItemTypes.Split(',');
-                items = items.Where(f => vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
-            }
-            
-            var request = itemsRequest as GetItems;
-
-            if (request == null)
-            {
-                return items;
-            }
-
             // Filter by Series Status
             if (!string.IsNullOrEmpty(request.SeriesStatus))
             {

@@ -1,6 +1,7 @@
-﻿using System.Threading;
+﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
@@ -8,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.UserLibrary
@@ -27,16 +29,19 @@ namespace MediaBrowser.Api.UserLibrary
         /// The library manager
         /// </summary>
         protected readonly ILibraryManager LibraryManager;
+        protected readonly IUserDataRepository UserDataRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseItemsByNameService{TItemType}" /> class.
         /// </summary>
         /// <param name="userManager">The user manager.</param>
         /// <param name="libraryManager">The library manager.</param>
-        protected BaseItemsByNameService(IUserManager userManager, ILibraryManager libraryManager)
+        /// <param name="userDataRepository">The user data repository.</param>
+        protected BaseItemsByNameService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository)
         {
             UserManager = userManager;
             LibraryManager = libraryManager;
+            UserDataRepository = userDataRepository;
         }
 
         /// <summary>
@@ -132,18 +137,19 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{BaseItem}.</returns>
         private IEnumerable<BaseItem> FilterItems(GetItemsByName request, IEnumerable<BaseItem> items, User user)
         {
-            items = items.AsParallel();
-
-            items = ItemsService.ApplyAdditionalFilters(request, items);
-
-            // Apply filters
-            // Run them starting with the ones that are likely to reduce the list the most
-            foreach (var filter in request.GetFilters().OrderByDescending(f => (int)f))
+            // Exclude item types
+            if (!string.IsNullOrEmpty(request.ExcludeItemTypes))
             {
-                items = ItemsService.ApplyFilter(items, filter, user, UserManager);
+                var vals = request.ExcludeItemTypes.Split(',');
+                items = items.Where(f => !vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
             }
 
-            items = items.AsEnumerable();
+            // Include item types
+            if (!string.IsNullOrEmpty(request.IncludeItemTypes))
+            {
+                var vals = request.IncludeItemTypes.Split(',');
+                items = items.Where(f => vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
+            }
 
             return items;
         }
@@ -185,7 +191,7 @@ namespace MediaBrowser.Api.UserLibrary
                 return null;
             }
 
-            var dto = await new DtoBuilder(Logger, LibraryManager, UserManager).GetBaseItemDto(item, user, fields).ConfigureAwait(false);
+            var dto = await new DtoBuilder(Logger, LibraryManager, UserDataRepository).GetBaseItemDto(item, user, fields).ConfigureAwait(false);
 
             if (fields.Contains(ItemFields.ItemCounts))
             {
@@ -211,13 +217,15 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = await getItem().ConfigureAwait(false);
 
+            var key = item.GetUserDataKey();
+
             // Get the user data for this item
-            var data = await UserManager.GetUserData(user.Id, item.UserDataId).ConfigureAwait(false);
+            var data = await UserDataRepository.GetUserData(user.Id, key).ConfigureAwait(false);
 
             // Set favorite status
             data.IsFavorite = isFavorite;
 
-            await UserManager.SaveUserData(user.Id, item.UserDataId, data, CancellationToken.None).ConfigureAwait(false);
+            await UserDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None).ConfigureAwait(false);
         }
     }
 

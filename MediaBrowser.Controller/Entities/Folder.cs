@@ -3,6 +3,7 @@ using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using System;
@@ -809,7 +810,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
         /// <param name="userManager">The user manager.</param>
         /// <returns>Task.</returns>
-        public override async Task SetPlayedStatus(User user, bool wasPlayed, IUserManager userManager)
+        public override async Task SetPlayedStatus(User user, bool wasPlayed, IUserDataRepository userManager)
         {
             await base.SetPlayedStatus(user, wasPlayed, userManager).ConfigureAwait(false);
 

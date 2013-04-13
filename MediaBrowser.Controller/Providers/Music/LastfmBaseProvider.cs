@@ -229,7 +229,13 @@ namespace MediaBrowser.Controller.Providers.Music
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var providerData = item.ProviderData.GetValueOrDefault(Id, new BaseProviderInfo { ProviderId = Id });
+            BaseProviderInfo providerData;
+
+            if (!item.ProviderData.TryGetValue(Id, out providerData))
+            {
+                providerData = new BaseProviderInfo();
+            }
+            
             if (!ConfigurationManager.Configuration.SaveLocalMeta || !HasLocalMeta(item) || (force && !HasLocalMeta(item)) || (RefreshOnVersionChange && providerData.ProviderVersion != ProviderVersion))
             {
                 try

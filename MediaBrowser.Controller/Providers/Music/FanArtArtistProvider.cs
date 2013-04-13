@@ -86,7 +86,15 @@ namespace MediaBrowser.Controller.Providers.Music
             cancellationToken.ThrowIfCancellationRequested();
 
             var artist = (MusicArtist)item;
-            if (ShouldFetch(artist, artist.ProviderData.GetValueOrDefault(Id, new BaseProviderInfo { ProviderId = Id })))
+
+            BaseProviderInfo providerData;
+
+            if (!item.ProviderData.TryGetValue(Id, out providerData))
+            {
+                providerData = new BaseProviderInfo();
+            }
+
+            if (ShouldFetch(artist, providerData))
             {
                 var url = string.Format(FanArtBaseUrl, APIKey, artist.GetProviderId(MetadataProviders.Musicbrainz));
                 var doc = new XmlDocument();

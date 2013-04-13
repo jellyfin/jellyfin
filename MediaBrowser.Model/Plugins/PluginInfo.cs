@@ -57,7 +57,7 @@ namespace MediaBrowser.Model.Plugins
         /// </summary>
         /// <value>The unique id.</value>
         [ProtoMember(9)]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// Whether or not this plug-in should be automatically updated when a

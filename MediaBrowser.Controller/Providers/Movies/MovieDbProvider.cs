@@ -22,10 +22,11 @@ namespace MediaBrowser.Controller.Providers.Movies
 {
     class MovieDbProviderException : ApplicationException
     {
-        public MovieDbProviderException(string msg) : base(msg)
+        public MovieDbProviderException(string msg)
+            : base(msg)
         {
         }
-     
+
     }
     /// <summary>
     /// Class MovieDbProvider
@@ -33,7 +34,7 @@ namespace MediaBrowser.Controller.Providers.Movies
     public class MovieDbProvider : BaseMetadataProvider, IDisposable
     {
         protected readonly IProviderManager ProviderManager;
-        
+
         /// <summary>
         /// The movie db
         /// </summary>
@@ -198,7 +199,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                         base_url = "http://cf2.imgobject.com/t/p/"
 
                     }
-                }; 
+                };
             }
         }
 
@@ -223,7 +224,14 @@ namespace MediaBrowser.Controller.Providers.Movies
                 //in addition to ours, we need to set the last refreshed time for the local data provider
                 //so it won't see the new files we download and process them all over again
                 if (JsonProvider == null) JsonProvider = new MovieProviderFromJson(LogManager, ConfigurationManager, JsonSerializer, HttpClient, ProviderManager);
-                var data = item.ProviderData.GetValueOrDefault(JsonProvider.Id, new BaseProviderInfo { ProviderId = JsonProvider.Id });
+
+                BaseProviderInfo data;
+
+                if (!item.ProviderData.TryGetValue(JsonProvider.Id, out data))
+                {
+                    data = new BaseProviderInfo();
+                }
+
                 data.LastRefreshed = value;
                 item.ProviderData[JsonProvider.Id] = data;
             }

@@ -71,6 +71,6 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The id.</value>
         [ProtoMember(9)]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
     }
 }
