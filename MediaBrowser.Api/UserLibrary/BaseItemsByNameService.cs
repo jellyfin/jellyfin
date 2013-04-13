@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.Threading;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
@@ -195,6 +196,28 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             return dto;
+        }
+
+        /// <summary>
+        /// Marks the favorite.
+        /// </summary>
+        /// <param name="getItem">The get item.</param>
+        /// <param name="userId">The user id.</param>
+        /// <param name="isFavorite">if set to <c>true</c> [is favorite].</param>
+        /// <returns>Task.</returns>
+        protected async Task MarkFavorite(Func<Task<TItemType>> getItem, Guid userId, bool isFavorite)
+        {
+            var user = UserManager.GetUserById(userId);
+
+            var item = await getItem().ConfigureAwait(false);
+
+            // Get the user data for this item
+            var data = await UserManager.GetUserData(user.Id, item.UserDataId).ConfigureAwait(false);
+
+            // Set favorite status
+            data.IsFavorite = isFavorite;
+
+            await UserManager.SaveUserData(user.Id, item.UserDataId, data, CancellationToken.None).ConfigureAwait(false);
         }
     }
 
