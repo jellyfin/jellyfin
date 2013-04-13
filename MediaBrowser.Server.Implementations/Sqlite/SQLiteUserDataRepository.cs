@@ -233,7 +233,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
             var cmd = connection.CreateCommand();
             cmd.CommandText = "select data from userdata where key = @key and userId=@userId";
 
-            var idParam = cmd.Parameters.Add("@key", DbType.Guid);
+            var idParam = cmd.Parameters.Add("@key", DbType.String);
             idParam.Value = key;
 
             var userIdParam = cmd.Parameters.Add("@userId", DbType.Guid);
