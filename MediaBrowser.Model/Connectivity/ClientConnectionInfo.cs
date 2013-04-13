@@ -15,7 +15,7 @@ namespace MediaBrowser.Model.Connectivity
         /// </summary>
         /// <value>The user id.</value>
         [ProtoMember(1)]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the client.

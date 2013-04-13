@@ -44,21 +44,12 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         /// <summary>
-        /// Override to use the provider Ids so it will be portable
+        /// Gets the user data key.
         /// </summary>
-        /// <value>The user data id.</value>
-        [IgnoreDataMember]
-        public override Guid UserDataId
+        /// <returns>System.String.</returns>
+        public override string GetUserDataKey()
         {
-            get
-            {
-                if (_userDataId == Guid.Empty)
-                {
-                    var baseId = this.GetProviderId(MetadataProviders.Tvdb) ?? this.GetProviderId(MetadataProviders.Tvcom);
-                    _userDataId = baseId != null ? baseId.GetMD5() : Id;
-                }
-                return _userDataId;
-            }
+            return this.GetProviderId(MetadataProviders.Tvdb) ?? this.GetProviderId(MetadataProviders.Tvcom) ?? base.GetUserDataKey();
         }
 
         // Studio, Genre and Rating will all be the same so makes no sense to index by these

@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
@@ -183,23 +184,18 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The _file system stamp
         /// </summary>
-        private Guid? _fileSystemStamp;
+        private string _fileSystemStamp;
         /// <summary>
         /// Gets a directory stamp, in the form of a string, that can be used for
         /// comparison purposes to determine if the file system entries for this item have changed.
         /// </summary>
         /// <value>The file system stamp.</value>
         [IgnoreDataMember]
-        public Guid FileSystemStamp
+        public string FileSystemStamp
         {
             get
             {
-                if (!_fileSystemStamp.HasValue)
-                {
-                    _fileSystemStamp = GetFileSystemStamp();
-                }
-
-                return _fileSystemStamp.Value;
+                return _fileSystemStamp ?? (_fileSystemStamp = GetFileSystemStamp());
             }
         }
 
@@ -221,12 +217,12 @@ namespace MediaBrowser.Controller.Entities
         /// comparison purposes to determine if the file system entries for this item have changed.
         /// </summary>
         /// <returns>Guid.</returns>
-        private Guid GetFileSystemStamp()
+        private string GetFileSystemStamp()
         {
             // If there's no path or the item is a file, there's nothing to do
             if (LocationType != LocationType.FileSystem || !ResolveArgs.IsDirectory)
             {
-                return Guid.Empty;
+                return string.Empty;
             }
 
             var sb = new StringBuilder();
@@ -242,7 +238,7 @@ namespace MediaBrowser.Controller.Entities
                 sb.Append(file.cFileName);
             }
 
-            return sb.ToString().GetMD5();
+            return sb.ToString();
         }
 
         /// <summary>
@@ -820,21 +816,12 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// The _user data id
+        /// Gets the user data key.
         /// </summary>
-        protected Guid _userDataId; //cache this so it doesn't have to be re-constructed on every reference
-        /// <summary>
-        /// Return the id that should be used to key user data for this item.
-        /// Default is just this Id but subclasses can use provider Ids for transportability.
-        /// </summary>
-        /// <value>The user data id.</value>
-        [IgnoreDataMember]
-        public virtual Guid UserDataId
+        /// <returns>System.String.</returns>
+        public virtual string GetUserDataKey()
         {
-            get
-            {
-                return _userDataId == Guid.Empty ? (_userDataId = Id) : _userDataId;
-            }
+            return Id.ToString();
         }
 
         /// <summary>
@@ -1151,14 +1138,16 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="userManager">The user manager.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public virtual async Task SetPlayedStatus(User user, bool wasPlayed, IUserManager userManager)
+        public virtual async Task SetPlayedStatus(User user, bool wasPlayed, IUserDataRepository userManager)
         {
             if (user == null)
             {
                 throw new ArgumentNullException();
             }
 
-            var data = await userManager.GetUserData(user.Id, UserDataId).ConfigureAwait(false);
+            var key = GetUserDataKey();
+
+            var data = await userManager.GetUserData(user.Id, key).ConfigureAwait(false);
 
             if (wasPlayed)
             {
@@ -1181,7 +1170,7 @@ namespace MediaBrowser.Controller.Entities
 
             data.Played = wasPlayed;
 
-            await userManager.SaveUserData(user.Id, UserDataId, data, CancellationToken.None).ConfigureAwait(false);
+            await userManager.SaveUserData(user.Id, key, data, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>

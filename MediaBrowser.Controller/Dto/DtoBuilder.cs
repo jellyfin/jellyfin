@@ -3,6 +3,8 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -14,7 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.Library
+namespace MediaBrowser.Controller.Dto
 {
     /// <summary>
     /// Generates DTO's from domain entities
@@ -28,13 +30,13 @@ namespace MediaBrowser.Controller.Library
 
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
-        private readonly IUserManager _userManager;
+        private readonly IUserDataRepository _userDataRepository;
 
-        public DtoBuilder(ILogger logger, ILibraryManager libraryManager, IUserManager userManager)
+        public DtoBuilder(ILogger logger, ILibraryManager libraryManager, IUserDataRepository userDataRepository)
         {
             _logger = logger;
             _libraryManager = libraryManager;
-            _userManager = userManager;
+            _userDataRepository = userDataRepository;
         }
 
         /// <summary>
@@ -73,7 +75,7 @@ namespace MediaBrowser.Controller.Library
             {
                 try
                 {
-                    AttachPrimaryImageAspectRatio(dto, item);
+                    AttachPrimaryImageAspectRatio(dto, item, _logger);
                 }
                 catch (Exception ex)
                 {
@@ -136,7 +138,7 @@ namespace MediaBrowser.Controller.Library
             {
                 try
                 {
-                    AttachPrimaryImageAspectRatio(dto, item);
+                    AttachPrimaryImageAspectRatio(dto, item, _logger);
                 }
                 catch (Exception ex)
                 {
@@ -167,7 +169,7 @@ namespace MediaBrowser.Controller.Library
         {
             if (fields.Contains(ItemFields.UserData))
             {
-                var userData = await _userManager.GetUserData(user.Id, item.UserDataId).ConfigureAwait(false);
+                var userData = await _userDataRepository.GetUserData(user.Id, item.GetUserDataKey()).ConfigureAwait(false);
 
                 dto.UserData = GetUserItemDataDto(userData);
             }
@@ -186,18 +188,19 @@ namespace MediaBrowser.Controller.Library
                     // Skip sorting since all we want is a count
                     dto.ChildCount = folder.GetChildren(user).Count();
 
-                    await SetSpecialCounts(folder, user, dto, _userManager).ConfigureAwait(false);
+                    await SetSpecialCounts(folder, user, dto, _userDataRepository).ConfigureAwait(false);
                 }
             }
         }
-        
+
         /// <summary>
         /// Attaches the primary image aspect ratio.
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
+        /// <param name="_logger">The _logger.</param>
         /// <returns>Task.</returns>
-        private void AttachPrimaryImageAspectRatio(IItemDto dto, BaseItem item)
+        internal static void AttachPrimaryImageAspectRatio(IItemDto dto, BaseItem item, ILogger _logger)
         {
             var path = item.PrimaryImagePath;
 
@@ -503,9 +506,9 @@ namespace MediaBrowser.Controller.Library
         /// <param name="folder">The folder.</param>
         /// <param name="user">The user.</param>
         /// <param name="dto">The dto.</param>
-        /// <param name="userManager">The user manager.</param>
+        /// <param name="userDataRepository">The user data repository.</param>
         /// <returns>Task.</returns>
-        private static async Task SetSpecialCounts(Folder folder, User user, BaseItemDto dto, IUserManager userManager)
+        private static async Task SetSpecialCounts(Folder folder, User user, BaseItemDto dto, IUserDataRepository userDataRepository)
         {
             var rcentlyAddedItemCount = 0;
             var recursiveItemCount = 0;
@@ -515,7 +518,7 @@ namespace MediaBrowser.Controller.Library
             // Loop through each recursive child
             foreach (var child in folder.GetRecursiveChildren(user).Where(i => !i.IsFolder))
             {
-                var userdata = await userManager.GetUserData(user.Id, child.UserDataId).ConfigureAwait(false);
+                var userdata = await userDataRepository.GetUserData(user.Id, child.GetUserDataKey()).ConfigureAwait(false);
 
                 recursiveItemCount++;
 
@@ -783,49 +786,6 @@ namespace MediaBrowser.Controller.Library
             }
 
             return item.Id.ToString();
-        }
-
-        /// <summary>
-        /// Converts a User to a DTOUser
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns>DtoUser.</returns>
-        /// <exception cref="System.ArgumentNullException">user</exception>
-        public UserDto GetUserDto(User user)
-        {
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
-            }
-
-            var dto = new UserDto
-            {
-                Id = user.Id,
-                Name = user.Name,
-                HasPassword = !String.IsNullOrEmpty(user.Password),
-                LastActivityDate = user.LastActivityDate,
-                LastLoginDate = user.LastLoginDate,
-                Configuration = user.Configuration
-            };
-            
-            var image = user.PrimaryImagePath;
-
-            if (!string.IsNullOrEmpty(image))
-            {
-                dto.PrimaryImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(user, ImageType.Primary, image);
-
-                try
-                {
-                    AttachPrimaryImageAspectRatio(dto, user);
-                }
-                catch (Exception ex)
-                {
-                    // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
-                    _logger.ErrorException("Error generating PrimaryImageAspectRatio for {0}", ex, user.Name);
-                }
-            }
-            
-            return dto;
         }
 
         /// <summary>

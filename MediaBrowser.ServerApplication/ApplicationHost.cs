@@ -37,6 +37,7 @@ using MediaBrowser.Server.Implementations.Library;
 using MediaBrowser.Server.Implementations.MediaEncoder;
 using MediaBrowser.Server.Implementations.Providers;
 using MediaBrowser.Server.Implementations.ServerManager;
+using MediaBrowser.Server.Implementations.Sqlite;
 using MediaBrowser.Server.Implementations.Udp;
 using MediaBrowser.Server.Implementations.Updates;
 using MediaBrowser.Server.Implementations.WebSocket;
@@ -153,6 +154,12 @@ namespace MediaBrowser.ServerApplication
         private IMediaEncoder MediaEncoder { get; set; }
 
         /// <summary>
+        /// Gets or sets the user data repository.
+        /// </summary>
+        /// <value>The user data repository.</value>
+        private IUserDataRepository UserDataRepository { get; set; }
+
+        /// <summary>
         /// The full path to our startmenu shortcut
         /// </summary>
         protected override string ProductShortcutPath
@@ -216,7 +223,10 @@ namespace MediaBrowser.ServerApplication
             UserManager = new UserManager(Logger, ServerConfigurationManager);
             RegisterSingleInstance(UserManager);
 
-            LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager);
+            UserDataRepository = new SQLiteUserDataRepository(ApplicationPaths, JsonSerializer, LogManager);
+            RegisterSingleInstance(UserDataRepository);
+
+            LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataRepository);
             RegisterSingleInstance(LibraryManager);
 
             InstallationManager = new InstallationManager(HttpClient, PackageManager, JsonSerializer, Logger, this);
@@ -273,9 +283,7 @@ namespace MediaBrowser.ServerApplication
         /// <returns>Task.</returns>
         private async Task ConfigureDisplayPreferencesRepositories()
         {
-            var repositories = GetExports<IDisplayPreferencesRepository>();
-
-            var repository = GetRepository(repositories, ServerConfigurationManager.Configuration.DisplayPreferencesRepository);
+            var repository = new SQLiteDisplayPreferencesRepository(ApplicationPaths, JsonSerializer, LogManager);
 
             await repository.Initialize().ConfigureAwait(false);
 
@@ -288,9 +296,7 @@ namespace MediaBrowser.ServerApplication
         /// <returns>Task.</returns>
         private async Task ConfigureItemRepositories()
         {
-            var repositories = GetExports<IItemRepository>();
-
-            var repository = GetRepository(repositories, ServerConfigurationManager.Configuration.ItemRepository);
+            var repository = new SQLiteItemRepository(ApplicationPaths, JsonSerializer, LogManager);
 
             await repository.Initialize().ConfigureAwait(false);
 
@@ -301,22 +307,14 @@ namespace MediaBrowser.ServerApplication
         /// Configures the user data repositories.
         /// </summary>
         /// <returns>Task.</returns>
-        private async Task ConfigureUserDataRepositories()
+        private Task ConfigureUserDataRepositories()
         {
-            var repositories = GetExports<IUserDataRepository>();
-
-            var repository = GetRepository(repositories, ServerConfigurationManager.Configuration.UserDataRepository);
-
-            await repository.Initialize().ConfigureAwait(false);
-
-            ((UserManager)UserManager).UserDataRepository = repository;
+            return UserDataRepository.Initialize();
         }
 
         private async Task ConfigureUserRepositories()
         {
-            var repositories = GetExports<IUserRepository>();
-
-            var repository = GetRepository(repositories, ServerConfigurationManager.Configuration.UserRepository);
+            var repository = new SQLiteUserRepository(ApplicationPaths, JsonSerializer, LogManager);
 
             await repository.Initialize().ConfigureAwait(false);
 
@@ -470,7 +468,7 @@ namespace MediaBrowser.ServerApplication
             yield return GetType().Assembly;
         }
 
-        private readonly Guid _systemId = Environment.MachineName.GetMD5();
+        private readonly string _systemId = Environment.MachineName.GetMD5().ToString();
 
         /// <summary>
         /// Gets the system status.

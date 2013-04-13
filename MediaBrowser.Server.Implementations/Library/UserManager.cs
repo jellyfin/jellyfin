@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -86,19 +87,13 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         private readonly ILogger _logger;
 
+        private readonly IUserDataRepository _userDataRepository;
+        
         /// <summary>
         /// Gets or sets the configuration manager.
         /// </summary>
         /// <value>The configuration manager.</value>
         private IServerConfigurationManager ConfigurationManager { get; set; }
-
-        private readonly ConcurrentDictionary<string, Task<UserItemData>> _userData = new ConcurrentDictionary<string, Task<UserItemData>>();
-
-        /// <summary>
-        /// Gets the active user data repository
-        /// </summary>
-        /// <value>The user data repository.</value>
-        public IUserDataRepository UserDataRepository { get; set; }
 
         /// <summary>
         /// Gets the active user repository
@@ -321,13 +316,13 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var connection = _activeConnections.GetOrAdd(key, keyName => new ClientConnectionInfo
             {
-                UserId = userId,
+                UserId = userId.ToString(),
                 Client = clientType,
                 DeviceName = deviceName,
                 DeviceId = deviceId
             });
 
-            connection.UserId = userId;
+            connection.UserId = userId.ToString();
             
             return connection;
         }
@@ -591,12 +586,14 @@ namespace MediaBrowser.Server.Implementations.Library
 
             UpdateNowPlayingItemId(user, clientType, deviceId, deviceName, item, positionTicks);
 
+            var key = item.GetUserDataKey();
+            
             if (positionTicks.HasValue)
             {
-                var data = await GetUserData(user.Id, item.UserDataId).ConfigureAwait(false);
+                var data = await _userDataRepository.GetUserData(user.Id, key).ConfigureAwait(false);
 
                 UpdatePlayState(item, data, positionTicks.Value, false);
-                await SaveUserData(user.Id, item.UserDataId, data, CancellationToken.None).ConfigureAwait(false);
+                await _userDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None).ConfigureAwait(false);
             }
 
             EventHelper.QueueEventIfNotNull(PlaybackProgress, this, new PlaybackProgressEventArgs
@@ -631,7 +628,9 @@ namespace MediaBrowser.Server.Implementations.Library
 
             RemoveNowPlayingItemId(user, clientType, deviceId, deviceName, item);
 
-            var data = await GetUserData(user.Id, item.UserDataId).ConfigureAwait(false);
+            var key = item.GetUserDataKey();
+
+            var data = await _userDataRepository.GetUserData(user.Id, key).ConfigureAwait(false);
 
             if (positionTicks.HasValue)
             {
@@ -644,7 +643,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 data.Played = true;
             }
 
-            await SaveUserData(user.Id, item.UserDataId, data, CancellationToken.None).ConfigureAwait(false);
+            await _userDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None).ConfigureAwait(false);
 
             EventHelper.QueueEventIfNotNull(PlaybackStopped, this, new PlaybackProgressEventArgs
             {
@@ -702,60 +701,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 data.PlayCount++;
                 data.LastPlayedDate = DateTime.UtcNow;
             }
-        }
-
-        /// <summary>
-        /// Saves display preferences for an item
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="userDataId">The user data id.</param>
-        /// <param name="userData">The user data.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public async Task SaveUserData(Guid userId, Guid userDataId, UserItemData userData, CancellationToken cancellationToken)
-        {
-            var key = userId + userDataId.ToString();
-            try
-            {
-                await UserDataRepository.SaveUserData(userId, userDataId, userData, cancellationToken).ConfigureAwait(false);
-
-                var newValue = Task.FromResult(userData);
-
-                // Once it succeeds, put it into the dictionary to make it available to everyone else
-                _userData.AddOrUpdate(key, newValue, delegate { return newValue; });
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error saving user data", ex);
-
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Gets the user data.
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="userDataId">The user data id.</param>
-        /// <returns>Task{UserItemData}.</returns>
-        public Task<UserItemData> GetUserData(Guid userId, Guid userDataId)
-        {
-            var key = userId + userDataId.ToString();
-
-            return _userData.GetOrAdd(key, keyName => RetrieveUserData(userId, userDataId));
-        }
-
-        /// <summary>
-        /// Retrieves the user data.
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="userDataId">The user data id.</param>
-        /// <returns>Task{UserItemData}.</returns>
-        private async Task<UserItemData> RetrieveUserData(Guid userId, Guid userDataId)
-        {
-            var userdata = await UserDataRepository.GetUserData(userId, userDataId).ConfigureAwait(false);
-
-            return userdata ?? new UserItemData();
         }
     }
 }

@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
+using System.Collections.Concurrent;
 using System.Data;
 using System.IO;
 using System.Threading;
@@ -16,6 +17,8 @@ namespace MediaBrowser.Server.Implementations.Sqlite
     /// </summary>
     public class SQLiteUserDataRepository : SqliteRepository, IUserDataRepository
     {
+        private readonly ConcurrentDictionary<string, Task<UserItemData>> _userData = new ConcurrentDictionary<string, Task<UserItemData>>();
+        
         /// <summary>
         /// The repository name
         /// </summary>
@@ -45,9 +48,6 @@ namespace MediaBrowser.Server.Implementations.Sqlite
             }
         }
         
-        /// <summary>
-        /// The _protobuf serializer
-        /// </summary>
         private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
@@ -90,8 +90,8 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             string[] queries = {
 
-                                "create table if not exists userdata (id GUID, userId GUID, data BLOB)",
-                                "create unique index if not exists userdataindex on userdata (id, userId)",
+                                "create table if not exists userdata (key nvarchar, userId GUID, data BLOB)",
+                                "create unique index if not exists userdataindex on userdata (key, userId)",
                                 "create table if not exists schema_version (table_name primary key, version)",
                                 //pragmas
                                 "pragma temp_store = memory"
@@ -104,20 +104,18 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// Saves the user data.
         /// </summary>
         /// <param name="userId">The user id.</param>
-        /// <param name="userDataId">The user data id.</param>
+        /// <param name="key">The key.</param>
         /// <param name="userData">The user data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">
-        /// userData
+        /// <exception cref="System.ArgumentNullException">userData
         /// or
         /// cancellationToken
         /// or
         /// userId
         /// or
-        /// userDataId
-        /// </exception>
-        public async Task SaveUserData(Guid userId, Guid userDataId, UserItemData userData, CancellationToken cancellationToken)
+        /// userDataId</exception>
+        public async Task SaveUserData(Guid userId, string key, UserItemData userData, CancellationToken cancellationToken)
         {
             if (userData == null)
             {
@@ -131,11 +129,40 @@ namespace MediaBrowser.Server.Implementations.Sqlite
             {
                 throw new ArgumentNullException("userId");
             }
-            if (userDataId == Guid.Empty)
+            if (string.IsNullOrEmpty(key))
             {
-                throw new ArgumentNullException("userDataId");
+                throw new ArgumentNullException("key");
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                await PersistUserData(userId, key, userData, cancellationToken).ConfigureAwait(false);
+
+                var newValue = Task.FromResult(userData);
+
+                // Once it succeeds, put it into the dictionary to make it available to everyone else
+                _userData.AddOrUpdate(key, newValue, delegate { return newValue; });
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error saving user data", ex);
+
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Persists the user data.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="userData">The user data.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public async Task PersistUserData(Guid userId, string key, UserItemData userData, CancellationToken cancellationToken)
+        {
             cancellationToken.ThrowIfCancellationRequested();
 
             var serialized = _jsonSerializer.SerializeToBytes(userData);
@@ -143,8 +170,8 @@ namespace MediaBrowser.Server.Implementations.Sqlite
             cancellationToken.ThrowIfCancellationRequested();
 
             var cmd = connection.CreateCommand();
-            cmd.CommandText = "replace into userdata (id, userId, data) values (@1, @2, @3)";
-            cmd.AddParam("@1", userDataId);
+            cmd.CommandText = "replace into userdata (key, userId, data) values (@1, @2, @3)";
+            cmd.AddParam("@1", key);
             cmd.AddParam("@2", userId);
             cmd.AddParam("@3", serialized);
 
@@ -174,29 +201,40 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// Gets the user data.
         /// </summary>
         /// <param name="userId">The user id.</param>
-        /// <param name="userDataId">The user data id.</param>
+        /// <param name="key">The key.</param>
         /// <returns>Task{UserItemData}.</returns>
         /// <exception cref="System.ArgumentNullException">
         /// userId
         /// or
-        /// userDataId
+        /// key
         /// </exception>
-        public async Task<UserItemData> GetUserData(Guid userId, Guid userDataId)
+        public Task<UserItemData> GetUserData(Guid userId, string key)
         {
             if (userId == Guid.Empty)
             {
                 throw new ArgumentNullException("userId");
             }
-            if (userDataId == Guid.Empty)
+            if (string.IsNullOrEmpty(key))
             {
-                throw new ArgumentNullException("userDataId");
+                throw new ArgumentNullException("key");
             }
+            
+            return _userData.GetOrAdd(key, keyName => RetrieveUserData(userId, key));
+        }
 
+        /// <summary>
+        /// Retrieves the user data.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="key">The key.</param>
+        /// <returns>Task{UserItemData}.</returns>
+        private async Task<UserItemData> RetrieveUserData(Guid userId, string key)
+        {
             var cmd = connection.CreateCommand();
-            cmd.CommandText = "select data from userdata where id = @id and userId=@userId";
+            cmd.CommandText = "select data from userdata where key = @key and userId=@userId";
 
-            var idParam = cmd.Parameters.Add("@id", DbType.Guid);
-            idParam.Value = userDataId;
+            var idParam = cmd.Parameters.Add("@key", DbType.String);
+            idParam.Value = key;
 
             var userIdParam = cmd.Parameters.Add("@userId", DbType.Guid);
             userIdParam.Value = userId;
@@ -212,7 +250,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 }
             }
 
-            return null;
+            return new UserItemData();
         }
     }
 }

@@ -154,27 +154,6 @@ namespace MediaBrowser.Model.Configuration
         public bool DownloadHDFanArt { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the item repository that should be used
-        /// </summary>
-        /// <value>The item repository.</value>
-        [ProtoMember(24)]
-        public string ItemRepository { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the user repository that should be used
-        /// </summary>
-        /// <value>The user repository.</value>
-        [ProtoMember(25)]
-        public string UserRepository { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the user data repository that should be used
-        /// </summary>
-        /// <value>The user data repository.</value>
-        [ProtoMember(26)]
-        public string UserDataRepository { get; set; }
-
-        /// <summary>
         /// Characters to be replaced with a ' ' in strings to create a sort name
         /// </summary>
         /// <value>The sort replace characters.</value>
@@ -201,13 +180,6 @@ namespace MediaBrowser.Model.Configuration
         /// <value><c>true</c> if [show log window]; otherwise, <c>false</c>.</value>
         [ProtoMember(30)]
         public bool ShowLogWindow { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the user data repository that should be used
-        /// </summary>
-        /// <value>The display preferences repository.</value>
-        [ProtoMember(31)]
-        public string DisplayPreferencesRepository { get; set; }
 
         /// <summary>
         /// The list of types that will NOT be allowed to have internet providers run against them even if they are turned on.
