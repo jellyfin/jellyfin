@@ -242,9 +242,21 @@ namespace MediaBrowser.Controller.Providers
                     }
 
                 case "Actors":
-                case "GuestStars":
                     {
                         foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Actor }))
+                        {
+                            if (string.IsNullOrWhiteSpace(p.Name))
+                            {
+                                continue;
+                            }
+                            item.AddPerson(p);
+                        }
+                        break;
+                    }
+
+                case "GuestStars":
+                    {
+                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.GuestStar }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {

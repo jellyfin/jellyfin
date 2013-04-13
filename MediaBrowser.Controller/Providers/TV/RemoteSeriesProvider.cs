@@ -322,7 +322,7 @@ namespace MediaBrowser.Controller.Providers.TV
                                     personNode.AppendChild(doc.ImportNode(subNode, true));
                                 //need to add the type
                                 var typeNode = doc.CreateNode(XmlNodeType.Element, "Type", null);
-                                typeNode.InnerText = "Actor";
+                                typeNode.InnerText = PersonType.Actor;
                                 personNode.AppendChild(typeNode);
                                 actorsNode.AppendChild(personNode);
                             }

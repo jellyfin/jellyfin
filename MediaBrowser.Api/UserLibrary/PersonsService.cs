@@ -89,7 +89,6 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var people = itemsList.SelectMany(i => i.People.OrderBy(p => p.Type));
 
-
             return personTypes.Length == 0 ?
 
                 people :
