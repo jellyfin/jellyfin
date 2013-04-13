@@ -1724,12 +1724,12 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         };
 
         /**
-         * Updates a user's favorite status for a person.
+         * Updates a user's favorite status for an item by name.
          * @param {String} userId
          * @param {String} name
          * @param {Boolean} isFavorite
          */
-        self.updateFavoritePersonStatus = function (userId, name, isFavorite) {
+        self.updateItemByNameFavoriteStatus = function (userId, name, isFavorite) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -1739,7 +1739,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/" + userId + "/FavoritePersons/" + name);
+            var url = self.getUrl("Users/" + userId + "/ItemsByName/Favorites/" + name);
 
             var method = isFavorite ? "POST" : "DELETE";
 
@@ -1751,12 +1751,12 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         };
 
         /**
-         * Updates a user's favorite status for a genre.
-         * @param {String} userId
-         * @param {String} name
-         * @param {Boolean} isFavorite
-         */
-        self.updateFavoriteGenreStatus = function (userId, name, isFavorite) {
+        * Updates a user's rating for an item by name.
+        * @param {String} userId
+        * @param {String} name
+        * @param {Boolean} likes
+        */
+        self.updateItemByNameRating = function (userId, name, likes) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -1766,24 +1766,46 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/" + userId + "/FavoriteGenre/" + name);
-
-            var method = isFavorite ? "POST" : "DELETE";
+            var url = self.getUrl("Users/" + userId + "/ItemsByName/" + name + "/Rating", {
+                likes: likes
+            });
 
             return self.ajax({
-                type: method,
+                type: "POST",
+                url: url
+            });
+        };
+
+        /**
+        * Clears a user's rating for an item by name.
+        * @param {String} userId
+        * @param {String} name
+        */
+        self.clearItemByNameRating = function (userId, name) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            if (!name) {
+                throw new Error("null name");
+            }
+
+            var url = self.getUrl("Users/" + userId + "/ItemsByName/" + name + "/Rating");
+
+            return self.ajax({
+                type: "DELETE",
                 url: url,
                 dataType: "json"
             });
         };
 
         /**
-         * Updates a user's favorite status for a studio.
-         * @param {String} userId
-         * @param {String} name
-         * @param {Boolean} isFavorite
-         */
-        self.updateFavoriteStudioStatus = function (userId, name, isFavorite) {
+        * Gets the full user data object for an item by name.
+        * @param {String} userId
+        * @param {String} name
+        */
+        self.getItembyNameUserData = function (userId, name) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -1793,12 +1815,10 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/" + userId + "/FavoriteStudios/" + name);
-
-            var method = isFavorite ? "POST" : "DELETE";
+            var url = self.getUrl("Users/" + userId + "/ItemsByName/" + name + "/UserData");
 
             return self.ajax({
-                type: method,
+                type: "GET",
                 url: url,
                 dataType: "json"
             });

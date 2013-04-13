@@ -682,7 +682,7 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="data">The data.</param>
         /// <returns>DtoUserItemData.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public UserItemDataDto GetUserItemDataDto(UserItemData data)
+        public static UserItemDataDto GetUserItemDataDto(UserItemData data)
         {
             if (data == null)
             {

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Persistence;
+﻿using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Persistence;
 using ServiceStack.ServiceHost;
 using System;
 using System.Threading;
@@ -146,7 +147,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Get the user data for this item
             var data = UserDataRepository.GetUserData(request.UserId, request.Name).Result;
 
-            return ToOptimizedResult(data);
+            return ToOptimizedResult(DtoBuilder.GetUserItemDataDto(data));
         }
         
         /// <summary>
@@ -175,7 +176,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Deletes the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Delete(MarkItemByNameFavorite request)
+        public void Delete(UnmarkItemByNameFavorite request)
         {
             var task = MarkFavorite(request.UserId, request.Name, false);
 
