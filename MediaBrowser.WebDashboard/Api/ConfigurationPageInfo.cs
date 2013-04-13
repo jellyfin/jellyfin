@@ -21,13 +21,13 @@ namespace MediaBrowser.WebDashboard.Api
         /// Gets or sets the plugin id.
         /// </summary>
         /// <value>The plugin id.</value>
-        public Guid PluginId { get; set; }
+        public string PluginId { get; set; }
 
         public ConfigurationPageInfo(IPluginConfigurationPage page)
         {
             Name = page.Name;
             ConfigurationPageType = page.ConfigurationPageType;
-            PluginId = page.Plugin.Id;
+            PluginId = page.Plugin.Id.ToString();
         }
     }
 }
