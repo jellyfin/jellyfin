@@ -632,14 +632,8 @@
 
             var markAsFavorite = $link.hasClass('imgFavoriteOff');
 
-            if (type == "Person") {
-                ApiClient.updateFavoritePersonStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
-            }
-            else if (type == "Studio") {
-                ApiClient.updateFavoriteStudioStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
-            }
-            else if (type == "Genre") {
-                ApiClient.updateFavoriteGenreStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
+            if (type == "Person" || type == "Studio" || type == "Genre") {
+                ApiClient.updateItemByNameFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
             }
             else {
                 ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
@@ -657,19 +651,30 @@
         markLike: function (link) {
 
             var id = link.getAttribute('data-itemid');
+            var type = link.getAttribute('data-type');
 
             var $link = $(link);
 
             if ($link.hasClass('imgLikeOff')) {
 
-                ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, true);
+                if (type == "Person" || type == "Studio" || type == "Genre") {
+                    ApiClient.updateItemByNameRating(Dashboard.getCurrentUserId(), id, true);
+                }
+                else {
+                    ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, true);
+                }
 
                 link.src = "css/images/userdata/thumbs_up_on.png";
                 $link.addClass('imgLike').removeClass('imgLikeOff');
 
             } else {
 
-                ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
+                if (type == "Person" || type == "Studio" || type == "Genre") {
+                    ApiClient.clearItemByNameRating(Dashboard.getCurrentUserId(), id);
+                }
+                else {
+                    ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
+                }
 
                 link.src = "css/images/userdata/thumbs_up_off.png";
                 $link.addClass('imgLikeOff').removeClass('imgLike');
@@ -683,19 +688,30 @@
         markDislike: function (link) {
 
             var id = link.getAttribute('data-itemid');
+            var type = link.getAttribute('data-type');
 
             var $link = $(link);
 
             if ($link.hasClass('imgDislikeOff')) {
 
-                ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, false);
+                if (type == "Person" || type == "Studio" || type == "Genre") {
+                    ApiClient.updateItemByNameRating(Dashboard.getCurrentUserId(), id, false);
+                }
+                else {
+                    ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, false);
+                }
 
                 link.src = "css/images/userdata/thumbs_down_on.png";
                 $link.addClass('imgDislike').removeClass('imgDislikeOff');
 
             } else {
 
-                ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
+                if (type == "Person" || type == "Studio" || type == "Genre") {
+                    ApiClient.clearItemByNameRating(Dashboard.getCurrentUserId(), id);
+                }
+                else {
+                    ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
+                }
 
                 link.src = "css/images/userdata/thumbs_down_off.png";
                 $link.addClass('imgDislikeOff').removeClass('imgDislike');

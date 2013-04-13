@@ -6,24 +6,40 @@
 
         var getItemPromise;
 
-        var person = getParameterByName('person');
+        var name  = getParameterByName('person');
 
-        if (person) {
-            getItemPromise = ApiClient.getPerson(person);
-        }
-
-        else if (getParameterByName('studio')) {
-            getItemPromise = ApiClient.getStudio(getParameterByName('studio'));
-        }
-        else if (getParameterByName('genre')) {
-            getItemPromise = ApiClient.getGenre(getParameterByName('genre'));
+        if (name) {
+            getItemPromise = ApiClient.getPerson(name);
         } else {
-            throw new Error('Invalid request');
+            
+            name  = getParameterByName('studio');
+            
+            if (name) {
+                
+                getItemPromise = ApiClient.getStudio(name);
+                
+            } else {
+                
+                name  = getParameterByName('genre');
+                
+                if (name) {
+                    getItemPromise = ApiClient.getGenre(name);
+                }
+                else {
+                    throw new Error('Invalid request');
+                }
+            }
         }
 
-        getItemPromise.done(function (item) {
+        var getUserDataPromise = ApiClient.getItembyNameUserData(Dashboard.getCurrentUserId(), name);
 
-            var name = item.Name;
+        $.when(getItemPromise, getUserDataPromise).done(function (response1, response2) {
+
+            var item = response1[0];
+            var userdata = response2[0];
+            
+            item.UserData = userdata;
+            name = item.Name;
 
             $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item));
 
