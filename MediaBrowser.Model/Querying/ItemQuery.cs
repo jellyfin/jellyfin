@@ -12,7 +12,7 @@ namespace MediaBrowser.Model.Querying
         /// The user to localize search results for
         /// </summary>
         /// <value>The user id.</value>
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Specify this to localize the search to a specific item or folder. Omit to use the root.

@@ -104,7 +104,14 @@ namespace MediaBrowser.Controller.Providers.Movies
             cancellationToken.ThrowIfCancellationRequested();
 
             var movie = item;
-            if (ShouldFetch(movie, movie.ProviderData.GetValueOrDefault(Id, new BaseProviderInfo { ProviderId = Id })))
+
+            BaseProviderInfo providerData;
+
+            if (!item.ProviderData.TryGetValue(Id, out providerData))
+            {
+                providerData = new BaseProviderInfo();
+            }
+            if (ShouldFetch(movie, providerData))
             {
                 var language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
                 var url = string.Format(FanArtBaseUrl, APIKey, movie.GetProviderId(MetadataProviders.Tmdb));

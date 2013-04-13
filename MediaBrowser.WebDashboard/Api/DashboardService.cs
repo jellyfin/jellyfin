@@ -4,6 +4,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
@@ -192,9 +193,9 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var connections = userManager.RecentConnections.ToArray();
 
-            var dtoBuilder = new DtoBuilder(logger, libraryManager, userManager);
+            var dtoBuilder = new UserDtoBuilder(logger);
 
-            var users = userManager.Users.Where(u => connections.Any(c => c.UserId == u.Id)).Select(dtoBuilder.GetUserDto);
+            var users = userManager.Users.Where(u => connections.Any(c => new Guid(c.UserId) == u.Id)).Select(dtoBuilder.GetUserDto);
 
             return new DashboardInfo
             {

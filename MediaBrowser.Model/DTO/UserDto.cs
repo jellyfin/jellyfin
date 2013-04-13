@@ -24,7 +24,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The id.</value>
         [ProtoMember(2)]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the primary image tag.

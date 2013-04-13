@@ -14,7 +14,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
     /// <summary>
     /// Class SQLiteDisplayPreferencesRepository
     /// </summary>
-    class SQLiteDisplayPreferencesRepository : SqliteRepository, IDisplayPreferencesRepository
+    public class SQLiteDisplayPreferencesRepository : SqliteRepository, IDisplayPreferencesRepository
     {
         /// <summary>
         /// The repository name

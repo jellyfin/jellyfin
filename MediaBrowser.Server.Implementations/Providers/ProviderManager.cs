@@ -89,12 +89,6 @@ namespace MediaBrowser.Server.Implementations.Providers
         }
 
         /// <summary>
-        /// Gets or sets the supported providers key.
-        /// </summary>
-        /// <value>The supported providers key.</value>
-        private Guid SupportedProvidersKey { get; set; }
-
-        /// <summary>
         /// Adds the metadata providers.
         /// </summary>
         /// <param name="providers">The providers.</param>
@@ -102,6 +96,11 @@ namespace MediaBrowser.Server.Implementations.Providers
         {
             MetadataProviders = providers.OrderBy(e => e.Priority).ToArray();
         }
+
+        /// <summary>
+        /// The _supported providers key
+        /// </summary>
+        private readonly Guid _supportedProvidersKey = "SupportedProviders".GetMD5();
 
         /// <summary>
         /// Runs all metadata providers for an entity, and returns true or false indicating if at least one was refreshed and requires persistence
@@ -126,19 +125,14 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             BaseProviderInfo supportedProvidersInfo;
 
-            if (SupportedProvidersKey == Guid.Empty)
-            {
-                SupportedProvidersKey = "SupportedProviders".GetMD5();
-            }
+            var supportedProvidersValue = string.Join("+", supportedProviders.Select(i => i.GetType().Name));
+            var providersChanged = false;
 
-            var supportedProvidersHash = string.Join("+", supportedProviders.Select(i => i.GetType().Name)).GetMD5();
-            bool providersChanged = false;
-
-            item.ProviderData.TryGetValue(SupportedProvidersKey, out supportedProvidersInfo);
+            item.ProviderData.TryGetValue(_supportedProvidersKey, out supportedProvidersInfo);
             if (supportedProvidersInfo != null)
             {
                 // Force refresh if the supported providers have changed
-                providersChanged = force = force || supportedProvidersInfo.FileSystemStamp != supportedProvidersHash;
+                providersChanged = force = force || !string.Equals(supportedProvidersInfo.FileSystemStamp, supportedProvidersValue);
 
                 // If providers have changed, clear provider info and update the supported providers hash
                 if (providersChanged)
@@ -150,7 +144,7 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             if (providersChanged)
             {
-                supportedProvidersInfo.FileSystemStamp = supportedProvidersHash;
+                supportedProvidersInfo.FileSystemStamp = supportedProvidersValue;
             }
 
             if (force) item.ClearMetaValues();
@@ -206,7 +200,7 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             if (providersChanged)
             {
-                item.ProviderData[SupportedProvidersKey] = supportedProvidersInfo;
+                item.ProviderData[_supportedProvidersKey] = supportedProvidersInfo;
             }
             
             return result || providersChanged;
