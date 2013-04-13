@@ -1671,7 +1671,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         };
 
         /**
-         * Updates a user's favorite status for an item and returns the updated UserItemData object.
+         * Updates a user's favorite status for an item.
          * @param {String} userId
          * @param {String} itemId
          * @param {Boolean} isFavorite
@@ -1720,6 +1720,87 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             return self.ajax({
                 type: "POST",
                 url: url
+            });
+        };
+
+        /**
+         * Updates a user's favorite status for a person.
+         * @param {String} userId
+         * @param {String} name
+         * @param {Boolean} isFavorite
+         */
+        self.updateFavoritePersonStatus = function (userId, name, isFavorite) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            if (!name) {
+                throw new Error("null name");
+            }
+
+            var url = self.getUrl("Users/" + userId + "/FavoritePersons/" + name);
+
+            var method = isFavorite ? "POST" : "DELETE";
+
+            return self.ajax({
+                type: method,
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        /**
+         * Updates a user's favorite status for a genre.
+         * @param {String} userId
+         * @param {String} name
+         * @param {Boolean} isFavorite
+         */
+        self.updateFavoriteGenreStatus = function (userId, name, isFavorite) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            if (!name) {
+                throw new Error("null name");
+            }
+
+            var url = self.getUrl("Users/" + userId + "/FavoriteGenre/" + name);
+
+            var method = isFavorite ? "POST" : "DELETE";
+
+            return self.ajax({
+                type: method,
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        /**
+         * Updates a user's favorite status for a studio.
+         * @param {String} userId
+         * @param {String} name
+         * @param {Boolean} isFavorite
+         */
+        self.updateFavoriteStudioStatus = function (userId, name, isFavorite) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            if (!name) {
+                throw new Error("null name");
+            }
+
+            var url = self.getUrl("Users/" + userId + "/FavoriteStudios/" + name);
+
+            var method = isFavorite ? "POST" : "DELETE";
+
+            return self.ajax({
+                type: method,
+                url: url,
+                dataType: "json"
             });
         };
 
