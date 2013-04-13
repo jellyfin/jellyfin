@@ -63,7 +63,20 @@ namespace MediaBrowser.Controller.Providers
         {
             // If the IBN location exists return the last modified date of any file in it
             var location = GetLocation(item);
-            return Directory.Exists(location) ? FileSystem.GetFiles(location).Select(f => f.CreationTimeUtc > f.LastWriteTimeUtc ? f.CreationTimeUtc : f.LastWriteTimeUtc).Max() : DateTime.MinValue;
+
+            if (!Directory.Exists(location))
+            {
+                return DateTime.MinValue;
+            }
+
+            var files = FileSystem.GetFiles(location).ToList();
+
+            if (files.Count == 0)
+            {
+                return DateTime.MinValue;
+            }
+
+            return files.Select(f => f.CreationTimeUtc > f.LastWriteTimeUtc ? f.CreationTimeUtc : f.LastWriteTimeUtc).Max();
         }
 
         /// <summary>

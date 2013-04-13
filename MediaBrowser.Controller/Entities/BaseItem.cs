@@ -32,7 +32,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
-        public virtual string Name { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -477,7 +477,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The end date.</value>
         public DateTime? EndDate { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the display type of the media.
         /// </summary>
@@ -569,7 +569,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The production locations.</value>
         public List<string> ProductionLocations { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the community rating.
         /// </summary>
