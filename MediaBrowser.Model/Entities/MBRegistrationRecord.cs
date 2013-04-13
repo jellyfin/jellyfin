@@ -4,10 +4,10 @@ namespace Mediabrowser.Model.Entities
 {
     public class MBRegistrationRecord
     {
-        public DateTime ExpirationDate = DateTime.MinValue;
-        public bool IsRegistered = false;
-        public bool RegChecked = false;
-        public bool RegError = false;
+        public DateTime ExpirationDate { get; set; }
+        public bool IsRegistered { get; set;}
+        public bool RegChecked { get; set; }
+        public bool RegError { get; set; }
         private bool? _isInTrial;
         public bool TrialVersion
         {
