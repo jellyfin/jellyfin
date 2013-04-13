@@ -350,27 +350,3 @@ function ticks_to_human(str) {
 
     return time;
 };
-
-//parse video player src URL
-function parse_src_url(url) {
-    var src = url.replace("\?", "\&");
-    var parts = src.split("/");
-    var len = parts.length - 1;
-    var query = parts[len].split("&");
-    var array = new Array();
-
-    array['Type'] = parts[len - 2];
-    array['item_id'] = parts[len - 1];
-
-    for (i = 0; i < query.length; i++) {
-        if (i == 0) {
-            var pairs = query[i].split(".");
-        } else {
-            var pairs = query[i].split("=");
-        }
-
-        array[pairs[0]] = pairs[1];
-    }
-
-    return array;
-}
