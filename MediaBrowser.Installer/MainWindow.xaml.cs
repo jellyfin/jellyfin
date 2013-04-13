@@ -241,60 +241,85 @@ namespace MediaBrowser.Installer
 
             if (archive == null) return;  //we canceled or had an error that was already reported
 
-            // Extract
-            lblStatus.Text = "Extracting Package...";
-            try 
+            if (Path.GetExtension(archive) == ".msi")
             {
-                ExtractPackage(archive);
-                // We're done with it so delete it (this is necessary for update operations)
-                try
+
+                // Create directory for our installer log
+                if (!Directory.Exists(RootPath)) Directory.CreateDirectory(RootPath);
+                var logPath = Path.Combine(RootPath, "Logs");
+                if (!Directory.Exists(logPath)) Directory.CreateDirectory(logPath);
+
+                // Run in silent mode and wait for it to finish
+                // First uninstall any previous version
+                lblStatus.Text = "Uninstalling any previous version...";
+                var logfile = Path.Combine(RootPath, "logs", "UnInstall.log");
+                var uninstaller = Process.Start("msiexec", "/x \"" + archive + "\" /quiet /le \"" + logfile + "\"");
+                if (uninstaller != null) uninstaller.WaitForExit();
+                // And now installer
+                lblStatus.Text = "Installing " + FriendlyName;
+                logfile = Path.Combine(RootPath, "logs", "Install.log");
+                var installer = Process.Start(archive, "/quiet /le \""+logfile+"\"");
+                installer.WaitForExit();  // let this throw if there is a problem
+            }
+            else
+            {
+                // Extract
+                lblStatus.Text = "Extracting Package...";
+                try 
                 {
-                    File.Delete(archive);
-                }
-                catch (FileNotFoundException)
-                {
+                    ExtractPackage(archive);
+                    // We're done with it so delete it (this is necessary for update operations)
+                    try
+                    {
+                        File.Delete(archive);
+                    }
+                    catch (FileNotFoundException)
+                    {
+                    }
+                    catch (Exception e)
+                    {
+                        SystemClose("Error Removing Archive - " + e.GetType().FullName + "\n\n" + e.Message);
+                        return;
+                    }
                 }
                 catch (Exception e)
                 {
-                    SystemClose("Error Removing Archive - " + e.GetType().FullName + "\n\n" + e.Message);
+                    SystemClose("Error Extracting - " + e.GetType().FullName + "\n\n" + e.Message);
                     return;
                 }
-            }
-            catch (Exception e)
-            {
-                SystemClose("Error Extracting - " + e.GetType().FullName + "\n\n" + e.Message);
-                return;
-            }
 
-            // Create shortcut
-            lblStatus.Text = "Creating Shortcuts...";
-            var fullPath = Path.Combine(RootPath, "System", TargetExe);
-            try
-            {
-                CreateShortcuts(fullPath);
-            }
-            catch (Exception e)
-            {
-                SystemClose("Error Creating Shortcut - "+e.GetType().FullName+"\n\n"+e.Message);
-                return;
-            }
-
-            // Install Pismo
-            if (InstallPismo)
-            {
-                lblStatus.Text = "Installing ISO Support...";
+                // Create shortcut
+                lblStatus.Text = "Creating Shortcuts...";
+                var fullPath = Path.Combine(RootPath, "System", TargetExe);
                 try
                 {
-                    PismoInstall();
+                    CreateShortcuts(fullPath);
                 }
                 catch (Exception e)
                 {
-                    SystemClose("Error Installing ISO support - "+e.GetType().FullName+"\n\n"+e.Message);
+                    SystemClose("Error Creating Shortcut - "+e.GetType().FullName+"\n\n"+e.Message);
+                    return;
                 }
-            }
 
-            // Now delete the pismo install files
-            Directory.Delete(Path.Combine(RootPath, "Pismo"), true);
+                // Install Pismo
+                if (InstallPismo)
+                {
+                    lblStatus.Text = "Installing ISO Support...";
+                    try
+                    {
+                        PismoInstall();
+                    }
+                    catch (Exception e)
+                    {
+                        SystemClose("Error Installing ISO support - "+e.GetType().FullName+"\n\n"+e.Message);
+                    }
+                }
+
+                // Now delete the pismo install files
+                Directory.Delete(Path.Combine(RootPath, "Pismo"), true);
+
+                
+            }
 
             // And run
             lblStatus.Text = string.Format("Starting {0}...", FriendlyName);
