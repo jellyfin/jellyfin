@@ -417,7 +417,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js", 
                                 "http://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.js",
                                 "http://vjs.zencdn.net/c/video.js",
-                                "thirdparty/jplayer/jquery.jplayer.min.js" + versionString,
                                 "scripts/all.js" + versionString
             };
 

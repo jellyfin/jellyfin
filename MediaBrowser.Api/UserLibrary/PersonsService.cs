@@ -23,6 +23,44 @@ namespace MediaBrowser.Api.UserLibrary
         public string PersonTypes { get; set; }
     }
 
+    [Route("/Users/{UserId}/FavoritePersons/{Name}", "POST")]
+    [Api(Description = "Marks a person as a favorite")]
+    public class MarkFavoritePerson : IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public Guid UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
+        public string Name { get; set; }
+    }
+
+    [Route("/Users/{UserId}/FavoritePersons/{Name}", "DELETE")]
+    [Api(Description = "Unmarks a person as a favorite")]
+    public class UnmarkFavoritePerson : IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
+        public Guid UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
+        public string Name { get; set; }
+    }
+    
     /// <summary>
     /// Class PersonsService
     /// </summary>
@@ -43,6 +81,28 @@ namespace MediaBrowser.Api.UserLibrary
             var result = GetResult(request).Result;
 
             return ToOptimizedResult(result);
+        }
+
+        /// <summary>
+        /// Posts the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        public void Post(MarkFavoritePerson request)
+        {
+            var task = MarkFavorite(() => LibraryManager.GetPerson(request.Name), request.UserId, true);
+
+            Task.WaitAll(task);
+        }
+
+        /// <summary>
+        /// Deletes the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        public void Delete(UnmarkFavoritePerson request)
+        {
+            var task = MarkFavorite(() => LibraryManager.GetPerson(request.Name), request.UserId, false);
+
+            Task.WaitAll(task);
         }
 
         /// <summary>

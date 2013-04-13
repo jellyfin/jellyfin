@@ -563,6 +563,16 @@
 
             var itemId = item.Id;
             var type = item.Type;
+            
+            if (type == "Person") {
+                itemId = item.Name;
+            }
+            else if (type == "Studio") {
+                itemId = item.Name;
+            }
+            else if (type == "Genre") {
+                itemId = item.Name;
+            }
 
             if (item.MediaType) {
                 if (userData.Played) {
@@ -616,12 +626,24 @@
         markFavorite: function (link) {
 
             var id = link.getAttribute('data-itemid');
+            var type = link.getAttribute('data-type');
 
             var $link = $(link);
 
             var markAsFavorite = $link.hasClass('imgFavoriteOff');
 
-            ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
+            if (type == "Person") {
+                ApiClient.updateFavoritePersonStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
+            }
+            else if (type == "Studio") {
+                ApiClient.updateFavoriteStudioStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
+            }
+            else if (type == "Genre") {
+                ApiClient.updateFavoriteGenreStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
+            }
+            else {
+                ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
+            }
 
             if (markAsFavorite) {
                 link.src = "css/images/userdata/heart_on.png";
@@ -697,21 +719,21 @@
 
                 if (item.Type == "Person") {
                     url = ApiClient.getPersonImageUrl(item.Name, {
-                        width: 800,
+                        maxwidth: 800,
                         tag: imageTags.Primary,
                         type: "primary"
                     });
                 }
                 else if (item.Type == "Genre") {
                     url = ApiClient.getGenreImageUrl(item.Name, {
-                        width: 800,
+                        maxwidth: 800,
                         tag: imageTags.Primary,
                         type: "primary"
                     });
                 }
                 else if (item.Type == "Studio") {
                     url = ApiClient.getStudioImageUrl(item.Name, {
-                        width: 800,
+                        maxwidth: 800,
                         tag: imageTags.Primary,
                         type: "primary"
                     });
@@ -719,7 +741,7 @@
                 else {
                     url = ApiClient.getImageUrl(item.Id, {
                         type: "Primary",
-                        width: 800,
+                        maxwidth: 800,
                         tag: item.ImageTags.Primary
                     });
                 }
@@ -728,7 +750,7 @@
 
                 url = ApiClient.getImageUrl(item.Id, {
                     type: "Backdrop",
-                    width: 800,
+                    maxwidth: 800,
                     tag: item.BackdropImageTags[0]
                 });
             }
@@ -736,7 +758,7 @@
 
                 url = ApiClient.getImageUrl(item.Id, {
                     type: "Thumb",
-                    width: 800,
+                    maxwidth: 800,
                     tag: item.ImageTags.Thumb
                 });
             }
@@ -744,7 +766,7 @@
 
                 url = ApiClient.getImageUrl(item.Id, {
                     type: "Disc",
-                    width: 800,
+                    maxwidth: 800,
                     tag: item.ImageTags.Disc
                 });
             }
@@ -850,7 +872,7 @@
                 elem.hide();
             }
         },
-        
+
         renderBudget: function (elem, item) {
             if (item.Budget) {
                 elem.show().html('Budget:&nbsp;&nbsp;$' + item.Budget);
