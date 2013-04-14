@@ -957,7 +957,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (person == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("person");
             }
 
             if (string.IsNullOrWhiteSpace(person.Name))
@@ -967,14 +967,37 @@ namespace MediaBrowser.Controller.Entities
 
             if (People == null)
             {
-                People = new List<PersonInfo>();
+                People = new List<PersonInfo> { person };
+                return;
             }
 
-            // Check for dupes based on the combination of Name and Type
-
-            if (!People.Any(p => p.Name.Equals(person.Name, StringComparison.OrdinalIgnoreCase) && p.Type.Equals(person.Type, StringComparison.OrdinalIgnoreCase)))
+            // If the type is GuestStar and there's already an Actor entry, then update it to avoid dupes
+            if (string.Equals(person.Type, PersonType.GuestStar, StringComparison.OrdinalIgnoreCase))
             {
-                People.Add(person);
+                var existing = People.FirstOrDefault(p => p.Name.Equals(person.Name, StringComparison.OrdinalIgnoreCase) && p.Type.Equals(PersonType.Actor, StringComparison.OrdinalIgnoreCase));
+
+                if (existing != null)
+                {
+                    existing.Type = PersonType.GuestStar;
+                    return;
+                }
+            }
+
+            if (string.Equals(person.Type, PersonType.Actor, StringComparison.OrdinalIgnoreCase))
+            {
+                // Only add actors if there isn't an existing one of type Actor or GuestStar
+                if (!People.Any(p => p.Name.Equals(person.Name, StringComparison.OrdinalIgnoreCase) && (p.Type.Equals(PersonType.Actor, StringComparison.OrdinalIgnoreCase) || p.Type.Equals(PersonType.GuestStar, StringComparison.OrdinalIgnoreCase))))
+                {
+                    People.Add(person);
+                }
+            }
+            else
+            {
+                // Check for dupes based on the combination of Name and Type
+                if (!People.Any(p => p.Name.Equals(person.Name, StringComparison.OrdinalIgnoreCase) && p.Type.Equals(person.Type, StringComparison.OrdinalIgnoreCase)))
+                {
+                    People.Add(person);
+                }
             }
         }
 
