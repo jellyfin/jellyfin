@@ -157,5 +157,17 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The ids.</value>
         public string[] Ids { get; set; }
+
+        /// <summary>
+        /// Gets or sets the min official rating.
+        /// </summary>
+        /// <value>The min official rating.</value>
+        public string MinOfficialRating { get; set; }
+
+        /// <summary>
+        /// Gets or sets the max official rating.
+        /// </summary>
+        /// <value>The max official rating.</value>
+        public string MaxOfficialRating { get; set; }
     }
 }
