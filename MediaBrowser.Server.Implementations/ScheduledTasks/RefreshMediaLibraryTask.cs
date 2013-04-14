@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Server.Implementations.Library;
 
 namespace MediaBrowser.Server.Implementations.ScheduledTasks
 {
@@ -55,7 +56,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
             progress.Report(0);
 
-            return _libraryManager.ValidateMediaLibrary(progress, cancellationToken);
+            return ((LibraryManager)_libraryManager).ValidateMediaLibraryInternal(progress, cancellationToken);
         }
 
         /// <summary>

@@ -758,7 +758,19 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task ValidateMediaLibrary(IProgress<double> progress, CancellationToken cancellationToken)
+        public Task ValidateMediaLibrary(IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            // Just run the scheduled task so that the user can see it
+            return Task.Run(() => _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>());
+        }
+
+        /// <summary>
+        /// Validates the media library internal.
+        /// </summary>
+        /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public async Task ValidateMediaLibraryInternal(IProgress<double> progress, CancellationToken cancellationToken)
         {
             _logger.Info("Validating media library");
 
