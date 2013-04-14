@@ -48,14 +48,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="items">The items.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<Tuple<string, Func<IEnumerable<BaseItem>>>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items, User user)
+        protected override IEnumerable<IbnStub<Genre>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items, User user)
         {
             var itemsList = items.Where(i => i.Genres != null).ToList();
 
             return itemsList
                 .SelectMany(i => i.Genres)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(name => new Tuple<string, Func<IEnumerable<BaseItem>>>(name, () => itemsList.Where(i => i.Genres.Contains(name, StringComparer.OrdinalIgnoreCase))));
+                .Select(name => new IbnStub<Genre>(name, () => itemsList.Where(i => i.Genres.Contains(name, StringComparer.OrdinalIgnoreCase)), GetEntity));
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{Genre}.</returns>
-        protected override Task<Genre> GetEntity(string name)
+        protected Task<Genre> GetEntity(string name)
         {
             return LibraryManager.GetGenre(name);
         }

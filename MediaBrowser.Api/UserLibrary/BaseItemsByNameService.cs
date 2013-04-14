@@ -70,9 +70,13 @@ namespace MediaBrowser.Api.UserLibrary
             items = FilterItems(request, items, user);
 
             var extractedItems = GetAllItems(request, items, user);
-            var ibnItemsArray = SortItems(request, extractedItems).ToArray();
-      
-            IEnumerable<Tuple<string, Func<IEnumerable<BaseItem>>>> ibnItems = ibnItemsArray;
+
+            extractedItems = FilterItems(request, extractedItems, user);
+            extractedItems = SortItems(request, extractedItems);
+
+            var ibnItemsArray = extractedItems.ToArray();
+
+            IEnumerable<IbnStub<TItemType>> ibnItems = ibnItemsArray;
 
             var result = new ItemsResult
             {
@@ -105,22 +109,73 @@ namespace MediaBrowser.Api.UserLibrary
         }
 
         /// <summary>
+        /// Filters the items.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="items">The items.</param>
+        /// <param name="user">The user.</param>
+        /// <returns>IEnumerable{IbnStub}.</returns>
+        private IEnumerable<IbnStub<TItemType>> FilterItems(GetItemsByName request, IEnumerable<IbnStub<TItemType>> items, User user)
+        {
+            var filters = request.GetFilters().ToList();
+
+            if (filters.Count == 0)
+            {
+                return items;
+            }
+
+            items = items.AsParallel();
+
+            if (filters.Contains(ItemFilter.Dislikes))
+            {
+                items = items.Where(i =>
+                {
+                    var userdata = i.GetUserItemData(UserDataRepository, user.Id).Result;
+
+                    return userdata != null && userdata.Likes.HasValue && !userdata.Likes.Value;
+                });
+            }
+
+            if (filters.Contains(ItemFilter.Likes))
+            {
+                items = items.Where(i =>
+                {
+                    var userdata = i.GetUserItemData(UserDataRepository, user.Id).Result;
+
+                    return userdata != null && userdata.Likes.HasValue && userdata.Likes.Value;
+                });
+            }
+
+            if (filters.Contains(ItemFilter.IsFavorite))
+            {
+                items = items.Where(i =>
+                {
+                    var userdata = i.GetUserItemData(UserDataRepository, user.Id).Result;
+
+                    return userdata != null && userdata.Likes.HasValue && userdata.IsFavorite;
+                });
+            }
+            
+            return items.AsEnumerable();
+        }
+        
+        /// <summary>
         /// Sorts the items.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        private IEnumerable<Tuple<string, Func<IEnumerable<BaseItem>>>> SortItems(GetItemsByName request, IEnumerable<Tuple<string, Func<IEnumerable<BaseItem>>>> items)
+        private IEnumerable<IbnStub<TItemType>> SortItems(GetItemsByName request, IEnumerable<IbnStub<TItemType>> items)
         {
             if (string.Equals(request.SortBy, "SortName", StringComparison.OrdinalIgnoreCase))
             {
                 if (request.SortOrder.HasValue && request.SortOrder.Value == Model.Entities.SortOrder.Descending)
                 {
-                    items = items.OrderByDescending(i => i.Item1);
+                    items = items.OrderByDescending(i => i.Name);
                 }
                 else
                 {
-                    items = items.OrderBy(i => i.Item1);
+                    items = items.OrderBy(i => i.Name);
                 }
             }
 
@@ -160,14 +215,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="items">The items.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected abstract IEnumerable<Tuple<string, Func<IEnumerable<BaseItem>>>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items, User user);
-
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns>Task{BaseItem}.</returns>
-        protected abstract Task<TItemType> GetEntity(string name);
+        protected abstract IEnumerable<IbnStub<TItemType>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items, User user);
 
         /// <summary>
         /// Gets the dto.
@@ -176,17 +224,17 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="user">The user.</param>
         /// <param name="fields">The fields.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
-        private async Task<BaseItemDto> GetDto(Tuple<string, Func<IEnumerable<BaseItem>>> stub, User user, List<ItemFields> fields)
+        private async Task<BaseItemDto> GetDto(IbnStub<TItemType> stub, User user, List<ItemFields> fields)
         {
             BaseItem item;
 
             try
             {
-                item = await GetEntity(stub.Item1).ConfigureAwait(false);
+                item = await stub.GetItem().ConfigureAwait(false);
             }
             catch (IOException ex)
             {
-                Logger.ErrorException("Error getting IBN item {0}", ex, stub.Item1);
+                Logger.ErrorException("Error getting IBN item {0}", ex, stub.Name);
                 return null;
             }
 
@@ -194,7 +242,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (fields.Contains(ItemFields.ItemCounts))
             {
-                var items = stub.Item2().ToList();
+                var items = stub.Items;
 
                 dto.ChildCount = items.Count;
                 dto.RecentlyAddedItemCount = items.Count(i => i.IsRecentlyAdded(user));
@@ -215,5 +263,49 @@ namespace MediaBrowser.Api.UserLibrary
         /// <value>The sort by.</value>
         [ApiMember(Name = "SortBy", Description = "Optional. Options: SortName", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string SortBy { get; set; }
+    }
+
+    public class IbnStub<T>
+        where T : BaseItem
+    {
+        private readonly Func<IEnumerable<BaseItem>> _childItemsFunction;
+        private List<BaseItem> _childItems;
+
+        private readonly Func<string,Task<T>> _itemFunction;
+        private Task<T> _itemTask;
+        
+        public string Name;
+
+        public BaseItem Item;
+        private Task<UserItemData> _userData;
+
+        public List<BaseItem> Items
+        {
+            get { return _childItems ?? (_childItems = _childItemsFunction().ToList()); }
+        }
+
+        public Task<T> GetItem()
+        {
+            return _itemTask ?? (_itemTask = _itemFunction(Name));
+        }
+
+        public async Task<UserItemData> GetUserItemData(IUserDataRepository repo, Guid userId)
+        {
+            var item = await GetItem().ConfigureAwait(false);
+
+            if (_userData == null)
+            {
+                _userData = repo.GetUserData(userId, item.GetUserDataKey());
+            }
+
+            return await _userData.ConfigureAwait(false);
+        }
+
+        public IbnStub(string name, Func<IEnumerable<BaseItem>> childItems, Func<string,Task<T>> item)
+        {
+            Name = name;
+            _childItemsFunction = childItems;
+            _itemFunction = item;
+        }
     }
 }

@@ -38,8 +38,8 @@ namespace MediaBrowser.Api.UserLibrary
         /// If the Person filter is used, this can also be used to restrict to a specific person type
         /// </summary>
         /// <value>The type of the person.</value>
-        [ApiMember(Name = "PersonType", Description = "Optional. If specified, along with Person, results will be filtered to include only those containing the specified person and PersonType.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string PersonType { get; set; }
+        [ApiMember(Name = "PersonTypes", Description = "Optional. If specified, along with Person, results will be filtered to include only those containing the specified person and PersonType. Allows multiple, comma-delimited", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string PersonTypes { get; set; }
 
         /// <summary>
         /// Search characters used to find items
@@ -357,6 +357,20 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{BaseItem}.</returns>
         internal static IEnumerable<BaseItem> ApplyAdditionalFilters(GetItems request, IEnumerable<BaseItem> items)
         {
+            // Exclude item types
+            if (!string.IsNullOrEmpty(request.ExcludeItemTypes))
+            {
+                var vals = request.ExcludeItemTypes.Split(',');
+                items = items.Where(f => !vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
+            }
+
+            // Include item types
+            if (!string.IsNullOrEmpty(request.IncludeItemTypes))
+            {
+                var vals = request.IncludeItemTypes.Split(',');
+                items = items.Where(f => vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
+            }
+            
             // Filter by Series Status
             if (!string.IsNullOrEmpty(request.SeriesStatus))
             {
@@ -434,11 +448,21 @@ namespace MediaBrowser.Api.UserLibrary
             // Apply person filter
             if (!string.IsNullOrEmpty(personName))
             {
-                var personType = request.PersonType;
+                var personTypes = request.PersonTypes;
 
-                items = !string.IsNullOrEmpty(personType)
-                            ? items.Where(item => item.People != null && item.People.Any(p => p.Name.Equals(personName, StringComparison.OrdinalIgnoreCase) && p.Type.Equals(personType, StringComparison.OrdinalIgnoreCase)))
-                            : items.Where(item => item.People != null && item.People.Any(p => p.Name.Equals(personName, StringComparison.OrdinalIgnoreCase)));
+                if (string.IsNullOrEmpty(personTypes))
+                {
+                    items = items.Where(item => item.People != null && item.People.Any(p => string.Equals(p.Name, personName, StringComparison.OrdinalIgnoreCase)));
+                }
+                else
+                {
+                    var types = personTypes.Split(',');
+
+                    items = items.Where(item =>
+                            item.People != null &&
+                            item.People.Any(p =>
+                                p.Name.Equals(personName, StringComparison.OrdinalIgnoreCase) && types.Contains(p.Type, StringComparer.OrdinalIgnoreCase)));
+                }
             }
 
             return items;

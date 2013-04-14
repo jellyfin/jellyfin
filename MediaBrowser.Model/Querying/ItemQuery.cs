@@ -120,7 +120,7 @@ namespace MediaBrowser.Model.Querying
         /// If the Person filter is used, this can also be used to restrict to a specific person type
         /// </summary>
         /// <value>The type of the person.</value>
-        public string PersonType { get; set; }
+        public string[] PersonTypes { get; set; }
 
         /// <summary>
         /// Search characters used to find items

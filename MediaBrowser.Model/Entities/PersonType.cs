@@ -26,5 +26,9 @@ namespace MediaBrowser.Model.Entities
         /// The music artist
         /// </summary>
         public const string MusicArtist = "MusicArtist";
+        /// <summary>
+        /// The guest star
+        /// </summary>
+        public const string GuestStar = "GuestStar";
     }
 }

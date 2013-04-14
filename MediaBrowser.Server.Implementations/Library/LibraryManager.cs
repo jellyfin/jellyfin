@@ -696,7 +696,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var tasks = new List<Task>();
 
-            var includedPersonTypes = new[] { PersonType.Actor, PersonType.Director };
+            var includedPersonTypes = new[] { PersonType.Actor, PersonType.Director, PersonType.GuestStar };
 
             var people = RootFolder.RecursiveChildren
                 .Where(c => c.People != null)
