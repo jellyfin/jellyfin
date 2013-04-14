@@ -42,7 +42,7 @@
             } else {
                 $('#btnPlayMenu', page).hide();
                 $('#playButtonShadow', page).hide();
-	            $('#btnQueueMenu', page).hide();
+                $('#btnQueueMenu', page).hide();
             }
 
             Dashboard.hideLoadingMsg();
@@ -50,7 +50,7 @@
     }
 
     function setInitialCollapsibleState(page, item) {
-        
+
         if (!item.MediaStreams || !item.MediaStreams.length) {
             $('#mediaInfoCollapsible', page).hide();
         } else {
@@ -110,17 +110,7 @@
         LibraryBrowser.renderGenres($('#itemGenres', page), item);
         LibraryBrowser.renderStudios($('#itemStudios', page), item);
         renderUserDataIcons(page, item);
-        renderLinks(page, item);
-    }
-
-    function renderLinks(page, item) {
-        if (item.ProviderIds) {
-
-            $('#itemLinks', page).html(LibraryBrowser.getLinksHtml(item));
-
-        } else {
-            $('#itemLinks', page).hide();
-        }
+        LibraryBrowser.renderLinks($('#itemLinks', page), item);
     }
 
     function renderUserDataIcons(page, item) {
@@ -465,7 +455,7 @@
 
         $('#castContent', page).html(html);
     }
-    
+
     function play(startPosition) {
 
         MediaPlayer.play([currentItem], startPosition);
@@ -494,14 +484,14 @@
             }
         });
 
-	    $('#btnQueueMenu', page).on('click', function () {
-		    var pos = $('#queueMenuAnchor', page).offset();
+        $('#btnQueueMenu', page).on('click', function () {
+            var pos = $('#queueMenuAnchor', page).offset();
 
-		    $('#queueMenu', page).popup("open", {
-			    x: pos.left + 165,
-			    y: pos.top + 20
-		    });
-	    });
+            $('#queueMenu', page).popup("open", {
+                x: pos.left + 165,
+                y: pos.top + 20
+            });
+        });
 
 
         $('#btnPlay', page).on('click', function () {
@@ -515,15 +505,15 @@
             $('#playMenu', page).popup("close");
 
             var userdata = currentItem.UserData || {};
-            
+
             play(userdata.PlaybackPositionTicks);
         });
 
-	    $('#btnQueue', page).on('click', function () {
+        $('#btnQueue', page).on('click', function () {
 
-		    $('#queueMenu', page).popup("close");
-		    Playlist.add(currentItem);
-	    });
+            $('#queueMenu', page).popup("close");
+            Playlist.add(currentItem);
+        });
 
     }).on('pageshow', "#itemDetailPage", function () {
 
@@ -584,7 +574,7 @@
         $('#castCollapsible', page).off('expand.lazyload');
         $('#galleryCollapsible', page).off('expand.lazyload');
     });
-    
+
     function itemDetailPage() {
 
         var self = this;

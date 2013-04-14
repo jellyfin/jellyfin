@@ -67,7 +67,7 @@
         }
 
         renderUserDataIcons(page, item);
-        renderLinks(page, item);
+        LibraryBrowser.renderLinks($('#itemLinks', page), item);
 
         if (item.Type == "Person" && item.PremiereDate) {
 
@@ -94,16 +94,6 @@
             $('#itemBirthLocation', page).show().html("Birthplace:&nbsp;&nbsp;" + gmap).trigger('create');
         } else {
             $('#itemBirthLocation', page).hide();
-        }
-    }
-
-    function renderLinks(page, item) {
-        if (item.ProviderIds) {
-
-            $('#itemLinks', page).html(LibraryBrowser.getLinksHtml(item));
-
-        } else {
-            $('#itemLinks', page).hide();
         }
     }
 
