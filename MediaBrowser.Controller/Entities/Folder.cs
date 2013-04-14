@@ -127,7 +127,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected IEnumerable<BaseItem> GetIndexByPerformer(User user)
         {
-            return GetIndexByPerson(user, new List<string> { PersonType.Actor, PersonType.MusicArtist }, LocalizedStrings.Instance.GetString("PerformerDispPref"));
+            return GetIndexByPerson(user, new List<string> { PersonType.Actor, PersonType.MusicArtist, PersonType.GuestStar }, LocalizedStrings.Instance.GetString("PerformerDispPref"));
         }
 
         /// <summary>

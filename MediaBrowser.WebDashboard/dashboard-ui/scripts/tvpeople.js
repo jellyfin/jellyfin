@@ -8,6 +8,7 @@
         IncludeItemTypes: "Series",
         Recursive: true,
         Fields: "PrimaryImageAspectRatio,ItemCounts,DateCreated,UserData",
+        PersonTypes: "",
         Limit: LibraryBrowser.getDetaultPageSize(),
         StartIndex: 0
     };
@@ -76,6 +77,22 @@
             }
 
             query.Filters = filters;
+
+            reloadItems(page);
+        });
+
+        $('.chkPersonTypeFilter', this).on('change', function () {
+
+            var filterName = this.getAttribute('data-filter');
+            var filters = query.PersonTypes || "";
+
+            filters = (',' + filters).replace(',' + filterName, '').substring(1);
+
+            if (this.checked) {
+                filters = filters ? (filters + ',' + filterName) : filterName;
+            }
+
+            query.PersonTypes = filters;
 
             reloadItems(page);
         });

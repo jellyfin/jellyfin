@@ -263,21 +263,21 @@ namespace MediaBrowser.Controller.Providers.TV
                     var actors = doc.SafeGetString("//GuestStars");
                     if (actors != null)
                     {
-                        episode.AddPeople(actors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = "Actor", Name = str }));
+                        episode.AddPeople(actors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = PersonType.GuestStar, Name = str }));
                     }
 
 
                     var directors = doc.SafeGetString("//Director");
                     if (directors != null)
                     {
-                        episode.AddPeople(directors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = "Director", Name = str }));
+                        episode.AddPeople(directors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = PersonType.Director, Name = str }));
                     }
 
 
                     var writers = doc.SafeGetString("//Writer");
                     if (writers != null)
                     {
-                        episode.AddPeople(writers.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = "Writer", Name = str }));
+                        episode.AddPeople(writers.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = PersonType.Writer, Name = str }));
                     }
 
                     if (ConfigurationManager.Configuration.SaveLocalMeta)
