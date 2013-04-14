@@ -72,6 +72,7 @@
 				filters = filters ? (filters + ',' + filterName) : filterName;
 			}
 
+			query.StartIndex = 0;
 			query.Filters = filters;
 
 			reloadItems(page);
