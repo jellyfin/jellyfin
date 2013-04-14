@@ -52,17 +52,7 @@
         LibraryBrowser.renderGenres($('#itemGenres', page), item);
         LibraryBrowser.renderStudios($('#itemStudios', page), item);
         renderUserDataIcons(page, item);
-        renderLinks(page, item);
-    }
-
-    function renderLinks(page, item) {
-        if (item.ProviderIds) {
-
-            $('#itemLinks', page).html(LibraryBrowser.getLinksHtml(item));
-
-        } else {
-            $('#itemLinks', page).hide();
-        }
+        LibraryBrowser.renderLinks($('#itemLinks', page), item);
     }
 
     function renderUserDataIcons(page, item) {
