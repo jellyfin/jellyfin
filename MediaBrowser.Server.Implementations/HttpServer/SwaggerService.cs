@@ -18,10 +18,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         public string ResourceName { get; set; }
     }
 
-    public class SwaggerService : IRequiresRequestContext, IRestfulService
+    public class SwaggerService : IHasResultFactory, IRestfulService
     {
-        public IHttpResultFactory HttpResultFactory { get; set; }
-        
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -35,8 +33,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             var requestedFile = Path.Combine(swaggerDirectory, request.ResourceName.Replace('/', '\\'));
 
-            return HttpResultFactory.GetStaticFileResult(RequestContext, requestedFile);
+            return ResultFactory.GetStaticFileResult(RequestContext, requestedFile);
         }
+
+        /// <summary>
+        /// Gets or sets the result factory.
+        /// </summary>
+        /// <value>The result factory.</value>
+        public IHttpResultFactory ResultFactory { get; set; }
 
         /// <summary>
         /// Gets or sets the request context.
