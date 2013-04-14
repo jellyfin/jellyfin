@@ -269,22 +269,13 @@ namespace MediaBrowser.Installer
                 {
                     ExtractPackage(archive);
                     // We're done with it so delete it (this is necessary for update operations)
-                    try
-                    {
-                        File.Delete(archive);
-                    }
-                    catch (FileNotFoundException)
-                    {
-                    }
-                    catch (Exception e)
-                    {
-                        SystemClose("Error Removing Archive - " + e.GetType().FullName + "\n\n" + e.Message);
-                        return;
-                    }
+                    TryDelete(archive);
                 }
                 catch (Exception e)
                 {
                     SystemClose("Error Extracting - " + e.GetType().FullName + "\n\n" + e.Message);
+                    // Delete archive even if failed so we don't try again with this one
+                    TryDelete(archive);
                     return;
                 }
 
@@ -335,6 +326,23 @@ namespace MediaBrowser.Installer
 
             SystemClose();
 
+        }
+
+        private bool TryDelete(string file)
+        {
+            try
+            {
+                File.Delete(file);
+            }
+            catch (FileNotFoundException)
+            {
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private void PismoInstall()
