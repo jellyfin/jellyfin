@@ -95,6 +95,10 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             return name;
         }());
 
+        function encodeName(name) {
+            return encodeURIComponent(name).replace("'", '%27');
+        }
+
         /**
          * Wraps around jQuery ajax methods to add additional info to the request.
          */
@@ -867,7 +871,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Studios/" + name);
+            var url = self.getUrl("Studios/" + encodeName(name));
 
             return self.ajax({
                 type: "GET",
@@ -885,7 +889,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Genres/" + name);
+            var url = self.getUrl("Genres/" + encodeName(name));
 
             return self.ajax({
                 type: "GET",
@@ -921,7 +925,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Persons/" + name);
+            var url = self.getUrl("Persons/" + encodeName(name));
 
             return self.ajax({
                 type: "GET",
@@ -1047,7 +1051,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             };
 
-            var url = "Persons/" + name + "/Images/" + options.type;
+            var url = "Persons/" + encodeName(name) + "/Images/" + options.type;
 
             if (options.index != null) {
                 url += "/" + options.index;
@@ -1117,7 +1121,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             };
 
-            var url = "Genres/" + name + "/Images/" + options.type;
+            var url = "Genres/" + encodeName(name) + "/Images/" + options.type;
 
             if (options.index != null) {
                 url += "/" + options.index;
@@ -1131,7 +1135,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         };
 
         /**
-         * Constructs a url for a genre image
+         * Constructs a url for a studio image
          * @param {String} name
          * @param {Object} options
          * Options supports the following properties:
@@ -1152,7 +1156,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             };
 
-            var url = "Studios/" + name + "/Images/" + options.type;
+            var url = "Studios/" + encodeName(name) + "/Images/" + options.type;
 
             if (options.index != null) {
                 url += "/" + options.index;
@@ -1739,7 +1743,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/" + userId + "/ItemsByName/Favorites/" + name);
+            var url = self.getUrl("Users/" + userId + "/ItemsByName/Favorites/" + encodeName(name));
 
             var method = isFavorite ? "POST" : "DELETE";
 
@@ -1766,7 +1770,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/" + userId + "/ItemsByName/" + name + "/Rating", {
+            var url = self.getUrl("Users/" + userId + "/ItemsByName/" + encodeName(name) + "/Rating", {
                 likes: likes
             });
 
@@ -1791,7 +1795,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/" + userId + "/ItemsByName/" + name + "/Rating");
+            var url = self.getUrl("Users/" + userId + "/ItemsByName/" + encodeName(name) + "/Rating");
 
             return self.ajax({
                 type: "DELETE",
@@ -1815,7 +1819,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/" + userId + "/ItemsByName/" + name + "/UserData");
+            var url = self.getUrl("Users/" + userId + "/ItemsByName/" + encodeName(name) + "/UserData");
 
             return self.ajax({
                 type: "GET",
