@@ -106,10 +106,12 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        public UserManager(ILogger logger, IServerConfigurationManager configurationManager)
+        /// <param name="userDataRepository">The user data repository.</param>
+        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserDataRepository userDataRepository)
         {
             _logger = logger;
             ConfigurationManager = configurationManager;
+            _userDataRepository = userDataRepository;
         }
 
         #region Events
