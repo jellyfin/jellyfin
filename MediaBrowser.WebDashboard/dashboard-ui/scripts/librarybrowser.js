@@ -794,6 +794,10 @@
                 url = "css/images/items/detail/game.png";
                 useBackgroundColor = true;
             }
+            else if (item.Type == "Person") {
+                url = "css/images/items/detail/person.png";
+                useBackgroundColor = true;
+            }
             else {
                 url = "css/images/items/detail/video.png";
                 useBackgroundColor = true;
