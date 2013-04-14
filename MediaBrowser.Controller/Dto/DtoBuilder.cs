@@ -566,28 +566,32 @@ namespace MediaBrowser.Controller.Dto
                 return;
             }
 
-            // Attach People by transforming them into BaseItemPerson (DTO)
-            dto.People = new BaseItemPerson[item.People.Count];
-
             // Ordering by person type to ensure actors and artists are at the front.
             // This is taking advantage of the fact that they both begin with A
             // This should be improved in the future
-            var entities = await Task.WhenAll(item.People.OrderBy(i => i.Type).Select(c =>
+            var people = item.People.OrderBy(i => i.Type).ToList();
+
+            // Attach People by transforming them into BaseItemPerson (DTO)
+            dto.People = new BaseItemPerson[people.Count];
+
+            var entities = await Task.WhenAll(people.Select(p => p.Name).Distinct(StringComparer.OrdinalIgnoreCase).Select(c =>
 
                     Task.Run(async () =>
                     {
                         try
                         {
-                            return await _libraryManager.GetPerson(c.Name).ConfigureAwait(false);
+                            return await _libraryManager.GetPerson(c).ConfigureAwait(false);
                         }
                         catch (IOException ex)
                         {
-                            _logger.ErrorException("Error getting person {0}", ex, c.Name);
+                            _logger.ErrorException("Error getting person {0}", ex, c);
                             return null;
                         }
                     })
 
             )).ConfigureAwait(false);
+
+            var dictionary = entities.ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
             for (var i = 0; i < item.People.Count; i++)
             {
@@ -600,15 +604,15 @@ namespace MediaBrowser.Controller.Dto
                     Type = person.Type
                 };
 
-                var ibnObject = entities[i];
+                Person entity;
 
-                if (ibnObject != null)
+                if (dictionary.TryGetValue(person.Name, out entity))
                 {
-                    var primaryImagePath = ibnObject.PrimaryImagePath;
+                    var primaryImagePath = entity.PrimaryImagePath;
 
                     if (!string.IsNullOrEmpty(primaryImagePath))
                     {
-                        baseItemPerson.PrimaryImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(ibnObject, ImageType.Primary, primaryImagePath);
+                        baseItemPerson.PrimaryImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(entity, ImageType.Primary, primaryImagePath);
                     }
                 }
 
