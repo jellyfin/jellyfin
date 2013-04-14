@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -124,6 +125,20 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "AirDays", Description = "Optional filter by Series Air Days. Allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string AirDays { get; set; }
 
+        /// <summary>
+        /// Gets or sets the min offical rating.
+        /// </summary>
+        /// <value>The min offical rating.</value>
+        [ApiMember(Name = "MinOfficalRating", Description = "Optional filter by minimum official rating (PG, PG-13, TV-MA, etc).", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string MinOfficalRating { get; set; }
+
+        /// <summary>
+        /// Gets or sets the max offical rating.
+        /// </summary>
+        /// <value>The max offical rating.</value>
+        [ApiMember(Name = "MaxOfficalRating", Description = "Optional filter by maximum official rating (PG, PG-13, TV-MA, etc).", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string MaxOfficalRating { get; set; }
+        
         /// <summary>
         /// Gets the order by.
         /// </summary>
@@ -357,6 +372,22 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{BaseItem}.</returns>
         internal static IEnumerable<BaseItem> ApplyAdditionalFilters(GetItems request, IEnumerable<BaseItem> items)
         {
+            // Min official rating
+            if (!string.IsNullOrEmpty(request.MinOfficalRating))
+            {
+                var level = Ratings.Level(request.MinOfficalRating);
+
+                items = items.Where(i => Ratings.Level(i.CustomRating ?? i.OfficialRating) >= level);
+            }
+
+            // Max official rating
+            if (!string.IsNullOrEmpty(request.MaxOfficalRating))
+            {
+                var level = Ratings.Level(request.MaxOfficalRating);
+
+                items = items.Where(i => Ratings.Level(i.CustomRating ?? i.OfficialRating) <= level);
+            }
+
             // Exclude item types
             if (!string.IsNullOrEmpty(request.ExcludeItemTypes))
             {

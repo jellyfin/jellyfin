@@ -269,22 +269,13 @@ namespace MediaBrowser.Installer
                 {
                     ExtractPackage(archive);
                     // We're done with it so delete it (this is necessary for update operations)
-                    try
-                    {
-                        File.Delete(archive);
-                    }
-                    catch (FileNotFoundException)
-                    {
-                    }
-                    catch (Exception e)
-                    {
-                        SystemClose("Error Removing Archive - " + e.GetType().FullName + "\n\n" + e.Message);
-                        return;
-                    }
+                    TryDelete(archive);
                 }
                 catch (Exception e)
                 {
                     SystemClose("Error Extracting - " + e.GetType().FullName + "\n\n" + e.Message);
+                    // Delete archive even if failed so we don't try again with this one
+                    TryDelete(archive);
                     return;
                 }
 
@@ -335,6 +326,23 @@ namespace MediaBrowser.Installer
 
             SystemClose();
 
+        }
+
+        private bool TryDelete(string file)
+        {
+            try
+            {
+                File.Delete(file);
+            }
+            catch (FileNotFoundException)
+            {
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private void PismoInstall()
@@ -441,8 +449,24 @@ namespace MediaBrowser.Installer
             var backupDir = Path.Combine(RootPath, "System.old");
             if (Directory.Exists(systemDir))
             {
-                if (Directory.Exists(backupDir)) Directory.Delete(backupDir,true);
-                Directory.Move(systemDir, backupDir);
+                try
+                {
+                    if (Directory.Exists(backupDir)) Directory.Delete(backupDir,true);
+
+                }
+                catch (Exception e)
+                {
+                    throw new ApplicationException("Could not delete previous backup directory.\n\n"+e.Message);
+                }
+
+                try
+                {
+                    Directory.Move(systemDir, backupDir);
+                }
+                catch (Exception e)
+                {
+                    throw new ApplicationException("Could not move system directory to backup.\n\n"+e.Message);
+                }
             }
 
             // And extract
@@ -461,7 +485,7 @@ namespace MediaBrowser.Installer
                         }
                     }
                 }
-                catch
+                catch (Exception e)
                 {
                     if (retryCount < 3)
                     {
@@ -472,8 +496,8 @@ namespace MediaBrowser.Installer
                     {
                         //Rollback
                         RollBack(systemDir, backupDir);
-                        File.Delete(archive); // so we don't try again if its an update
-                        throw;
+                        TryDelete(archive); // so we don't try again if its an update
+                        throw new ApplicationException(string.Format("Could not extract {0} to {1} after {2} attempts.\n\n{3}", archive, RootPath, retryCount, e.Message));
                     }
                 }
             }

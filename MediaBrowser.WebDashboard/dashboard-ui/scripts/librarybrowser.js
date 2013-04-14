@@ -439,53 +439,50 @@
 
         },
 
-        getLinksHtml: function (item) {
+        renderLinks: function (linksElem, item) {
 
-            var html = 'Links:&nbsp;&nbsp;';
             var links = [];
 
             if (item.HomePageUrl) {
                 links.push('<a class="ui-link" href="' + item.HomePageUrl + '" target="_blank">Website</a>');
             }
 
-            if (item.ProviderIds.Imdb) {
+            var providerIds = item.ProviderIds || {};
+
+            if (providerIds.Imdb) {
                 if (item.Type == "Movie" || item.Type == "Episode")
-                    links.push('<a class="ui-link" href="http://www.imdb.com/title/' + item.ProviderIds.Imdb + '" target="_blank">IMDb</a>');
+                    links.push('<a class="ui-link" href="http://www.imdb.com/title/' + providerIds.Imdb + '" target="_blank">IMDb</a>');
                 else if (item.Type == "Person")
-                    links.push('<a class="ui-link" href="http://www.imdb.com/name/' + item.ProviderIds.Imdb + '" target="_blank">IMDb</a>');
+                    links.push('<a class="ui-link" href="http://www.imdb.com/name/' + providerIds.Imdb + '" target="_blank">IMDb</a>');
             }
-            if (item.ProviderIds.Tmdb) {
+            if (providerIds.Tmdb) {
                 if (item.Type == "Movie")
-                    links.push('<a class="ui-link" href="http://www.themoviedb.org/movie/' + item.ProviderIds.Tmdb + '" target="_blank">TMDB</a>');
+                    links.push('<a class="ui-link" href="http://www.themoviedb.org/movie/' + providerIds.Tmdb + '" target="_blank">TMDB</a>');
                 else if (item.Type == "Person")
-                    links.push('<a class="ui-link" href="http://www.themoviedb.org/person/' + item.ProviderIds.Tmdb + '" target="_blank">TMDB</a>');
+                    links.push('<a class="ui-link" href="http://www.themoviedb.org/person/' + providerIds.Tmdb + '" target="_blank">TMDB</a>');
             }
-            if (item.ProviderIds.Tvdb)
-                links.push('<a class="ui-link" href="http://thetvdb.com/index.php?tab=series&id=' + item.ProviderIds.Tvdb + '" target="_blank">TVDB</a>');
-            if (item.ProviderIds.Tvcom) {
+            if (providerIds.Tvdb)
+                links.push('<a class="ui-link" href="http://thetvdb.com/index.php?tab=series&id=' + providerIds.Tvdb + '" target="_blank">TVDB</a>');
+            if (providerIds.Tvcom) {
                 if (item.Type == "Episode")
-                    links.push('<a class="ui-link" href="http://www.tv.com/shows/' + item.ProviderIds.Tvcom + '" target="_blank">TV.com</a>');
+                    links.push('<a class="ui-link" href="http://www.tv.com/shows/' + providerIds.Tvcom + '" target="_blank">TV.com</a>');
                 else if (item.Type == "Person")
-                    links.push('<a class="ui-link" href="http://www.tv.com/people/' + item.ProviderIds.Tvcom + '" target="_blank">TV.com</a>');
+                    links.push('<a class="ui-link" href="http://www.tv.com/people/' + providerIds.Tvcom + '" target="_blank">TV.com</a>');
             }
-            if (item.ProviderIds.Musicbrainz)
-                links.push('<a class="ui-link" href="http://musicbrainz.org/release/' + item.ProviderIds.Musicbrainz + '" target="_blank">MusicBrainz</a>');
-            if (item.ProviderIds.Gamesdb)
-                links.push('<a class="ui-link" href="http://www.games-db.com/Game/' + item.ProviderIds.Gamesdb + '" target="_blank">GamesDB</a>');
+            if (providerIds.Musicbrainz)
+                links.push('<a class="ui-link" href="http://musicbrainz.org/release/' + providerIds.Musicbrainz + '" target="_blank">MusicBrainz</a>');
+            if (providerIds.Gamesdb)
+                links.push('<a class="ui-link" href="http://www.games-db.com/Game/' + providerIds.Gamesdb + '" target="_blank">GamesDB</a>');
 
-            html += links.join('&nbsp;&nbsp;/&nbsp;&nbsp;');
 
-            return html;
-        },
+            if (links.length) {
 
-        renderLinks: function (item, page) {
+                var html = 'Links:&nbsp;&nbsp;' + links.join('&nbsp;&nbsp;/&nbsp;&nbsp;');
 
-            if (item.ProviderIds) {
-
-                $('#itemLinks', page).html(LibraryBrowser.getLinksHtml(item));
+                $(linksElem).html(html);
 
             } else {
-                $('#itemLinks', page).hide();
+                $(linksElem).hide();
             }
         },
 
@@ -563,7 +560,7 @@
 
             var itemId = item.Id;
             var type = item.Type;
-            
+
             if (type == "Person") {
                 itemId = item.Name;
             }
@@ -792,6 +789,10 @@
             }
             else if (item.MediaType == "Game") {
                 url = "css/images/items/detail/game.png";
+                useBackgroundColor = true;
+            }
+            else if (item.Type == "Person") {
+                url = "css/images/items/detail/person.png";
                 useBackgroundColor = true;
             }
             else {
