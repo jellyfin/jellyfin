@@ -220,11 +220,11 @@ namespace MediaBrowser.ServerApplication
             ZipClient = new DotNetZipClient();
             RegisterSingleInstance(ZipClient);
 
-            UserManager = new UserManager(Logger, ServerConfigurationManager);
-            RegisterSingleInstance(UserManager);
-
             UserDataRepository = new SQLiteUserDataRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(UserDataRepository);
+
+            UserManager = new UserManager(Logger, ServerConfigurationManager, UserDataRepository);
+            RegisterSingleInstance(UserManager);
 
             LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataRepository);
             RegisterSingleInstance(LibraryManager);
