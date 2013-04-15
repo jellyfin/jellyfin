@@ -574,7 +574,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <summary>
         /// The images by name item cache
         /// </summary>
-        private readonly ConcurrentDictionary<string, object> _imagesByNameItemCache = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, BaseItem> _imagesByNameItemCache = new ConcurrentDictionary<string, BaseItem>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Generically retrieves an IBN item
@@ -588,7 +588,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task{``0}.</returns>
         /// <exception cref="System.ArgumentNullException">
         /// </exception>
-        private Task<T> GetImagesByNameItem<T>(string path, string name, CancellationToken cancellationToken, bool allowSlowProviders = true, bool forceCreation = false)
+        private async Task<T> GetImagesByNameItem<T>(string path, string name, CancellationToken cancellationToken, bool allowSlowProviders = true, bool forceCreation = false)
             where T : BaseItem, new()
         {
             if (string.IsNullOrEmpty(path))
@@ -603,18 +603,16 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var key = Path.Combine(path, FileSystem.GetValidFilename(name));
 
-            if (forceCreation)
+            BaseItem obj;
+
+            if (forceCreation || !_imagesByNameItemCache.TryGetValue(key, out obj))
             {
-                var task = CreateImagesByNameItem<T>(path, name, cancellationToken, allowSlowProviders);
+                obj = await CreateImagesByNameItem<T>(path, name, cancellationToken, allowSlowProviders).ConfigureAwait(false);
 
-                _imagesByNameItemCache.AddOrUpdate(key, task, (keyName, oldValue) => task);
-
-                return task;
+                _imagesByNameItemCache.AddOrUpdate(key, obj, (keyName, oldValue) => obj);
             }
 
-            var obj = _imagesByNameItemCache.GetOrAdd(key, keyname => CreateImagesByNameItem<T>(path, name, cancellationToken, allowSlowProviders));
-
-            return obj as Task<T>;
+            return obj as T;
         }
 
         /// <summary>
