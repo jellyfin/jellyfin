@@ -275,7 +275,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 }
             }
 
-            Logger.Info("SQL Delayed writer executed " + numCommands + " commands");
+            Logger.Debug("SQL Delayed writer executed " + numCommands + " commands");
 
             FlushTimer.Change(TimeSpan.FromMilliseconds(FlushInterval), TimeSpan.FromMilliseconds(-1));
             IsFlushing = false;
