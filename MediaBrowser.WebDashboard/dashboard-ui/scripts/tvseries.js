@@ -58,9 +58,44 @@
     function renderUserDataIcons(page, item) {
         $('#itemRatings', page).html(LibraryBrowser.getUserDataIconsHtml(item));
     }
+    
+    function renderSeasons(page) {
+        
+        ApiClient.getItems(Dashboard.getCurrentUserId(), {
+            
+            ParentId: getParameterByName('id'),
+            SortBy: "SortName"
+            
+        }).done(function(result) {
+            
+            var html = LibraryBrowser.getPosterDetailViewHtml({
+                items: result.Items,
+                useAverageAspectRatio: true
+            });
+
+
+            $('#seasonsContent', page).html(html);
+        });
+    }
 
     $(document).on('pageshow', "#tvSeriesPage", function () {
-        reload(this);
+
+        var page = this;
+        
+        reload(page);
+
+        $('#seasonsCollapsible', page).on('expand.lazyload', function () {
+
+            renderSeasons(page);
+
+            $(this).off('expand.lazyload');
+        });
+        
+    }).on('pagehide', "#tvSeriesPage", function () {
+
+        var page = this;
+
+        $('#seasonsCollapsible', page).off('expand.lazyload');
     });
 
 
