@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.Linq;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -159,7 +160,7 @@ namespace MediaBrowser.ServerApplication.Controls
             DisplayTitle(item);
             DisplayRating(item);
 
-            var path = MultiItemUpdateNotification.GetImagePath(item);
+            var path = GetImagePath(item);
 
             if (string.IsNullOrEmpty(path))
             {
@@ -208,6 +209,44 @@ namespace MediaBrowser.ServerApplication.Controls
                 txtPremeireDate.Visibility = Visibility.Visible;
                 txtPremeireDate.Text = "Premiered " + item.PremiereDate.Value.ToLocalTime().ToShortDateString();
             }
+        }
+
+        /// <summary>
+        /// Gets the image path.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>System.String.</returns>
+        internal static string GetImagePath(BaseItem item)
+        {
+            // Try our best to find an image
+            var path = item.PrimaryImagePath;
+
+            if (string.IsNullOrEmpty(path) && item.BackdropImagePaths != null)
+            {
+                path = item.BackdropImagePaths.FirstOrDefault();
+            }
+
+            if (string.IsNullOrEmpty(path))
+            {
+                path = item.GetImage(ImageType.Thumb);
+            }
+
+            if (string.IsNullOrEmpty(path))
+            {
+                path = item.GetImage(ImageType.Art);
+            }
+
+            if (string.IsNullOrEmpty(path))
+            {
+                path = item.GetImage(ImageType.Logo);
+            }
+
+            if (string.IsNullOrEmpty(path))
+            {
+                path = item.GetImage(ImageType.Disc);
+            }
+
+            return path;
         }
 
         /// <summary>

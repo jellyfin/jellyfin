@@ -148,7 +148,7 @@
     <Compile Include="Providers\IImageEnhancer.cs" />
     <Compile Include="Providers\ImagesByNameProvider.cs" />
     <Compile Include="Providers\MediaInfo\BaseFFMpegProvider.cs" />
-    <Compile Include="Providers\MediaInfo\FFMpegAudioImageProvider.cs" />
+    <Compile Include="Providers\MediaInfo\AudioImageProvider.cs" />
     <Compile Include="Providers\MediaInfo\BaseFFProbeProvider.cs" />
     <Compile Include="Providers\BaseProviderInfo.cs" />
     <Compile Include="Providers\Movies\FanArtMovieProvider.cs" />
@@ -170,7 +170,6 @@
     <Compile Include="Providers\TV\RemoteSeriesProvider.cs" />
     <Compile Include="Providers\TV\SeriesProviderFromXml.cs" />
     <Compile Include="Providers\TV\SeriesXmlParser.cs" />
-    <Compile Include="Providers\MediaInfo\FFMpegVideoImageProvider.cs" />
     <Compile Include="Resolvers\IResolverIgnoreRule.cs" />
     <Compile Include="Resolvers\EntityResolutionHelper.cs" />
     <Compile Include="Resolvers\ResolverPriority.cs" />

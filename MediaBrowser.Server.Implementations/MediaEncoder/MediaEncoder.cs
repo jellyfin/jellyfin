@@ -50,12 +50,12 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <summary>
         /// The video image resource pool
         /// </summary>
-        private readonly SemaphoreSlim _videoImageResourcePool = new SemaphoreSlim(2, 2);
+        private readonly SemaphoreSlim _videoImageResourcePool = new SemaphoreSlim(1, 1);
 
         /// <summary>
         /// The audio image resource pool
         /// </summary>
-        private readonly SemaphoreSlim _audioImageResourcePool = new SemaphoreSlim(3, 3);
+        private readonly SemaphoreSlim _audioImageResourcePool = new SemaphoreSlim(2, 2);
 
         /// <summary>
         /// The _subtitle extraction resource pool
@@ -65,7 +65,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <summary>
         /// The FF probe resource pool
         /// </summary>
-        private readonly SemaphoreSlim _ffProbeResourcePool = new SemaphoreSlim(3, 3);
+        private readonly SemaphoreSlim _ffProbeResourcePool = new SemaphoreSlim(2, 2);
 
         /// <summary>
         /// Gets or sets the versioned directory path.
@@ -370,7 +370,18 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             try
             {
                 process.Start();
+            }
+            catch (Exception ex)
+            {
+                _ffProbeResourcePool.Release();
 
+                _logger.ErrorException("Error starting ffprobe", ex);
+
+                throw;
+            }
+            
+            try
+            {
                 Task<string> standardErrorReadTask = null;
 
                 // MUST read both stdout and stderr asynchronously or a deadlock may occurr

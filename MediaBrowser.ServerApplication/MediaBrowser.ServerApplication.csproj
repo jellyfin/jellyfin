@@ -194,10 +194,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\MultiItemUpdateNotification.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="LibraryExplorer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -220,9 +216,6 @@
     <Compile Include="ApplicationHost.cs" />
     <Compile Include="Controls\ItemUpdateNotification.xaml.cs">
       <DependentUpon>ItemUpdateNotification.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\MultiItemUpdateNotification.xaml.cs">
-      <DependentUpon>MultiItemUpdateNotification.xaml</DependentUpon>
     </Compile>
     <Compile Include="Implementations\DotNetZipClient.cs" />
     <Compile Include="LibraryExplorer.xaml.cs">
