@@ -511,7 +511,15 @@
             var recordsEnd = Math.min(query.StartIndex + query.Limit, totalRecordCount);
 
             html += isTop ? '<div class="listPaging topListPaging">' : '<div class="listPaging">';
-            html += 'Results ' + (query.StartIndex + 1) + '-' + recordsEnd + ' of ' + totalRecordCount + ', page ' + dropdownHtml + ' of ' + pageCount;
+
+            html += '<span style="margin-right: 10px;">';
+            html += (query.StartIndex + 1) + '-' + recordsEnd + ' of ' + totalRecordCount + ', page ' + dropdownHtml + ' of ' + pageCount;
+            html += '</span>';
+
+            html += '<button data-icon="arrow-left" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (query.StartIndex ? '' : 'disabled') + '>Previous Page</button>';
+
+            html += '<button data-icon="arrow-right" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (query.StartIndex + query.Limit > totalRecordCount ? 'disabled' : '') + '>Next Page</button>';
+
             html += '</div>';
 
             return html;
@@ -902,74 +910,74 @@
             }
         },
 
-	    getGamePosterViewHtml: function (options) {
+        getGamePosterViewHtml: function (options) {
 
-		    var items = options.items;
+            var items = options.items;
 
-		    var primaryImageAspectRatio = options.useAverageAspectRatio ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
+            var primaryImageAspectRatio = options.useAverageAspectRatio ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
 
-		    var html = "";
+            var html = "";
 
-		    for (var i = 0, length = items.length; i < length; i++) {
-			    var item = items[i];
+            for (var i = 0, length = items.length; i < length; i++) {
+                var item = items[i];
 
-			    var hasPrimaryImage = item.ImageTags && item.ImageTags.Primary;
+                var hasPrimaryImage = item.ImageTags && item.ImageTags.Primary;
 
-			    var showText = options.showTitle || !hasPrimaryImage;
+                var showText = options.showTitle || !hasPrimaryImage;
 
-			    var cssClass = showText ? "posterViewItem" : "posterViewItem posterViewItemWithNoText";
+                var cssClass = showText ? "posterViewItem" : "posterViewItem posterViewItemWithNoText";
 
-			    html += "<div class='" + cssClass + "'><a href='" + LibraryBrowser.getHref(item) + "'>";
+                html += "<div class='" + cssClass + "'><a href='" + LibraryBrowser.getHref(item) + "'>";
 
-			    if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
-				    html += "<img src='" + ApiClient.getImageUrl(item.Id, {
-					    type: "Backdrop",
-					    height: 198,
-					    width: 352,
-					    tag: item.BackdropImageTags[0]
+                if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
+                    html += "<img src='" + ApiClient.getImageUrl(item.Id, {
+                        type: "Backdrop",
+                        height: 198,
+                        width: 352,
+                        tag: item.BackdropImageTags[0]
 
-				    }) + "' />";
-			    } else if (hasPrimaryImage) {
+                    }) + "' />";
+                } else if (hasPrimaryImage) {
 
-				    var height = 300;
-				    var width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
+                    var height = 300;
+                    var width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
 
-				    html += "<img src='" + ApiClient.getImageUrl(item.Id, {
-					    type: "Primary",
-					    height: height,
-					    width: width,
-					    tag: item.ImageTags.Primary
+                    html += "<img src='" + ApiClient.getImageUrl(item.Id, {
+                        type: "Primary",
+                        height: height,
+                        width: width,
+                        tag: item.ImageTags.Primary
 
-				    }) + "' />";
+                    }) + "' />";
 
-			    } else if (item.BackdropImageTags && item.BackdropImageTags.length) {
-				    html += "<img src='" + ApiClient.getImageUrl(item.Id, {
-					    type: "Backdrop",
-					    height: 198,
-					    width: 352,
-					    tag: item.BackdropImageTags[0]
+                } else if (item.BackdropImageTags && item.BackdropImageTags.length) {
+                    html += "<img src='" + ApiClient.getImageUrl(item.Id, {
+                        type: "Backdrop",
+                        height: 198,
+                        width: 352,
+                        tag: item.BackdropImageTags[0]
 
-				    }) + "' />";
-			    }
-			    else {
-				    html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/game.png' />";
-			    }
+                    }) + "' />";
+                }
+                else {
+                    html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/game.png' />";
+                }
 
-			    if (showText) {
-				    html += "<div class='posterViewItemText'>";
-				    html += item.Name;
-				    html += "</div>";
-			    }
+                if (showText) {
+                    html += "<div class='posterViewItemText'>";
+                    html += item.Name;
+                    html += "</div>";
+                }
 
-			    if (options.showNewIndicator !== false) {
-				    html += LibraryBrowser.getNewIndicatorHtml(item);
-			    }
+                if (options.showNewIndicator !== false) {
+                    html += LibraryBrowser.getNewIndicatorHtml(item);
+                }
 
-			    html += "</a></div>";
-		    }
+                html += "</a></div>";
+            }
 
-		    return html;
-	    }
+            return html;
+        }
 
     };
 

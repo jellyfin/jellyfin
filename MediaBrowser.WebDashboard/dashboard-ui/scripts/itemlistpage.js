@@ -42,6 +42,16 @@
                 reloadItems(page);
             });
 
+            $('.btnNextPage', elem).on('click', function () {
+                query.StartIndex += query.Limit;
+                reloadItems(page);
+            });
+
+            $('.btnPreviousPage', elem).on('click', function () {
+                query.StartIndex -= query.Limit;
+                reloadItems(page);
+            });
+
             Dashboard.hideLoadingMsg();
         });
 

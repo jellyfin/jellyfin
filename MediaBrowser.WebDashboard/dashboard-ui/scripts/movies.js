@@ -52,6 +52,16 @@
                 query.StartIndex = (parseInt(this.value) - 1) * query.Limit;
                 reloadItems(page);
             });
+            
+            $('.btnNextPage', elem).on('click', function () {
+                query.StartIndex += query.Limit;
+                reloadItems(page);
+            });
+
+            $('.btnPreviousPage', elem).on('click', function () {
+                query.StartIndex -= query.Limit;
+                reloadItems(page);
+            });
 
             Dashboard.hideLoadingMsg();
         });
