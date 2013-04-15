@@ -1,190 +1,67 @@
-﻿var ItemListPage = {
+﻿(function ($, document) {
 
-    onPageShow: function () {
+    // The base query options
+    var query = {
 
-        ItemListPage.reload();
-    },
+        SortBy: "SortName",
+        SortOrder: "Ascending",
+        Fields: "PrimaryImageAspectRatio,UserData,DisplayMediaType,ItemCounts,DateCreated",
+        Limit: LibraryBrowser.getDetaultPageSize(),
+        StartIndex: 0
+    };
 
-    reload: function () {
-
-        var page = $.mobile.activePage;
-
-        var parentId = getParameterByName('parentId');
-
-        var query = {
-            Fields: "PrimaryImageAspectRatio",
-            Recursive: getParameterByName('Recursive') == 'true'
-        };
-
-        var filters = [];
-
-        if (getParameterByName('IsResumable') == 'true') {
-            filters.push("IsResumable");
-            $('#chkResumable', page).checked(true).checkboxradio("refresh");
-        }
-
-        if (getParameterByName('IsFavorite') == 'true') {
-            filters.push("IsFavorite");
-            $('#chkIsFavorite', page).checked(true).checkboxradio("refresh");
-        }
-
-        if (getParameterByName('IsRecentlyAdded') == 'true') {
-            filters.push("IsRecentlyAdded");
-            $('#chkRecentlyAdded', page).checked(true).checkboxradio("refresh");
-        }
-
-        var sortBy = getParameterByName('SortBy') || 'SortName';
-        query.SortBy = sortBy;
-        $('.radioSortBy', page).checked(false).checkboxradio("refresh");
-        $('#radio' + sortBy, page).checked(true).checkboxradio("refresh");
-
-        var order = getParameterByName('SortOrder') || 'Ascending';
-
-        query.SortOrder = order;
-        $('.radioSortOrder', page).checked(false).checkboxradio("refresh");
-        $('#radio' + order, page).checked(true).checkboxradio("refresh");
-
-        query.Filters = filters.join(',');
-        //query.limit = 100;
-
-        if (parentId) {
-            query.parentId = parentId;
-
-            ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).done(ItemListPage.renderTitle);
-        }
-        else {
-            $('#itemName', page).html(getParameterByName('Title') || "Media Library");
-        }
-
-        ItemListPage.refreshItems(query);
-    },
-
-    refreshItems: function (query) {
+    function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
 
-        var page = $.mobile.activePage;
+        var userId = Dashboard.getCurrentUserId();
 
-        page.itemQuery = query;
+        ApiClient.getItems(userId, query).done(function (result) {
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(ItemListPage.renderItems);
-    },
+            var html = '';
 
-    renderItems: function (result) {
+            var showPaging = result.TotalRecordCount > query.Limit;
 
-        var items = result.Items;
+            if (showPaging) {
+                html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true);
+            }
 
-        var query = $.mobile.activePage.itemQuery;
+            html += LibraryBrowser.getPosterDetailViewHtml({
+                items: result.Items,
+                useAverageAspectRatio: true
+            });
 
-        var renderOptions = {
+            if (showPaging) {
+                html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
+            }
 
-            items: items,
-            useAverageAspectRatio: query.Recursive !== true,
-            showTitle: query.Recursive
-        };
+            var elem = $('#items', page).html(html).trigger('create');
 
-        var html = LibraryBrowser.getPosterViewHtml(renderOptions);
+            $('select', elem).on('change', function () {
+                query.StartIndex = (parseInt(this.value) - 1) * query.Limit;
+                reloadItems(page);
+            });
 
-        $('#listItems', $.mobile.activePage).html(html);
+            Dashboard.hideLoadingMsg();
+        });
 
-        Dashboard.hideLoadingMsg();
-    },
+        ApiClient.getItem(userId, query.ParentId).done(function (item) {
 
-    renderTitle: function (item) {
+            $('#itemName', page).html(item.Name);
 
-
-        $('#itemName', $.mobile.activePage).html(item.Name);
-    },
-
-    sortBy: function (sortBy) {
-
-        var query = $.mobile.activePage.itemQuery;
-        query.SortBy = sortBy;
-        ItemListPage.refreshItems(query);
-    },
-
-    sortOrder: function (order) {
-
-        var query = $.mobile.activePage.itemQuery;
-        query.SortOrder = order;
-        ItemListPage.refreshItems(query);
-    },
-
-    filter: function(name, add)
-    {
-        var query = $.mobile.activePage.itemQuery;
-        var filters = query.Filters || "";
-
-        filters = (',' + filters).replace(',' + name, '').substring(1);
-
-        if (add) {
-            filters = filters ? (filters + ',' + name) : name;
-        }
-
-        query.Filters = filters;
-
-        ItemListPage.refreshItems(query);
-    },
-
-    showSortPanel: function () {
-
-        var page = $.mobile.activePage;
-
-        $('#viewpanel', page).hide();
-        $('#filterpanel', page).hide();
-        $('#indexpanel', page).hide();
-        $('#sortpanel', page).show();
-
-        $('#btnViewPanel', page).buttonMarkup({ theme: "c" });
-        $('#btnSortPanel', page).buttonMarkup({ theme: "a" });
-        $('#btnIndexPanel', page).buttonMarkup({ theme: "c" });
-        $('#btnFilterPanel', page).buttonMarkup({ theme: "c" });
-    },
-
-    showViewPanel: function () {
-
-        var page = $.mobile.activePage;
-
-        $('#viewpanel', page).show();
-        $('#filterpanel', page).hide();
-        $('#indexpanel', page).hide();
-        $('#sortpanel', page).hide();
-
-        $('#btnViewPanel', page).buttonMarkup({ theme: "a" });
-        $('#btnSortPanel', page).buttonMarkup({ theme: "c" });
-        $('#btnIndexPanel', page).buttonMarkup({ theme: "c" });
-        $('#btnFilterPanel', page).buttonMarkup({ theme: "c" });
-    },
-
-    showIndexPanel: function () {
-
-        var page = $.mobile.activePage;
-
-        $('#viewpanel', page).hide();
-        $('#filterpanel', page).hide();
-        $('#indexpanel', page).show();
-        $('#sortpanel', page).hide();
-
-        $('#btnViewPanel', page).buttonMarkup({ theme: "c" });
-        $('#btnSortPanel', page).buttonMarkup({ theme: "c" });
-        $('#btnIndexPanel', page).buttonMarkup({ theme: "a" });
-        $('#btnFilterPanel', page).buttonMarkup({ theme: "c" });
-    },
-
-    showFilterPanel: function () {
-
-        var page = $.mobile.activePage;
-
-        $('#viewpanel', page).hide();
-        $('#filterpanel', page).show();
-        $('#indexpanel', page).hide();
-        $('#sortpanel', page).hide();
-
-        $('#btnViewPanel', page).buttonMarkup({ theme: "c" });
-        $('#btnSortPanel', page).buttonMarkup({ theme: "c" });
-        $('#btnIndexPanel', page).buttonMarkup({ theme: "c" });
-        $('#btnFilterPanel', page).buttonMarkup({ theme: "a" });
+        });
     }
-};
 
-$(document).on('pageshow', "#itemListPage", ItemListPage.onPageShow);
+    $(document).on('pageinit', "#itemListPage", function () {
+
+
+    }).on('pagebeforeshow', "#itemListPage", function () {
+
+        query.ParentId = getParameterByName('parentId');
+        reloadItems(this);
+
+    }).on('pageshow', "#itemListPage", function () {
+
+    });
+
+})(jQuery, document);

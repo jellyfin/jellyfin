@@ -20,7 +20,7 @@
 }
 
 .libraryPage, .itemListContent {
-    background: #494949 url(images/bgflip.png) repeat-x!important;
+    background: #262626!important;
     background-attachment: fixed!important;
 }
 
@@ -28,8 +28,8 @@
         color: #fff;
     }
 
-.listPage {
-    background: #262626!important;
+.type-home {
+    background: #494949 url(images/bgflip.png) repeat-x!important;
 }
 
 .listHeader {

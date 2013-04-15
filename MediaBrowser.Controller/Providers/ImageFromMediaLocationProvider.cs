@@ -160,6 +160,7 @@ namespace MediaBrowser.Controller.Providers
         private void PopulateBaseItemImages(BaseItem item)
         {
             var backdropFiles = new List<string>();
+            var screenshotFiles = new List<string>();
 
             // Primary Image
             var image = GetImage(item, "folder");
@@ -201,6 +202,22 @@ namespace MediaBrowser.Controller.Providers
                 item.SetImage(ImageType.Thumb, image.Value.Path);
             }
 
+            // Thumbnail Image
+            image = GetImage(item, "box");
+
+            if (image.HasValue)
+            {
+                item.SetImage(ImageType.Box, image.Value.Path);
+            }
+
+            // Thumbnail Image
+            image = GetImage(item, "menu");
+
+            if (image.HasValue)
+            {
+                item.SetImage(ImageType.Menu, image.Value.Path);
+            }
+
             // Backdrop Image
             image = GetImage(item, "backdrop");
 
@@ -234,7 +251,40 @@ namespace MediaBrowser.Controller.Providers
             {
                 item.BackdropImagePaths = backdropFiles;
             }
-        }
 
+            // Screenshot Image
+            image = GetImage(item, "screenshot");
+
+            if (image.HasValue)
+            {
+                screenshotFiles.Add(image.Value.Path);
+            }
+
+            unfound = 0;
+            for (var i = 1; i <= 20; i++)
+            {
+                // Screenshot Image
+                image = GetImage(item, "screenshot" + i);
+
+                if (image.HasValue)
+                {
+                    screenshotFiles.Add(image.Value.Path);
+                }
+                else
+                {
+                    unfound++;
+
+                    if (unfound >= 3)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            if (screenshotFiles.Count > 0)
+            {
+                item.ScreenshotImagePaths = screenshotFiles;
+            }
+        }
     }
 }

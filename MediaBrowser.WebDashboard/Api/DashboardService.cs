@@ -484,7 +484,14 @@ namespace MediaBrowser.WebDashboard.Api
                                       "userprofilespage.js",
                                       "wizardfinishpage.js",
                                       "wizardstartpage.js",
-                                      "wizarduserpage.js"
+                                      "wizarduserpage.js",
+                                      "gamesrecommendedpage.js",
+                                      "gamesystemspage.js",
+                                      "gamesystempage.js",
+                                      "gamespage.js",
+                                      "gamegenrepage.js",
+                                      "gamestudiospage.js",
+                                      "gamedetailpage.js"
                                   };
 
             var memoryStream = new MemoryStream();
