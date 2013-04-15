@@ -265,18 +265,32 @@ namespace MediaBrowser.Installer
             {
                 // Extract
                 lblStatus.Text = "Extracting Package...";
-                try 
+                var retryCount = 0;
+                var success = false;
+                while (!success && retryCount < 3)
                 {
-                    ExtractPackage(archive);
-                    // We're done with it so delete it (this is necessary for update operations)
-                    TryDelete(archive);
-                }
-                catch (Exception e)
-                {
-                    SystemClose("Error Extracting - " + e.GetType().FullName + "\n\n" + e.Message + "\n\n" + e.StackTrace);
-                    // Delete archive even if failed so we don't try again with this one
-                    TryDelete(archive);
-                    return;
+                    try
+                    {
+                        ExtractPackage(archive);
+                        success = true;
+                        // We're done with it so delete it (this is necessary for update operations)
+                        TryDelete(archive);
+                    }
+                    catch (Exception e)
+                    {
+                        if (retryCount < 3)
+                        {
+                            retryCount++;
+                            Thread.Sleep(500);
+                        }
+                        else
+                        {
+                            // Delete archive even if failed so we don't try again with this one
+                            TryDelete(archive);
+                            SystemClose("Error Extracting - " + e.GetType().FullName + "\n\n" + e.Message);
+                            return;
+                        }
+                    }
                 }
 
                 // Create shortcut
@@ -496,7 +510,6 @@ namespace MediaBrowser.Installer
                     {
                         //Rollback
                         RollBack(systemDir, backupDir);
-                        TryDelete(archive); // so we don't try again if its an update
                         throw new ApplicationException(string.Format("Could not extract {0} to {1} after {2} attempts.\n\n{3}", archive, RootPath, retryCount, e.Message));
                     }
                 }
