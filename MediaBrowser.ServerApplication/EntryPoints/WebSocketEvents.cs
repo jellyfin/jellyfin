@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Common.Events;
+﻿using System.Linq;
+using System.Threading;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
@@ -8,6 +10,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Updates;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Updates;
@@ -49,8 +52,33 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         /// </summary>
         private readonly IServerApplicationHost _appHost;
 
+        /// <summary>
+        /// The _task manager
+        /// </summary>
         private readonly ITaskManager _taskManager;
-        
+
+        /// <summary>
+        /// The _library changed sync lock
+        /// </summary>
+        private readonly object _libraryChangedSyncLock = new object();
+
+        /// <summary>
+        /// Gets or sets the library update info.
+        /// </summary>
+        /// <value>The library update info.</value>
+        private LibraryUpdateInfo LibraryUpdateInfo { get; set; }
+
+        /// <summary>
+        /// Gets or sets the library update timer.
+        /// </summary>
+        /// <value>The library update timer.</value>
+        private Timer LibraryUpdateTimer { get; set; }
+
+        /// <summary>
+        /// The library update duration
+        /// </summary>
+        private const int LibraryUpdateDuration = 60000;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketEvents" /> class.
         /// </summary>
@@ -145,7 +173,47 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         /// <param name="e">The <see cref="ChildrenChangedEventArgs" /> instance containing the event data.</param>
         void libraryManager_LibraryChanged(object sender, ChildrenChangedEventArgs e)
         {
-            _serverManager.SendWebSocketMessage("LibraryChanged", () => DtoBuilder.GetLibraryUpdateInfo(e));
+            lock (_libraryChangedSyncLock)
+            {
+                if (LibraryUpdateInfo == null)
+                {
+                    LibraryUpdateInfo = new LibraryUpdateInfo();
+                }
+
+                if (LibraryUpdateTimer == null)
+                {
+                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
+                                                   Timeout.Infinite);
+                }
+                else
+                {
+                    LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
+                }
+
+                LibraryUpdateInfo.Folders.Add(e.Folder.Id);
+
+                LibraryUpdateInfo.ItemsAdded.AddRange(e.ItemsAdded.Select(i => i.Id));
+                LibraryUpdateInfo.ItemsUpdated.AddRange(e.ItemsUpdated.Select(i => i.Id));
+                LibraryUpdateInfo.ItemsRemoved.AddRange(e.ItemsRemoved.Select(i => i.Id));
+            }
+        }
+
+        /// <summary>
+        /// Libraries the update timer callback.
+        /// </summary>
+        /// <param name="state">The state.</param>
+        private void LibraryUpdateTimerCallback(object state)
+        {
+            lock (_libraryChangedSyncLock)
+            {
+                _serverManager.SendWebSocketMessage("LibraryChanged", LibraryUpdateInfo);
+
+                if (LibraryUpdateTimer != null)
+                {
+                    LibraryUpdateTimer.Dispose();
+                    LibraryUpdateTimer = null;
+                }
+            }
         }
 
         /// <summary>
@@ -206,6 +274,12 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         {
             if (dispose)
             {
+                if (LibraryUpdateTimer != null)
+                {
+                    LibraryUpdateTimer.Dispose();
+                    LibraryUpdateTimer = null;
+                }
+                
                 _userManager.UserDeleted -= userManager_UserDeleted;
                 _userManager.UserUpdated -= userManager_UserUpdated;
 

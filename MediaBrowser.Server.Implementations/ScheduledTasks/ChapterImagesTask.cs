@@ -2,6 +2,7 @@
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -60,40 +61,27 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var videos = _libraryManager.RootFolder.RecursiveChildren.OfType<Video>().Where(v => v.Chapters != null).ToList();
+            var videos = _libraryManager.RootFolder.RecursiveChildren
+                .OfType<Video>()
+                .Where(v => v.Chapters != null && v.Chapters.Count != 0)
+                .ToList();
 
             var numComplete = 0;
 
-            var tasks = videos.Select(v => Task.Run(async () =>
+            foreach (var video in videos)
             {
-                try
-                {
-                    await _kernel.FFMpegManager.PopulateChapterImages(v, cancellationToken, true, true);
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error creating chapter images for {0}", ex, v.Name);
-                }
-                finally
-                {
-                    lock (progress)
-                    {
-                        numComplete++;
-                        double percent = numComplete;
-                        percent /= videos.Count;
+                cancellationToken.ThrowIfCancellationRequested();
 
-                        progress.Report(100 * percent);
-                    }
-                }
-            }));
+                await _kernel.FFMpegManager.PopulateChapterImages(video, cancellationToken, true, true);
 
-            return Task.WhenAll(tasks);
+                numComplete++;
+                double percent = numComplete;
+                percent /= videos.Count;
+
+                progress.Report(100 * percent);
+            }
         }
 
         /// <summary>

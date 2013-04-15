@@ -15,7 +15,8 @@ namespace MediaBrowser.Controller.Providers.TV
     /// </summary>
     public class EpisodeProviderFromXml : BaseMetadataProvider
     {
-        public EpisodeProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
+        public EpisodeProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager)
+            : base(logManager, configurationManager)
         {
         }
 
@@ -55,7 +56,7 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <returns>Task{System.Boolean}.</returns>
         public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            return Task.Run(() => Fetch(item, cancellationToken));
+            return Fetch(item, cancellationToken);
         }
 
         /// <summary>
@@ -84,42 +85,31 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private bool Fetch(BaseItem item, CancellationToken cancellationToken)
+        private async Task<bool> Fetch(BaseItem item, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             var metadataFile = Path.Combine(item.MetaLocation, Path.ChangeExtension(Path.GetFileName(item.Path), ".xml"));
 
-            var episode = (Episode)item;
-
-            if (!FetchMetadata(episode, item.ResolveArgs.Parent, metadataFile, cancellationToken))
-            {
-                // Don't set last refreshed if we didn't do anything
-                return false;
-            }
-
-            SetLastRefreshed(item, DateTime.UtcNow);
-            return true;
-        }
-
-        /// <summary>
-        /// Fetches the metadata.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="parent">The parent.</param>
-        /// <param name="metadataFile">The metadata file.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private bool FetchMetadata(Episode item, Folder parent, string metadataFile, CancellationToken cancellationToken)
-        {
-            var file = parent.ResolveArgs.GetMetaFileByPath(metadataFile);
+            var file = item.ResolveArgs.Parent.ResolveArgs.GetMetaFileByPath(metadataFile);
 
             if (!file.HasValue)
             {
                 return false;
             }
 
-            new EpisodeXmlParser(Logger).Fetch(item, metadataFile, cancellationToken);
+            await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                new EpisodeXmlParser(Logger).Fetch((Episode)item, metadataFile, cancellationToken);
+            }
+            finally
+            {
+                XmlParsingResourcePool.Release();
+            }
+
+            SetLastRefreshed(item, DateTime.UtcNow);
             return true;
         }
     }

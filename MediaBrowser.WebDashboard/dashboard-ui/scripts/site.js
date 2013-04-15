@@ -949,19 +949,6 @@ var Dashboard = {
 
     processLibraryUpdateNotification: function (data) {
 
-        var newItems = data.ItemsAdded.filter(function (a) {
-            return !a.IsFolder;
-        });
-
-        if (!Dashboard.newItems) {
-            Dashboard.newItems = [];
-        }
-
-        for (var i = 0, length = newItems.length ; i < length; i++) {
-
-            Dashboard.newItems.push(newItems[i]);
-        }
-
         if (Dashboard.newItemTimeout) {
             clearTimeout(Dashboard.newItemTimeout);
         }
@@ -971,52 +958,45 @@ var Dashboard = {
 
     onNewItemTimerStopped: function () {
 
-        var newItems = Dashboard.newItems;
+        ApiClient.getItems(Dashboard.getCurrentUserId(), {
+            
+            Recursive: true,
+            Limit: 2,
+            Fitlers: "IsNotFolder",
+            SortBy: "DateCreated",
+            SortOrder: "Descending",
+            ImageTypes: "Primary"
+            
+        }).done(function (result) {
 
-        newItems = newItems.sort(function (a, b) {
+            var items = result.Items;
 
-            if (a.PrimaryImageTag && b.PrimaryImageTag) {
-                return 0;
-            }
+            for (var i = 0, length = Math.min(items.length, 2) ; i < length; i++) {
 
-            if (a.PrimaryImageTag) {
-                return -1;
-            }
+                var item = items[i];
 
-            return 1;
-        });
+                var data = {
+                    title: "New " + item.Type,
+                    body: item.Name,
+                    timeout: 5000
+                };
 
-        Dashboard.newItems = [];
-        Dashboard.newItemTimeout = null;
+                var imageTags = item.ImageTags || {};
+                
+                if (imageTags.Primary) {
 
-        // Show at most 3 notifications
-        for (var i = 0, length = Math.min(newItems.length, 3) ; i < length; i++) {
-
-            var item = newItems[i];
-
-            var data = {
-                title: "New " + item.Type,
-                body: item.Name,
-                timeout: 6000
-            };
-
-            if (item.PrimaryImageTag) {
-                data.icon = ApiClient.getImageUrl(item.Id, {
-                    width: 100,
-                    tag: item.PrimaryImageTag,
-                    type: "Primary"
-                });
-
-                if (!item.Id || !data.icon || data.icon == "undefined") {
-                    alert("bad image url: " + JSON.stringify(item));
-                    console.log("bad image url: " + JSON.stringify(item));
-
-                    continue;
+                    data.icon = ApiClient.getImageUrl(item.Id, {
+                        width: 100,
+                        tag: imageTags.Primary,
+                        type: "Primary"
+                    });
                 }
-            }
 
-            WebNotifications.show(data);
-        }
+                WebNotifications.show(data);
+            }
+        });
+        
+        Dashboard.newItemTimeout = null;
     },
 
     ensurePageTitle: function (page) {

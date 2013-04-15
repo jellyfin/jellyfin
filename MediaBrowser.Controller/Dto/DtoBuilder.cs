@@ -665,22 +665,6 @@ namespace MediaBrowser.Controller.Dto
         }
 
         /// <summary>
-        /// Gets the library update info.
-        /// </summary>
-        /// <param name="changeEvent">The <see cref="ChildrenChangedEventArgs" /> instance containing the event data.</param>
-        /// <returns>LibraryUpdateInfo.</returns>
-        public static LibraryUpdateInfo GetLibraryUpdateInfo(ChildrenChangedEventArgs changeEvent)
-        {
-            return new LibraryUpdateInfo
-            {
-                Folder = GetBaseItemInfo(changeEvent.Folder),
-                ItemsAdded = changeEvent.ItemsAdded.Select(GetBaseItemInfo),
-                ItemsRemoved = changeEvent.ItemsRemoved.Select(i => i.Id),
-                ItemsUpdated = changeEvent.ItemsUpdated.Select(i => i.Id)
-            };
-        }
-
-        /// <summary>
         /// Converts a UserItemData to a DTOUserItemData
         /// </summary>
         /// <param name="data">The data.</param>
