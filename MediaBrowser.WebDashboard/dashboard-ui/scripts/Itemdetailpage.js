@@ -167,35 +167,35 @@
 
         if (imageTags.Logo) {
 
-            html += createGalleryImage(item.Id, "Logo", item.ImageTags.Logo);
+            html += LibraryBrowser.createGalleryImage(item.Id, "Logo", item.ImageTags.Logo);
         }
         if (imageTags.Thumb) {
 
-            html += createGalleryImage(item.Id, "Thumb", item.ImageTags.Thumb);
+            html += LibraryBrowser.createGalleryImage(item.Id, "Thumb", item.ImageTags.Thumb);
         }
         if (imageTags.Art) {
 
-            html += createGalleryImage(item.Id, "Art", item.ImageTags.Art);
+            html += LibraryBrowser.createGalleryImage(item.Id, "Art", item.ImageTags.Art);
 
         }
         if (imageTags.Menu) {
 
-            html += createGalleryImage(item.Id, "Menu", item.ImageTags.Menu);
+            html += LibraryBrowser.createGalleryImage(item.Id, "Menu", item.ImageTags.Menu);
 
         }
         if (imageTags.Disc) {
 
-            html += createGalleryImage(item.Id, "Disc", item.ImageTags.Disc);
+            html += LibraryBrowser.createGalleryImage(item.Id, "Disc", item.ImageTags.Disc);
         }
         if (imageTags.Box) {
 
-            html += createGalleryImage(item.Id, "Box", item.ImageTags.Box);
+            html += LibraryBrowser.createGalleryImage(item.Id, "Box", item.ImageTags.Box);
         }
 
         if (item.BackdropImageTags) {
 
             for (i = 0, length = item.BackdropImageTags.length; i < length; i++) {
-                html += createGalleryImage(item.Id, "Backdrop", item.BackdropImageTags[0], i);
+                html += LibraryBrowser.createGalleryImage(item.Id, "Backdrop", item.BackdropImageTags[0], i);
             }
 
         }
@@ -203,42 +203,11 @@
         if (item.ScreenshotImageTags) {
 
             for (i = 0, length = item.ScreenshotImageTags.length; i < length; i++) {
-                html += createGalleryImage(item.Id, "Screenshot", item.ScreenshotImageTags[0], i);
+                html += LibraryBrowser.createGalleryImage(item.Id, "Screenshot", item.ScreenshotImageTags[0], i);
             }
         }
 
         $('#galleryContent', page).html(html).trigger('create');
-    }
-
-    function createGalleryImage(itemId, type, tag, index) {
-
-        var downloadWidth = 400;
-        var lightboxWidth = 800;
-        var html = '';
-
-        if (typeof (index) == "undefined") index = 0;
-
-        html += '<div class="posterViewItem" style="padding-bottom:0px;">';
-        html += '<a href="#pop_' + index + '_' + tag + '" data-transition="fade" data-rel="popup" data-position-to="window">';
-        html += '<img class="galleryImage" src="' + ApiClient.getImageUrl(itemId, {
-            type: type,
-            maxwidth: downloadWidth,
-            tag: tag,
-            index: index
-        }) + '" />';
-        html += '</div>';
-
-        html += '<div class="galleryPopup" id="pop_' + index + '_' + tag + '" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
-        html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
-        html += '<img class="" src="' + ApiClient.getImageUrl(itemId, {
-            type: type,
-            maxwidth: lightboxWidth,
-            tag: tag,
-            index: index
-        }) + '" />';
-        html += '</div>';
-
-        return html;
     }
 
     function renderMediaInfo(page, item) {
@@ -433,32 +402,9 @@
 
         for (var i = 0, length = casts.length; i < length; i++) {
 
-            var cast = casts[i];
-            var role = cast.Role || cast.Type;
+	        var cast = casts[i];
 
-            html += '<a href="itembynamedetails.html?person=' + cast.Name + '">';
-            html += '<div class="posterViewItem posterViewItemWithDualText">';
-
-            if (cast.PrimaryImageTag) {
-
-                var imgUrl = ApiClient.getPersonImageUrl(cast.Name, {
-                    width: 185,
-                    tag: cast.PrimaryImageTag,
-                    type: "primary"
-                });
-
-                html += '<img src="' + imgUrl + '" />';
-            } else {
-                var style = "background-color:" + LibraryBrowser.getMetroColor(cast.Name) + ";";
-
-                html += '<img src="css/images/items/list/person.png" style="max-width:185px; ' + style + '"/>';
-            }
-
-            html += '<div class="posterViewItemText posterViewItemPrimaryText">' + cast.Name + '</div>';
-            html += '<div class="posterViewItemText">' + role + '</div>';
-
-            html += '</div></a>';
-
+	        html += LibraryBrowser.createCastImage(cast);
         }
 
         $('#castContent', page).html(html);

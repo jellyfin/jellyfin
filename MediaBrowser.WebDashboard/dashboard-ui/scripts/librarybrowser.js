@@ -977,7 +977,70 @@
             }
 
             return html;
-        }
+        },
+
+	    createGalleryImage: function (itemId, type, tag, index) {
+
+			var downloadWidth = 400;
+			var lightboxWidth = 800;
+			var html = '';
+
+			if (typeof (index) == "undefined") index = 0;
+
+			html += '<div class="posterViewItem" style="padding-bottom:0px;">';
+			html += '<a href="#pop_' + index + '_' + tag + '" data-transition="fade" data-rel="popup" data-position-to="window">';
+			html += '<img class="galleryImage" src="' + ApiClient.getImageUrl(itemId, {
+				type: type,
+				maxwidth: downloadWidth,
+				tag: tag,
+				index: index
+			}) + '" />';
+			html += '</div>';
+
+			html += '<div class="galleryPopup" id="pop_' + index + '_' + tag + '" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
+			html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
+			html += '<img class="" src="' + ApiClient.getImageUrl(itemId, {
+				type: type,
+				maxwidth: lightboxWidth,
+				tag: tag,
+				index: index
+			}) + '" />';
+			html += '</div>';
+
+			return html;
+		},
+
+	    createCastImage: function (cast) {
+
+			var html = '';
+
+			var role = cast.Role || cast.Type;
+
+			html += '<a href="itembynamedetails.html?person=' + cast.Name + '">';
+			html += '<div class="posterViewItem posterViewItemWithDualText">';
+
+			if (cast.PrimaryImageTag) {
+
+				var imgUrl = ApiClient.getPersonImageUrl(cast.Name, {
+					width: 185,
+					tag: cast.PrimaryImageTag,
+					type: "primary"
+				});
+
+				html += '<img src="' + imgUrl + '" />';
+			} else {
+				var style = "background-color:" + LibraryBrowser.getMetroColor(cast.Name) + ";";
+
+				html += '<img src="css/images/items/list/person.png" style="max-width:185px; ' + style + '"/>';
+			}
+
+			html += '<div class="posterViewItemText posterViewItemPrimaryText">' + cast.Name + '</div>';
+			html += '<div class="posterViewItemText">' + role + '</div>';
+
+			html += '</div></a>';
+
+		    return html;
+		}
 
     };
 
