@@ -110,10 +110,6 @@
     margin: 0 0 5px;
 }
 
-.detailPagePrimaryInfo {
-    padding: 0 10px;
-}
-
 .itemMiscInfo {
     color: #ddd;
     font-size: 14px;
@@ -238,6 +234,12 @@
 
 .posterDetailViewItem .userDataIcons {
     display: none;
+}
+
+@media all and (min-width: 650px) {
+    .detailPagePrimaryInfo {
+        padding: 0 10px;
+    }
 }
 
 @media all and (min-width: 850px) {

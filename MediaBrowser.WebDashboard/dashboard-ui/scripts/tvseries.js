@@ -73,6 +73,24 @@
         $('#itemRatings', page).html(LibraryBrowser.getUserDataIconsHtml(item));
     }
 
+	function renderSeasons(page) {
+        
+        ApiClient.getItems(Dashboard.getCurrentUserId(), {
+            
+            ParentId: getParameterByName('id'),
+            SortBy: "SortName"
+            
+        }).done(function(result) {
+            
+            var html = LibraryBrowser.getPosterDetailViewHtml({
+                items: result.Items,
+                useAverageAspectRatio: true
+            });
+
+            $('#seasonsContent', page).html(html);
+        });
+    }
+
 	function renderGallery(page, item) {
 
 		var imageTags = item.ImageTags || {};
@@ -149,6 +167,13 @@
 
 		reload(page);
 
+		$('#seasonsCollapsible', page).on('expand.lazyload', function () {
+
+			renderSeasons(page);
+
+			$(this).off('expand.lazyload');
+		});
+
 		$('#castCollapsible', page).on('expand.lazyload', function () {
 			renderCast(page, currentItem);
 
@@ -167,6 +192,7 @@
 		currentItem = null;
 		var page = this;
 
+		$('#seasonsCollapsible', page).off('expand.lazyload');
 		$('#castCollapsible', page).off('expand.lazyload');
 		$('#galleryCollapsible', page).off('expand.lazyload');
 	});

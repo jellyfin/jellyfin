@@ -7,7 +7,7 @@
             if (window.location.toString().toLowerCase().indexOf('localhost') != -1) {
                 return 100;
             }
-            return 25;
+            return 20;
         },
 
         getPosterDetailViewHtml: function (options) {

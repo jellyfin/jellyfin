@@ -59,8 +59,43 @@
         $('#itemRatings', page).html(LibraryBrowser.getUserDataIconsHtml(item));
     }
 
+    function renderMovies(page) {
+
+        ApiClient.getItems(Dashboard.getCurrentUserId(), {
+
+            ParentId: getParameterByName('id'),
+            SortBy: "SortName"
+
+        }).done(function (result) {
+
+            var html = LibraryBrowser.getPosterDetailViewHtml({
+                items: result.Items,
+                useAverageAspectRatio: true
+            });
+
+
+            $('#moviesContent', page).html(html);
+        });
+    }
+
     $(document).on('pageshow', "#boxsetPage", function () {
-        reload(this);
+        
+        var page = this;
+
+        reload(page);
+
+        $('#moviesCollapsible', page).on('expand.lazyload', function () {
+
+            renderMovies(page);
+
+            $(this).off('expand.lazyload');
+        });
+        
+    }).on('pagehide', "#boxsetPage", function () {
+
+        var page = this;
+
+        $('#moviesCollapsible', page).off('expand.lazyload');
     });
 
 
