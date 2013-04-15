@@ -357,10 +357,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 _logger.ErrorException("AcceptWebSocketAsync error", ex);
 
                 ctx.Response.StatusCode = 500;
-            }
-            finally
-            { 
-                ctx.Response.Close(); 
+                ctx.Response.Close();
             }
         }
 
