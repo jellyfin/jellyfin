@@ -32,27 +32,24 @@ namespace MediaBrowser.Controller.Providers.Music
 
         public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            return Task.Run(() =>
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var entry = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, LastfmHelper.LocalArtistMetaFileName));
+            if (entry.HasValue)
             {
+                // read in our saved meta and pass to processing function
+                var data = JsonSerializer.DeserializeFromFile<LastfmArtist>(entry.Value.Path);
+
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var entry = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, LastfmHelper.LocalArtistMetaFileName));
-                if (entry.HasValue)
-                {
-                    // read in our saved meta and pass to processing function
-                    var data = JsonSerializer.DeserializeFromFile<LastfmArtist>(entry.Value.Path);
+                LastfmHelper.ProcessArtistData(item, data);
 
-                    cancellationToken.ThrowIfCancellationRequested();
+                item.SetProviderId(MetadataProviders.Musicbrainz, data.mbid);
 
-                    LastfmHelper.ProcessArtistData(item, data);
-
-                    item.SetProviderId(MetadataProviders.Musicbrainz, data.mbid);
-
-                    SetLastRefreshed(item, DateTime.UtcNow);
-                    return true;
-                }
-                return false;
-            });
+                SetLastRefreshed(item, DateTime.UtcNow);
+                return TrueTaskResult;
+            }
+            return FalseTaskResult;
         }
 
         public override MetadataProviderPriority Priority

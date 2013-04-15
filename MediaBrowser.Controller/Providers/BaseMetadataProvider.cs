@@ -31,6 +31,12 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         protected readonly Guid Id;
 
+        /// <summary>
+        /// The true task result
+        /// </summary>
+        protected static readonly Task<bool> TrueTaskResult = Task.FromResult(true);
+        protected static readonly Task<bool> FalseTaskResult = Task.FromResult(false);
+
         protected static readonly SemaphoreSlim XmlParsingResourcePool = new SemaphoreSlim(5, 5);
         
         /// <summary>
@@ -207,7 +213,7 @@ namespace MediaBrowser.Controller.Providers
                 return true;
             }
 
-            if (RefreshOnVersionChange && !string.Equals(ProviderVersion, providerInfo.ProviderVersion))
+            if (RefreshOnVersionChange && !String.Equals(ProviderVersion, providerInfo.ProviderVersion))
             {
                 return true;
             }
@@ -223,7 +229,7 @@ namespace MediaBrowser.Controller.Providers
         /// <returns><c>true</c> if [has file system stamp changed] [the specified item]; otherwise, <c>false</c>.</returns>
         protected bool HasFileSystemStampChanged(BaseItem item, BaseProviderInfo providerInfo)
         {
-            return !string.Equals(GetCurrentFileSystemStamp(item), providerInfo.FileSystemStamp);
+            return !String.Equals(GetCurrentFileSystemStamp(item), providerInfo.FileSystemStamp);
         }
 
         /// <summary>
