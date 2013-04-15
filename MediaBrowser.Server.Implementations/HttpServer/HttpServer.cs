@@ -330,6 +330,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                 throw;
             }
+            finally
+            {
+                context.Response.Close();
+            }
         }
 
         /// <summary>
@@ -353,7 +357,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 _logger.ErrorException("AcceptWebSocketAsync error", ex);
 
                 ctx.Response.StatusCode = 500;
-                ctx.Response.Close();
+            }
+            finally
+            { 
+                ctx.Response.Close(); 
             }
         }
 
@@ -386,26 +393,26 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             _logger.ErrorException("Error processing request", ex);
 
-            response.StatusCode = statusCode;
-
-            response.Headers.Add("Status", statusCode.ToString(new CultureInfo("en-US")));
-
-            response.Headers.Remove("Age");
-            response.Headers.Remove("Expires");
-            response.Headers.Remove("Cache-Control");
-            response.Headers.Remove("Etag");
-            response.Headers.Remove("Last-Modified");
-
-            response.ContentType = "text/plain";
-
-            if (!string.IsNullOrEmpty(ex.Message))
-            {
-                response.AddHeader("X-Application-Error-Code", ex.Message);
-            }
-
             // This could fail, but try to add the stack trace as the body content
             try
             {
+                response.StatusCode = statusCode;
+
+                response.Headers.Add("Status", statusCode.ToString(new CultureInfo("en-US")));
+
+                response.Headers.Remove("Age");
+                response.Headers.Remove("Expires");
+                response.Headers.Remove("Cache-Control");
+                response.Headers.Remove("Etag");
+                response.Headers.Remove("Last-Modified");
+
+                response.ContentType = "text/plain";
+
+                if (!string.IsNullOrEmpty(ex.Message))
+                {
+                    response.AddHeader("X-Application-Error-Code", ex.Message);
+                }
+
                 var sb = new StringBuilder();
                 sb.AppendLine("{");
                 sb.AppendLine("\"ResponseStatus\":{");
@@ -415,11 +422,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 sb.AppendLine("}");
                 sb.AppendLine("}");
 
-                response.StatusCode = 500;
                 response.ContentType = ContentType.Json;
                 var sbBytes = sb.ToString().ToUtf8Bytes();
                 response.OutputStream.Write(sbBytes, 0, sbBytes.Length);
-                response.Close();
             }
             catch (Exception errorEx)
             {
@@ -457,7 +462,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 }
                 serviceStackHandler.ProcessRequest(httpReq, httpRes, operationName);
                 LogResponse(context, url, endPoint);
-                httpRes.Close();
                 return;
             }
 
