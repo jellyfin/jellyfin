@@ -153,7 +153,9 @@
     <Compile Include="ScheduledTasks\ChapterImagesTask.cs" />
     <Compile Include="ScheduledTasks\ImageCleanupTask.cs" />
     <Compile Include="ScheduledTasks\PluginUpdateTask.cs" />
+    <Compile Include="ScheduledTasks\AudioImagesTask.cs" />
     <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
+    <Compile Include="ScheduledTasks\VideoImagesTask.cs" />
     <Compile Include="ServerApplicationPaths.cs" />
     <Compile Include="ServerManager\ServerManager.cs" />
     <Compile Include="ServerManager\WebSocketConnection.cs" />

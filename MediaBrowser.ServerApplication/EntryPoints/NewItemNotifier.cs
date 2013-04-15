@@ -109,7 +109,7 @@ namespace MediaBrowser.ServerApplication.EntryPoints
             }
 
             // Show the notification
-            if (newItems.Count == 1)
+            if (newItems.Count > 0)
             {
                 Application.Current.Dispatcher.InvokeAsync(() =>
                 {
@@ -118,19 +118,6 @@ namespace MediaBrowser.ServerApplication.EntryPoints
                     window.Dispatcher.InvokeAsync(() => window.MbTaskbarIcon.ShowCustomBalloon(new ItemUpdateNotification(_logger)
                     {
                         DataContext = newItems[0]
-
-                    }, PopupAnimation.Slide, 6000));
-                });
-            }
-            else if (newItems.Count > 1)
-            {
-                Application.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    var window = (MainWindow)Application.Current.MainWindow;
-
-                    window.Dispatcher.InvokeAsync(() => window.MbTaskbarIcon.ShowCustomBalloon(new MultiItemUpdateNotification(_logger)
-                    {
-                        DataContext = newItems
 
                     }, PopupAnimation.Slide, 6000));
                 });

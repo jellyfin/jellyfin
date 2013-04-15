@@ -542,6 +542,7 @@ namespace MediaBrowser.Controller.Entities
 
             var options = new ParallelOptions
             {
+                MaxDegreeOfParallelism = 50
             };
 
             Parallel.ForEach(nonCachedChildren, options, child =>
@@ -606,6 +607,12 @@ namespace MediaBrowser.Controller.Entities
                         _children.Add(item);
                     }
 
+                    if (saveTasks.Count > 50)
+                    {
+                        await Task.WhenAll(saveTasks).ConfigureAwait(false);
+                        saveTasks.Clear();
+                    }
+
                     saveTasks.Add(LibraryManager.SaveItem(item, CancellationToken.None));
                 }
 
@@ -642,65 +649,77 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
         /// <returns>Task.</returns>
-        private Task RefreshChildren(IEnumerable<Tuple<BaseItem, bool>> children, IProgress<double> progress, CancellationToken cancellationToken, bool? recursive)
+        private async Task RefreshChildren(IEnumerable<Tuple<BaseItem, bool>> children, IProgress<double> progress, CancellationToken cancellationToken, bool? recursive)
         {
             var list = children.ToList();
 
             var percentages = new ConcurrentDictionary<Guid, double>(list.Select(i => new KeyValuePair<Guid, double>(i.Item1.Id, 0)));
 
-            var tasks = list.Select(tuple => Task.Run(async () =>
+            var tasks = new List<Task>();
+
+            foreach (var tuple in list)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var child = tuple.Item1;
-
-                //refresh it
-                await child.RefreshMetadata(cancellationToken, resetResolveArgs: child.IsFolder).ConfigureAwait(false);
-
-                // Refresh children if a folder and the item changed or recursive is set to true
-                var refreshChildren = child.IsFolder && (tuple.Item2 || (recursive.HasValue && recursive.Value));
-
-                if (refreshChildren)
+                if (tasks.Count > 50)
                 {
-                    // Don't refresh children if explicitly set to false
-                    if (recursive.HasValue && recursive.Value == false)
-                    {
-                        refreshChildren = false;
-                    }
+                    await Task.WhenAll(tasks).ConfigureAwait(false);
                 }
 
-                if (refreshChildren)
+                Tuple<BaseItem, bool> currentTuple = tuple;
+
+                tasks.Add(Task.Run(async () =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var innerProgress = new ActionableProgress<double>();
+                    var child = currentTuple.Item1;
 
-                    innerProgress.RegisterAction(p =>
+                    //refresh it
+                    await child.RefreshMetadata(cancellationToken, resetResolveArgs: child.IsFolder).ConfigureAwait(false);
+
+                    // Refresh children if a folder and the item changed or recursive is set to true
+                    var refreshChildren = child.IsFolder && (currentTuple.Item2 || (recursive.HasValue && recursive.Value));
+
+                    if (refreshChildren)
                     {
-                        percentages.TryUpdate(child.Id, p / 100, percentages[child.Id]);
+                        // Don't refresh children if explicitly set to false
+                        if (recursive.HasValue && recursive.Value == false)
+                        {
+                            refreshChildren = false;
+                        }
+                    }
+
+                    if (refreshChildren)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        var innerProgress = new ActionableProgress<double>();
+
+                        innerProgress.RegisterAction(p =>
+                        {
+                            percentages.TryUpdate(child.Id, p / 100, percentages[child.Id]);
+
+                            var percent = percentages.Values.Sum();
+                            percent /= list.Count;
+
+                            progress.Report((90 * percent) + 10);
+                        });
+
+                        await ((Folder)child).ValidateChildren(innerProgress, cancellationToken, recursive).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        percentages.TryUpdate(child.Id, 1, percentages[child.Id]);
 
                         var percent = percentages.Values.Sum();
                         percent /= list.Count;
 
                         progress.Report((90 * percent) + 10);
-                    });
-
-                    await ((Folder) child).ValidateChildren(innerProgress, cancellationToken, recursive).ConfigureAwait(false);
-                }
-                else
-                {
-                    percentages.TryUpdate(child.Id, 1, percentages[child.Id]);
-
-                    var percent = percentages.Values.Sum();
-                    percent /= list.Count;
-
-                    progress.Report((90 * percent) + 10);
-                }
-            }));
+                    }
+                }));
+            }
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            return Task.WhenAll(tasks);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
         /// <summary>

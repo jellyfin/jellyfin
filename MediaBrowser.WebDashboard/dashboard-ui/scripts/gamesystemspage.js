@@ -6,7 +6,7 @@
 
 		SortBy: "SortName",
 		SortOrder: "Ascending",
-		IncludeItemTypes: "Platform",
+		IncludeItemTypes: "GamePlatform",
 		Recursive: true,
 		Fields: "PrimaryImageAspectRatio,ItemCounts,ItemCounts,DateCreated,UserData",
 		Limit: LibraryBrowser.getDetaultPageSize(),

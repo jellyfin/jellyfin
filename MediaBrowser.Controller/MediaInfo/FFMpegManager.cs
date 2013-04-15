@@ -24,12 +24,6 @@ namespace MediaBrowser.Controller.MediaInfo
         internal FileSystemRepository VideoImageCache { get; set; }
 
         /// <summary>
-        /// Gets or sets the image cache.
-        /// </summary>
-        /// <value>The image cache.</value>
-        internal FileSystemRepository AudioImageCache { get; set; }
-
-        /// <summary>
         /// Gets or sets the subtitle cache.
         /// </summary>
         /// <value>The subtitle cache.</value>
@@ -54,7 +48,6 @@ namespace MediaBrowser.Controller.MediaInfo
             _libraryManager = libraryManager;
 
             VideoImageCache = new FileSystemRepository(VideoImagesDataPath);
-            AudioImageCache = new FileSystemRepository(AudioImagesDataPath);
             SubtitleCache = new FileSystemRepository(SubtitleCachePath);
         }
 

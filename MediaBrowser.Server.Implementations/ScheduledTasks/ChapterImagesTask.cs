@@ -24,6 +24,9 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
+        /// <summary>
+        /// The _library manager
+        /// </summary>
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
@@ -99,7 +102,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <value>The name.</value>
         public string Name
         {
-            get { return "Create video chapter thumbnails"; }
+            get { return "Chapter image extraction"; }
         }
 
         /// <summary>
