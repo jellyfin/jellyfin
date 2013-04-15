@@ -962,7 +962,7 @@ var Dashboard = {
             
             Recursive: true,
             Limit: 2,
-            Fitlers: "IsNotFolder",
+            Filters: "IsNotFolder",
             SortBy: "DateCreated",
             SortOrder: "Descending",
             ImageTypes: "Primary"
