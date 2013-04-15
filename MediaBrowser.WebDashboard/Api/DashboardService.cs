@@ -489,7 +489,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "gamesystemspage.js",
                                       "gamesystempage.js",
                                       "gamespage.js",
-                                      "gamegenrespage.js",
+                                      "gamegenrepage.js",
                                       "gamestudiospage.js",
                                       "gamedetailpage.js"
                                   };
