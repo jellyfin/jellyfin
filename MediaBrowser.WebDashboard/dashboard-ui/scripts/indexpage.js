@@ -59,7 +59,7 @@
 
             if (result.TotalRecordCount) {
 
-                var view = { name: "Games", url: "#", img: "css/images/items/list/gamecollection.png", background: "#E12026" };
+                var view = { name: "Games", url: "gamesrecommended.html", img: "css/images/items/list/gamecollection.png", background: "#E12026" };
 
                 $('#views', page).append(getViewHtml(view));
             }
