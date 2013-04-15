@@ -163,6 +163,7 @@
 
         var imageTags = item.ImageTags || {};
         var html = '';
+        var i, length;
 
         if (imageTags.Logo) {
 
@@ -193,10 +194,17 @@
 
         if (item.BackdropImageTags) {
 
-            for (var i = 0, length = item.BackdropImageTags.length; i < length; i++) {
+            for (i = 0, length = item.BackdropImageTags.length; i < length; i++) {
                 html += createGalleryImage(item.Id, "Backdrop", item.BackdropImageTags[0], i);
             }
 
+        }
+
+        if (item.ScreenshotImageTags) {
+
+            for (i = 0, length = item.ScreenshotImageTags.length; i < length; i++) {
+                html += createGalleryImage(item.Id, "Screenshot", item.ScreenshotImageTags[0], i);
+            }
         }
 
         $('#galleryContent', page).html(html).trigger('create');
