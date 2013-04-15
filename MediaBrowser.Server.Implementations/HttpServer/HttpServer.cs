@@ -282,58 +282,54 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 return;
             }
 
+            RaiseReceiveWebRequest(context);
 
-            Task.Run(() =>
+            try
             {
-                RaiseReceiveWebRequest(context);
+                ProcessRequest(context);
+            }
+            catch (InvalidOperationException ex)
+            {
+                HandleException(context.Response, ex, 422);
 
-                try
-                {
-                    ProcessRequest(context);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    HandleException(context.Response, ex, 422);
+                throw;
+            }
+            catch (ResourceNotFoundException ex)
+            {
+                HandleException(context.Response, ex, 404);
 
-                    throw;
-                }
-                catch (ResourceNotFoundException ex)
-                {
-                    HandleException(context.Response, ex, 404);
+                throw;
+            }
+            catch (FileNotFoundException ex)
+            {
+                HandleException(context.Response, ex, 404);
 
-                    throw;
-                }
-                catch (FileNotFoundException ex)
-                {
-                    HandleException(context.Response, ex, 404);
+                throw;
+            }
+            catch (DirectoryNotFoundException ex)
+            {
+                HandleException(context.Response, ex, 404);
 
-                    throw;
-                }
-                catch (DirectoryNotFoundException ex)
-                {
-                    HandleException(context.Response, ex, 404);
+                throw;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                HandleException(context.Response, ex, 401);
 
-                    throw;
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    HandleException(context.Response, ex, 401);
+                throw;
+            }
+            catch (ArgumentException ex)
+            {
+                HandleException(context.Response, ex, 400);
 
-                    throw;
-                }
-                catch (ArgumentException ex)
-                {
-                    HandleException(context.Response, ex, 400);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                HandleException(context.Response, ex, 500);
 
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    HandleException(context.Response, ex, 500);
-
-                    throw;
-                }
-            });
+                throw;
+            }
         }
 
         /// <summary>

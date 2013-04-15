@@ -217,7 +217,7 @@ namespace MediaBrowser.Controller.Drawing
                             var outputTask = toStream.WriteAsync(bytes, 0, bytes.Length);
 
                             // kick off a task to cache the result
-                            Task.Run(() => CacheResizedImage(cacheFilePath, bytes));
+                            await CacheResizedImage(cacheFilePath, bytes).ConfigureAwait(false);
 
                             await outputTask.ConfigureAwait(false);
                         }
@@ -238,7 +238,7 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         /// <param name="cacheFilePath">The cache file path.</param>
         /// <param name="bytes">The bytes.</param>
-        private async void CacheResizedImage(string cacheFilePath, byte[] bytes)
+        private async Task CacheResizedImage(string cacheFilePath, byte[] bytes)
         {
             // Save to the cache location
             using (var cacheFileStream = new FileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
@@ -320,7 +320,7 @@ namespace MediaBrowser.Controller.Drawing
             var size = ImageHeader.GetDimensions(imagePath, _logger);
 
             // Update the file system cache
-            Task.Run(() => File.WriteAllText(fullCachePath, size.Width.ToString(UsCulture) + @"|" + size.Height.ToString(UsCulture)));
+            File.WriteAllText(fullCachePath, size.Width.ToString(UsCulture) + @"|" + size.Height.ToString(UsCulture));
 
             return new ImageSize { Width = size.Width, Height = size.Height };
         }

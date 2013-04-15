@@ -195,17 +195,14 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 throw new ArgumentNullException("cancellationToken");
             }
 
-            return Task.Run(() =>
-            {
-                cancellationToken.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = "delete from users where guid=@guid";
-                var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
-                guidParam.Value = user.Id;
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = "delete from users where guid=@guid";
+            var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
+            guidParam.Value = user.Id;
 
-                return ExecuteCommand(cmd);
-            });
+            return ExecuteCommand(cmd);
         }
     }
 }
