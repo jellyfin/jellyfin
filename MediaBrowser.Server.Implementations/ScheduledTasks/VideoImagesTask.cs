@@ -3,6 +3,7 @@ using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers.MediaInfo;
 using MediaBrowser.Model.Entities;
@@ -95,33 +96,40 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <returns>Task.</returns>
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var items = _libraryManager.RootFolder.RecursiveChildren
-                .OfType<Video>()
-                .Where(i =>
-                    {
-                        if (!string.IsNullOrEmpty(i.PrimaryImagePath))
-                        {
-                            return false;
-                        }
+            var allItems = _libraryManager.RootFolder.RecursiveChildren.ToList();
 
-                        if (i.LocationType != LocationType.FileSystem)
-                        {
-                            return false;
-                        }
+            var localTrailers = allItems.SelectMany(i => i.LocalTrailers);
 
-                        if (i.VideoType == VideoType.HdDvd)
-                        {
-                            return false;
-                        }
+            var videos = allItems.OfType<Video>().ToList();
 
-                        if (i.VideoType == VideoType.Iso && !i.IsoType.HasValue)
-                        {
-                            return false;
-                        }
+            var items = videos;
+            items.AddRange(localTrailers);
+            items.AddRange(videos.OfType<Movie>().SelectMany(i => i.SpecialFeatures).ToList());
 
-                        return i.MediaStreams != null && i.MediaStreams.Any(m => m.Type == MediaStreamType.Video);
-                    })
-                .ToList();
+            items = items.Where(i =>
+            {
+                if (!string.IsNullOrEmpty(i.PrimaryImagePath))
+                {
+                    return false;
+                }
+
+                if (i.LocationType != LocationType.FileSystem)
+                {
+                    return false;
+                }
+
+                if (i.VideoType == VideoType.HdDvd)
+                {
+                    return false;
+                }
+
+                if (i.VideoType == VideoType.Iso && !i.IsoType.HasValue)
+                {
+                    return false;
+                }
+
+                return i.MediaStreams != null && i.MediaStreams.Any(m => m.Type == MediaStreamType.Video);
+            }).ToList();
 
             progress.Report(0);
 

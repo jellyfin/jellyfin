@@ -53,11 +53,6 @@ namespace MediaBrowser.Controller.Providers
         }
 
         /// <summary>
-        /// The true task result
-        /// </summary>
-        protected static readonly Task<bool> TrueTaskResult = Task.FromResult(true);
-
-        /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>
         /// <param name="item">The item.</param>

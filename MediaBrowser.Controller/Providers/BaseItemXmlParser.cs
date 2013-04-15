@@ -54,7 +54,6 @@ namespace MediaBrowser.Controller.Providers
                 CheckCharacters = false,
                 IgnoreProcessingInstructions = true,
                 IgnoreComments = true,
-                IgnoreWhitespace = true,
                 ValidationType = ValidationType.None
             };
 
