@@ -237,7 +237,7 @@ namespace MediaBrowser.Server.Implementations.Providers
             }
             catch (OperationCanceledException ex)
             {
-                _logger.Debug("{0} cancelled for {1}", provider.GetType().Name, item.Name);
+                _logger.Debug("{0} canceled for {1}", provider.GetType().Name, item.Name);
 
                 // If the outer cancellation token is the one that caused the cancellation, throw it
                 if (cancellationToken.IsCancellationRequested && ex.CancellationToken == cancellationToken)
