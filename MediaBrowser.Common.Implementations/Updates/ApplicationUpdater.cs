@@ -15,15 +15,19 @@ namespace MediaBrowser.Common.Implementations.Updates
     /// </summary>
     public class ApplicationUpdater
     {
-        private const string UpdaterExe = "Mediabrowser.Installer.exe";
+        private const string UpdaterExe = "Mediabrowser.Updater.exe";
+        private const string UpdaterDll = "Mediabrowser.InstallUtil.dll";
         public void UpdateApplication(MBApplication app, IApplicationPaths appPaths, string archive)
         {
             // Use our installer passing it the specific archive
             // We need to copy to a temp directory and execute it there
             var source = Path.Combine(appPaths.ProgramSystemPath, UpdaterExe);
             var tempUpdater = Path.Combine(Path.GetTempPath(), UpdaterExe);
-            var product = app == MBApplication.MBTheater ? "mbt" : "server";
             File.Copy(source, tempUpdater, true);
+            source = Path.Combine(appPaths.ProgramSystemPath, UpdaterDll);
+            var tempUpdaterDll = Path.Combine(Path.GetTempPath(), UpdaterDll);
+            File.Copy(source, tempUpdaterDll, true);
+            var product = app == MBApplication.MBTheater ? "mbt" : "server";
             // Our updater needs SS and ionic
             source = Path.Combine(appPaths.ProgramSystemPath, "ServiceStack.Text.dll");
             File.Copy(source, Path.Combine(Path.GetTempPath(), "ServiceStack.Text.dll"), true);
