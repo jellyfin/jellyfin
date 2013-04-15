@@ -81,26 +81,22 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <returns>Task{System.Boolean}.</returns>
         public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            // Since we don't have anything truly async, and since deserializing can be expensive, create a task to force parallelism
-            return Task.Run(() =>
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var entry = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, LOCAL_META_FILE_NAME));
+            if (entry.HasValue)
             {
+                // read in our saved meta and pass to processing function
+                var movieData = JsonSerializer.DeserializeFromFile<CompleteMovieData>(entry.Value.Path);
+
                 cancellationToken.ThrowIfCancellationRequested();
-                
-                var entry = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, LOCAL_META_FILE_NAME));
-                if (entry.HasValue)
-                {
-                    // read in our saved meta and pass to processing function
-                    var movieData = JsonSerializer.DeserializeFromFile<CompleteMovieData>(entry.Value.Path);
 
-                    cancellationToken.ThrowIfCancellationRequested();
+                ProcessMainInfo(item, movieData);
 
-                    ProcessMainInfo(item, movieData);
-
-                    SetLastRefreshed(item, DateTime.UtcNow);
-                    return true;
-                }
-                return false;
-            });
+                SetLastRefreshed(item, DateTime.UtcNow);
+                return TrueTaskResult;
+            }
+            return FalseTaskResult;
         }
     }
 }

@@ -82,7 +82,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         {
             var dbFile = Path.Combine(_appPaths.DataPath, "library.db");
 
-            await ConnectToDB(dbFile).ConfigureAwait(false);
+            await ConnectToDb(dbFile).ConfigureAwait(false);
 
             string[] queries = {
 
