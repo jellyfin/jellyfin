@@ -76,7 +76,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <param name="dbPath">The db path.</param>
         /// <returns>Task{System.Boolean}.</returns>
         /// <exception cref="System.ArgumentNullException">dbPath</exception>
-        protected async Task ConnectToDB(string dbPath)
+        protected async Task ConnectToDb(string dbPath)
         {
             if (string.IsNullOrEmpty(dbPath))
             {

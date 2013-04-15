@@ -92,28 +92,24 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <returns>Task{System.Boolean}.</returns>
         public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            return Task.Run(() =>
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
             {
+                var personInfo = JsonSerializer.DeserializeFromFile<PersonResult>(Path.Combine(item.MetaLocation, MetaFileName));
+
                 cancellationToken.ThrowIfCancellationRequested();
 
-                try
-                {
-                    var personInfo = JsonSerializer.DeserializeFromFile<PersonResult>(Path.Combine(item.MetaLocation, MetaFileName));
+                ProcessInfo((Person)item, personInfo);
 
-                    cancellationToken.ThrowIfCancellationRequested();
-                
-                    ProcessInfo((Person)item, personInfo);
-
-                    SetLastRefreshed(item, DateTime.UtcNow);
-                    return true;
-                }
-                catch (FileNotFoundException)
-                {
-                    // This is okay - just means we force refreshed and there isn't a json file
-                    return false;
-                }
-
-            });
+                SetLastRefreshed(item, DateTime.UtcNow);
+                return TrueTaskResult;
+            }
+            catch (FileNotFoundException)
+            {
+                // This is okay - just means we force refreshed and there isn't a json file
+                return FalseTaskResult;
+            }
         }
     }
 }
