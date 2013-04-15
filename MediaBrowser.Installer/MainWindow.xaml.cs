@@ -273,7 +273,7 @@ namespace MediaBrowser.Installer
                 }
                 catch (Exception e)
                 {
-                    SystemClose("Error Extracting - " + e.GetType().FullName + "\n\n" + e.Message);
+                    SystemClose("Error Extracting - " + e.GetType().FullName + "\n\n" + e.Message + "\n\n" + e.StackTrace);
                     // Delete archive even if failed so we don't try again with this one
                     TryDelete(archive);
                     return;
