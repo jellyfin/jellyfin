@@ -1,11 +1,11 @@
 ﻿using Alchemy.Classes;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
 using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Server.Implementations.WebSocket
 {

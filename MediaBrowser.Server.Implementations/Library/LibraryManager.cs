@@ -82,7 +82,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             UpdateLibraryCache(args);
 
-            EventHelper.QueueEventIfNotNull(LibraryChanged, this, args, _logger);
+            EventHelper.FireEventIfNotNull(LibraryChanged, this, args, _logger);
         }
         #endregion
 
