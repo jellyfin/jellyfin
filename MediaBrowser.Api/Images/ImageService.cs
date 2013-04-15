@@ -293,7 +293,7 @@ namespace MediaBrowser.Api.Images
 
             if (string.IsNullOrEmpty(imagePath))
             {
-                throw new ResourceNotFoundException();
+                throw new ResourceNotFoundException(string.Format("{0} does not have an image of type {1}", item.Name, request.Type));
             }
 
             // See if we can avoid a file system lookup by looking for the file in ResolveArgs

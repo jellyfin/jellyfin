@@ -421,7 +421,7 @@
     function renderCast(page, item) {
         var html = '';
 
-        var casts = item.People || {};
+        var casts = item.People || [];
 
         for (var i = 0, length = casts.length; i < length; i++) {
 

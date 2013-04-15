@@ -81,7 +81,11 @@
                 }
                 else if (item.MediaType == "Game") {
 
+<<<<<<< HEAD
 	                html += "<img class='posterDetailViewImage' style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/game.png' />";
+=======
+                    html += "<img class='posterDetailViewImage' style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/game.png' />";
+>>>>>>> 103dcc97e4c89de41919ec2ab1025f8df30e87fb
                 }
                 else {
 
