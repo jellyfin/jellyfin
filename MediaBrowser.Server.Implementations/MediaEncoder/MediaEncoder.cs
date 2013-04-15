@@ -55,7 +55,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <summary>
         /// The audio image resource pool
         /// </summary>
-        private readonly SemaphoreSlim _audioImageResourcePool = new SemaphoreSlim(2, 2);
+        private readonly SemaphoreSlim _audioImageResourcePool = new SemaphoreSlim(1, 1);
 
         /// <summary>
         /// The _subtitle extraction resource pool

@@ -49,8 +49,17 @@ namespace MediaBrowser.Controller.Providers
                 throw new ArgumentNullException();
             }
 
+            var settings = new XmlReaderSettings
+            {
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true,
+                IgnoreWhitespace = true,
+                ValidationType = ValidationType.None
+            };
+
             // Use XmlReader for best performance
-            using (var reader = XmlReader.Create(metadataFile))
+            using (var reader = XmlReader.Create(metadataFile, settings))
             {
                 reader.MoveToContent();
 
@@ -93,7 +102,7 @@ namespace MediaBrowser.Controller.Providers
                     {
                         var type = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrWhiteSpace(type) && !type.Equals("none",StringComparison.OrdinalIgnoreCase))
+                        if (!string.IsNullOrWhiteSpace(type) && !type.Equals("none", StringComparison.OrdinalIgnoreCase))
                         {
                             item.DisplayMediaType = type;
                         }

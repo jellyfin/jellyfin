@@ -31,6 +31,8 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         protected readonly Guid Id;
 
+        protected static readonly SemaphoreSlim XmlParsingResourcePool = new SemaphoreSlim(5, 5);
+        
         /// <summary>
         /// Supportses the specified item.
         /// </summary>

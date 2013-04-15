@@ -176,6 +176,8 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                 {
                     // Image is already in the cache
                     item.PrimaryImagePath = path;
+
+                    await _libraryManager.SaveItem(item, cancellationToken).ConfigureAwait(false);
                 }
             }
 

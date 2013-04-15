@@ -21,5 +21,13 @@ namespace MediaBrowser.Model.Weather
         /// <value>The forecasts.</value>
         [ProtoMember(2)]
         public WeatherForecast[] Forecasts { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WeatherInfo"/> class.
+        /// </summary>
+        public WeatherInfo()
+        {
+            Forecasts = new WeatherForecast[] {};
+        }
     }
 }

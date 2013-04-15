@@ -58,7 +58,7 @@ namespace MediaBrowser.Controller.Providers
         /// <returns>Task{System.Boolean}.</returns>
         public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            return Task.Run(() => Fetch(item, cancellationToken));
+            return Fetch(item, cancellationToken);
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private bool Fetch(BaseItem item, CancellationToken cancellationToken)
+        private async Task<bool> Fetch(BaseItem item, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -76,7 +76,18 @@ namespace MediaBrowser.Controller.Providers
             if (metadataFile.HasValue)
             {
                 var path = metadataFile.Value.Path;
-                new BaseItemXmlParser<Folder>(Logger).Fetch((Folder)item, path, cancellationToken);
+
+                await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+                try
+                {
+                    new BaseItemXmlParser<Folder>(Logger).Fetch((Folder)item, path, cancellationToken);
+                }
+                finally
+                {
+                    XmlParsingResourcePool.Release();
+                }
+
                 SetLastRefreshed(item, DateTime.UtcNow);
                 return true;
             }
