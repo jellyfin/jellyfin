@@ -48,9 +48,13 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow" /> class.
         /// </summary>
-        /// <param name="jsonSerializer">The json serializer.</param>
-        /// <param name="logger">The logger.</param>
+        /// <param name="logManager">The log manager.</param>
         /// <param name="appHost">The app host.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="jsonSerializer">The json serializer.</param>
+        /// <param name="displayPreferencesManager">The display preferences manager.</param>
         /// <exception cref="System.ArgumentNullException">logger</exception>
         public MainWindow(ILogManager logManager, IApplicationHost appHost, IServerConfigurationManager configurationManager, IUserManager userManager, ILibraryManager libraryManager, IJsonSerializer jsonSerializer, IDisplayPreferencesManager displayPreferencesManager)
         {
@@ -95,6 +99,11 @@ namespace MediaBrowser.ServerApplication
             LoadLogWindow(null, EventArgs.Empty);
             _logManager.LoggerLoaded += LoadLogWindow;
             _configurationManager.ConfigurationUpdated += Instance_ConfigurationUpdated;
+
+            if (_appHost.IsFirstRun)
+            {
+                Dispatcher.InvokeAsync(() => MbTaskbarIcon.ShowBalloonTip("Media Browser", "Welcome to Media Browser Server!", Hardcodet.Wpf.TaskbarNotification.BalloonIcon.None));
+            }
         }
 
         /// <summary>
