@@ -151,9 +151,9 @@
 
 .itemProgress {
     vertical-align: top;
-    font-size: 20px;
-    color: #6FBD45;
-    margin-right: 10px;
+    font-size: 19px;
+    margin-right: 15px;
+    font-weight: bold;
 }
 
 .posterDetailViewItem {
@@ -170,7 +170,6 @@
 
     .posterDetailViewItem .itemProgress {
         font-size: 14px;
-        font-weight: bold;
     }
 
     .posterDetailViewItem .starRating {

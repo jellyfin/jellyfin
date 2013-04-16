@@ -1,63 +1,24 @@
-﻿var ScheduledTasksPage = {
+﻿(function ($, document, window) {
 
-    onPageShow: function () {
-
-        Dashboard.showLoadingMsg();
-
-        ScheduledTasksPage.reloadList(true);
-
-        $(ApiClient).on("websocketmessage", ScheduledTasksPage.onWebSocketMessage).on("websocketopen", ScheduledTasksPage.onWebSocketConnectionChange).on("websocketerror", ScheduledTasksPage.onWebSocketConnectionChange).on("websocketclose", ScheduledTasksPage.onWebSocketConnectionChange);
-    },
-
-    onPageHide: function () {
-        $(ApiClient).off("websocketmessage", ScheduledTasksPage.onWebSocketMessage).off("websocketopen", ScheduledTasksPage.onWebSocketConnectionChange).off("websocketerror", ScheduledTasksPage.onWebSocketConnectionChange).off("websocketclose", ScheduledTasksPage.onWebSocketConnectionChange);
-        ScheduledTasksPage.stopInterval();
-    },
-
-    startInterval: function () {
-
-        if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1500,1500");
-        }
-    },
-
-    stopInterval: function () {
-
-        if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStop");
-        }
-    },
-
-    onWebSocketMessage: function (e, msg) {
-
-        if (msg.MessageType == "ScheduledTasksInfo") {
-            ScheduledTasksPage.populateList(msg.Data);
-        }
-    },
-    
-    onWebSocketConnectionChange: function() {
-        ScheduledTasksPage.reloadList(true);
-    },
-
-    reloadList: function (updateInterval) {
+    function reloadList(page, updateInterval) {
 
         if (updateInterval) {
-            ScheduledTasksPage.stopInterval();
+            stopInterval();
         }
 
         ApiClient.getScheduledTasks().done(function (tasks) {
-            ScheduledTasksPage.populateList(tasks);
+
+            populateList(page, tasks);
             Dashboard.hideLoadingMsg();
 
             if (updateInterval) {
-                ScheduledTasksPage.startInterval();
+                startInterval();
             }
 
         });
-    },
+    }
 
-    populateList: function (tasks) {
-
+    function populateList(page, tasks) {
         tasks = tasks.sort(function (a, b) {
 
             a = a.Category + " " + a.Name;
@@ -73,8 +34,6 @@
 
             return 1;
         });
-
-        var page = $($.mobile.activePage);
 
         var html = "";
 
@@ -98,44 +57,19 @@
 
             html += "<h3>" + task.Name + "</h3>";
 
+            html += "<p id='" + task.Id + "'>" + getTaskProgressHtml(task) + "</p>";
+
             if (task.State == "Idle") {
 
-                if (task.LastExecutionResult) {
-
-                    var text = "Last ran " + humane_date(task.LastExecutionResult.EndTimeUtc) + ', taking ' + humane_elapsed(task.LastExecutionResult.StartTimeUtc, task.LastExecutionResult.EndTimeUtc);
-
-                    if (task.LastExecutionResult.Status == "Failed") {
-                        text += " <span style='color:#FF0000;'>(failed)</span>";
-                    }
-                    else if (task.LastExecutionResult.Status == "Cancelled") {
-                        text += " <span style='color:#0026FF;'>(cancelled)</span>";
-                    }
-                    else if (task.LastExecutionResult.Status == "Aborted") {
-                        text += " <span style='color:#FF0000;'>(Aborted by server shutdown)</span>";
-                    }
-
-                    html += "<p>" + text + "</p>";
-                }
-
-                html += "<a href='#' data-icon='play' onclick='ScheduledTasksPage.startTask(\"" + task.Id + "\");'>Start</a>";
+                html += "<a id='btnTask" + task.Id + "' class='btnStartTask' href='#' data-taskid='" + task.Id + "' data-icon='play'>Start</a>";
             }
             else if (task.State == "Running") {
 
-                var progress = (task.CurrentProgressPercentage || 0).toFixed(1);
-                
-                html += '<p><progress max="100" value="' + progress + '" title="' + progress + '%">';
-                html += '' + progress + '%';
-                html += '</progress>';
-
-                html += "<span style='color:#009F00;margin-left:5px;'>" + progress + "%</span>";
-                html += '</p>';
-
-                html += "<a href='#' data-icon='stop' onclick='ScheduledTasksPage.stopTask(\"" + task.Id + "\");'>Stop</a>";
+                html += "<a id='btnTask" + task.Id + "' class='btnStopTask' href='#' data-taskid='" + task.Id + "' data-icon='stop'>Stop</a>";
 
             } else {
 
-                html += "<p style='color:#FF0000;'>Stopping</p>";
-                html += "<a href='#' data-icon='play' style='visibility:hidden;'>Start</a>";
+                html += "<a id='btnTask" + task.Id + "' class='btnStartTask' href='#' data-taskid='" + task.Id + "' data-icon='play' style='display:none;'>Start</a>";
             }
 
             html += "</a>";
@@ -146,24 +80,136 @@
         html += "</ul>";
 
         $('#divScheduledTasks', page).html(html).trigger('create');
-    },
-
-    startTask: function (id) {
-
-        ApiClient.startScheduledTask(id).done(function (result) {
-
-            ScheduledTasksPage.reloadList();
-        });
-
-    },
-
-    stopTask: function (id) {
-
-        ApiClient.stopScheduledTask(id).done(function (result) {
-
-            ScheduledTasksPage.reloadList();
-        });
     }
-};
 
-$(document).on('pageshow', "#scheduledTasksPage", ScheduledTasksPage.onPageShow).on('pagehide', "#scheduledTasksPage", ScheduledTasksPage.onPageHide);
+    function getTaskProgressHtml(task) {
+        var html = '';
+
+        if (task.State == "Idle") {
+
+            if (task.LastExecutionResult) {
+
+                html += "Last ran " + humane_date(task.LastExecutionResult.EndTimeUtc) + ', taking ' + humane_elapsed(task.LastExecutionResult.StartTimeUtc, task.LastExecutionResult.EndTimeUtc);
+
+                if (task.LastExecutionResult.Status == "Failed") {
+                    html += " <span style='color:#FF0000;'>(failed)</span>";
+                }
+                else if (task.LastExecutionResult.Status == "Cancelled") {
+                    html += " <span style='color:#0026FF;'>(cancelled)</span>";
+                }
+                else if (task.LastExecutionResult.Status == "Aborted") {
+                    html += " <span style='color:#FF0000;'>(Aborted by server shutdown)</span>";
+                }
+            }
+        }
+        else if (task.State == "Running") {
+
+            var progress = (task.CurrentProgressPercentage || 0).toFixed(1);
+
+            html += '<progress max="100" value="' + progress + '" title="' + progress + '%">';
+            html += '' + progress + '%';
+            html += '</progress>';
+
+            html += "<span style='color:#009F00;margin-left:5px;'>" + progress + "%</span>";
+
+        } else {
+
+            html += "<span style='color:#FF0000;'>Stopping</span>";
+        }
+
+        return html;
+    }
+
+    function onWebSocketMessage(e, msg) {
+        if (msg.MessageType == "ScheduledTasksInfo") {
+
+            var tasks = msg.Data;
+
+            var page = $.mobile.activePage;
+
+            for (var i = 0, length = tasks.length; i < length; i++) {
+
+                var task = tasks[i];
+
+                $('#' + task.Id, page).html(getTaskProgressHtml(task));
+
+                var btnTask = $('#btnTask' + task.Id, page);
+                
+                updateTaskButton(btnTask, task.State);
+            }
+        }
+    }
+    
+    function updateTaskButton(btnTask, state) {
+        if (state == "Idle") {
+
+            btnTask.addClass('btnStartTask').removeClass('btnStopTask').show().data('icon', 'play').buttonMarkup("refresh");
+        }
+        else if (state == "Running") {
+
+            btnTask.addClass('btnStopTask').removeClass('btnStartTask').show().data('icon', 'stop').buttonMarkup("refresh");
+
+        } else {
+
+            btnTask.addClass('btnStartTask').removeClass('btnStopTask').hide().data('icon', 'play').buttonMarkup("refresh");
+        }
+    }
+
+    function onWebSocketConnectionChange() {
+        reloadList($.mobile.activePage, true);
+    }
+
+    function startInterval() {
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1500,1500");
+        }
+    }
+
+    function stopInterval() {
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStop");
+        }
+    }
+
+    $(document).on('pageshow', "#scheduledTasksPage", function () {
+
+        var page = this;
+
+        Dashboard.showLoadingMsg();
+
+        reloadList(page, true);
+
+        $(ApiClient).on("websocketmessage", onWebSocketMessage).on("websocketopen", onWebSocketConnectionChange).on("websocketerror", onWebSocketConnectionChange).on("websocketclose", onWebSocketConnectionChange);
+
+        $('#divScheduledTasks', page).on('click', '.btnStartTask', function () {
+
+            var button = this;
+            var id = button.getAttribute('data-taskid');
+            ApiClient.startScheduledTask(id).done(function () {
+
+                updateTaskButton($(button), "Running");
+                reloadList(page);
+            });
+
+        }).on('click', '.btnStopTask', function () {
+
+            var button = this;
+            var id = button.getAttribute('data-taskid');
+            ApiClient.stopScheduledTask(id).done(function () {
+
+                updateTaskButton($(button), "");
+                reloadList(page);
+            });
+        });
+
+    }).on('pagehide', "#scheduledTasksPage", function () {
+
+        var page = this;
+
+        $(ApiClient).off("websocketmessage", onWebSocketMessage).off("websocketopen", onWebSocketConnectionChange).off("websocketerror", onWebSocketConnectionChange).off("websocketclose", onWebSocketConnectionChange);
+        stopInterval();
+
+        $('#divScheduledTasks', page).off('click', '.btnStartTask').off('click', '.btnStopTask');
+    });
+
+})(jQuery, document, window);
