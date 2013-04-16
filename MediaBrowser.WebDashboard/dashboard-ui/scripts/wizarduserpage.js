@@ -1,6 +1,46 @@
-﻿var WizardUserPage = {
+﻿(function ($, document, window) {
 
-    onPageShow: function () {
+    function onSaveComplete() {
+        Dashboard.hideLoadingMsg();
+
+        Dashboard.navigate('wizardlibrary.html');
+    }
+
+    function wizardUserPage() {
+
+        var self = this;
+
+        self.onSubmit = function () {
+            Dashboard.showLoadingMsg();
+
+            var page = $.mobile.activePage;
+
+            ApiClient.getUsers().done(function (users) {
+
+                var user;
+
+                if (users.length) {
+
+                    user = users[0];
+
+                    user.Name = $('#txtUsername', page).val();
+
+                    ApiClient.updateUser(user).done(onSaveComplete);
+
+                } else {
+
+                    user = { Name: $('#txtUsername', page).val() };
+
+                    ApiClient.createUser(user).done(onSaveComplete);
+                }
+
+            });
+
+            return false;
+        };
+    }
+
+    $(document).on('pageshow', "#wizardUserPage", function () {
 
         Dashboard.showLoadingMsg();
 
@@ -15,45 +55,8 @@
             Dashboard.hideLoadingMsg();
         });
 
-    },
-    
-    onSubmit: function() {        
+    });
 
-        Dashboard.showLoadingMsg();
+    window.WizardUserPage = new wizardUserPage();
 
-        var page = $.mobile.activePage;
-
-        ApiClient.getUsers().done(function (users) {
-
-            var user;
-            
-            if (users.length) {
-                
-                user = users[0];
-
-                user.Name = $('#txtUsername', page).val();
-
-                ApiClient.updateUser(user).done(WizardUserPage.saveComplete);
-                
-            } else {
-
-                user = { Name: $('#txtUsername', page).val() };
-                
-                ApiClient.createUser(user).done(WizardUserPage.saveComplete);
-            }
-
-        });
-
-        return false;
-    },
-    
-    saveComplete: function () {
-        
-        Dashboard.hideLoadingMsg();
-
-        Dashboard.navigate('wizardlibrary.html');
-    }
-
-};
-
-$(document).on('pageshow', "#wizardUserPage", WizardUserPage.onPageShow);
+})(jQuery, document, window);
