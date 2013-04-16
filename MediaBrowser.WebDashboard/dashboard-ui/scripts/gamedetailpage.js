@@ -88,40 +88,7 @@
 		var imageTags = item.ImageTags || {};
 		var html = '';
 
-		if (imageTags.Logo) {
-
-			html += LibraryBrowser.createGalleryImage(item.Id, "Logo", item.ImageTags.Logo);
-		}
-		if (imageTags.Thumb) {
-
-			html += LibraryBrowser.createGalleryImage(item.Id, "Thumb", item.ImageTags.Thumb);
-		}
-		if (imageTags.Art) {
-
-			html += LibraryBrowser.createGalleryImage(item.Id, "Art", item.ImageTags.Art);
-
-		}
-		if (imageTags.Menu) {
-
-			html += LibraryBrowser.createGalleryImage(item.Id, "Menu", item.ImageTags.Menu);
-
-		}
-		if (imageTags.Disc) {
-
-			html += LibraryBrowser.createGalleryImage(item.Id, "Disc", item.ImageTags.Disc);
-		}
-		if (imageTags.Box) {
-
-			html += LibraryBrowser.createGalleryImage(item.Id, "Box", item.ImageTags.Box);
-		}
-
-		if (item.BackdropImageTags) {
-
-			for (var i = 0, length = item.BackdropImageTags.length; i < length; i++) {
-				html += LibraryBrowser.createGalleryImage(item.Id, "Backdrop", item.BackdropImageTags[0], i);
-			}
-
-		}
+		html += LibraryBrowser.renderGallery(imageTags);
 
 		$('#galleryContent', page).html(html).trigger('create');
 	}
