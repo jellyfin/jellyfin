@@ -66,7 +66,7 @@
 
 @media all and (min-width: 650px) {
     .libraryPage .ui-content {
-        padding: 10px 15px 100px;
+        padding: 10px 20px 100px;
     }
 }
 
@@ -107,7 +107,7 @@
 }
 
 .detailPageName {
-    margin: 0 0 5px;
+    margin: 0 0 .4em;
 }
 
 .itemMiscInfo {
@@ -234,6 +234,10 @@
 
 .posterDetailViewItem .userDataIcons {
     display: none;
+}
+
+.detailPagePrimaryInfo {
+    margin-bottom: 1.5em;
 }
 
 @media all and (min-width: 650px) {

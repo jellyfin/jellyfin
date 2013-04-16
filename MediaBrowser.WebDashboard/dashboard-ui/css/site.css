@@ -725,7 +725,7 @@ progress {
         display: inline-block;
         width: 45%;
         padding-left: 20px;
-        max-width: 1000px;
+        max-width: 1300px;
     }
 
     .galleryImage {
@@ -741,10 +741,6 @@ progress {
 
     .itemDetailBlock {
         width: 55%;
-    }
-
-    .itemDetailBlock {
-        padding-left: 30px;
     }
 }
 

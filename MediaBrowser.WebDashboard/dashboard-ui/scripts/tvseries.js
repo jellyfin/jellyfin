@@ -93,10 +93,9 @@
 
 	function renderGallery(page, item) {
 
-		var imageTags = item.ImageTags || {};
-		var html = '';
+	    var html = '';
 
-		html += LibraryBrowser.renderGallery(imageTags);
+	    html += LibraryBrowser.getGalleryHtml(item);
 
 		$('#galleryContent', page).html(html).trigger('create');
 	}

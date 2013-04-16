@@ -161,10 +161,7 @@
 
     function renderGallery(page, item) {
 
-        var imageTags = item.ImageTags || {};
-        var html = '';
-
-	    html += LibraryBrowser.renderGallery(imageTags);
+        var html = LibraryBrowser.getGalleryHtml(item);
 
         $('#galleryContent', page).html(html).trigger('create');
     }
