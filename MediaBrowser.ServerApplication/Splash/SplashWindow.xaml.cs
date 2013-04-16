@@ -19,9 +19,10 @@ namespace MediaBrowser.ServerApplication.Splash
     /// </summary>
     public partial class SplashWindow : Window
     {
-        public SplashWindow()
+        public SplashWindow(Version version)
         {
             InitializeComponent();
+            lblStatus.Text = string.Format("Loading Media Browser Server\nVersion {0}...", version);
         }
     }
 }

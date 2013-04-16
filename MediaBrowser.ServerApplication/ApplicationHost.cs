@@ -176,7 +176,7 @@ namespace MediaBrowser.ServerApplication
         /// <returns>Task.</returns>
         public override async Task Init()
         {
-            var win = new SplashWindow();
+            var win = new SplashWindow(ApplicationVersion);
 
             win.Show();
 
