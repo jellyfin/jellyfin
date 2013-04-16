@@ -42,6 +42,7 @@ using MediaBrowser.Server.Implementations.Udp;
 using MediaBrowser.Server.Implementations.Updates;
 using MediaBrowser.Server.Implementations.WebSocket;
 using MediaBrowser.ServerApplication.Implementations;
+using MediaBrowser.ServerApplication.Splash;
 using MediaBrowser.WebDashboard.Api;
 using System;
 using System.Collections.Generic;
@@ -168,6 +169,21 @@ namespace MediaBrowser.ServerApplication
         }
 
         private Task<IHttpServer> _httpServerCreationTask;
+
+        /// <summary>
+        /// Inits this instance.
+        /// </summary>
+        /// <returns>Task.</returns>
+        public override async Task Init()
+        {
+            var win = new SplashWindow();
+
+            win.Show();
+
+            await base.Init();
+
+            win.Hide();
+        }
 
         /// <summary>
         /// Runs the startup tasks.

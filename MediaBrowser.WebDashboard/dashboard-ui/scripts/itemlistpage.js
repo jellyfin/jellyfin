@@ -65,12 +65,10 @@
     $(document).on('pageinit', "#itemListPage", function () {
 
 
-    }).on('pagebeforeshow', "#itemListPage", function () {
+    }).on('pageshow', "#itemListPage", function () {
 
         query.ParentId = getParameterByName('parentId');
         reloadItems(this);
-
-    }).on('pageshow', "#itemListPage", function () {
 
     });
 
