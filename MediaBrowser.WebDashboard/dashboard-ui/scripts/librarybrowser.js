@@ -580,7 +580,7 @@
                 itemId = item.Name;
             }
 
-            if (item.MediaType) {
+            if (item.MediaType || item.IsFolder) {
                 if (userData.Played) {
                     html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayed" src="css/images/userdata/played.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);return false;" />';
                 } else {
