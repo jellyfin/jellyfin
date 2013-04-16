@@ -130,10 +130,6 @@
 
                 html += '<p class="userDataIcons">' + LibraryBrowser.getUserDataIconsHtml(item) + '</p>';
 
-                if (item.PlayedPercentage || (item.UserData && item.UserData.PlaybackPositionTicks)) {
-                    html += '<p>' + LibraryBrowser.getProgressBarHtml(item) + '</p>';
-                }
-
                 html += '</div>';
 
                 html += LibraryBrowser.getNewIndicatorHtml(item);
@@ -366,27 +362,6 @@
             return '';
         },
 
-        getProgressBarHtml: function (item) {
-
-            var html = '';
-
-            var tooltip;
-
-            if (item.PlayedPercentage) {
-
-                tooltip = parseInt(item.PlayedPercentage) + '% watched';
-                html += '<progress class="itemProgress" min="0" max="100" value="' + item.PlayedPercentage + '" title="' + tooltip + '"></progress>';
-            }
-            else if (item.UserData && item.UserData.PlaybackPositionTicks && item.RunTimeTicks) {
-
-                tooltip = DashboardPage.getDisplayText(item.UserData.PlaybackPositionTicks) + " / " + DashboardPage.getDisplayText(item.RunTimeTicks);
-
-                html += '<progress class="itemProgress" min="0" max="100" value="' + (item.UserData.PlaybackPositionTicks / item.RunTimeTicks) + '" title="' + tooltip + '"></progress>';
-            }
-
-            return html;
-        },
-
         getAveragePrimaryImageAspectRatio: function (items) {
 
             var values = [];
@@ -567,6 +542,28 @@
         getUserDataIconsHtml: function (item) {
 
             var html = '';
+
+            var tooltip;
+            var pct;
+
+            if (item.PlayedPercentage) {
+
+                tooltip = '';
+                pct = item.PlayedPercentage;
+            }
+            else if (item.UserData && item.UserData.PlaybackPositionTicks && item.RunTimeTicks) {
+
+                tooltip = DashboardPage.getDisplayText(item.UserData.PlaybackPositionTicks) + " / " + DashboardPage.getDisplayText(item.RunTimeTicks);
+
+                pct = (item.UserData.PlaybackPositionTicks / item.RunTimeTicks) * 100;
+            }
+
+            if (pct) {
+
+                pct = parseInt(pct);
+
+                html += '<span title="' + tooltip + '" class="itemProgress">' + pct + '%</span>';
+            }
 
             var userData = item.UserData || {};
 
@@ -980,9 +977,9 @@
         },
 
         getGalleryHtml: function (item) {
-            
-		    var html = '';
-		    var i, length;
+
+            var html = '';
+            var i, length;
 
             var imageTags = item.ImageTags || {};
 
@@ -994,110 +991,110 @@
             if (imageTags.Logo) {
 
                 html += LibraryBrowser.createGalleryImage(item.Id, "Logo", imageTags.Logo);
-		    }
-		    if (imageTags.Thumb) {
+            }
+            if (imageTags.Thumb) {
 
-		        html += LibraryBrowser.createGalleryImage(item.Id, "Thumb", imageTags.Thumb);
-		    }
-		    if (imageTags.Art) {
+                html += LibraryBrowser.createGalleryImage(item.Id, "Thumb", imageTags.Thumb);
+            }
+            if (imageTags.Art) {
 
-		        html += LibraryBrowser.createGalleryImage(item.Id, "Art", imageTags.Art);
+                html += LibraryBrowser.createGalleryImage(item.Id, "Art", imageTags.Art);
 
-		    }
-		    if (imageTags.Menu) {
+            }
+            if (imageTags.Menu) {
 
-		        html += LibraryBrowser.createGalleryImage(item.Id, "Menu", imageTags.Menu);
+                html += LibraryBrowser.createGalleryImage(item.Id, "Menu", imageTags.Menu);
 
-		    }
-		    if (imageTags.Disc) {
+            }
+            if (imageTags.Disc) {
 
-		        html += LibraryBrowser.createGalleryImage(item.Id, "Disc", imageTags.Disc);
-		    }
-		    if (imageTags.Box) {
+                html += LibraryBrowser.createGalleryImage(item.Id, "Disc", imageTags.Disc);
+            }
+            if (imageTags.Box) {
 
-		        html += LibraryBrowser.createGalleryImage(item.Id, "Box", imageTags.Box);
-		    }
+                html += LibraryBrowser.createGalleryImage(item.Id, "Box", imageTags.Box);
+            }
 
-		    if (item.BackdropImageTags) {
+            if (item.BackdropImageTags) {
 
-			    for (i = 0, length = item.BackdropImageTags.length; i < length; i++) {
-				    html += LibraryBrowser.createGalleryImage(item.Id, "Backdrop", item.BackdropImageTags[0], i);
-			    }
+                for (i = 0, length = item.BackdropImageTags.length; i < length; i++) {
+                    html += LibraryBrowser.createGalleryImage(item.Id, "Backdrop", item.BackdropImageTags[0], i);
+                }
 
-		    }
+            }
 
-		    if (item.ScreenshotImageTags) {
+            if (item.ScreenshotImageTags) {
 
-			    for (i = 0, length = item.ScreenshotImageTags.length; i < length; i++) {
-				    html += LibraryBrowser.createGalleryImage(item.Id, "Screenshot", item.ScreenshotImageTags[0], i);
-			    }
-		    }
+                for (i = 0, length = item.ScreenshotImageTags.length; i < length; i++) {
+                    html += LibraryBrowser.createGalleryImage(item.Id, "Screenshot", item.ScreenshotImageTags[0], i);
+                }
+            }
 
-		    return html;
-	    },
+            return html;
+        },
 
         createGalleryImage: function (itemId, type, tag, index) {
 
-			var downloadWidth = 400;
-			var lightboxWidth = 800;
-			var html = '';
+            var downloadWidth = 400;
+            var lightboxWidth = 800;
+            var html = '';
 
-			if (typeof (index) == "undefined") index = 0;
+            if (typeof (index) == "undefined") index = 0;
 
-			html += '<div class="posterViewItem" style="padding-bottom:0px;">';
-			html += '<a href="#pop_' + index + '_' + tag + '" data-transition="fade" data-rel="popup" data-position-to="window">';
-			html += '<img class="galleryImage" src="' + ApiClient.getImageUrl(itemId, {
-				type: type,
-				maxwidth: downloadWidth,
-				tag: tag,
-				index: index
-			}) + '" />';
-			html += '</div>';
+            html += '<div class="posterViewItem" style="padding-bottom:0px;">';
+            html += '<a href="#pop_' + index + '_' + tag + '" data-transition="fade" data-rel="popup" data-position-to="window">';
+            html += '<img class="galleryImage" src="' + ApiClient.getImageUrl(itemId, {
+                type: type,
+                maxwidth: downloadWidth,
+                tag: tag,
+                index: index
+            }) + '" />';
+            html += '</div>';
 
-			html += '<div class="galleryPopup" id="pop_' + index + '_' + tag + '" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
-			html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
-			html += '<img class="" src="' + ApiClient.getImageUrl(itemId, {
-				type: type,
-				maxwidth: lightboxWidth,
-				tag: tag,
-				index: index
-			}) + '" />';
-			html += '</div>';
+            html += '<div class="galleryPopup" id="pop_' + index + '_' + tag + '" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
+            html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
+            html += '<img class="" src="' + ApiClient.getImageUrl(itemId, {
+                type: type,
+                maxwidth: lightboxWidth,
+                tag: tag,
+                index: index
+            }) + '" />';
+            html += '</div>';
 
-			return html;
-		},
+            return html;
+        },
 
-	    createCastImage: function (cast) {
+        createCastImage: function (cast) {
 
-			var html = '';
+            var html = '';
 
-			var role = cast.Role || cast.Type;
+            var role = cast.Role || cast.Type;
 
-			html += '<a href="itembynamedetails.html?person=' + cast.Name + '">';
-			html += '<div class="posterViewItem posterViewItemWithDualText">';
+            html += '<a href="itembynamedetails.html?person=' + cast.Name + '">';
+            html += '<div class="posterViewItem posterViewItemWithDualText">';
 
-			if (cast.PrimaryImageTag) {
+            if (cast.PrimaryImageTag) {
 
-				var imgUrl = ApiClient.getPersonImageUrl(cast.Name, {
-					width: 185,
-					tag: cast.PrimaryImageTag,
-					type: "primary"
-				});
+                var imgUrl = ApiClient.getPersonImageUrl(cast.Name, {
+                    width: 185,
+                    tag: cast.PrimaryImageTag,
+                    type: "primary"
+                });
 
-				html += '<img src="' + imgUrl + '" />';
-			} else {
-				var style = "background-color:" + LibraryBrowser.getMetroColor(cast.Name) + ";";
+                html += '<img src="' + imgUrl + '" />';
+            } else {
+                var style = "background-color:" + LibraryBrowser.getMetroColor(cast.Name) + ";";
 
-				html += '<img src="css/images/items/list/person.png" style="max-width:185px; ' + style + '"/>';
-			}
+                html += '<img src="css/images/items/list/person.png" style="max-width:185px; ' + style + '"/>';
+            }
 
-			html += '<div class="posterViewItemText posterViewItemPrimaryText">' + cast.Name + '</div>';
-			html += '<div class="posterViewItemText">' + role + '</div>';
+            html += '<div class="posterViewItemText posterViewItemPrimaryText">' + cast.Name + '</div>';
+            html += '<div class="posterViewItemText">' + role + '</div>';
 
-			html += '</div></a>';
+            html += '</div></a>';
 
-		    return html;
-		}
+            return html;
+        }
 
     };
 

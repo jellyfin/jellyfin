@@ -149,45 +149,12 @@
     color: #fff;
 }
 
-/* Firefox and Polyfill */
 .itemProgress {
-    border: solid #222222 1px;
-    background: #444444 !important; /* !important only needed in polyfill */
-    border-radius: 0!important;
-    height: 14px;
-    opacity: .7;
+    vertical-align: top;
+    font-size: 20px;
+    color: #6FBD45;
+    margin-right: 10px;
 }
-
-    /* Chrome */
-    .itemProgress::-webkit-progress-bar {
-        background: #444444;
-        border-radius: 0!important;
-    }
-
-    /*
- * Background of the progress bar value
- */
-
-    /* Firefox */
-    .itemProgress::-moz-progress-bar {
-        border-radius: 0!important;
-        background-image: -moz-linear-gradient( center bottom, rgb(43,194,83) 37%, rgb(84,240,84) 69% );
-    }
-
-    /* Chrome */
-    .itemProgress::-webkit-progress-value {
-        border-radius: 0!important;
-        background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0, rgb(43,194,83)), color-stop(1, rgb(84,240,84)) );
-        background-image: -webkit-linear-gradient( center bottom, rgb(43,194,83) 37%, rgb(84,240,84) 69% );
-    }
-
-    /* Polyfill */
-    .itemProgress[aria-valuenow]:before {
-        border-radius: 0!important;
-        background-image: -moz-linear-gradient( center bottom, rgb(43,194,83) 37%, rgb(84,240,84) 69% );
-        background-image: -ms-linear-gradient( center bottom, rgb(43,194,83) 37%, rgb(84,240,84) 69% );
-        background-image: -o-linear-gradient( center bottom, rgb(43,194,83) 37%, rgb(84,240,84) 69% );
-    }
 
 .posterDetailViewItem {
     background: #333;
@@ -200,6 +167,12 @@
     position: relative;
 }
 
+
+    .posterDetailViewItem .itemProgress {
+        font-size: 14px;
+        font-weight: bold;
+    }
+
     .posterDetailViewItem .starRating {
         width: 15px;
         height: 13px;
@@ -211,7 +184,7 @@
 }
 
 .posterDetailViewItem p {
-    margin: .75em 0;
+    margin: .35em 0;
 }
 
 .posterDetailViewItem .imgUserItemRating {
@@ -232,8 +205,9 @@
     font-weight: bold;
 }
 
-.posterDetailViewItem .userDataIcons {
-    display: none;
+.posterDetailViewItem .userDataIcons img {
+    height: 14px;
+    width: 14px;
 }
 
 .detailPagePrimaryInfo {
@@ -258,8 +232,17 @@
         max-height: 140px;
     }
 
-    .posterDetailViewItem .userDataIcons {
-        display: block;
+    .posterDetailViewItem .userDataIcons img {
+        height: 18px;
+        width: 18px;
+    }
+
+    .posterDetailViewItem p {
+        margin: .75em 0;
+    }
+
+    .posterDetailViewItem .itemProgress {
+        font-size: 17px;
     }
 }
 
