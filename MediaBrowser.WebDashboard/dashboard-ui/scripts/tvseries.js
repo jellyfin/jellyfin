@@ -93,51 +93,7 @@
 
 	function renderGallery(page, item) {
 
-		var imageTags = item.ImageTags || {};
-		var html = '';
-		var i, length;
-
-		if (imageTags.Logo) {
-
-			html += LibraryBrowser.createGalleryImage(item.Id, "Logo", item.ImageTags.Logo);
-		}
-		if (imageTags.Thumb) {
-
-			html += LibraryBrowser.createGalleryImage(item.Id, "Thumb", item.ImageTags.Thumb);
-		}
-		if (imageTags.Art) {
-
-			html += LibraryBrowser.createGalleryImage(item.Id, "Art", item.ImageTags.Art);
-
-		}
-		if (imageTags.Menu) {
-
-			html += LibraryBrowser.createGalleryImage(item.Id, "Menu", item.ImageTags.Menu);
-
-		}
-		if (imageTags.Disc) {
-
-			html += LibraryBrowser.createGalleryImage(item.Id, "Disc", item.ImageTags.Disc);
-		}
-		if (imageTags.Box) {
-
-			html += LibraryBrowser.createGalleryImage(item.Id, "Box", item.ImageTags.Box);
-		}
-
-		if (item.BackdropImageTags) {
-
-			for (i = 0, length = item.BackdropImageTags.length; i < length; i++) {
-				html += LibraryBrowser.createGalleryImage(item.Id, "Backdrop", item.BackdropImageTags[0], i);
-			}
-
-		}
-
-		if (item.ScreenshotImageTags) {
-
-			for (i = 0, length = item.ScreenshotImageTags.length; i < length; i++) {
-				html += LibraryBrowser.createGalleryImage(item.Id, "Screenshot", item.ScreenshotImageTags[0], i);
-			}
-		}
+	    var html = LibraryBrowser.getGalleryHtml(item);
 
 		$('#galleryContent', page).html(html).trigger('create');
 	}
