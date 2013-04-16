@@ -1,0 +1,8 @@
+﻿<Window x:Class="MediaBrowser.ServerApplication.Splash.SplashWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Height="300" Width="400" WindowStartupLocation="CenterScreen" Title="Media Browser Server" ShowInTaskbar="True" WindowStyle="None" BorderThickness="1" BorderBrush="#cccccc" AllowsTransparency="True">
+    <Grid>
+        <TextBlock>Loading</TextBlock>
+    </Grid>
+</Window>
