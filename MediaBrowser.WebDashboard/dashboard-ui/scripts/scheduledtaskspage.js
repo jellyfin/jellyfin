@@ -135,19 +135,23 @@
 
                 var btnTask = $('#btnTask' + task.Id, page);
                 
-                if (task.State == "Idle") {
-
-                    btnTask.addClass('btnStartTask').removeClass('btnStopTask').show().data('icon', 'play').buttonMarkup("refresh");
-                }
-                else if (task.State == "Running") {
-
-                    btnTask.addClass('btnStopTask').removeClass('btnStartTask').show().data('icon', 'stop').buttonMarkup("refresh");
-
-                } else {
-
-                    btnTask.addClass('btnStartTask').removeClass('btnStopTask').hide().data('icon', 'play').buttonMarkup("refresh");
-                }
+                updateTaskButton(btnTask, task.State);
             }
+        }
+    }
+    
+    function updateTaskButton(btnTask, state) {
+        if (state == "Idle") {
+
+            btnTask.addClass('btnStartTask').removeClass('btnStopTask').show().data('icon', 'play').buttonMarkup("refresh");
+        }
+        else if (state == "Running") {
+
+            btnTask.addClass('btnStopTask').removeClass('btnStartTask').show().data('icon', 'stop').buttonMarkup("refresh");
+
+        } else {
+
+            btnTask.addClass('btnStartTask').removeClass('btnStopTask').hide().data('icon', 'play').buttonMarkup("refresh");
         }
     }
 
@@ -179,17 +183,21 @@
 
         $('#divScheduledTasks', page).on('click', '.btnStartTask', function () {
 
-            var id = this.getAttribute('data-taskid');
+            var button = this;
+            var id = button.getAttribute('data-taskid');
             ApiClient.startScheduledTask(id).done(function () {
 
+                updateTaskButton($(button), "Running");
                 reloadList(page);
             });
 
         }).on('click', '.btnStopTask', function () {
 
-            var id = this.getAttribute('data-taskid');
+            var button = this;
+            var id = button.getAttribute('data-taskid');
             ApiClient.stopScheduledTask(id).done(function () {
 
+                updateTaskButton($(button), "");
                 reloadList(page);
             });
         });
