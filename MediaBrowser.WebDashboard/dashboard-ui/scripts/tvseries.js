@@ -93,9 +93,7 @@
 
 	function renderGallery(page, item) {
 
-	    var html = '';
-
-	    html += LibraryBrowser.getGalleryHtml(item);
+	    var html = LibraryBrowser.getGalleryHtml(item);
 
 		$('#galleryContent', page).html(html).trigger('create');
 	}

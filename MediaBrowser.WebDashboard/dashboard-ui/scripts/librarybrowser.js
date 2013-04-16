@@ -986,6 +986,11 @@
 
             var imageTags = item.ImageTags || {};
 
+            if (imageTags.Banner) {
+
+                html += LibraryBrowser.createGalleryImage(item.Id, "Banner", imageTags.Banner);
+            }
+
             if (imageTags.Logo) {
 
                 html += LibraryBrowser.createGalleryImage(item.Id, "Logo", imageTags.Logo);
@@ -1031,7 +1036,7 @@
 		    return html;
 	    },
 
-	    createGalleryImage: function (itemId, type, tag, index) {
+        createGalleryImage: function (itemId, type, tag, index) {
 
 			var downloadWidth = 400;
 			var lightboxWidth = 800;
