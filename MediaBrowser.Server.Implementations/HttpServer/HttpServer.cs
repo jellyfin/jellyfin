@@ -284,56 +284,45 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             RaiseReceiveWebRequest(context);
 
-            try
+            await Task.Run(() =>
             {
-                ProcessRequest(context);
-            }
-            catch (InvalidOperationException ex)
-            {
-                HandleException(context.Response, ex, 422);
-
-                throw;
-            }
-            catch (ResourceNotFoundException ex)
-            {
-                HandleException(context.Response, ex, 404);
-
-                throw;
-            }
-            catch (FileNotFoundException ex)
-            {
-                HandleException(context.Response, ex, 404);
-
-                throw;
-            }
-            catch (DirectoryNotFoundException ex)
-            {
-                HandleException(context.Response, ex, 404);
-
-                throw;
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                HandleException(context.Response, ex, 401);
-
-                throw;
-            }
-            catch (ArgumentException ex)
-            {
-                HandleException(context.Response, ex, 400);
-
-                throw;
-            }
-            catch (Exception ex)
-            {
-                HandleException(context.Response, ex, 500);
-
-                throw;
-            }
-            finally
-            {
-                context.Response.Close();
-            }
+                try
+                {
+                    ProcessRequest(context);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    HandleException(context.Response, ex, 422);
+                }
+                catch (ResourceNotFoundException ex)
+                {
+                    HandleException(context.Response, ex, 404);
+                }
+                catch (FileNotFoundException ex)
+                {
+                    HandleException(context.Response, ex, 404);
+                }
+                catch (DirectoryNotFoundException ex)
+                {
+                    HandleException(context.Response, ex, 404);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    HandleException(context.Response, ex, 401);
+                }
+                catch (ArgumentException ex)
+                {
+                    HandleException(context.Response, ex, 400);
+                }
+                catch (Exception ex)
+                {
+                    HandleException(context.Response, ex, 500);
+                }
+                finally
+                {
+                    context.Response.Close();
+                }
+            }).ConfigureAwait(false);
         }
 
         /// <summary>
