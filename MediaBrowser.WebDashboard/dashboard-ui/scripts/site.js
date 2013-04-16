@@ -52,6 +52,8 @@ var Dashboard = {
             Dashboard.getCurrentUser();
         }
 
+        page = page || $.mobile.activePage;
+
         var header = $('.header', page);
 
         if (header.length) {
