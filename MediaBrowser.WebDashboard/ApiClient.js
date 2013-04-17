@@ -1829,6 +1829,72 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         };
 
         /**
+            Gets a variety of item counts that a person appears in
+        */
+        self.getPersonItemCounts = function (userId, name) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            if (!name) {
+                throw new Error("null name");
+            }
+
+            var url = self.getUrl("Users/{UserId}/Persons/" + encodeName(name) + "/Counts");
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        /**
+            Gets a variety of item counts that a genre appears in
+        */
+        self.getGenreItemCounts = function (userId, name) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            if (!name) {
+                throw new Error("null name");
+            }
+
+            var url = self.getUrl("Users/{UserId}/Genres/" + encodeName(name) + "/Counts");
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        /**
+            Gets a variety of item counts that a studio appears in
+        */
+        self.getStudiosItemCounts = function (userId, name) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            if (!name) {
+                throw new Error("null name");
+            }
+
+            var url = self.getUrl("Users/{UserId}/Studios/" + encodeName(name) + "/Counts");
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        /**
          * Clears a user's personal rating for an item
          * @param {String} userId
          * @param {String} itemId
