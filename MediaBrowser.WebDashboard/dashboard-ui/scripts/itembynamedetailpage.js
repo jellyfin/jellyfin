@@ -64,31 +64,31 @@
 
         $.getJSON(url).done(function (result) {
 
-            var html = '<fieldset data-role="controlgroup" data-type="horizontal">';
+            var html = '<fieldset data-role="controlgroup" data-type="horizontal" class="libraryTabs">';
 
             html += '<legend></legend>';
 
             if (result.MovieCount) {
 
-                html += '<input type="radio" name="ibnItems" id="radioMovies" value="on">';
+                html += '<input type="radio" name="ibnItems" id="radioMovies" value="on" data-mini="true">';
                 html += '<label for="radioMovies">Movies (' + result.MovieCount + ')</label>';
             }
 
             if (result.SeriesCount) {
 
-                html += '<input type="radio" name="ibnItems" id="radioShows" value="on">';
+                html += '<input type="radio" name="ibnItems" id="radioShows" value="on" data-mini="true">';
                 html += '<label for="radioShows">TV Shows (' + result.SeriesCount + ')</label>';
             }
             
             if (result.EpisodeGuestStarCount) {
 
-                html += '<input type="radio" name="ibnItems" id="radioGuestStar" value="on">';
+                html += '<input type="radio" name="ibnItems" id="radioGuestStar" value="on" data-mini="true">';
                 html += '<label for="radioGuestStar">Guest Starred (' + result.EpisodeGuestStarCount + ')</label>';
             }
 
             if (result.GameCount) {
 
-                html += '<input type="radio" name="ibnItems" id="radioGames" value="on">';
+                html += '<input type="radio" name="ibnItems" id="radioGames" value="on" data-mini="true">';
                 html += '<label for="radioGames">Games (' + result.SeriesCount + ')</label>';
             }
 

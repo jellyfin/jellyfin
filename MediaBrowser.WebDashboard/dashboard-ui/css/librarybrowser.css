@@ -221,6 +221,14 @@
     .detailPagePrimaryInfo {
         padding: 0 10px;
     }
+
+    .libraryTabs .ui-btn-text {
+        font-size: 16px;
+    }
+
+    .libraryTabs .ui-btn-inner {
+        padding: 1em 20px!important;
+    }
 }
 
 @media all and (min-width: 850px) {
