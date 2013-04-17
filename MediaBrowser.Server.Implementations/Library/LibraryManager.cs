@@ -832,7 +832,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 .Select(dir => new VirtualFolderInfo
                 {
                     Name = Path.GetFileName(dir),
-                    Locations = Directory.EnumerateFiles(dir, "*.lnk", SearchOption.TopDirectoryOnly).Select(FileSystem.ResolveShortcut).ToList()
+                    Locations = Directory.EnumerateFiles(dir, "*.lnk", SearchOption.TopDirectoryOnly).Select(FileSystem.ResolveShortcut).OrderBy(i => i).ToList()
                 });
         }
 

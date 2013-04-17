@@ -173,7 +173,7 @@ namespace MediaBrowser.Api.Library
         {
             if (string.IsNullOrEmpty(request.UserId))
             {
-                var result = _libraryManager.GetDefaultVirtualFolders().ToList();
+                var result = _libraryManager.GetDefaultVirtualFolders().OrderBy(i => i.Name).ToList();
 
                 return ToOptimizedResult(result);
             }
@@ -181,7 +181,7 @@ namespace MediaBrowser.Api.Library
             {
                 var user = _userManager.GetUserById(new Guid(request.UserId));
 
-                var result = _libraryManager.GetVirtualFolders(user).ToList();
+                var result = _libraryManager.GetVirtualFolders(user).OrderBy(i => i.Name).ToList();
 
                 return ToOptimizedResult(result);
             }
