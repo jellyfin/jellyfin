@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -39,12 +40,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
+        [ApiMember(Name = "Name", Description = "The person name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Name { get; set; }
     }
 
@@ -91,11 +94,17 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 TotalCount = items.Count,
 
+                TrailerCount = items.OfType<Trailer>().Count(),
+
                 MovieCount = items.OfType<Movie>().Count(),
 
                 SeriesCount = items.OfType<Series>().Count(),
 
                 GameCount = items.OfType<BaseGame>().Count(),
+
+                SongCount = items.OfType<AudioCodecs>().Count(),
+
+                AlbumCount = items.OfType<MusicAlbum>().Count(),
 
                 EpisodeGuestStarCount = items.OfType<Episode>().Count(i => i.People.Any(p => string.Equals(p.Name, request.Name, StringComparison.OrdinalIgnoreCase) && string.Equals(p.Type, PersonType.GuestStar)))
             };

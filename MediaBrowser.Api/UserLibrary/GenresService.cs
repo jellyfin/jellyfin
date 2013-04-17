@@ -1,6 +1,11 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
@@ -18,6 +23,28 @@ namespace MediaBrowser.Api.UserLibrary
     public class GetGenres : GetItemsByName
     {
     }
+
+    /// <summary>
+    /// Class GetGenreItemCounts
+    /// </summary>
+    [Route("/Users/{UserId}/Genres/{Name}/Counts", "GET")]
+    [Api(Description = "Gets item counts of library items that a genre appears in")]
+    public class GetGenreItemCounts : IReturn<ItemByNameCounts>
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public Guid UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        [ApiMember(Name = "Name", Description = "The genre name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Name { get; set; }
+    }
     
     /// <summary>
     /// Class GenresService
@@ -29,6 +56,37 @@ namespace MediaBrowser.Api.UserLibrary
         {
         }
 
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
+        public object Get(GetGenreItemCounts request)
+        {
+            var user = UserManager.GetUserById(request.UserId);
+
+            var items = user.RootFolder.GetRecursiveChildren(user).Where(i => i.Genres != null && i.Genres.Contains(request.Name, StringComparer.OrdinalIgnoreCase)).ToList();
+
+            var counts = new ItemByNameCounts
+            {
+                TotalCount = items.Count,
+
+                TrailerCount = items.OfType<Trailer>().Count(),
+
+                MovieCount = items.OfType<Movie>().Count(),
+
+                SeriesCount = items.OfType<Series>().Count(),
+
+                GameCount = items.OfType<BaseGame>().Count(),
+
+                SongCount = items.OfType<AudioCodecs>().Count(),
+
+                AlbumCount = items.OfType<MusicAlbum>().Count()
+            };
+
+            return ToOptimizedResult(counts);
+        }
+        
         /// <summary>
         /// Gets the specified request.
         /// </summary>
