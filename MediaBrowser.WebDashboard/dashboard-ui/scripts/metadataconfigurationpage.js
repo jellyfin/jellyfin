@@ -79,14 +79,10 @@
         $('#selectLanguage', '#metadataConfigurationPage').html(html).selectmenu("refresh");
     },
 
-    submit: function () {
-
-        $('.btnSubmit', $.mobile.activePage)[0].click();
-
-    },
-
     onSubmit: function () {
         var form = this;
+
+        Dashboard.showLoadingMsg();
 
         ApiClient.getServerConfiguration().done(function (config) {
 
@@ -96,7 +92,7 @@
             config.PreferredMetadataLanguage = $('#selectLanguage', form).val();
             config.MetadataCountryCode = $('#selectCountry', form).val();
 
-            ApiClient.updateServerConfiguration(config);
+            ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
         });
 
         // Disable default form submission

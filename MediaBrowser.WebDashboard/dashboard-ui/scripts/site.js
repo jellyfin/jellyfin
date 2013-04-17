@@ -775,9 +775,9 @@ var Dashboard = {
             href: "userprofiles.html",
             selected: page.hasClass("userProfilesConfigurationPage") || (pageElem.id == "mediaLibraryPage" && getParameterByName('userId'))
         }, {
-            name: "Display Settings",
-            href: "uisettings.html",
-            selected: pageElem.id == "displaySettingsPage"
+            name: "Client Settings",
+            href: "clientsettings.html",
+            selected: pageElem.id == "clientSettingsPage"
         }, {
             name: "Advanced",
             href: "advanced.html",

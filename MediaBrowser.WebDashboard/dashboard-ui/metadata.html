@@ -18,28 +18,31 @@
                 <form id="metadataConfigurationForm">
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <input type="checkbox" id="chkEnableInternetProviders" name="chkEnableInternetProviders" onchange="MetadataConfigurationPage.submit();" />
+                            <input type="checkbox" id="chkEnableInternetProviders" name="chkEnableInternetProviders" />
                             <label for="chkEnableInternetProviders">Download metadata from the internet </label>
                         </li>
                         <li>
-                            <input type="checkbox" id="chkSaveLocal" name="chkSaveLocal" onchange="MetadataConfigurationPage.submit();" />
+                            <input type="checkbox" id="chkSaveLocal" name="chkSaveLocal" />
                             <label for="chkSaveLocal">Save metadata within media folders </label>
                         </li>
                         <li>
                             <label for="txtRefreshDays">Metadata refresh period (days): </label>
-                            <input type="number" id="txtRefreshDays" name="txtRefreshDays" pattern="[0-9]*" required="required" min="1" onchange="MetadataConfigurationPage.submit();" />
+                            <input type="number" id="txtRefreshDays" name="txtRefreshDays" pattern="[0-9]*" required="required" min="1" />
                         </li>
                         <li>
                             <label for="selectLanguage">Preferred language: </label>
-                            <select name="selectLanguage" id="selectLanguage" onchange="MetadataConfigurationPage.submit();"></select>
+                            <select name="selectLanguage" id="selectLanguage"></select>
                         </li>
                         <li>
                             <label for="selectCountry">Country: </label>
-                            <select name="selectCountry" id="selectCountry" onchange="MetadataConfigurationPage.submit();"></select>
+                            <select name="selectCountry" id="selectCountry"></select>
                         </li>
-                        <li style="display: none;">
-                            <button class="btnSubmit" type="submit" data-theme="b">
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="ok">
                                 Save
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete">
+                                Cancel
                             </button>
                         </li>
                     </ul>

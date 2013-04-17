@@ -42,14 +42,10 @@
         Dashboard.hideLoadingMsg();
     },
 
-    submit: function () {
-
-        $('.btnSubmit', $.mobile.activePage)[0].click();
-
-    },
-
     onSubmit: function () {
         var form = this;
+
+        Dashboard.showLoadingMsg();
 
         ApiClient.getServerConfiguration().done(function (config) {
 
@@ -79,7 +75,7 @@
             config.DownloadMusicAlbumImages.Primary = $('#chkDownloadAlbumPrimary', form).checked();
             config.DownloadMusicAlbumImages.Backdrops = $('#chkDownloadAlbumBackdrops', form).checked();
 
-            ApiClient.updateServerConfiguration(config);
+            ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
         });
 
         // Disable default form submission
