@@ -1,5 +1,7 @@
 ﻿(function ($, document, LibraryBrowser) {
 
+    var currentItem;
+    
     function reload(page) {
 
         var id = getParameterByName('id');
@@ -8,6 +10,8 @@
 
         ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
 
+            currentItem = item;
+            
             var name = item.Name;
 
             $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item));
@@ -17,6 +21,12 @@
             $('#itemName', page).html(name);
 
             renderDetails(page, item);
+
+            if (LibraryBrowser.shouldDisplayGallery(item)) {
+                $('#galleryCollapsible', page).show();
+            } else {
+                $('#galleryCollapsible', page).hide();
+            }
 
             Dashboard.hideLoadingMsg();
         });
@@ -78,6 +88,13 @@
         });
     }
 
+    function renderGallery(page, item) {
+
+        var html = LibraryBrowser.getGalleryHtml(item);
+
+        $('#galleryContent', page).html(html).trigger('create');
+    }
+
     $(document).on('pageshow', "#boxsetPage", function () {
         
         var page = this;
@@ -90,12 +107,20 @@
 
             $(this).off('expand.lazyload');
         });
+
+        $('#galleryCollapsible', page).on('expand.lazyload', function () {
+
+            renderGallery(page, currentItem);
+
+            $(this).off('expand.lazyload');
+        });
         
     }).on('pagehide', "#boxsetPage", function () {
 
         var page = this;
 
         $('#moviesCollapsible', page).off('expand.lazyload');
+        $('#galleryCollapsible', page).off('expand.lazyload');
     });
 
 
