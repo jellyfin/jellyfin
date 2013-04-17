@@ -45,6 +45,7 @@
     <Compile Include="Dto\BaseItemPerson.cs" />
     <Compile Include="Dto\ChapterInfoDto.cs" />
     <Compile Include="Dto\IItemDto.cs" />
+    <Compile Include="Dto\ItemByNameCounts.cs" />
     <Compile Include="Entities\IByReferenceItem.cs" />
     <Compile Include="Net\WebSocketMessage.cs" />
     <Compile Include="Net\WebSocketMessageType.cs" />

@@ -6,22 +6,22 @@
 
         var getItemPromise;
 
-        var name  = getParameterByName('person');
+        var name = getParameterByName('person');
 
         if (name) {
             getItemPromise = ApiClient.getPerson(name);
         } else {
-            
-            name  = getParameterByName('studio');
-            
+
+            name = getParameterByName('studio');
+
             if (name) {
-                
+
                 getItemPromise = ApiClient.getStudio(name);
-                
+
             } else {
-                
-                name  = getParameterByName('genre');
-                
+
+                name = getParameterByName('genre');
+
                 if (name) {
                     getItemPromise = ApiClient.getGenre(name);
                 }
@@ -37,7 +37,7 @@
 
             var item = response1[0];
             var userdata = response2[0];
-            
+
             item.UserData = userdata;
             name = item.Name;
 
@@ -48,8 +48,55 @@
             $('#itemName', page).html(name);
 
             renderDetails(page, item);
+            renderTabs(page, item);
 
             Dashboard.hideLoadingMsg();
+        });
+    }
+
+    function renderTabs(page, item) {
+
+        if (item.Type !== "Person") {
+            return;
+        }
+
+        var url = ApiClient.getUrl("Users/" + Dashboard.getCurrentUserId() + "/Persons/" + item.Name + "/Counts");
+
+        $.getJSON(url).done(function (result) {
+
+            var html = '<fieldset data-role="controlgroup" data-type="horizontal">';
+
+            html += '<legend></legend>';
+
+            if (result.MovieCount) {
+
+                html += '<input type="radio" name="ibnItems" id="radioMovies" value="on">';
+                html += '<label for="radioMovies">Movies (' + result.MovieCount + ')</label>';
+            }
+
+            if (result.SeriesCount) {
+
+                html += '<input type="radio" name="ibnItems" id="radioShows" value="on">';
+                html += '<label for="radioShows">TV Shows (' + result.SeriesCount + ')</label>';
+            }
+            
+            if (result.EpisodeGuestStarCount) {
+
+                html += '<input type="radio" name="ibnItems" id="radioGuestStar" value="on">';
+                html += '<label for="radioGuestStar">Guest Starred (' + result.EpisodeGuestStarCount + ')</label>';
+            }
+
+            if (result.GameCount) {
+
+                html += '<input type="radio" name="ibnItems" id="radioGames" value="on">';
+                html += '<label for="radioGames">Games (' + result.SeriesCount + ')</label>';
+            }
+
+            html += '</fieldset>';
+
+            var elem = $('#items', page).html(html).trigger('create');
+
+            $('input:first', elem).attr("checked", "checked").checkboxradio("refresh").click();
         });
     }
 
