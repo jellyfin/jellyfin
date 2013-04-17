@@ -75,7 +75,7 @@ namespace MediaBrowser.Controller.Dto
             {
                 try
                 {
-                    AttachPrimaryImageAspectRatio(dto, item, _logger);
+                    await AttachPrimaryImageAspectRatio(dto, item, _logger).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -138,7 +138,7 @@ namespace MediaBrowser.Controller.Dto
             {
                 try
                 {
-                    AttachPrimaryImageAspectRatio(dto, item, _logger);
+                    await AttachPrimaryImageAspectRatio(dto, item, _logger).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -198,9 +198,9 @@ namespace MediaBrowser.Controller.Dto
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
-        /// <param name="_logger">The _logger.</param>
+        /// <param name="logger">The _logger.</param>
         /// <returns>Task.</returns>
-        internal static void AttachPrimaryImageAspectRatio(IItemDto dto, BaseItem item, ILogger _logger)
+        internal static async Task AttachPrimaryImageAspectRatio(IItemDto dto, BaseItem item, ILogger logger)
         {
             var path = item.PrimaryImagePath;
 
@@ -218,16 +218,16 @@ namespace MediaBrowser.Controller.Dto
 
             try
             {
-                size = Kernel.Instance.ImageManager.GetImageSize(path, dateModified);
+                size = await Kernel.Instance.ImageManager.GetImageSize(path, dateModified).ConfigureAwait(false);
             }
             catch (FileNotFoundException)
             {
-                _logger.Error("Image file does not exist: {0}", path);
+                logger.Error("Image file does not exist: {0}", path);
                 return;
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Failed to determine primary image aspect ratio for {0}", ex, path);
+                logger.ErrorException("Failed to determine primary image aspect ratio for {0}", ex, path);
                 return;
             }
 

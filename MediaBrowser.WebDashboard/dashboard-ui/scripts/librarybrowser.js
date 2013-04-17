@@ -1069,7 +1069,7 @@
             if (item.BackdropImageTags) {
 
                 for (i = 0, length = item.BackdropImageTags.length; i < length; i++) {
-                    html += LibraryBrowser.createGalleryImage(item.Id, "Backdrop", item.BackdropImageTags[0], i);
+                    html += LibraryBrowser.createGalleryImage(item.Id, "Backdrop", item.BackdropImageTags[i], i);
                 }
 
             }
@@ -1077,7 +1077,7 @@
             if (item.ScreenshotImageTags) {
 
                 for (i = 0, length = item.ScreenshotImageTags.length; i < length; i++) {
-                    html += LibraryBrowser.createGalleryImage(item.Id, "Screenshot", item.ScreenshotImageTags[0], i);
+                    html += LibraryBrowser.createGalleryImage(item.Id, "Screenshot", item.ScreenshotImageTags[i], i);
                 }
             }
 

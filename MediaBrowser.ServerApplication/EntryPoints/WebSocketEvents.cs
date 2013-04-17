@@ -241,9 +241,9 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        void userManager_UserUpdated(object sender, GenericEventArgs<User> e)
+        async void userManager_UserUpdated(object sender, GenericEventArgs<User> e)
         {
-            var dto = new UserDtoBuilder(_logger).GetUserDto(e.Argument);
+            var dto = await new UserDtoBuilder(_logger).GetUserDto(e.Argument).ConfigureAwait(false);
 
             _serverManager.SendWebSocketMessage("UserUpdated", dto);
         }
