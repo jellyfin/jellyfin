@@ -207,7 +207,7 @@ namespace MediaBrowser.ServerApplication
         {
             base.OnLoggerLoaded();
 
-            _httpServerCreationTask = Task.Run(() => ServerFactory.CreateServer(this, Logger, "Media Browser", "index.html"));
+            _httpServerCreationTask = Task.Run(() => ServerFactory.CreateServer(this, LogManager, "Media Browser", "index.html"));
         }
 
         /// <summary>
