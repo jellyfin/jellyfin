@@ -8,7 +8,12 @@
 
         ApiClient.getScheduledTasks().done(function (tasks) {
 
-            populateList(page, tasks);
+            if (updateInterval) {
+                populateList(page, tasks);
+            } else {
+                updateTasks(page, tasks);
+            }
+
             Dashboard.hideLoadingMsg();
 
             if (updateInterval) {
@@ -127,31 +132,44 @@
 
             var page = $.mobile.activePage;
 
-            for (var i = 0, length = tasks.length; i < length; i++) {
-
-                var task = tasks[i];
-
-                $('#' + task.Id, page).html(getTaskProgressHtml(task));
-
-                var btnTask = $('#btnTask' + task.Id, page);
-                
-                updateTaskButton(btnTask, task.State);
-            }
+            updateTasks(page, tasks);
         }
     }
-    
+
+    function updateTasks(page, tasks) {
+        for (var i = 0, length = tasks.length; i < length; i++) {
+
+            var task = tasks[i];
+
+            $('#' + task.Id, page).html(getTaskProgressHtml(task));
+
+            var btnTask = $('#btnTask' + task.Id, page);
+
+            updateTaskButton(btnTask, task.State);
+        }
+    }
+
     function updateTaskButton(btnTask, state) {
+
+        var elem;
+
         if (state == "Idle") {
 
-            btnTask.addClass('btnStartTask').removeClass('btnStopTask').show().data('icon', 'play').buttonMarkup("refresh");
+            elem = btnTask.addClass('btnStartTask').removeClass('btnStopTask').show().data("icon", "play").attr("title", "Start").buttonMarkup("refresh");
+
+            $('.ui-icon-stop', elem).removeClass('ui-icon-stop').addClass('ui-icon-play');
         }
         else if (state == "Running") {
 
-            btnTask.addClass('btnStopTask').removeClass('btnStartTask').show().data('icon', 'stop').buttonMarkup("refresh");
+            elem = btnTask.addClass('btnStopTask').removeClass('btnStartTask').show().data("icon", "stop").attr("title", "Stop").buttonMarkup("refresh");
+
+            $('.ui-icon-play', elem).removeClass('ui-icon-play').addClass('ui-icon-stop');
 
         } else {
 
-            btnTask.addClass('btnStartTask').removeClass('btnStopTask').hide().data('icon', 'play').buttonMarkup("refresh");
+            elem = btnTask.addClass('btnStartTask').removeClass('btnStopTask').hide().data("icon", "play").attr("title", "Start").buttonMarkup("refresh");
+
+            $('.ui-icon-stop', elem).removeClass('ui-icon-stop').addClass('ui-icon-play');
         }
     }
 
