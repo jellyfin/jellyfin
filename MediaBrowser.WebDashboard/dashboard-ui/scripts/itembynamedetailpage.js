@@ -86,10 +86,28 @@
                 html += '<label for="radioGuestStar">Guest Starred (' + result.EpisodeGuestStarCount + ')</label>';
             }
 
+            if (result.TrailerCount) {
+
+                html += '<input type="radio" name="ibnItems" id="radioTrailers" value="on" data-mini="true">';
+                html += '<label for="radioTrailers">Trailers (' + result.TrailerCount + ')</label>';
+            }
+
             if (result.GameCount) {
 
                 html += '<input type="radio" name="ibnItems" id="radioGames" value="on" data-mini="true">';
                 html += '<label for="radioGames">Games (' + result.SeriesCount + ')</label>';
+            }
+
+            if (result.AlbumCount) {
+
+                html += '<input type="radio" name="ibnItems" id="radioAlbums" value="on" data-mini="true">';
+                html += '<label for="radioAlbums">Albums (' + result.AlbumCount + ')</label>';
+            }
+
+            if (result.SongCount) {
+
+                html += '<input type="radio" name="ibnItems" id="radioSongs" value="on" data-mini="true">';
+                html += '<label for="radioSongs">Songs (' + result.SongCount + ')</label>';
             }
 
             html += '</fieldset>';
