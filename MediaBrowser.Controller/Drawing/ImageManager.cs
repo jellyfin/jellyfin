@@ -137,7 +137,7 @@ namespace MediaBrowser.Controller.Drawing
                 _logger.Error("Error enhancing image", ex);
             }
 
-            var originalImageSize = GetImageSize(originalImagePath, dateModified);
+            var originalImageSize = await GetImageSize(originalImagePath, dateModified).ConfigureAwait(false);
 
             // Determine the output size based on incoming parameters
             var newSize = DrawingUtils.Resize(originalImageSize, width, height, maxWidth, maxHeight);
@@ -148,16 +148,6 @@ namespace MediaBrowser.Controller.Drawing
             }
 
             var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality.Value, dateModified);
-
-            // Grab the cache file if it already exists
-            if (File.Exists(cacheFilePath))
-            {
-                using (var fileStream = new FileStream(cacheFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
-                {
-                    await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
-                    return;
-                }
-            }
 
             var semaphore = GetLock(cacheFilePath);
 
@@ -279,7 +269,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="dateModified">The date modified.</param>
         /// <returns>Task{ImageSize}.</returns>
         /// <exception cref="System.ArgumentNullException">imagePath</exception>
-        public ImageSize GetImageSize(string imagePath, DateTime dateModified)
+        public async Task<ImageSize> GetImageSize(string imagePath, DateTime dateModified)
         {
             if (string.IsNullOrEmpty(imagePath))
             {
@@ -288,7 +278,16 @@ namespace MediaBrowser.Controller.Drawing
 
             var name = imagePath + "datemodified=" + dateModified.Ticks;
 
-            return _cachedImagedSizes.GetOrAdd(name, keyName => GetImageSize(keyName, imagePath));
+            ImageSize size;
+
+            if (!_cachedImagedSizes.TryGetValue(name, out size))
+            {
+                size = await GetImageSize(name, imagePath).ConfigureAwait(false);
+
+                _cachedImagedSizes.AddOrUpdate(name, size, (keyName, oldValue) => size);
+            }
+
+            return size;
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
@@ -299,30 +298,41 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="keyName">Name of the key.</param>
         /// <param name="imagePath">The image path.</param>
         /// <returns>ImageSize.</returns>
-        private ImageSize GetImageSize(string keyName, string imagePath)
+        private async Task<ImageSize> GetImageSize(string keyName, string imagePath)
         {
             // Now check the file system cache
             var fullCachePath = ImageSizeCache.GetResourcePath(keyName, ".txt");
 
+            var semaphore = GetLock(fullCachePath);
+
+            await semaphore.WaitAsync().ConfigureAwait(false);
+
             try
             {
-                var result = File.ReadAllText(fullCachePath).Split('|').Select(i => double.Parse(i, UsCulture)).ToArray();
+                try
+                {
+                    var result = File.ReadAllText(fullCachePath).Split('|').Select(i => double.Parse(i, UsCulture)).ToArray();
 
-                return new ImageSize { Width = result[0], Height = result[1] };
+                    return new ImageSize { Width = result[0], Height = result[1] };
+                }
+                catch (FileNotFoundException)
+                {
+                    // Cache file doesn't exist no biggie
+                }
+
+                _logger.Debug("Getting image size for {0}", imagePath);
+
+                var size = ImageHeader.GetDimensions(imagePath, _logger);
+
+                // Update the file system cache
+                File.WriteAllText(fullCachePath, size.Width.ToString(UsCulture) + @"|" + size.Height.ToString(UsCulture));
+
+                return new ImageSize { Width = size.Width, Height = size.Height };
             }
-            catch (FileNotFoundException)
+            finally
             {
-                // Cache file doesn't exist no biggie
+                semaphore.Release();
             }
-
-            _logger.Debug("Getting image size for {0}", imagePath);
-
-            var size = ImageHeader.GetDimensions(imagePath, _logger);
-
-            // Update the file system cache
-            File.WriteAllText(fullCachePath, size.Width.ToString(UsCulture) + @"|" + size.Height.ToString(UsCulture));
-
-            return new ImageSize { Width = size.Width, Height = size.Height };
         }
 
         /// <summary>
@@ -445,11 +455,6 @@ namespace MediaBrowser.Controller.Drawing
 
             var croppedImagePath = CroppedImageCache.GetResourcePath(name, Path.GetExtension(originalImagePath));
 
-            if (CroppedImageCache.ContainsFilePath(croppedImagePath))
-            {
-                return croppedImagePath;
-            }
-
             var semaphore = GetLock(croppedImagePath);
 
             await semaphore.WaitAsync().ConfigureAwait(false);
@@ -529,11 +534,6 @@ namespace MediaBrowser.Controller.Drawing
             // All enhanced images are saved as png to allow transparency
             var enhancedImagePath = EnhancedImageCache.GetResourcePath(cacheGuid + ".png");
 
-            if (EnhancedImageCache.ContainsFilePath(enhancedImagePath))
-            {
-                return enhancedImagePath;
-            }
-            
             var semaphore = GetLock(enhancedImagePath);
 
             await semaphore.WaitAsync().ConfigureAwait(false);

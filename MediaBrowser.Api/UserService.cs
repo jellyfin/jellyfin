@@ -168,7 +168,9 @@ namespace MediaBrowser.Api
         {
             var dtoBuilder = new UserDtoBuilder(Logger);
 
-            var users = _userManager.Users.OrderBy(u => u.Name).Select(dtoBuilder.GetUserDto).ToArray();
+            var tasks = _userManager.Users.OrderBy(u => u.Name).Select(dtoBuilder.GetUserDto);
+
+            var users = tasks.Select(i => i.Result).ToList();
 
             return ToOptimizedResult(users);
         }
@@ -189,7 +191,7 @@ namespace MediaBrowser.Api
 
             var dtoBuilder = new UserDtoBuilder(Logger);
 
-            var result = dtoBuilder.GetUserDto(user);
+            var result = dtoBuilder.GetUserDto(user).Result;
 
             return ToOptimizedResult(result);
         }
@@ -305,7 +307,7 @@ namespace MediaBrowser.Api
 
             var dtoBuilder = new UserDtoBuilder(Logger);
 
-            var result = dtoBuilder.GetUserDto(newUser);
+            var result = dtoBuilder.GetUserDto(newUser).Result;
 
             return ToOptimizedResult(result);
         }

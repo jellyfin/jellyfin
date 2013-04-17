@@ -177,7 +177,9 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.Object.</returns>
         public object Get(GetDashboardInfo request)
         {
-            return GetDashboardInfo(_appHost, Logger, _taskManager, _userManager, _libraryManager);
+            var result =  GetDashboardInfo(_appHost, Logger, _taskManager, _userManager, _libraryManager).Result;
+
+            return ResultFactory.GetOptimizedResult(RequestContext, result);
         }
 
         /// <summary>
@@ -189,13 +191,15 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="userManager">The user manager.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <returns>DashboardInfo.</returns>
-        public static DashboardInfo GetDashboardInfo(IServerApplicationHost appHost, ILogger logger, ITaskManager taskManager, IUserManager userManager, ILibraryManager libraryManager)
+        public static async Task<DashboardInfo> GetDashboardInfo(IServerApplicationHost appHost, ILogger logger, ITaskManager taskManager, IUserManager userManager, ILibraryManager libraryManager)
         {
             var connections = userManager.RecentConnections.ToArray();
 
             var dtoBuilder = new UserDtoBuilder(logger);
 
-            var users = userManager.Users.Where(u => connections.Any(c => new Guid(c.UserId) == u.Id)).Select(dtoBuilder.GetUserDto);
+            var tasks = userManager.Users.Where(u => connections.Any(c => new Guid(c.UserId) == u.Id)).Select(dtoBuilder.GetUserDto);
+
+            var users = await Task.WhenAll(tasks).ConfigureAwait(false);
 
             return new DashboardInfo
             {

@@ -3,6 +3,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Dto
 {
@@ -31,7 +32,7 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="user">The user.</param>
         /// <returns>DtoUser.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        public UserDto GetUserDto(User user)
+        public async Task<UserDto> GetUserDto(User user)
         {
             if (user == null)
             {
@@ -56,7 +57,7 @@ namespace MediaBrowser.Controller.Dto
 
                 try
                 {
-                    DtoBuilder.AttachPrimaryImageAspectRatio(dto, user, _logger);
+                    await DtoBuilder.AttachPrimaryImageAspectRatio(dto, user, _logger).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
