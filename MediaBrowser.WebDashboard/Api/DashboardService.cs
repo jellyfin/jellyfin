@@ -465,6 +465,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "moviepeople.js",
                                       "moviesrecommended.js",
                                       "moviestudios.js",
+                                      "movietrailers.js",
                                       "playlist.js",
                                       "plugincatalogpage.js",
                                       "pluginspage.js",
