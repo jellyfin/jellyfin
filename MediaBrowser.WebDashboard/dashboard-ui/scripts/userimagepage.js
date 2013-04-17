@@ -146,7 +146,11 @@
 
         var file = UserImagePage.currentFile;
 
-        if (!file || !file.type.match('image.*')) {
+        if (!file) {
+            return false;
+        }
+
+        if (file.type != "image/png" && file.type != "image/jpeg" && file.type != "image/jpeg") {
             return false;
         }
 

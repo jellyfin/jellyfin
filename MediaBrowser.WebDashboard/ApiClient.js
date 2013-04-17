@@ -786,7 +786,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null imageType");
             }
 
-            if (!file || !file.type.match('image.*')) {
+            if (!file) {
+                throw new Error("File must be an image.");
+            }
+
+            if (file.type != "image/png" && file.type != "image/jpeg" && file.type != "image/jpeg") {
                 throw new Error("File must be an image.");
             }
 
@@ -1841,7 +1845,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/{UserId}/Persons/" + encodeName(name) + "/Counts");
+            var url = self.getUrl("Users/" + userId + "/Persons/" + encodeName(name) + "/Counts");
 
             return self.ajax({
                 type: "GET",
@@ -1863,7 +1867,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/{UserId}/Genres/" + encodeName(name) + "/Counts");
+            var url = self.getUrl("Users/" + userId + "/Genres/" + encodeName(name) + "/Counts");
 
             return self.ajax({
                 type: "GET",
@@ -1875,7 +1879,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         /**
             Gets a variety of item counts that a studio appears in
         */
-        self.getStudiosItemCounts = function (userId, name) {
+        self.getStudioItemCounts = function (userId, name) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -1885,7 +1889,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/{UserId}/Studios/" + encodeName(name) + "/Counts");
+            var url = self.getUrl("Users/" + userId + "/Studios/" + encodeName(name) + "/Counts");
 
             return self.ajax({
                 type: "GET",
