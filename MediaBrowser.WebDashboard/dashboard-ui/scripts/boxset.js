@@ -74,7 +74,8 @@
         ApiClient.getItems(Dashboard.getCurrentUserId(), {
 
             ParentId: getParameterByName('id'),
-            SortBy: "SortName"
+            SortBy: "SortName",
+            Fields: "PrimaryImageAspectRatio,ItemCounts,DisplayMediaType,DateCreated,UserData"
 
         }).done(function (result) {
 

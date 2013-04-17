@@ -90,7 +90,8 @@
             
             var html = LibraryBrowser.getPosterDetailViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: true
+                useAverageAspectRatio: true,
+                Fields: "PrimaryImageAspectRatio,ItemCounts,DisplayMediaType,DateCreated,UserData"
             });
 
             $('#seasonsContent', page).html(html);

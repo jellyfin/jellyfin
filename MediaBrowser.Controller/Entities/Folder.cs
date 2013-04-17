@@ -831,10 +831,8 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         public override async Task SetPlayedStatus(User user, bool wasPlayed, IUserDataRepository userManager)
         {
-            await base.SetPlayedStatus(user, wasPlayed, userManager).ConfigureAwait(false);
-
-            // Now sweep through recursively and update status
-            var tasks = GetChildren(user).Select(c => c.SetPlayedStatus(user, wasPlayed, userManager));
+            // Sweep through recursively and update status
+            var tasks = GetRecursiveChildren(user).Where(i => !i.IsFolder).Select(c => c.SetPlayedStatus(user, wasPlayed, userManager));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }

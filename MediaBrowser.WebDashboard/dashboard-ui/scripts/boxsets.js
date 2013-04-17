@@ -7,7 +7,7 @@
 		SortOrder: "Ascending",
 		IncludeItemTypes: "BoxSet",
 		Recursive: true,
-		Fields: "PrimaryImageAspectRatio,ItemCounts,ItemCounts,DateCreated,UserData",
+		Fields: "PrimaryImageAspectRatio,DisplayMediaType,ItemCounts,DateCreated,UserData",
 		Limit: LibraryBrowser.getDetaultPageSize(),
 		StartIndex: 0
 	};

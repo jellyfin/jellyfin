@@ -9,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Series",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio,SeriesInfo,ItemCounts,DateCreated,UserData",
+        Fields: "PrimaryImageAspectRatio,DisplayMediaType,SeriesInfo,ItemCounts,DateCreated,UserData",
         Limit: LibraryBrowser.getDetaultPageSize(),
         StartIndex: 0
     };
