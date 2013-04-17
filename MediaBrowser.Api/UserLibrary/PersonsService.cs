@@ -1,6 +1,10 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
@@ -23,12 +27,38 @@ namespace MediaBrowser.Api.UserLibrary
         /// <value>The person types.</value>
         public string PersonTypes { get; set; }
     }
-    
+
+    /// <summary>
+    /// Class GetPersonItemCounts
+    /// </summary>
+    [Route("/Users/{UserId}/Persons/{Name}/Counts", "GET")]
+    [Api(Description = "Gets item counts of library items that a person appears in")]
+    public class GetPersonItemCounts : IReturn<ItemByNameCounts>
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        public Guid UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name { get; set; }
+    }
+
     /// <summary>
     /// Class PersonsService
     /// </summary>
     public class PersonsService : BaseItemsByNameService<Person>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PersonsService"/> class.
+        /// </summary>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="userDataRepository">The user data repository.</param>
         public PersonsService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository)
             : base(userManager, libraryManager, userDataRepository)
         {
@@ -47,6 +77,33 @@ namespace MediaBrowser.Api.UserLibrary
         }
 
         /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
+        public object Get(GetPersonItemCounts request)
+        {
+            var user = UserManager.GetUserById(request.UserId);
+
+            var items = user.RootFolder.GetRecursiveChildren(user).Where(i => i.People != null && i.People.Any(p => string.Equals(p.Name, request.Name, StringComparison.OrdinalIgnoreCase))).ToList();
+
+            var counts = new ItemByNameCounts
+            {
+                TotalCount = items.Count,
+
+                MovieCount = items.OfType<Movie>().Count(),
+
+                SeriesCount = items.OfType<Series>().Count(),
+
+                GameCount = items.OfType<BaseGame>().Count(),
+
+                EpisodeGuestStarCount = items.OfType<Episode>().Count(i => i.People.Any(p => string.Equals(p.Name, request.Name, StringComparison.OrdinalIgnoreCase) && string.Equals(p.Type, PersonType.GuestStar)))
+            };
+
+            return ToOptimizedResult(counts);
+        }
+
+        /// <summary>
         /// Gets all items.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -55,7 +112,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
         protected override IEnumerable<IbnStub<Person>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items, User user)
         {
-            var inputPersonTypes = ((GetPersons) request).PersonTypes;
+            var inputPersonTypes = ((GetPersons)request).PersonTypes;
             var personTypes = string.IsNullOrEmpty(inputPersonTypes) ? new string[] { } : inputPersonTypes.Split(',');
 
             var itemsList = items.Where(i => i.People != null).ToList();
