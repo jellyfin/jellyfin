@@ -976,6 +976,54 @@
             return html;
         },
 
+        shouldDisplayGallery: function (item) {
+
+            var imageTags = item.ImageTags || {};
+
+            if (imageTags.Banner) {
+
+                return true;
+            }
+
+            if (imageTags.Logo) {
+
+                return true;
+            }
+            if (imageTags.Thumb) {
+
+                return true;
+            }
+            if (imageTags.Art) {
+
+                return true;
+
+            }
+            if (imageTags.Menu) {
+
+                return true;
+
+            }
+            if (imageTags.Disc) {
+
+                return true;
+            }
+            if (imageTags.Box) {
+
+                return true;
+            }
+
+            if (item.BackdropImageTags && item.BackdropImageTags.length) {
+                return true;
+
+            }
+
+            if (item.ScreenshotImageTags && item.ScreenshotImageTags.length) {
+                return true;
+            }
+
+            return false;
+        },
+
         getGalleryHtml: function (item) {
 
             var html = '';

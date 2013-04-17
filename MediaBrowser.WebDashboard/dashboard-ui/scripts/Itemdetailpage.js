@@ -44,6 +44,12 @@
                 $('#playButtonShadow', page).hide();
                 $('#btnQueueMenu', page).hide();
             }
+            
+            if (LibraryBrowser.shouldDisplayGallery(item)) {
+                $('#galleryCollapsible', page).show();
+            } else {
+                $('#galleryCollapsible', page).hide();
+            }
 
             Dashboard.hideLoadingMsg();
         });

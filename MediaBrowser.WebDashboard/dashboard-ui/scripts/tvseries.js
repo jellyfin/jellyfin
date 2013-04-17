@@ -21,7 +21,13 @@
             $('#itemName', page).html(name);
 
 	        setInitialCollapsibleState(page, item);
-            renderDetails(page, item);
+	        renderDetails(page, item);
+
+	        if (LibraryBrowser.shouldDisplayGallery(item)) {
+	            $('#galleryCollapsible', page).show();
+	        } else {
+	            $('#galleryCollapsible', page).hide();
+	        }
 
             Dashboard.hideLoadingMsg();
         });
