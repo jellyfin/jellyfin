@@ -1,3 +1,4 @@
+using System.IO;
 using Funq;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
@@ -16,7 +17,6 @@ using ServiceStack.WebHost.Endpoints.Support;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
@@ -108,7 +108,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             DefaultRedirectPath = defaultRedirectpath;
             _logger = logManager.GetLogger("HttpServer");
 
-            ServiceStack.Logging.LogManager.LogFactory = new ServerLogFactory(logManager);
+            LogManager.LogFactory = new ServerLogFactory(logManager);
 
             EndpointHostConfig.Instance.ServiceStackHandlerFactoryPath = null;
             EndpointHostConfig.Instance.MetadataRedirectPath = "metadata";
@@ -135,8 +135,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {
                 DefaultRedirectPath = DefaultRedirectPath,
 
-                // Tell SS to bubble exceptions up to here
-                WriteErrorsToResponse = false
+                MapExceptionToStatusCode = {
+                    { typeof(InvalidOperationException), 422 },
+                    { typeof(ResourceNotFoundException), 404 },
+                    { typeof(FileNotFoundException), 404 },
+                    { typeof(DirectoryNotFoundException), 404 }
+                },
+
+                DebugMode = true
             });
 
             container.Adapter = _containerAdapter;
@@ -290,45 +296,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             RaiseReceiveWebRequest(context);
 
-            await Task.Run(() =>
-            {
-                try
-                {
-                    ProcessRequest(context);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    HandleException(context.Response, ex, 422);
-                }
-                catch (ResourceNotFoundException ex)
-                {
-                    HandleException(context.Response, ex, 404);
-                }
-                catch (FileNotFoundException ex)
-                {
-                    HandleException(context.Response, ex, 404);
-                }
-                catch (DirectoryNotFoundException ex)
-                {
-                    HandleException(context.Response, ex, 404);
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    HandleException(context.Response, ex, 401);
-                }
-                catch (ArgumentException ex)
-                {
-                    HandleException(context.Response, ex, 400);
-                }
-                catch (Exception ex)
-                {
-                    HandleException(context.Response, ex, 500);
-                }
-                finally
-                {
-                    context.Response.Close();
-                }
-            }).ConfigureAwait(false);
+            await Task.Run(() => ProcessRequest(context)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -372,52 +340,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             if (EnableHttpRequestLogging)
             {
                 _logger.LogMultiline(type + " request received from " + ctx.Request.RemoteEndPoint, LogSeverity.Debug, log);
-            }
-        }
-
-        /// <summary>
-        /// Appends the error message.
-        /// </summary>
-        /// <param name="response">The response.</param>
-        /// <param name="ex">The ex.</param>
-        /// <param name="statusCode">The status code.</param>
-        private void HandleException(HttpListenerResponse response, Exception ex, int statusCode)
-        {
-            _logger.ErrorException("Error processing request", ex);
-
-            // This could fail, but try to add the stack trace as the body content
-            try
-            {
-                //response.StatusCode = statusCode;
-
-                response.Headers.Add("Status", statusCode.ToString(new CultureInfo("en-US")));
-
-                response.Headers.Remove("Age");
-                response.Headers.Remove("Expires");
-                response.Headers.Remove("Cache-Control");
-                response.Headers.Remove("Etag");
-                response.Headers.Remove("Last-Modified");
-
-                if (!string.IsNullOrEmpty(ex.Message))
-                {
-                    response.AddHeader("X-Application-Error-Code", ex.Message);
-                }
-
-                var sb = new StringBuilder();
-                sb.AppendLine("{");
-                sb.AppendLine("\"ResponseStatus\":{");
-                sb.AppendFormat(" \"ErrorCode\":{0},\n", ex.GetType().Name.EncodeJson());
-                sb.AppendFormat(" \"Message\":{0},\n", ex.Message.EncodeJson());
-                sb.AppendFormat(" \"StackTrace\":{0}\n", ex.StackTrace.EncodeJson());
-                sb.AppendLine("}");
-                sb.AppendLine("}");
-
-                var sbBytes = sb.ToString().ToUtf8Bytes();
-                response.OutputStream.Write(sbBytes, 0, sbBytes.Length);
-            }
-            catch (Exception errorEx)
-            {
-                _logger.ErrorException("Error processing failed request", errorEx);
             }
         }
 
@@ -613,230 +535,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         public void Release(object instance)
         {
             // Leave this empty so SS doesn't try to dispose our objects
-        }
-    }
-
-    /// <summary>
-    /// Class ServerLogFactory
-    /// </summary>
-    public class ServerLogFactory : ILogFactory
-    {
-        /// <summary>
-        /// The _log manager
-        /// </summary>
-        private readonly ILogManager _logManager;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ServerLogFactory"/> class.
-        /// </summary>
-        /// <param name="logManager">The log manager.</param>
-        public ServerLogFactory(ILogManager logManager)
-        {
-            _logManager = logManager;
-        }
-
-        /// <summary>
-        /// Gets the logger.
-        /// </summary>
-        /// <param name="typeName">Name of the type.</param>
-        /// <returns>ILog.</returns>
-        public ILog GetLogger(string typeName)
-        {
-            return new ServerLogger(_logManager.GetLogger(typeName));
-        }
-
-        /// <summary>
-        /// Gets the logger.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns>ILog.</returns>
-        public ILog GetLogger(Type type)
-        {
-            return GetLogger(type.Name);
-        }
-    }
-
-    /// <summary>
-    /// Class ServerLogger
-    /// </summary>
-    public class ServerLogger : ILog
-    {
-        /// <summary>
-        /// The _logger
-        /// </summary>
-        private readonly ILogger _logger;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ServerLogger"/> class.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        public ServerLogger(ILogger logger)
-        {
-            _logger = logger;
-        }
-
-        /// <summary>
-        /// Logs a Debug message and exception.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="exception">The exception.</param>
-        public void Debug(object message, Exception exception)
-        {
-            _logger.ErrorException(GetMesssage(message), exception);
-        }
-
-        /// <summary>
-        /// Logs a Debug message.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        public void Debug(object message)
-        {
-            _logger.Debug(GetMesssage(message));
-        }
-
-        /// <summary>
-        /// Logs a Debug format message.
-        /// </summary>
-        /// <param name="format">The format.</param>
-        /// <param name="args">The args.</param>
-        public void DebugFormat(string format, params object[] args)
-        {
-            _logger.Debug(format, args);
-        }
-
-        /// <summary>
-        /// Logs a Error message and exception.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="exception">The exception.</param>
-        public void Error(object message, Exception exception)
-        {
-            _logger.ErrorException(GetMesssage(message), exception);
-        }
-
-        /// <summary>
-        /// Logs a Error message.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        public void Error(object message)
-        {
-            _logger.Error(GetMesssage(message));
-        }
-
-        /// <summary>
-        /// Logs a Error format message.
-        /// </summary>
-        /// <param name="format">The format.</param>
-        /// <param name="args">The args.</param>
-        public void ErrorFormat(string format, params object[] args)
-        {
-            _logger.Error(format, args);
-        }
-
-        /// <summary>
-        /// Logs a Fatal message and exception.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="exception">The exception.</param>
-        public void Fatal(object message, Exception exception)
-        {
-            _logger.FatalException(GetMesssage(message), exception);
-        }
-
-        /// <summary>
-        /// Logs a Fatal message.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        public void Fatal(object message)
-        {
-            _logger.Fatal(GetMesssage(message));
-        }
-
-        /// <summary>
-        /// Logs a Error format message.
-        /// </summary>
-        /// <param name="format">The format.</param>
-        /// <param name="args">The args.</param>
-        public void FatalFormat(string format, params object[] args)
-        {
-            _logger.Fatal(format, args);
-        }
-
-        /// <summary>
-        /// Logs an Info message and exception.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="exception">The exception.</param>
-        public void Info(object message, Exception exception)
-        {
-            _logger.ErrorException(GetMesssage(message), exception);
-        }
-
-        /// <summary>
-        /// Logs an Info message and exception.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        public void Info(object message)
-        {
-            _logger.Info(GetMesssage(message));
-        }
-
-        /// <summary>
-        /// Logs an Info format message.
-        /// </summary>
-        /// <param name="format">The format.</param>
-        /// <param name="args">The args.</param>
-        public void InfoFormat(string format, params object[] args)
-        {
-            _logger.Info(format, args);
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is debug enabled.
-        /// </summary>
-        /// <value><c>true</c> if this instance is debug enabled; otherwise, <c>false</c>.</value>
-        public bool IsDebugEnabled
-        {
-            get { return true; }
-        }
-
-        /// <summary>
-        /// Logs a Warning message and exception.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="exception">The exception.</param>
-        public void Warn(object message, Exception exception)
-        {
-            _logger.ErrorException(GetMesssage(message), exception);
-        }
-
-        /// <summary>
-        /// Logs a Warning message.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        public void Warn(object message)
-        {
-            _logger.Warn(GetMesssage(message));
-        }
-
-        /// <summary>
-        /// Logs a Warning format message.
-        /// </summary>
-        /// <param name="format">The format.</param>
-        /// <param name="args">The args.</param>
-        public void WarnFormat(string format, params object[] args)
-        {
-            _logger.Warn(format, args);
-        }
-
-        /// <summary>
-        /// Gets the messsage.
-        /// </summary>
-        /// <param name="o">The o.</param>
-        /// <returns>System.String.</returns>
-        private string GetMesssage(object o)
-        {
-            return o == null ? string.Empty : o.ToString();
         }
     }
 }
