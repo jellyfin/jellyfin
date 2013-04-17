@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = "Tile";
+    var view = "Backdrop";
 
     // The base query options
     var query = {
@@ -28,7 +28,7 @@
                 html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true);
             }
 
-            if (view == "Tile") {
+            if (view == "Backdrop") {
                 html += LibraryBrowser.getPosterDetailViewHtml({
                     items: result.Items,
                     useAverageAspectRatio: true,

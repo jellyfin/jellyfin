@@ -1,7 +1,7 @@
 
 (function ($, document) {
 
-	var view = "Tile";
+    var view = "Backdrop";
 
 	// The base query options
 	var query = {
