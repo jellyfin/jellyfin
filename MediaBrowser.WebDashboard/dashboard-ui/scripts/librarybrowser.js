@@ -149,6 +149,9 @@
             if (item.Type == "Series") {
                 return "tvseries.html?id=" + item.Id;
             }
+            if (item.Type == "Season") {
+                return "tvseason.html?id=" + item.Id;
+            }
             if (item.Type == "BoxSet") {
                 return "boxset.html?id=" + item.Id;
             }

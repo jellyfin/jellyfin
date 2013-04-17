@@ -4,16 +4,14 @@
 
         MediaLibraryPage.lastVirtualFolderName = "";
         
-        MediaLibraryPage.reloadLibrary();
+        MediaLibraryPage.reloadLibrary(this);
     },
 
-    reloadLibrary: function () {
+    reloadLibrary: function (page) {
 
         Dashboard.showLoadingMsg();
 
         var userId = getParameterByName("userId");
-
-        var page = $.mobile.activePage;
 
         if (userId) {
 
@@ -28,8 +26,11 @@
 
                 if (user.Configuration.UseCustomLibrary) {
 
-                    ApiClient.getVirtualFolders(userId).done(MediaLibraryPage.reloadVirtualFolders);
-	                $(".editing_default").hide();
+                    ApiClient.getVirtualFolders(userId).done(function (result) {
+                        MediaLibraryPage.reloadVirtualFolders(page, result);
+                    });
+                    
+                    $(".editing_default", page).hide();
                     $('#divMediaLibrary', page).show();
                 } else {
                     $('#divMediaLibrary', page).hide();
@@ -41,7 +42,9 @@
         } else {
 
             $('#userProfileNavigation', page).hide();
-            ApiClient.getVirtualFolders().done(MediaLibraryPage.reloadVirtualFolders);
+            ApiClient.getVirtualFolders().done(function(result) {
+                MediaLibraryPage.reloadVirtualFolders(page, result);
+            });
 
             $('#fldUseDefaultLibrary', page).hide();
             $('#divMediaLibrary', page).show();
@@ -49,9 +52,7 @@
         }
     },
 
-    reloadVirtualFolders: function (virtualFolders) {
-
-        var page = $.mobile.activePage;
+    reloadVirtualFolders: function (page, virtualFolders) {
 
         if (virtualFolders) {
             MediaLibraryPage.virtualFolders = virtualFolders;
@@ -113,14 +114,17 @@
         Dashboard.showLoadingMsg();
 
         var userId = getParameterByName("userId");
+        var page = $.mobile.activePage;
 
         ApiClient.getUser(userId).done(function (user) {
 
             user.Configuration.UseCustomLibrary = !useDefaultLibrary;
 
-            ApiClient.updateUser(user).done(MediaLibraryPage.reloadLibrary);
+            ApiClient.updateUser(user).done(function() {
+                MediaLibraryPage.reloadLibrary(page);
+            });
 
-	        $(".editing_default").hide();
+            $(".editing_default", page).hide();
         });
     },
 
@@ -266,7 +270,7 @@
 
         $('#popupEnterText', page).popup("close");
         $('#popupDirectoryPicker', page).popup("close");
-        MediaLibraryPage.reloadLibrary();
+        MediaLibraryPage.reloadLibrary(page);
     }
 };
 

@@ -1,0 +1,65 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    <div id="tvSeasonPage" data-role="page" class="page libraryPage noLogoPage" data-theme="a">
+        <h1 class="libraryPageHeader"><a href="index.html" class="imageLink">
+            <img src="css/images/home.png"></a>TV Shows</h1>
+
+        <div data-role="content">
+
+            <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
+                <a href="tvrecommended.html" data-role="button">Suggested</a>
+                <a href="tvshows.html" data-role="button" class="ui-btn-active">Shows</a>
+                <a href="tvgenres.html" data-role="button">Genres</a>
+                <a href="tvpeople.html" data-role="button">Actors</a>
+                <a href="tvstudios.html" data-role="button">Networks</a>
+            </div>
+
+            <div class="detailPagePrimaryInfo">
+                
+                <h1 id="itemName" class="detailPageName"></h1>
+
+                <div class="itemImageBlock">
+                    <div id="itemMedia" style="position: relative;">
+                        <div id="itemImage"></div>
+                    </div>
+                </div>
+
+                <div class="itemDetailBlock">
+
+                    <p id="itemTagline" style="font-style: italic;"></p>
+                    <p id="itemOverview"></p>
+                    <p id="itemRatings"></p>
+                    <p id="itemCommunityRating"></p>
+                    <p id="itemMiscInfo" class="itemMiscInfo"></p>
+
+                    <p id="itemGenres"></p>
+                    <p id="itemStudios"></p>
+                    <p id="itemLinks"></p>
+                </div>
+            </div>
+
+            <div data-role="collapsible" id="episodesCollapsible">
+                <h3>Episodes</h3>
+                <div id="episodesContent"></div>
+            </div>
+            <div data-role="collapsible" id="trailersCollapsible" class="hide">
+                <h3>Trailers</h3>
+                <div id="trailersContent"></div>
+            </div>
+            <div data-role="collapsible" id="castCollapsible" class="hide">
+                <h3>Cast & Crew</h3>
+                <div id="castContent"></div>
+            </div>
+            <div data-role="collapsible" id="galleryCollapsible">
+                <h3>Gallery</h3>
+                <div id="galleryContent"></div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>
