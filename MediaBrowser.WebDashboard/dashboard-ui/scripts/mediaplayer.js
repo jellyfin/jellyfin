@@ -102,7 +102,9 @@
                 videoBitrate: 1500000,
                 maxWidth: screenWidth,
                 maxHeight: screenHeight,
-                StartTimeTicks: 0
+                StartTimeTicks: 0,
+                SubtitleStreamIndex: null,
+                AudioStreamIndex: null
             };
 
             if (typeof (startPosition) != "undefined") {
