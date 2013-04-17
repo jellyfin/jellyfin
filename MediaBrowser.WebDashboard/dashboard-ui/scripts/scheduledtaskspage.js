@@ -56,7 +56,7 @@
                 html += "<li data-role='list-divider'>" + currentCategory + "</li>";
             }
 
-            html += "<li>";
+            html += "<li title='" + task.Description + "'>";
 
             html += "<a href='scheduledtask.html?id=" + task.Id + "'>";
 
