@@ -279,3 +279,15 @@
         max-height: 200px;
     }
 }
+
+@media all and (min-width: 2000px) {
+    .posterDetailViewItem {
+        width: 23.5%;
+    }
+}
+
+@media all and (min-width: 2540px) {
+    .posterDetailViewItem {
+        width: 18.75%;
+    }
+}

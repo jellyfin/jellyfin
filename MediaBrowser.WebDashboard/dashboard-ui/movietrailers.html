@@ -4,7 +4,7 @@
     <title>Media Browser</title>
 </head>
 <body>
-    <div id="moviePeoplePage" data-role="page" class="page libraryPage noLogoPage" data-theme="a">
+    <div id="movieTrailersPage" data-role="page" class="page libraryPage noLogoPage" data-theme="a">
         <h1 class="libraryPageHeader"><a href="index.html" class="imageLink">
             <img src="css/images/home.png"></a>Movies</h1>
         <div data-role="content">
@@ -12,12 +12,18 @@
                 <a href="moviesrecommended.html" data-role="button">Suggested</a>
                 <a href="movies.html" data-role="button">Movies</a>
                 <a href="boxsets.html" data-role="button">Box Sets</a>
-                <a href="movietrailers.html" data-role="button">Trailers</a>
+                <a href="movietrailers.html" data-role="button" class="ui-btn-active">Trailers</a>
                 <a href="moviegenres.html" data-role="button">Genres</a>
-                <a href="moviepeople.html" data-role="button" class="ui-btn-active">People</a>
+                <a href="moviepeople.html" data-role="button">People</a>
                 <a href="moviestudios.html" data-role="button">Studios</a>
             </div>
             <div class="viewSettings">
+                <div style="display: inline-block;">
+                    <select data-mini="true" data-inline="true" id="selectView" name="selectView">
+                        <option value="Tile">Tile</option>
+                        <option value="Poster">Poster</option>
+                    </select>
+                </div>
                 <button data-mini="true" data-icon="sort" data-inline="true" onclick="$('#sortPanel', $.mobile.activePage).panel( 'toggle' );">Sort</button>
                 <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $.mobile.activePage).panel( 'toggle' );">Filter</button>
             </div>
@@ -33,6 +39,30 @@
 
                     <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
                     <label for="radioSortName">Name</label>
+
+                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioBudget" value="off" data-sortby="Budget" data-mini="true">
+                    <label for="radioBudget">Budget</label>
+
+                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioCommunityRating" value="off" data-sortby="CommunityRating" data-mini="true">
+                    <label for="radioCommunityRating">Community Rating</label>
+
+                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioDateCreated" value="off" data-sortby="DateCreated" data-mini="true">
+                    <label for="radioDateCreated">Date Added</label>
+
+                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioDatePlayed" value="off" data-sortby="DatePlayed" data-mini="true">
+                    <label for="radioDatePlayed">Date Played</label>
+
+                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioPremiereDate" value="off" data-sortby="PremiereDate" data-mini="true">
+                    <label for="radioPremiereDate">Date Released</label>
+
+                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioPlayCount" value="off" data-sortby="PlayCount" data-mini="true">
+                    <label for="radioPlayCount">Play Count</label>
+
+                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioRandom" value="off" data-sortby="Random" data-mini="true">
+                    <label for="radioRandom">Random</label>
+
+                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioRuntime" value="off" data-sortby="Runtime" data-mini="true">
+                    <label for="radioRuntime">Runtime</label>
                 </fieldset>
 
                 <fieldset data-role="controlgroup">
@@ -54,6 +84,15 @@
                     <legend>
                         <strong>Filters:</strong>
                     </legend>
+                    <input class="chkStandardFilter" type="checkbox" name="chkPlayed" id="chkPlayed" data-theme="c" data-filter="IsPlayed" data-mini="true">
+                    <label for="chkPlayed">Watched</label>
+
+                    <input class="chkStandardFilter" type="checkbox" name="chkUnplayed" id="chkUnplayed" data-theme="c" data-filter="IsUnPlayed" data-mini="true">
+                    <label for="chkUnplayed">Unwatched</label>
+
+                    <input class="chkStandardFilter" type="checkbox" name="chkResumable" id="chkResumable" data-theme="c" data-filter="IsResumable" data-mini="true">
+                    <label for="chkResumable">Resumable</label>
+
                     <input class="chkStandardFilter" type="checkbox" name="chkIsFavorite" id="chkIsFavorite" data-theme="c" data-filter="IsFavorite" data-mini="true">
                     <label for="chkIsFavorite">Favorite</label>
 
@@ -63,25 +102,8 @@
                     <input class="chkStandardFilter" type="checkbox" name="chkDislikes" id="chkDislikes" data-theme="c" data-filter="Dislikes" data-mini="true">
                     <label for="chkDislikes">Dislikes</label>
                 </fieldset>
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        <strong>Person Types:</strong>
-                    </legend>
-                    <input class="chkPersonTypeFilter" type="checkbox" name="chkActor" id="chkActor" data-theme="c" data-filter="Actor" data-mini="true">
-                    <label for="chkActor">Actors</label>
-
-                    <input class="chkPersonTypeFilter" type="checkbox" name="chkDirector" id="chkDirector" data-theme="c" data-filter="Director" data-mini="true">
-                    <label for="chkDirector">Directors</label>
-
-                    <input class="chkPersonTypeFilter" type="checkbox" name="chkProducer" id="chkProducer" data-theme="c" data-filter="Producer" data-mini="true">
-                    <label for="chkProducer">Producers</label>
-
-                    <input class="chkPersonTypeFilter" type="checkbox" name="chkWriter" id="chkWriter" data-theme="c" data-filter="Writer" data-mini="true">
-                    <label for="chkWriter">Writers</label>
-                </fieldset>
             </form>
         </div>
-
     </div>
 </body>
 </html>
