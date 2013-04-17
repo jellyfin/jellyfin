@@ -56,13 +56,21 @@
 
     function renderTabs(page, item) {
 
-        if (item.Type !== "Person") {
-            return;
+        var promise;
+        
+        if (item.Type == "Person") {
+            promise = ApiClient.getPersonItemCounts(Dashboard.getCurrentUserId(), item.Name);
+        }
+        else if (item.Type == "Genre") {
+            promise = ApiClient.getGenreItemCounts(Dashboard.getCurrentUserId(), item.Name);
+        }
+        else if (item.Type == "Studio") {
+            promise = ApiClient.getStudioItemCounts(Dashboard.getCurrentUserId(), item.Name);
+        } else {
+            throw new Error("Unknown item type: " + item.Type);
         }
 
-        var url = ApiClient.getUrl("Users/" + Dashboard.getCurrentUserId() + "/Persons/" + item.Name + "/Counts");
-
-        $.getJSON(url).done(function (result) {
+        promise.done(function (result) {
 
             var html = '<fieldset data-role="controlgroup" data-type="horizontal" class="libraryTabs">';
 
