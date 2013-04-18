@@ -809,12 +809,12 @@
             else if (item.Type == "Person") {
                 url = "css/images/items/detail/person.png";
                 useBackgroundColor = true;
-                maxwidth = 100;
+                maxwidth = 125;
             }
             else if (item.Type == "Genre" || item.Type == "Studio") {
                 url = "css/images/items/detail/video.png";
                 useBackgroundColor = true;
-                maxwidth = 100;
+                maxwidth = 125;
             }
             else {
                 url = "css/images/items/detail/video.png";

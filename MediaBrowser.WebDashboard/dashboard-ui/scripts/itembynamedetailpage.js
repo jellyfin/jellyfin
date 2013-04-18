@@ -1,5 +1,7 @@
 ﻿(function ($, document, LibraryBrowser) {
 
+    var currentItem;
+
     function reload(page) {
 
         Dashboard.showLoadingMsg();
@@ -38,6 +40,8 @@
             var item = response1[0];
             var userdata = response2[0];
 
+            currentItem = item;
+
             item.UserData = userdata;
             name = item.Name;
 
@@ -57,7 +61,7 @@
     function renderTabs(page, item) {
 
         var promise;
-        
+
         if (item.Type == "Person") {
             promise = ApiClient.getPersonItemCounts(Dashboard.getCurrentUserId(), item.Name);
         }
@@ -87,11 +91,11 @@
                 html += '<input type="radio" name="ibnItems" id="radioShows" value="on" data-mini="true">';
                 html += '<label for="radioShows">TV Shows (' + result.SeriesCount + ')</label>';
             }
-            
+
             if (result.EpisodeGuestStarCount) {
 
                 html += '<input type="radio" name="ibnItems" id="radioGuestStar" value="on" data-mini="true">';
-                html += '<label for="radioGuestStar">Guest Starred (' + result.EpisodeGuestStarCount + ')</label>';
+                html += '<label for="radioGuestStar">Guest Star (' + result.EpisodeGuestStarCount + ')</label>';
             }
 
             if (result.TrailerCount) {
@@ -120,9 +124,40 @@
 
             html += '</fieldset>';
 
-            var elem = $('#items', page).html(html).trigger('create');
+            var elem = $('#itemTabs', page).html(html).trigger('create');
 
-            $('input:first', elem).attr("checked", "checked").checkboxradio("refresh").click();
+            bindRadioEvents(page);
+
+            $('input:first', elem).attr("checked", "checked").checkboxradio("refresh").trigger('click');
+        });
+    }
+
+    function bindRadioEvents(page) {
+
+        $("#radioMovies", page).on("click", function () {
+
+            loadItems(page, { IncludeItemTypes: "Movie" });
+
+        });
+
+        $("#radioShows", page).on("click", function () {
+
+            loadItems(page, { IncludeItemTypes: "Series" });
+        });
+
+        $("#radioTrailers", page).on("click", function () {
+
+            loadItems(page, { IncludeItemTypes: "Trailer" });
+        });
+
+        $("#radioGames", page).on("click", function () {
+
+            loadItems(page, { IncludeItemTypes: "Game" });
+        });
+
+        $("#radioGuestStar", page).on("click", function () {
+
+            loadItems(page, { IncludeItemTypes: "Episode", PersonTypes: "GuestStar" });
         });
     }
 
@@ -174,8 +209,85 @@
         $('#itemRatings', page).html(LibraryBrowser.getUserDataIconsHtml(item));
     }
 
+    function addCurrentItemToQuery(query) {
+
+        if (currentItem.Type == "Person") {
+            query.Person = currentItem.Name;
+        }
+        else if (currentItem.Type == "Genre") {
+            query.Genres = currentItem.Name;
+        }
+        else if (currentItem.Type == "Studio") {
+            query.Studios = currentItem.Name;
+        }
+    }
+
+    function loadItems(page, options) {
+
+        var query = {
+
+            SortBy: "SortName",
+            SortOrder: "Ascending",
+            IncludeItemTypes: "Movie",
+            Recursive: true,
+            Fields: "PrimaryImageAspectRatio,UserData,DisplayMediaType,ItemCounts,DateCreated",
+            Limit: LibraryBrowser.getDetaultPageSize(),
+            StartIndex: 0
+        };
+
+        query = $.extend(query, options || {});
+
+        addCurrentItemToQuery(query);
+
+        ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
+            var html = '';
+
+            var showPaging = result.TotalRecordCount > query.Limit;
+
+            if (showPaging) {
+                html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true);
+            }
+
+            html += LibraryBrowser.getPosterDetailViewHtml({
+                items: result.Items,
+                useAverageAspectRatio: true
+            });
+
+            if (showPaging) {
+                html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
+            }
+
+            var elem = $('#items', page).html(html).trigger('create');
+
+            $('select', elem).on('change', function () {
+
+                query.StartIndex = (parseInt(this.value) - 1) * query.Limit;
+                loadItems(page, query);
+            });
+
+            $('.btnNextPage', elem).on('click', function () {
+
+                query.StartIndex = query.StartIndex + query.Limit;
+                loadItems(page, query);
+            });
+
+            $('.btnPreviousPage', elem).on('click', function () {
+
+                query.StartIndex = query.StartIndex - query.Limit;
+                loadItems(page, query);
+            });
+        });
+    }
+
     $(document).on('pageshow', "#itemByNameDetailPage", function () {
-        reload(this);
+
+        var page = this;
+
+        reload(page);
+
+    }).on('pagehide', "#itemByNameDetailPage", function () {
+
+        currentItem = null;
     });
 
 
