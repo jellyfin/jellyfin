@@ -307,7 +307,7 @@
                 seriesName = item.SeriesName || item.Album || item.ProductionYear;
             }
 
-            html += "<div><img class='nowPlayingBarImage ' alt='' title='' src='" + url + "' style='height:36px;display:inline-block;' /></div>";
+            html += "<div><a href='itemdetails.html?id="+item.Id+"'><img class='nowPlayingBarImage ' alt='' title='' src='" + url + "' style='height:36px;display:inline-block;' /></a></div>";
             if (item.Type == "Movie")
                 html += '<div>' + name + '<br/>' + seriesName + '</div>';
             else
