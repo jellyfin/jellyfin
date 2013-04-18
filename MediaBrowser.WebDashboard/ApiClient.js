@@ -349,8 +349,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             return self.ajax({
                 type: "DELETE",
-                url: url,
-                dataType: "json"
+                url: url
             });
         };
 
@@ -549,8 +548,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             return self.ajax({
                 type: "DELETE",
-                url: url,
-                dataType: "json"
+                url: url
             });
         };
 
@@ -604,8 +602,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             return self.ajax({
                 type: "DELETE",
-                url: url,
-                dataType: "json"
+                url: url
             });
         };
 
@@ -626,8 +623,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             return self.ajax({
                 type: "DELETE",
-                url: url,
-                dataType: "json"
+                url: url
             });
         };
 
@@ -722,8 +718,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             return self.ajax({
                 type: "DELETE",
-                url: url,
-                dataType: "json"
+                url: url
             });
         };
 
@@ -741,8 +736,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             return self.ajax({
                 type: "DELETE",
-                url: url,
-                dataType: "json"
+                url: url
             });
         };
 
@@ -765,8 +759,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             return self.ajax({
                 type: "DELETE",
-                url: url,
-                dataType: "json"
+                url: url
             });
         };
 
@@ -1313,7 +1306,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 type: "POST",
                 url: url,
                 data: JSON.stringify(postData),
-                dataType: "json",
                 contentType: "application/json"
             });
         };
@@ -1390,7 +1382,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 type: "POST",
                 url: url,
                 data: JSON.stringify(configuration),
-                dataType: "json",
                 contentType: "application/json"
             });
         };
@@ -1406,7 +1397,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 type: "POST",
                 url: url,
                 data: JSON.stringify(info),
-                dataType: "json",
                 contentType: "application/json"
             });
         };
@@ -1448,7 +1438,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 type: "POST",
                 url: url,
                 data: JSON.stringify(user),
-                dataType: "json",
                 contentType: "application/json"
             });
         };
@@ -1474,7 +1463,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 type: "POST",
                 url: url,
                 data: JSON.stringify(triggers),
-                dataType: "json",
                 contentType: "application/json"
             });
         };
@@ -1500,7 +1488,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 type: "POST",
                 url: url,
                 data: JSON.stringify(configuration),
-                dataType: "json",
                 contentType: "application/json"
             });
         };
@@ -1673,8 +1660,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             return self.ajax({
                 type: method,
-                url: url,
-                dataType: "json"
+                url: url
             });
         };
 
@@ -1700,8 +1686,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             return self.ajax({
                 type: method,
-                url: url,
-                dataType: "json"
+                url: url
             });
         };
 
@@ -1753,8 +1738,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             return self.ajax({
                 type: method,
-                url: url,
-                dataType: "json"
+                url: url
             });
         };
 
@@ -1803,8 +1787,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             return self.ajax({
                 type: "DELETE",
-                url: url,
-                dataType: "json"
+                url: url
             });
         };
 
@@ -1917,8 +1900,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             return self.ajax({
                 type: "DELETE",
-                url: url,
-                dataType: "json"
+                url: url
             });
         };
 
@@ -1941,8 +1923,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             return self.ajax({
                 type: "POST",
-                url: url,
-                dataType: "json"
+                url: url
             });
         };
 
@@ -1972,8 +1953,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             return self.ajax({
                 type: "POST",
-                url: url,
-                dataType: "json"
+                url: url
             });
         };
 
@@ -2004,8 +1984,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             return self.ajax({
                 type: "DELETE",
-                url: url,
-                dataType: "json"
+                url: url
             });
         };
     }
