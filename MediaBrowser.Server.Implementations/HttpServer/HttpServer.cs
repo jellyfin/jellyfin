@@ -296,7 +296,17 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             RaiseReceiveWebRequest(context);
 
-            await Task.Run(() => ProcessRequest(context)).ConfigureAwait(false);
+            await Task.Run(() =>
+            {
+                try
+                {
+                    ProcessRequest(context);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("ProcessRequest failure", ex);
+                }
+            }).ConfigureAwait(false);
         }
 
         /// <summary>
