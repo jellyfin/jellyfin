@@ -108,7 +108,7 @@ namespace MediaBrowser.Api
 
             if (path.StartsWith(NetworkPrefix, StringComparison.OrdinalIgnoreCase) && path.LastIndexOf('\\') == 1)
             {
-                return ToOptimizedResult(GetNetworkShares(path).ToList());
+                return ToOptimizedResult(GetNetworkShares(path).OrderBy(i => i.Path).ToList());
             }
 
             // Reject invalid input
@@ -117,7 +117,7 @@ namespace MediaBrowser.Api
                 throw new ArgumentException(string.Format("Invalid path: {0}", path));
             }
 
-            return ToOptimizedResult(GetFileSystemEntries(request).ToList());
+            return ToOptimizedResult(GetFileSystemEntries(request).OrderBy(i => i.Path).ToList());
         }
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetNetworkDevices request)
         {
-            var result = GetNetworkDevices().ToList();
+            var result = GetNetworkDevices().OrderBy(i => i.Path).ToList();
 
             return ToOptimizedResult(result);
         }
