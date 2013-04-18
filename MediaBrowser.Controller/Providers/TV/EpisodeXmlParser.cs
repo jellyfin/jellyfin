@@ -48,7 +48,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                 case "filename":
                     {
-                        string filename = reader.ReadElementContentAsString();
+                        var filename = reader.ReadElementContentAsString();
 
                         if (!string.IsNullOrWhiteSpace(filename))
                         {
@@ -56,8 +56,13 @@ namespace MediaBrowser.Controller.Providers.TV
                             // even though it's actually using the metadata folder.
                             filename = Path.GetFileName(filename);
 
-                            string seasonFolder = Path.GetDirectoryName(item.Path);
-                            item.PrimaryImagePath = Path.Combine(seasonFolder, "metadata", filename);
+                            var seasonFolder = Path.GetDirectoryName(item.Path);
+                            filename = Path.Combine(seasonFolder, "metadata", filename);
+
+                            if (File.Exists(filename))
+                            {
+                                item.PrimaryImagePath = filename;
+                            }
                         }
                         break;
                     }
