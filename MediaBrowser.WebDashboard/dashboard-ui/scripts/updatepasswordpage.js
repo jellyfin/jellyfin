@@ -1,11 +1,6 @@
-﻿var UpdatePasswordPage = {
+﻿(function ($, document, window) {
 
-    onPageShow: function () {
-        UpdatePasswordPage.loadUser();
-    },
-    
-    loadUser: function() {
-        var page = $.mobile.activePage;
+    function loadUser(page) {
 
         var userid = getParameterByName("userId");
 
@@ -28,65 +23,96 @@
         $('#txtCurrentPassword', page).val('');
         $('#txtNewPassword', page).val('');
         $('#txtNewPasswordConfirm', page).val('');
-    },
+    }
 
-    save: function () {
+    function save(page) {
 
         var userId = getParameterByName("userId");
 
-        var page = $($.mobile.activePage);
         var currentPassword = $('#txtCurrentPassword', page).val();
         var newPassword = $('#txtNewPassword', page).val();
 
-        ApiClient.updateUserPassword(userId, currentPassword, newPassword).done(UpdatePasswordPage.saveComplete);
-    },
+        ApiClient.updateUserPassword(userId, currentPassword, newPassword).done(function () {
 
-    saveComplete: function () {
+            Dashboard.hideLoadingMsg();
 
-        Dashboard.hideLoadingMsg();
+            Dashboard.alert("Password saved.");
+            loadUser(page);
 
-        Dashboard.alert("Password saved.");
-        UpdatePasswordPage.loadUser();
-    },
+        });
 
-    resetPassword: function () {
+    }
 
-        var msg = "Are you sure you wish to reset the password?";
+    function updatePasswordPage() {
 
-        Dashboard.confirm(msg, "Password Reset", function (result) {
+        var self = this;
 
-            if (result) {
-                var userId = getParameterByName("userId");
+        self.onSubmit = function () {
 
-                Dashboard.showLoadingMsg();
+            var page = $.mobile.activePage;
 
-                ApiClient.resetUserPassword(userId).done(function () {
+            if ($('#txtNewPassword', page).val() != $('#txtNewPasswordConfirm', page).val()) {
 
-                    Dashboard.hideLoadingMsg();
-                    Dashboard.alert("The password has been reset.");
-                    UpdatePasswordPage.loadUser();
+                Dashboard.showError("Password and password confirmation must match.");
+                return false;
+            }
 
-                });
+            Dashboard.showLoadingMsg();
+
+            save(page);
+
+            // Disable default form submission
+            return false;
+
+        };
+
+        self.resetPassword = function () {
+
+            var msg = "Are you sure you wish to reset the password?";
+
+            var page = $.mobile.activePage;
+
+            Dashboard.confirm(msg, "Password Reset", function (result) {
+
+                if (result) {
+                    var userId = getParameterByName("userId");
+
+                    Dashboard.showLoadingMsg();
+
+                    ApiClient.resetUserPassword(userId).done(function () {
+
+                        Dashboard.hideLoadingMsg();
+                        Dashboard.alert("The password has been reset.");
+                        loadUser(page);
+
+                    });
+                }
+            });
+
+        };
+    }
+
+    window.UpdatePasswordPage = new updatePasswordPage();
+
+    $(document).on('pagebeforeshow', "#updatePasswordPage", function () {
+
+        var page = this;
+
+        Dashboard.getCurrentUser().done(function (loggedInUser) {
+
+            if (loggedInUser.Configuration.IsAdministrator) {
+                $('.lnkMediaLibrary', page).show().prev().removeClass('ui-last-child');
+            } else {
+                $('.lnkMediaLibrary', page).hide().prev().addClass('ui-last-child');
             }
         });
-    },
 
-    onSubmit: function () {
-        var page = $($.mobile.activePage);
+    }).on('pageshow', "#updatePasswordPage", function () {
 
-        if ($('#txtNewPassword', page).val() != $('#txtNewPasswordConfirm', page).val()) {
+        var page = this;
 
-            Dashboard.showError("Password and password confirmation must match.");
-            return false;
-        }
+        loadUser(page);
 
-        Dashboard.showLoadingMsg();
+    });
 
-        UpdatePasswordPage.save();
-
-        // Disable default form submission
-        return false;
-    }
-};
-
-$(document).on('pageshow', "#updatePasswordPage", UpdatePasswordPage.onPageShow);
+})(jQuery, document, window);

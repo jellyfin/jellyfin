@@ -34,10 +34,6 @@
     
     function loadUser(page, user, loggedInUser, parentalRatingsPromise, allCulturesPromise) {
 
-        if (loggedInUser.Configuration.IsAdministrator) {
-            $('.lnkMediaLibrary', page).show();
-        }
-
         if (!loggedInUser.Configuration.IsAdministrator || user.Id == loggedInUser.Id) {
 
             $('#fldIsAdmin', page).hide();
@@ -155,12 +151,10 @@
 
     window.EditUserPage = new editUserPage();
 
-    $(document).on('pageshow', "#editUserPage", function () {
+    $(document).on('pagebeforeshow', "#editUserPage", function () {
 
         var page = this;
         
-        Dashboard.showLoadingMsg();
-
         var userId = getParameterByName("userId");
 
         if (userId) {
@@ -168,6 +162,23 @@
         } else {
             $('#userProfileNavigation', page).hide();
         }
+
+        Dashboard.getCurrentUser().done(function (loggedInUser) {
+
+            if (loggedInUser.Configuration.IsAdministrator) {
+                $('.lnkMediaLibrary', page).show().prev().removeClass('ui-last-child');
+            } else {
+                $('.lnkMediaLibrary', page).hide().prev().addClass('ui-last-child');
+            }
+        });
+
+    }).on('pageshow', "#editUserPage", function () {
+
+        var page = this;
+
+        Dashboard.showLoadingMsg();
+
+        var userId = getParameterByName("userId");
 
         var promise1;
 
@@ -188,7 +199,7 @@
         var promise2 = Dashboard.getCurrentUser();
 
         var parentalRatingsPromise = ApiClient.getParentalRatings();
-        
+
         var allCulturesPromise = ApiClient.getCultures();
 
         $.when(promise1, promise2).done(function (response1, response2) {
