@@ -83,7 +83,6 @@
     <Compile Include="Net\NetworkShare.cs" />
     <Compile Include="Net\NetworkShareType.cs" />
     <Compile Include="Serialization\IJsonSerializer.cs" />
-    <Compile Include="Serialization\IProtobufSerializer.cs" />
     <Compile Include="Serialization\IXmlSerializer.cs" />
     <Compile Include="Updates\CheckForUpdateResult.cs" />
     <Compile Include="Updates\PackageTargetSystem.cs" />
@@ -128,9 +127,6 @@
   <ItemGroup>
     <Reference Include="PropertyChanged">
       <HintPath>..\packages\PropertyChanged.Fody.1.32.2.0\lib\portable-net4+sl4+wp7+win8\PropertyChanged.dll</HintPath>
-    </Reference>
-    <Reference Include="protobuf-net">
-      <HintPath>..\packages\protobuf-net.2.0.0.621\lib\portable-sl4+net40+wp7+windows8\protobuf-net.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

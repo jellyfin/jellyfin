@@ -61,7 +61,11 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <param name="appPaths">The app paths.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logManager">The log manager.</param>
-        /// <exception cref="System.ArgumentNullException">protobufSerializer</exception>
+        /// <exception cref="System.ArgumentNullException">
+        /// jsonSerializer
+        /// or
+        /// appPaths
+        /// </exception>
         public SQLiteUserDataRepository(IApplicationPaths appPaths, IJsonSerializer jsonSerializer, ILogManager logManager)
             : base(logManager)
         {
