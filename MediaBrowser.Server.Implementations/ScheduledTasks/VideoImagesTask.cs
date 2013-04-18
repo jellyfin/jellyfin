@@ -76,7 +76,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <value>The description.</value>
         public string Description
         {
-            get { return "Extracts images from audio files that do not have external images."; }
+            get { return "Extracts images from video files that do not have external images."; }
         }
 
         /// <summary>
