@@ -229,8 +229,8 @@
             if (stream.AspectRatio) {
                 html += '<li><span class="mediaInfoLabel">Aspect Ratio</span> ' + stream.AspectRatio + '</li>';
             }
-            if (stream.Bitrate) {
-                html += '<li><span class="mediaInfoLabel">Bitrate</span> ' + stream.Bitrate + '</li>';
+            if (stream.BitRate) {
+                html += '<li><span class="mediaInfoLabel">Bitrate</span> ' + stream.BitRate + '</li>';
             }
             if (stream.Channels) {
                 html += '<li><span class="mediaInfoLabel">Channels</span> ' + stream.Channels + '</li>';
