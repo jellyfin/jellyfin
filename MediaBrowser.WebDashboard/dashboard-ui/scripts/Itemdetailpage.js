@@ -27,9 +27,15 @@
 
             $('#itemName', page).html(name);
 
-            if (item.SeriesName || item.Album) {
-                var seriesName = item.SeriesName || item.Album;
-                $('#seriesName', page).html(seriesName).show();
+            if (item.SeriesName) {
+
+                $('#seriesName', page).html('<a class="detailPageParentLink" href="tvseries.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>').show().trigger('create');
+            }
+            else if (item.Album) {
+                $('#seriesName', page).html(item.Album).show();
+                
+            } else {
+                $('#seriesName', page).hide();
             }
 
             setInitialCollapsibleState(page, item);
