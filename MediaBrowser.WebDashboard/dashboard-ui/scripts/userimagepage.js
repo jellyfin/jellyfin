@@ -10,12 +10,6 @@
 
         ApiClient.getUser(userId).done(function (user) {
 
-            if (user.Configuration.IsAdministrator) {
-                $('.lnkMediaLibrary', page).show();
-            } else {
-                $('.lnkMediaLibrary', page).hide();
-            }
-
             $('#uploadUserImage', page).val('').trigger('change');
 
             Dashboard.setPageTitle(user.Name);
