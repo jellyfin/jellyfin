@@ -4,7 +4,7 @@ using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Server.Implementations.Sorting
 {
-    public class BudgetComparer : IBaseItemComparer
+    public class RevenueComparer : IBaseItemComparer
     {
         /// <summary>
         /// Compares the specified x.
@@ -14,7 +14,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
         /// <returns>System.Int32.</returns>
         public int Compare(BaseItem x, BaseItem y)
         {
-            return (x.Budget ?? 0).CompareTo(y.Budget ?? 0);
+            return (x.Revenue ?? 0).CompareTo(y.Revenue ?? 0);
         }
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
         /// <value>The name.</value>
         public string Name
         {
-            get { return ItemSortBy.Budget; }
+            get { return ItemSortBy.Revenue; }
         }
     }
 }

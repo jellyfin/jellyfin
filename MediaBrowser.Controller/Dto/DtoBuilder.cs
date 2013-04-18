@@ -264,6 +264,11 @@ namespace MediaBrowser.Controller.Dto
                 dto.Budget = item.Budget;
             }
 
+            if (fields.Contains(ItemFields.Revenue))
+            {
+                dto.Revenue = item.Revenue;
+            }
+
             if (fields.Contains(ItemFields.EndDate))
             {
                 dto.EndDate = item.EndDate;

@@ -458,8 +458,15 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the budget.
         /// </summary>
         /// <value>The budget.</value>
-        [ProtoMember(73)]
+        [ProtoMember(74)]
         public double? Budget { get; set; }
+
+        /// <summary>
+        /// Gets or sets the revenue.
+        /// </summary>
+        /// <value>The revenue.</value>
+        [ProtoMember(75)]
+        public double? Revenue { get; set; }
         
         /// <summary>
         /// Gets a value indicating whether this instance can resume.

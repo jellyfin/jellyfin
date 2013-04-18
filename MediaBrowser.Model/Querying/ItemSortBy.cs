@@ -23,6 +23,10 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         public const string Budget = "Budget";
         /// <summary>
+        /// The revenue
+        /// </summary>
+        public const string Revenue = "Revenue";
+        /// <summary>
         /// The date created
         /// </summary>
         public const string DateCreated = "DateCreated";

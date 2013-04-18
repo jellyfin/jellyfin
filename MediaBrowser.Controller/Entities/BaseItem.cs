@@ -565,6 +565,12 @@ namespace MediaBrowser.Controller.Entities
         public double? Budget { get; set; }
 
         /// <summary>
+        /// Gets or sets the revenue.
+        /// </summary>
+        /// <value>The revenue.</value>
+        public double? Revenue { get; set; }
+        
+        /// <summary>
         /// Gets or sets the production locations.
         /// </summary>
         /// <value>The production locations.</value>
