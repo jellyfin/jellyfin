@@ -397,7 +397,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new[]
                             {
-                                "http://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.css",
+                                "http://code.jquery.com/mobile/1.3.1/jquery.mobile-1.3.1.min.css",
                                 "thirdparty/video-js/video-js.min.css",
                                 "thirdparty/jqm-icon-pack-3.0/font-awesome/jqm-icon-pack-3.0.0-fa.css",
                                 "css/all.css" + versionString
@@ -419,8 +419,8 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new[]
                             {
-                                "http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js", 
-                                "http://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.js",
+                                "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js", 
+                                "http://code.jquery.com/mobile/1.3.1/jquery.mobile-1.3.1.min.js",
                                 "thirdparty/video-js/video.min.js",
                                 "scripts/all.js" + versionString
             };
