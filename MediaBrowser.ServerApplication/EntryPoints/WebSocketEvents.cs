@@ -213,6 +213,8 @@ namespace MediaBrowser.ServerApplication.EntryPoints
                     LibraryUpdateTimer.Dispose();
                     LibraryUpdateTimer = null;
                 }
+
+                LibraryUpdateInfo = null;
             }
         }
 
