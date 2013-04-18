@@ -916,6 +916,14 @@
             }
         },
 
+        renderPremiereDate: function (elem, item) {
+            if (item.PremiereDate) {
+                elem.show().html('Premiered&nbsp;&nbsp;' + parseISO8601Date(item.PremiereDate, { toLocal: true }).toDateString());
+            } else {
+                elem.hide();
+            }
+        },
+
         renderBudget: function (elem, item) {
             if (item.Budget) {
                 elem.show().html('Budget:&nbsp;&nbsp;$' + item.Budget);

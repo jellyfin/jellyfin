@@ -118,6 +118,7 @@
             $('#itemCommunityRating', page).hide();
         }
 
+        LibraryBrowser.renderPremiereDate($('#itemPremiereDate', page), item);
         LibraryBrowser.renderBudget($('#itemBudget', page), item);
         LibraryBrowser.renderRevenue($('#itemRevenue', page), item);
 
