@@ -224,6 +224,8 @@
 
     function loadItems(page, options) {
 
+        Dashboard.showLoadingMsg();
+
         var query = {
 
             SortBy: "SortName",
@@ -276,6 +278,8 @@
                 query.StartIndex = query.StartIndex - query.Limit;
                 loadItems(page, query);
             });
+
+            Dashboard.hideLoadingMsg();
         });
     }
 
