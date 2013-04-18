@@ -1,25 +1,14 @@
-﻿var UserImagePage = {
+﻿(function ($, window, document, FileReader) {
 
-    onPageShow: function () {
+    var currentFile;
 
-        UserImagePage.reloadUser();
-
-        $("#userImageDropZone", this).on('dragover', UserImagePage.onImageDragOver).on('drop', UserImagePage.onImageDrop);
-    },
-
-    onPageHide: function () {
-        $("#userImageDropZone", this).off('dragover', UserImagePage.onImageDragOver).off('drop', UserImagePage.onImageDrop);
-    },
-
-    reloadUser: function () {
+    function reloadUser(page) {
 
         var userId = getParameterByName("userId");
 
         Dashboard.showLoadingMsg();
 
         ApiClient.getUser(userId).done(function (user) {
-
-            var page = $($.mobile.activePage);
 
             if (user.Configuration.IsAdministrator) {
                 $('.lnkMediaLibrary', page).show();
@@ -51,75 +40,20 @@
 
             Dashboard.hideLoadingMsg();
         });
-    },
 
-    deleteImage: function () {
+    }
 
-        Dashboard.confirm("Are you sure you wish to delete the image?", "Delete Image", function (result) {
+    function processImageChangeResult() {
 
-            if (result) {
-
-                Dashboard.showLoadingMsg();
-
-                var userId = getParameterByName("userId");
-
-                ApiClient.deleteUserImage(userId, "primary").done(UserImagePage.processImageChangeResult);
-            }
-
-        });
-    },
-
-    processImageChangeResult: function () {
-        
         Dashboard.hideLoadingMsg();
-
-        Dashboard.validateCurrentUser($.mobile.activePage);
-        UserImagePage.reloadUser();
-    },
-
-    onFileUploadChange: function (fileUpload) {
-
-        UserImagePage.setFiles(fileUpload.files);
-    },
-
-    setFiles: function (files) {
 
         var page = $.mobile.activePage;
 
-        var file = files[0];
+        Dashboard.validateCurrentUser(page);
+        reloadUser(page);
+    }
 
-        if (!file || !file.type.match('image.*')) {
-            $('#userImageOutput', page).html('');
-            $('#fldUpload', page).hide();
-            UserImagePage.currentFile = null;
-            return;
-        }
-
-        UserImagePage.currentFile = file;
-
-        var reader = new FileReader();
-
-        reader.onerror = UserImagePage.onFileReaderError;
-        reader.onloadstart = UserImagePage.onFileReaderOnloadStart;
-        reader.onabort = UserImagePage.onFileReaderAbort;
-
-        // Closure to capture the file information.
-        reader.onload = (function (theFile) {
-            return function (e) {
-
-                // Render thumbnail.
-                var html = ['<img style="max-width:500px;max-height:200px;" src="', e.target.result, '" title="', escape(theFile.name), '"/>'].join('');
-
-                $('#userImageOutput', page).html(html);
-                $('#fldUpload', page).show();
-            };
-        })(file);
-
-        // Read in the image file as a data URL.
-        reader.readAsDataURL(file);
-    },
-
-    onFileReaderError: function (evt) {
+    function onFileReaderError(evt) {
 
         Dashboard.hideLoadingMsg();
 
@@ -135,50 +69,66 @@
             default:
                 Dashboard.showError('An error occurred reading this file.');
         };
-    },
+    }
 
-    onFileReaderOnloadStart: function (evt) {
+    function onFileReaderOnloadStart(evt) {
 
         $('#fldUpload', $.mobile.activePage).hide();
-    },
+    }
 
-    onFileReaderAbort: function (evt) {
+    function onFileReaderAbort(evt) {
 
         Dashboard.hideLoadingMsg();
         Dashboard.showError('File read cancelled');
-    },
+    }
 
-    onSubmit: function () {
+    function setFiles(files) {
 
-        var file = UserImagePage.currentFile;
+        var page = $.mobile.activePage;
 
-        if (!file) {
-            return false;
+        var file = files[0];
+
+        if (!file || !file.type.match('image.*')) {
+            $('#userImageOutput', page).html('');
+            $('#fldUpload', page).hide();
+            currentFile = null;
+            return;
         }
 
-        if (file.type != "image/png" && file.type != "image/jpeg" && file.type != "image/jpeg") {
-            return false;
-        }
+        currentFile = file;
 
-        Dashboard.showLoadingMsg();
+        var reader = new FileReader();
 
-        var userId = getParameterByName("userId");
+        reader.onerror = onFileReaderError;
+        reader.onloadstart = onFileReaderOnloadStart;
+        reader.onabort = onFileReaderAbort;
 
-        ApiClient.uploadUserImage(userId, 'Primary', file).done(UserImagePage.processImageChangeResult);
+        // Closure to capture the file information.
+        reader.onload = (function (theFile) {
+            return function (e) {
 
-        return false;
-    },
+                // Render thumbnail.
+                var html = ['<img style="max-width:500px;max-height:200px;" src="', e.target.result, '" title="', escape(theFile.name), '"/>'].join('');
 
-    onImageDrop: function (e) {
+                $('#userImageOutput', page).html(html);
+                $('#fldUpload', page).show();
+            };
+        })(file);
+
+        // Read in the image file as a data URL.
+        reader.readAsDataURL(file);
+    }
+
+    function onImageDrop(e) {
 
         e.preventDefault();
 
-        UserImagePage.setFiles(e.originalEvent.dataTransfer.files);
+        setFiles(e.originalEvent.dataTransfer.files);
 
         return false;
-    },
+    }
 
-    onImageDragOver: function (e) {
+    function onImageDragOver(e) {
 
         e.preventDefault();
 
@@ -186,6 +136,83 @@
 
         return false;
     }
-};
 
-$(document).on('pageshow', "#userImagePage", UserImagePage.onPageShow).on('pagehide', "#userImagePage", UserImagePage.onPageHide);
+    function userImagePage() {
+
+        var self = this;
+
+        self.onSubmit = function () {
+
+            var file = currentFile;
+
+            if (!file) {
+                return false;
+            }
+
+            if (file.type != "image/png" && file.type != "image/jpeg" && file.type != "image/jpeg") {
+                return false;
+            }
+
+            Dashboard.showLoadingMsg();
+
+            var userId = getParameterByName("userId");
+
+            ApiClient.uploadUserImage(userId, 'Primary', file).done(processImageChangeResult);
+
+            return false;
+        };
+
+        self.deleteImage = function () {
+
+            Dashboard.confirm("Are you sure you wish to delete the image?", "Delete Image", function (result) {
+
+                if (result) {
+
+                    Dashboard.showLoadingMsg();
+
+                    var userId = getParameterByName("userId");
+
+                    ApiClient.deleteUserImage(userId, "primary").done(processImageChangeResult);
+                }
+
+            });
+        };
+
+        self.onFileUploadChange = function (fileUpload) {
+
+            setFiles(fileUpload.files);
+        };
+    }
+
+    window.UserImagePage = new userImagePage();
+
+    $(document).on('pagebeforeshow', "#userImagePage", function () {
+
+        var page = this;
+
+        Dashboard.getCurrentUser().done(function (loggedInUser) {
+
+            if (loggedInUser.Configuration.IsAdministrator) {
+                $('.lnkMediaLibrary', page).show().prev().removeClass('ui-last-child');
+            } else {
+                $('.lnkMediaLibrary', page).hide().prev().addClass('ui-last-child');
+            }
+        });
+
+    }).on('pageshow', "#userImagePage", function () {
+
+        var page = this;
+
+        reloadUser(page);
+
+        $("#userImageDropZone", page).on('dragover', onImageDragOver).on('drop', onImageDrop);
+
+    }).on('pagehide', "#userImagePage", function () {
+
+        var page = this;
+
+        $("#userImageDropZone", page).off('dragover', onImageDragOver).off('drop', onImageDrop);
+    });
+
+
+})(jQuery, window, document, window.FileReader);
