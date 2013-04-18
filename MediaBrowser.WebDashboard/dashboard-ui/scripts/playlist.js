@@ -13,20 +13,41 @@
 
         };
 
-        self.remove = function (index) {
+        self.remove = function (elem) {
+	        var index = $(elem).attr("data-queue-index");
 
 	        self.queue.splice(index, 1);
+
+	        $(elem).parent().parent().remove();
+	        return false;
         };
 
         self.play = function (elem) {
 			var index = $(elem).attr("data-queue-index");
 
             MediaPlayer.play(new Array(self.queue[index]));
-	        self.queue.shift();
+	        self.queue.splice(index, 1);
         };
+
+	    self.playNext = function () {
+		    if (typeof self.queue[0] != "undefined") {
+			    MediaPlayer.play(new Array(self.queue[0]));
+			    self.queue.shift();
+		    }
+	    };
+
+	    self.inQueue = function (item) {
+		    $.each(Playlist.queue, function(i, queueItem){
+			    if (item.Id == queueItem.Id) {
+				    return true;
+			    }
+		    });
+		    return false;
+	    };
 
         return self;
     }
+
 
     window.Playlist = new playlist();
 })(window);
@@ -39,6 +60,7 @@
 
 		Dashboard.showLoadingMsg();
 
+		$("#queueTable").html('');
 		$.each(Playlist.queue, function(i, item){
 			var html = '';
 			var name = item.Name;
@@ -59,11 +81,12 @@
 			}
 
 			html += '<tr>';
-			html += '<td><img src="css/images/media/playCircle.png" style="height: 28px;" data-queue-index="'+i+'" onclick="Playlist.play(this)" /></td>';
+			html += '<td><img src="css/images/media/playCircle.png" style="height: 28px;cursor:pointer;" data-queue-index="'+i+'" onclick="Playlist.play(this)" /></td>';
 			html += '<td>' + name + '</td>';
 			html += '<td>' + seriesName + '</td>';
 			html += '<td>' + ticks_to_human(item.RunTimeTicks) + '</td>';
 			html += '<td></td>';
+			html += '<td><a href="" data-queue-index="'+i+'" onclick="Playlist.remove(this)">remove</a></td>';
 			html += '</tr>';
 
 			$("#queueTable").append(html);

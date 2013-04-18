@@ -50,6 +50,10 @@
 
             $('#mediaElement', nowPlayingBar).html(html);
 
+	        $(".itemAudio").on("ended",function(){
+		        Playlist.playNext();
+	        });
+
             return $('audio', nowPlayingBar)[0];
         }
 
@@ -170,6 +174,12 @@
                 });
 
                 (this).addEvent("play", updateProgress);
+
+	            (this).addEvent("ended", function () {
+		            MediaPlayer.stopVideo();
+
+		            Playlist.playNext();
+	            });
 
                 ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id);
             });
@@ -314,19 +324,7 @@
             if ($(elem).hasClass("vjs-tech")) {
                 var player = _V_("videoWindow");
 
-                var startTimeTicks = player.tag.src.match(new RegExp("StartTimeTicks=[0-9]+", "g"));
-                var startTime = startTimeTicks[0].replace("StartTimeTicks=", "");
-
-                var itemString = player.tag.src.match(new RegExp("Videos/[0-9a-z\-]+", "g"));
-                var itemId = itemString[0].replace("Videos/", "");
-
-                var positionTicks = parseInt(startTime) + Math.floor(10000000 * player.currentTime());
-
-                ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), itemId, positionTicks);
-
-                if (currentProgressInterval) {
-                    clearTimeout(currentProgressInterval);
-                }
+                self.stopVideo();
 
                 if (player.techName == "html5") {
                     player.tag.src = "";
@@ -353,6 +351,24 @@
 
             currentMediaElement = null;
         };
+
+	    self.stopVideo = function () {
+		    var player = _V_("videoWindow");
+
+		    var startTimeTicks = player.tag.src.match(new RegExp("StartTimeTicks=[0-9]+", "g"));
+		    var startTime = startTimeTicks[0].replace("StartTimeTicks=", "");
+
+		    var itemString = player.tag.src.match(new RegExp("Videos/[0-9a-z\-]+", "g"));
+		    var itemId = itemString[0].replace("Videos/", "");
+
+		    var positionTicks = parseInt(startTime) + Math.floor(10000000 * player.currentTime());
+
+		    ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), itemId, positionTicks);
+
+		    if (currentProgressInterval) {
+			    clearTimeout(currentProgressInterval);
+		    }
+	    }
 
         self.isPlaying = function () {
             return currentMediaElement;

@@ -38,13 +38,13 @@
             if (MediaPlayer.canPlay(item)) {
                 $('#btnPlayMenu', page).show();
                 $('#playButtonShadow', page).show();
-                $('#btnQueueMenu', page).hide();
+                $('#btnQueueMenu', page).show();
             } else {
                 $('#btnPlayMenu', page).hide();
                 $('#playButtonShadow', page).hide();
                 $('#btnQueueMenu', page).hide();
             }
-            
+
             if (LibraryBrowser.shouldDisplayGallery(item)) {
                 $('#galleryCollapsible', page).show();
             } else {
