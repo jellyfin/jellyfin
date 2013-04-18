@@ -19,6 +19,7 @@
             Dashboard.setPageTitle(name);
 
             $('#itemName', page).html(name);
+            $('#seriesName', page).html('<a class="detailPageParentLink" href="tvseries.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>').trigger('create');
 
             setInitialCollapsibleState(page, item);
             renderDetails(page, item);

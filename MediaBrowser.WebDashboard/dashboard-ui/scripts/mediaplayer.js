@@ -149,6 +149,9 @@
                     videoCodec: 'theora',
                     audioCodec: 'Vorbis'
                 }));
+                
+                // HLS must be at the top for safari
+                // Webm must be ahead of mp4 due to the issue of mp4 playing too fast in chrome
 
                 (this).src([
                     { type: "application/x-mpegURL", src: hlsVideoUrl },

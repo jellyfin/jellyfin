@@ -114,6 +114,14 @@
         margin: 0 0 .4em;
     }
 
+.detailPageParentLink {
+    text-decoration: none;
+}
+
+    .detailPageParentLink:hover {
+        text-decoration: underline;
+    }
+
 .itemMiscInfo {
     color: #ddd;
     font-size: 14px;
@@ -214,16 +222,13 @@
 }
 
 .detailPagePrimaryInfo {
-    margin-bottom: 1.5em;
+    margin: 1em 0 1.5em;
 }
 
 @media all and (min-width: 650px) {
     .detailPagePrimaryInfo {
         padding: 0 10px;
-    }
-
-    .libraryTabs .ui-btn-text {
-        font-size: 16px;
+        margin-top: 1.5em;
     }
 
     .libraryTabs .ui-btn-inner {

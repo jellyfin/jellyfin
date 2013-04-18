@@ -739,6 +739,7 @@
 
             var url;
             var useBackgroundColor;
+            var maxwidth;
 
             if (imageTags.Primary) {
 
@@ -798,23 +799,36 @@
             else if (item.MediaType == "Audio") {
                 url = "css/images/items/detail/audio.png";
                 useBackgroundColor = true;
+                maxwidth = 150;
             }
             else if (item.MediaType == "Game") {
                 url = "css/images/items/detail/game.png";
                 useBackgroundColor = true;
+                maxwidth = 150;
             }
             else if (item.Type == "Person") {
                 url = "css/images/items/detail/person.png";
                 useBackgroundColor = true;
+                maxwidth = 100;
+            }
+            else if (item.Type == "Genre" || item.Type == "Studio") {
+                url = "css/images/items/detail/video.png";
+                useBackgroundColor = true;
+                maxwidth = 100;
             }
             else {
                 url = "css/images/items/detail/video.png";
                 useBackgroundColor = true;
+                maxwidth = 150;
             }
 
             if (url) {
 
                 var style = useBackgroundColor ? "background-color:" + LibraryBrowser.getMetroColor(item.Id) + ";" : "";
+
+                if (maxwidth) {
+                    style += "max-width:" + maxwidth + "px;";
+                }
 
                 html += "<img class='itemDetailImage' src='" + url + "' style='" + style + "' />";
             }
