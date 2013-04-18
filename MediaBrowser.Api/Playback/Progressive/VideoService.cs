@@ -94,7 +94,9 @@ namespace MediaBrowser.Api.Playback.Progressive
                 format = " -f mp4 -movflags frag_keyframe+empty_moov";
             }
 
-            return string.Format("{0} {1} -i {2}{3}{4} -threads 0 {5} {6} {7}{8} \"{9}\"",
+            var threads = videoCodec.Equals("libvpx", StringComparison.OrdinalIgnoreCase) ? 2 : 0;
+
+            return string.Format("{0} {1} -i {2}{3}{4} {5} {6} -threads {7} {8}{9} \"{10}\"",
                 probeSize,
                 GetFastSeekCommandLineParameter(state.Request),
                 GetInputArgument(video, state.IsoMount),
@@ -102,6 +104,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 keyFrame,
                 GetMapArgs(state),
                 GetVideoArguments(state, videoCodec),
+                threads,
                 GetAudioArguments(state),
                 format,
                 outputPath
@@ -242,7 +245,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             // webm
             if (videoCodec.Equals("libvpx", StringComparison.OrdinalIgnoreCase))
             {
-                args = "-quality realtime -profile:v 1 -slices 4";
+                args = "-quality realtime -profile:v 0 -slices 4";
             }
 
             // asf/wmv
