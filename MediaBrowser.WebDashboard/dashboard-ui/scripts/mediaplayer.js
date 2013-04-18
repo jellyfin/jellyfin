@@ -153,8 +153,14 @@
                 // HLS must be at the top for safari
                 // Webm must be ahead of mp4 due to the issue of mp4 playing too fast in chrome
 
+	            var mkvVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mkv', $.extend({}, baseParams, {
+		            videoCodec: 'h264',
+		            audioCodec: 'aac'
+	            }));
+
                 (this).src([
                     { type: "application/x-mpegURL", src: hlsVideoUrl },
+	                { type: "video/x-matroska", src: mkvVideoUrl },
                     { type: "video/webm", src: webmVideoUrl },
                     { type: "video/mp4", src: mp4VideoUrl },
                     { type: "video/mp2t; codecs='h264, aac'", src: tsVideoUrl },
@@ -310,7 +316,7 @@
                 seriesName = item.SeriesName || item.Album || item.ProductionYear;
             }
 
-            html += "<div><img class='nowPlayingBarImage ' alt='' title='' src='" + url + "' style='height:36px;display:inline-block;' /></div>";
+            html += "<div><a href='itemdetails.html?id="+item.Id+"'><img class='nowPlayingBarImage ' alt='' title='' src='" + url + "' style='height:36px;display:inline-block;' /></a></div>";
             if (item.Type == "Movie")
                 html += '<div>' + name + '<br/>' + seriesName + '</div>';
             else

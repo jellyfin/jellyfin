@@ -38,7 +38,10 @@
             if (MediaPlayer.canPlay(item)) {
                 $('#btnPlayMenu', page).show();
                 $('#playButtonShadow', page).show();
-                $('#btnQueueMenu', page).show();
+                if (MediaPlayer.isPlaying())
+	                $('#btnQueueMenu', page).show();
+	            else
+	                $('#btnQueueMenu', page).hide();
             } else {
                 $('#btnPlayMenu', page).hide();
                 $('#playButtonShadow', page).hide();
