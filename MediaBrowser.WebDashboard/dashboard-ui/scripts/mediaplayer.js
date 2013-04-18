@@ -150,8 +150,14 @@
                     audioCodec: 'Vorbis'
                 }));
 
+	            var mkvVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mkv', $.extend({}, baseParams, {
+		            videoCodec: 'h264',
+		            audioCodec: 'aac'
+	            }));
+
                 (this).src([
                     { type: "application/x-mpegURL", src: hlsVideoUrl },
+	                { type: "video/x-matroska", src: mkvVideoUrl },
                     { type: "video/webm", src: webmVideoUrl },
                     { type: "video/mp4", src: mp4VideoUrl },
                     { type: "video/mp2t; codecs='h264, aac'", src: tsVideoUrl },
