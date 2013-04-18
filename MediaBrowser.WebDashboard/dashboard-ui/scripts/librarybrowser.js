@@ -924,6 +924,14 @@
             }
         },
 
+        renderRevenue: function (elem, item) {
+            if (item.Revenue) {
+                elem.show().html('Revenue:&nbsp;&nbsp;$' + item.Revenue);
+            } else {
+                elem.hide();
+            }
+        },
+
         getGamePosterViewHtml: function (options) {
 
             var items = options.items;

@@ -119,6 +119,7 @@
         }
 
         LibraryBrowser.renderBudget($('#itemBudget', page), item);
+        LibraryBrowser.renderRevenue($('#itemRevenue', page), item);
 
         $('#itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
 
