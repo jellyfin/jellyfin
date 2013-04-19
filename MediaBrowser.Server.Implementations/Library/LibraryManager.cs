@@ -413,10 +413,12 @@ namespace MediaBrowser.Server.Implementations.Library
             // Gather child folder and files
             if (args.IsDirectory)
             {
-                // When resolving the root, we need it's grandchildren (children of user views)
-                var flattenFolderDepth = args.IsPhysicalRoot ? 2 : 0;
+                var isPhysicalRoot = args.IsPhysicalRoot;
 
-                args.FileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, _logger, flattenFolderDepth: flattenFolderDepth, args: args);
+                // When resolving the root, we need it's grandchildren (children of user views)
+                var flattenFolderDepth = isPhysicalRoot ? 2 : 0;
+
+                args.FileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, _logger, flattenFolderDepth: flattenFolderDepth, args: args, resolveShortcuts: isPhysicalRoot || args.IsVf);
             }
 
             // Check to see if we should resolve based on our contents
