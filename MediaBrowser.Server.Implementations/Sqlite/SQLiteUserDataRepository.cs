@@ -147,7 +147,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 var newValue = Task.FromResult(userData);
 
                 // Once it succeeds, put it into the dictionary to make it available to everyone else
-                _userData.AddOrUpdate(key, newValue, delegate { return newValue; });
+                _userData.AddOrUpdate(GetInternalKey(userId, key), newValue, delegate { return newValue; });
             }
             catch (Exception ex)
             {
@@ -155,6 +155,17 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Gets the internal key.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="key">The key.</param>
+        /// <returns>System.String.</returns>
+        private string GetInternalKey(Guid userId, string key)
+        {
+            return userId + key;
         }
 
         /// <summary>
@@ -223,7 +234,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 throw new ArgumentNullException("key");
             }
             
-            return _userData.GetOrAdd(key, keyName => RetrieveUserData(userId, key));
+            return _userData.GetOrAdd(GetInternalKey(userId, key), keyName => RetrieveUserData(userId, key));
         }
 
         /// <summary>
