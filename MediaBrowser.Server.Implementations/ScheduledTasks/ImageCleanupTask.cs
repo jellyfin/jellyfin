@@ -64,7 +64,12 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <returns>Task.</returns>
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            await EnsureChapterImages(cancellationToken).ConfigureAwait(false);
+            var items = _libraryManager.RootFolder.RecursiveChildren.ToList();
+
+            foreach (var video in items.OfType<Video>().Where(v => v.Chapters != null))
+            {
+                await _kernel.FFMpegManager.PopulateChapterImages(video, cancellationToken, false, true).ConfigureAwait(false);
+            }
 
             // First gather all image files
             var files = GetFiles(_kernel.FFMpegManager.AudioImagesDataPath)
@@ -73,7 +78,6 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                 .ToList();
 
             // Now gather all items
-            var items = _libraryManager.RootFolder.RecursiveChildren.ToList();
             items.Add(_libraryManager.RootFolder);
 
             // Determine all possible image paths
@@ -83,14 +87,14 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
             var numComplete = 0;
 
-            var tasks = files.Select(file => Task.Run(() =>
+            foreach (var file in files)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 if (!pathsInUse.ContainsKey(file))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    
+
                     try
                     {
                         File.Delete(file);
@@ -102,34 +106,12 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                 }
 
                 // Update progress
-                lock (progress)
-                {
-                    numComplete++;
-                    double percent = numComplete;
-                    percent /= files.Count;
+                numComplete++;
+                double percent = numComplete;
+                percent /= files.Count;
 
-                    progress.Report(100 * percent);
-                }
-            }));
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Ensures the chapter images.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        private Task EnsureChapterImages(CancellationToken cancellationToken)
-        {
-            var videos = _libraryManager.RootFolder.RecursiveChildren.OfType<Video>().Where(v => v.Chapters != null).ToList();
-
-            var tasks = videos.Select(v => Task.Run(async () =>
-            {
-                await _kernel.FFMpegManager.PopulateChapterImages(v, cancellationToken, false, true);
-            }));
-
-            return Task.WhenAll(tasks);
+                progress.Report(100 * percent);
+            }
         }
 
         /// <summary>
