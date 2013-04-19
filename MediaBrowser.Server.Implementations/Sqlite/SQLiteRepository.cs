@@ -160,27 +160,30 @@ namespace MediaBrowser.Server.Implementations.Sqlite
             {
                 try
                 {
-                    if (connection != null)
+                    lock (this)
                     {
-                        if (EnableDelayedCommands)
+                        if (connection != null)
                         {
-                            FlushOnDispose();
+                            if (EnableDelayedCommands)
+                            {
+                                FlushOnDispose();
+                            }
+
+                            if (connection.IsOpen())
+                            {
+                                connection.Close();
+                            }
+
+                            connection.Dispose();
+                            connection = null;
                         }
-                        
-                        if (connection.IsOpen())
+
+                        if (FlushTimer != null)
                         {
-                            connection.Close();
+                            FlushTimer.Dispose();
+                            FlushTimer = null;
                         }
-
-                        connection.Dispose();
                     }
-
-                    if (FlushTimer != null)
-                    {
-                        FlushTimer.Dispose();
-                        FlushTimer = null;
-                    }
-
                 }
                 catch (Exception ex)
                 {
@@ -195,13 +198,13 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         private void FlushOnDispose()
         {
             // If we're not already flushing, do it now
-            if (!IsFlushing)
+            if (!_isFlushing)
             {
                 Flush(null);
             }
 
             // Don't dispose in the middle of a flush
-            while (IsFlushing)
+            while (_isFlushing)
             {
                 Thread.Sleep(25);
             }
@@ -225,7 +228,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <summary>
         /// The is flushing
         /// </summary>
-        private bool IsFlushing;
+        private bool _isFlushing;
 
         /// <summary>
         /// Flushes the specified sender.
@@ -241,12 +244,12 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 return;
             }
 
-            if (IsFlushing)
+            if (_isFlushing)
             {
                 return;
             }
 
-            IsFlushing = true;
+            _isFlushing = true;
             var numCommands = 0;
 
             using (var tran = connection.BeginTransaction())
@@ -278,7 +281,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
             Logger.Debug("SQL Delayed writer executed " + numCommands + " commands");
 
             FlushTimer.Change(TimeSpan.FromMilliseconds(FlushInterval), TimeSpan.FromMilliseconds(-1));
-            IsFlushing = false;
+            _isFlushing = false;
         }
 
         /// <summary>

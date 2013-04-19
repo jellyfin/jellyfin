@@ -76,6 +76,25 @@
         LibraryBrowser.renderStudios($('#itemStudios', page), item);
         renderUserDataIcons(page, item);
         LibraryBrowser.renderLinks($('#itemLinks', page), item);
+
+        var airs = item.Status == "Ended" ? "Aired" : "Airs";
+
+        if (item.AirDays && item.AirDays.length) {
+
+            airs += " " + item.AirDays.map(function (i) {
+                return i.substring(0, 3);
+            }).join(',');
+        }
+        
+        if (item.AirTime) {
+            airs += " at " + item.AirTime;
+        }
+        
+        if (item.Studios && item.Studios.length) {
+            airs += " on " + item.Studios[0];
+        }
+
+        $('#itemAirTime', page).html(airs);
     }
 
     function renderUserDataIcons(page, item) {

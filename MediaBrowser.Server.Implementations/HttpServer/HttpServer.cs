@@ -1,4 +1,3 @@
-using System.IO;
 using Funq;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
@@ -17,6 +16,7 @@ using ServiceStack.WebHost.Endpoints.Support;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
@@ -497,6 +497,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             _logger.Info("Calling ServiceStack AppHost.Init");
             Init();
+        }
+
+        /// <summary>
+        /// Releases the specified instance.
+        /// </summary>
+        /// <param name="instance">The instance.</param>
+        public override void Release(object instance)
+        {
+            // Leave this empty so SS doesn't try to dispose our objects
         }
     }
 

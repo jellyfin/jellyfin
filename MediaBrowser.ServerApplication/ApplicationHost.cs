@@ -159,6 +159,9 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         /// <value>The user data repository.</value>
         private IUserDataRepository UserDataRepository { get; set; }
+        private IUserRepository UserRepository { get; set; }
+        private IDisplayPreferencesRepository DisplayPreferencesRepository { get; set; }
+        private IItemRepository ItemRepository { get; set; }
 
         /// <summary>
         /// The full path to our startmenu shortcut
@@ -239,6 +242,15 @@ namespace MediaBrowser.ServerApplication
             UserDataRepository = new SQLiteUserDataRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(UserDataRepository);
 
+            UserRepository = new SQLiteUserRepository(ApplicationPaths, JsonSerializer, LogManager);
+            RegisterSingleInstance(UserRepository);
+
+            DisplayPreferencesRepository = new SQLiteDisplayPreferencesRepository(ApplicationPaths, JsonSerializer, LogManager);
+            RegisterSingleInstance(DisplayPreferencesRepository);
+
+            ItemRepository = new SQLiteItemRepository(ApplicationPaths, JsonSerializer, LogManager);
+            RegisterSingleInstance(ItemRepository);
+
             UserManager = new UserManager(Logger, ServerConfigurationManager, UserDataRepository);
             RegisterSingleInstance(UserManager);
 
@@ -299,11 +311,9 @@ namespace MediaBrowser.ServerApplication
         /// <returns>Task.</returns>
         private async Task ConfigureDisplayPreferencesRepositories()
         {
-            var repository = new SQLiteDisplayPreferencesRepository(ApplicationPaths, JsonSerializer, LogManager);
+            await DisplayPreferencesRepository.Initialize().ConfigureAwait(false);
 
-            await repository.Initialize().ConfigureAwait(false);
-
-            ((DisplayPreferencesManager)DisplayPreferencesManager).Repository = repository;
+            ((DisplayPreferencesManager)DisplayPreferencesManager).Repository = DisplayPreferencesRepository;
         }
 
         /// <summary>
@@ -312,11 +322,9 @@ namespace MediaBrowser.ServerApplication
         /// <returns>Task.</returns>
         private async Task ConfigureItemRepositories()
         {
-            var repository = new SQLiteItemRepository(ApplicationPaths, JsonSerializer, LogManager);
+            await ItemRepository.Initialize().ConfigureAwait(false);
 
-            await repository.Initialize().ConfigureAwait(false);
-
-            ((LibraryManager)LibraryManager).ItemRepository = repository;
+            ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
         }
 
         /// <summary>
@@ -328,13 +336,15 @@ namespace MediaBrowser.ServerApplication
             return UserDataRepository.Initialize();
         }
 
+        /// <summary>
+        /// Configures the user repositories.
+        /// </summary>
+        /// <returns>Task.</returns>
         private async Task ConfigureUserRepositories()
         {
-            var repository = new SQLiteUserRepository(ApplicationPaths, JsonSerializer, LogManager);
+            await UserRepository.Initialize().ConfigureAwait(false);
 
-            await repository.Initialize().ConfigureAwait(false);
-
-            ((UserManager)UserManager).UserRepository = repository;
+            ((UserManager)UserManager).UserRepository = UserRepository;
         }
 
         /// <summary>
@@ -552,22 +562,6 @@ namespace MediaBrowser.ServerApplication
             {
                 process.WaitForExit();
             }
-        }
-
-        /// <summary>
-        /// Gets the repository.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="repositories">The repositories.</param>
-        /// <param name="name">The name.</param>
-        /// <returns>``0.</returns>
-        private T GetRepository<T>(IEnumerable<T> repositories, string name)
-            where T : class, IRepository
-        {
-            var enumerable = repositories as T[] ?? repositories.ToArray();
-
-            return enumerable.FirstOrDefault(r => string.Equals(r.Name, name, StringComparison.OrdinalIgnoreCase)) ??
-                   enumerable.FirstOrDefault();
         }
     }
 }
