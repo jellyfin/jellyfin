@@ -56,7 +56,7 @@
 
 .viewSettings {
     text-align: center;
-    margin: 1em 0;
+    margin: .5em 0;
 }
 
 .listPaging {
@@ -68,22 +68,20 @@
     .libraryPage .ui-content {
         padding: 10px 20px 100px;
     }
+
+    .viewControls, .listTopPaging {
+        display: inline-block;
+    }
+
+        .viewControls + .listTopPaging {
+            margin-left: 1em;
+        }
 }
 
 @media all and (min-width: 750px) {
     .libraryViewNav .ui-btn-inner {
         padding-left: 20px;
         padding-right: 20px;
-    }
-
-    .viewSettings {
-        margin-bottom: 0;
-        padding-right: 300px;
-    }
-
-    .topListPaging {
-        padding-left: 300px;
-        margin-top: -35px;
     }
 }
 

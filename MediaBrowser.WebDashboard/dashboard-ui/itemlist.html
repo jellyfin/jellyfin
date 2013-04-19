@@ -9,14 +9,18 @@
 
             <h1 id="itemName" class="listHeader" style="margin-top: .5em;"></h1>
             <div class="viewSettings">
-                <div style="display: inline-block;">
-                    <select data-mini="true" data-inline="true" id="selectView" name="selectView">
-                        <option value="Backdrop">Backdrop</option>
-                        <option value="Poster">Poster</option>
-                    </select>
+                <div class="viewControls">
+                    <div style="display: inline-block;">
+                        <select data-mini="true" data-inline="true" id="selectView" name="selectView">
+                            <option value="Backdrop">Backdrop</option>
+                            <option value="Poster">Poster</option>
+                        </select>
+                    </div>
+                    <button data-mini="true" data-icon="sort" data-inline="true" onclick="$('#sortPanel', $.mobile.activePage).panel( 'toggle' );">Sort</button>
+                    <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $.mobile.activePage).panel( 'toggle' );">Filter</button>
                 </div>
-                <button data-mini="true" data-icon="sort" data-inline="true" onclick="$('#sortPanel', $.mobile.activePage).panel( 'toggle' );">Sort</button>
-                <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $.mobile.activePage).panel( 'toggle' );">Filter</button>
+                <div class="listTopPaging">
+                </div>
             </div>
             <div id="items"></div>
         </div>

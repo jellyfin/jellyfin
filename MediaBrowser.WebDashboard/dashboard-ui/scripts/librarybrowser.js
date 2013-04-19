@@ -357,8 +357,12 @@
 
                 var date = item.DateCreated;
 
-                if (date && (new Date().getTime() - parseISO8601Date(date).getTime()) < 1209600000) {
-                    return "<div class='posterRibbon'>New</div>";
+                try {
+                    if (date && (new Date().getTime() - parseISO8601Date(date).getTime()) < 1209600000) {
+                        return "<div class='posterRibbon'>New</div>";
+                    }
+                } catch (err) {
+                    
                 }
             }
 
@@ -468,14 +472,14 @@
             }
         },
 
-        getPagingHtml: function (query, totalRecordCount, isTop) {
+        getPagingHtml: function (query, totalRecordCount) {
 
             var html = '';
 
             var pageCount = Math.ceil(totalRecordCount / query.Limit);
             var pageNumber = (query.StartIndex / query.Limit) + 1;
 
-            var dropdownHtml = '<select data-enhance="false" data-role="none">';
+            var dropdownHtml = '<select class="selectPage" data-enhance="false" data-role="none">';
             for (var i = 1; i <= pageCount; i++) {
 
                 if (i == pageNumber) {
@@ -488,7 +492,7 @@
 
             var recordsEnd = Math.min(query.StartIndex + query.Limit, totalRecordCount);
 
-            html += isTop ? '<div class="listPaging topListPaging">' : '<div class="listPaging">';
+            html += '<div class="listPaging">';
 
             html += '<span style="margin-right: 10px;">';
             html += (query.StartIndex + 1) + '-' + recordsEnd + ' of ' + totalRecordCount + ', page ' + dropdownHtml + ' of ' + pageCount;
@@ -920,7 +924,11 @@
 
         renderPremiereDate: function (elem, item) {
             if (item.PremiereDate) {
-                elem.show().html('Premiered&nbsp;&nbsp;' + parseISO8601Date(item.PremiereDate, { toLocal: true }).toDateString());
+                try {
+                    elem.show().html('Premiered&nbsp;&nbsp;' + parseISO8601Date(item.PremiereDate, { toLocal: true }).toDateString());
+                } catch (err) {
+                    elem.hide();
+                }
             } else {
                 elem.hide();
             }

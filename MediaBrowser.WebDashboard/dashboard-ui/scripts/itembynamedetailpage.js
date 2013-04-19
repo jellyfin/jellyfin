@@ -179,20 +179,30 @@
 
         if (item.Type == "Person" && item.PremiereDate) {
 
-            var birthday = parseISO8601Date(item.PremiereDate, { toLocal: true }).toDateString();
+            try {
+                var birthday = parseISO8601Date(item.PremiereDate, { toLocal: true }).toDateString();
 
-            $('#itemBirthday', page).show().html("Birthday:&nbsp;&nbsp;" + birthday);
+                $('#itemBirthday', page).show().html("Birthday:&nbsp;&nbsp;" + birthday);
+            }
+            catch(err)
+            {
+                $('#itemBirthday', page).hide();
+            }
         } else {
             $('#itemBirthday', page).hide();
         }
 
         if (item.Type == "Person" && item.EndDate) {
 
-            var deathday = parseISO8601Date(item.EndDate, { toLocal: true }).toDateString();
+            try {
+                var deathday = parseISO8601Date(item.EndDate, { toLocal: true }).toDateString();
 
-            $('#itemDeathDate', page).show().html("Death day:&nbsp;&nbsp;" + deathday);
+                $('#itemDeathDate', page).show().html("Death day:&nbsp;&nbsp;" + deathday);
+            }
+            catch (err) {
+                $('#itemBirthday', page).hide();
+            }
         } else {
-            $('#itemDeathDate', page).hide();
         }
 
         if (item.Type == "Person" && item.ProductionLocations && item.ProductionLocations.length) {
@@ -246,9 +256,7 @@
 
             var showPaging = result.TotalRecordCount > query.Limit;
 
-            if (showPaging) {
-                html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true);
-            }
+            $('.listTopPaging', page).html(showPaging ? LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true) : '').trigger('create');
 
             html += LibraryBrowser.getPosterDetailViewHtml({
                 items: result.Items,
@@ -259,21 +267,21 @@
                 html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
             }
 
-            var elem = $('#items', page).html(html).trigger('create');
+            $('#items', page).html(html).trigger('create');
 
-            $('select', elem).on('change', function () {
+            $('.selectPage', page).on('change', function () {
 
                 query.StartIndex = (parseInt(this.value) - 1) * query.Limit;
                 loadItems(page, query);
             });
 
-            $('.btnNextPage', elem).on('click', function () {
+            $('.btnNextPage', page).on('click', function () {
 
                 query.StartIndex = query.StartIndex + query.Limit;
                 loadItems(page, query);
             });
 
-            $('.btnPreviousPage', elem).on('click', function () {
+            $('.btnPreviousPage', page).on('click', function () {
 
                 query.StartIndex = query.StartIndex - query.Limit;
                 loadItems(page, query);
