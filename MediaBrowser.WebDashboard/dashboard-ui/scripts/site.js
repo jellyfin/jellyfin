@@ -358,7 +358,7 @@ var Dashboard = {
 
         $(document.body).append(html);
 
-        $('#confirmFlyout').popup().trigger('create').popup("open").on("popupafterclose", function () {
+        $('#confirmFlyout').popup({ history: false }).trigger('create').popup("open").on("popupafterclose", function () {
 
             if (callback) {
                 callback(this.confirm == true);
@@ -961,14 +961,14 @@ var Dashboard = {
     onNewItemTimerStopped: function () {
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), {
-            
+
             Recursive: true,
             Limit: 2,
             Filters: "IsNotFolder",
             SortBy: "DateCreated",
             SortOrder: "Descending",
             ImageTypes: "Primary"
-            
+
         }).done(function (result) {
 
             var items = result.Items;
@@ -984,7 +984,7 @@ var Dashboard = {
                 };
 
                 var imageTags = item.ImageTags || {};
-                
+
                 if (imageTags.Primary) {
 
                     data.icon = ApiClient.getImageUrl(item.Id, {
@@ -997,7 +997,7 @@ var Dashboard = {
                 WebNotifications.show(data);
             }
         });
-        
+
         Dashboard.newItemTimeout = null;
     },
 
@@ -1033,7 +1033,7 @@ var Dashboard = {
         }
     }
 
-    
+
 };
 
 var ApiClient = MediaBrowser.ApiClient.create("Dashboard");
@@ -1042,7 +1042,7 @@ $(function () {
 
     var footerHtml = '<div id="footer" class="ui-bar-a">';
     footerHtml += '<div id="nowPlayingBar" style="display:none;">';
-	footerHtml += '<a href="playlist.html"><img src="css/images/media/playlist.png" class="imageButton mediaButton" style="height:34px;margin-bottom:2px;vertical-align:bottom;" /></a>';
+    footerHtml += '<a href="playlist.html"><img src="css/images/media/playlist.png" class="imageButton mediaButton" style="height:34px;margin-bottom:2px;vertical-align:bottom;" /></a>';
     footerHtml += '<button id="previousTrackButton" class="imageButton mediaButton" title="Previous Track" type="button"><img src="css/images/media/previoustrack.png" /></button>';
     footerHtml += '<button id="stopButton" class="imageButton mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();"><img src="css/images/media/stop.png" /></button>';
     footerHtml += '<button id="nextTrackButton" class="imageButton mediaButton" title="Next Track" type="button"><img src="css/images/media/nexttrack.png" /></button>';
@@ -1053,6 +1053,15 @@ $(function () {
     footerHtml += '</div>';
 
     $(document.body).append(footerHtml);
+
+    if ($.browser.msie && parseInt($.browser.version) > 10) {
+        Dashboard.confirm("This is an unsupported version of Internet Explorer. Please consider upgrading to IE10.", "Unsupported Browser", function (result) {
+
+            if (result) {
+                window.location = "http://windows.microsoft.com/en-us/internet-explorer/downloads/ie-10/worldwide-languages";
+            }
+        });
+    }
 });
 
 Dashboard.jQueryMobileInit();
