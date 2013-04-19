@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using System.Threading;
-using MediaBrowser.Common.Events;
+﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
@@ -15,6 +13,8 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Updates;
 using System;
+using System.Linq;
+using System.Threading;
 
 namespace MediaBrowser.ServerApplication.EntryPoints
 {

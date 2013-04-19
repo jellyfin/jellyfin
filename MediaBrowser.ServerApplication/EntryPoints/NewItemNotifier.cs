@@ -1,5 +1,4 @@
-﻿using System.Windows;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
@@ -7,6 +6,7 @@ using MediaBrowser.ServerApplication.Controls;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Windows;
 using System.Windows.Controls.Primitives;
 
 namespace MediaBrowser.ServerApplication.EntryPoints
