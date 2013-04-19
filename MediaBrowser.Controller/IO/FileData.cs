@@ -21,11 +21,12 @@ namespace MediaBrowser.Controller.IO
         /// <param name="includeFiles">if set to <c>true</c> [include files].</param>
         /// <param name="includeDirectories">if set to <c>true</c> [include directories].</param>
         /// <param name="flattenFolderDepth">The flatten folder depth.</param>
+        /// <param name="resolveShortcuts">if set to <c>true</c> [resolve shortcuts].</param>
         /// <param name="args">The args.</param>
         /// <returns>Dictionary{System.StringWIN32_FIND_DATA}.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
         /// <exception cref="System.IO.IOException">GetFileSystemEntries failed</exception>
-        public static Dictionary<string, WIN32_FIND_DATA> GetFilteredFileSystemEntries(string path, ILogger logger, string searchPattern = "*", bool includeFiles = true, bool includeDirectories = true, int flattenFolderDepth = 0, ItemResolveArgs args = null)
+        public static Dictionary<string, WIN32_FIND_DATA> GetFilteredFileSystemEntries(string path, ILogger logger, string searchPattern = "*", bool includeFiles = true, bool includeDirectories = true, int flattenFolderDepth = 0, bool resolveShortcuts = true, ItemResolveArgs args = null)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -80,7 +81,7 @@ namespace MediaBrowser.Controller.IO
 
                 lpFindFileData.Path = Path.Combine(path, lpFindFileData.cFileName);
 
-                if (FileSystem.IsShortcut(lpFindFileData.Path))
+                if (resolveShortcuts && FileSystem.IsShortcut(lpFindFileData.Path))
                 {
                     var newPath = FileSystem.ResolveShortcut(lpFindFileData.Path);
                     if (string.IsNullOrWhiteSpace(newPath))
@@ -110,7 +111,7 @@ namespace MediaBrowser.Controller.IO
                 }
                 else if (flattenFolderDepth > 0 && lpFindFileData.IsDirectory)
                 {
-                    foreach (var child in GetFilteredFileSystemEntries(lpFindFileData.Path, logger, flattenFolderDepth: flattenFolderDepth - 1))
+                    foreach (var child in GetFilteredFileSystemEntries(lpFindFileData.Path, logger, flattenFolderDepth: flattenFolderDepth - 1, resolveShortcuts: resolveShortcuts))
                     {
                         dict[child.Key] = child.Value;
                     }
