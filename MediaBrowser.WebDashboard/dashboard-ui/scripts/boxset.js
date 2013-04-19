@@ -28,6 +28,8 @@
                 $('#galleryCollapsible', page).hide();
             }
 
+            $('#moviesCollapsible .collapsibleTitle', page).html('Titles (' + item.ChildCount + ')');
+
             Dashboard.hideLoadingMsg();
         });
     }

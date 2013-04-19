@@ -1,42 +1,48 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title></title>
+    <title></title>
 </head>
 <body>
-<div id="playlistPage" data-role="page" class="page libraryPage noLogoPage" data-theme="a">
-	<h1 class="libraryPageHeader"><a href="index.html" class="imageLink">
-		<img src="css/images/home.png"></a>Now Playing</h1>
+    <div id="playlistPage" data-role="page" class="page libraryPage noLogoPage" data-theme="a">
+        <h1 class="libraryPageHeader"><a href="index.html" class="imageLink">
+            <img src="css/images/mblogoicon.png"></a>Now Playing</h1>
 
-	<div data-role="content">
+        <div data-role="content">
 
-		<table id="playlistTable">
-			<thead>
-				<tr>
-					<th></th>
-					<th>Name</th>
-					<th>Series/Album/Year</th>
-					<th>Time</th>
-					<th>Rating</th>
-					<th></th>
-				</tr>
-			</thead>
-			<tfoot>
-				<tr>
-					<td colspan="5"></td>
-				</tr>
-			</tfoot>
-			<tbody id="queueTable"></tbody>
-		</table>
+            <table id="playlistTable">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Name</th>
+                        <th>Series/Album/Year</th>
+                        <th>Time</th>
+                        <th>Rating</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <td colspan="5"></td>
+                    </tr>
+                </tfoot>
+                <tbody id="queueTable"></tbody>
+            </table>
 
 
-	</div>
-</div>
+        </div>
+    </div>
 
-<!-- temp styling -->
-<style>
-	#playlistTable {width:80%;margin:auto;}
-	#playlistTable th, #playlistTable td {padding:4px 10px;}
-</style>
+    <!-- temp styling -->
+    <style>
+        #playlistTable {
+            width: 80%;
+            margin: auto;
+        }
+
+            #playlistTable th, #playlistTable td {
+                padding: 4px 10px;
+            }
+    </style>
 </body>
 </html>

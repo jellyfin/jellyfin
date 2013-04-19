@@ -1,6 +1,6 @@
 (function ($, document, LibraryBrowser, window) {
 
-	var currentItem;
+    var currentItem;
 
     function reload(page) {
 
@@ -10,9 +10,9 @@
 
         ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
 
-	        currentItem = item;
+            currentItem = item;
 
-	        var name = item.Name;
+            var name = item.Name;
 
             $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item));
 
@@ -20,30 +20,30 @@
 
             $('#itemName', page).html(name);
 
-	        setInitialCollapsibleState(page, item);
-	        renderDetails(page, item);
+            setInitialCollapsibleState(page, item);
+            renderDetails(page, item);
 
-	        if (LibraryBrowser.shouldDisplayGallery(item)) {
-	            $('#galleryCollapsible', page).show();
-	        } else {
-	            $('#galleryCollapsible', page).hide();
-	        }
+            if (LibraryBrowser.shouldDisplayGallery(item)) {
+                $('#galleryCollapsible', page).show();
+            } else {
+                $('#galleryCollapsible', page).hide();
+            }
 
             Dashboard.hideLoadingMsg();
         });
     }
 
-	function setInitialCollapsibleState(page, item) {
+    function setInitialCollapsibleState(page, item) {
 
-		if (!item.People || !item.People.length) {
-			$('#castCollapsible', page).hide();
-		} else {
-			$('#castCollapsible', page).show();
-		}
-	}
+        if (!item.People || !item.People.length) {
+            $('#castCollapsible', page).hide();
+        } else {
+            $('#castCollapsible', page).show();
+        }
+    }
 
     function renderDetails(page, item) {
-        
+
         if (item.Taglines && item.Taglines.length) {
             $('#itemTagline', page).html(item.Taglines[0]).show();
         } else {
@@ -69,27 +69,29 @@
 
         $('#itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
 
+        $('#seasonsCollapsible .collapsibleTitle', page).html('Seasons (' + item.ChildCount + ')');
+
         LibraryBrowser.renderPremiereDate($('#itemPremiereDate', page), item);
         LibraryBrowser.renderGenres($('#itemGenres', page), item);
         LibraryBrowser.renderStudios($('#itemStudios', page), item);
         renderUserDataIcons(page, item);
         LibraryBrowser.renderLinks($('#itemLinks', page), item);
     }
-    
+
     function renderUserDataIcons(page, item) {
         $('#itemRatings', page).html(LibraryBrowser.getUserDataIconsHtml(item));
     }
 
-	function renderSeasons(page) {
-        
+    function renderSeasons(page) {
+
         ApiClient.getItems(Dashboard.getCurrentUserId(), {
-            
+
             ParentId: getParameterByName('id'),
             SortBy: "SortName",
             Fields: "PrimaryImageAspectRatio,ItemCounts,DisplayMediaType,DateCreated,UserData"
-            
-        }).done(function(result) {
-            
+
+        }).done(function (result) {
+
             var html = LibraryBrowser.getPosterDetailViewHtml({
                 items: result.Items,
                 useAverageAspectRatio: true
@@ -99,62 +101,62 @@
         });
     }
 
-	function renderGallery(page, item) {
+    function renderGallery(page, item) {
 
-	    var html = LibraryBrowser.getGalleryHtml(item);
+        var html = LibraryBrowser.getGalleryHtml(item);
 
-		$('#galleryContent', page).html(html).trigger('create');
-	}
+        $('#galleryContent', page).html(html).trigger('create');
+    }
 
-	function renderCast(page, item) {
-		var html = '';
+    function renderCast(page, item) {
+        var html = '';
 
-		var casts = item.People || [];
+        var casts = item.People || [];
 
-		for (var i = 0, length = casts.length; i < length; i++) {
+        for (var i = 0, length = casts.length; i < length; i++) {
 
-			var cast = casts[i];
+            var cast = casts[i];
 
-			html += LibraryBrowser.createCastImage(cast);
-		}
+            html += LibraryBrowser.createCastImage(cast);
+        }
 
-		$('#castContent', page).html(html);
-	}
+        $('#castContent', page).html(html);
+    }
 
-	$(document).on('pageshow', "#tvSeriesPage", function () {
+    $(document).on('pageshow', "#tvSeriesPage", function () {
 
-		var page = this;
+        var page = this;
 
-		reload(page);
+        reload(page);
 
-		$('#seasonsCollapsible', page).on('expand.lazyload', function () {
+        $('#seasonsCollapsible', page).on('expand.lazyload', function () {
 
-			renderSeasons(page);
+            renderSeasons(page);
 
-			$(this).off('expand.lazyload');
-		});
+            $(this).off('expand.lazyload');
+        });
 
-		$('#castCollapsible', page).on('expand.lazyload', function () {
-			renderCast(page, currentItem);
+        $('#castCollapsible', page).on('expand.lazyload', function () {
+            renderCast(page, currentItem);
 
-			$(this).off('expand.lazyload');
-		});
+            $(this).off('expand.lazyload');
+        });
 
-		$('#galleryCollapsible', page).on('expand.lazyload', function () {
+        $('#galleryCollapsible', page).on('expand.lazyload', function () {
 
-			renderGallery(page, currentItem);
+            renderGallery(page, currentItem);
 
-			$(this).off('expand.lazyload');
-		});
+            $(this).off('expand.lazyload');
+        });
 
-	}).on('pagehide', "#tvSeriesPage", function () {
+    }).on('pagehide', "#tvSeriesPage", function () {
 
-		currentItem = null;
-		var page = this;
+        currentItem = null;
+        var page = this;
 
-		$('#seasonsCollapsible', page).off('expand.lazyload');
-		$('#castCollapsible', page).off('expand.lazyload');
-		$('#galleryCollapsible', page).off('expand.lazyload');
-	});
+        $('#seasonsCollapsible', page).off('expand.lazyload');
+        $('#castCollapsible', page).off('expand.lazyload');
+        $('#galleryCollapsible', page).off('expand.lazyload');
+    });
 
 })(jQuery, document, LibraryBrowser, window);

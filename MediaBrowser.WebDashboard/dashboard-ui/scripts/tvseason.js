@@ -30,6 +30,8 @@
                 $('#galleryCollapsible', page).hide();
             }
 
+            $('#episodesCollapsible .collapsibleTitle', page).html('Episodes (' + item.ChildCount + ')');
+
             Dashboard.hideLoadingMsg();
         });
     }

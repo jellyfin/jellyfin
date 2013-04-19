@@ -12,7 +12,7 @@
 }
 
     .libraryPageHeader a {
-        margin-right: 20px;
+        margin-right: 15px;
     }
 
 .libraryPage .ui-content {
@@ -61,7 +61,7 @@
 
 .listPaging {
     text-align: center;
-    margin: .5em 0;
+    margin: .5em 0 .25em;
 }
 
 @media all and (min-width: 650px) {
@@ -74,6 +74,16 @@
     .libraryViewNav .ui-btn-inner {
         padding-left: 20px;
         padding-right: 20px;
+    }
+
+    .viewSettings {
+        margin-bottom: 0;
+        padding-right: 300px;
+    }
+
+    .topListPaging {
+        padding-left: 300px;
+        margin-top: -35px;
     }
 }
 

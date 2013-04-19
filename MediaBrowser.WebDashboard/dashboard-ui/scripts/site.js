@@ -719,7 +719,7 @@ var Dashboard = {
 
             var html = '<div class="content-secondary ui-bar-a toolsSidebar">';
 
-            html += '<h1><a href="index.html" class="imageLink" style="margin-left: 0;margin-right: 20px;"> <img src="css/images/home.png" /></a>Tools</h1>';
+            html += '<h1><a href="index.html" class="imageLink" style="margin-left: 0;margin-right: 20px;"> <img src="css/images/mblogoicon.png" /></a>Tools</h1>';
 
             html += '<div class="sidebarLinks">';
 
