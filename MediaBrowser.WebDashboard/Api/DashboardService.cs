@@ -454,6 +454,13 @@ namespace MediaBrowser.WebDashboard.Api
                                       "clientsettings.js",
                                       "dashboardpage.js",
                                       "edituserpage.js",
+                                      "gamesrecommendedpage.js",
+                                      "gamesystemspage.js",
+                                      "gamesystempage.js",
+                                      "gamespage.js",
+                                      "gamegenrepage.js",
+                                      "gamestudiospage.js",
+                                      "gamedetailpage.js",
                                       "indexpage.js",
                                       "itembynamedetailpage.js",
                                       "itemdetailpage.js",
@@ -470,6 +477,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "moviesrecommended.js",
                                       "moviestudios.js",
                                       "movietrailers.js",
+                                      "musicgenres.js",
                                       "playlist.js",
                                       "plugincatalogpage.js",
                                       "pluginspage.js",
@@ -490,14 +498,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "userprofilespage.js",
                                       "wizardfinishpage.js",
                                       "wizardstartpage.js",
-                                      "wizarduserpage.js",
-                                      "gamesrecommendedpage.js",
-                                      "gamesystemspage.js",
-                                      "gamesystempage.js",
-                                      "gamespage.js",
-                                      "gamegenrepage.js",
-                                      "gamestudiospage.js",
-                                      "gamedetailpage.js"
+                                      "wizarduserpage.js"
                                   };
 
             var memoryStream = new MemoryStream();

@@ -159,6 +159,11 @@
 
             loadItems(page, { IncludeItemTypes: "Episode", PersonTypes: "GuestStar" });
         });
+
+        $("#radioAlbums", page).on("click", function () {
+
+            loadItems(page, { IncludeItemTypes: "MusicAlbum", PersonTypes: "Artist" });
+        });
     }
 
     function renderDetails(page, item) {
