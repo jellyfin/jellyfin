@@ -329,7 +329,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
             {
                 throw new ArgumentNullException("reader");
             }
-
+            
             var memoryStream = new MemoryStream();
             var num = 0L;
             var array = new byte[4096];
