@@ -653,7 +653,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var list = children.ToList();
 
-            var percentages = new ConcurrentDictionary<Guid, double>(list.Select(i => new KeyValuePair<Guid, double>(i.Item1.Id, 0)));
+            var percentages = new Dictionary<Guid, double>();
 
             var tasks = new List<Task>();
 
@@ -695,24 +695,30 @@ namespace MediaBrowser.Controller.Entities
 
                         innerProgress.RegisterAction(p =>
                         {
-                            percentages.TryUpdate(child.Id, p / 100, percentages[child.Id]);
+                            lock (percentages)
+                            {
+                                percentages[child.Id] = p/100;
 
-                            var percent = percentages.Values.Sum();
-                            percent /= list.Count;
+                                var percent = percentages.Values.Sum();
+                                percent /= list.Count;
 
-                            progress.Report((90 * percent) + 10);
+                                progress.Report((90 * percent) + 10);
+                            }
                         });
 
                         await ((Folder)child).ValidateChildren(innerProgress, cancellationToken, recursive).ConfigureAwait(false);
                     }
                     else
                     {
-                        percentages.TryUpdate(child.Id, 1, percentages[child.Id]);
+                        lock (percentages)
+                        {
+                            percentages[child.Id] = 1;
 
-                        var percent = percentages.Values.Sum();
-                        percent /= list.Count;
+                            var percent = percentages.Values.Sum();
+                            percent /= list.Count;
 
-                        progress.Report((90 * percent) + 10);
+                            progress.Report((90 * percent) + 10);
+                        }
                     }
                 }));
             }
