@@ -136,6 +136,15 @@
             this.checked = filters.indexOf(',' + filterName) != -1;
 
         }).checkboxradio('refresh');
+
+        $('.chkPersonTypeFilter', this).each(function () {
+
+            var filters = "," + (query.PersonTypes || "");
+            var filterName = this.getAttribute('data-filter');
+
+            this.checked = filters.indexOf(',' + filterName) != -1;
+
+        }).checkboxradio('refresh');
     });
 
 })(jQuery, document);

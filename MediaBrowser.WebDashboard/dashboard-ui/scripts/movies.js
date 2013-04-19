@@ -139,7 +139,6 @@
 
     }).on('pageshow', "#moviesPage", function () {
 
-
         // Reset form values using the last used query
         $('.radioSortBy', this).each(function () {
 

@@ -125,7 +125,7 @@
                     html += '<p class="itemMiscInfo">' + childText + '</p>';
                 }
                 else {
-                    html += '<p class="itemMiscInfo">' + LibraryBrowser.getMiscInfoHtml(item, false) + '</p>';
+                    html += '<p class="itemMiscInfo">' + LibraryBrowser.getMiscInfoHtml(item) + '</p>';
                 }
 
                 html += '<p class="userDataIcons">' + LibraryBrowser.getUserDataIconsHtml(item) + '</p>';
@@ -836,12 +836,17 @@
             return html;
         },
 
-        getMiscInfoHtml: function (item, includeMediaInfo) {
+        getMiscInfoHtml: function (item) {
 
             var miscInfo = [];
 
             if (item.ProductionYear) {
-                miscInfo.push(item.ProductionYear);
+
+                if (item.Status == "Continuing") {
+                    miscInfo.push(item.ProductionYear + "-Present");
+                } else {
+                    miscInfo.push(item.ProductionYear);
+                }
             }
 
             if (item.OfficialRating) {
@@ -857,16 +862,13 @@
                 miscInfo.push(parseInt(minutes) + "min");
             }
 
-            if (includeMediaInfo !== false) {
-                if (item.DisplayMediaType) {
-                    miscInfo.push(item.DisplayMediaType);
-                }
-
-                if (item.VideoFormat && item.VideoFormat !== 'Standard') {
-                    miscInfo.push(item.VideoFormat);
-                }
+            if (item.MediaType && item.DisplayMediaType) {
+                miscInfo.push(item.DisplayMediaType);
             }
 
+            if (item.VideoFormat && item.VideoFormat !== 'Standard') {
+                miscInfo.push(item.VideoFormat);
+            }
 
             return miscInfo.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
         },

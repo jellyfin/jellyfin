@@ -69,6 +69,7 @@
 
         $('#itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
 
+        LibraryBrowser.renderPremiereDate($('#itemPremiereDate', page), item);
         LibraryBrowser.renderGenres($('#itemGenres', page), item);
         LibraryBrowser.renderStudios($('#itemStudios', page), item);
         renderUserDataIcons(page, item);

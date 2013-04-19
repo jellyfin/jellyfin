@@ -630,7 +630,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            _logger.Debug("Creating {0}: {1}", typeof(T).Name, name);
+            _logger.Debug("Getting {0}: {1}", typeof(T).Name, name);
 
             path = Path.Combine(path, FileSystem.GetValidFilename(name));
 
@@ -694,7 +694,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var tasks = new List<Task>();
 
-            var includedPersonTypes = new[] { PersonType.Actor, PersonType.Director, PersonType.GuestStar };
+            var includedPersonTypes = new[] { PersonType.Actor, PersonType.Director, PersonType.GuestStar, PersonType.Writer, PersonType.Director, PersonType.Producer };
 
             var people = RootFolder.RecursiveChildren
                 .Where(c => c.People != null)

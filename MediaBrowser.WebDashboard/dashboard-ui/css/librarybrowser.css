@@ -125,6 +125,9 @@
 .itemMiscInfo {
     color: #ddd;
     font-size: 14px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .mediaInfoStream {
@@ -210,6 +213,7 @@
     color: #fff;
     text-align: left;
     vertical-align: top;
+    overflow: hidden;
 }
 
 .posterDetailViewName {
