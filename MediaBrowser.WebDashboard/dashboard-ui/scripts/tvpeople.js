@@ -21,9 +21,7 @@
 
             var html = '';
 
-            var showPaging = result.TotalRecordCount > query.Limit;
-
-            $('.listTopPaging', page).html(showPaging ? LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true) : '').trigger('create');
+            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
 
             html += LibraryBrowser.getPosterDetailViewHtml({
                 items: result.Items,
@@ -32,11 +30,9 @@
                 countNamePlural: "Shows"
             });
 
-            if (showPaging) {
-                html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
-            }
+            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 
-            var elem = $('#items', page).html(html).trigger('create');
+            $('#items', page).html(html).trigger('create');
 
             $('.selectPage', page).on('change', function () {
                 query.StartIndex = (parseInt(this.value) - 1) * query.Limit;

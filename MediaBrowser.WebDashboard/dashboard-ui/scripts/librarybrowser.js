@@ -362,7 +362,7 @@
                         return "<div class='posterRibbon'>New</div>";
                     }
                 } catch (err) {
-                    
+
                 }
             }
 
@@ -492,15 +492,24 @@
 
             var recordsEnd = Math.min(query.StartIndex + query.Limit, totalRecordCount);
 
+            var showControls = totalRecordCount > query.Limit;
+
             html += '<div class="listPaging">';
 
             html += '<span style="margin-right: 10px;">';
-            html += (query.StartIndex + 1) + '-' + recordsEnd + ' of ' + totalRecordCount + ', page ' + dropdownHtml + ' of ' + pageCount;
+            html += (query.StartIndex + 1) + '-' + recordsEnd + ' of ' + totalRecordCount;
+
+            if (showControls) {
+                html += ', page ' + dropdownHtml + ' of ' + pageCount;
+            }
+
             html += '</span>';
 
-            html += '<button data-icon="arrow-left" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (query.StartIndex ? '' : 'disabled') + '>Previous Page</button>';
+            if (showControls) {
+                html += '<button data-icon="arrow-left" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (query.StartIndex ? '' : 'disabled') + '>Previous Page</button>';
 
-            html += '<button data-icon="arrow-right" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (query.StartIndex + query.Limit > totalRecordCount ? 'disabled' : '') + '>Next Page</button>';
+                html += '<button data-icon="arrow-right" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (query.StartIndex + query.Limit > totalRecordCount ? 'disabled' : '') + '>Next Page</button>';
+            }
 
             html += '</div>';
 

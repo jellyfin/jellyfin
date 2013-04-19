@@ -254,18 +254,14 @@
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
             var html = '';
 
-            var showPaging = result.TotalRecordCount > query.Limit;
-
-            $('.listTopPaging', page).html(showPaging ? LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true) : '').trigger('create');
+            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
 
             html += LibraryBrowser.getPosterDetailViewHtml({
                 items: result.Items,
                 useAverageAspectRatio: true
             });
 
-            if (showPaging) {
-                html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
-            }
+            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 
             $('#items', page).html(html).trigger('create');
 
