@@ -56,7 +56,7 @@
 
 .viewSettings {
     text-align: center;
-    margin: .5em 0;
+    margin: .5em 0 .25em;
 }
 
 .listPaging {
@@ -85,11 +85,11 @@
     }
 }
 
-/*@media all and (min-width: 1000px) {
-    .libraryPage:not(.folderListPage) > .ui-content, .libraryPage:not(.folderListPage) > .ui-panel-content-wrap {
+@media all and (min-width: 1000px) {
+    /*.libraryPage:not(.folderListPage) > .ui-content, .libraryPage:not(.folderListPage) > .ui-panel-content-wrap {
         margin-top: -35px!important;
-    }
-}*/
+    }*/
+}
 
 @media all and (min-width: 1200px) {
 

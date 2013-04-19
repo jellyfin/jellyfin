@@ -497,7 +497,9 @@
             html += '<div class="listPaging">';
 
             html += '<span style="margin-right: 10px;">';
-            html += (query.StartIndex + 1) + '-' + recordsEnd + ' of ' + totalRecordCount;
+
+            var startAtDisplay = totalRecordCount ? query.StartIndex + 1 : 0;
+            html += startAtDisplay + '-' + recordsEnd + ' of ' + totalRecordCount;
 
             if (showControls) {
                 html += ', page ' + dropdownHtml + ' of ' + pageCount;
@@ -853,7 +855,7 @@
 
             var miscInfo = [];
 
-            if (item.ProductionYear) {
+            if (item.ProductionYear && item.Type != "Episode") {
 
                 if (item.Status == "Continuing") {
                     miscInfo.push(item.ProductionYear + "-Present");
@@ -875,7 +877,7 @@
                 miscInfo.push(parseInt(minutes) + "min");
             }
 
-            if (item.MediaType && item.DisplayMediaType) {
+            if (item.MediaType && item.DisplayMediaType && item.DisplayMediaType != item.Type) {
                 miscInfo.push(item.DisplayMediaType);
             }
 
