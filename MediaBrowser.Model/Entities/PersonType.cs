@@ -30,5 +30,9 @@ namespace MediaBrowser.Model.Entities
         /// The guest star
         /// </summary>
         public const string GuestStar = "GuestStar";
+        /// <summary>
+        /// The producer
+        /// </summary>
+        public const string Producer = "Producer";
     }
 }
