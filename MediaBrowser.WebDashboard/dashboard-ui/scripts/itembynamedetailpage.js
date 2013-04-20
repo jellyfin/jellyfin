@@ -164,6 +164,11 @@
 
             loadItems(page, { IncludeItemTypes: "MusicAlbum", PersonTypes: "Artist" });
         });
+
+        $("#radioSongs", page).on("click", function () {
+
+            loadItems(page, { IncludeItemTypes: "Audio", PersonTypes: "Artist" });
+        });
     }
 
     function renderDetails(page, item) {
@@ -189,8 +194,7 @@
 
                 $('#itemBirthday', page).show().html("Birthday:&nbsp;&nbsp;" + birthday);
             }
-            catch(err)
-            {
+            catch (err) {
                 $('#itemBirthday', page).hide();
             }
         } else {
@@ -259,7 +263,13 @@
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
             var html = '';
 
-            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
+            if (result.TotalRecordCount > query.Limit) {
+                $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
+                $('.viewSettings', page).show();
+            } else {
+                $('.listTopPaging', page).html('');
+                $('.viewSettings', page).hide();
+            }
 
             html += LibraryBrowser.getPosterDetailViewHtml({
                 items: result.Items,
