@@ -427,17 +427,16 @@ namespace MediaBrowser.Server.Implementations.Providers
             //Tell the watchers to ignore
             _directoryWatchers.TemporarilyIgnore(path);
 
-            //Make the mod
-
             dataToSave.Position = 0;
 
             try
             {
                 using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
                 {
-                    await dataToSave.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
-
-                    dataToSave.Dispose();
+                    using (var input = dataToSave)
+                    {
+                        await input.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
+                    }
 
                     // If this is ever used for something other than metadata we can add a file type param
                     item.ResolveArgs.AddMetadataFile(path);
