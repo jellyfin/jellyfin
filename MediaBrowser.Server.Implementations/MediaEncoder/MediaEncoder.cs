@@ -541,7 +541,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     FileName = FFMpegPath,
-                    Arguments = string.Format("-i \"{0}\" \"{1}\"", inputPath, outputPath),
+                    Arguments = string.Format("-sub_charenc Windows-1256 -i \"{0}\" \"{1}\"", inputPath, outputPath),
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false
                 }
@@ -646,7 +646,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     FileName = FFMpegPath,
-                    Arguments = string.Format("-i {0} -map 0:{1} -an -vn -c:s ass \"{2}\"", inputPath, subtitleStreamIndex, outputPath),
+                    Arguments = string.Format("-sub_charenc Windows-1256 -i {0} -map 0:{1} -an -vn -c:s ass \"{2}\"", inputPath, subtitleStreamIndex, outputPath),
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false
                 }
