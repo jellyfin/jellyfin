@@ -324,6 +324,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 DeviceId = deviceId
             });
 
+            connection.DeviceName = deviceName;
             connection.UserId = userId.ToString();
             
             return connection;
