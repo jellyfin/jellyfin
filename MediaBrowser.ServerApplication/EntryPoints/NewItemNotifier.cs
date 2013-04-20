@@ -14,7 +14,7 @@ namespace MediaBrowser.ServerApplication.EntryPoints
     /// <summary>
     /// Class NewItemNotifier
     /// </summary>
-    public class NewItemNotifier : IServerEntryPoint
+    public class NewItemNotifier
     {
         /// <summary>
         /// Holds the list of new items to display when the NewItemTimer expires
