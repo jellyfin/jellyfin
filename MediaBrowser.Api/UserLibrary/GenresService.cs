@@ -79,7 +79,7 @@ namespace MediaBrowser.Api.UserLibrary
 
                 GameCount = items.OfType<BaseGame>().Count(),
 
-                SongCount = items.OfType<AudioCodecs>().Count(),
+                SongCount = items.OfType<Audio>().Count(),
 
                 AlbumCount = items.OfType<MusicAlbum>().Count()
             };
