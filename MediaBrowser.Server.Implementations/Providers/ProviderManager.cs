@@ -202,7 +202,7 @@ namespace MediaBrowser.Server.Implementations.Providers
             {
                 item.ProviderData[_supportedProvidersKey] = supportedProvidersInfo;
             }
-            
+
             return result || providersChanged;
         }
 
@@ -282,7 +282,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                 }
                 catch (ObjectDisposedException)
                 {
-                    
+
                 }
             }
 
@@ -358,7 +358,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                 Path.Combine(item.MetaLocation, targetName) :
                 _remoteImageCache.GetResourcePath(item.GetType().FullName + item.Path.ToLower(), targetName);
 
-            var img = await _httpClient.GetMemoryStream(source, resourcePool, cancellationToken).ConfigureAwait(false);
+            var img = await _httpClient.Get(source, resourcePool, cancellationToken).ConfigureAwait(false);
 
             if (ConfigurationManager.Configuration.SaveLocalMeta) // queue to media directories
             {
@@ -422,12 +422,32 @@ namespace MediaBrowser.Server.Implementations.Providers
                 throw new ArgumentNullException();
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
+            if (cancellationToken.IsCancellationRequested)
+            {
+                dataToSave.Dispose();
+                cancellationToken.ThrowIfCancellationRequested();
+            }
 
             //Tell the watchers to ignore
             _directoryWatchers.TemporarilyIgnore(path);
 
-            dataToSave.Position = 0;
+            if (dataToSave.CanSeek)
+            {
+                dataToSave.Position = 0;
+            }
+
+            if (!(dataToSave is MemoryStream || dataToSave is FileStream))
+            {
+                var ms = new MemoryStream();
+
+                using (var input = dataToSave)
+                {
+                    await input.CopyToAsync(ms).ConfigureAwait(false);
+                }
+
+                ms.Position = 0;
+                dataToSave = ms;
+            }
 
             try
             {

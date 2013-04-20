@@ -1,14 +1,17 @@
 ﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Cache;
 using System.Net.Http;
 using System.Text;
@@ -31,13 +34,22 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// The _app paths
         /// </summary>
         private readonly IApplicationPaths _appPaths;
-        
+
+        private readonly IJsonSerializer _jsonSerializer;
+        //private readonly FileSystemRepository _cacheRepository;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpClientManager" /> class.
         /// </summary>
         /// <param name="appPaths">The kernel.</param>
         /// <param name="logger">The logger.</param>
-        public HttpClientManager(IApplicationPaths appPaths, ILogger logger)
+        /// <param name="jsonSerializer">The json serializer.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// appPaths
+        /// or
+        /// logger
+        /// </exception>
+        public HttpClientManager(IApplicationPaths appPaths, ILogger logger, IJsonSerializer jsonSerializer)
         {
             if (appPaths == null)
             {
@@ -47,9 +59,12 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 throw new ArgumentNullException("logger");
             }
-            
+
             _logger = logger;
+            _jsonSerializer = jsonSerializer;
             _appPaths = appPaths;
+
+            //_cacheRepository = new FileSystemRepository(Path.Combine(_appPaths.CachePath, "http"));
         }
 
         /// <summary>
@@ -77,8 +92,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 var handler = new WebRequestHandler
                 {
-                    //AutomaticDecompression = DecompressionMethods.Deflate,
-                    CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate)
+                    CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache)
                 };
 
                 client = new HttpClient(handler);
@@ -102,9 +116,41 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         {
             ValidateParams(url, cancellationToken);
 
+            //var urlHash = url.GetMD5().ToString();
+            //var infoPath = _cacheRepository.GetResourcePath(urlHash + ".js");
+            //var responsePath = _cacheRepository.GetResourcePath(urlHash + ".dat");
+
+            //HttpResponseInfo cachedInfo = null;
+
+            //try
+            //{
+            //    cachedInfo = _jsonSerializer.DeserializeFromFile<HttpResponseInfo>(infoPath);
+            //}
+            //catch (FileNotFoundException)
+            //{
+
+            //}
+
+            //if (cachedInfo != null && !cachedInfo.MustRevalidate && cachedInfo.Expires.HasValue && cachedInfo.Expires.Value > DateTime.UtcNow)
+            //{
+            //    return GetCachedResponse(responsePath);
+            //}
+
             cancellationToken.ThrowIfCancellationRequested();
 
             var message = new HttpRequestMessage(HttpMethod.Get, url);
+
+            //if (cachedInfo != null)
+            //{
+            //    if (!string.IsNullOrEmpty(cachedInfo.Etag))
+            //    {
+            //        message.Headers.Add("If-None-Match", cachedInfo.Etag);
+            //    }
+            //    else if (cachedInfo.LastModified.HasValue)
+            //    {
+            //        message.Headers.IfModifiedSince = new DateTimeOffset(cachedInfo.LastModified.Value);
+            //    }
+            //}
 
             if (resourcePool != null)
             {
@@ -122,6 +168,20 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                     EnsureSuccessStatusCode(response);
 
                     cancellationToken.ThrowIfCancellationRequested();
+
+                    //cachedInfo = UpdateInfoCache(cachedInfo, url, infoPath, response);
+
+                    //if (response.StatusCode == HttpStatusCode.NotModified)
+                    //{
+                    //    return GetCachedResponse(responsePath);
+                    //}
+
+                    //if (!string.IsNullOrEmpty(cachedInfo.Etag) || cachedInfo.LastModified.HasValue || (cachedInfo.Expires.HasValue && cachedInfo.Expires.Value > DateTime.UtcNow))
+                    //{
+                    //    await UpdateResponseCache(response, responsePath).ConfigureAwait(false);
+
+                    //    return GetCachedResponse(responsePath);
+                    //}
 
                     return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 }
@@ -150,7 +210,108 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Gets the cached response.
+        /// </summary>
+        /// <param name="responsePath">The response path.</param>
+        /// <returns>Stream.</returns>
+        private Stream GetCachedResponse(string responsePath)
+        {
+            return File.OpenRead(responsePath);
+        }
+
+        /// <summary>
+        /// Updates the cache.
+        /// </summary>
+        /// <param name="cachedInfo">The cached info.</param>
+        /// <param name="url">The URL.</param>
+        /// <param name="path">The path.</param>
+        /// <param name="response">The response.</param>
+        private HttpResponseInfo UpdateInfoCache(HttpResponseInfo cachedInfo, string url, string path, HttpResponseMessage response)
+        {
+            var fileExists = true;
+
+            if (cachedInfo == null)
+            {
+                cachedInfo = new HttpResponseInfo();
+                fileExists = false;
+            }
+
+            cachedInfo.Url = url;
+
+            var etag = response.Headers.ETag;
+            if (etag != null)
+            {
+                cachedInfo.Etag = etag.Tag;
+            }
+
+            var modified = response.Content.Headers.LastModified;
+
+            if (modified.HasValue)
+            {
+                cachedInfo.LastModified = modified.Value.UtcDateTime;
+            }
+            else if (response.Headers.Age.HasValue)
+            {
+                cachedInfo.LastModified = DateTime.UtcNow.Subtract(response.Headers.Age.Value);
+            }
+
+            var expires = response.Content.Headers.Expires;
+
+            if (expires.HasValue)
+            {
+                cachedInfo.Expires = expires.Value.UtcDateTime;
+            }
+            else
+            {
+                var cacheControl = response.Headers.CacheControl;
+
+                if (cacheControl != null)
+                {
+                    if (cacheControl.MaxAge.HasValue)
+                    {
+                        var baseline = cachedInfo.LastModified ?? DateTime.UtcNow;
+                        cachedInfo.Expires = baseline.Add(cacheControl.MaxAge.Value);
+                    }
+
+                    cachedInfo.MustRevalidate = cacheControl.MustRevalidate;
+                }
+            }
+
+            if (string.IsNullOrEmpty(cachedInfo.Etag) && !cachedInfo.Expires.HasValue && !cachedInfo.LastModified.HasValue)
+            {
+                // Nothing to cache
+                if (fileExists)
+                {
+                    File.Delete(path);
+                }
+            }
+            else
+            {
+                _jsonSerializer.SerializeToFile(cachedInfo, path);
+            }
+
+            return cachedInfo;
+        }
+
+        /// <summary>
+        /// Updates the response cache.
+        /// </summary>
+        /// <param name="response">The response.</param>
+        /// <param name="path">The path.</param>
+        /// <returns>Task.</returns>
+        private async Task UpdateResponseCache(HttpResponseMessage response, string path)
+        {
+            using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+            {
+                using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                {
+                    await stream.CopyToAsync(fs).ConfigureAwait(false);
+                }
+            }
+        }
+
         /// <summary>
         /// Performs a POST request
         /// </summary>
@@ -259,10 +420,9 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                     options.CancellationToken.ThrowIfCancellationRequested();
 
-                    IEnumerable<string> lengthValues;
+                    var contentLength = GetContentLength(response);
 
-                    if (!response.Headers.TryGetValues("content-length", out lengthValues) &&
-                        !response.Content.Headers.TryGetValues("content-length", out lengthValues))
+                    if (!contentLength.HasValue)
                     {
                         // We're not able to track progress
                         using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
@@ -275,9 +435,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                     }
                     else
                     {
-                        var length = long.Parse(string.Join(string.Empty, lengthValues.ToArray()), UsCulture);
-
-                        using (var stream = ProgressStream.CreateReadProgressStream(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), options.Progress.Report, length))
+                        using (var stream = ProgressStream.CreateReadProgressStream(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), options.Progress.Report, contentLength.Value))
                         {
                             using (var fs = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
                             {
@@ -304,6 +462,23 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
 
             return tempFile;
+        }
+
+        /// <summary>
+        /// Gets the length of the content.
+        /// </summary>
+        /// <param name="response">The response.</param>
+        /// <returns>System.Nullable{System.Int64}.</returns>
+        private long? GetContentLength(HttpResponseMessage response)
+        {
+            IEnumerable<string> lengthValues;
+
+            if (!response.Headers.TryGetValues("content-length", out lengthValues) && !response.Content.Headers.TryGetValues("content-length", out lengthValues))
+            {
+                return null;
+            }
+
+            return long.Parse(string.Join(string.Empty, lengthValues.ToArray()), UsCulture);
         }
 
         protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
@@ -347,41 +522,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
 
             throw ex;
-        }
-        
-        /// <summary>
-        /// Downloads the contents of a given url into a MemoryStream
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="resourcePool">The resource pool.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{MemoryStream}.</returns>
-        /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public async Task<MemoryStream> GetMemoryStream(string url, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
-        {
-            ValidateParams(url, cancellationToken);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            _logger.Info("HttpClientManager.GetMemoryStream url: {0}", url);
-
-            var ms = new MemoryStream();
-
-            try
-            {
-                using (var stream = await Get(url, resourcePool, cancellationToken).ConfigureAwait(false))
-                {
-                    await stream.CopyToAsync(ms, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
-                }
-
-                return ms;
-            }
-            catch
-            {
-                ms.Dispose();
-
-                throw;
-            }
         }
 
         /// <summary>
@@ -498,17 +638,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         public Task<Stream> Post(string url, Dictionary<string, string> postData, CancellationToken cancellationToken)
         {
             return Post(url, postData, null, cancellationToken);
-        }
-
-        /// <summary>
-        /// Gets the memory stream.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{MemoryStream}.</returns>
-        public Task<MemoryStream> GetMemoryStream(string url, CancellationToken cancellationToken)
-        {
-            return GetMemoryStream(url, null, cancellationToken);
         }
     }
 }
