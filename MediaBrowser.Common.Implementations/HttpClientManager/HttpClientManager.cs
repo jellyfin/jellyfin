@@ -104,6 +104,8 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            var message = new HttpRequestMessage(HttpMethod.Get, url);
+
             if (resourcePool != null)
             {
                 await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -115,11 +117,14 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var msg = await GetHttpClient(GetHostFromUrl(url)).GetAsync(url, cancellationToken).ConfigureAwait(false);
+                using (var response = await GetHttpClient(GetHostFromUrl(url)).SendAsync(message, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false))
+                {
+                    EnsureSuccessStatusCode(response);
 
-                EnsureSuccessStatusCode(msg);
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                return await msg.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                    return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                }
             }
             catch (OperationCanceledException ex)
             {
@@ -131,6 +136,12 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                 throw new HttpException(ex.Message, ex);
             }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting response from " + url, ex);
+
+                throw;
+            }
             finally
             {
                 if (resourcePool != null)
@@ -139,7 +150,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 }
             }
         }
-
+        
         /// <summary>
         /// Performs a POST request
         /// </summary>
@@ -209,26 +220,11 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <exception cref="System.ArgumentNullException">progress</exception>
         /// <exception cref="HttpException"></exception>
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public Task<string> GetTempFile(HttpRequestOptions options)
-        {
-            var tempFile = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".tmp");
-
-            return GetTempFile(options, tempFile);
-        }
-
-        protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
-        /// <summary>
-        /// Gets the temp file.
-        /// </summary>
-        /// <param name="options">The options.</param>
-        /// <param name="tempFile">The temp file.</param>
-        /// <returns>Task{System.String}.</returns>
-        /// <exception cref="System.ArgumentNullException">progress</exception>
-        /// <exception cref="HttpException"></exception>
-        private async Task<string> GetTempFile(HttpRequestOptions options, string tempFile)
+        public async Task<string> GetTempFile(HttpRequestOptions options)
         {
             ValidateParams(options.Url, options.CancellationToken);
+
+            var tempFile = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".tmp");
 
             if (options.Progress == null)
             {
@@ -250,7 +246,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
 
             options.Progress.Report(0);
-            
+
             _logger.Info("HttpClientManager.GetTempFile url: {0}, temp file: {1}", options.Url, tempFile);
 
             try
@@ -309,6 +305,8 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             return tempFile;
         }
+
+        protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         /// <summary>
         /// Handles the temp file exception.
