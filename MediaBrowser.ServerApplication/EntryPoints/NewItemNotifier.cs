@@ -113,7 +113,7 @@ namespace MediaBrowser.ServerApplication.EntryPoints
             {
                 Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    var window = (MainWindow)Application.Current.MainWindow;
+                    var window = Application.Current.Windows.OfType<MainWindow>().First();
 
                     window.Dispatcher.InvokeAsync(() => window.MbTaskbarIcon.ShowCustomBalloon(new ItemUpdateNotification(_logger)
                     {
