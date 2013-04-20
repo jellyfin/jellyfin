@@ -363,67 +363,24 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var message = new HttpRequestMessage(HttpMethod.Get, url);
-
-            if (resourcePool != null)
-            {
-                await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-            }
+            _logger.Info("HttpClientManager.GetMemoryStream url: {0}", url);
 
             var ms = new MemoryStream();
 
-            _logger.Info("HttpClientManager.GetMemoryStream url: {0}", url);
-
             try
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                using (var response = await GetHttpClient(GetHostFromUrl(url)).SendAsync(message, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false))
+                using (var stream = await Get(url, resourcePool, cancellationToken).ConfigureAwait(false))
                 {
-                    EnsureSuccessStatusCode(response);
-
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-                    {
-                        await stream.CopyToAsync(ms, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
-                    }
-
-                    cancellationToken.ThrowIfCancellationRequested();
+                    await stream.CopyToAsync(ms, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
                 }
-
-                ms.Position = 0;
 
                 return ms;
             }
-            catch (OperationCanceledException ex)
+            catch
             {
-                ms.Dispose();
-
-                throw GetCancellationException(url, cancellationToken, ex);
-            }
-            catch (HttpRequestException ex)
-            {
-                _logger.ErrorException("Error getting response from " + url, ex);
-
-                ms.Dispose();
-
-                throw new HttpException(ex.Message, ex);
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error getting response from " + url, ex);
-
                 ms.Dispose();
 
                 throw;
-            }
-            finally
-            {
-                if (resourcePool != null)
-                {
-                    resourcePool.Release();
-                }
             }
         }
 
