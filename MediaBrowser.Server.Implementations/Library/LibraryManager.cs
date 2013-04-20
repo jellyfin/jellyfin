@@ -692,7 +692,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public async Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            const int maxTasks = 50;
+            const int maxTasks = 25;
 
             var tasks = new List<Task>();
 
