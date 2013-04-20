@@ -243,17 +243,17 @@ namespace MediaBrowser.Model.Configuration
             TmdbFetchedProfileSize = "original"; //w185 w45 h632 or original
             TmdbFetchedPosterSize = "original"; //w500, w342, w185 or original
             TmdbFetchedBackdropSize = "original"; //w1280, w780 or original
-            DownloadMovieImages = new ImageDownloadOptions {Backdrops = true, Primary = true};
-            DownloadSeriesImages = new ImageDownloadOptions {Backdrops = true, Primary = true, Banner = true, Logo = true};
-            DownloadSeasonImages = new ImageDownloadOptions {Backdrops = false, Primary = true, Banner = true};
-            DownloadMusicArtistImages = new ImageDownloadOptions {Backdrops = true, Primary = true, Banner = true, Thumb = true};
-            DownloadMusicAlbumImages = new ImageDownloadOptions {Backdrops = true, Primary = false};
+            DownloadMovieImages = new ImageDownloadOptions();
+            DownloadSeriesImages = new ImageDownloadOptions();
+            DownloadSeasonImages = new ImageDownloadOptions();
+            DownloadMusicArtistImages = new ImageDownloadOptions();
+            DownloadMusicAlbumImages = new ImageDownloadOptions();
             DownloadHDFanArt = true;
             MaxBackdrops = 4;
 
-            SortReplaceCharacters = new [] { ".", "+", "%" };
-            SortRemoveCharacters = new [] { ",", "&", "-", "{", "}", "'" };
-            SortRemoveWords = new [] { "the", "a", "an" };
+            SortReplaceCharacters = new[] { ".", "+", "%" };
+            SortRemoveCharacters = new[] { ",", "&", "-", "{", "}", "'" };
+            SortRemoveWords = new[] { "the", "a", "an" };
         }
     }
 }
