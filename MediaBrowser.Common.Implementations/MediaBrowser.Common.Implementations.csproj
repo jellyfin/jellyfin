@@ -65,6 +65,7 @@
     <Compile Include="BaseApplicationPaths.cs" />
     <Compile Include="Configuration\BaseConfigurationManager.cs" />
     <Compile Include="HttpClientManager\HttpClientManager.cs" />
+    <Compile Include="HttpClientManager\HttpResponseInfo.cs" />
     <Compile Include="Logging\LogHelper.cs" />
     <Compile Include="Logging\NLogger.cs" />
     <Compile Include="Logging\NlogManager.cs" />

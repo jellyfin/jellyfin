@@ -335,7 +335,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             var localPath = Path.Combine(item.MetaLocation, targetName);
             if (!item.ResolveArgs.ContainsMetaFileByName(targetName))
             {
-                using (var sourceStream = await HttpClient.GetMemoryStream(source, MovieDbProvider.Current.MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
+                using (var sourceStream = await HttpClient.Get(source, MovieDbProvider.Current.MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
                 {
                     await ProviderManager.SaveToLibraryFilesystem(item, localPath, sourceStream, cancellationToken).ConfigureAwait(false);
 

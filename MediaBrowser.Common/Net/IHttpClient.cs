@@ -58,23 +58,5 @@ namespace MediaBrowser.Common.Net
         /// <exception cref="System.ArgumentNullException">progress</exception>
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
         Task<string> GetTempFile(HttpRequestOptions options);
-        
-        /// <summary>
-        /// Downloads the contents of a given url into a MemoryStream
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="resourcePool">The resource pool.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{MemoryStream}.</returns>
-        /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        Task<MemoryStream> GetMemoryStream(string url, SemaphoreSlim resourcePool, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets the memory stream.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{MemoryStream}.</returns>
-        Task<MemoryStream> GetMemoryStream(string url, CancellationToken cancellationToken);
     }
 }
