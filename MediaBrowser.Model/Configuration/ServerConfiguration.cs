@@ -240,9 +240,9 @@ namespace MediaBrowser.Model.Configuration
             MetadataRefreshDays = 30;
             PreferredMetadataLanguage = "en";
             MetadataCountryCode = "US";
-            TmdbFetchedProfileSize = "w185"; //w185 w45 h632 or original
-            TmdbFetchedPosterSize = "w500"; //w500, w342, w185 or original
-            TmdbFetchedBackdropSize = "w1280"; //w1280, w780 or original
+            TmdbFetchedProfileSize = "original"; //w185 w45 h632 or original
+            TmdbFetchedPosterSize = "original"; //w500, w342, w185 or original
+            TmdbFetchedBackdropSize = "original"; //w1280, w780 or original
             DownloadMovieImages = new ImageDownloadOptions {Backdrops = true, Primary = true};
             DownloadSeriesImages = new ImageDownloadOptions {Backdrops = true, Primary = true, Banner = true, Logo = true};
             DownloadSeasonImages = new ImageDownloadOptions {Backdrops = false, Primary = true, Banner = true};
