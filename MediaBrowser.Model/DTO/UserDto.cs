@@ -57,7 +57,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The primary image aspect ratio.</value>
         public double? PrimaryImageAspectRatio { get; set; }
-        
+
         /// <summary>
         /// Gets a value indicating whether this instance has primary image.
         /// </summary>
@@ -68,6 +68,17 @@ namespace MediaBrowser.Model.Dto
             get { return PrimaryImageTag.HasValue; }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserDto"/> class.
+        /// </summary>
+        public UserDto()
+        {
+            Configuration = new UserConfiguration();
+        }
+
+        /// <summary>
+        /// Occurs when [property changed].
+        /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
     }
 }

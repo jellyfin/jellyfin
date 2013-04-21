@@ -73,7 +73,7 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The video types.</value>
         public VideoType[] VideoTypes { get; set; }
-        
+
         /// <summary>
         /// Whether or not to perform the query recursively
         /// </summary>
@@ -103,7 +103,7 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The include item types.</value>
         public string[] IncludeItemTypes { get; set; }
-        
+
         /// <summary>
         /// Limit results to items containing specific years
         /// </summary>
@@ -127,7 +127,7 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The index by.</value>
         public string SearchTerm { get; set; }
-        
+
         /// <summary>
         /// The dynamic, localized index function name
         /// </summary>
@@ -151,7 +151,7 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The series status.</value>
         public SeriesStatus[] SeriesStatuses { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the ids, which are specific items to retrieve
         /// </summary>
@@ -169,5 +169,35 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The max official rating.</value>
         public string MaxOfficialRating { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ItemQuery"/> class.
+        /// </summary>
+        public ItemQuery()
+        {
+            SortBy = new string[] {};
+
+            Filters = new ItemFilter[] {};
+
+            Fields = new ItemFields[] {};
+
+            MediaTypes = new string[] {};
+
+            VideoFormats = new VideoFormat[] { };
+
+            VideoTypes = new VideoType[] {};
+
+            Genres = new string[] { };
+            Studios = new string[] { };
+            IncludeItemTypes = new string[] { };
+            ExcludeItemTypes = new string[] { };
+            Years = new int[] { };
+            PersonTypes = new string[] { };
+            Ids = new string[] { };
+
+            ImageTypes = new ImageType[] { };
+            AirDays = new DayOfWeek[] { };
+            SeriesStatuses = new SeriesStatus[] { };
+        }
     }
 }

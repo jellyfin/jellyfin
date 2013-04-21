@@ -32,6 +32,9 @@ namespace MediaBrowser.Model.Entities
         /// <value>The items updated.</value>
         public List<Guid> ItemsUpdated { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LibraryUpdateInfo"/> class.
+        /// </summary>
         public LibraryUpdateInfo()
         {
             Folders = new List<Guid>();

@@ -60,5 +60,17 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The id.</value>
         public string Id { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SystemInfo"/> class.
+        /// </summary>
+        public SystemInfo()
+        {
+            InProgressInstallations = new InstallationInfo[] { };
+
+            CompletedInstallations = new InstallationInfo[] { };
+
+            FailedPluginAssemblies = new string[] { };
+        }
     }
 }

@@ -54,5 +54,13 @@ namespace MediaBrowser.Model.Tasks
         /// </summary>
         /// <value>The category.</value>
         public string Category { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TaskInfo"/> class.
+        /// </summary>
+        public TaskInfo()
+        {
+            Triggers = new TaskTriggerInfo[] {};
+        }
     }
 }
