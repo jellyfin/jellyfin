@@ -92,7 +92,8 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 var handler = new WebRequestHandler
                 {
-                    CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache)
+                    CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache),
+                    AutomaticDecompression = DecompressionMethods.None
                 };
 
                 client = new HttpClient(handler);
@@ -163,28 +164,27 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                using (var response = await GetHttpClient(GetHostFromUrl(url)).SendAsync(message, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false))
-                {
-                    EnsureSuccessStatusCode(response);
+                var response = await GetHttpClient(GetHostFromUrl(url)).SendAsync(message, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
-                    cancellationToken.ThrowIfCancellationRequested();
+                EnsureSuccessStatusCode(response);
 
-                    //cachedInfo = UpdateInfoCache(cachedInfo, url, infoPath, response);
+                cancellationToken.ThrowIfCancellationRequested();
 
-                    //if (response.StatusCode == HttpStatusCode.NotModified)
-                    //{
-                    //    return GetCachedResponse(responsePath);
-                    //}
+                //cachedInfo = UpdateInfoCache(cachedInfo, url, infoPath, response);
 
-                    //if (!string.IsNullOrEmpty(cachedInfo.Etag) || cachedInfo.LastModified.HasValue || (cachedInfo.Expires.HasValue && cachedInfo.Expires.Value > DateTime.UtcNow))
-                    //{
-                    //    await UpdateResponseCache(response, responsePath).ConfigureAwait(false);
+                //if (response.StatusCode == HttpStatusCode.NotModified)
+                //{
+                //    return GetCachedResponse(responsePath);
+                //}
 
-                    //    return GetCachedResponse(responsePath);
-                    //}
+                //if (!string.IsNullOrEmpty(cachedInfo.Etag) || cachedInfo.LastModified.HasValue || (cachedInfo.Expires.HasValue && cachedInfo.Expires.Value > DateTime.UtcNow))
+                //{
+                //    await UpdateResponseCache(response, responsePath).ConfigureAwait(false);
 
-                    return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                }
+                //    return GetCachedResponse(responsePath);
+                //}
+
+                return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             }
             catch (OperationCanceledException ex)
             {
