@@ -121,5 +121,13 @@ namespace MediaBrowser.Model.Updates
         /// </summary>
         /// <value>The versions.</value>
         public List<PackageVersionInfo> versions { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PackageInfo"/> class.
+        /// </summary>
+        public PackageInfo()
+        {
+            versions = new List<PackageVersionInfo>();
+        }
     }
 }

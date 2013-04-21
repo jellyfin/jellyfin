@@ -23,7 +23,7 @@ namespace MediaBrowser.Model.Querying
         /// <value>The size of the page.</value>
         public int? Limit { get; set; }
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="ItemsByNameQuery"/> is recursive.
+        /// Gets or sets a value indicating whether this <see cref="ItemsByNameQuery" /> is recursive.
         /// </summary>
         /// <value><c>true</c> if recursive; otherwise, <c>false</c>.</value>
         public bool Recursive { get; set; }
@@ -47,5 +47,15 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The person types.</value>
         public string[] PersonTypes { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ItemsByNameQuery"/> class.
+        /// </summary>
+        public ItemsByNameQuery()
+        {
+            Fields = new ItemFields[] {};
+
+            PersonTypes = new string[] {};
+        }
     }
 }

@@ -18,5 +18,13 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The locations.</value>
         public List<string> Locations { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VirtualFolderInfo"/> class.
+        /// </summary>
+        public VirtualFolderInfo()
+        {
+            Locations = new List<string>();
+        }
     }
 }

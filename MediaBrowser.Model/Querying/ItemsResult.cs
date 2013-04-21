@@ -18,5 +18,13 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The total record count.</value>
         public int TotalRecordCount { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ItemsResult"/> class.
+        /// </summary>
+        public ItemsResult()
+        {
+            Items = new BaseItemDto[] { };
+        }
     }
 }
