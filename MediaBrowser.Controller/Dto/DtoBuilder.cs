@@ -427,7 +427,7 @@ namespace MediaBrowser.Controller.Dto
                 {
                     dto.Album = audio.Album;
                     dto.AlbumArtist = audio.AlbumArtist;
-                    dto.Artist = audio.Artist;
+                    dto.Artists = audio.Artists;
                 }
             }
 

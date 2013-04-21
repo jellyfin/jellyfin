@@ -268,7 +268,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the artist.
         /// </summary>
         /// <value>The artist.</value>
-        public string Artist { get; set; }
+        public List<string> Artists { get; set; }
 
         /// <summary>
         /// Gets or sets the album.

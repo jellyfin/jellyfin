@@ -96,11 +96,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
             if (!string.IsNullOrWhiteSpace(composer))
             {
-                // Only use the comma as a delimeter if there are no slashes or pipes. 
-                // We want to be careful not to split names that have commas in them
-                var delimeter = composer.IndexOf('/') == -1 && composer.IndexOf('|') == -1 ? new[] { ',' } : new[] { '/', '|' };
-
-                foreach (var person in composer.Split(delimeter, StringSplitOptions.RemoveEmptyEntries))
+                foreach (var person in Split(composer))
                 {
                     var name = person.Trim();
 
@@ -112,12 +108,19 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             }
 
             audio.Album = GetDictionaryValue(tags, "album");
-            audio.Artist = GetDictionaryValue(tags, "artist");
 
-            if (!string.IsNullOrWhiteSpace(audio.Artist))
+            var artists = GetDictionaryValue(tags, "artist");
+            if (!string.IsNullOrWhiteSpace(artists))
             {
-                // Add to people too
-                audio.AddPerson(new PersonInfo {Name = audio.Artist, Type = PersonType.MusicArtist});
+                foreach (var artist in Split(artists))
+                {
+                    var name = artist.Trim();
+
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        audio.AddArtist(name);
+                    }
+                }
             }
 
             // Several different forms of albumartist
@@ -148,6 +151,20 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             FetchStudios(audio, tags, "organization");
             FetchStudios(audio, tags, "ensemble");
             FetchStudios(audio, tags, "publisher");
+        }
+
+        /// <summary>
+        /// Splits the specified val.
+        /// </summary>
+        /// <param name="val">The val.</param>
+        /// <returns>System.String[][].</returns>
+        private string[] Split(string  val)
+        {
+            // Only use the comma as a delimeter if there are no slashes or pipes. 
+            // We want to be careful not to split names that have commas in them
+            var delimeter = val.IndexOf('/') == -1 && val.IndexOf('|') == -1 ? new[] { ',' } : new[] { '/', '|' };
+
+            return val.Split(delimeter, StringSplitOptions.RemoveEmptyEntries);
         }
 
         /// <summary>

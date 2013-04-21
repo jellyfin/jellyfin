@@ -127,7 +127,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected IEnumerable<BaseItem> GetIndexByPerformer(User user)
         {
-            return GetIndexByPerson(user, new List<string> { PersonType.Actor, PersonType.MusicArtist, PersonType.GuestStar }, LocalizedStrings.Instance.GetString("PerformerDispPref"));
+            return GetIndexByPerson(user, new List<string> { PersonType.Actor, PersonType.GuestStar }, true, LocalizedStrings.Instance.GetString("PerformerDispPref"));
         }
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected IEnumerable<BaseItem> GetIndexByDirector(User user)
         {
-            return GetIndexByPerson(user, new List<string> { PersonType.Director }, LocalizedStrings.Instance.GetString("DirectorDispPref"));
+            return GetIndexByPerson(user, new List<string> { PersonType.Director }, false, LocalizedStrings.Instance.GetString("DirectorDispPref"));
         }
 
         /// <summary>
@@ -145,9 +145,10 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="personTypes">The person types we should match on</param>
+        /// <param name="includeAudio">if set to <c>true</c> [include audio].</param>
         /// <param name="indexName">Name of the index.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        protected IEnumerable<BaseItem> GetIndexByPerson(User user, List<string> personTypes, string indexName)
+        private IEnumerable<BaseItem> GetIndexByPerson(User user, List<string> personTypes, bool includeAudio, string indexName)
         {
 
             // Even though this implementation means multiple iterations over the target list - it allows us to defer
@@ -158,9 +159,12 @@ namespace MediaBrowser.Controller.Entities
                 var currentIndexName = indexName;
 
                 var us = this;
-                var candidates = RecursiveChildren.Where(i => i.IncludeInIndex && i.AllPeople != null).ToList();
+                var recursiveChildren = GetRecursiveChildren(user).Where(i => i.IncludeInIndex).ToList();
 
-                return candidates.AsParallel().SelectMany(i => i.AllPeople.Where(p => personTypes.Contains(p.Type))
+                // Get the candidates, but handle audio separately
+                var candidates = recursiveChildren.Where(i => i.AllPeople != null && !(i is Audio.Audio)).ToList();
+
+                var indexFolders = candidates.AsParallel().SelectMany(i => i.AllPeople.Where(p => personTypes.Contains(p.Type))
                     .Select(a => a.Name))
                     .Distinct()
                     .Select(i =>
@@ -183,8 +187,38 @@ namespace MediaBrowser.Controller.Entities
                     .Where(i => i != null)
                     .Select(a => new IndexFolder(us, a,
                                         candidates.Where(i => i.AllPeople.Any(p => personTypes.Contains(p.Type) && p.Name.Equals(a.Name, StringComparison.OrdinalIgnoreCase))
-                                        ), currentIndexName));
+                                        ), currentIndexName)).AsEnumerable();
 
+                if (includeAudio)
+                {
+                    var songs = recursiveChildren.OfType<Audio.Audio>().ToList();
+
+                    indexFolders = songs.SelectMany(i => i.Artists)
+                        .Distinct()
+                    .Select(i =>
+                    {
+                        try
+                        {
+                            return LibraryManager.GetArtist(i).Result;
+                        }
+                        catch (IOException ex)
+                        {
+                            Logger.ErrorException("Error getting artist {0}", ex, i);
+                            return null;
+                        }
+                        catch (AggregateException ex)
+                        {
+                            Logger.ErrorException("Error getting artist {0}", ex, i);
+                            return null;
+                        }
+                    })
+                    .Where(i => i != null)
+                    .Select(a => new IndexFolder(us, a,
+                                        songs.Where(i => i.Artists.Contains(a.Name, StringComparer.OrdinalIgnoreCase)
+                                        ), currentIndexName)).Concat(indexFolders); 
+                }
+
+                return indexFolders;
             }
         }
 
@@ -201,7 +235,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var indexName = LocalizedStrings.Instance.GetString("StudioDispPref");
 
-                var candidates = RecursiveChildren.Where(i => i.IncludeInIndex && i.Studios != null).ToList();
+                var candidates = GetRecursiveChildren(user).Where(i => i.IncludeInIndex && i.Studios != null).ToList();
 
                 return candidates.AsParallel().SelectMany(i => i.Studios)
                     .Distinct()
@@ -241,7 +275,7 @@ namespace MediaBrowser.Controller.Entities
                 var indexName = LocalizedStrings.Instance.GetString("GenreDispPref");
 
                 //we need a copy of this so we don't double-recurse
-                var candidates = RecursiveChildren.Where(i => i.IncludeInIndex && i.Genres != null).ToList();
+                var candidates = GetRecursiveChildren(user).Where(i => i.IncludeInIndex && i.Genres != null).ToList();
 
                 return candidates.AsParallel().SelectMany(i => i.Genres)
                     .Distinct()
@@ -282,7 +316,7 @@ namespace MediaBrowser.Controller.Entities
                 var indexName = LocalizedStrings.Instance.GetString("YearDispPref");
 
                 //we need a copy of this so we don't double-recurse
-                var candidates = RecursiveChildren.Where(i => i.IncludeInIndex && i.ProductionYear.HasValue).ToList();
+                var candidates = GetRecursiveChildren(user).Where(i => i.IncludeInIndex && i.ProductionYear.HasValue).ToList();
 
                 return candidates.AsParallel().Select(i => i.ProductionYear.Value)
                     .Distinct()
