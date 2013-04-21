@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
@@ -64,6 +65,14 @@ namespace MediaBrowser.Controller.Library
         /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{Person}.</returns>
         Task<Person> GetPerson(string name, bool allowSlowProviders = false);
+
+        /// <summary>
+        /// Gets the artist.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
+        /// <returns>Task{Artist}.</returns>
+        Task<Artist> GetArtist(string name, bool allowSlowProviders = false);
 
         /// <summary>
         /// Gets a Studio

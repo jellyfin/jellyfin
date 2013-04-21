@@ -1,0 +1,18 @@
+﻿
+namespace MediaBrowser.Controller.Entities.Audio
+{
+    /// <summary>
+    /// Class Artist
+    /// </summary>
+    public class Artist : BaseItem
+    {
+        /// <summary>
+        /// Gets the user data key.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        public override string GetUserDataKey()
+        {
+            return Name;
+        }
+    }
+}

@@ -3,6 +3,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -549,6 +550,17 @@ namespace MediaBrowser.Server.Implementations.Library
         public Task<Genre> GetGenre(string name, bool allowSlowProviders = false)
         {
             return GetImagesByNameItem<Genre>(ConfigurationManager.ApplicationPaths.GenrePath, name, CancellationToken.None, allowSlowProviders);
+        }
+
+        /// <summary>
+        /// Gets a Genre
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
+        /// <returns>Task{Genre}.</returns>
+        public Task<Artist> GetArtist(string name, bool allowSlowProviders = false)
+        {
+            return GetImagesByNameItem<Artist>(ConfigurationManager.ApplicationPaths.ArtistsPath, name, CancellationToken.None, allowSlowProviders);
         }
 
         /// <summary>

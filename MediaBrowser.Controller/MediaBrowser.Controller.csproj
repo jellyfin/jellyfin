@@ -71,6 +71,7 @@
     <Compile Include="Drawing\ImageManager.cs" />
     <Compile Include="Dto\UserDtoBuilder.cs" />
     <Compile Include="Entities\AggregateFolder.cs" />
+    <Compile Include="Entities\Audio\Artist.cs" />
     <Compile Include="Entities\Audio\Audio.cs" />
     <Compile Include="Entities\Audio\MusicAlbum.cs" />
     <Compile Include="Entities\Audio\MusicArtist.cs" />

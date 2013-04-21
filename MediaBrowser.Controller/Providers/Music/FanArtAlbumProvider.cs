@@ -55,14 +55,7 @@ namespace MediaBrowser.Controller.Providers.Music
             var artist = (MusicArtist)item.Parent;
 
             var cover = artist.AlbumCovers != null ? GetValueOrDefault(artist.AlbumCovers, mbid, null) : null;
-            if (cover == null)
-            {
-                // Not there - maybe it is new since artist last refreshed so refresh it and try again
-                await artist.RefreshMetadata(cancellationToken).ConfigureAwait(false);
-                cancellationToken.ThrowIfCancellationRequested();
 
-                cover = artist.AlbumCovers != null ? GetValueOrDefault(artist.AlbumCovers, mbid, null) : null;
-            }
             if (cover == null)
             {
                 Logger.Warn("Unable to find cover art for {0}", item.Name);

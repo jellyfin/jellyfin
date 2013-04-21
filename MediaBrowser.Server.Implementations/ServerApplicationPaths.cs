@@ -18,6 +18,9 @@ namespace MediaBrowser.Server.Implementations
         {
         }
 #else
+/// <summary>
+/// Initializes a new instance of the <see cref="ServerApplicationPaths"/> class.
+/// </summary>
         public ServerApplicationPaths()
             : base(false)
         {
@@ -343,6 +346,31 @@ namespace MediaBrowser.Server.Implementations
                 }
 
                 return _downloadedImagesDataPath;
+            }
+        }
+
+        /// <summary>
+        /// The _music artists path
+        /// </summary>
+        private string _musicArtistsPath;
+        /// <summary>
+        /// Gets the artists path.
+        /// </summary>
+        /// <value>The artists path.</value>
+        public string ArtistsPath
+        {
+            get
+            {
+                if (_musicArtistsPath == null)
+                {
+                    _musicArtistsPath = Path.Combine(ImagesByNamePath, "Artists");
+                    if (!Directory.Exists(_musicArtistsPath))
+                    {
+                        Directory.CreateDirectory(_musicArtistsPath);
+                    }
+                }
+
+                return _musicArtistsPath;
             }
         }
     }
