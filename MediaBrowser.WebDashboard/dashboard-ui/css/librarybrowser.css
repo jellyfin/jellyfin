@@ -188,7 +188,7 @@
     font-weight: bold;
 }
 
-.posterDetailViewItem {
+.tileItem {
     background: #333;
     padding: 10px 10px 3px;
     margin: 3px 0;
@@ -200,30 +200,38 @@
 }
 
 
-    .posterDetailViewItem .itemProgress {
+    .tileItem .itemProgress {
         font-size: 14px;
     }
 
-    .posterDetailViewItem .starRating {
+    .tileItem .starRating {
         width: 15px;
         height: 13px;
     }
 
-.posterDetailViewImage {
-    max-height: 90px;
-    max-width: 46.5%;
+.tileImage {
+    height: 90px;
+    width: 45%;
+    display: inline-block;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center top;
 }
 
-.posterDetailViewItem p {
+.defaultTileImage {
+    background-color: #999;
+}
+
+.tileItem p {
     margin: .35em 0;
 }
 
-.posterDetailViewItem .imgUserItemRating {
+.tileItem .imgUserItemRating {
     height: 18px;
     width: 18px;
 }
 
-.posterDetailViewContentContainer {
+.tileContent {
     display: inline-block;
     width: 50%;
     padding-left: 10px;
@@ -233,11 +241,11 @@
     overflow: hidden;
 }
 
-.posterDetailViewName {
+.tileName {
     font-weight: bold;
 }
 
-.posterDetailViewItem .userDataIcons img {
+.tileItem .userDataIcons img {
     height: 14px;
     width: 14px;
 }
@@ -262,33 +270,33 @@
 }
 
 @media all and (min-width: 850px) {
-    .posterDetailViewItem {
+    .tileItem {
         width: 46%;
         display: inline-block;
         margin-left: 3px;
         margin-right: 3px;
     }
 
-    .posterDetailViewImage {
-        max-height: 140px;
+    .tileImage {
+        height: 140px;
     }
 
-    .posterDetailViewItem .userDataIcons img {
+    .tileItem .userDataIcons img {
         height: 18px;
         width: 18px;
     }
 
-    .posterDetailViewItem p {
+    .tileItem p {
         margin: .75em 0;
     }
 
-    .posterDetailViewItem .itemProgress {
+    .tileItem .itemProgress {
         font-size: 17px;
     }
 }
 
 @media all and (min-width: 1200px) {
-    .posterDetailViewItem {
+    .tileItem {
         width: 30.6%;
     }
 
@@ -298,30 +306,56 @@
 }
 
 @media all and (min-width: 1440px) {
-    .posterDetailViewImage {
-        max-height: 170px;
+    .tileImage {
+        height: 170px;
     }
 }
 
 
 @media all and (min-width: 1920px) {
-    .posterDetailViewItem {
+    .tileItem {
         width: 31.3%;
     }
 
-    .posterDetailViewImage {
-        max-height: 200px;
+    .tileImage {
+        height: 200px;
     }
 }
 
 @media all and (min-width: 2000px) {
-    .posterDetailViewItem {
+    .tileItem {
         width: 23%;
     }
 }
 
 @media all and (min-width: 2540px) {
-    .posterDetailViewItem {
+    .tileItem {
         width: 18.75%;
     }
 }
+
+.detailTable {
+    border-collapse: collapse;
+    border-spacing: 0;
+    min-width: 70%;
+}
+
+    .detailTable td {
+        border-spacing: 0;
+        border-top: 1px solid #444;
+        border-bottom: 1px solid #444;
+        padding: 3px 5px;
+    }
+
+    .detailTable th {
+        border-spacing: 0;
+        border-bottom: 1px solid #444;
+        padding: 5px;
+        font-weight: normal;
+        text-align: left;
+    }
+
+    .detailTable .imgUserItemRating {
+        width: 20px;
+        height: 20px;
+    }

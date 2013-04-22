@@ -205,12 +205,19 @@
 
         }).done(function (result) {
 
-            var html = LibraryBrowser.getPosterDetailViewHtml({
-                items: result.Items,
-                useAverageAspectRatio: true
-            });
+            if (item.Type == "MusicAlbum") {
 
-            $('#childrenContent', page).html(html);
+                $('#childrenContent', page).html(LibraryBrowser.getSongTableHtml(result.Items)).trigger('create');
+
+            } else {
+                var html = LibraryBrowser.getPosterDetailViewHtml({
+                    items: result.Items,
+                    useAverageAspectRatio: true
+                });
+
+                $('#childrenContent', page).html(html);
+
+            }
         });
 
         if (item.Type == "Season") {
@@ -223,7 +230,7 @@
             $('#childrenTitle', page).html('Movies (' + item.ChildCount + ')');
         }
         else if (item.Type == "MusicAlbum") {
-            $('#childrenTitle', page).html('Songs (' + item.ChildCount + ')');
+            $('#childrenTitle', page).html('Tracks (' + item.ChildCount + ')');
         }
         else {
             $('#childrenTitle', page).html('Items (' + item.ChildCount + ')');

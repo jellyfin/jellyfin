@@ -224,7 +224,7 @@
 
         ticks -= (minutes * ticksPerMinute);
 
-        if (minutes < 10) {
+        if (minutes < 10 && hours) {
             minutes = '0' + minutes;
         }
         parts.push(minutes);
