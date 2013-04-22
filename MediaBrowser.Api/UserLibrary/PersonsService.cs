@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -6,6 +7,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
@@ -17,8 +19,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetPersons
     /// </summary>
-    [Route("/Users/{UserId}/Items/{ParentId}/Persons", "GET")]
-    [Route("/Users/{UserId}/Items/Root/Persons", "GET")]
+    [Route("/Persons", "GET")]
     [Api(Description = "Gets all persons from a given item, folder, or the entire library")]
     public class GetPersons : GetItemsByName
     {
@@ -32,7 +33,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetPersonItemCounts
     /// </summary>
-    [Route("/Users/{UserId}/Persons/{Name}/Counts", "GET")]
+    [Route("/Persons/{Name}/Counts", "GET")]
     [Api(Description = "Gets item counts of library items that a person appears in")]
     public class GetPersonItemCounts : IReturn<ItemByNameCounts>
     {
@@ -49,6 +50,28 @@ namespace MediaBrowser.Api.UserLibrary
         /// <value>The name.</value>
         [ApiMember(Name = "Name", Description = "The person name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Name { get; set; }
+    }
+
+    /// <summary>
+    /// Class GetPerson
+    /// </summary>
+    [Route("/Persons/{Name}", "GET")]
+    [Api(Description = "Gets a person, by name")]
+    public class GetPerson : IReturn<BaseItemDto>
+    {
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        [ApiMember(Name = "Name", Description = "The person name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid? UserId { get; set; }
     }
 
     /// <summary>
@@ -72,6 +95,42 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
+        public object Get(GetPerson request)
+        {
+            var result = GetItem(request).Result;
+
+            return ToOptimizedResult(result);
+        }
+
+        /// <summary>
+        /// Gets the item.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>Task{BaseItemDto}.</returns>
+        private async Task<BaseItemDto> GetItem(GetPerson request)
+        {
+            var item = await LibraryManager.GetPerson(request.Name).ConfigureAwait(false);
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
+
+            var builder = new DtoBuilder(Logger, LibraryManager, UserDataRepository);
+
+            if (request.UserId.HasValue)
+            {
+                var user = UserManager.GetUserById(request.UserId.Value);
+
+                return await builder.GetBaseItemDto(item, user, fields.ToList()).ConfigureAwait(false);
+            }
+
+            return await builder.GetBaseItemDto(item, fields.ToList()).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
         public object Get(GetPersons request)
         {
             var result = GetResult(request).Result;
@@ -86,9 +145,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetPersonItemCounts request)
         {
-            var user = UserManager.GetUserById(request.UserId);
-
-            var items = user.RootFolder.GetRecursiveChildren(user).Where(i => i.People != null && i.People.Any(p => string.Equals(p.Name, request.Name, StringComparison.OrdinalIgnoreCase))).ToList();
+            var items = GetItems(request.UserId).Where(i => i.People != null && i.People.Any(p => string.Equals(p.Name, request.Name, StringComparison.OrdinalIgnoreCase))).ToList();
 
             var counts = new ItemByNameCounts
             {
@@ -117,9 +174,8 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
-        /// <param name="user">The user.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<IbnStub<Person>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items, User user)
+        protected override IEnumerable<IbnStub<Person>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
             var inputPersonTypes = ((GetPersons)request).PersonTypes;
             var personTypes = string.IsNullOrEmpty(inputPersonTypes) ? new string[] { } : inputPersonTypes.Split(',');

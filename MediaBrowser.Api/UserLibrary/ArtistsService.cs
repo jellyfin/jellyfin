@@ -1,8 +1,6 @@
 ﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
@@ -16,17 +14,20 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Api.UserLibrary
 {
     /// <summary>
-    /// Class GetStudios
+    /// Class GetArtists
     /// </summary>
-    [Route("/Studios", "GET")]
-    [Api(Description = "Gets all studios from a given item, folder, or the entire library")]
-    public class GetStudios : GetItemsByName
+    [Route("/Artists", "GET")]
+    [Api(Description = "Gets all artists from a given item, folder, or the entire library")]
+    public class GetArtists : GetItemsByName
     {
     }
 
-    [Route("/Studios/{Name}/Counts", "GET")]
-    [Api(Description = "Gets item counts of library items that a studio appears in")]
-    public class GetStudioItemCounts : IReturn<ItemByNameCounts>
+    /// <summary>
+    /// Class GetArtistsItemCounts
+    /// </summary>
+    [Route("/Artists/{Name}/Counts", "GET")]
+    [Api(Description = "Gets item counts of library items that an artist appears in")]
+    public class GetArtistsItemCounts : IReturn<ItemByNameCounts>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -39,22 +40,19 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
-        [ApiMember(Name = "Name", Description = "The studio name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        [ApiMember(Name = "Name", Description = "The artist name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Name { get; set; }
     }
 
-    /// <summary>
-    /// Class GetStudio
-    /// </summary>
-    [Route("/Studios/{Name}", "GET")]
-    [Api(Description = "Gets a studio, by name")]
-    public class GetStudio : IReturn<BaseItemDto>
+    [Route("/Artists/{Name}", "GET")]
+    [Api(Description = "Gets an artist, by name")]
+    public class GetArtist : IReturn<BaseItemDto>
     {
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
-        [ApiMember(Name = "Name", Description = "The studio name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        [ApiMember(Name = "Name", Description = "The artist name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Name { get; set; }
 
         /// <summary>
@@ -66,11 +64,17 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class StudiosService
+    /// Class ArtistsService
     /// </summary>
-    public class StudiosService : BaseItemsByNameService<Studio>
+    public class ArtistsService : BaseItemsByNameService<Artist>
     {
-        public StudiosService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArtistsService"/> class.
+        /// </summary>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="userDataRepository">The user data repository.</param>
+        public ArtistsService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository)
             : base(userManager, libraryManager, userDataRepository)
         {
         }
@@ -80,7 +84,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetStudio request)
+        public object Get(GetArtist request)
         {
             var result = GetItem(request).Result;
 
@@ -92,9 +96,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task{BaseItemDto}.</returns>
-        private async Task<BaseItemDto> GetItem(GetStudio request)
+        private async Task<BaseItemDto> GetItem(GetArtist request)
         {
-            var item = await LibraryManager.GetStudio(request.Name).ConfigureAwait(false);
+            var item = await LibraryManager.GetArtist(request.Name).ConfigureAwait(false);
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
@@ -116,25 +120,17 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetStudioItemCounts request)
+        public object Get(GetArtistsItemCounts request)
         {
-            var items = GetItems(request.UserId).Where(i => i.Studios != null && i.Studios.Contains(request.Name, StringComparer.OrdinalIgnoreCase)).ToList();
+            var items = GetItems(request.UserId).OfType<Audio>().Where(i => i.HasArtist(request.Name)).ToList();
 
             var counts = new ItemByNameCounts
             {
                 TotalCount = items.Count,
 
-                TrailerCount = items.OfType<Trailer>().Count(),
+                SongCount = items.Count(),
 
-                MovieCount = items.OfType<Movie>().Count(),
-
-                SeriesCount = items.OfType<Series>().Count(),
-
-                GameCount = items.OfType<BaseGame>().Count(),
-
-                SongCount = items.OfType<Audio>().Count(),
-
-                AlbumCount = items.OfType<MusicAlbum>().Count()
+                AlbumCount = items.Select(i => i.Parent).OfType<MusicAlbum>().Distinct().Count()
             };
 
             return ToOptimizedResult(counts);
@@ -145,7 +141,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetStudios request)
+        public object Get(GetArtists request)
         {
             var result = GetResult(request).Result;
 
@@ -158,24 +154,34 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<IbnStub<Studio>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
+        protected override IEnumerable<IbnStub<Artist>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
-            var itemsList = items.Where(i => i.Studios != null).ToList();
+            var itemsList = items.OfType<Audio>().ToList();
 
             return itemsList
-                .SelectMany(i => i.Studios)
+                .SelectMany(i =>
+                    {
+                        var list = i.Artists.ToList();
+
+                        if (!string.IsNullOrEmpty(i.AlbumArtist))
+                        {
+                            list.Add(i.AlbumArtist);
+                        }
+
+                        return list;
+                    })
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(name => new IbnStub<Studio>(name, () => itemsList.Where(i => i.Studios.Contains(name, StringComparer.OrdinalIgnoreCase)), GetEntity));
+                .Select(name => new IbnStub<Artist>(name, () => itemsList.Where(i => i.HasArtist(name)), GetEntity));
         }
 
         /// <summary>
         /// Gets the entity.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <returns>Task{Studio}.</returns>
-        protected Task<Studio> GetEntity(string name)
+        /// <returns>Task{Artist}.</returns>
+        protected Task<Artist> GetEntity(string name)
         {
-            return LibraryManager.GetStudio(name);
+            return LibraryManager.GetArtist(name);
         }
     }
 }

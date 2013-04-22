@@ -1,5 +1,7 @@
 ﻿var LibraryBrowser = (function (window, $) {
 
+    var defaultBackground = "#999;";
+
     return {
 
         getDetaultPageSize: function () {
@@ -26,11 +28,9 @@
 
                 if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
 
-                    html += "<img class='posterDetailViewImage' src='" + ApiClient.getImageUrl(item.Id, {
-                        type: "Backdrop",
+                    html += "<img class='posterDetailViewImage' src='" + LibraryBrowser.getImageUrl(item, 'Backdrop', 0, {
                         height: 198,
-                        width: 352,
-                        tag: item.BackdropImageTags[0]
+                        width: 352
 
                     }) + "' />";
 
@@ -44,14 +44,13 @@
                         tag: item.ImageTags.Thumb
 
                     }) + "' />";
-
                 }
                 else if (item.ImageTags && item.ImageTags.Primary) {
 
                     var height = 300;
                     var width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
 
-                    html += "<img class='posterDetailViewImage' src='" + LibraryBrowser.getPrimaryImageUrl(item, {
+                    html += "<img class='posterDetailViewImage' src='" + LibraryBrowser.getImageUrl(item, 'Primary', 0, {
                         height: height,
                         width: width
 
@@ -59,33 +58,35 @@
 
                 }
                 else if (item.BackdropImageTags && item.BackdropImageTags.length) {
-                    html += "<img class='posterDetailViewImage' src='" + ApiClient.getImageUrl(item.Id, {
-                        type: "Backdrop",
+                    html += "<img class='posterDetailViewImage' src='" + LibraryBrowser.getImageUrl(item, 'Backdrop', 0, {
                         height: 198,
-                        width: 352,
-                        tag: item.BackdropImageTags[0]
+                        width: 352
 
                     }) + "' />";
                 }
                 else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
 
-                    html += "<img class='posterDetailViewImage' style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/audio.png' />";
+                    html += "<img class='posterDetailViewImage' style='background:" + defaultBackground + ";' src='css/images/items/list/audio.png' />";
                 }
                 else if (item.MediaType == "Video" || item.Type == "Season" || item.Type == "Series") {
 
-                    html += "<img class='posterDetailViewImage' style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/video.png' />";
+                    html += "<img class='posterDetailViewImage' style='background:" + defaultBackground + ";' src='css/images/items/list/video.png' />";
                 }
                 else if (item.Type == "Person") {
 
-                    html += "<img class='posterDetailViewImage' style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/person.png' />";
+                    html += "<img class='posterDetailViewImage' style='background:" + defaultBackground + ";' src='css/images/items/list/person.png' />";
+                }
+                else if (item.Type == "Artist") {
+
+                    html += "<img class='posterDetailViewImage' style='background:" + defaultBackground + ";' src='css/images/items/list/audiocollection.png' />";
                 }
                 else if (item.MediaType == "Game") {
 
-                    html += "<img class='posterDetailViewImage' style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/game.png' />";
+                    html += "<img class='posterDetailViewImage' style='background:" + defaultBackground + ";' src='css/images/items/list/game.png' />";
                 }
                 else {
 
-                    html += "<img class='posterDetailViewImage' style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/collection.png' />";
+                    html += "<img class='posterDetailViewImage' style='background:" + defaultBackground + ";' src='css/images/items/list/collection.png' />";
                 }
 
                 html += '<div class="posterDetailViewContentContainer">';
@@ -118,13 +119,24 @@
 
                     html += '<p class="itemMiscInfo">' + childText + '</p>';
                 }
-                else if (item.Type == "Genre" || item.Type == "Studio" || item.Type == "Person") {
+                else if (item.Type == "MusicAlbum") {
+
+                    childText = item.ChildCount == 1 ? "1 Song" : item.ChildCount + " Songs";
+
+                    html += '<p class="itemMiscInfo">' + childText + '</p>';
+                }
+                else if (item.Type == "Genre" || item.Type == "Studio" || item.Type == "Person" || item.Type == "Artist") {
 
                     childText = item.ChildCount == 1 ? "1 " + options.countNameSingular : item.ChildCount + " " + options.countNamePlural;
 
                     html += '<p class="itemMiscInfo">' + childText + '</p>';
                 }
                 else {
+                    html += '<p class="itemMiscInfo">' + LibraryBrowser.getMiscInfoHtml(item) + '</p>';
+                }
+
+                if (item.Type == "MusicAlbum") {
+
                     html += '<p class="itemMiscInfo">' + LibraryBrowser.getMiscInfoHtml(item) + '</p>';
                 }
 
@@ -147,13 +159,16 @@
             }
 
             if (item.Type == "Series") {
-                return "tvseries.html?id=" + item.Id;
+                return "itemdetails.html?id=" + item.Id;
             }
             if (item.Type == "Season") {
-                return "tvseason.html?id=" + item.Id;
+                return "itemdetails.html?id=" + item.Id;
             }
             if (item.Type == "BoxSet") {
-                return "boxset.html?id=" + item.Id;
+                return "itemdetails.html?id=" + item.Id;
+            }
+            if (item.Type == "MusicAlbum") {
+                return "itemdetails.html?id=" + item.Id;
             }
             if (item.Type == "Genre") {
                 return "itembynamedetails.html?genre=" + item.Name;
@@ -164,16 +179,25 @@
             if (item.Type == "Person") {
                 return "itembynamedetails.html?person=" + item.Name;
             }
+            if (item.Type == "Artist") {
+                return "itembynamedetails.html?artist=" + item.Name;
+            }
 
             return item.IsFolder ? (item.Id ? "itemList.html?parentId=" + item.Id : "#") : "itemdetails.html?id=" + item.Id;
 
         },
 
-        getPrimaryImageUrl: function (item, options) {
+        getImageUrl: function (item, type, index, options) {
 
             options = options || {};
-            options.type = "Primary";
-            options.tag = item.ImageTags.Primary;
+            options.type = type;
+            options.index = index;
+
+            if (type == 'Backdrop') {
+                options.tag = item.BackdropImageTags[index];
+            } else {
+                options.tag = item.ImageTags[type];
+            }
 
             if (item.Type == "Studio") {
 
@@ -186,6 +210,10 @@
             if (item.Type == "Genre") {
 
                 return ApiClient.getGenreImageUrl(item.Name, options);
+            }
+            if (item.Type == "Artist") {
+
+                return ApiClient.getArtistImageUrl(item.Name, options);
             }
 
             return ApiClient.getImageUrl(item.Id, options);
@@ -243,11 +271,11 @@
                 }
                 else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
 
-                    html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/audio.png' />";
+                    html += "<img style='background:" + defaultBackground + ";' src='css/images/items/list/audio.png' />";
                 }
                 else if (item.MediaType == "Video" || item.Type == "Season" || item.Type == "Series") {
 
-                    html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/video.png' />";
+                    html += "<img style='background:" + defaultBackground + ";' src='css/images/items/list/video.png' />";
                 }
                 else {
 
@@ -316,7 +344,7 @@
                         tag: item.BackdropImageTags[0]
                     }) + "' />";
                 } else {
-                    html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/collection.png' />";
+                    html += "<img style='background:" + defaultBackground + ";' src='css/images/items/list/collection.png' />";
                 }
 
                 if (showText) {
@@ -353,7 +381,7 @@
                 return '<div class="posterRibbon">' + item.RecentlyAddedItemCount + ' New</div>';
             }
 
-            if (!item.IsFolder && item.Type !== "Genre" && item.Type !== "Studio" && item.Type !== "Person") {
+            if (!item.IsFolder && item.Type !== "Genre" && item.Type !== "Studio" && item.Type !== "Person" && item.Type !== "Artist") {
 
                 var date = item.DateCreated;
 
@@ -597,6 +625,9 @@
             else if (type == "Genre") {
                 itemId = item.Name;
             }
+            else if (type == "Artist") {
+                itemId = item.Name;
+            }
 
             if (item.MediaType || item.IsFolder) {
                 if (userData.Played) {
@@ -656,8 +687,17 @@
 
             var markAsFavorite = $link.hasClass('imgFavoriteOff');
 
-            if (type == "Person" || type == "Studio" || type == "Genre") {
-                ApiClient.updateItemByNameFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
+            if (type == "Person") {
+                ApiClient.updateFavoritePersonStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
+            }
+            else if (type == "Studio") {
+                ApiClient.updateFavoriteStudioStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
+            }
+            else if (type == "Artist") {
+                ApiClient.updateFavoriteArtistStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
+            }
+            else if (type == "Genre") {
+                ApiClient.updateFavoriteGenreStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
             }
             else {
                 ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
@@ -681,24 +721,14 @@
 
             if ($link.hasClass('imgLikeOff')) {
 
-                if (type == "Person" || type == "Studio" || type == "Genre") {
-                    ApiClient.updateItemByNameRating(Dashboard.getCurrentUserId(), id, true);
-                }
-                else {
-                    ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, true);
-                }
+                LibraryBrowser.updateUserItemRating(type, id, true);
 
                 link.src = "css/images/userdata/thumbs_up_on.png";
                 $link.addClass('imgLike').removeClass('imgLikeOff');
 
             } else {
 
-                if (type == "Person" || type == "Studio" || type == "Genre") {
-                    ApiClient.clearItemByNameRating(Dashboard.getCurrentUserId(), id);
-                }
-                else {
-                    ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
-                }
+                LibraryBrowser.clearUserItemRating(type, id);
 
                 link.src = "css/images/userdata/thumbs_up_off.png";
                 $link.addClass('imgLikeOff').removeClass('imgLike');
@@ -718,24 +748,14 @@
 
             if ($link.hasClass('imgDislikeOff')) {
 
-                if (type == "Person" || type == "Studio" || type == "Genre") {
-                    ApiClient.updateItemByNameRating(Dashboard.getCurrentUserId(), id, false);
-                }
-                else {
-                    ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, false);
-                }
+                LibraryBrowser.updateUserItemRating(type, id, false);
 
                 link.src = "css/images/userdata/thumbs_down_on.png";
                 $link.addClass('imgDislike').removeClass('imgDislikeOff');
 
             } else {
 
-                if (type == "Person" || type == "Studio" || type == "Genre") {
-                    ApiClient.clearItemByNameRating(Dashboard.getCurrentUserId(), id);
-                }
-                else {
-                    ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
-                }
+                LibraryBrowser.clearUserItemRating(type, id);
 
                 link.src = "css/images/userdata/thumbs_down_off.png";
                 $link.addClass('imgDislikeOff').removeClass('imgDislike');
@@ -744,6 +764,44 @@
             $link.next().removeClass('imgLike').addClass('imgLikeOff').each(function () {
                 this.src = "css/images/userdata/thumbs_up_off.png";
             });
+        },
+
+        updateUserItemRating: function (type, id, likes) {
+
+            if (type == "Person") {
+                ApiClient.updatePersonRating(Dashboard.getCurrentUserId(), id, likes);
+            }
+            else if (type == "Studio") {
+                ApiClient.updateStudioRating(Dashboard.getCurrentUserId(), id, likes);
+            }
+            else if (type == "Artist") {
+                ApiClient.updateArtistRating(Dashboard.getCurrentUserId(), id, likes);
+            }
+            else if (type == "Genre") {
+                ApiClient.updateGenreRating(Dashboard.getCurrentUserId(), id, likes);
+            }
+            else {
+                ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, likes);
+            }
+        },
+
+        clearUserItemRating: function (type, id) {
+
+            if (type == "Person") {
+                ApiClient.clearPersonRating(Dashboard.getCurrentUserId(), id);
+            }
+            else if (type == "Studio") {
+                ApiClient.clearStudioRating(Dashboard.getCurrentUserId(), id);
+            }
+            else if (type == "Artist") {
+                ApiClient.clearArtistRating(Dashboard.getCurrentUserId(), id);
+            }
+            else if (type == "Genre") {
+                ApiClient.clearGenreRating(Dashboard.getCurrentUserId(), id);
+            }
+            else {
+                ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
+            }
         },
 
         getDetailImageHtml: function (item) {
@@ -762,21 +820,28 @@
                     url = ApiClient.getPersonImageUrl(item.Name, {
                         maxwidth: 800,
                         tag: imageTags.Primary,
-                        type: "primary"
+                        type: "Primary"
                     });
                 }
                 else if (item.Type == "Genre") {
                     url = ApiClient.getGenreImageUrl(item.Name, {
                         maxwidth: 800,
                         tag: imageTags.Primary,
-                        type: "primary"
+                        type: "Primary"
                     });
                 }
                 else if (item.Type == "Studio") {
                     url = ApiClient.getStudioImageUrl(item.Name, {
                         maxwidth: 800,
                         tag: imageTags.Primary,
-                        type: "primary"
+                        type: "Primary"
+                    });
+                }
+                else if (item.Type == "Artist") {
+                    url = ApiClient.getArtistImageUrl(item.Name, {
+                        maxwidth: 800,
+                        tag: imageTags.Primary,
+                        type: "Primary"
                     });
                 }
                 else {
@@ -789,19 +854,79 @@
             }
             else if (item.BackdropImageTags && item.BackdropImageTags.length) {
 
-                url = ApiClient.getImageUrl(item.Id, {
-                    type: "Backdrop",
-                    maxwidth: 800,
-                    tag: item.BackdropImageTags[0]
-                });
+                if (item.Type == "Person") {
+                    url = ApiClient.getPersonImageUrl(item.Name, {
+                        maxwidth: 800,
+                        tag: item.BackdropImageTags[0],
+                        type: "Backdrop"
+                    });
+                }
+                else if (item.Type == "Genre") {
+                    url = ApiClient.getGenreImageUrl(item.Name, {
+                        maxwidth: 800,
+                        tag: item.BackdropImageTags[0],
+                        type: "Backdrop"
+                    });
+                }
+                else if (item.Type == "Studio") {
+                    url = ApiClient.getStudioImageUrl(item.Name, {
+                        maxwidth: 800,
+                        tag: item.BackdropImageTags[0],
+                        type: "Backdrop"
+                    });
+                }
+                else if (item.Type == "Artist") {
+                    url = ApiClient.getArtistImageUrl(item.Name, {
+                        maxwidth: 800,
+                        tag: item.BackdropImageTags[0],
+                        type: "Backdrop"
+                    });
+                }
+                else {
+                    url = ApiClient.getImageUrl(item.Id, {
+                        type: "Backdrop",
+                        maxwidth: 800,
+                        tag: item.BackdropImageTags[0]
+                    });
+                }
             }
             else if (imageTags.Thumb) {
 
-                url = ApiClient.getImageUrl(item.Id, {
-                    type: "Thumb",
-                    maxwidth: 800,
-                    tag: item.ImageTags.Thumb
-                });
+                if (item.Type == "Person") {
+                    url = ApiClient.getPersonImageUrl(item.Name, {
+                        maxwidth: 800,
+                        tag: imageTags.Thumb,
+                        type: "Thumb"
+                    });
+                }
+                else if (item.Type == "Genre") {
+                    url = ApiClient.getGenreImageUrl(item.Name, {
+                        maxwidth: 800,
+                        tag: imageTags.Thumb,
+                        type: "Thumb"
+                    });
+                }
+                else if (item.Type == "Studio") {
+                    url = ApiClient.getStudioImageUrl(item.Name, {
+                        maxwidth: 800,
+                        tag: imageTags.Thumb,
+                        type: "Thumb"
+                    });
+                }
+                else if (item.Type == "Artist") {
+                    url = ApiClient.getArtistImageUrl(item.Name, {
+                        maxwidth: 800,
+                        tag: imageTags.Thumb,
+                        type: "Thumb"
+                    });
+                }
+                else {
+                    url = ApiClient.getImageUrl(item.Id, {
+                        type: "Thumb",
+                        maxwidth: 800,
+                        tag: item.ImageTags.Thumb
+                    });
+                }
             }
             else if (imageTags.Disc) {
 
@@ -839,7 +964,7 @@
 
             if (url) {
 
-                var style = useBackgroundColor ? "background-color:" + LibraryBrowser.getMetroColor(item.Id) + ";" : "";
+                var style = useBackgroundColor ? "background-color:" + defaultBackground + ";" : "";
 
                 if (maxwidth) {
                     style += "max-width:" + maxwidth + "px;";
@@ -886,6 +1011,22 @@
             }
 
             return miscInfo.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+        },
+
+        renderOverview: function (elem, item) {
+
+            if (item.Overview || item.OverviewHtml) {
+                var overview = item.OverviewHtml || item.Overview;
+
+                elem.html(overview).show().trigger('create');
+
+                $('a', elem).each(function () {
+                    $(this).attr("target", "_blank");
+                });
+            } else {
+                elem.hide();
+            }
+
         },
 
         renderStudios: function (elem, item) {
@@ -1011,7 +1152,7 @@
                     }) + "' />";
                 }
                 else {
-                    html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/game.png' />";
+                    html += "<img style='background:" + defaultBackground + ";' src='css/images/items/list/game.png' />";
                 }
 
                 if (showText) {
@@ -1108,10 +1249,6 @@
                 html += LibraryBrowser.createGalleryImage(item.Id, "Menu", imageTags.Menu);
 
             }
-            if (imageTags.Disc) {
-
-                html += LibraryBrowser.createGalleryImage(item.Id, "Disc", imageTags.Disc);
-            }
             if (imageTags.Box) {
 
                 html += LibraryBrowser.createGalleryImage(item.Id, "Box", imageTags.Box);
@@ -1130,6 +1267,10 @@
                 for (i = 0, length = item.ScreenshotImageTags.length; i < length; i++) {
                     html += LibraryBrowser.createGalleryImage(item.Id, "Screenshot", item.ScreenshotImageTags[i], i);
                 }
+            }
+            if (imageTags.Disc) {
+
+                html += LibraryBrowser.createGalleryImage(item.Id, "Disc", imageTags.Disc);
             }
 
             return html;
@@ -1185,7 +1326,7 @@
 
                 html += '<img src="' + imgUrl + '" />';
             } else {
-                var style = "background-color:" + LibraryBrowser.getMetroColor(cast.Name) + ";";
+                var style = "background-color:" + defaultBackground + ";";
 
                 html += '<img src="css/images/items/list/person.png" style="max-width:185px; ' + style + '"/>';
             }

@@ -632,7 +632,7 @@ var Dashboard = {
 
     ensureHeader: function (page) {
 
-        if (!$('.header', page).length) {
+        if (!$('.headerButtons', page).length) {
 
             var isLoggedIn = Dashboard.getCurrentUserId();
 
@@ -652,28 +652,39 @@ var Dashboard = {
     renderHeader: function (page, user) {
 
         var headerHtml = '';
-        headerHtml += '<div class="header">';
 
         var isLibraryPage = page.hasClass('libraryPage');
 
-        if (!page.hasClass('noLogoPage')) {
-            headerHtml += '<a class="logo" href="index.html">';
+        var header = $('.header', page);
+        
+        if (!header.length) {
+            headerHtml += '<div class="header">';
 
-            if (page.hasClass('standalonePage')) {
+            if (!page.hasClass('noLogoPage')) {
+                headerHtml += '<a class="logo" href="index.html">';
 
-                headerHtml += '<img class="imgLogoIcon" src="css/images/mblogoicon.png" /><img class="imgLogoText" src="css/images/mblogotextblack.png" />';
+                if (page.hasClass('standalonePage')) {
+
+                    headerHtml += '<img class="imgLogoIcon" src="css/images/mblogoicon.png" /><img class="imgLogoText" src="css/images/mblogotextblack.png" />';
+                }
+                else if (isLibraryPage) {
+
+                    headerHtml += '<img class="imgLogoIcon" src="css/images/mblogoicon.png" /><img class="imgLogoText" src="css/images/mblogotextwhite.png" />';
+                }
+                headerHtml += '</a>';
             }
-            else if (isLibraryPage) {
+            headerHtml += '</div>';
+            page.prepend(headerHtml);
 
-                headerHtml += '<img class="imgLogoIcon" src="css/images/mblogoicon.png" /><img class="imgLogoText" src="css/images/mblogotextwhite.png" />';
-            }
-            headerHtml += '</a>';
+            header = $('.header', page);
         }
 
         var imageColor = isLibraryPage ? "white" : "black";
 
+        headerHtml = '';
+        headerHtml += '<div class="headerButtons">';
+
         if (user && !page.hasClass('wizardPage')) {
-            headerHtml += '<div class="headerButtons">';
             headerHtml += '<a class="imageLink btnCurrentUser" href="#" onclick="Dashboard.showUserFlyout();"><span class="currentUsername">' + user.Name + '</span>';
 
             if (user.PrimaryImageTag) {
@@ -694,15 +705,15 @@ var Dashboard = {
                 headerHtml += '<a class="imageLink btnTools" href="dashboard.html"><img src="css/images/tools' + imageColor + '.png" /></a>';
             }
 
-            headerHtml += '</div>';
         }
 
         headerHtml += '</div>';
-        page.prepend(headerHtml);
+
+        header.append(headerHtml);
 
         Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
             if (pluginSecurityInfo.IsMBSupporter) {
-                $('<a class="imageLink" href="supporter.html"><img src="css/images/supporter/supporterbadge.png" /></a>').insertBefore('.btnTools', page);
+                $('<a class="imageLink" href="supporter.html"><img src="css/images/supporter/supporterbadge.png" /></a>').insertBefore('.btnTools', header);
             }
         });
     },

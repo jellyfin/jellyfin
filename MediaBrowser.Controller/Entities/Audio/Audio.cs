@@ -113,5 +113,15 @@ namespace MediaBrowser.Controller.Entities.Audio
             return (ProductionYear != null ? ProductionYear.Value.ToString("000-") : "")
                     + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ") : "") + Name;
         }
+
+        /// <summary>
+        /// Determines whether the specified name has artist.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns><c>true</c> if the specified name has artist; otherwise, <c>false</c>.</returns>
+        public bool HasArtist(string name)
+        {
+            return Artists.Contains(name, StringComparer.OrdinalIgnoreCase) || string.Equals(AlbumArtist, name, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

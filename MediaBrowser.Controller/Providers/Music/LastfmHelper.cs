@@ -6,20 +6,23 @@ namespace MediaBrowser.Controller.Providers.Music
 {
     public static class LastfmHelper
     {
-        public static string LocalArtistMetaFileName = "MBArtist.json";
-        public static string LocalAlbumMetaFileName = "MBAlbum.json";
+        public static string LocalArtistMetaFileName = "mbartist.js";
+        public static string LocalAlbumMetaFileName = "mbalbum.js";
 
         public static void ProcessArtistData(BaseItem artist, LastfmArtist data)
         {
-            var overview = data.bio != null ? data.bio.content : null;
-
-            artist.Overview = overview;
-
             var yearFormed = 0;
 
             if (data.bio != null)
             {
                 Int32.TryParse(data.bio.yearformed, out yearFormed);
+
+                artist.Overview = data.bio.content;
+
+                if (!string.IsNullOrEmpty(data.bio.placeformed))
+                {
+                    artist.AddProductionLocation(data.bio.placeformed);
+                }
             }
 
             artist.PremiereDate = yearFormed > 0 ? new DateTime(yearFormed, 1,1) : DateTime.MinValue;
@@ -52,7 +55,10 @@ namespace MediaBrowser.Controller.Providers.Music
         {
             foreach (var tag in tags.tag)
             {
-                item.AddGenre(tag.name);
+                if (!string.IsNullOrEmpty(tag.name))
+                {
+                    item.AddGenre(tag.name);
+                }
             }
         }
     }

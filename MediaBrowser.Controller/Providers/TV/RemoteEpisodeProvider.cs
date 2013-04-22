@@ -233,7 +233,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                         try
                         {
-                            episode.PrimaryImagePath = await _providerManager.DownloadAndSaveImage(episode, TVUtils.BannerUrl + p, Path.GetFileName(p), RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken);
+                            episode.PrimaryImagePath = await _providerManager.DownloadAndSaveImage(episode, TVUtils.BannerUrl + p, Path.GetFileName(p), ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken);
                         }
                         catch (HttpException)
                         {

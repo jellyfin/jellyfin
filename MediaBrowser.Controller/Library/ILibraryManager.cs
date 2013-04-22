@@ -213,5 +213,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parent">The parent.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
         IEnumerable<BaseItem> RetrieveChildren(Folder parent);
+
+        /// <summary>
+        /// Validates the artists.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <returns>Task.</returns>
+        Task ValidateArtists(CancellationToken cancellationToken, IProgress<double> progress);
     }
 }

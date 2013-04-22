@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <summary>
         /// The unknwon artist
         /// </summary>
-        private static readonly MusicArtist UnknwonArtist = new MusicArtist {Name = "<Unknown>"};
+        private static readonly MusicArtist UnknwonArtist = new MusicArtist { Name = "<Unknown>" };
 
         /// <summary>
         /// Override this to return the folder that should be used to construct a container

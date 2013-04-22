@@ -4,71 +4,155 @@
     <title></title>
 </head>
 <body>
-    <div id="itemDetailPage" data-role="page" class="page libraryPage" data-theme="a">
+    <div id="itemDetailPage" data-role="page" class="page libraryPage noLogoPage" data-theme="a">
+        <div id="genericHeader" class="header">
+            <a class="logo" href="index.html" id="standardLogo" style="display: none;">
+                <img class="imgLogoIcon" src="css/images/mblogoicon.png"><img class="imgLogoText" src="css/images/mblogotextwhite.png"></a>
+        </div>
+        <h1 class="libraryPageHeader" style="display: none;"><a href="index.html" class="imageLink">
+            <img src="css/images/mblogoicon.png"></a><span></span></h1>
         <div data-role="content">
+            <div id="movieTabs" style="display: none;">
+                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
+                    <a href="moviesrecommended.html" data-role="button">Suggested</a>
+                    <a href="movies.html" data-role="button" class="ui-btn-active">Movies</a>
+                    <a href="boxsets.html" data-role="button">Box Sets</a>
+                    <a href="movietrailers.html" data-role="button">Trailers</a>
+                    <a href="moviegenres.html" data-role="button">Genres</a>
+                    <a href="moviepeople.html" data-role="button">People</a>
+                    <a href="moviestudios.html" data-role="button">Studios</a>
+                </div>
+            </div>
+            <div id="boxsetTabs" style="display: none;">
+                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
+                    <a href="moviesrecommended.html" data-role="button">Suggested</a>
+                    <a href="movies.html" data-role="button">Movies</a>
+                    <a href="boxsets.html" data-role="button" class="ui-btn-active">Box Sets</a>
+                    <a href="movietrailers.html" data-role="button">Trailers</a>
+                    <a href="moviegenres.html" data-role="button">Genres</a>
+                    <a href="moviepeople.html" data-role="button">People</a>
+                    <a href="moviestudios.html" data-role="button">Studios</a>
+                </div>
+            </div>
+            <div id="trailerTabs" style="display: none;">
+                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
+                    <a href="moviesrecommended.html" data-role="button">Suggested</a>
+                    <a href="movies.html" data-role="button">Movies</a>
+                    <a href="boxsets.html" data-role="button">Box Sets</a>
+                    <a href="movietrailers.html" data-role="button" class="ui-btn-active">Trailers</a>
+                    <a href="moviegenres.html" data-role="button">Genres</a>
+                    <a href="moviepeople.html" data-role="button">People</a>
+                    <a href="moviestudios.html" data-role="button">Studios</a>
+                </div>
+            </div>
+            <div id="tvShowsTabs" style="display: none;">
+                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
+                    <a href="tvrecommended.html" data-role="button">Suggested</a>
+                    <a href="tvshows.html" data-role="button" class="ui-btn-active">Shows</a>
+                    <a href="tvgenres.html" data-role="button">Genres</a>
+                    <a href="tvpeople.html" data-role="button">Actors</a>
+                    <a href="tvstudios.html" data-role="button">Networks</a>
+                </div>
+            </div>
+            <div id="songTabs" style="display: none;">
+                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
+                    <a href="musicrecommended.html" data-role="button">Suggested</a>
+                    <a href="#" data-role="button" class="ui-btn-active">Songs</a>
+                    <a href="musicalbums.html" data-role="button">Albums</a>
+                    <a href="musicartists.html" data-role="button">Artists</a>
+                    <a href="musicgenres.html" data-role="button">Genres</a>
+                </div>
+            </div>
+            <div id="albumTabs" style="display: none;">
+                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
+                    <a href="musicrecommended.html" data-role="button">Suggested</a>
+                    <a href="#" data-role="button">Songs</a>
+                    <a href="musicalbums.html" class="ui-btn-active" data-role="button">Albums</a>
+                    <a href="musicartists.html" data-role="button">Artists</a>
+                    <a href="musicgenres.html" data-role="button">Genres</a>
+                </div>
+            </div>
+            <div class="detailPageContent">
+                <div class="detailPagePrimaryInfo">
+                    <div class="itemImageBlock">
+                        <div id="itemMedia" style="position: relative;">
+                            <div id="itemImage"></div>
 
-            <div class="detailPagePrimaryInfo">
-                <div class="itemImageBlock">
-                    <div id="itemMedia" style="position: relative;">
-                        <div id="itemImage"></div>
+                            <div id="playButtonShadow" style="display: none; height: 48px; position: absolute; bottom: 0; left: 0; right: 0; background: black; opacity: .75;"></div>
+                            <button id="btnPlayMenu" type="button" class="imageButton" style="display: none; position: absolute; bottom: 5px; left: 10px;" data-role="none" title="Play">
+                                <img src="css/images/media/playCircle.png" style="height: 28px;" />
+                            </button>
 
-                        <div id="playButtonShadow" style="display: none; height: 48px; position: absolute; bottom: 0; left: 0; right: 0; background: black; opacity: .75;"></div>
-                        <button id="btnPlayMenu" type="button" class="imageButton" style="display: none; position: absolute; bottom: 5px; left: 10px;" data-role="none" title="Play">
-                            <img src="css/images/media/playCircle.png" style="height: 28px;" />
-                        </button>
+                            <button id="btnQueueMenu" type="button" class="imageButton" style="display: none; position: absolute; bottom: 5px; left: 50px;" data-role="none" title="Queue">
+                                <img src="css/images/media/queue.png" style="height: 28px;" />
+                            </button>
+                        </div>
+                        <div id="playMenuAnchor"></div>
+                        <div id="queueMenuAnchor"></div>
 
-                        <button id="btnQueueMenu" type="button" class="imageButton" style="display: none; position: absolute; bottom: 5px; left: 50px;" data-role="none" title="Queue">
-                            <img src="css/images/media/queue.png" style="height: 28px;" />
-                        </button>
                     </div>
-                    <div id="playMenuAnchor"></div>
-                    <div id="queueMenuAnchor"></div>
 
+                    <div class="itemDetailBlock">
+
+                        <h1 id="seriesName" class="detailPageName hide"></h1>
+                        <h1 id="itemName" class="detailPageName"></h1>
+
+                        <p id="itemTagline" style="font-style: italic;"></p>
+                        <p id="itemOverview"></p>
+                        <p id="itemRatings"></p>
+                        <p id="itemCommunityRating"></p>
+                        <p id="itemMiscInfo" class="itemMiscInfo"></p>
+
+                        <p id="itemPremiereDate"></p>
+                        <p id="itemBudget"></p>
+                        <p id="itemRevenue"></p>
+                        <p id="itemGenres"></p>
+                        <p id="itemStudios"></p>
+                        <p id="itemLinks"></p>
+                    </div>
                 </div>
-
-                <div class="itemDetailBlock">
-
-                    <h1 id="seriesName" class="detailPageName hide"></h1>
-                    <h1 id="itemName" class="detailPageName"></h1>
-
-                    <p id="itemTagline" style="font-style: italic;"></p>
-                    <p id="itemOverview"></p>
-                    <p id="itemRatings"></p>
-                    <p id="itemCommunityRating"></p>
-                    <p id="itemMiscInfo" class="itemMiscInfo"></p>
-
-                    <p id="itemPremiereDate"></p>
-                    <p id="itemBudget"></p>
-                    <p id="itemRevenue"></p>
-                    <p id="itemGenres"></p>
-                    <p id="itemStudios"></p>
-                    <p id="itemLinks"></p>
+                <div style="vertical-align: top;">
+                    <div data-role="collapsible" id="childrenCollapsible" class="hide" data-mini="true" data-collapsed="false" data-corners="false">
+                        <h3><span id="childrenTitle" class="collapsibleTitle"></span></h3>
+                        <div id="childrenContent"></div>
+                    </div>
                 </div>
-            </div>
-
-            <div data-role="collapsible" id="mediaInfoCollapsible" class="hide" data-mini="true">
-                <h3>Media Info</h3>
-                <div id="mediaInfoContent"></div>
-            </div>
-            <div data-role="collapsible" id="scenesCollapsible" class="hide" data-mini="true">
-                <h3>Scenes</h3>
-                <div id="scenesContent"></div>
-            </div>
-            <div data-role="collapsible" id="specialsCollapsible" class="hide" data-mini="true">
-                <h3>Special Features</h3>
-                <div id="specialsContent"></div>
-            </div>
-            <div data-role="collapsible" id="trailersCollapsible" class="hide" data-mini="true">
-                <h3>Trailers</h3>
-                <div id="trailersContent"></div>
-            </div>
-            <div data-role="collapsible" id="castCollapsible" class="hide" data-mini="true">
-                <h3>Cast & Crew</h3>
-                <div id="castContent"></div>
-            </div>
-            <div data-role="collapsible" id="galleryCollapsible" data-mini="true">
-                <h3>Gallery</h3>
-                <div id="galleryContent"></div>
+                <div style="display: inline-block; vertical-align: top;">
+                    <div data-role="collapsible" id="mediaInfoCollapsible" style="display: none;" data-mini="true" data-collapsed="false" data-corners="false">
+                        <h3>Media Info</h3>
+                        <div id="mediaInfoContent"></div>
+                    </div>
+                </div>
+                <div style="display: inline-block; vertical-align: top;">
+                    <div data-role="collapsible" id="trailersCollapsible" style="display: none;" data-mini="true" data-collapsed="false" data-corners="false">
+                        <h3>Trailers</h3>
+                        <div id="trailersContent"></div>
+                    </div>
+                </div>
+                <div style="display: inline-block; vertical-align: top;">
+                    <div data-role="collapsible" id="specialsCollapsible" style="display: none;" data-mini="true" data-collapsed="false" data-corners="false">
+                        <h3>Special Features</h3>
+                        <div id="specialsContent"></div>
+                    </div>
+                </div>
+                <div style="display: inline-block; vertical-align: top;">
+                    <div data-role="collapsible" id="galleryCollapsible" style="display: none;" data-collapsed="false" data-corners="false">
+                        <h3>Gallery</h3>
+                        <div id="galleryContent"></div>
+                    </div>
+                </div>
+                <div style="display: inline-block; vertical-align: top;">
+                    <div data-role="collapsible" id="scenesCollapsible" style="display: none;" data-mini="true" data-collapsed="false" data-corners="false">
+                        <h3>Scenes</h3>
+                        <div id="scenesContent"></div>
+                    </div>
+                </div>
+                <div style="display: inline-block; vertical-align: top;">
+                    <div data-role="collapsible" id="castCollapsible" style="display: none;" data-mini="true" data-collapsed="false" data-corners="false">
+                        <h3>Cast & Crew</h3>
+                        <div id="castContent"></div>
+                    </div>
+                </div>
             </div>
 
             <div data-role="popup" id="playMenu" data-corners="false" data-theme="c">

@@ -7,10 +7,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.ScheduledTasks
 {
-    /// <summary>
-    /// Class PeopleValidationTask
-    /// </summary>
-    public class PeopleValidationTask : IScheduledTask
+    public class ArtistValidationTask
     {
         /// <summary>
         /// The _library manager
@@ -21,7 +18,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// Initializes a new instance of the <see cref="PeopleValidationTask" /> class.
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
-        public PeopleValidationTask(ILibraryManager libraryManager)
+        public ArtistValidationTask(ILibraryManager libraryManager)
         {
             _libraryManager = libraryManager;
         }
@@ -34,7 +31,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         {
             return new ITaskTrigger[]
                 {
-                    new DailyTrigger { TimeOfDay = TimeSpan.FromHours(2) },
+                    new DailyTrigger { TimeOfDay = TimeSpan.FromHours(5) },
 
                     new IntervalTrigger{ Interval = TimeSpan.FromHours(12)}
                 };
@@ -48,7 +45,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <returns>Task.</returns>
         public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            return _libraryManager.ValidatePeople(cancellationToken, progress);
+            return _libraryManager.ValidateArtists(cancellationToken, progress);
         }
 
         /// <summary>
@@ -57,7 +54,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <value>The name.</value>
         public string Name
         {
-            get { return "Refresh people"; }
+            get { return "Refresh music artists"; }
         }
 
         /// <summary>
@@ -66,7 +63,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <value>The description.</value>
         public string Description
         {
-            get { return "Updates metadata for actors and directors in your media library."; }
+            get { return "Updates metadata for music artists in your media library."; }
         }
 
         /// <summary>
