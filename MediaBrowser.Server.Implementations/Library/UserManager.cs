@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Events;
+﻿using System.IO;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
@@ -484,6 +485,31 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             await UserRepository.DeleteUser(user, CancellationToken.None).ConfigureAwait(false);
+
+            if (user.Configuration.UseCustomLibrary)
+            {
+                var path = user.RootFolderPath;
+
+                try
+                {
+                    Directory.Delete(path, true);
+                }
+                catch (IOException ex)
+                {
+                    _logger.ErrorException("Error deleting directory {0}", ex, path);
+                }
+
+                path = user.ConfigurationFilePath;
+
+                try
+                {
+                    File.Delete(path);
+                }
+                catch (IOException ex)
+                {
+                    _logger.ErrorException("Error deleting file {0}", ex, path);
+                }
+            }
 
             OnUserDeleted(user);
 
