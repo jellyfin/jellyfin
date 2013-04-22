@@ -48,6 +48,19 @@ namespace MediaBrowser.Api.Images
         public string Name { get; set; }
     }
 
+    [Route("/Artists/{Name}/Images/{Type}", "GET")]
+    [Route("/Artists/{Name}/Images/{Type}/{Index}", "GET")]
+    [Api(Description = "Gets an artist image")]
+    public class GetArtistImage : ImageRequest
+    {
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        [ApiMember(Name = "Name", Description = "Artist name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Name { get; set; }
+    }
+
     /// <summary>
     /// Class GetStudioImage
     /// </summary>
@@ -233,6 +246,18 @@ namespace MediaBrowser.Api.Images
             return GetImage(request, item);
         }
 
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
+        public object Get(GetArtistImage request)
+        {
+            var item = _libraryManager.GetArtist(request.Name).Result;
+
+            return GetImage(request, item);
+        }
+        
         /// <summary>
         /// Gets the specified request.
         /// </summary>

@@ -22,6 +22,13 @@ namespace MediaBrowser.Api.UserLibrary
     public class GetItems : BaseItemsRequest, IReturn<ItemsResult>
     {
         /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public Guid UserId { get; set; }
+
+        /// <summary>
         /// Limit results to items containing a specific person
         /// </summary>
         /// <value>The person.</value>
@@ -328,7 +335,7 @@ namespace MediaBrowser.Api.UserLibrary
                     });
 
                 case ItemFilter.IsRecentlyAdded:
-                    return items.Where(item => item.IsRecentlyAdded(currentUser));
+                    return items.Where(item => item.IsRecentlyAdded());
 
                 case ItemFilter.IsResumable:
                     return items.Where(item =>

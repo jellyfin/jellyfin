@@ -528,7 +528,7 @@ namespace MediaBrowser.Controller.Dto
                 recursiveItemCount++;
 
                 // Check is recently added
-                if (child.IsRecentlyAdded(user))
+                if (child.IsRecentlyAdded())
                 {
                     rcentlyAddedItemCount++;
                 }

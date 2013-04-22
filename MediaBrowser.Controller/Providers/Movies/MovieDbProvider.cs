@@ -251,7 +251,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             new Regex(@"(?<name>.*)") // last resort matches the whole string as the name
         };
 
-        public const string LOCAL_META_FILE_NAME = "MBMovie.json";
+        public const string LOCAL_META_FILE_NAME = "mbmovie.js";
         public const string ALT_META_FILE_NAME = "movie.xml";
         protected string ItemType = "movie";
 
@@ -268,7 +268,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             }
 
-            if (providerInfo.LastRefreshStatus == ProviderRefreshStatus.CompletedWithErrors)
+            if (providerInfo.LastRefreshStatus != ProviderRefreshStatus.Success)
             {
                 Logger.Debug("MovieProvider for {0} - last attempt had errors.  Will try again.", item.Path);
                 return true;
@@ -280,9 +280,6 @@ namespace MediaBrowser.Controller.Providers.Movies
             {
                 return false;
             }
-
-            if (DateTime.Today.Subtract(item.DateCreated).TotalDays > 180 && downloadDate != DateTime.MinValue)
-                return false; // don't trigger a refresh data for item that are more than 6 months old and have been refreshed before
 
             if (DateTime.Today.Subtract(downloadDate).TotalDays < ConfigurationManager.Configuration.MetadataRefreshDays) // only refresh every n days
                 return false;
@@ -1034,7 +1031,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 {
                     try
                     {
-                        item.PrimaryImagePath = await ProviderManager.DownloadAndSaveImage(item, tmdbImageUrl + poster.file_path, "folder" + Path.GetExtension(poster.file_path), MovieDbResourcePool, cancellationToken).ConfigureAwait(false);
+                        item.PrimaryImagePath = await ProviderManager.DownloadAndSaveImage(item, tmdbImageUrl + poster.file_path, "folder" + Path.GetExtension(poster.file_path), ConfigurationManager.Configuration.SaveLocalMeta, MovieDbResourcePool, cancellationToken).ConfigureAwait(false);
                     }
                     catch (HttpException)
                     {
@@ -1066,7 +1063,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                     {
                         try
                         {
-                            item.BackdropImagePaths.Add(await ProviderManager.DownloadAndSaveImage(item, tmdbImageUrl + images.backdrops[i].file_path, bdName + Path.GetExtension(images.backdrops[i].file_path), MovieDbResourcePool, cancellationToken).ConfigureAwait(false));
+                            item.BackdropImagePaths.Add(await ProviderManager.DownloadAndSaveImage(item, tmdbImageUrl + images.backdrops[i].file_path, bdName + Path.GetExtension(images.backdrops[i].file_path), ConfigurationManager.Configuration.SaveLocalMeta, MovieDbResourcePool, cancellationToken).ConfigureAwait(false));
                         }
                         catch (HttpException)
                         {

@@ -1,10 +1,6 @@
 ﻿using MediaBrowser.Common;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
@@ -37,66 +33,6 @@ namespace MediaBrowser.Api.Library
     }
 
     /// <summary>
-    /// Class GetPerson
-    /// </summary>
-    [Route("/Persons/{Name}", "GET")]
-    [Api(Description = "Gets a person, by name")]
-    public class GetPerson : IReturn<BaseItemDto>
-    {
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        [ApiMember(Name = "Name", Description = "The person name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Name { get; set; }
-    }
-
-    /// <summary>
-    /// Class GetStudio
-    /// </summary>
-    [Route("/Studios/{Name}", "GET")]
-    [Api(Description = "Gets a studio, by name")]
-    public class GetStudio : IReturn<BaseItemDto>
-    {
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        [ApiMember(Name = "Name", Description = "The studio name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Name { get; set; }
-    }
-
-    /// <summary>
-    /// Class GetGenre
-    /// </summary>
-    [Route("/Genres/{Name}", "GET")]
-    [Api(Description = "Gets a genre, by name")]
-    public class GetGenre : IReturn<BaseItemDto>
-    {
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        [ApiMember(Name = "Name", Description = "The genre name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Name { get; set; }
-    }
-
-    /// <summary>
-    /// Class GetYear
-    /// </summary>
-    [Route("/Years/{Year}", "GET")]
-    [Api(Description = "Gets a year")]
-    public class GetYear : IReturn<BaseItemDto>
-    {
-        /// <summary>
-        /// Gets or sets the year.
-        /// </summary>
-        /// <value>The year.</value>
-        [ApiMember(Name = "Year", Description = "The year", IsRequired = true, DataType = "int", ParameterType = "path", Verb = "GET")]
-        public int Year { get; set; }
-    }
-
-    /// <summary>
     /// Class LibraryService
     /// </summary>
     public class LibraryService : BaseApiService
@@ -106,16 +42,14 @@ namespace MediaBrowser.Api.Library
         /// </summary>
         private readonly IApplicationHost _appHost;
         private readonly ILibraryManager _libraryManager;
-        private readonly IUserDataRepository _userDataRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         /// <param name="appHost">The app host.</param>
         /// <param name="libraryManager">The library manager.</param>
-        /// <param name="userDataRepository">The user data repository.</param>
         /// <exception cref="System.ArgumentNullException">appHost</exception>
-        public LibraryService(IApplicationHost appHost, ILibraryManager libraryManager, IUserDataRepository userDataRepository)
+        public LibraryService(IApplicationHost appHost, ILibraryManager libraryManager)
         {
             if (appHost == null)
             {
@@ -124,75 +58,6 @@ namespace MediaBrowser.Api.Library
 
             _appHost = appHost;
             _libraryManager = libraryManager;
-            _userDataRepository = userDataRepository;
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetPerson request)
-        {
-            var item = _libraryManager.GetPerson(request.Name).Result;
-
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
-
-            var result = new DtoBuilder(Logger, _libraryManager, _userDataRepository).GetBaseItemDto(item, fields.ToList()).Result;
-
-            return ToOptimizedResult(result);
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetGenre request)
-        {
-            var item = _libraryManager.GetGenre(request.Name).Result;
-
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
-
-            var result = new DtoBuilder(Logger, _libraryManager, _userDataRepository).GetBaseItemDto(item, fields.ToList()).Result;
-
-            return ToOptimizedResult(result);
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetStudio request)
-        {
-            var item = _libraryManager.GetStudio(request.Name).Result;
-
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
-
-            var result = new DtoBuilder(Logger, _libraryManager, _userDataRepository).GetBaseItemDto(item, fields.ToList()).Result;
-
-            return ToOptimizedResult(result);
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetYear request)
-        {
-            var item = _libraryManager.GetYear(request.Year).Result;
-
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
-
-            var result = new DtoBuilder(Logger, _libraryManager, _userDataRepository).GetBaseItemDto(item, fields.ToList()).Result;
-
-            return ToOptimizedResult(result);
         }
 
         /// <summary>
