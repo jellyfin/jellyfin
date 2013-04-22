@@ -660,7 +660,6 @@ progress {
 
 .itemDetailImage {
     max-width: 100%;
-    max-height: 300px;
 }
 
 .itemImageBlock {
@@ -712,8 +711,8 @@ progress {
         display: inline-block;
     }
 
-    .itemDetailImage, .itemImageBlock {
-        max-width: 220px;
+    .itemDetailImage {
+        width: 220px;
     }
 
     .itemDetailBlock {
@@ -731,11 +730,7 @@ progress {
 @media all and (min-width: 750px) {
 
     .itemDetailImage {
-        max-height: 400px;
-    }
-
-    .itemDetailImage, .itemImageBlock {
-        max-width: 300px;
+        width: 300px;
     }
 
     .itemDetailBlock {
@@ -753,10 +748,6 @@ progress {
 
 @media all and (min-width: 1200px) {
 
-    .itemDetailBlock {
-        width: 70%;
-    }
-
     .galleryImage {
         width: 200px;
     }
@@ -764,8 +755,8 @@ progress {
 
 @media all and (min-width: 1440px) {
 
-    .itemDetailImage, .itemImageBlock {
-        max-width: 400px;
+    .itemDetailImage {
+        width: 400px;
     }
 
     .itemDetailBlock {

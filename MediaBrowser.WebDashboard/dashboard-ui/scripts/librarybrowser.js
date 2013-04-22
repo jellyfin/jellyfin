@@ -159,13 +159,13 @@
             }
 
             if (item.Type == "Series") {
-                return "tvseries.html?id=" + item.Id;
+                return "itemdetails.html?id=" + item.Id;
             }
             if (item.Type == "Season") {
-                return "tvseason.html?id=" + item.Id;
+                return "itemdetails.html?id=" + item.Id;
             }
             if (item.Type == "BoxSet") {
-                return "boxset.html?id=" + item.Id;
+                return "itemdetails.html?id=" + item.Id;
             }
             if (item.Type == "Genre") {
                 return "itembynamedetails.html?genre=" + item.Name;
@@ -1246,10 +1246,6 @@
                 html += LibraryBrowser.createGalleryImage(item.Id, "Menu", imageTags.Menu);
 
             }
-            if (imageTags.Disc) {
-
-                html += LibraryBrowser.createGalleryImage(item.Id, "Disc", imageTags.Disc);
-            }
             if (imageTags.Box) {
 
                 html += LibraryBrowser.createGalleryImage(item.Id, "Box", imageTags.Box);
@@ -1268,6 +1264,10 @@
                 for (i = 0, length = item.ScreenshotImageTags.length; i < length; i++) {
                     html += LibraryBrowser.createGalleryImage(item.Id, "Screenshot", item.ScreenshotImageTags[i], i);
                 }
+            }
+            if (imageTags.Disc) {
+
+                html += LibraryBrowser.createGalleryImage(item.Id, "Disc", imageTags.Disc);
             }
 
             return html;

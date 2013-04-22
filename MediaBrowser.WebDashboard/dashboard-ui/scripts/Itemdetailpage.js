@@ -12,6 +12,8 @@
 
             currentItem = item;
 
+            renderHeader(page, item);
+
             var name = item.Name;
 
             if (item.IndexNumber != null) {
@@ -29,11 +31,11 @@
 
             if (item.SeriesName) {
 
-                $('#seriesName', page).html('<a class="detailPageParentLink" href="tvseries.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>').show().trigger('create');
+                $('#seriesName', page).html('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>').show().trigger('create');
             }
             else if (item.Album) {
                 $('#seriesName', page).html(item.Album).show();
-                
+
             } else {
                 $('#seriesName', page).hide();
             }
@@ -45,51 +47,117 @@
                 $('#btnPlayMenu', page).show();
                 $('#playButtonShadow', page).show();
                 if (MediaPlayer.isPlaying())
-	                $('#btnQueueMenu', page).show();
-	            else
-	                $('#btnQueueMenu', page).hide();
+                    $('#btnQueueMenu', page).show();
+                else
+                    $('#btnQueueMenu', page).hide();
             } else {
                 $('#btnPlayMenu', page).hide();
                 $('#playButtonShadow', page).hide();
                 $('#btnQueueMenu', page).hide();
             }
 
-            if (LibraryBrowser.shouldDisplayGallery(item)) {
-                $('#galleryCollapsible', page).show();
-            } else {
-                $('#galleryCollapsible', page).hide();
-            }
-
             Dashboard.hideLoadingMsg();
         });
     }
 
+    function enableCustomHeader(page, text) {
+        var elem = $('.libraryPageHeader', page).show();
+
+        $('span', elem).html(text);
+    }
+
+    function renderHeader(page, item) {
+
+        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "BoxSet") {
+            enableCustomHeader(page, "Movies");
+            $('#standardLogo', page).hide();
+        }
+        else if (item.Type == "Episode" || item.Type == "Season" || item.Type == "Series") {
+            enableCustomHeader(page, "TV Shows");
+            $('#standardLogo', page).hide();
+        }
+        else if (item.Type == "Audio") {
+            enableCustomHeader(page, "Music");
+            $('#standardLogo', page).hide();
+        }
+        else {
+            $('.libraryPageHeader', page).hide();
+            $('#standardLogo', page).show();
+        }
+
+        if (item.Type == "Audio") {
+            $('#songTabs', page).show();
+        } else {
+            $('#songTabs', page).hide();
+        }
+
+        if (item.Type == "Movie") {
+            $('#movieTabs', page).show();
+        } else {
+            $('#movieTabs', page).hide();
+        }
+
+        if (item.Type == "BoxSet") {
+            $('#boxsetTabs', page).show();
+        } else {
+            $('#boxsetTabs', page).hide();
+        }
+        if (item.Type == "Trailer") {
+            $('#trailerTabs', page).show();
+        } else {
+            $('#trailerTabs', page).hide();
+        }
+        if (item.Type == "Episode" || item.Type == "Season" || item.Type == "Series") {
+            $('#tvShowsTabs', page).show();
+        } else {
+            $('#tvShowsTabs', page).hide();
+        }
+    }
+
     function setInitialCollapsibleState(page, item) {
+
+        if (item.ChildCount) {
+            $('#childrenCollapsible', page).show();
+            renderChildren(page, item);
+        } else {
+            $('#childrenCollapsible', page).hide();
+        }
+        if (LibraryBrowser.shouldDisplayGallery(item)) {
+            $('#galleryCollapsible', page).show();
+            renderGallery(page, item);
+        } else {
+            $('#galleryCollapsible', page).hide();
+        }
 
         if (!item.MediaStreams || !item.MediaStreams.length) {
             $('#mediaInfoCollapsible', page).hide();
         } else {
             $('#mediaInfoCollapsible', page).show();
+            renderMediaInfo(page, item);
         }
         if (!item.Chapters || !item.Chapters.length) {
             $('#scenesCollapsible', page).hide();
         } else {
             $('#scenesCollapsible', page).show();
+            renderScenes(page, item);
         }
         if (!item.LocalTrailerCount || item.LocalTrailerCount == 0) {
             $('#trailersCollapsible', page).hide();
         } else {
             $('#trailersCollapsible', page).show();
+            renderTrailers(page, item);
         }
         if (!item.SpecialFeatureCount || item.SpecialFeatureCount == 0) {
             $('#specialsCollapsible', page).hide();
         } else {
             $('#specialsCollapsible', page).show();
+            renderSpecials(page, item);
         }
         if (!item.People || !item.People.length) {
             $('#castCollapsible', page).hide();
         } else {
             $('#castCollapsible', page).show();
+            renderCast(page, item);
         }
     }
 
@@ -121,6 +189,37 @@
         LibraryBrowser.renderLinks($('#itemLinks', page), item);
     }
 
+    function renderChildren(page, item) {
+
+        ApiClient.getItems(Dashboard.getCurrentUserId(), {
+
+            ParentId: getParameterByName('id'),
+            SortBy: "SortName",
+            Fields: "PrimaryImageAspectRatio,ItemCounts,DisplayMediaType,DateCreated,UserData"
+
+        }).done(function (result) {
+
+            var html = LibraryBrowser.getPosterDetailViewHtml({
+                items: result.Items,
+                useAverageAspectRatio: true
+            });
+
+            $('#childrenContent', page).html(html);
+        });
+
+        if (item.Type == "Season") {
+            $('#childrenTitle', page).html('Episodes (' + item.ChildCount + ')');
+        }
+        else if (item.Type == "Series") {
+            $('#childrenTitle', page).html('Seasons (' + item.ChildCount + ')');
+        }
+        else if (item.Type == "BoxSet") {
+            $('#childrenTitle', page).html('Movies (' + item.ChildCount + ')');
+        }
+        else {
+            $('#childrenTitle', page).html('Items (' + item.ChildCount + ')');
+        }
+    }
     function renderUserDataIcons(page, item) {
         $('#itemRatings', page).html(LibraryBrowser.getUserDataIconsHtml(item));
     }
@@ -135,13 +234,13 @@
             var chapter = chapters[i];
             var chapterName = chapter.Name || "Chapter " + i;
 
-            html += '<div class="posterViewItem posterViewItemWithDualText">';
+            html += '<div class="scenePosterViewItem posterViewItem posterViewItemWithDualText">';
             html += '<a href="#play-Chapter-' + i + '" onclick="ItemDetailPage.play(' + chapter.StartPositionTicks + ');">';
 
             if (chapter.ImageTag) {
 
                 var imgUrl = ApiClient.getImageUrl(item.Id, {
-                    width: 500,
+                    width: 400,
                     tag: chapter.ImageTag,
                     type: "Chapter",
                     index: i
@@ -259,8 +358,6 @@
         }
 
         $('#mediaInfoContent', page).html(html).trigger('create');
-
-        $('#mediaInfoCollapsible', page).show();
     }
 
     function renderSpecials(page, item) {
@@ -366,9 +463,9 @@
 
         for (var i = 0, length = casts.length; i < length; i++) {
 
-	        var cast = casts[i];
+            var cast = casts[i];
 
-	        html += LibraryBrowser.createCastImage(cast);
+            html += LibraryBrowser.createCastImage(cast);
         }
 
         $('#castContent', page).html(html);
@@ -439,58 +536,9 @@
 
         reload(page);
 
-        $('#mediaInfoCollapsible', page).on('expand.lazyload', function () {
-            renderMediaInfo(page, currentItem);
-
-            $(this).off('expand.lazyload');
-        });
-
-        $('#scenesCollapsible', page).on('expand.lazyload', function () {
-
-            if (currentItem) {
-
-                renderScenes(page, currentItem);
-
-                $(this).off('expand.lazyload');
-            }
-        });
-
-        $('#specialsCollapsible', page).on('expand.lazyload', function () {
-            renderSpecials(page, currentItem);
-
-            $(this).off('expand.lazyload');
-        });
-
-        $('#trailersCollapsible', page).on('expand.lazyload', function () {
-            renderTrailers(page, currentItem);
-
-            $(this).off('expand.lazyload');
-        });
-
-        $('#castCollapsible', page).on('expand.lazyload', function () {
-            renderCast(page, currentItem);
-
-            $(this).off('expand.lazyload');
-        });
-
-        $('#galleryCollapsible', page).on('expand.lazyload', function () {
-
-            renderGallery(page, currentItem);
-
-            $(this).off('expand.lazyload');
-        });
-
     }).on('pagehide', "#itemDetailPage", function () {
 
         currentItem = null;
-        var page = this;
-
-        $('#mediaInfoCollapsible', page).off('expand.lazyload');
-        $('#scenesCollapsible', page).off('expand.lazyload');
-        $('#specialsCollapsible', page).off('expand.lazyload');
-        $('#trailersCollapsible', page).off('expand.lazyload');
-        $('#castCollapsible', page).off('expand.lazyload');
-        $('#galleryCollapsible', page).off('expand.lazyload');
     });
 
     function itemDetailPage() {

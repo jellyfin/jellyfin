@@ -89,6 +89,11 @@
     /*.libraryPage:not(.folderListPage) > .ui-content, .libraryPage:not(.folderListPage) > .ui-panel-content-wrap {
         margin-top: -35px!important;
     }*/
+
+    .detailPageContent {
+        width: 90%;
+        margin: 0 auto;
+    }
 }
 
 @media all and (min-width: 1200px) {
@@ -105,6 +110,10 @@
 @media all and (min-width: 1440px) {
     .ehsContent {
         max-width: 900px;
+    }
+
+    .detailPageContent {
+        width: 70%;
     }
 }
 
@@ -148,12 +157,12 @@
     border-bottom: 1px solid #555;
     padding-bottom: 5px;
     margin-bottom: .5em;
-    font-weight: bold;
 }
 
 .mediaInfoDetails {
-    margin: 0 0 0 2em;
+    margin: 0 0 0 1.5em;
     padding: 0;
+    list-style-type: circle;
 }
 
 .mediaInfoLabel {
@@ -237,6 +246,10 @@
     margin: 1em 0 1.5em;
 }
 
+.scenePosterViewItem img {
+    max-width: 150px!important;
+}
+
 @media all and (min-width: 650px) {
     .detailPagePrimaryInfo {
         padding: 0 10px;
@@ -277,6 +290,10 @@
 @media all and (min-width: 1200px) {
     .posterDetailViewItem {
         width: 31%;
+    }
+
+    .scenePosterViewItem img {
+        max-width: 200px!important;
     }
 }
 
