@@ -312,7 +312,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the path to the user's configuration file
         /// </summary>
         /// <value>The configuration file path.</value>
-        private string ConfigurationFilePath
+        public string ConfigurationFilePath
         {
             get
             {
