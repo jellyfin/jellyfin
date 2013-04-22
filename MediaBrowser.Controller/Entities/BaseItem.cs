@@ -852,12 +852,12 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException("user");
             }
 
-            if (string.IsNullOrEmpty(user.Configuration.MaxParentalRating))
+            if (user.Configuration.MaxParentalRating == null)
             {
                 return true;
             }
 
-            return Ratings.Level(CustomRating ?? OfficialRating) <= Ratings.Level(user.Configuration.MaxParentalRating);
+            return Ratings.Level(CustomRating ?? OfficialRating) <= user.Configuration.MaxParentalRating.Value;
         }
 
         /// <summary>

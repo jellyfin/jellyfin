@@ -22,17 +22,39 @@
 
         html += "<option value=''>None</option>";
 
-        for (var i = 0, length = allParentalRatings.length; i < length; i++) {
+        var ratings = [];
+        var i, length, rating;
 
-            var rating = allParentalRatings[i];
+        for (i = 0, length = allParentalRatings.length; i < length; i++) {
+
+            rating = allParentalRatings[i];
+
+            if (ratings.length) {
+
+                var lastRating = ratings[ratings.length - 1];
+                
+                if (lastRating.Value === rating.Value) {
+
+                    lastRating.Name += "/" + rating.Name;
+                    continue;
+                }
+
+            }
+
+            ratings.push({ Name: rating.Name, Value: rating.Value });
+        }
+
+        for (i = 0, length = ratings.length; i < length; i++) {
+
+            rating = ratings[i];
 
             html += "<option value='" + rating.Value + "'>" + rating.Name + "</option>";
         }
 
         $('#selectMaxParentalRating', page).html(html).selectmenu("refresh");
     }
-    
-    function loadUser(page, user, loggedInUser, allCulturesPromise) {
+
+    function loadUser(page, user, loggedInUser, parentalRatingsPromise, allCulturesPromise) {
 
         if (!loggedInUser.Configuration.IsAdministrator || user.Id == loggedInUser.Id) {
 
@@ -47,10 +69,29 @@
 
         $('#txtUserName', page).val(user.Name);
 
-        $('#selectMaxParentalRating', page).val(user.Configuration.MaxParentalRating).selectmenu("refresh");
+        parentalRatingsPromise.done(function (allParentalRatings) {
+
+            populateRatings(allParentalRatings, page);
+
+            var ratingValue = "";
+
+            if (user.Configuration.MaxParentalRating) {
+
+                for (var i = 0, length = allParentalRatings.length; i < length; i++) {
+
+                    var rating = allParentalRatings[i];
+
+                    if (user.Configuration.MaxParentalRating >= rating.Value) {
+                        ratingValue = rating.Value;
+                    }
+                }
+            }
+
+            $('#selectMaxParentalRating', page).val(ratingValue).selectmenu("refresh");
+        });
 
         allCulturesPromise.done(function (allCultures) {
-            
+
             populateLanguages($('#selectAudioLanguage', page), allCultures);
             populateLanguages($('#selectSubtitleLanguage', page), allCultures);
 
@@ -135,7 +176,7 @@
     $(document).on('pagebeforeshow', "#editUserPage", function () {
 
         var page = this;
-        
+
         var userId = getParameterByName("userId");
 
         if (userId) {
@@ -179,11 +220,13 @@
 
         var promise2 = Dashboard.getCurrentUser();
 
+        var parentalRatingsPromise = ApiClient.getParentalRatings();
+
         var allCulturesPromise = ApiClient.getCultures();
 
         $.when(promise1, promise2).done(function (response1, response2) {
 
-            loadUser(page, response1[0] || response1, response2[0], allCulturesPromise);
+            loadUser(page, response1[0] || response1, response2[0], parentalRatingsPromise, allCulturesPromise);
 
         });
 
