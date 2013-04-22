@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.Globalization;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -75,6 +76,8 @@ namespace MediaBrowser.Controller.Providers
             }
         }
 
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        
         /// <summary>
         /// Fetches metadata from one Xml Element
         /// </summary>
@@ -104,6 +107,28 @@ namespace MediaBrowser.Controller.Providers
                         if (!string.IsNullOrWhiteSpace(type) && !type.Equals("none", StringComparison.OrdinalIgnoreCase))
                         {
                             item.DisplayMediaType = type;
+                        }
+
+                        break;
+                    }
+                case "Budget":
+                    {
+                        var text = reader.ReadElementContentAsString();
+                        double value;
+                        if (double.TryParse(text, NumberStyles.Any, _usCulture, out value))
+                        {
+                            item.Budget = value;
+                        }
+
+                        break;
+                    }
+                case "Revenue":
+                    {
+                        var text = reader.ReadElementContentAsString();
+                        double value;
+                        if (double.TryParse(text, NumberStyles.Any, _usCulture, out value))
+                        {
+                            item.Revenue = value;
                         }
 
                         break;
