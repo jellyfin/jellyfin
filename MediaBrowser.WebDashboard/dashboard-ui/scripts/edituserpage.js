@@ -32,7 +32,7 @@
         $('#selectMaxParentalRating', page).html(html).selectmenu("refresh");
     }
     
-    function loadUser(page, user, loggedInUser, parentalRatingsPromise, allCulturesPromise) {
+    function loadUser(page, user, loggedInUser, allCulturesPromise) {
 
         if (!loggedInUser.Configuration.IsAdministrator || user.Id == loggedInUser.Id) {
 
@@ -47,26 +47,7 @@
 
         $('#txtUserName', page).val(user.Name);
 
-        parentalRatingsPromise.done(function (allParentalRatings) {
-            
-            populateRatings(allParentalRatings, page);
-
-            var ratingValue = "";
-
-            if (user.Configuration.MaxParentalRating) {
-
-                for (var i = 0, length = allParentalRatings.length; i < length; i++) {
-
-                    var rating = allParentalRatings[i];
-
-                    if (user.Configuration.MaxParentalRating >= rating.Value) {
-                        ratingValue = rating.Value;
-                    }
-                }
-            }
-
-            $('#selectMaxParentalRating', page).val(ratingValue).selectmenu("refresh");
-        });
+        $('#selectMaxParentalRating', page).val(user.Configuration.MaxParentalRating).selectmenu("refresh");
 
         allCulturesPromise.done(function (allCultures) {
             
@@ -198,13 +179,11 @@
 
         var promise2 = Dashboard.getCurrentUser();
 
-        var parentalRatingsPromise = ApiClient.getParentalRatings();
-
         var allCulturesPromise = ApiClient.getCultures();
 
         $.when(promise1, promise2).done(function (response1, response2) {
 
-            loadUser(page, response1[0] || response1, response2[0], parentalRatingsPromise, allCulturesPromise);
+            loadUser(page, response1[0] || response1, response2[0], allCulturesPromise);
 
         });
 

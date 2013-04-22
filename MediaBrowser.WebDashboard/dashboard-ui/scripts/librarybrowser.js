@@ -936,7 +936,7 @@
                     tag: item.ImageTags.Disc
                 });
             }
-            else if (item.MediaType == "Audio") {
+            else if (item.MediaType == "Audio" || item.Type == "MusicAlbum") {
                 url = "css/images/items/detail/audio.png";
                 useBackgroundColor = true;
                 maxwidth = 150;
