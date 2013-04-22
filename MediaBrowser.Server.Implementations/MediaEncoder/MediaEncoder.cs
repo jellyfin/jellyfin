@@ -757,8 +757,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 throw new ArgumentNullException("outputPath");
             }
 
-            var args = useIFrame ? string.Format("-i {0} -threads 0 -v quiet -vframes 1 -filter:v select=\\'eq(pict_type\\,I)\\' -vf \"scale=iw*sar:ih\" -f image2 \"{1}\"", inputPath, outputPath) :
-                string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"scale=iw*sar:ih\" -f image2 \"{1}\"", inputPath, outputPath);
+            var args = useIFrame ? string.Format("-i {0} -threads 0 -v quiet -vframes 1 -filter:v select=\\'eq(pict_type\\,I)\\' -vf \"scale=iw*sar:ih, scale=600:-1\" -f image2 \"{1}\"", inputPath, outputPath) :
+                string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"scale=iw*sar:ih, scale=600:-1\" -f image2 \"{1}\"", inputPath, outputPath);
 
             var probeSize = GetProbeSizeArgument(type);
 
