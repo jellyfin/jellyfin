@@ -417,13 +417,6 @@ namespace MediaBrowser.Server.Implementations.Updates
 
                 if (plugin != null)
                 {
-                    // Synchronize the UpdateClass value
-                    if (plugin.Configuration.UpdateClass != package.classification)
-                    {
-                        plugin.Configuration.UpdateClass = package.classification;
-                        plugin.SaveConfiguration();
-                    }
-
                     OnPluginUpdated(plugin, package);
                 }
                 else
