@@ -177,7 +177,7 @@ namespace MediaBrowser.Controller.Providers.TV
                                 try
                                 {
                                     if (n != null)
-                                        season.PrimaryImagePath = await _providerManager.DownloadAndSaveImage(season, TVUtils.BannerUrl + n.InnerText, "folder" + Path.GetExtension(n.InnerText), RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false);
+                                        season.PrimaryImagePath = await _providerManager.DownloadAndSaveImage(season, TVUtils.BannerUrl + n.InnerText, "folder" + Path.GetExtension(n.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false);
                                 }
                                 catch (HttpException)
                                 {
@@ -204,7 +204,7 @@ namespace MediaBrowser.Controller.Providers.TV
                                                                                              TVUtils.BannerUrl + n.InnerText,
                                                                                              "banner" +
                                                                                              Path.GetExtension(n.InnerText),
-                                                                                             RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).
+                                                                                             ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).
                                                                ConfigureAwait(false);
 
                                         season.SetImage(ImageType.Banner, bannerImagePath);
@@ -231,7 +231,7 @@ namespace MediaBrowser.Controller.Providers.TV
                                     try
                                     {
                                         if (season.BackdropImagePaths == null) season.BackdropImagePaths = new List<string>();
-                                        season.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(season, TVUtils.BannerUrl + n.InnerText, "backdrop" + Path.GetExtension(n.InnerText), RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false));
+                                        season.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(season, TVUtils.BannerUrl + n.InnerText, "backdrop" + Path.GetExtension(n.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false));
                                     }
                                     catch (HttpException)
                                     {
@@ -265,7 +265,7 @@ namespace MediaBrowser.Controller.Providers.TV
                                                                                                  "backdrop" +
                                                                                                  Path.GetExtension(
                                                                                                      n.InnerText),
-                                                                                                 RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken)
+                                                                                                 ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken)
                                                                   .ConfigureAwait(false));
                                         }
                                         catch (HttpException)

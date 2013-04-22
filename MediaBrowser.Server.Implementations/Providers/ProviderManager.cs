@@ -330,11 +330,12 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <param name="item">The item.</param>
         /// <param name="source">The source.</param>
         /// <param name="targetName">Name of the target.</param>
+        /// <param name="saveLocally">if set to <c>true</c> [save locally].</param>
         /// <param name="resourcePool">The resource pool.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.String}.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public async Task<string> DownloadAndSaveImage(BaseItem item, string source, string targetName, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
+        public async Task<string> DownloadAndSaveImage(BaseItem item, string source, string targetName, bool saveLocally, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
         {
             if (item == null)
             {
@@ -354,13 +355,13 @@ namespace MediaBrowser.Server.Implementations.Providers
             }
 
             //download and save locally
-            var localPath = (ConfigurationManager.Configuration.SaveLocalMeta && item.MetaLocation != null) ?
+            var localPath = (saveLocally && item.MetaLocation != null) ?
                 Path.Combine(item.MetaLocation, targetName) :
                 _remoteImageCache.GetResourcePath(item.GetType().FullName + item.Path.ToLower(), targetName);
 
             var img = await _httpClient.Get(source, resourcePool, cancellationToken).ConfigureAwait(false);
 
-            if (ConfigurationManager.Configuration.SaveLocalMeta) // queue to media directories
+            if (saveLocally) // queue to media directories
             {
                 await SaveToLibraryFilesystem(item, localPath, img, cancellationToken).ConfigureAwait(false);
             }

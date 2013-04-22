@@ -1,7 +1,11 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -12,11 +16,32 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetYears
     /// </summary>
-    [Route("/Users/{UserId}/Items/{ParentId}/Years", "GET")]
-    [Route("/Users/{UserId}/Items/Root/Years", "GET")]
+    [Route("/Years", "GET")]
     [Api(Description = "Gets all years from a given item, folder, or the entire library")]
     public class GetYears : GetItemsByName
     {
+    }
+
+    /// <summary>
+    /// Class GetYear
+    /// </summary>
+    [Route("/Years/{Year}", "GET")]
+    [Api(Description = "Gets a year")]
+    public class GetYear : IReturn<BaseItemDto>
+    {
+        /// <summary>
+        /// Gets or sets the year.
+        /// </summary>
+        /// <value>The year.</value>
+        [ApiMember(Name = "Year", Description = "The year", IsRequired = true, DataType = "int", ParameterType = "path", Verb = "GET")]
+        public int Year { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid? UserId { get; set; }
     }
 
     /// <summary>
@@ -39,6 +64,42 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
+        public object Get(GetYear request)
+        {
+            var result = GetItem(request).Result;
+
+            return ToOptimizedResult(result);
+        }
+
+        /// <summary>
+        /// Gets the item.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>Task{BaseItemDto}.</returns>
+        private async Task<BaseItemDto> GetItem(GetYear request)
+        {
+            var item = await LibraryManager.GetYear(request.Year).ConfigureAwait(false);
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
+
+            var builder = new DtoBuilder(Logger, LibraryManager, UserDataRepository);
+
+            if (request.UserId.HasValue)
+            {
+                var user = UserManager.GetUserById(request.UserId.Value);
+
+                return await builder.GetBaseItemDto(item, user, fields.ToList()).ConfigureAwait(false);
+            }
+
+            return await builder.GetBaseItemDto(item, fields.ToList()).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
         public object Get(GetYears request)
         {
             var result = GetResult(request).Result;
@@ -51,9 +112,8 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
-        /// <param name="user">The user.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<IbnStub<Year>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items, User user)
+        protected override IEnumerable<IbnStub<Year>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
             var itemsList = items.Where(i => i.ProductionYear != null).ToList();
 

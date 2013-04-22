@@ -228,7 +228,7 @@ namespace MediaBrowser.Controller.Providers.TV
                     string n = doc.SafeGetString("//banner");
                     if (!string.IsNullOrWhiteSpace(n))
                     {
-                        series.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n, "banner" + Path.GetExtension(n), TvDbResourcePool, cancellationToken).ConfigureAwait(false));
+                        series.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n, "banner" + Path.GetExtension(n), ConfigurationManager.Configuration.SaveLocalMeta, TvDbResourcePool, cancellationToken).ConfigureAwait(false));
                     }
 
                     string s = doc.SafeGetString("//Network");
@@ -369,7 +369,7 @@ namespace MediaBrowser.Controller.Providers.TV
                             {
                                 try
                                 {
-                                    series.PrimaryImagePath = await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "folder" + Path.GetExtension(n.InnerText), TvDbResourcePool, cancellationToken).ConfigureAwait(false);
+                                    series.PrimaryImagePath = await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "folder" + Path.GetExtension(n.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, TvDbResourcePool, cancellationToken).ConfigureAwait(false);
                                 }
                                 catch (HttpException)
                                 {
@@ -392,7 +392,7 @@ namespace MediaBrowser.Controller.Providers.TV
                             {
                                 try
                                 {
-                                    var bannerImagePath = await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "banner" + Path.GetExtension(n.InnerText), TvDbResourcePool, cancellationToken);
+                                    var bannerImagePath = await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "banner" + Path.GetExtension(n.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, TvDbResourcePool, cancellationToken);
 
                                     series.SetImage(ImageType.Banner, bannerImagePath);
                                 }
@@ -421,7 +421,7 @@ namespace MediaBrowser.Controller.Providers.TV
                                 {
                                     try
                                     {
-                                        series.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + p.InnerText, bdName + Path.GetExtension(p.InnerText), TvDbResourcePool, cancellationToken).ConfigureAwait(false));
+                                        series.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + p.InnerText, bdName + Path.GetExtension(p.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, TvDbResourcePool, cancellationToken).ConfigureAwait(false));
                                     }
                                     catch (HttpException)
                                     {

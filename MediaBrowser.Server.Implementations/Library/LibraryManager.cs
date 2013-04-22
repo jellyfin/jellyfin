@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -103,7 +104,7 @@ namespace MediaBrowser.Server.Implementations.Library
         private readonly IUserManager _userManager;
 
         private readonly IUserDataRepository _userDataRepository;
-        
+
         /// <summary>
         /// Gets or sets the configuration manager.
         /// </summary>
@@ -244,7 +245,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 // Any number of configuration settings could change the way the library is refreshed, so do that now
                 _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
-                
+
                 if (refreshPeopleAfterUpdate)
                 {
                     _taskManager.CancelIfRunningAndQueue<PeopleValidationTask>();
@@ -285,7 +286,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             items.AddRange(userFolders);
 
-            return new ConcurrentDictionary<Guid,BaseItem>(items.ToDictionary(i => i.Id));
+            return new ConcurrentDictionary<Guid, BaseItem>(items.ToDictionary(i => i.Id));
         }
 
         /// <summary>
@@ -505,7 +506,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             return _userRootFolders.GetOrAdd(userRootPath, key => RetrieveItem(userRootPath.GetMBId(typeof(UserRootFolder))) as UserRootFolder ?? (UserRootFolder)ResolvePath(userRootPath));
         }
-        
+
         /// <summary>
         /// Gets a Person
         /// </summary>
@@ -560,7 +561,20 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task{Genre}.</returns>
         public Task<Artist> GetArtist(string name, bool allowSlowProviders = false)
         {
-            return GetImagesByNameItem<Artist>(ConfigurationManager.ApplicationPaths.ArtistsPath, name, CancellationToken.None, allowSlowProviders);
+            return GetArtist(name, CancellationToken.None, allowSlowProviders);
+        }
+
+        /// <summary>
+        /// Gets the artist.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
+        /// <param name="forceCreation">if set to <c>true</c> [force creation].</param>
+        /// <returns>Task{Artist}.</returns>
+        private Task<Artist> GetArtist(string name, CancellationToken cancellationToken, bool allowSlowProviders = false, bool forceCreation = false)
+        {
+            return GetImagesByNameItem<Artist>(ConfigurationManager.ApplicationPaths.ArtistsPath, name, cancellationToken, allowSlowProviders, forceCreation);
         }
 
         /// <summary>
@@ -764,6 +778,76 @@ namespace MediaBrowser.Server.Implementations.Library
             _logger.Info("People validation complete");
         }
 
+        public async Task ValidateArtists(CancellationToken cancellationToken, IProgress<double> progress)
+        {
+            const int maxTasks = 25;
+
+            var tasks = new List<Task>();
+
+            var artists = RootFolder.RecursiveChildren
+                .OfType<Audio>()
+                .SelectMany(c =>
+                {
+                    var list = c.Artists.ToList();
+
+                    if (!string.IsNullOrEmpty(c.AlbumArtist))
+                    {
+                        list.Add(c.AlbumArtist);
+                    }
+
+                    return list;
+                })
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var numComplete = 0;
+
+            foreach (var artist in artists)
+            {
+                if (tasks.Count > maxTasks)
+                {
+                    await Task.WhenAll(tasks).ConfigureAwait(false);
+                    tasks.Clear();
+
+                    // Safe cancellation point, when there are no pending tasks
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
+
+                // Avoid accessing the foreach variable within the closure
+                var currentArtist = artist;
+
+                tasks.Add(Task.Run(async () =>
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    try
+                    {
+                        await GetArtist(currentArtist, cancellationToken, true, true).ConfigureAwait(false);
+                    }
+                    catch (IOException ex)
+                    {
+                        _logger.ErrorException("Error validating Artist {0}", ex, currentArtist);
+                    }
+
+                    // Update progress
+                    lock (progress)
+                    {
+                        numComplete++;
+                        double percent = numComplete;
+                        percent /= artists.Count;
+
+                        progress.Report(100 * percent);
+                    }
+                }));
+            }
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            progress.Report(100);
+
+            _logger.Info("Artist validation complete");
+        }
+
         /// <summary>
         /// Reloads the root media folder
         /// </summary>
@@ -796,8 +880,20 @@ namespace MediaBrowser.Server.Implementations.Library
                 await ValidateCollectionFolders(folder, cancellationToken).ConfigureAwait(false);
             }
 
+            var innerProgress = new ActionableProgress<double>();
+
+            innerProgress.RegisterAction(pct => progress.Report(pct * .8));
+
             // Now validate the entire media library
-            await RootFolder.ValidateChildren(progress, cancellationToken, recursive: true).ConfigureAwait(false);
+            await RootFolder.ValidateChildren(innerProgress, cancellationToken, recursive: true).ConfigureAwait(false);
+
+            innerProgress = new ActionableProgress<double>();
+
+            innerProgress.RegisterAction(pct => progress.Report(80 + pct * .2));
+
+            await ValidateArtists(cancellationToken, innerProgress);
+
+            progress.Report(100);
         }
 
         /// <summary>

@@ -150,7 +150,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                             Logger.Debug("FanArtProvider getting ClearLogo for " + movie.Name);
                             try
                             {
-                                movie.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(movie, path, LOGO_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                movie.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(movie, path, LOGO_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {
@@ -176,7 +176,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                             Logger.Debug("FanArtProvider getting ClearArt for " + movie.Name);
                             try
                             {
-                                movie.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(movie, path, ART_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                movie.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(movie, path, ART_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {
@@ -199,7 +199,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                             Logger.Debug("FanArtProvider getting DiscArt for " + movie.Name);
                             try
                             {
-                                movie.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(movie, path, DISC_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                movie.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(movie, path, DISC_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {
@@ -223,7 +223,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                             Logger.Debug("FanArtProvider getting Banner for " + movie.Name);
                             try
                             {
-                                movie.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(movie, path, BANNER_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                movie.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(movie, path, BANNER_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {
@@ -247,7 +247,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                             Logger.Debug("FanArtProvider getting Banner for " + movie.Name);
                             try
                             {
-                                movie.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(movie, path, THUMB_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                movie.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(movie, path, THUMB_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {

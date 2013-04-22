@@ -29,7 +29,7 @@ namespace MediaBrowser.Controller.Providers.Music
             //Execute the Artist search against our name and assume first one is the one we want
             var url = RootUrl + string.Format("method=artist.search&artist={0}&api_key={1}&format=json", UrlEncode(item.Name), ApiKey);
 
-            LastfmArtistSearchResults searchResult = null;
+            LastfmArtistSearchResults searchResult;
 
             try
             {
@@ -60,29 +60,18 @@ namespace MediaBrowser.Controller.Providers.Music
             // Get artist info with provided id
             var url = RootUrl + string.Format("method=artist.getInfo&mbid={0}&api_key={1}&format=json", UrlEncode(id), ApiKey);
 
-            LastfmGetArtistResult result = null;
+            LastfmGetArtistResult result;
 
-            try
+            using (var json = await HttpClient.Get(url, LastfmResourcePool, cancellationToken).ConfigureAwait(false))
             {
-                using (var json = await HttpClient.Get(url, LastfmResourcePool, cancellationToken).ConfigureAwait(false))
-                {
-                    result = JsonSerializer.DeserializeFromStream<LastfmGetArtistResult>(json);
-                }
-            }
-            catch (HttpException e)
-            {
-                if (e.StatusCode == HttpStatusCode.NotFound)
-                {
-                    throw new LastfmProviderException(string.Format("Unable to retrieve artist info for {0} with id {1}", item.Name, id));
-                }
-                throw;
+                result = JsonSerializer.DeserializeFromStream<LastfmGetArtistResult>(json);
             }
 
             if (result != null && result.artist != null)
             {
                 LastfmHelper.ProcessArtistData(item, result.artist);
                 //And save locally if indicated
-                if (ConfigurationManager.Configuration.SaveLocalMeta)
+                if (SaveLocalMeta)
                 {
                     var ms = new MemoryStream();
                     JsonSerializer.SerializeToStream(result.artist, ms);
