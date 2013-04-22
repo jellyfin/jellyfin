@@ -76,13 +76,19 @@
             enableCustomHeader(page, "TV Shows");
             $('#standardLogo', page).hide();
         }
-        else if (item.Type == "Audio") {
+        else if (item.Type == "Audio" || item.Type == "MusicAlbum") {
             enableCustomHeader(page, "Music");
             $('#standardLogo', page).hide();
         }
         else {
             $('.libraryPageHeader', page).hide();
             $('#standardLogo', page).show();
+        }
+
+        if (item.Type == "MusicAlbum") {
+            $('#albumTabs', page).show();
+        } else {
+            $('#albumTabs', page).hide();
         }
 
         if (item.Type == "Audio") {
@@ -215,6 +221,9 @@
         }
         else if (item.Type == "BoxSet") {
             $('#childrenTitle', page).html('Movies (' + item.ChildCount + ')');
+        }
+        else if (item.Type == "MusicAlbum") {
+            $('#childrenTitle', page).html('Songs (' + item.ChildCount + ')');
         }
         else {
             $('#childrenTitle', page).html('Items (' + item.ChildCount + ')');

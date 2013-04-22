@@ -167,6 +167,9 @@
             if (item.Type == "BoxSet") {
                 return "itemdetails.html?id=" + item.Id;
             }
+            if (item.Type == "MusicAlbum") {
+                return "itemdetails.html?id=" + item.Id;
+            }
             if (item.Type == "Genre") {
                 return "itembynamedetails.html?genre=" + item.Name;
             }
