@@ -42,16 +42,7 @@
             $('#itemTagline', page).hide();
         }
 
-        if (item.Overview || item.OverviewHtml) {
-            var overview = item.OverviewHtml || item.Overview;
-
-            $('#itemOverview', page).html(overview).show();
-            $('#itemOverview a').each(function () {
-                $(this).attr("target", "_blank");
-            });
-        } else {
-            $('#itemOverview', page).hide();
-        }
+        LibraryBrowser.renderOverview($('#itemOverview', page), item);
 
         if (item.CommunityRating) {
             $('#itemCommunityRating', page).html(LibraryBrowser.getStarRatingHtml(item)).show().attr('title', item.CommunityRating);

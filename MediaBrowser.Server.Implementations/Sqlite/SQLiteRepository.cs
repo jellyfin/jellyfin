@@ -150,6 +150,8 @@ namespace MediaBrowser.Server.Implementations.Sqlite
             GC.SuppressFinalize(this);
         }
 
+        private readonly object _disposeLock = new object();
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
@@ -160,7 +162,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
             {
                 try
                 {
-                    lock (this)
+                    lock (_disposeLock)
                     {
                         if (connection != null)
                         {

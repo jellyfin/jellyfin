@@ -14,11 +14,12 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="item">The item.</param>
         /// <param name="source">The source.</param>
         /// <param name="targetName">Name of the target.</param>
+        /// <param name="saveLocally">if set to <c>true</c> [save locally].</param>
         /// <param name="resourcePool">The resource pool.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.String}.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        Task<string> DownloadAndSaveImage(BaseItem item, string source, string targetName, SemaphoreSlim resourcePool, CancellationToken cancellationToken);
+        Task<string> DownloadAndSaveImage(BaseItem item, string source, string targetName, bool saveLocally, SemaphoreSlim resourcePool, CancellationToken cancellationToken);
 
         /// <summary>
         /// Saves to library filesystem.

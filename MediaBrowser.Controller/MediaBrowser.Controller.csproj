@@ -53,8 +53,12 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MoreLinq">
+      <HintPath>..\packages\morelinq.1.0.15631-beta\lib\net35\MoreLinq.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Net" />
     <Reference Include="System.Runtime.Serialization" />
@@ -111,9 +115,11 @@
     <Compile Include="Providers\IProviderManager.cs" />
     <Compile Include="Providers\MediaInfo\MediaEncoderHelpers.cs" />
     <Compile Include="Providers\MetadataProviderPriority.cs" />
+    <Compile Include="Providers\Music\FanArtArtistByNameProvider.cs" />
     <Compile Include="Providers\Music\LastfmAlbumProvider.cs" />
     <Compile Include="Providers\Music\FanArtAlbumProvider.cs" />
     <Compile Include="Providers\Music\FanArtArtistProvider.cs" />
+    <Compile Include="Providers\Music\LastfmArtistByNameProvider.cs" />
     <Compile Include="Providers\Music\LastfmArtistProvider.cs" />
     <Compile Include="Providers\Music\LastfmHelper.cs" />
     <Compile Include="Providers\Music\MusicArtistProviderFromJson.cs" />
@@ -196,6 +202,9 @@
       <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
       <Name>MediaBrowser.Model</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

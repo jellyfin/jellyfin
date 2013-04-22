@@ -10,13 +10,6 @@ namespace MediaBrowser.Api.UserLibrary
     public abstract class BaseItemsRequest
     {
         /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid UserId { get; set; }
-
-        /// <summary>
         /// Skips over a given number of items within the results. Use for paging.
         /// </summary>
         /// <value>The start index.</value>

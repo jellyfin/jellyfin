@@ -100,7 +100,7 @@ namespace MediaBrowser.Controller.Providers.TV
                             Logger.Debug("FanArtProvider getting ClearLogo for " + series.Name);
                             try
                             {
-                                series.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(series, path, LOGO_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                series.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(series, path, LOGO_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {
@@ -124,7 +124,7 @@ namespace MediaBrowser.Controller.Providers.TV
                             Logger.Debug("FanArtProvider getting ClearArt for " + series.Name);
                             try
                             {
-                                series.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(series, path, ART_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                series.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(series, path, ART_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {
@@ -148,7 +148,7 @@ namespace MediaBrowser.Controller.Providers.TV
                             Logger.Debug("FanArtProvider getting ThumbArt for " + series.Name);
                             try
                             {
-                                series.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(series, path, THUMB_FILE, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                series.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(series, path, THUMB_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                             }
                             catch (HttpException)
                             {

@@ -1,14 +1,15 @@
-﻿using System.IO;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
+using MoreLinq;
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Providers.Music
 {
@@ -33,26 +34,7 @@ namespace MediaBrowser.Controller.Providers.Music
 
         protected override async Task FetchLastfmData(BaseItem item, string id, CancellationToken cancellationToken)
         {
-            // Get albu info using artist and album name
-            var url = RootUrl + string.Format("method=album.getInfo&artist={0}&album={1}&api_key={2}&format=json", UrlEncode(item.Parent.Name), UrlEncode(item.Name), ApiKey);
-
-            LastfmGetAlbumResult result;
-
-            try
-            {
-                using (var json = await HttpClient.Get(url, LastfmResourcePool, cancellationToken).ConfigureAwait(false))
-                {
-                    result = JsonSerializer.DeserializeFromStream<LastfmGetAlbumResult>(json);
-                }
-            }
-            catch (HttpException e)
-            {
-                if (e.StatusCode == HttpStatusCode.NotFound)
-                {
-                    throw new LastfmProviderException(string.Format("Unable to retrieve album info for {0} with artist {1}", item.Name, item.Parent.Name));
-                }
-                throw;
-            }
+            var result = await GetAlbumResult(item, cancellationToken).ConfigureAwait(false);
 
             if (result != null && result.album != null)
             {
@@ -71,9 +53,60 @@ namespace MediaBrowser.Controller.Providers.Music
             }
         }
 
+        private async Task<LastfmGetAlbumResult> GetAlbumResult(BaseItem item, CancellationToken cancellationToken)
+        {
+            var result = await GetAlbumResult(item.Parent.Name, item.Name, cancellationToken);
+
+            if (result != null && result.album != null)
+            {
+                return result;
+            }
+
+            var folder = (Folder)item;
+
+            // Get each song, distinct by the combination of AlbumArtist and Album
+            var songs = folder.Children.OfType<Audio>().DistinctBy(i => (i.AlbumArtist ?? string.Empty) + (i.Album ?? string.Empty), StringComparer.OrdinalIgnoreCase).ToList();
+
+            foreach (var song in songs.Where(song => !string.IsNullOrEmpty(song.Album) && !string.IsNullOrEmpty(song.AlbumArtist)))
+            {
+                result = await GetAlbumResult(song.AlbumArtist, song.Album, cancellationToken).ConfigureAwait(false);
+
+                if (result != null && result.album != null)
+                {
+                    return result;
+                }
+            }
+
+            return null;
+        }
+
+        private async Task<LastfmGetAlbumResult> GetAlbumResult(string artist, string album, CancellationToken cancellationToken)
+        {
+            // Get albu info using artist and album name
+            var url = RootUrl + string.Format("method=album.getInfo&artist={0}&album={1}&api_key={2}&format=json", UrlEncode(artist), UrlEncode(album), ApiKey);
+
+            using (var json = await HttpClient.Get(url, LastfmResourcePool, cancellationToken).ConfigureAwait(false))
+            {
+                return JsonSerializer.DeserializeFromStream<LastfmGetAlbumResult>(json);
+            }
+        }
+        
+        protected override Task FetchData(BaseItem item, CancellationToken cancellationToken)
+        {
+            return FetchLastfmData(item, string.Empty, cancellationToken);
+        }
+
         public override bool Supports(BaseItem item)
         {
             return item is MusicAlbum;
+        }
+
+        protected override bool RefreshOnFileSystemStampChange
+        {
+            get
+            {
+                return true;
+            }
         }
     }
 }

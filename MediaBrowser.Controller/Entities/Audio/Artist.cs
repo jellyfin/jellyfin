@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <returns>System.String.</returns>
         public override string GetUserDataKey()
         {
-            return Name;
+            return "Artist-" + Name;
         }
     }
 }

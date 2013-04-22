@@ -11,38 +11,40 @@
         var name = getParameterByName('person');
 
         if (name) {
-            getItemPromise = ApiClient.getPerson(name);
+            getItemPromise = ApiClient.getPerson(name, Dashboard.getCurrentUserId());
         } else {
 
             name = getParameterByName('studio');
 
             if (name) {
 
-                getItemPromise = ApiClient.getStudio(name);
+                getItemPromise = ApiClient.getStudio(name, Dashboard.getCurrentUserId());
 
             } else {
 
                 name = getParameterByName('genre');
 
                 if (name) {
-                    getItemPromise = ApiClient.getGenre(name);
+                    getItemPromise = ApiClient.getGenre(name, Dashboard.getCurrentUserId());
                 }
                 else {
-                    throw new Error('Invalid request');
+                    
+                    name = getParameterByName('artist');
+
+                    if (name) {
+                        getItemPromise = ApiClient.getArtist(name, Dashboard.getCurrentUserId());
+                    }
+                    else {
+                        throw new Error('Invalid request');
+                    }
                 }
             }
         }
 
-        var getUserDataPromise = ApiClient.getItembyNameUserData(Dashboard.getCurrentUserId(), name);
-
-        $.when(getItemPromise, getUserDataPromise).done(function (response1, response2) {
-
-            var item = response1[0];
-            var userdata = response2[0];
+        getItemPromise.done(function (item) {
 
             currentItem = item;
 
-            item.UserData = userdata;
             name = item.Name;
 
             $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item));
@@ -70,7 +72,11 @@
         }
         else if (item.Type == "Studio") {
             promise = ApiClient.getStudioItemCounts(Dashboard.getCurrentUserId(), item.Name);
-        } else {
+        }
+        else if (item.Type == "Artist") {
+            promise = ApiClient.getArtistItemCounts(Dashboard.getCurrentUserId(), item.Name);
+        }
+        else {
             throw new Error("Unknown item type: " + item.Type);
         }
 
@@ -173,16 +179,7 @@
 
     function renderDetails(page, item) {
 
-        if (item.Overview || item.OverviewHtml) {
-            var overview = item.OverviewHtml || item.Overview;
-
-            $('#itemOverview', page).html(overview).show();
-            $('#itemOverview a').each(function () {
-                $(this).attr("target", "_blank");
-            });
-        } else {
-            $('#itemOverview', page).hide();
-        }
+        LibraryBrowser.renderOverview($('#itemOverview', page), item);
 
         renderUserDataIcons(page, item);
         LibraryBrowser.renderLinks($('#itemLinks', page), item);

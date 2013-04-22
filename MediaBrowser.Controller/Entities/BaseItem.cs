@@ -23,6 +23,14 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public abstract class BaseItem : IHasProviderIds
     {
+        protected BaseItem()
+        {
+            Genres = new List<string>();
+            TrailerUrls = new List<string>();
+            Studios = new List<string>();
+            People = new List<PersonInfo>();
+        }
+
         /// <summary>
         /// The trailer folder name
         /// </summary>
@@ -925,16 +933,10 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Determines if the item is considered new based on user settings
         /// </summary>
-        /// <param name="user">The user.</param>
         /// <returns><c>true</c> if [is recently added] [the specified user]; otherwise, <c>false</c>.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public bool IsRecentlyAdded(User user)
+        public bool IsRecentlyAdded()
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException();
-            }
-
             return (DateTime.UtcNow - DateCreated).TotalDays < ConfigurationManager.Configuration.RecentItemDays;
         }
 

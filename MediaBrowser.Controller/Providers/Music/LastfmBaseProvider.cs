@@ -1,26 +1,17 @@
-﻿using System.Collections.Generic;
-using System.Net;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Providers.Music
 {
-    class LastfmProviderException : ApplicationException
-    {
-        public LastfmProviderException(string msg)
-            : base(msg)
-        {
-        }
-     
-    }
     /// <summary>
     /// Class MovieDbProvider
     /// </summary>
@@ -84,6 +75,14 @@ namespace MediaBrowser.Controller.Providers.Music
         /// </summary>
         protected string LocalMetaFileName { get; set; }
 
+        protected virtual bool SaveLocalMeta
+        {
+            get
+            {
+                return ConfigurationManager.Configuration.SaveLocalMeta;
+            }
+        }
+
         /// <summary>
         /// If we save locally, refresh if they delete something
         /// </summary>
@@ -91,7 +90,7 @@ namespace MediaBrowser.Controller.Providers.Music
         {
             get
             {
-                return ConfigurationManager.Configuration.SaveLocalMeta;
+                return SaveLocalMeta;
             }
         }
 
@@ -173,16 +172,15 @@ namespace MediaBrowser.Controller.Providers.Music
         {
             if (item.DontFetchMeta) return false;
 
-            if (ConfigurationManager.Configuration.SaveLocalMeta && HasFileSystemStampChanged(item, providerInfo))
+            if (RefreshOnFileSystemStampChange && HasFileSystemStampChanged(item, providerInfo))
             {
                 //If they deleted something from file system, chances are, this item was mis-identified the first time
                 item.SetProviderId(MetadataProviders.Musicbrainz, null);
                 Logger.Debug("LastfmProvider reports file system stamp change...");
                 return true;
-
             }
 
-            if (providerInfo.LastRefreshStatus == ProviderRefreshStatus.CompletedWithErrors)
+            if (providerInfo.LastRefreshStatus != ProviderRefreshStatus.Success)
             {
                 Logger.Debug("LastfmProvider for {0} - last attempt had errors.  Will try again.", item.Path);
                 return true;
@@ -194,22 +192,10 @@ namespace MediaBrowser.Controller.Providers.Music
                 return true;
             }
 
-            var downloadDate = providerInfo.LastRefreshed;
+            if (DateTime.UtcNow.Subtract(providerInfo.LastRefreshed).TotalDays > ConfigurationManager.Configuration.MetadataRefreshDays) // only refresh every n days
+                return true;
 
-            if (ConfigurationManager.Configuration.MetadataRefreshDays == -1 && downloadDate != DateTime.MinValue)
-            {
-                return false;
-            }
-
-            if (DateTime.Today.Subtract(item.DateCreated).TotalDays > 180 && downloadDate != DateTime.MinValue)
-                return false; // don't trigger a refresh data for item that are more than 6 months old and have been refreshed before
-
-            if (DateTime.Today.Subtract(downloadDate).TotalDays < ConfigurationManager.Configuration.MetadataRefreshDays) // only refresh every n days
-                return false;
-
-
-            Logger.Debug("LastfmProvider - " + item.Name + " needs refresh.  Download date: " + downloadDate + " item created date: " + item.DateCreated + " Check for Update age: " + ConfigurationManager.Configuration.MetadataRefreshDays);
-            return true;
+            return false;
         }
 
         /// <summary>
@@ -221,36 +207,9 @@ namespace MediaBrowser.Controller.Providers.Music
         /// <returns>Task{System.Boolean}.</returns>
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            if (item.DontFetchMeta)
-            {
-                Logger.Info("LastfmProvider - Not fetching because requested to ignore " + item.Name);
-                return false;
-            }
-
             cancellationToken.ThrowIfCancellationRequested();
 
-            BaseProviderInfo providerData;
-
-            if (!item.ProviderData.TryGetValue(Id, out providerData))
-            {
-                providerData = new BaseProviderInfo();
-            }
-            
-            if (!ConfigurationManager.Configuration.SaveLocalMeta || !HasLocalMeta(item) || (force && !HasLocalMeta(item)) || (RefreshOnVersionChange && providerData.ProviderVersion != ProviderVersion))
-            {
-                try
-                {
-                    await FetchData(item, cancellationToken).ConfigureAwait(false);
-                    SetLastRefreshed(item, DateTime.UtcNow);
-                }
-                catch (LastfmProviderException)
-                {
-                    SetLastRefreshed(item, DateTime.UtcNow, ProviderRefreshStatus.CompletedWithErrors);
-                }
-
-                return true;
-            }
-            Logger.Debug("LastfmProvider not fetching because local meta exists for " + item.Name);
+            await FetchData(item, cancellationToken).ConfigureAwait(false);
             SetLastRefreshed(item, DateTime.UtcNow);
             return true;
         }
