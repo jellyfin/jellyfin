@@ -33,10 +33,15 @@
 
                 $('#seriesName', page).html('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>').show().trigger('create');
             }
+            else if (item.Album && item.Type == "Audio") {
+                $('#seriesName', page).html('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.ParentId + '">' + item.Album + '</a>').show().trigger('create');
+
+            }
             else if (item.Album) {
                 $('#seriesName', page).html(item.Album).show();
 
-            } else {
+            }
+            else {
                 $('#seriesName', page).hide();
             }
 

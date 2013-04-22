@@ -173,6 +173,7 @@
             html += '<th></th>';
             html += '<th>Track</th>';
             html += '<th>Duration</th>';
+            html += '<th>Play Count</th>';
             html += '<th></th>';
 
             html += '</tr>';
@@ -195,6 +196,8 @@
                 var time = DashboardPage.getDisplayText(item.RunTimeTicks || 0);
 
                 html += '<td>' + time + '</td>';
+
+                html += '<td>' + (item.UserData ? item.UserData.PlayCount : 0) + '</td>';
 
                 html += '<td>' + LibraryBrowser.getUserDataIconsHtml(item) + '</td>';
 

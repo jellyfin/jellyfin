@@ -111,6 +111,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         protected override string CreateSortName()
         {
             return (ProductionYear != null ? ProductionYear.Value.ToString("000-") : "")
+                    + (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ") : "")
                     + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ") : "") + Name;
         }
 
