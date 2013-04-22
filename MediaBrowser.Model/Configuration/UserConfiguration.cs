@@ -10,7 +10,7 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the max parental rating.
         /// </summary>
         /// <value>The max parental rating.</value>
-        public int? MaxParentalRating { get; set; }
+        public string MaxParentalRating { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [use custom library].

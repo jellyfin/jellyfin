@@ -849,10 +849,15 @@ namespace MediaBrowser.Controller.Entities
         {
             if (user == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("user");
             }
 
-            return user.Configuration.MaxParentalRating == null || Ratings.Level(CustomRating ?? OfficialRating) <= user.Configuration.MaxParentalRating;
+            if (string.IsNullOrEmpty(user.Configuration.MaxParentalRating))
+            {
+                return true;
+            }
+
+            return Ratings.Level(CustomRating ?? OfficialRating) <= Ratings.Level(user.Configuration.MaxParentalRating);
         }
 
         /// <summary>
