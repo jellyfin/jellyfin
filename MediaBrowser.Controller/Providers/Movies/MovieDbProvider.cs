@@ -33,6 +33,8 @@ namespace MediaBrowser.Controller.Providers.Movies
     /// </summary>
     public class MovieDbProvider : BaseMetadataProvider, IDisposable
     {
+        protected static CultureInfo EnUs = new CultureInfo("en-US");
+
         protected readonly IProviderManager ProviderManager;
 
         /// <summary>
@@ -548,7 +550,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 foreach (var possible in searchResult.results)
                 {
                     string matchedName = null;
-                    string id = possible.id.ToString();
+                    string id = possible.id.ToString(CultureInfo.InvariantCulture);
                     string n = possible.title;
                     if (GetComparableName(n, Logger) == compName)
                     {
@@ -606,7 +608,8 @@ namespace MediaBrowser.Controller.Providers.Movies
                         {
                             DateTime r;
 
-                            if (DateTime.TryParse(possible.release_date, out r))
+                            //These dates are always in this exact format
+                            if (DateTime.TryParseExact(possible.release_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None,  out r))
                             {
                                 if (Math.Abs(r.Year - year.Value) > 1) // allow a 1 year tolerance on release date
                                 {
@@ -909,19 +912,10 @@ namespace MediaBrowser.Controller.Providers.Movies
                 if (!string.IsNullOrEmpty(movieData.tagline)) movie.AddTagline(movieData.tagline);
                 movie.SetProviderId(MetadataProviders.Imdb, movieData.imdb_id);
                 float rating;
-                string voteAvg = movieData.vote_average.ToString();
-                string cultureStr = ConfigurationManager.Configuration.PreferredMetadataLanguage + "-" + ConfigurationManager.Configuration.MetadataCountryCode;
-                CultureInfo culture;
-                try
-                {
-                    culture = new CultureInfo(cultureStr);
-                }
-                catch
-                {
-                    culture = CultureInfo.CurrentCulture; //default to windows settings if other was invalid
-                }
-                Logger.Debug("Culture for numeric conversion is: " + culture.Name);
-                if (float.TryParse(voteAvg, NumberStyles.AllowDecimalPoint, culture, out rating))
+                string voteAvg = movieData.vote_average.ToString(CultureInfo.InvariantCulture);
+                //tmdb appears to have unified their numbers to always report "7.3" regardless of country
+                // so I removed the culture-specific processing here because it was not working for other countries -ebr
+                if (float.TryParse(voteAvg, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out rating))
                     movie.CommunityRating = rating;
 
                 //release date and certification are retrieved based on configured country and we fall back on US if not there
@@ -1057,7 +1051,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 var numToFetch = Math.Min(ConfigurationManager.Configuration.MaxBackdrops, images.backdrops.Count);
                 for (var i = 0; i < numToFetch; i++)
                 {
-                    var bdName = "backdrop" + (i == 0 ? "" : i.ToString());
+                    var bdName = "backdrop" + (i == 0 ? "" : i.ToString(CultureInfo.InvariantCulture));
 
                     if (ConfigurationManager.Configuration.RefreshItemImages || !item.HasLocalImage(bdName))
                     {
