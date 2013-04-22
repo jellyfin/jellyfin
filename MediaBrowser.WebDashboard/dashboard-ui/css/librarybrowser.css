@@ -211,7 +211,7 @@
 
 .posterDetailViewImage {
     max-height: 90px;
-    max-width: 47%;
+    max-width: 46.5%;
 }
 
 .posterDetailViewItem p {
@@ -289,7 +289,7 @@
 
 @media all and (min-width: 1200px) {
     .posterDetailViewItem {
-        width: 31%;
+        width: 30.6%;
     }
 
     .scenePosterViewItem img {
@@ -306,7 +306,7 @@
 
 @media all and (min-width: 1920px) {
     .posterDetailViewItem {
-        width: 31.5%;
+        width: 31.3%;
     }
 
     .posterDetailViewImage {
@@ -316,7 +316,7 @@
 
 @media all and (min-width: 2000px) {
     .posterDetailViewItem {
-        width: 23.5%;
+        width: 23%;
     }
 }
 

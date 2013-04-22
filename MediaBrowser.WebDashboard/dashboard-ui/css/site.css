@@ -756,25 +756,29 @@ progress {
 @media all and (min-width: 1440px) {
 
     .itemDetailImage {
-        width: 400px;
+        width: 350px;
     }
 
     .itemDetailBlock {
-        width: 68%;
+        width: 60%;
     }
 }
 
 @media all and (min-width: 1700px) {
 
+    .itemDetailImage {
+        width: 400px;
+    }
+
     .itemDetailBlock {
-        width: 73%;
+        width: 61%;
     }
 }
 
 @media all and (min-width: 1920px) {
 
     .itemDetailBlock {
-        width: 77%;
+        width: 65%;
     }
 }
 
