@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.IO;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Implementations.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -23,6 +24,7 @@ namespace MediaBrowser.Server.Implementations.Configuration
         public ServerConfigurationManager(IApplicationPaths applicationPaths, ILogManager logManager, IXmlSerializer xmlSerializer)
             : base(applicationPaths, logManager, xmlSerializer)
         {
+            UpdateItemsByNamePath();
         }
 
         /// <summary>
@@ -50,6 +52,48 @@ namespace MediaBrowser.Server.Implementations.Configuration
         public ServerConfiguration Configuration
         {
             get { return (ServerConfiguration)CommonConfiguration; }
+        }
+
+        /// <summary>
+        /// Called when [configuration updated].
+        /// </summary>
+        protected override void OnConfigurationUpdated()
+        {
+            UpdateItemsByNamePath();
+
+            base.OnConfigurationUpdated();
+        }
+
+        /// <summary>
+        /// Updates the items by name path.
+        /// </summary>
+        private void UpdateItemsByNamePath()
+        {
+            if (!string.IsNullOrEmpty(Configuration.ItemsByNamePath))
+            {
+                ApplicationPaths.ItemsByNamePath = Configuration.ItemsByNamePath;
+            }
+        }
+
+        /// <summary>
+        /// Replaces the configuration.
+        /// </summary>
+        /// <param name="newConfiguration">The new configuration.</param>
+        /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
+        public override void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration)
+        {
+            var newConfig = (ServerConfiguration) newConfiguration;
+
+            if (!string.Equals(Configuration.ItemsByNamePath, newConfig.ItemsByNamePath))
+            {
+                // Validate
+                if (!Directory.Exists(newConfig.ItemsByNamePath))
+                {
+                    throw new DirectoryNotFoundException(string.Format("{0} does not exist.", newConfig.ItemsByNamePath));
+                }
+            }
+
+            base.ReplaceConfiguration(newConfiguration);
         }
     }
 }

@@ -222,32 +222,7 @@ namespace MediaBrowser.ServerApplication
             var url = "http://localhost:" + configurationManager.Configuration.HttpServerPortNumber + "/" +
                       Kernel.Instance.WebApplicationName + "/dashboard/" + page;
 
-            if (loggedInUser != null)
-            {
-                url = AddAutoLoginToDashboardUrl(url, loggedInUser);
-            }
-
             OpenUrl(url);
-        }
-
-        /// <summary>
-        /// Adds the auto login to dashboard URL.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>System.String.</returns>
-        public static string AddAutoLoginToDashboardUrl(string url, User user)
-        {
-            if (url.IndexOf('?') == -1)
-            {
-                url += "?u=" + user.Id;
-            }
-            else
-            {
-                url += "&u=" + user.Id;
-            }
-
-            return url;
         }
 
         /// <summary>
