@@ -32,7 +32,12 @@ namespace MediaBrowser.Server.Implementations.Sorting
         {
             var audio = x as Audio;
 
-            return audio == null ? string.Empty : audio.Artists.OrderBy(i => i).FirstOrDefault() ?? string.Empty;
+            if (audio == null)
+            {
+                return string.Empty;
+            }
+
+            return audio.Artist ?? string.Empty;
         }
 
         /// <summary>

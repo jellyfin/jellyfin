@@ -109,19 +109,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
             audio.Album = GetDictionaryValue(tags, "album");
 
-            var artists = GetDictionaryValue(tags, "artist");
-            if (!string.IsNullOrWhiteSpace(artists))
-            {
-                foreach (var artist in Split(artists))
-                {
-                    var name = artist.Trim();
-
-                    if (!string.IsNullOrEmpty(name))
-                    {
-                        audio.AddArtist(name);
-                    }
-                }
-            }
+            audio.Artist = GetDictionaryValue(tags, "artist");
 
             // Several different forms of albumartist
             audio.AlbumArtist = GetDictionaryValue(tags, "albumartist") ?? GetDictionaryValue(tags, "album artist") ?? GetDictionaryValue(tags, "album_artist");
