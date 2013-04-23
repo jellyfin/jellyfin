@@ -28,7 +28,7 @@ namespace MediaBrowser.Controller.Providers
         public override bool Supports(BaseItem item)
         {
             //only run for these generic types since we are expensive in file i/o
-            return item is IndexFolder || item is BasePluginFolder;
+            return item is IndexFolder || item is BasePluginFolder || item is CollectionFolder;
         }
 
         /// <summary>
