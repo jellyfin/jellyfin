@@ -26,7 +26,8 @@
                 items: result.Items,
                 useAverageAspectRatio: true,
                 countNameSingular: "Song",
-                countNamePlural: "Songs"
+                countNamePlural: "Songs",
+                context: "music"
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);

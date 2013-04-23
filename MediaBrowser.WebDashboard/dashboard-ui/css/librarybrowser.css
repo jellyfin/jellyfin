@@ -191,7 +191,7 @@
 
 .tileItem {
     background: #333;
-    padding: 10px 10px 3px;
+    padding: 10px 7px 5px;
     margin: 3px 0;
     text-shadow: none;
     font-weight: normal!important;
@@ -224,7 +224,7 @@
 }
 
 .tileItem p {
-    margin: .35em 0;
+    margin: .35em 0 0;
 }
 
 .tileItem .imgUserItemRating {
@@ -244,6 +244,9 @@
 
 .tileName {
     font-weight: bold;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .tileItem .userDataIcons img {
@@ -270,7 +273,7 @@
     }
 }
 
-@media all and (min-width: 850px) {
+@media all and (min-width: 750px) {
     .tileItem {
         width: 46%;
         display: inline-block;
@@ -279,7 +282,14 @@
     }
 
     .tileImage {
-        height: 140px;
+        height: 88px;
+    }
+}
+
+@media all and (min-width: 850px) {
+
+    .tileImage {
+        height: 105px;
     }
 
     .tileItem .userDataIcons img {
@@ -288,7 +298,7 @@
     }
 
     .tileItem p {
-        margin: .75em 0;
+        margin: .75em 0 0;
     }
 
     .tileItem .itemProgress {
@@ -297,6 +307,10 @@
 }
 
 @media all and (min-width: 1200px) {
+    .tileImage {
+        height: 100px;
+    }
+
     .tileItem {
         width: 31%;
     }
@@ -307,19 +321,12 @@
 }
 
 @media all and (min-width: 1440px) {
-    .tileImage {
-        height: 170px;
-    }
 }
 
 
 @media all and (min-width: 1920px) {
     .tileItem {
         width: 31.5%;
-    }
-
-    .tileImage {
-        height: 200px;
     }
 }
 
@@ -345,6 +352,7 @@
 .centeredDetailTable {
     margin: auto;
 }
+
 .stretchedDetailTable {
     width: 100%;
 }
@@ -369,6 +377,7 @@
     width: 18px;
     height: 18px;
 }
+
 .userDataCell {
     width: 140px;
 }

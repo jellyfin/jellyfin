@@ -45,8 +45,9 @@
                 $('#seriesName', page).hide();
             }
 
-            setInitialCollapsibleState(page, item);
-            renderDetails(page, item);
+            var context = getContext(item);
+            setInitialCollapsibleState(page, item, context);
+            renderDetails(page, item, context);
 
             if (MediaPlayer.canPlay(item)) {
                 $('#btnPlayMenu', page).show();
@@ -63,6 +64,25 @@
 
             Dashboard.hideLoadingMsg();
         });
+    }
+    
+    function getContext(item) {
+
+        // should return either movies, tv, music or games
+        
+        if (item.Type == "Episode" || item.Type == "Series" || item.Type == "Season") {
+            return "tv";
+        }
+        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "BoxSet") {
+            return "movies";
+        }
+        if (item.Type == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "Artist") {
+            return "music";
+        }
+        if (item.MediaType == "Game") {
+            return "games";
+        }
+        return "";
     }
 
     function enableCustomHeader(page, text) {
@@ -125,7 +145,7 @@
         }
     }
 
-    function setInitialCollapsibleState(page, item) {
+    function setInitialCollapsibleState(page, item, context) {
 
         if (item.ChildCount && item.Type == "MusicAlbum") {
             $('#itemSongs', page).show();
@@ -176,11 +196,11 @@
             $('#castCollapsible', page).hide();
         } else {
             $('#castCollapsible', page).show();
-            renderCast(page, item);
+            renderCast(page, item, context);
         }
     }
 
-    function renderDetails(page, item) {
+    function renderDetails(page, item, context) {
 
         if (item.Taglines && item.Taglines.length) {
             $('#itemTagline', page).html(item.Taglines[0]).show();
@@ -202,8 +222,8 @@
 
         $('#itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
 
-        LibraryBrowser.renderGenres($('#itemGenres', page), item);
-        LibraryBrowser.renderStudios($('#itemStudios', page), item);
+        LibraryBrowser.renderGenres($('#itemGenres', page), item, context);
+        LibraryBrowser.renderStudios($('#itemStudios', page), item, context);
         renderUserDataIcons(page, item);
         LibraryBrowser.renderLinks($('#itemLinks', page), item);
     }
@@ -485,7 +505,7 @@
         });
     }
 
-    function renderCast(page, item) {
+    function renderCast(page, item, context) {
         var html = '';
 
         var casts = item.People || [];
@@ -494,7 +514,7 @@
 
             var cast = casts[i];
 
-            html += LibraryBrowser.createCastImage(cast);
+            html += LibraryBrowser.createCastImage(cast, context);
         }
 
         $('#castContent', page).html(html);

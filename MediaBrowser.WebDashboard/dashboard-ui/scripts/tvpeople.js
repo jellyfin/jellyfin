@@ -27,7 +27,8 @@
                 items: result.Items,
                 useAverageAspectRatio: true,
                 countNameSingular: "Show",
-                countNamePlural: "Shows"
+                countNamePlural: "Shows",
+                context: "tv"
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);

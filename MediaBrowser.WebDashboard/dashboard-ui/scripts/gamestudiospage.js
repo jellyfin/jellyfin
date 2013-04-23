@@ -26,7 +26,8 @@
 				items: result.Items,
 				useAverageAspectRatio: true,
 				countNameSingular: "Game",
-				countNamePlural: "Games"
+				countNamePlural: "Games",
+				context: "games"
 			});
 
 			html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
