@@ -357,6 +357,11 @@
     width: 100%;
 }
 
+.detailTable a {
+    font-weight: normal!important;
+    text-decoration: none;
+}
+
 .detailTable td {
     border-spacing: 0;
     border-top: 1px solid #444;

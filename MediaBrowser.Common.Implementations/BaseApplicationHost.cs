@@ -323,9 +323,9 @@ namespace MediaBrowser.Common.Implementations
             {
                 return Container.GetInstance(type);
             }
-            catch
+            catch (Exception ex)
             {
-                Logger.Error("Error creating {0}", type.Name);
+                Logger.Error("Error creating {0}", ex, type.Name);
 
                 throw;
             }
