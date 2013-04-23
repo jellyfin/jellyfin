@@ -25,7 +25,8 @@
 
 		    html += LibraryBrowser.getPosterDetailViewHtml({
 		        items: result.Items,
-		        useAverageAspectRatio: true
+		        useAverageAspectRatio: true,
+		        context: "movies"
 		    });
 
 		    html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);

@@ -26,7 +26,8 @@
                 items: result.Items,
                 useAverageAspectRatio: true,
                 countNameSingular: "Movie",
-                countNamePlural: "Movies"
+                countNamePlural: "Movies",
+                context: "movies"
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);

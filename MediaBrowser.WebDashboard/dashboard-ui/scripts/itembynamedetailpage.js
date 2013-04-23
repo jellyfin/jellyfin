@@ -45,6 +45,8 @@
 
             currentItem = item;
 
+            renderHeader(page, item);
+
             name = item.Name;
 
             $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item));
@@ -58,6 +60,68 @@
 
             Dashboard.hideLoadingMsg();
         });
+    }
+
+    function enableCustomHeader(page, text) {
+        var elem = $('.libraryPageHeader', page).show();
+
+        $('span', elem).html(text);
+    }
+
+    function renderHeader(page, item) {
+
+        var context = getParameterByName('context');
+        
+        if (context == "movies") {
+            enableCustomHeader(page, "Movies");
+            $('#standardLogo', page).hide();
+        }
+        else if (context == "music") {
+            enableCustomHeader(page, "Music");
+            $('#standardLogo', page).hide();
+        }
+        else if (context == "tv") {
+            enableCustomHeader(page, "TV Shows");
+            $('#standardLogo', page).hide();
+        }
+        else if (context == "games") {
+            enableCustomHeader(page, "Games");
+            $('#standardLogo', page).hide();
+        }
+        else {
+            $('.libraryPageHeader', page).hide();
+            $('#standardLogo', page).show();
+        }
+
+        $('.itemTabs', page).hide();
+
+        if (context == "movies" && item.Type == "Genre") {
+            $('#movieGenreTabs', page).show();
+        }
+
+        if (context == "movies" && item.Type == "Person") {
+            $('#moviePeopleTabs', page).show();
+        }
+
+        if (context == "movies" && item.Type == "Studio") {
+            $('#movieStudioTabs', page).show();
+        }
+
+        if (context == "tv" && item.Type == "Studio") {
+            $('#tvStudioTabs', page).show();
+        }
+
+        if (context == "tv" && item.Type == "Genre") {
+            $('#tvGenreTabs', page).show();
+        }
+
+        if (context == "tv" && item.Type == "Person") {
+            $('#tvPeopleTabs', page).show();
+        }
+
+        if (context == "music" && item.Type == "Genre") {
+            $('#musicGenreTabs', page).show();
+        }
     }
 
     function renderTabs(page, item) {

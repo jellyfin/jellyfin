@@ -27,7 +27,7 @@
                 var imgUrl;
                 var isDefault = false;
 
-                html += '<a class="tileItem" href="' + LibraryBrowser.getHref(item) + '">';
+                html += '<a class="tileItem" href="' + LibraryBrowser.getHref(item, options.context) + '">';
 
                 if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
 
@@ -208,7 +208,7 @@
                 }
                 html += '<td>' + (num || "") + '</td>';
 
-                html += '<td><a href="' + LibraryBrowser.getHref(item) + '">' + (item.Name || "") + '</a></td>';
+                html += '<td><a href="' + LibraryBrowser.getHref(item, "music") + '">' + (item.Name || "") + '</a></td>';
 
                 if (options.showAlbum) {
                     html += '<td><a href="itemdetails.html?id=' + item.ParentId + '">' + item.Album + '</a></td>';
@@ -234,7 +234,7 @@
             return html;
         },
 
-        getHref: function (item) {
+        getHref: function (item, itemByNameContext) {
 
             if (item.url) {
                 return item.url;
@@ -253,16 +253,16 @@
                 return "itemdetails.html?id=" + item.Id;
             }
             if (item.Type == "Genre") {
-                return "itembynamedetails.html?genre=" + item.Name;
+                return "itembynamedetails.html?genre=" + item.Name + "&context=" + itemByNameContext;
             }
             if (item.Type == "Studio") {
-                return "itembynamedetails.html?studio=" + item.Name;
+                return "itembynamedetails.html?studio=" + item.Name + "&context=" + itemByNameContext;
             }
             if (item.Type == "Person") {
-                return "itembynamedetails.html?person=" + item.Name;
+                return "itembynamedetails.html?person=" + item.Name + "&context=" + itemByNameContext;
             }
             if (item.Type == "Artist") {
-                return "itembynamedetails.html?artist=" + item.Name;
+                return "itembynamedetails.html?artist=" + item.Name + "&context=" + itemByNameContext;
             }
 
             return item.IsFolder ? (item.Id ? "itemList.html?parentId=" + item.Id : "#") : "itemdetails.html?id=" + item.Id;
@@ -397,7 +397,7 @@
 
                 var cssClass = showText ? "posterViewItem posterViewItemWithDualText" : "posterViewItem posterViewItemWithNoText";
 
-                html += "<div class='" + cssClass + "'><a href='" + LibraryBrowser.getHref(item) + "'>";
+                html += "<div class='" + cssClass + "'><a href='" + LibraryBrowser.getHref(item, "tv") + "'>";
 
                 if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
                     html += "<img src='" + ApiClient.getImageUrl(item.Id, {
@@ -1121,7 +1121,7 @@
 
         },
 
-        renderStudios: function (elem, item) {
+        renderStudios: function (elem, item, context) {
 
             if (item.Studios && item.Studios.length) {
 
@@ -1133,7 +1133,7 @@
                         html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
                     }
 
-                    html += '<a href="itembynamedetails.html?studio=' + item.Studios[i] + '">' + item.Studios[i] + '</a>';
+                    html += '<a href="itembynamedetails.html?context=' + context + '&studio=' + item.Studios[i] + '">' + item.Studios[i] + '</a>';
                 }
 
                 elem.show().html(html).trigger('create');
@@ -1144,7 +1144,7 @@
             }
         },
 
-        renderGenres: function (elem, item) {
+        renderGenres: function (elem, item, context) {
 
             if (item.Genres && item.Genres.length) {
                 var html = 'Genres:&nbsp;&nbsp;';
@@ -1155,7 +1155,7 @@
                         html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
                     }
 
-                    html += '<a href="itembynamedetails.html?genre=' + item.Genres[i] + '">' + item.Genres[i] + '</a>';
+                    html += '<a href="itembynamedetails.html?context=' + context + '&genre=' + item.Genres[i] + '">' + item.Genres[i] + '</a>';
                 }
 
                 elem.show().html(html).trigger('create');
@@ -1211,7 +1211,7 @@
 
                 var cssClass = showText ? "posterViewItem" : "posterViewItem posterViewItemWithNoText";
 
-                html += "<div class='" + cssClass + "'><a href='" + LibraryBrowser.getHref(item) + "'>";
+                html += "<div class='" + cssClass + "'><a href='" + LibraryBrowser.getHref(item, "games") + "'>";
 
                 if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
                     html += "<img src='" + ApiClient.getImageUrl(item.Id, {
@@ -1399,13 +1399,13 @@
             return html;
         },
 
-        createCastImage: function (cast) {
+        createCastImage: function (cast, context) {
 
             var html = '';
 
             var role = cast.Role || cast.Type;
 
-            html += '<a href="itembynamedetails.html?person=' + cast.Name + '">';
+            html += '<a href="itembynamedetails.html?context=' + context + '&person=' + cast.Name + '">';
             html += '<div class="posterViewItem posterViewItemWithDualText">';
 
             if (cast.PrimaryImageTag) {

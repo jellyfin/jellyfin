@@ -4,9 +4,84 @@
     <title></title>
 </head>
 <body>
-    <div id="itemByNameDetailPage" data-role="page" class="page libraryPage" data-theme="a">
+    <div id="itemByNameDetailPage" data-role="page" class="page libraryPage noLogoPage" data-theme="a">
+        <div id="genericHeader" class="header">
+            <a class="logo" href="index.html" id="standardLogo" style="display: none;">
+                <img class="imgLogoIcon" src="css/images/mblogoicon.png"><img class="imgLogoText" src="css/images/mblogotextwhite.png"></a>
+        </div>
+        <h1 class="libraryPageHeader" style="display: none;"><a href="index.html" class="imageLink">
+            <img src="css/images/mblogoicon.png"></a><span></span></h1>
         <div data-role="content">
 
+            <div id="movieGenreTabs" class="itemTabs" style="display: none;">
+                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
+                    <a href="moviesrecommended.html" data-role="button">Suggested</a>
+                    <a href="movies.html" data-role="button">Movies</a>
+                    <a href="boxsets.html" data-role="button">Box Sets</a>
+                    <a href="movietrailers.html" data-role="button">Trailers</a>
+                    <a href="moviegenres.html" data-role="button" class="ui-btn-active">Genres</a>
+                    <a href="moviepeople.html" data-role="button">People</a>
+                    <a href="moviestudios.html" data-role="button">Studios</a>
+                </div>
+            </div>
+            <div id="moviePeopleTabs" class="itemTabs" style="display: none;">
+                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
+                    <a href="moviesrecommended.html" data-role="button">Suggested</a>
+                    <a href="movies.html" data-role="button">Movies</a>
+                    <a href="boxsets.html" data-role="button">Box Sets</a>
+                    <a href="movietrailers.html" data-role="button">Trailers</a>
+                    <a href="moviegenres.html" data-role="button">Genres</a>
+                    <a href="moviepeople.html" data-role="button" class="ui-btn-active">People</a>
+                    <a href="moviestudios.html" data-role="button">Studios</a>
+                </div>
+            </div>
+            <div id="movieStudioTabs" class="itemTabs" style="display: none;">
+                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
+                    <a href="moviesrecommended.html" data-role="button">Suggested</a>
+                    <a href="movies.html" data-role="button">Movies</a>
+                    <a href="boxsets.html" data-role="button">Box Sets</a>
+                    <a href="movietrailers.html" data-role="button">Trailers</a>
+                    <a href="moviegenres.html" data-role="button">Genres</a>
+                    <a href="moviepeople.html" data-role="button">People</a>
+                    <a href="moviestudios.html" data-role="button" class="ui-btn-active">Studios</a>
+                </div>
+            </div>
+            <div id="tvGenreTabs" class="itemTabs" style="display: none;">
+                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
+                    <a href="tvrecommended.html" data-role="button">Suggested</a>
+                    <a href="tvshows.html" data-role="button">Shows</a>
+                    <a href="tvgenres.html" data-role="button" class="ui-btn-active">Genres</a>
+                    <a href="tvpeople.html" data-role="button">Actors</a>
+                    <a href="tvstudios.html" data-role="button">Networks</a>
+                </div>
+            </div>
+            <div id="tvPeopleTabs" class="itemTabs" style="display: none;">
+                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
+                    <a href="tvrecommended.html" data-role="button">Suggested</a>
+                    <a href="tvshows.html" data-role="button">Shows</a>
+                    <a href="tvgenres.html" data-role="button">Genres</a>
+                    <a href="tvpeople.html" data-role="button" class="ui-btn-active">Actors</a>
+                    <a href="tvstudios.html" data-role="button">Networks</a>
+                </div>
+            </div>
+            <div id="tvStudioTabs" class="itemTabs" style="display: none;">
+                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
+                    <a href="tvrecommended.html" data-role="button">Suggested</a>
+                    <a href="tvshows.html" data-role="button">Shows</a>
+                    <a href="tvgenres.html" data-role="button">Genres</a>
+                    <a href="tvpeople.html" data-role="button">Actors</a>
+                    <a href="tvstudios.html" data-role="button" class="ui-btn-active">Networks</a>
+                </div>
+            </div>
+            <div id="musicGenreTabs" class="itemTabs" style="display: none;">
+                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
+                    <a href="musicrecommended.html" data-role="button">Suggested</a>
+                    <a href="songs.html" data-role="button">Songs</a>
+                    <a href="musicalbums.html" data-role="button">Albums</a>
+                    <a href="musicartists.html" data-role="button">Artists</a>
+                    <a href="musicgenres.html" data-role="button" class="ui-btn-active">Genres</a>
+                </div>
+            </div>
             <div class="detailPagePrimaryInfo">
                 <div class="itemImageBlock">
                     <div id="itemMedia" style="position: relative;">

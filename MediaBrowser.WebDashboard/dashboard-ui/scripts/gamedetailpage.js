@@ -70,8 +70,8 @@
 
 		$('#itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
 
-		LibraryBrowser.renderGenres($('#itemGenres', page), item);
-		LibraryBrowser.renderStudios($('#itemStudios', page), item);
+		LibraryBrowser.renderGenres($('#itemGenres', page), item, "games");
+		LibraryBrowser.renderStudios($('#itemStudios', page), item, "games");
 		renderUserDataIcons(page, item);
 		LibraryBrowser.renderLinks($('#itemLinks', page), item);
 	}

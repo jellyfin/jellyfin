@@ -28,13 +28,15 @@
                 html += LibraryBrowser.getPosterDetailViewHtml({
                     items: result.Items,
                     useAverageAspectRatio: true,
-                    preferBackdrop: true
+                    preferBackdrop: true,
+                    context: "movies"
                 });
             }
             else if (view == "Poster") {
                 html += LibraryBrowser.getPosterDetailViewHtml({
                     items: result.Items,
-                    useAverageAspectRatio: true
+                    useAverageAspectRatio: true,
+                    context: "movies"
                 });
             }
 

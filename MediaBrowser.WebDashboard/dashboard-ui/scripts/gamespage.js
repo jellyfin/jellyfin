@@ -32,8 +32,8 @@
 				html += '<td><a href="gamedetail.html?id='+item.Id+'">' + item.Name + '</a></td>';
 				html += '<td>' + item.DisplayMediaType + '</td>';
 				html += '<td>' + item.ReleaseYear + '</td>';
-				html += '<td>' + /*LibraryBrowser.renderGenres('', item)*/ + '</td>';
-				html += '<td>' + /*LibraryBrowser.renderStudios('', item)*/ + '</td>';
+				html += '<td>' + /*LibraryBrowser.renderGenres('', item, "games")*/ + '</td>';
+				html += '<td>' + /*LibraryBrowser.renderStudios('', item, "games")*/ + '</td>';
 				html += '<td>' + /* */ + '</td>';
 				html += '</tr>';
 
