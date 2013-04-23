@@ -306,6 +306,16 @@
     }
 }
 
+@media all and (min-width: 1000px) {
+    .tileItem {
+        width: 47.5%;
+    }
+
+    .tileImage {
+        height: 110px;
+    }
+}
+
 @media all and (min-width: 1200px) {
     .tileImage {
         height: 100px;
@@ -321,6 +331,24 @@
 }
 
 @media all and (min-width: 1440px) {
+    .tileImage {
+        height: 110px;
+    }
+
+    .tileItem {
+        width: 31.5%;
+    }
+}
+
+@media all and (min-width: 1700px) {
+
+    .tileImage {
+        height: 132px;
+    }
+
+    .tileItem {
+        width: 32%;
+    }
 }
 
 
@@ -328,11 +356,29 @@
     .tileItem {
         width: 31.5%;
     }
+
+    .tileImage {
+        height: 155px;
+    }
 }
 
 @media all and (min-width: 2000px) {
     .tileItem {
         width: 23.5%;
+    }
+
+    .tileImage {
+        height: 117px;
+    }
+}
+
+@media all and (min-width: 2200px) {
+    .tileItem {
+        width: 24%;
+    }
+
+    .tileImage {
+        height: 145px;
     }
 }
 
@@ -340,6 +386,14 @@
     .tileItem {
         width: 18.75%;
     }
+
+    .tileImage {
+        height: 120px;
+    }
+}
+
+.itemsContainer {
+    text-align: center;
 }
 
 .detailTable {
@@ -347,6 +401,7 @@
     border-spacing: 0;
     width: 70%;
     max-width: 1200px;
+    text-align: left;
 }
 
 .centeredDetailTable {
@@ -359,7 +414,6 @@
 
 .detailTable a {
     font-weight: normal!important;
-    text-decoration: none;
 }
 
 .detailTable td {

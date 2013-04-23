@@ -89,6 +89,25 @@
                     imgUrl = "css/images/items/list/game.png";
                     isDefault = true;
                 }
+                else if (item.Type == "Studio" || item.Type == "Genre") {
+
+                    if (options.context == "games") {
+
+                        imgUrl = "css/images/items/list/game.png";
+                    }
+                    else if (options.context == "music") {
+
+                        imgUrl = "css/images/items/list/audio.png";
+                    }
+                    else if (options.context == "movies") {
+
+                        imgUrl = "css/images/items/list/chapter.png";
+                    }
+                    else {
+                        imgUrl = "css/images/items/list/collection.png";
+                    }
+                    isDefault = true;
+                }
                 else {
 
                     imgUrl = "css/images/items/list/collection.png";
