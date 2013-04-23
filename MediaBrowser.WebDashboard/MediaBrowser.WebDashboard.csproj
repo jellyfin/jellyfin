@@ -356,17 +356,27 @@
     <Content Include="dashboard-ui\scripts\videojsextensions.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\video-js-3.2.0\demo.html" />
-    <Content Include="dashboard-ui\thirdparty\video-js-3.2.0\video-js.css" />
-    <Content Include="dashboard-ui\thirdparty\video-js-3.2.0\video-js.min.css" />
-    <Content Include="dashboard-ui\thirdparty\video-js-3.2.0\video-js.min.css" />
-    <Content Include="dashboard-ui\thirdparty\video-js-3.2.0\video-js.png" />
-    <Content Include="dashboard-ui\thirdparty\video-js-3.2.0\video-js.png" />
-    <Content Include="dashboard-ui\thirdparty\video-js-3.2.0\video-js.swf" />
-    <Content Include="dashboard-ui\thirdparty\video-js-3.2.0\video-js.swf" />
-    <Content Include="dashboard-ui\thirdparty\video-js-3.2.0\video.js" />
-    <Content Include="dashboard-ui\thirdparty\video-js-3.2.0\video.min.js" />
-    <Content Include="dashboard-ui\thirdparty\video-js-3.2.0\video.min.js" />
+    <Content Include="dashboard-ui\thirdparty\video-js-3.2.0\demo.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\video-js-3.2.0\video-js.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\video-js-3.2.0\video-js.min.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\video-js-3.2.0\video-js.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\video-js-3.2.0\video-js.swf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\video-js-3.2.0\video.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\video-js-3.2.0\video.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\tvgenres.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -903,7 +913,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <None Include="dashboard-ui\thirdparty\video-js-3.2.0\captions.vtt" />
+    <None Include="dashboard-ui\thirdparty\video-js-3.2.0\captions.vtt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
