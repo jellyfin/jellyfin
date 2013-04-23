@@ -77,7 +77,7 @@
                 $('#regInfo', page).html(pkg.regInfo || "");
                 if (pkg.price > 0) {
                     // Fill in PayPal info
-                    $('premiumHasPrice', page).show();
+                    $('.premiumHasPrice', page).show();
                     $('#featureId', page).val(pkg.featureId);
                     $('#featureName', page).val(pkg.name);
                     $('#amount', page).val(pkg.price);
@@ -94,7 +94,7 @@
                     });
                 } else {
                     // Supporter-only feature
-                    $('premiumHasPrice', page).hide();
+                    $('.premiumHasPrice', page).hide();
                 }
             } else {
                 $('#regInfo', page).html("You must be a <a href='supporter.html'>Media Browser Supporter</a> in order to gain access to this feature.").trigger('create');
