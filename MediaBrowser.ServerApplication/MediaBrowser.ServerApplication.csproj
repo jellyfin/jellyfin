@@ -334,14 +334,6 @@
     <Resource Include="Resources\Images\mblogowhitefull.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Images\Loading\1.ico" />
-    <Resource Include="Resources\Images\Loading\2.ico" />
-    <Resource Include="Resources\Images\Loading\3.ico" />
-    <Resource Include="Resources\Images\Loading\4.ico" />
-    <Resource Include="Resources\Images\Loading\5.ico" />
-    <Resource Include="Resources\Images\Loading\6.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">
       <Visible>False</Visible>
       <ProductName>Microsoft .NET Framework 4.5 %28x86 and x64%29</ProductName>
