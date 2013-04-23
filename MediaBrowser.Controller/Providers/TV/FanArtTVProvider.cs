@@ -90,10 +90,13 @@ namespace MediaBrowser.Controller.Providers.TV
                 if (doc.HasChildNodes)
                 {
                     string path;
+                    var hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hdtv" : "clear";
                     if (ConfigurationManager.Configuration.DownloadSeriesImages.Logo && !series.ResolveArgs.ContainsMetaFileByName(LOGO_FILE))
                     {
-                        var node = doc.SelectSingleNode("//fanart/series/clearlogos/clearlogo[@lang = \"" + language + "\"]/@url") ??
-                                   doc.SelectSingleNode("//fanart/series/clearlogos/clearlogo/@url");
+                        var node = doc.SelectSingleNode("//fanart/series/"+hd+"logos/"+hd+"logo[@lang = \"" + language + "\"]/@url") ??
+                                    doc.SelectSingleNode("//fanart/series/clearlogos/clearlogo[@lang = \"" + language + "\"]/@url") ??
+                                    doc.SelectSingleNode("//fanart/series/"+hd+"logos/"+hd+"logo/@url") ??
+                                    doc.SelectSingleNode("//fanart/series/clearlogos/clearlogo/@url");
                         path = node != null ? node.Value : null;
                         if (!string.IsNullOrEmpty(path))
                         {
@@ -114,9 +117,12 @@ namespace MediaBrowser.Controller.Providers.TV
 
                     cancellationToken.ThrowIfCancellationRequested();
 
+                    hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hd" : "";
                     if (ConfigurationManager.Configuration.DownloadSeriesImages.Art && !series.ResolveArgs.ContainsMetaFileByName(ART_FILE))
                     {
-                        var node = doc.SelectSingleNode("//fanart/series/cleararts/clearart[@lang = \"" + language + "\"]/@url") ??
+                        var node = doc.SelectSingleNode("//fanart/series/"+hd+"cleararts/"+hd+"clearart[@lang = \"" + language + "\"]/@url") ??
+                                   doc.SelectSingleNode("//fanart/series/cleararts/clearart[@lang = \"" + language + "\"]/@url") ??
+                                   doc.SelectSingleNode("//fanart/series/"+hd+"cleararts/"+hd+"clearart/@url") ??
                                    doc.SelectSingleNode("//fanart/series/cleararts/clearart/@url");
                         path = node != null ? node.Value : null;
                         if (!string.IsNullOrEmpty(path))
