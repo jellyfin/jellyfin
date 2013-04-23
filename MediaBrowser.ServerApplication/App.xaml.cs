@@ -25,11 +25,26 @@ namespace MediaBrowser.ServerApplication
     public partial class App : Application
     {
         /// <summary>
+        /// The single instance mutex
+        /// </summary>
+        private static Mutex _singleInstanceMutex;
+
+        /// <summary>
         /// Defines the entry point of the application.
         /// </summary>
         [STAThread]
         public static void Main()
         {
+            bool createdNew;
+
+            _singleInstanceMutex = new Mutex(true, @"Local\" + typeof(App).Assembly.GetName().Name, out createdNew);
+            
+            if (!createdNew)
+            {
+                _singleInstanceMutex = null;
+                return;
+            }
+
             // Look for the existence of an update archive
             var appPaths = new ServerApplicationPaths();
             var updateArchive = Path.Combine(appPaths.TempUpdatePath, Constants.MbServerPkgName + ".zip");
@@ -67,11 +82,6 @@ namespace MediaBrowser.ServerApplication
         }
 
         /// <summary>
-        /// The single instance mutex
-        /// </summary>
-        private Mutex SingleInstanceMutex;
-
-        /// <summary>
         /// Gets or sets the logger.
         /// </summary>
         /// <value>The logger.</value>
@@ -107,15 +117,6 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">A <see cref="T:System.Windows.StartupEventArgs" /> that contains the event data.</param>
         protected override void OnStartup(StartupEventArgs e)
         {
-            bool createdNew;
-            SingleInstanceMutex = new Mutex(true, @"Local\" + GetType().Assembly.GetName().Name, out createdNew);
-            if (!createdNew)
-            {
-                SingleInstanceMutex = null;
-                Shutdown();
-                return;
-            }
-
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             LoadKernel();
 
@@ -190,7 +191,10 @@ namespace MediaBrowser.ServerApplication
 
             base.OnExit(e);
 
-            CompositionRoot.Dispose();
+            if (CompositionRoot != null)
+            {
+                CompositionRoot.Dispose();
+            }
         }
 
         /// <summary>
@@ -198,15 +202,15 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         private void ReleaseMutex()
         {
-            if (SingleInstanceMutex == null)
+            if (_singleInstanceMutex == null)
             {
                 return;
             }
 
-            SingleInstanceMutex.ReleaseMutex();
-            SingleInstanceMutex.Close();
-            SingleInstanceMutex.Dispose();
-            SingleInstanceMutex = null;
+            _singleInstanceMutex.ReleaseMutex();
+            _singleInstanceMutex.Close();
+            _singleInstanceMutex.Dispose();
+            _singleInstanceMutex = null;
         }
 
         /// <summary>
