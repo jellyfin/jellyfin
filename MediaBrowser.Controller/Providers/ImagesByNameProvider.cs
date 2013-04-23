@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using System;
@@ -42,6 +44,23 @@ namespace MediaBrowser.Controller.Providers
         }
 
         /// <summary>
+        /// Needses the refresh internal.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="providerInfo">The provider info.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
+        {
+            // Force a refresh if the IBN path changed
+            if (!string.Equals(providerInfo.CustomData, ConfigurationManager.ApplicationPaths.ItemsByNamePath, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return base.NeedsRefreshInternal(item, providerInfo);
+        }
+
+        /// <summary>
         /// Gets a value indicating whether [refresh on file system stamp change].
         /// </summary>
         /// <value><c>true</c> if [refresh on file system stamp change]; otherwise, <c>false</c>.</value>
@@ -80,9 +99,25 @@ namespace MediaBrowser.Controller.Providers
         }
 
         /// <summary>
-        /// The us culture
+        /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        /// <param name="item">The item.</param>
+        /// <param name="force">if set to <c>true</c> [force].</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{System.Boolean}.</returns>
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
+        {
+            var result = await base.FetchAsync(item, force, cancellationToken).ConfigureAwait(false);
+
+            BaseProviderInfo data;
+
+            if (item.ProviderData.TryGetValue(Id, out data))
+            {
+                data.CustomData = ConfigurationManager.ApplicationPaths.ItemsByNamePath;
+            }
+
+            return result;
+        }
 
         /// <summary>
         /// Gets the location.
@@ -91,10 +126,7 @@ namespace MediaBrowser.Controller.Providers
         /// <returns>System.String.</returns>
         protected string GetLocation(BaseItem item)
         {
-            var invalid = Path.GetInvalidFileNameChars();
-
-            var name = item.Name ?? string.Empty;
-            name = invalid.Aggregate(name, (current, c) => current.Replace(c.ToString(UsCulture), string.Empty));
+            var name = FileSystem.GetValidFilename(item.Name);
 
             return Path.Combine(ConfigurationManager.ApplicationPaths.GeneralPath, name);
         }

@@ -212,9 +212,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private bool _internetProvidersEnabled;
         private bool _peopleImageFetchingEnabled;
+        private string _itemsByNamePath;
 
         private void RecordConfigurationValues(ServerConfiguration configuration)
         {
+            _itemsByNamePath = ConfigurationManager.ApplicationPaths.ItemsByNamePath;
             _internetProvidersEnabled = configuration.EnableInternetProviders;
             _peopleImageFetchingEnabled = configuration.InternetProviderExcludeTypes == null || !configuration.InternetProviderExcludeTypes.Contains(typeof(Person).Name, StringComparer.OrdinalIgnoreCase);
         }
@@ -237,6 +239,13 @@ namespace MediaBrowser.Server.Implementations.Library
                 var newConfigurationFetchesPeopleImages = config.InternetProviderExcludeTypes == null || !config.InternetProviderExcludeTypes.Contains(typeof(Person).Name, StringComparer.OrdinalIgnoreCase);
 
                 refreshPeopleAfterUpdate = newConfigurationFetchesPeopleImages && !_peopleImageFetchingEnabled;
+            }
+
+            var ibnPathChanged = !string.Equals(_itemsByNamePath, ConfigurationManager.ApplicationPaths.ItemsByNamePath);
+
+            if (ibnPathChanged)
+            {
+                _itemsByName.Clear();
             }
 
             RecordConfigurationValues(config);
@@ -528,7 +537,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task{Person}.</returns>
         private Task<Person> GetPerson(string name, CancellationToken cancellationToken, bool allowSlowProviders = false, bool forceCreation = false)
         {
-            return GetImagesByNameItem<Person>(ConfigurationManager.ApplicationPaths.PeoplePath, name, cancellationToken, allowSlowProviders, forceCreation);
+            return GetItemByName<Person>(ConfigurationManager.ApplicationPaths.PeoplePath, name, cancellationToken, allowSlowProviders, forceCreation);
         }
 
         /// <summary>
@@ -539,7 +548,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task{Studio}.</returns>
         public Task<Studio> GetStudio(string name, bool allowSlowProviders = false)
         {
-            return GetImagesByNameItem<Studio>(ConfigurationManager.ApplicationPaths.StudioPath, name, CancellationToken.None, allowSlowProviders);
+            return GetItemByName<Studio>(ConfigurationManager.ApplicationPaths.StudioPath, name, CancellationToken.None, allowSlowProviders);
         }
 
         /// <summary>
@@ -550,7 +559,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task{Genre}.</returns>
         public Task<Genre> GetGenre(string name, bool allowSlowProviders = false)
         {
-            return GetImagesByNameItem<Genre>(ConfigurationManager.ApplicationPaths.GenrePath, name, CancellationToken.None, allowSlowProviders);
+            return GetItemByName<Genre>(ConfigurationManager.ApplicationPaths.GenrePath, name, CancellationToken.None, allowSlowProviders);
         }
 
         /// <summary>
@@ -574,7 +583,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task{Artist}.</returns>
         private Task<Artist> GetArtist(string name, CancellationToken cancellationToken, bool allowSlowProviders = false, bool forceCreation = false)
         {
-            return GetImagesByNameItem<Artist>(ConfigurationManager.ApplicationPaths.ArtistsPath, name, cancellationToken, allowSlowProviders, forceCreation);
+            return GetItemByName<Artist>(ConfigurationManager.ApplicationPaths.ArtistsPath, name, cancellationToken, allowSlowProviders, forceCreation);
         }
 
         /// <summary>
@@ -596,13 +605,13 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentOutOfRangeException();
             }
 
-            return GetImagesByNameItem<Year>(ConfigurationManager.ApplicationPaths.YearPath, value.ToString(UsCulture), CancellationToken.None, allowSlowProviders);
+            return GetItemByName<Year>(ConfigurationManager.ApplicationPaths.YearPath, value.ToString(UsCulture), CancellationToken.None, allowSlowProviders);
         }
 
         /// <summary>
         /// The images by name item cache
         /// </summary>
-        private readonly ConcurrentDictionary<string, BaseItem> _imagesByNameItemCache = new ConcurrentDictionary<string, BaseItem>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, BaseItem> _itemsByName = new ConcurrentDictionary<string, BaseItem>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Generically retrieves an IBN item
@@ -616,7 +625,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task{``0}.</returns>
         /// <exception cref="System.ArgumentNullException">
         /// </exception>
-        private async Task<T> GetImagesByNameItem<T>(string path, string name, CancellationToken cancellationToken, bool allowSlowProviders = true, bool forceCreation = false)
+        private async Task<T> GetItemByName<T>(string path, string name, CancellationToken cancellationToken, bool allowSlowProviders = true, bool forceCreation = false)
             where T : BaseItem, new()
         {
             if (string.IsNullOrEmpty(path))
@@ -633,11 +642,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
             BaseItem obj;
 
-            if (forceCreation || !_imagesByNameItemCache.TryGetValue(key, out obj))
+            if (forceCreation || !_itemsByName.TryGetValue(key, out obj))
             {
-                obj = await CreateImagesByNameItem<T>(path, name, cancellationToken, allowSlowProviders).ConfigureAwait(false);
+                obj = await CreateItemByName<T>(path, name, cancellationToken, allowSlowProviders).ConfigureAwait(false);
 
-                _imagesByNameItemCache.AddOrUpdate(key, obj, (keyName, oldValue) => obj);
+                _itemsByName.AddOrUpdate(key, obj, (keyName, oldValue) => obj);
             }
 
             return obj as T;
@@ -653,7 +662,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{``0}.</returns>
         /// <exception cref="System.IO.IOException">Path not created:  + path</exception>
-        private async Task<T> CreateImagesByNameItem<T>(string path, string name, CancellationToken cancellationToken, bool allowSlowProviders = true)
+        private async Task<T> CreateItemByName<T>(string path, string name, CancellationToken cancellationToken, bool allowSlowProviders = true)
             where T : BaseItem, new()
         {
             cancellationToken.ThrowIfCancellationRequested();

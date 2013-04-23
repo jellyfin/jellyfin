@@ -470,8 +470,9 @@ var Dashboard = {
         options = options || {};
 
         options.header = options.header || "Select Media Path";
+        options.instruction = options.instruction || "Browse to or enter the folder containing the media. Network paths (UNC) are recommended for optimal playback performance.";
 
-        var html = '<div data-role="popup" id="popupDirectoryPicker" class="ui-corner-all popup">';
+        var html = '<div data-role="popup" id="popupDirectoryPicker" class="ui-corner-all popup" style="min-width:60%;">';
 
         html += '<div class="ui-corner-top ui-bar-a" style="text-align: center; padding: 0 20px;">';
         html += '<h3>' + options.header + '</h3>';
@@ -479,7 +480,7 @@ var Dashboard = {
 
         html += '<div data-role="content" class="ui-corner-bottom ui-content">';
         html += '<form>';
-        html += '<p>Browse to or enter the folder containing the media. Network paths (UNC) are recommended for optimal playback performance.</p>';
+        html += '<p>' + options.instruction + '</p>';
 
         html += '<div data-role="fieldcontain" style="margin:0;">';
         html += '<label for="txtDirectoryPickerPath">Current Folder:</label>';
@@ -656,7 +657,7 @@ var Dashboard = {
         var isLibraryPage = page.hasClass('libraryPage');
 
         var header = $('.header', page);
-        
+
         if (!header.length) {
             headerHtml += '<div class="header">';
 

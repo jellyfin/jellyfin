@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller
         /// Gets the path to the Images By Name directory
         /// </summary>
         /// <value>The images by name path.</value>
-        string ImagesByNamePath { get; }
+        string ItemsByNamePath { get; set; }
 
         /// <summary>
         /// Gets the path to the People directory

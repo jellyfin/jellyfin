@@ -99,8 +99,16 @@ namespace MediaBrowser.Common.Implementations.Configuration
             lock (_configurationSaveLock)
             {
                 XmlSerializer.SerializeToFile(CommonConfiguration, CommonApplicationPaths.SystemConfigurationFilePath);
-            } 
-            
+            }
+
+            OnConfigurationUpdated();
+        }
+
+        /// <summary>
+        /// Called when [configuration updated].
+        /// </summary>
+        protected virtual void OnConfigurationUpdated()
+        {
             EventHelper.QueueEventIfNotNull(ConfigurationUpdated, this, EventArgs.Empty, Logger);
         }
 
@@ -109,7 +117,7 @@ namespace MediaBrowser.Common.Implementations.Configuration
         /// </summary>
         /// <param name="newConfiguration">The new configuration.</param>
         /// <exception cref="System.ArgumentNullException">newConfiguration</exception>
-        public void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration)
+        public virtual void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration)
         {
             if (newConfiguration == null)
             {

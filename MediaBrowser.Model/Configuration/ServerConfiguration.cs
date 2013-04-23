@@ -40,6 +40,12 @@ namespace MediaBrowser.Model.Configuration
         public string WeatherLocation { get; set; }
 
         /// <summary>
+        /// Gets or sets the item by name path.
+        /// </summary>
+        /// <value>The item by name path.</value>
+        public string ItemsByNamePath { get; set; }
+        
+        /// <summary>
         /// Gets or sets the weather unit to use when displaying weather
         /// </summary>
         /// <value>The weather unit.</value>

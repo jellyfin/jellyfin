@@ -27,6 +27,11 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <value>The provider version.</value>
         public string ProviderVersion { get; set; }
+        /// <summary>
+        /// Gets or sets the custom data.
+        /// </summary>
+        /// <value>The custom data.</value>
+        public string CustomData { get; set; }
     }
 
     /// <summary>
