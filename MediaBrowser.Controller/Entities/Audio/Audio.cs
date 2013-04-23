@@ -1,7 +1,6 @@
-﻿using MediaBrowser.Model.Entities;
-using System;
+﻿using System;
+using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities.Audio
@@ -53,7 +52,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// Gets or sets the artist.
         /// </summary>
         /// <value>The artist.</value>
-        public List<string> Artists { get; set; }
+        public string Artist { get; set; }
 
         /// <summary>
         /// Gets or sets the album.
@@ -79,39 +78,12 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Audio"/> class.
-        /// </summary>
-        public Audio()
-        {
-            Artists = new List<string>();
-        }
-
-        /// <summary>
-        /// Adds the artist.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <exception cref="System.ArgumentNullException">name</exception>
-        public void AddArtist(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentNullException("name");
-            }
-
-            if (!Artists.Contains(name, StringComparer.OrdinalIgnoreCase))
-            {
-                Artists.Add(name);
-            }
-        }
-
-        /// <summary>
         /// Creates the name of the sort.
         /// </summary>
         /// <returns>System.String.</returns>
         protected override string CreateSortName()
         {
-            return (ProductionYear != null ? ProductionYear.Value.ToString("000-") : "")
-                    + (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ") : "")
+            return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ") : "")
                     + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ") : "") + Name;
         }
 
@@ -122,7 +94,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <returns><c>true</c> if the specified name has artist; otherwise, <c>false</c>.</returns>
         public bool HasArtist(string name)
         {
-            return Artists.Contains(name, StringComparer.OrdinalIgnoreCase) || string.Equals(AlbumArtist, name, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(Artist, name, StringComparison.OrdinalIgnoreCase) || string.Equals(AlbumArtist, name, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

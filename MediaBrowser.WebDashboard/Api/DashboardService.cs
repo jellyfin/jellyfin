@@ -485,6 +485,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "pluginupdatespage.js",
                                       "scheduledtaskpage.js",
                                       "scheduledtaskspage.js",
+                                      "songs.js",
                                       "supporterkeypage.js",
                                       "supporterpage.js",
                                       "tvgenres.js",

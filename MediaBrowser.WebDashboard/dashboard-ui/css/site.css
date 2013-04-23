@@ -471,7 +471,7 @@ form, .readOnlyContent {
     bottom: 28px;
 }
 
-.posterViewItem:hover, .userItem:hover, .posterDetailViewItem:hover {
+.posterViewItem:hover, .userItem:hover, .tileItem:hover {
     -moz-box-shadow: 0 0 20px 3px #2572EB;
     -webkit-box-shadow: 0 0 20px 3px #2572EB;
     box-shadow: 0 0 20px 3px #2572EB;
@@ -660,6 +660,7 @@ progress {
 
 .itemDetailImage {
     max-width: 100%;
+    max-height: 400px;
 }
 
 .itemImageBlock {
@@ -712,7 +713,7 @@ progress {
     }
 
     .itemDetailImage {
-        width: 220px;
+        max-width: 220px;
     }
 
     .itemDetailBlock {
@@ -730,7 +731,7 @@ progress {
 @media all and (min-width: 750px) {
 
     .itemDetailImage {
-        width: 300px;
+        max-width: 300px;
     }
 
     .itemDetailBlock {
@@ -756,7 +757,7 @@ progress {
 @media all and (min-width: 1440px) {
 
     .itemDetailImage {
-        width: 350px;
+        max-width: 350px;
     }
 
     .itemDetailBlock {
@@ -767,7 +768,7 @@ progress {
 @media all and (min-width: 1700px) {
 
     .itemDetailImage {
-        width: 400px;
+        max-width: 400px;
     }
 
     .itemDetailBlock {
@@ -778,7 +779,7 @@ progress {
 @media all and (min-width: 1920px) {
 
     .itemDetailBlock {
-        width: 65%;
+        width: 63%;
     }
 }
 

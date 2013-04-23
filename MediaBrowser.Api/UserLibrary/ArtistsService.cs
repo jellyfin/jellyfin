@@ -161,11 +161,15 @@ namespace MediaBrowser.Api.UserLibrary
             return itemsList
                 .SelectMany(i =>
                     {
-                        var list = i.Artists.ToList();
+                        var list = new List<string>();
 
                         if (!string.IsNullOrEmpty(i.AlbumArtist))
                         {
                             list.Add(i.AlbumArtist);
+                        }
+                        if (!string.IsNullOrEmpty(i.Artist))
+                        {
+                            list.Add(i.Artist);
                         }
 
                         return list;

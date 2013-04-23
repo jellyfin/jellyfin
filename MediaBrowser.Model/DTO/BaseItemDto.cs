@@ -268,7 +268,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the artist.
         /// </summary>
         /// <value>The artist.</value>
-        public List<string> Artists { get; set; }
+        public string Artist { get; set; }
 
         /// <summary>
         /// Gets or sets the album.
@@ -403,7 +403,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The revenue.</value>
         public double? Revenue { get; set; }
-        
+
         /// <summary>
         /// Gets a value indicating whether this instance can resume.
         /// </summary>

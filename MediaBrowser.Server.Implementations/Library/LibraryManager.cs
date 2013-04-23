@@ -788,11 +788,15 @@ namespace MediaBrowser.Server.Implementations.Library
                 .OfType<Audio>()
                 .SelectMany(c =>
                 {
-                    var list = c.Artists.ToList();
+                    var list = new List<string>();
 
                     if (!string.IsNullOrEmpty(c.AlbumArtist))
                     {
                         list.Add(c.AlbumArtist);
+                    }
+                    if (!string.IsNullOrEmpty(c.Artist))
+                    {
+                        list.Add(c.Artist);
                     }
 
                     return list;

@@ -162,19 +162,36 @@
             return html;
         },
 
-        getSongTableHtml: function (items) {
+        getSongTableHtml: function (items, options) {
+
+            options = options || {};
 
             var html = '';
 
-            html += '<table class="detailTable">';
+            var cssClass = options.center ? "centeredDetailTable detailTable" : "detailTable";
+
+            if (options.strech) {
+                cssClass += " stretchedDetailTable";
+            }
+
+            html += '<table class="' + cssClass + '">';
 
             html += '<tr>';
 
             html += '<th></th>';
+
             html += '<th>Track</th>';
+
+            if (options.showAlbum) {
+                html += '<th>Album</th>';
+            }
+            if (options.showArtist) {
+                html += '<th>Artists</th>';
+            }
+
             html += '<th>Duration</th>';
             html += '<th>Play Count</th>';
-            html += '<th></th>';
+            html += '<th class="userDataCell"></th>';
 
             html += '</tr>';
 
@@ -193,13 +210,21 @@
 
                 html += '<td><a href="' + LibraryBrowser.getHref(item) + '">' + (item.Name || "") + '</a></td>';
 
+                if (options.showAlbum) {
+                    html += '<td><a href="itemdetails.html?id=' + item.ParentId + '">' + item.Album + '</a></td>';
+                }
+
+                if (options.showArtist) {
+                    html += '<td>' + item.Artist + '</td>';
+                }
+
                 var time = DashboardPage.getDisplayText(item.RunTimeTicks || 0);
 
                 html += '<td>' + time + '</td>';
 
                 html += '<td>' + (item.UserData ? item.UserData.PlayCount : 0) + '</td>';
 
-                html += '<td>' + LibraryBrowser.getUserDataIconsHtml(item) + '</td>';
+                html += '<td class="userDataCell">' + LibraryBrowser.getUserDataIconsHtml(item) + '</td>';
 
                 html += '</tr>';
             }
@@ -540,8 +565,15 @@
                 else if (item.Type == "Person")
                     links.push('<a class="ui-link" href="http://www.tv.com/people/' + providerIds.Tvcom + '" target="_blank">TV.com</a>');
             }
-            if (providerIds.Musicbrainz)
-                links.push('<a class="ui-link" href="http://musicbrainz.org/release/' + providerIds.Musicbrainz + '" target="_blank">MusicBrainz</a>');
+            if (providerIds.Musicbrainz) {
+
+                if (item.Type == "MusicArtist" || item.Type == "Artist") {
+                    links.push('<a class="ui-link" href="http://musicbrainz.org/artist/' + providerIds.Musicbrainz + '" target="_blank">MusicBrainz</a>');
+                } else {
+                    links.push('<a class="ui-link" href="http://musicbrainz.org/release/' + providerIds.Musicbrainz + '" target="_blank">MusicBrainz</a>');
+                }
+
+            }
             if (providerIds.Gamesdb)
                 links.push('<a class="ui-link" href="http://www.games-db.com/Game/' + providerIds.Gamesdb + '" target="_blank">GamesDB</a>');
 
@@ -996,12 +1028,10 @@
             else if (item.MediaType == "Audio" || item.Type == "MusicAlbum") {
                 url = "css/images/items/detail/audio.png";
                 useBackgroundColor = true;
-                maxwidth = 150;
             }
             else if (item.MediaType == "Game") {
                 url = "css/images/items/detail/game.png";
                 useBackgroundColor = true;
-                maxwidth = 150;
             }
             else if (item.Type == "Person") {
                 url = "css/images/items/detail/person.png";

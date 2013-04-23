@@ -114,6 +114,7 @@
 
     .detailPageContent {
         width: 70%;
+        max-width: 1200px;
     }
 }
 
@@ -251,7 +252,7 @@
 }
 
 .detailPagePrimaryInfo {
-    margin: 1em 0 1.5em;
+    margin: 1em 0;
 }
 
 .scenePosterViewItem img {
@@ -297,7 +298,7 @@
 
 @media all and (min-width: 1200px) {
     .tileItem {
-        width: 30.6%;
+        width: 31%;
     }
 
     .scenePosterViewItem img {
@@ -314,7 +315,7 @@
 
 @media all and (min-width: 1920px) {
     .tileItem {
-        width: 31.3%;
+        width: 31.5%;
     }
 
     .tileImage {
@@ -324,7 +325,7 @@
 
 @media all and (min-width: 2000px) {
     .tileItem {
-        width: 23%;
+        width: 23.5%;
     }
 }
 
@@ -337,25 +338,37 @@
 .detailTable {
     border-collapse: collapse;
     border-spacing: 0;
-    min-width: 70%;
+    width: 70%;
+    max-width: 1200px;
 }
 
-    .detailTable td {
-        border-spacing: 0;
-        border-top: 1px solid #444;
-        border-bottom: 1px solid #444;
-        padding: 3px 5px;
-    }
+.centeredDetailTable {
+    margin: auto;
+}
+.stretchedDetailTable {
+    width: 100%;
+}
 
-    .detailTable th {
-        border-spacing: 0;
-        border-bottom: 1px solid #444;
-        padding: 5px;
-        font-weight: normal;
-        text-align: left;
-    }
+.detailTable td {
+    border-spacing: 0;
+    border-top: 1px solid #444;
+    border-bottom: 1px solid #444;
+    padding: 3px 5px;
+}
 
-    .detailTable .imgUserItemRating {
-        width: 20px;
-        height: 20px;
-    }
+.detailTable th {
+    border-spacing: 0;
+    border-bottom: 1px solid #444;
+    padding: 5px;
+    font-weight: normal;
+    text-align: left;
+    vertical-align: top;
+}
+
+.detailTable .imgUserItemRating {
+    width: 18px;
+    height: 18px;
+}
+.userDataCell {
+    width: 140px;
+}

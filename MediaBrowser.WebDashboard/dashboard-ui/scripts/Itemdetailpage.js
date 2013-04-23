@@ -127,10 +127,18 @@
 
     function setInitialCollapsibleState(page, item) {
 
-        if (item.ChildCount) {
+        if (item.ChildCount && item.Type == "MusicAlbum") {
+            $('#itemSongs', page).show();
+            $('#childrenCollapsible', page).hide();
+            renderChildren(page, item);
+        }
+        else if (item.ChildCount) {
+            $('#itemSongs', page).hide();
             $('#childrenCollapsible', page).show();
             renderChildren(page, item);
-        } else {
+        }
+        else {
+            $('#itemSongs', page).hide();
             $('#childrenCollapsible', page).hide();
         }
         if (LibraryBrowser.shouldDisplayGallery(item)) {
@@ -212,7 +220,7 @@
 
             if (item.Type == "MusicAlbum") {
 
-                $('#childrenContent', page).html(LibraryBrowser.getSongTableHtml(result.Items)).trigger('create');
+                $('#itemSongs', page).html(LibraryBrowser.getSongTableHtml(result.Items)).trigger('create');
 
             } else {
                 var html = LibraryBrowser.getPosterDetailViewHtml({
