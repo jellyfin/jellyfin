@@ -10,7 +10,7 @@
         WindowStyle="None" 
         ShowInTaskbar="False">
     <Grid>
-        <tb:TaskbarIcon Name="MbTaskbarIcon" ToolTipText="Media Browser Server">
+        <tb:TaskbarIcon Name="MbTaskbarIcon" ToolTipText="Media Browser Server" IconSource="/Resources/Images/icon.ico">
 
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu Background="White">
@@ -34,32 +34,6 @@
                     <MenuItem x:Name="cmExit" Header="Exit" Click="cmExit_click"/>
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
-
-            <tb:TaskbarIcon.Style>
-                <Style TargetType="{x:Type tb:TaskbarIcon}">
-                    <Setter Property="IconSource" Value="/Resources/Images/icon.ico" />
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding LoadingImageIndex}" Value="1">
-                            <Setter Property="IconSource" Value="/Resources/Images/Loading/1.ico" />
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding LoadingImageIndex}" Value="2">
-                            <Setter Property="IconSource" Value="/Resources/Images/Loading/2.ico" />
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding LoadingImageIndex}" Value="3">
-                            <Setter Property="IconSource" Value="/Resources/Images/Loading/3.ico" />
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding LoadingImageIndex}" Value="4">
-                            <Setter Property="IconSource" Value="/Resources/Images/Loading/4.ico" />
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding LoadingImageIndex}" Value="5">
-                            <Setter Property="IconSource" Value="/Resources/Images/Loading/5.ico" />
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding LoadingImageIndex}" Value="6">
-                            <Setter Property="IconSource" Value="/Resources/Images/Loading/6.ico" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </tb:TaskbarIcon.Style>
 
         </tb:TaskbarIcon>
     </Grid>

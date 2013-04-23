@@ -431,6 +431,22 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            if (result.streams != null)
+            {
+                // Normalize aspect ratio if invalid
+                foreach (var stream in result.streams)
+                {
+                    if (string.Equals(stream.display_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
+                    {
+                        stream.display_aspect_ratio = string.Empty;
+                    }
+                    if (string.Equals(stream.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
+                    {
+                        stream.sample_aspect_ratio = string.Empty;
+                    }
+                }
+            }
+
             if (extractChapters && !string.IsNullOrEmpty(standardError))
             {
                 AddChapters(result, standardError);
