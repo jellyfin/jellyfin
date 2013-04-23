@@ -16,6 +16,15 @@
     }
 });
 
+if ($.browser.msie) {
+    
+    // This is unfortuantely required due to IE's over-aggressive caching. 
+    // https://github.com/MediaBrowser/MediaBrowser/issues/179
+    $.ajaxSetup({
+        cache: false
+    });
+}
+
 $.support.cors = true;
 
 $(document).one('click', WebNotifications.requestPermission);
