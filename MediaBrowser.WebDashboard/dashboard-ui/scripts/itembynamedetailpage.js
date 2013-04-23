@@ -334,7 +334,8 @@
 
             html += LibraryBrowser.getPosterDetailViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: true
+                useAverageAspectRatio: true,
+                preferBackdrop: true
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
