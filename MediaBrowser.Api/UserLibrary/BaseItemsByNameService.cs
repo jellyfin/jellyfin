@@ -220,6 +220,14 @@ namespace MediaBrowser.Api.UserLibrary
                 items = items.Where(f => vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
             }
 
+            // Include MediaTypes
+            if (!string.IsNullOrEmpty(request.MediaTypes))
+            {
+                var vals = request.MediaTypes.Split(',');
+
+                items = items.Where(f => vals.Contains(f.MediaType ?? string.Empty, StringComparer.OrdinalIgnoreCase));
+            }
+
             return items;
         }
 

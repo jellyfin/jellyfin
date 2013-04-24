@@ -71,6 +71,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// <value>The filters.</value>
         [ApiMember(Name = "Filters", Description = "Optional. Specify additional filters to apply. This allows multiple, comma delimeted. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsRecentlyAdded, IsResumable, Likes, Dislikes", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Filters { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media types.
+        /// </summary>
+        /// <value>The media types.</value>
+        [ApiMember(Name = "MediaTypes", Description = "Optional filter by MediaType. Allows multiple, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string MediaTypes { get; set; }
+
         
         /// <summary>
         /// Gets the filters.
