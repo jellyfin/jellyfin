@@ -420,14 +420,24 @@ namespace MediaBrowser.Controller.Dto
             }
 
             // Add audio info
-            var audio = item as Audio;
-            if (audio != null)
+            if (fields.Contains(ItemFields.AudioInfo))
             {
-                if (fields.Contains(ItemFields.AudioInfo))
+                var audio = item as Audio;
+                if (audio != null)
                 {
                     dto.Album = audio.Album;
                     dto.AlbumArtist = audio.AlbumArtist;
                     dto.Artist = audio.Artist;
+                }
+
+                var album = item as MusicAlbum;
+
+                if (album != null)
+                {
+                    var songs = album.Children.OfType<Audio>().ToList();
+
+                    dto.AlbumArtist = songs.Select(i => i.AlbumArtist).FirstOrDefault(i => !string.IsNullOrEmpty(i));
+                    dto.Artist = songs.Select(i => i.Artist).FirstOrDefault(i => !string.IsNullOrEmpty(i));
                 }
             }
 
@@ -503,6 +513,13 @@ namespace MediaBrowser.Controller.Dto
                     dto.SeriesName = series.Name;
                 }
             }
+
+            var game = item as BaseGame;
+
+            if (game != null)
+            {
+                dto.Players = game.PlayersSupported;
+            }
         }
 
         /// <summary>
@@ -521,7 +538,7 @@ namespace MediaBrowser.Controller.Dto
             double totalPercentPlayed = 0;
 
             // Loop through each recursive child
-            foreach (var child in folder.GetRecursiveChildren(user).Where(i => !i.IsFolder))
+            foreach (var child in folder.GetRecursiveChildren(user).Where(i => !i.IsFolder).ToList())
             {
                 var userdata = await userDataRepository.GetUserData(user.Id, child.GetUserDataKey()).ConfigureAwait(false);
 

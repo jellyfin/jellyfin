@@ -50,7 +50,7 @@ namespace MediaBrowser.Model.Configuration
         public BaseApplicationConfiguration()
         {
             EnableAutoUpdate = true;
-            LogFileRetentionDays = 14;
+            LogFileRetentionDays = 7;
 
 #if (DEBUG)
             EnableDebugLevelLogging = true;
