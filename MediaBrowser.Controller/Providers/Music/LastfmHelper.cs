@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Entities;
 using System;
 
@@ -30,6 +31,13 @@ namespace MediaBrowser.Controller.Providers.Music
             if (data.tags != null)
             {
                 AddGenres(artist, data.tags);
+            }
+
+            var entity = artist as Artist;
+
+            if (entity != null)
+            {
+                entity.IsOnTour = string.Equals(data.ontour, "1");
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
@@ -77,6 +78,13 @@ namespace MediaBrowser.Api.UserLibrary
         public string Studios { get; set; }
 
         /// <summary>
+        /// Gets or sets the studios.
+        /// </summary>
+        /// <value>The studios.</value>
+        [ApiMember(Name = "Artists", Description = "Optional. If specified, results will be filtered based on studio. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string Artists { get; set; }
+
+        /// <summary>
         /// Limit results to items containing specific years
         /// </summary>
         /// <value>The years.</value>
@@ -87,21 +95,21 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the image types.
         /// </summary>
         /// <value>The image types.</value>
-        [ApiMember(Name = "ImageTypes", Description = "Optional. If specified, results will be filtered based on those containing image types. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        [ApiMember(Name = "ImageTypes", Description = "Optional. If specified, results will be filtered based on those containing image types. This allows multiple, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string ImageTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the item ids.
         /// </summary>
         /// <value>The item ids.</value>
-        [ApiMember(Name = "Ids", Description = "Optional. If specific items are needed, specify a list of item id's to retrieve. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        [ApiMember(Name = "Ids", Description = "Optional. If specific items are needed, specify a list of item id's to retrieve. This allows multiple, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Ids { get; set; }
 
         /// <summary>
         /// Gets or sets the media types.
         /// </summary>
         /// <value>The media types.</value>
-        [ApiMember(Name = "MediaTypes", Description = "Optional filter by MediaType. Allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        [ApiMember(Name = "MediaTypes", Description = "Optional filter by MediaType. Allows multiple, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string MediaTypes { get; set; }
 
         /// <summary>
@@ -379,6 +387,31 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{BaseItem}.</returns>
         internal static IEnumerable<BaseItem> ApplyAdditionalFilters(GetItems request, IEnumerable<BaseItem> items)
         {
+            // Artists
+            if (!string.IsNullOrEmpty(request.Artists))
+            {
+                var artists = request.Artists.Split('|');
+
+                items = items.Where(i =>
+                {
+                    var audio = i as Audio;
+
+                    if (audio != null)
+                    {
+                        return artists.Any(audio.HasArtist);
+                    }
+
+                    var album = i as MusicAlbum;
+
+                    if (album != null)
+                    {
+                        return artists.Any(album.HasArtist);
+                    }
+
+                    return false;
+                });
+            }
+
             // Min official rating
             if (!string.IsNullOrEmpty(request.MinOfficalRating))
             {

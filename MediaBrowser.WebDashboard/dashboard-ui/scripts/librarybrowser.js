@@ -245,11 +245,20 @@
                 html += '<td><a href="' + LibraryBrowser.getHref(item, "music") + '">' + (item.Name || "") + '</a></td>';
 
                 if (options.showAlbum) {
-                    html += '<td><a href="itemdetails.html?id=' + item.ParentId + '">' + item.Album + '</a></td>';
+                    if (item.Album) {
+                        html += '<td><a href="itemdetails.html?id=' + item.ParentId + '">' + item.Album + '</a></td>';
+                    } else {
+                        html += '<td></td>';
+                    }
                 }
 
                 if (options.showArtist) {
-                    html += '<td>' + item.Artist + '</td>';
+                    
+                    if (item.Artist) {
+                        html += '<td><a href="itembynamedetails.html?context=music&artist=' + item.Artist + '">' + item.Artist + '</a></td>';
+                    } else {
+                        html += '<td></td>';
+                    }
                 }
 
                 var time = DashboardPage.getDisplayText(item.RunTimeTicks || 0);

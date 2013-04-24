@@ -1,6 +1,7 @@
 ﻿(function ($, document, LibraryBrowser) {
 
     var currentItem;
+    var shape;
 
     function reload(page) {
 
@@ -209,38 +210,72 @@
 
         $("#radioMovies", page).on("click", function () {
 
-            loadItems(page, { IncludeItemTypes: "Movie" });
+            shape = "backdrop";
+            loadItems(page, {
+                IncludeItemTypes: "Movie",
+                PersonTypes: "",
+                Artists: ""
+            });
 
         });
 
         $("#radioShows", page).on("click", function () {
 
-            loadItems(page, { IncludeItemTypes: "Series" });
+            shape = "backdrop";
+            loadItems(page, {
+                IncludeItemTypes: "Series",
+                PersonTypes: "",
+                Artists: ""
+            });
         });
 
         $("#radioTrailers", page).on("click", function () {
 
-            loadItems(page, { IncludeItemTypes: "Trailer" });
+            shape = "poster";
+            loadItems(page, {
+                IncludeItemTypes: "Trailer",
+                PersonTypes: "",
+                Artists: ""
+            });
         });
 
         $("#radioGames", page).on("click", function () {
 
-            loadItems(page, { IncludeItemTypes: "Game" });
+            shape = "poster";
+            loadItems(page, {
+                IncludeItemTypes: "Game",
+                PersonTypes: "",
+                Artists: ""
+            });
         });
 
         $("#radioGuestStar", page).on("click", function () {
 
-            loadItems(page, { IncludeItemTypes: "Episode", PersonTypes: "GuestStar" });
+            shape = "backdrop";
+            loadItems(page, {
+                IncludeItemTypes: "Episode",
+                PersonTypes: "GuestStar",
+                Artists: ""
+            });
         });
 
         $("#radioAlbums", page).on("click", function () {
 
-            loadItems(page, { IncludeItemTypes: "MusicAlbum", PersonTypes: "Artist" });
+            shape = "cd";
+            loadItems(page, {
+                IncludeItemTypes: "MusicAlbum",
+                PersonTypes: "Artist",
+                Artists: ""
+            });
         });
 
         $("#radioSongs", page).on("click", function () {
 
-            loadItems(page, { IncludeItemTypes: "Audio", PersonTypes: "Artist" });
+            loadItems(page, {
+                IncludeItemTypes: "Audio",
+                PersonTypes: "Artist",
+                Artists: ""
+            });
         });
     }
 
@@ -303,7 +338,10 @@
         else if (currentItem.Type == "Studio") {
             query.Studios = currentItem.Name;
         }
-    }
+        else if (currentItem.Type == "Artist") {
+            query.Artists = currentItem.Name;
+        }
+}
 
     function loadItems(page, options) {
 
@@ -338,7 +376,8 @@
             html += LibraryBrowser.getPosterDetailViewHtml({
                 items: result.Items,
                 useAverageAspectRatio: true,
-                preferBackdrop: true
+                preferBackdrop: true,
+                shape: shape
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
