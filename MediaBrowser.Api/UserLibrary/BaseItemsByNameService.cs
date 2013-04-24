@@ -204,7 +204,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        private IEnumerable<BaseItem> FilterItems(GetItemsByName request, IEnumerable<BaseItem> items)
+        protected virtual IEnumerable<BaseItem> FilterItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
             // Exclude item types
             if (!string.IsNullOrEmpty(request.ExcludeItemTypes))

@@ -50,6 +50,7 @@
     <Compile Include="Net\WebSocketMessage.cs" />
     <Compile Include="Net\WebSocketMessageType.cs" />
     <Compile Include="Net\WebSocketState.cs" />
+    <Compile Include="Querying\ArtistsQuery.cs" />
     <Compile Include="Querying\ItemsByNameQuery.cs" />
     <Compile Include="Entities\BaseItemInfo.cs" />
     <Compile Include="Connectivity\ClientConnectionInfo.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="Net\HttpException.cs" />
     <Compile Include="Net\NetworkShare.cs" />
     <Compile Include="Net\NetworkShareType.cs" />
+    <Compile Include="Querying\PersonsQuery.cs" />
     <Compile Include="Serialization\IJsonSerializer.cs" />
     <Compile Include="Serialization\IXmlSerializer.cs" />
     <Compile Include="Updates\CheckForUpdateResult.cs" />
