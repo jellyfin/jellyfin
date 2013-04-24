@@ -20,6 +20,11 @@ namespace MediaBrowser.Api.UserLibrary
     [Api(Description = "Gets all artists from a given item, folder, or the entire library")]
     public class GetArtists : GetItemsByName
     {
+        /// <summary>
+        /// Filter by artists that are on tour, or not
+        /// </summary>
+        /// <value><c>null</c> if [is on tour] contains no value, <c>true</c> if [is on tour]; otherwise, <c>false</c>.</value>
+        public bool? IsOnTour { get; set; }
     }
 
     /// <summary>
@@ -146,6 +151,26 @@ namespace MediaBrowser.Api.UserLibrary
             var result = GetResult(request).Result;
 
             return ToOptimizedResult(result);
+        }
+
+        /// <summary>
+        /// Filters the items.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="items">The items.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        protected override IEnumerable<BaseItem> FilterItems(GetItemsByName request, IEnumerable<BaseItem> items)
+        {
+            items = base.FilterItems(request, items);
+
+            var getArtists = (GetArtists) request;
+
+            if (getArtists.IsOnTour.HasValue)
+            {
+                items = items.OfType<Artist>().Where(i => i.IsOnTour == getArtists.IsOnTour.Value);
+            }
+
+            return items;
         }
 
         /// <summary>

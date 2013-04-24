@@ -139,5 +139,15 @@ namespace MediaBrowser.Controller.Entities.Audio
                 base.Images = value;
             }
         }
+
+        /// <summary>
+        /// Determines whether the specified artist has artist.
+        /// </summary>
+        /// <param name="artist">The artist.</param>
+        /// <returns><c>true</c> if the specified artist has artist; otherwise, <c>false</c>.</returns>
+        public bool HasArtist(string artist)
+        {
+            return Children.OfType<Audio>().Any(i => i.HasArtist(artist));
+        }
     }
 }
