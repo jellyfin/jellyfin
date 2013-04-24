@@ -161,7 +161,7 @@ namespace MediaBrowser.Api.UserLibrary
         public string Id { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="UpdateUserItemRating"/> is likes.
+        /// Gets or sets a value indicating whether this <see cref="UpdateUserItemRating" /> is likes.
         /// </summary>
         /// <value><c>true</c> if likes; otherwise, <c>false</c>.</value>
         [ApiMember(Name = "Likes", Description = "Whether the user likes the item or not. true/false", IsRequired = true, DataType = "boolean", ParameterType = "query", Verb = "POST")]
@@ -212,6 +212,9 @@ namespace MediaBrowser.Api.UserLibrary
         public string Id { get; set; }
     }
 
+    /// <summary>
+    /// Class OnPlaybackStart
+    /// </summary>
     [Route("/Users/{UserId}/PlayingItems/{Id}", "POST")]
     [Api(Description = "Reports that a user has begun playing an item")]
     public class OnPlaybackStart : IReturnVoid
@@ -231,6 +234,9 @@ namespace MediaBrowser.Api.UserLibrary
         public string Id { get; set; }
     }
 
+    /// <summary>
+    /// Class OnPlaybackProgress
+    /// </summary>
     [Route("/Users/{UserId}/PlayingItems/{Id}/Progress", "POST")]
     [Api(Description = "Reports a user's playback progress")]
     public class OnPlaybackProgress : IReturnVoid
@@ -257,6 +263,9 @@ namespace MediaBrowser.Api.UserLibrary
         public long? PositionTicks { get; set; }
     }
 
+    /// <summary>
+    /// Class OnPlaybackStopped
+    /// </summary>
     [Route("/Users/{UserId}/PlayingItems/{Id}", "DELETE")]
     [Api(Description = "Reports that a user has stopped playing an item")]
     public class OnPlaybackStopped : IReturnVoid
@@ -282,13 +291,35 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "PositionTicks", Description = "Optional. The position, in ticks, where playback stopped. 1 tick = 10000 ms", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "DELETE")]
         public long? PositionTicks { get; set; }
     }
-    
+
     /// <summary>
     /// Class GetLocalTrailers
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/LocalTrailers", "GET")]
     [Api(Description = "Gets local trailers for an item")]
     public class GetLocalTrailers : IReturn<List<BaseItemDto>>
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public Guid UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
+    /// <summary>
+    /// Class GetThemeSongs
+    /// </summary>
+    [Route("/Users/{UserId}/Items/{Id}/ThemeSongs", "GET")]
+    [Api(Description = "Gets theme songs for an item")]
+    public class GetThemeSongs : IReturn<ThemeSongsResult>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -337,12 +368,21 @@ namespace MediaBrowser.Api.UserLibrary
         /// The _user manager
         /// </summary>
         private readonly IUserManager _userManager;
+        /// <summary>
+        /// The _user data repository
+        /// </summary>
         private readonly IUserDataRepository _userDataRepository;
+        /// <summary>
+        /// The _library manager
+        /// </summary>
         private readonly ILibraryManager _libraryManager;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserLibraryService" /> class.
         /// </summary>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="userDataRepository">The user data repository.</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
         public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository)
             : base()
@@ -401,6 +441,34 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
+        public object Get(GetThemeSongs request)
+        {
+            var user = _userManager.GetUserById(request.UserId);
+
+            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
+
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
+
+            var items = item.ThemeSongs.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).AsParallel().Select(t => t.Result).ToArray();
+
+            var result = new ThemeSongsResult
+            {
+                Items = items,
+                TotalRecordCount = items.Length,
+                OwnerId = DtoBuilder.GetClientItemId(item)
+            };
+
+            return ToOptimizedResult(result);
+        }
+
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
         public object Get(GetItem request)
         {
             var user = _userManager.GetUserById(request.UserId);
@@ -417,6 +485,11 @@ namespace MediaBrowser.Api.UserLibrary
             return ToOptimizedResult(result);
         }
 
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
         public object Get(GetRootFolder request)
         {
             var user = _userManager.GetUserById(request.UserId);
@@ -432,7 +505,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             return ToOptimizedResult(result);
         }
-        
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -483,7 +556,7 @@ namespace MediaBrowser.Api.UserLibrary
             var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
             var key = item.GetUserDataKey();
-            
+
             // Get the user data for this item
             var data = _userDataRepository.GetUserData(user.Id, key).Result;
 
@@ -506,7 +579,7 @@ namespace MediaBrowser.Api.UserLibrary
             var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
             var key = item.GetUserDataKey();
-            
+
             // Get the user data for this item
             var data = _userDataRepository.GetUserData(user.Id, key).Result;
 
@@ -528,7 +601,7 @@ namespace MediaBrowser.Api.UserLibrary
             var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
             var key = item.GetUserDataKey();
-            
+
             // Get the user data for this item
             var data = _userDataRepository.GetUserData(user.Id, key).Result;
 

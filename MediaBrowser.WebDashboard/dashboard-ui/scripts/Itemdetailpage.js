@@ -33,7 +33,7 @@
 
                 $('#seriesName', page).html('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>').show().trigger('create');
             }
-            else if (item.Album && item.Type == "Audio") {
+            else if (item.Album && item.Type == "Audio" && item.ParentId) {
                 $('#seriesName', page).html('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.ParentId + '">' + item.Album + '</a>').show().trigger('create');
 
             }
@@ -198,6 +198,12 @@
             $('#castCollapsible', page).show();
             renderCast(page, item, context);
         }
+
+        $('#themeSongsCollapsible', page).hide();
+
+        ApiClient.getThemeSongs(Dashboard.getCurrentUserId(), item.Id).done(function (result) {
+            renderThemeSongs(page, item, result);
+        });
     }
 
     function renderDetails(page, item, context) {
@@ -271,6 +277,16 @@
     }
     function renderUserDataIcons(page, item) {
         $('#itemRatings', page).html(LibraryBrowser.getUserDataIconsHtml(item));
+    }
+    
+    function renderThemeSongs(page, item, result) {
+        
+        if (result.Items.length) {
+            
+            $('#themeSongsCollapsible', page).show();
+
+            $('#themeSongsContent', page).html(LibraryBrowser.getSongTableHtml(result.Items, {})).trigger('create');
+        }
     }
 
     function renderScenes(page, item) {

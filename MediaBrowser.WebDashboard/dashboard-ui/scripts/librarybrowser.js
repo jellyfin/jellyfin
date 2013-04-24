@@ -245,7 +245,7 @@
                 html += '<td><a href="' + LibraryBrowser.getHref(item, "music") + '">' + (item.Name || "") + '</a></td>';
 
                 if (options.showAlbum) {
-                    if (item.Album) {
+                    if (item.Album && item.ParentId) {
                         html += '<td><a href="itemdetails.html?id=' + item.ParentId + '">' + item.Album + '</a></td>';
                     } else {
                         html += '<td></td>';
