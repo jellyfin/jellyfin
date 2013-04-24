@@ -70,7 +70,10 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("searchTerm");
             }
 
-            return LuceneSearch.Search(searchTerm);
+            var hits = LuceneSearch.Search(searchTerm, items.Count());
+
+            //return hits;
+            return hits.Where(searchHit => items.Any(p => p.Id == searchHit.Id));
         }
 
         public void Dispose()
@@ -229,7 +232,7 @@ namespace MediaBrowser.Server.Implementations.Library
             writer.Flush(true, true, true);
         }
 
-        public static IEnumerable<BaseItem> Search(string searchQuery)
+        public static IEnumerable<BaseItem> Search(string searchQuery, int maxHits)
         {
             var results = new List<BaseItem>();
 
@@ -255,7 +258,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     logger.Debug("Querying Lucene with query:   " + finalQuery.ToString());
 
                     long start = DateTime.Now.Ticks;
-                    var searchResult = searcher.Search(finalQuery, 20);
+                    var searchResult = searcher.Search(finalQuery, maxHits);
                     foreach (var searchHit in searchResult.ScoreDocs)
                     {
                         Document hit = searcher.Doc(searchHit.Doc);
