@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Controller.Library;
+﻿using System.IO;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +18,6 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         private static readonly List<string> IgnoreFolders = new List<string>
         {
-            "trailers",
             "metadata",
             "certificate",
             "backup",
@@ -36,7 +37,12 @@ namespace MediaBrowser.Server.Implementations.Library
             // Ignore hidden files and folders
             if (args.IsHidden)
             {
-                return true;
+                var parentFolderName = Path.GetFileName(Path.GetDirectoryName(args.Path));
+
+                if (!string.Equals(parentFolderName, BaseItem.ThemeSongsFolderName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
             }
 
             if (args.IsDirectory)
@@ -45,6 +51,16 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 // Ignore any folders in our list
                 if (IgnoreFolders.Contains(filename, StringComparer.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                if (string.Equals(filename, BaseItem.TrailerFolderName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                if (string.Equals(filename, BaseItem.ThemeSongsFolderName, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
