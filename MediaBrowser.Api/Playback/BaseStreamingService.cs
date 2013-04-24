@@ -290,7 +290,7 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected string GetTextSubtitleParam(Video video, MediaStream subtitleStream, long? startTimeTicks)
         {
-            var path = subtitleStream.IsExternal ? GetConvertedAssPath(video, subtitleStream) : GetExtractedAssPath(video, subtitleStream);
+            var path = subtitleStream.IsExternal ? GetConvertedAssPath(video, subtitleStream) : GetExtractedAssPath(video, subtitleStream, startTimeTicks);
 
             if (string.IsNullOrEmpty(path))
             {
@@ -299,7 +299,7 @@ namespace MediaBrowser.Api.Playback
 
             var param = string.Format(",ass='{0}'", path.Replace('\\', '/').Replace(":/", "\\:/"));
 
-            if (startTimeTicks.HasValue)
+            if (startTimeTicks.HasValue && subtitleStream.IsExternal)
             {
                 var seconds = Convert.ToInt32(TimeSpan.FromTicks(startTimeTicks.Value).TotalSeconds);
                 param += string.Format(",setpts=PTS-{0}/TB", seconds);
@@ -313,10 +313,13 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="video">The video.</param>
         /// <param name="subtitleStream">The subtitle stream.</param>
+        /// <param name="startTimeTicks">The start time ticks.</param>
         /// <returns>System.String.</returns>
-        private string GetExtractedAssPath(Video video, MediaStream subtitleStream)
+        private string GetExtractedAssPath(Video video, MediaStream subtitleStream, long? startTimeTicks)
         {
-            var path = Kernel.Instance.FFMpegManager.GetSubtitleCachePath(video, subtitleStream.Index, ".ass");
+            var offset = TimeSpan.FromTicks(startTimeTicks ?? 0);
+
+            var path = Kernel.Instance.FFMpegManager.GetSubtitleCachePath(video, subtitleStream.Index, offset, ".ass");
 
             if (!File.Exists(path))
             {
@@ -326,7 +329,7 @@ namespace MediaBrowser.Api.Playback
 
                 try
                 {
-                    var task = MediaEncoder.ExtractTextSubtitle(inputPath, type, subtitleStream.Index, path, CancellationToken.None);
+                    var task = MediaEncoder.ExtractTextSubtitle(inputPath, type, subtitleStream.Index, offset, path, CancellationToken.None);
 
                     Task.WaitAll(task);
                 }
@@ -347,7 +350,7 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         private string GetConvertedAssPath(Video video, MediaStream subtitleStream)
         {
-            var path = Kernel.Instance.FFMpegManager.GetSubtitleCachePath(video, subtitleStream.Index, ".ass");
+            var path = Kernel.Instance.FFMpegManager.GetSubtitleCachePath(video, subtitleStream.Index, null, ".ass");
 
             if (!File.Exists(path))
             {

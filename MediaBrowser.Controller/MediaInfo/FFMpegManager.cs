@@ -30,7 +30,7 @@ namespace MediaBrowser.Controller.MediaInfo
         internal FileSystemRepository SubtitleCache { get; set; }
 
         private readonly ILibraryManager _libraryManager;
-        
+
         private readonly IServerApplicationPaths _appPaths;
         private readonly IMediaEncoder _encoder;
 
@@ -219,11 +219,14 @@ namespace MediaBrowser.Controller.MediaInfo
         /// </summary>
         /// <param name="input">The input.</param>
         /// <param name="subtitleStreamIndex">Index of the subtitle stream.</param>
+        /// <param name="offset">The offset.</param>
         /// <param name="outputExtension">The output extension.</param>
         /// <returns>System.String.</returns>
-        public string GetSubtitleCachePath(Video input, int subtitleStreamIndex, string outputExtension)
+        public string GetSubtitleCachePath(Video input, int subtitleStreamIndex, TimeSpan? offset, string outputExtension)
         {
-            return SubtitleCache.GetResourcePath(input.Id + "_" + subtitleStreamIndex + "_" + input.DateModified.Ticks, outputExtension);
+            var ticksParam = offset.HasValue ? "_" + offset.Value.Ticks : "";
+
+            return SubtitleCache.GetResourcePath(input.Id + "_" + subtitleStreamIndex + "_" + input.DateModified.Ticks + ticksParam, outputExtension);
         }
     }
 }

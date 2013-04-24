@@ -24,15 +24,15 @@ namespace MediaBrowser.Server.Implementations.Library
     {
         public LuceneSearchEngine(IServerApplicationPaths serverPaths, ILogManager logManager)
         {
-            string luceneDbPath = serverPaths.DataPath + "\\SearchIndexDB";
-            if (!System.IO.Directory.Exists(luceneDbPath))
-                System.IO.Directory.CreateDirectory(luceneDbPath);
-            else if(File.Exists(luceneDbPath + "\\write.lock"))
-                    File.Delete(luceneDbPath + "\\write.lock");
+            //string luceneDbPath = serverPaths.DataPath + "\\SearchIndexDB";
+            //if (!System.IO.Directory.Exists(luceneDbPath))
+            //    System.IO.Directory.CreateDirectory(luceneDbPath);
+            //else if(File.Exists(luceneDbPath + "\\write.lock"))
+            //        File.Delete(luceneDbPath + "\\write.lock");
 
-            LuceneSearch.Init(luceneDbPath, logManager.GetLogger("Lucene"));
+            //LuceneSearch.Init(luceneDbPath, logManager.GetLogger("Lucene"));
 
-            BaseItem.LibraryManager.LibraryChanged += LibraryChanged;
+            //BaseItem.LibraryManager.LibraryChanged += LibraryChanged;
         }
 
         public void LibraryChanged(object source, ChildrenChangedEventArgs changeInformation)
@@ -75,9 +75,9 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public void Dispose()
         {
-            BaseItem.LibraryManager.LibraryChanged -= LibraryChanged;
+            //BaseItem.LibraryManager.LibraryChanged -= LibraryChanged;
 
-            LuceneSearch.CloseAll();
+            //LuceneSearch.CloseAll();
         }
     }
 
