@@ -24,7 +24,6 @@
 
 			html += LibraryBrowser.getPosterDetailViewHtml({
 				items: result.Items,
-				useAverageAspectRatio: true,
 				countNameSingular: "Game",
 				countNamePlural: "Games",
 				context: "games"

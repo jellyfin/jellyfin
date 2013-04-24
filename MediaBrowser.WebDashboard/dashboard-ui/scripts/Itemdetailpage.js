@@ -65,11 +65,11 @@
             Dashboard.hideLoadingMsg();
         });
     }
-    
+
     function getContext(item) {
 
         // should return either movies, tv, music or games
-        
+
         if (item.Type == "Episode" || item.Type == "Series" || item.Type == "Season") {
             return "tv";
         }
@@ -105,6 +105,10 @@
             enableCustomHeader(page, "Music");
             $('#standardLogo', page).hide();
         }
+        else if (item.MediaType == "Game") {
+            enableCustomHeader(page, "Games");
+            $('#standardLogo', page).hide();
+        }
         else {
             $('.libraryPageHeader', page).hide();
             $('#standardLogo', page).show();
@@ -126,6 +130,12 @@
             $('#movieTabs', page).show();
         } else {
             $('#movieTabs', page).hide();
+        }
+
+        if (item.MediaType == "Game") {
+            $('#gameTabs', page).show();
+        } else {
+            $('#gameTabs', page).hide();
         }
 
         if (item.Type == "BoxSet") {
@@ -278,14 +288,14 @@
     function renderUserDataIcons(page, item) {
         $('#itemRatings', page).html(LibraryBrowser.getUserDataIconsHtml(item));
     }
-    
+
     function renderThemeSongs(page, item, result) {
-        
+
         if (result.Items.length) {
-            
+
             $('#themeSongsCollapsible', page).show();
 
-            $('#themeSongsContent', page).html(LibraryBrowser.getSongTableHtml(result.Items, {})).trigger('create');
+            $('#themeSongsContent', page).html(LibraryBrowser.getSongTableHtml(result.Items, { showArtist: true, showAlbum: true })).trigger('create');
         }
     }
 

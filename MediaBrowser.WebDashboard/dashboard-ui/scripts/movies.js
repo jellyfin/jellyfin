@@ -27,7 +27,6 @@
             if (view == "Backdrop") {
                 html += LibraryBrowser.getPosterDetailViewHtml({
                     items: result.Items,
-                    useAverageAspectRatio: true,
                     preferBackdrop: true,
                     context: "movies",
                     shape: "backdrop"

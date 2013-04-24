@@ -106,13 +106,6 @@ namespace MediaBrowser.Api.UserLibrary
         public string Ids { get; set; }
 
         /// <summary>
-        /// Gets or sets the media types.
-        /// </summary>
-        /// <value>The media types.</value>
-        [ApiMember(Name = "MediaTypes", Description = "Optional filter by MediaType. Allows multiple, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string MediaTypes { get; set; }
-
-        /// <summary>
         /// Gets or sets the video types.
         /// </summary>
         /// <value>The video types.</value>

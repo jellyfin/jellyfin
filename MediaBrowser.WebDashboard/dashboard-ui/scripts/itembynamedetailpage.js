@@ -181,7 +181,7 @@
             if (result.GameCount) {
 
                 html += '<input type="radio" name="ibnItems" id="radioGames" value="on" data-mini="true">';
-                html += '<label for="radioGames">Games (' + result.SeriesCount + ')</label>';
+                html += '<label for="radioGames">Games (' + result.GameCount + ')</label>';
             }
 
             if (result.AlbumCount) {
@@ -212,6 +212,7 @@
 
             shape = "backdrop";
             loadItems(page, {
+                MediaTypes: "",
                 IncludeItemTypes: "Movie",
                 PersonTypes: "",
                 Artists: ""
@@ -223,6 +224,7 @@
 
             shape = "backdrop";
             loadItems(page, {
+                MediaTypes: "",
                 IncludeItemTypes: "Series",
                 PersonTypes: "",
                 Artists: ""
@@ -233,6 +235,7 @@
 
             shape = "poster";
             loadItems(page, {
+                MediaTypes: "",
                 IncludeItemTypes: "Trailer",
                 PersonTypes: "",
                 Artists: ""
@@ -243,7 +246,8 @@
 
             shape = "poster";
             loadItems(page, {
-                IncludeItemTypes: "Game",
+                IncludeItemTypes: "",
+                MediaTypes: "Game",
                 PersonTypes: "",
                 Artists: ""
             });
@@ -253,6 +257,7 @@
 
             shape = "backdrop";
             loadItems(page, {
+                MediaTypes: "",
                 IncludeItemTypes: "Episode",
                 PersonTypes: "GuestStar",
                 Artists: ""
@@ -263,6 +268,7 @@
 
             shape = "cd";
             loadItems(page, {
+                MediaTypes: "",
                 IncludeItemTypes: "MusicAlbum",
                 PersonTypes: "Artist",
                 Artists: ""
@@ -272,6 +278,7 @@
         $("#radioSongs", page).on("click", function () {
 
             loadItems(page, {
+                MediaTypes: "",
                 IncludeItemTypes: "Audio",
                 PersonTypes: "Artist",
                 Artists: ""
@@ -351,7 +358,7 @@
 
             SortBy: "SortName",
             SortOrder: "Ascending",
-            IncludeItemTypes: "Movie",
+            IncludeItemTypes: "",
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,UserData,DisplayMediaType,ItemCounts,DateCreated,AudioInfo,SeriesInfo",
             Limit: LibraryBrowser.getDetaultPageSize(),
@@ -375,8 +382,7 @@
 
             html += LibraryBrowser.getPosterDetailViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: true,
-                preferBackdrop: true,
+                preferBackdrop: shape == "backdrop",
                 shape: shape
             });
 

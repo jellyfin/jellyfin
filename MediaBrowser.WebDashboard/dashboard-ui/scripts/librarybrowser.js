@@ -20,7 +20,7 @@
         getPosterDetailViewHtml: function (options) {
 
             var items = options.items;
-            
+
             if (!options.shape) {
                 options.shape = options.preferBackdrop ? "backdrop" : "poster";
             }
@@ -253,7 +253,7 @@
                 }
 
                 if (options.showArtist) {
-                    
+
                     if (item.Artist) {
                         html += '<td><a href="itembynamedetails.html?context=music&artist=' + item.Artist + '">' + item.Artist + '</a></td>';
                     } else {
@@ -1109,13 +1109,46 @@
         getMiscInfoHtml: function (item) {
 
             var miscInfo = [];
-
-            if (item.ProductionYear && item.Type != "Episode") {
+            var text;
+            
+            if (item.ProductionYear && item.Type == "Series") {
 
                 if (item.Status == "Continuing") {
                     miscInfo.push(item.ProductionYear + "-Present");
-                } else {
+
+                } else if (item.ProductionYear) {
+
+                    text = item.ProductionYear;
+
+                    if (item.EndDate) {
+
+                        try {
+                            text += "-" + parseISO8601Date(item.EndDate, { toLocal: true }).getFullYear();
+                        }
+                        catch (e) {
+                            console.log("Error parsing date: " + item.EndDate);
+                        }
+                    }
+
+                    miscInfo.push(text);
+                }
+            }
+
+            if (item.Type != "Series" && item.Type != "Episode") {
+                
+                if (item.ProductionYear) {
+
                     miscInfo.push(item.ProductionYear);
+                }
+                else if (item.PremiereDate) {
+                    
+                    try {
+                        text = "-" + parseISO8601Date(item.PremiereDate, { toLocal: true }).getFullYear();
+                        miscInfo.push(text);
+                    }
+                    catch (e) {
+                        console.log("Error parsing date: " + item.PremiereDate);
+                    }
                 }
             }
 
@@ -1212,7 +1245,12 @@
         renderPremiereDate: function (elem, item) {
             if (item.PremiereDate) {
                 try {
-                    elem.show().html('Premiered&nbsp;&nbsp;' + parseISO8601Date(item.PremiereDate, { toLocal: true }).toDateString());
+
+                    var date = parseISO8601Date(item.PremiereDate, { toLocal: true });
+
+                    var text = new Date().getTime() > date.getTime() ? "Premiered" : "Premieres";
+
+                    elem.show().html(text + '&nbsp;&nbsp;' + date.toDateString());
                 } catch (err) {
                     elem.hide();
                 }

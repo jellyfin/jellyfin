@@ -26,7 +26,6 @@
 
 			html += LibraryBrowser.getPosterDetailViewHtml({
 				items: result.Items,
-				useAverageAspectRatio: true,
 				context: "games"
 			});
 
