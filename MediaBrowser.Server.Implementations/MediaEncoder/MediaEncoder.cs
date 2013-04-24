@@ -379,7 +379,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
                 throw;
             }
-            
+
             try
             {
                 Task<string> standardErrorReadTask = null;
@@ -455,8 +455,11 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             return result;
         }
 
+        /// <summary>
+        /// The us culture
+        /// </summary>
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
+
         /// <summary>
         /// Adds the chapters.
         /// </summary>
@@ -615,13 +618,14 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <param name="inputFiles">The input files.</param>
         /// <param name="type">The type.</param>
         /// <param name="subtitleStreamIndex">Index of the subtitle stream.</param>
+        /// <param name="offset">The offset.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentException">Must use inputPath list overload</exception>
-        public Task ExtractTextSubtitle(string[] inputFiles, InputType type, int subtitleStreamIndex, string outputPath, CancellationToken cancellationToken)
+        public Task ExtractTextSubtitle(string[] inputFiles, InputType type, int subtitleStreamIndex, TimeSpan offset, string outputPath, CancellationToken cancellationToken)
         {
-            return ExtractTextSubtitleInternal(GetInputArgument(inputFiles, type), subtitleStreamIndex, outputPath, cancellationToken);
+            return ExtractTextSubtitleInternal(GetInputArgument(inputFiles, type), subtitleStreamIndex, offset, outputPath, cancellationToken);
         }
 
         /// <summary>
@@ -629,6 +633,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// </summary>
         /// <param name="inputPath">The input path.</param>
         /// <param name="subtitleStreamIndex">Index of the subtitle stream.</param>
+        /// <param name="offset">The offset.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
@@ -638,7 +643,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// or
         /// cancellationToken</exception>
         /// <exception cref="System.ApplicationException"></exception>
-        private async Task ExtractTextSubtitleInternal(string inputPath, int subtitleStreamIndex, string outputPath, CancellationToken cancellationToken)
+        private async Task ExtractTextSubtitleInternal(string inputPath, int subtitleStreamIndex, TimeSpan offset, string outputPath, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
@@ -655,6 +660,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 throw new ArgumentNullException("cancellationToken");
             }
 
+            var offsetParam = offset.Ticks > 0 ? "-ss " + offset.TotalSeconds + " " : string.Empty;
+
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo
@@ -662,7 +669,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     FileName = FFMpegPath,
-                    Arguments = string.Format("-i {0} -map 0:{1} -an -vn -c:s ass \"{2}\"", inputPath, subtitleStreamIndex, outputPath),
+                    Arguments = string.Format("{0}-i {1} -map 0:{2} -an -vn -c:s ass \"{3}\"", offsetParam, inputPath, subtitleStreamIndex, outputPath),
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false
                 }
