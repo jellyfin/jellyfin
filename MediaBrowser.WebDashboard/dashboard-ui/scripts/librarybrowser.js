@@ -1,5 +1,10 @@
 ﻿var LibraryBrowser = (function (window, $) {
 
+    function encodeName(name) {
+        return name;
+        return encodeURIComponent(name).replace("'", '%27');
+    }
+
     var defaultBackground = "#999;";
 
     return {
@@ -15,6 +20,10 @@
         getPosterDetailViewHtml: function (options) {
 
             var items = options.items;
+            
+            if (!options.shape) {
+                options.shape = options.preferBackdrop ? "backdrop" : "poster";
+            }
 
             var primaryImageAspectRatio = options.useAverageAspectRatio ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
 
@@ -27,7 +36,13 @@
                 var imgUrl;
                 var isDefault = false;
 
-                html += '<a class="tileItem" href="' + LibraryBrowser.getHref(item, options.context) + '">';
+                var cssClass = "tileItem";
+
+                if (options.shape) {
+                    cssClass += " " + options.shape + "TileItem";
+                }
+
+                html += '<a class="' + cssClass + '" href="' + LibraryBrowser.getHref(item, options.context) + '">';
 
                 if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
 
@@ -114,7 +129,7 @@
                     isDefault = true;
                 }
 
-                var cssClass = isDefault ? "tileImage defaultTileImage" : "tileImage";
+                cssClass = isDefault ? "tileImage defaultTileImage" : "tileImage";
 
                 html += '<div class="' + cssClass + '" style="background-image: url(\'' + imgUrl + '\');"></div>';
 
@@ -272,16 +287,16 @@
                 return "itemdetails.html?id=" + item.Id;
             }
             if (item.Type == "Genre") {
-                return "itembynamedetails.html?genre=" + item.Name + "&context=" + itemByNameContext;
+                return "itembynamedetails.html?genre=" + encodeName(item.Name) + "&context=" + itemByNameContext;
             }
             if (item.Type == "Studio") {
-                return "itembynamedetails.html?studio=" + item.Name + "&context=" + itemByNameContext;
+                return "itembynamedetails.html?studio=" + encodeName(item.Name) + "&context=" + itemByNameContext;
             }
             if (item.Type == "Person") {
-                return "itembynamedetails.html?person=" + item.Name + "&context=" + itemByNameContext;
+                return "itembynamedetails.html?person=" + encodeName(item.Name) + "&context=" + itemByNameContext;
             }
             if (item.Type == "Artist") {
-                return "itembynamedetails.html?artist=" + item.Name + "&context=" + itemByNameContext;
+                return "itembynamedetails.html?artist=" + encodeName(item.Name) + "&context=" + itemByNameContext;
             }
 
             return item.IsFolder ? (item.Id ? "itemList.html?parentId=" + item.Id : "#") : "itemdetails.html?id=" + item.Id;
@@ -1152,7 +1167,7 @@
                         html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
                     }
 
-                    html += '<a href="itembynamedetails.html?context=' + context + '&studio=' + item.Studios[i] + '">' + item.Studios[i] + '</a>';
+                    html += '<a href="itembynamedetails.html?context=' + context + '&studio=' + encodeName(item.Studios[i]) + '">' + item.Studios[i] + '</a>';
                 }
 
                 elem.show().html(html).trigger('create');
@@ -1174,7 +1189,7 @@
                         html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
                     }
 
-                    html += '<a href="itembynamedetails.html?context=' + context + '&genre=' + item.Genres[i] + '">' + item.Genres[i] + '</a>';
+                    html += '<a href="itembynamedetails.html?context=' + context + '&genre=' + encodeName(item.Genres[i]) + '">' + item.Genres[i] + '</a>';
                 }
 
                 elem.show().html(html).trigger('create');
@@ -1424,7 +1439,7 @@
 
             var role = cast.Role || cast.Type;
 
-            html += '<a href="itembynamedetails.html?context=' + context + '&person=' + cast.Name + '">';
+            html += '<a href="itembynamedetails.html?context=' + context + '&person=' + encodeName(cast.Name) + '">';
             html += '<div class="posterViewItem posterViewItemWithDualText">';
 
             if (cast.PrimaryImageTag) {

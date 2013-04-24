@@ -122,6 +122,9 @@
         if (context == "music" && item.Type == "Genre") {
             $('#musicGenreTabs', page).show();
         }
+        if (context == "music" && item.Type == "Artist") {
+            $('#artistTabs', page).show();
+        }
     }
 
     function renderTabs(page, item) {

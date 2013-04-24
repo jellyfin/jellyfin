@@ -29,14 +29,16 @@
                     items: result.Items,
                     useAverageAspectRatio: true,
                     preferBackdrop: true,
-                    context: "movies"
+                    context: "movies",
+                    shape: "backdrop"
                 });
             }
             else if (view == "Poster") {
                 html += LibraryBrowser.getPosterDetailViewHtml({
                     items: result.Items,
                     useAverageAspectRatio: true,
-                    context: "movies"
+                    context: "movies",
+                    shape: "poster"
                 });
             }
 
