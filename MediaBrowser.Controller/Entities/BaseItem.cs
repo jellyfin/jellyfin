@@ -35,6 +35,7 @@ namespace MediaBrowser.Controller.Entities
         /// The trailer folder name
         /// </summary>
         public const string TrailerFolderName = "trailers";
+        public const string ThemeSongsFolderName = "theme-music";
 
         /// <summary>
         /// Gets or sets the name.
@@ -656,6 +657,28 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        private List<Audio.Audio> _themeSongs;
+        private bool _themeSongsInitialized;
+        private object _themeSongsSyncLock = new object();
+        [IgnoreDataMember]
+        public List<Audio.Audio> ThemeSongs
+        {
+            get
+            {
+                LazyInitializer.EnsureInitialized(ref _themeSongs, ref _themeSongsInitialized, ref _themeSongsSyncLock, LoadThemeSongs);
+                return _themeSongs;
+            }
+            private set
+            {
+                _themeSongs = value;
+
+                if (value == null)
+                {
+                    _themeSongsInitialized = false;
+                }
+            }
+        }
+
         /// <summary>
         /// Loads local trailers from the file system
         /// </summary>
@@ -715,6 +738,64 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
+        /// Loads the theme songs.
+        /// </summary>
+        /// <returns>List{Audio.Audio}.</returns>
+        private List<Audio.Audio> LoadThemeSongs()
+        {
+            ItemResolveArgs resolveArgs;
+
+            try
+            {
+                resolveArgs = ResolveArgs;
+            }
+            catch (IOException ex)
+            {
+                Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
+                return new List<Audio.Audio>();
+            }
+
+            if (!resolveArgs.IsDirectory)
+            {
+                return new List<Audio.Audio>();
+            }
+
+            var folder = resolveArgs.GetFileSystemEntryByName(ThemeSongsFolderName);
+
+            // Path doesn't exist. No biggie
+            if (folder == null)
+            {
+                return new List<Audio.Audio>();
+            }
+
+            IEnumerable<WIN32_FIND_DATA> files;
+
+            try
+            {
+                files = FileSystem.GetFiles(folder.Value.Path);
+            }
+            catch (IOException ex)
+            {
+                Logger.ErrorException("Error loading theme songs for {0}", ex, Name);
+                return new List<Audio.Audio>();
+            }
+
+            return LibraryManager.ResolvePaths<Audio.Audio>(files, null).Select(audio =>
+            {
+                // Try to retrieve it from the db. If we don't find it, use the resolved version
+                var dbItem = LibraryManager.RetrieveItem(audio.Id) as Audio.Audio;
+
+                if (dbItem != null)
+                {
+                    dbItem.ResolveArgs = audio.ResolveArgs;
+                    audio = dbItem;
+                }
+
+                return audio;
+            }).ToList();
+        }
+
+        /// <summary>
         /// Overrides the base implementation to refresh metadata for local trailers
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -732,6 +813,7 @@ namespace MediaBrowser.Controller.Entities
 
             // Lazy load these again
             LocalTrailers = null;
+            ThemeSongs = null;
 
             // Refresh for the item
             var itemRefreshTask = ProviderManager.ExecuteMetadataProviders(this, cancellationToken, forceRefresh, allowSlowProviders);
@@ -741,10 +823,13 @@ namespace MediaBrowser.Controller.Entities
             // Refresh metadata for local trailers
             var trailerTasks = LocalTrailers.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
 
+            var themeSongTasks = ThemeSongs.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
+            
             cancellationToken.ThrowIfCancellationRequested();
 
             // Await the trailer tasks
             await Task.WhenAll(trailerTasks).ConfigureAwait(false);
+            await Task.WhenAll(themeSongTasks).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 
