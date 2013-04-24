@@ -201,8 +201,8 @@
 
         $('#themeSongsCollapsible', page).hide();
 
-        ApiClient.getThemeSongs(Dashboard.getCurrentUserId(), item.Id).done(function(songs) {
-            renderThemeSongs(page, item, songs);
+        ApiClient.getThemeSongs(Dashboard.getCurrentUserId(), item.Id).done(function (result) {
+            renderThemeSongs(page, item, result);
         });
     }
 
@@ -279,13 +279,13 @@
         $('#itemRatings', page).html(LibraryBrowser.getUserDataIconsHtml(item));
     }
     
-    function renderThemeSongs(page, item, songs) {
+    function renderThemeSongs(page, item, result) {
         
-        if (songs.length) {
+        if (result.Items.length) {
             
             $('#themeSongsCollapsible', page).show();
 
-            $('#themeSongsContent', page).html(LibraryBrowser.getSongTableHtml(songs, {})).trigger('create');
+            $('#themeSongsContent', page).html(LibraryBrowser.getSongTableHtml(result.Items, {})).trigger('create');
         }
     }
 

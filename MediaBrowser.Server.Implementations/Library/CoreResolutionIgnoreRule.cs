@@ -18,7 +18,6 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         private static readonly List<string> IgnoreFolders = new List<string>
         {
-            "trailers",
             "metadata",
             "certificate",
             "backup",
@@ -52,6 +51,16 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 // Ignore any folders in our list
                 if (IgnoreFolders.Contains(filename, StringComparer.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                if (string.Equals(filename, BaseItem.TrailerFolderName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                if (string.Equals(filename, BaseItem.ThemeSongsFolderName, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
