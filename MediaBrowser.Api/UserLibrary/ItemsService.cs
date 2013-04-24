@@ -144,15 +144,15 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the min offical rating.
         /// </summary>
         /// <value>The min offical rating.</value>
-        [ApiMember(Name = "MinOfficalRating", Description = "Optional filter by minimum official rating (PG, PG-13, TV-MA, etc).", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string MinOfficalRating { get; set; }
+        [ApiMember(Name = "MinOfficialRating", Description = "Optional filter by minimum official rating (PG, PG-13, TV-MA, etc).", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string MinOfficialRating { get; set; }
 
         /// <summary>
         /// Gets or sets the max offical rating.
         /// </summary>
         /// <value>The max offical rating.</value>
-        [ApiMember(Name = "MaxOfficalRating", Description = "Optional filter by maximum official rating (PG, PG-13, TV-MA, etc).", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string MaxOfficalRating { get; set; }
+        [ApiMember(Name = "MaxOfficialRating", Description = "Optional filter by maximum official rating (PG, PG-13, TV-MA, etc).", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string MaxOfficialRating { get; set; }
         
         /// <summary>
         /// Gets the order by.
@@ -413,17 +413,17 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             // Min official rating
-            if (!string.IsNullOrEmpty(request.MinOfficalRating))
+            if (!string.IsNullOrEmpty(request.MinOfficialRating))
             {
-                var level = Ratings.Level(request.MinOfficalRating);
+                var level = Ratings.Level(request.MinOfficialRating);
 
                 items = items.Where(i => Ratings.Level(i.CustomRating ?? i.OfficialRating) >= level);
             }
 
             // Max official rating
-            if (!string.IsNullOrEmpty(request.MaxOfficalRating))
+            if (!string.IsNullOrEmpty(request.MaxOfficialRating))
             {
-                var level = Ratings.Level(request.MaxOfficalRating);
+                var level = Ratings.Level(request.MaxOfficialRating);
 
                 items = items.Where(i => Ratings.Level(i.CustomRating ?? i.OfficialRating) <= level);
             }
