@@ -559,7 +559,7 @@
 .detailTable {
     border-collapse: collapse;
     border-spacing: 0;
-    width: 70%;
+    width: 100%;
     max-width: 1200px;
     text-align: left;
 }

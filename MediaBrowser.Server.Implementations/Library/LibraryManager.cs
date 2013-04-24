@@ -274,9 +274,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var specialFeatures = items.OfType<Movie>().SelectMany(i => i.SpecialFeatures).ToList();
             var localTrailers = items.SelectMany(i => i.LocalTrailers).ToList();
+            var themeSongs = items.SelectMany(i => i.ThemeSongs).ToList();
 
             items.AddRange(specialFeatures);
             items.AddRange(localTrailers);
+            items.AddRange(themeSongs);
 
             // Need to use DistinctBy Id because there could be multiple instances with the same id
             // due to sharing the default library
@@ -325,22 +327,29 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             LibraryItemsCache.AddOrUpdate(item.Id, item, delegate { return item; });
 
-            foreach (var trailer in item.LocalTrailers)
+            foreach (var subItem in item.LocalTrailers)
             {
                 // Prevent access to foreach variable in closure
-                var trailer1 = trailer;
-                LibraryItemsCache.AddOrUpdate(trailer.Id, trailer, delegate { return trailer1; });
+                var trailer1 = subItem;
+                LibraryItemsCache.AddOrUpdate(subItem.Id, subItem, delegate { return trailer1; });
+            }
+
+            foreach (var subItem in item.ThemeSongs)
+            {
+                // Prevent access to foreach variable in closure
+                var trailer1 = subItem;
+                LibraryItemsCache.AddOrUpdate(subItem.Id, subItem, delegate { return trailer1; });
             }
 
             var movie = item as Movie;
 
             if (movie != null)
             {
-                foreach (var special in movie.SpecialFeatures)
+                foreach (var subItem in movie.SpecialFeatures)
                 {
                     // Prevent access to foreach variable in closure
-                    var special1 = special;
-                    LibraryItemsCache.AddOrUpdate(special.Id, special, delegate { return special1; });
+                    var special1 = subItem;
+                    LibraryItemsCache.AddOrUpdate(subItem.Id, subItem, delegate { return special1; });
                 }
             }
         }

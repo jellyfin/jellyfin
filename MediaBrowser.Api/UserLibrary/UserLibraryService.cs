@@ -305,6 +305,25 @@ namespace MediaBrowser.Api.UserLibrary
         public string Id { get; set; }
     }
 
+    [Route("/Users/{UserId}/Items/{Id}/ThemeSongs", "GET")]
+    [Api(Description = "Gets theme songs for an item")]
+    public class GetThemeSongs : IReturn<List<BaseItemDto>>
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public Guid UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
     /// <summary>
     /// Class GetSpecialFeatures
     /// </summary>
@@ -392,6 +411,27 @@ namespace MediaBrowser.Api.UserLibrary
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
 
             var items = item.LocalTrailers.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).AsParallel().Select(t => t.Result).ToList();
+
+            return ToOptimizedResult(items);
+        }
+
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
+        public object Get(GetThemeSongs request)
+        {
+            var user = _userManager.GetUserById(request.UserId);
+
+            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
+
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
+
+            var items = item.ThemeSongs.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).AsParallel().Select(t => t.Result).ToList();
 
             return ToOptimizedResult(items);
         }

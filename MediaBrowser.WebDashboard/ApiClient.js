@@ -1713,6 +1713,27 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         };
 
         /**
+         * Gets theme songs for an item
+         */
+        self.getThemeSongs = function (userId, itemId) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+            if (!itemId) {
+                throw new Error("null itemId");
+            }
+
+            var url = self.getUrl("Users/" + userId + "/Items/" + itemId + "/ThemeSongs");
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        /**
          * Gets special features for an item
          */
         self.getSpecialFeatures = function (userId, itemId) {
