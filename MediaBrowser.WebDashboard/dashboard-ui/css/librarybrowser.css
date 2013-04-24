@@ -20,7 +20,7 @@
 }
 
 .libraryPage, .itemListContent {
-    background: #262626!important;
+    background: #494949 url(images/bgflip.png) repeat-x!important;
     background-attachment: fixed!important;
 }
 
@@ -211,8 +211,6 @@
     }
 
 .tileImage {
-    height: 90px;
-    width: 45%;
     display: inline-block;
     background-size: contain;
     background-repeat: no-repeat;
@@ -234,12 +232,38 @@
 
 .tileContent {
     display: inline-block;
-    width: 50%;
     padding-left: 10px;
     color: #fff;
     text-align: left;
     vertical-align: top;
     overflow: hidden;
+}
+
+.backdropTileItem .tileImage {
+    height: 90px;
+    width: 45%;
+}
+
+.backdropTileItem .tileContent {
+    width: 50%;
+}
+
+.posterTileItem .tileImage {
+    height: 120px;
+    width: 30%;
+}
+
+.posterTileItem .tileContent {
+    width: 65%;
+}
+
+.cdTileItem .tileImage {
+    height: 100px;
+    width: 35%;
+}
+
+.cdTileItem .tileContent {
+    width: 60%;
 }
 
 .tileName {
@@ -248,6 +272,10 @@
     text-overflow: ellipsis;
     overflow: hidden;
 }
+
+    .tileName + .tileName {
+        margin-top: .75em;
+    }
 
 .tileItem .userDataIcons img {
     height: 14px;
@@ -281,15 +309,31 @@
         margin-right: 3px;
     }
 
-    .tileImage {
+    .backdropTileItem .tileImage {
         height: 88px;
+    }
+
+    .posterTileItem .tileImage {
+        height: 120px;
+    }
+
+    .cdTileItem .tileImage {
+        height: 115px;
     }
 }
 
 @media all and (min-width: 850px) {
 
-    .tileImage {
+    .backdropTileItem .tileImage {
         height: 105px;
+    }
+
+    .posterTileItem .tileImage {
+        height: 120px;
+    }
+
+    .posterTileItem {
+        width: 31%;
     }
 
     .tileItem .userDataIcons img {
@@ -311,18 +355,42 @@
         width: 47.5%;
     }
 
-    .tileImage {
+    .posterTileItem {
+        width: 31%;
+    }
+
+    .backdropTileItem .tileImage {
         height: 110px;
     }
+
+    .posterTileItem .tileImage {
+        height: 136px;
+    }
+
+    .cdTileItem {
+        width: 31%;
+    }
+
+        .cdTileItem .tileImage {
+            height: 105px;
+        }
 }
 
 @media all and (min-width: 1200px) {
-    .tileImage {
+    .backdropTileItem .tileImage {
         height: 100px;
     }
 
+    .posterTileItem .tileImage {
+        height: 160px;
+    }
+
     .tileItem {
-        width: 31%;
+        width: 31.5%;
+    }
+
+    .cdTileItem .tileImage {
+        height: 130px;
     }
 
     .scenePosterViewItem img {
@@ -331,24 +399,52 @@
 }
 
 @media all and (min-width: 1440px) {
-    .tileImage {
+    .backdropTileItem .tileImage {
         height: 110px;
+    }
+
+    .posterTileItem .tileImage {
+        height: 150px;
     }
 
     .tileItem {
         width: 31.5%;
     }
+
+    .cdTileItem .tileImage {
+        height: 155px;
+    }
+
+    .posterTileItem {
+        width: 23.5%;
+    }
 }
 
 @media all and (min-width: 1700px) {
 
-    .tileImage {
+    .backdropTileItem .tileImage {
         height: 132px;
+    }
+
+    .posterTileItem .tileImage {
+        height: 170px;
     }
 
     .tileItem {
         width: 32%;
     }
+
+    .posterTileItem {
+        width: 23.5%;
+    }
+
+    .cdTileItem {
+        width: 23.5%;
+    }
+
+        .cdTileItem .tileImage {
+            height: 140px;
+        }
 }
 
 
@@ -360,6 +456,22 @@
     .tileImage {
         height: 155px;
     }
+
+    .posterTileItem {
+        width: 18.8%;
+    }
+
+        .posterTileItem .tileImage {
+            height: 160px;
+        }
+
+    .cdTileItem {
+        width: 18.8%;
+    }
+
+        .cdTileItem .tileImage {
+            height: 120px;
+        }
 }
 
 @media all and (min-width: 2000px) {
@@ -370,6 +482,22 @@
     .tileImage {
         height: 117px;
     }
+
+    .posterTileItem {
+        width: 18.8%;
+    }
+
+        .posterTileItem .tileImage {
+            height: 160px;
+        }
+
+    .cdTileItem {
+        width: 18.8%;
+    }
+
+        .cdTileItem .tileImage {
+            height: 130px;
+        }
 }
 
 @media all and (min-width: 2200px) {
@@ -380,6 +508,22 @@
     .tileImage {
         height: 145px;
     }
+
+    .posterTileItem {
+        width: 18.8%;
+    }
+
+        .posterTileItem .tileImage {
+            height: 185px;
+        }
+
+    .cdTileItem {
+        width: 18.8%;
+    }
+
+        .cdTileItem .tileImage {
+            height: 140px;
+        }
 }
 
 @media all and (min-width: 2540px) {
@@ -390,6 +534,22 @@
     .tileImage {
         height: 120px;
     }
+
+    .posterTileItem {
+        width: 15.8%;
+    }
+
+        .posterTileItem .tileImage {
+            height: 180px;
+        }
+
+    .cdTileItem {
+        width: 15.8%;
+    }
+
+        .cdTileItem .tileImage {
+            height: 140px;
+        }
 }
 
 .itemsContainer {

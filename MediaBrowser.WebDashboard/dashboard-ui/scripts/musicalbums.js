@@ -25,7 +25,8 @@
             html += LibraryBrowser.getPosterDetailViewHtml({
                 items: result.Items,
                 useAverageAspectRatio: true,
-                context: "music"
+                context: "music",
+                shape: "cd"
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
