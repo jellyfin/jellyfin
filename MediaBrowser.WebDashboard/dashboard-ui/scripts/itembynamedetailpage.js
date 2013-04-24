@@ -353,7 +353,7 @@
             SortOrder: "Ascending",
             IncludeItemTypes: "Movie",
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio,UserData,DisplayMediaType,ItemCounts,DateCreated",
+            Fields: "PrimaryImageAspectRatio,UserData,DisplayMediaType,ItemCounts,DateCreated,AudioInfo,SeriesInfo",
             Limit: LibraryBrowser.getDetaultPageSize(),
             StartIndex: 0
         };

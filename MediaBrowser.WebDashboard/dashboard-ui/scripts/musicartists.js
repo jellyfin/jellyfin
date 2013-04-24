@@ -87,6 +87,13 @@
             reloadItems(page);
         });
 
+        $('#chkIsOnTour', this).on('change', function () {
+
+            query.IsOnTour = this.checked || null;
+
+            reloadItems(page);
+        });
+
     }).on('pagebeforeshow', "#musicArtistsPage", function () {
 
         reloadItems(this);
@@ -105,6 +112,8 @@
             this.checked = query.SortOrder == this.getAttribute('data-sortorder');
 
         }).checkboxradio('refresh');
+
+        $('#chkIsOnTour', this).checked(query.IsOnTour === true).checkboxradio('refresh');
     });
 
 })(jQuery, document);

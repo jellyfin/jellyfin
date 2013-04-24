@@ -273,6 +273,10 @@
     overflow: hidden;
 }
 
+    .tileName + .tileName {
+        margin-top: .75em;
+    }
+
 .tileItem .userDataIcons img {
     height: 14px;
     width: 14px;
@@ -438,9 +442,9 @@
         width: 23.5%;
     }
 
-    .cdTileItem .tileImage {
-        height: 140px;
-    }
+        .cdTileItem .tileImage {
+            height: 140px;
+        }
 }
 
 

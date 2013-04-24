@@ -42,11 +42,6 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The fields.</value>
         public ItemFields[] Fields { get; set; }
-        /// <summary>
-        /// Gets or sets the person types.
-        /// </summary>
-        /// <value>The person types.</value>
-        public string[] PersonTypes { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsByNameQuery"/> class.
@@ -54,8 +49,6 @@ namespace MediaBrowser.Model.Querying
         public ItemsByNameQuery()
         {
             Fields = new ItemFields[] {};
-
-            PersonTypes = new string[] {};
         }
     }
 }

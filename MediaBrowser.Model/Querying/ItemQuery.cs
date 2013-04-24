@@ -39,6 +39,12 @@ namespace MediaBrowser.Model.Querying
         public string[] SortBy { get; set; }
 
         /// <summary>
+        /// Filter by artists
+        /// </summary>
+        /// <value>The artists.</value>
+        public string[] Artists { get; set; }
+        
+        /// <summary>
         /// The sort order to return results with
         /// </summary>
         /// <value>The sort order.</value>
@@ -194,6 +200,7 @@ namespace MediaBrowser.Model.Querying
             Years = new int[] { };
             PersonTypes = new string[] { };
             Ids = new string[] { };
+            Artists = new string[] { };
 
             ImageTypes = new ImageType[] { };
             AirDays = new DayOfWeek[] { };
