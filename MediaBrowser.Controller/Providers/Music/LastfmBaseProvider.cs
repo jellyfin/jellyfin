@@ -46,7 +46,7 @@ namespace MediaBrowser.Controller.Providers.Music
         {
             get
             {
-                return "3-12-13.3";
+                return "04-24-2013";
             }
         }
 

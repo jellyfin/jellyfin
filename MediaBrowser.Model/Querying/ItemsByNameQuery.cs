@@ -44,11 +44,40 @@ namespace MediaBrowser.Model.Querying
         public ItemFields[] Fields { get; set; }
 
         /// <summary>
+        /// Gets or sets the exclude item types.
+        /// </summary>
+        /// <value>The exclude item types.</value>
+        public string[] ExcludeItemTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the include item types.
+        /// </summary>
+        /// <value>The include item types.</value>
+        public string[] IncludeItemTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media types.
+        /// </summary>
+        /// <value>The media types.</value>
+        public string[] MediaTypes { get; set; }
+
+        /// <summary>
+        /// What to sort the results by
+        /// </summary>
+        /// <value>The sort by.</value>
+        public string[] SortBy { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ItemsByNameQuery"/> class.
         /// </summary>
         public ItemsByNameQuery()
         {
             Fields = new ItemFields[] {};
+            Recursive = true;
+            MediaTypes = new string[] { };
+            SortBy = new string[] { };
+            ExcludeItemTypes = new string[] { };
+            IncludeItemTypes = new string[] { };
         }
     }
 }

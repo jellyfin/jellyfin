@@ -97,6 +97,12 @@ namespace MediaBrowser.Model.Dto
         public int? ProductionYear { get; set; }
 
         /// <summary>
+        /// Gets or sets the players supported by a game.
+        /// </summary>
+        /// <value>The players.</value>
+        public int? Players { get; set; }
+        
+        /// <summary>
         /// Gets or sets the index number.
         /// </summary>
         /// <value>The index number.</value>

@@ -573,7 +573,11 @@
 }
 
 .detailTable a {
-    font-weight: normal!important;
+    text-decoration: none;
+}
+
+.detailTable a:hover {
+    text-decoration: underline;
 }
 
 .detailTable td {
