@@ -125,14 +125,14 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             BaseProviderInfo supportedProvidersInfo;
 
-            var supportedProvidersValue = string.Join("+", supportedProviders.Select(i => i.GetType().Name));
+            var supportedProvidersValue = string.Join(string.Empty, supportedProviders.Select(i => i.GetType().Name));
             var providersChanged = false;
 
             item.ProviderData.TryGetValue(_supportedProvidersKey, out supportedProvidersInfo);
             if (supportedProvidersInfo != null)
             {
                 // Force refresh if the supported providers have changed
-                providersChanged = force = force || !string.Equals(supportedProvidersInfo.FileSystemStamp, supportedProvidersValue);
+                providersChanged = force = force || !string.Equals(supportedProvidersInfo.CustomData, supportedProvidersValue);
 
                 // If providers have changed, clear provider info and update the supported providers hash
                 if (providersChanged)
@@ -144,7 +144,7 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             if (providersChanged)
             {
-                supportedProvidersInfo.FileSystemStamp = supportedProvidersValue;
+                supportedProvidersInfo.CustomData = supportedProvidersValue;
             }
 
             if (force) item.ClearMetaValues();

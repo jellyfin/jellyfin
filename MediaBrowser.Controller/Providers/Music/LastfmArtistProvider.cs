@@ -76,7 +76,11 @@ namespace MediaBrowser.Controller.Providers.Music
                     var ms = new MemoryStream();
                     JsonSerializer.SerializeToStream(result.artist, ms);
 
-                    cancellationToken.ThrowIfCancellationRequested();
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        ms.Dispose();
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
 
                     await _providerManager.SaveToLibraryFilesystem(item, Path.Combine(item.MetaLocation, LocalMetaFileName), ms, cancellationToken).ConfigureAwait(false);
                     

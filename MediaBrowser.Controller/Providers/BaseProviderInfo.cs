@@ -16,7 +16,7 @@ namespace MediaBrowser.Controller.Providers
         /// Gets or sets the file system stamp.
         /// </summary>
         /// <value>The file system stamp.</value>
-        public string FileSystemStamp { get; set; }
+        public Guid FileStamp { get; set; }
         /// <summary>
         /// Gets or sets the last refresh status.
         /// </summary>

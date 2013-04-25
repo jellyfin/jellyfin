@@ -142,7 +142,7 @@ namespace MediaBrowser.Controller.Providers
             // Save the file system stamp for future comparisons
             if (RefreshOnFileSystemStampChange)
             {
-                data.FileSystemStamp = GetCurrentFileSystemStamp(item);
+                data.FileStamp = GetCurrentFileSystemStamp(item);
             }
 
             item.ProviderData[Id] = data;
@@ -229,7 +229,7 @@ namespace MediaBrowser.Controller.Providers
         /// <returns><c>true</c> if [has file system stamp changed] [the specified item]; otherwise, <c>false</c>.</returns>
         protected bool HasFileSystemStampChanged(BaseItem item, BaseProviderInfo providerInfo)
         {
-            return !String.Equals(GetCurrentFileSystemStamp(item), providerInfo.FileSystemStamp);
+            return GetCurrentFileSystemStamp(item) != providerInfo.FileStamp;
         }
 
         /// <summary>
@@ -287,7 +287,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>Guid.</returns>
-        private string GetCurrentFileSystemStamp(BaseItem item)
+        private Guid GetCurrentFileSystemStamp(BaseItem item)
         {
             if (UseParentFileSystemStamp(item) && item.Parent != null)
             {

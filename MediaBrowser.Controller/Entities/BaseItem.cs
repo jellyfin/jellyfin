@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
@@ -193,18 +194,23 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The _file system stamp
         /// </summary>
-        private string _fileSystemStamp;
+        private Guid? _fileSystemStamp;
         /// <summary>
         /// Gets a directory stamp, in the form of a string, that can be used for
         /// comparison purposes to determine if the file system entries for this item have changed.
         /// </summary>
         /// <value>The file system stamp.</value>
         [IgnoreDataMember]
-        public string FileSystemStamp
+        public Guid FileSystemStamp
         {
             get
             {
-                return _fileSystemStamp ?? (_fileSystemStamp = GetFileSystemStamp());
+                if (!_fileSystemStamp.HasValue)
+                {
+                    _fileSystemStamp = GetFileSystemStamp();
+                }
+
+                return _fileSystemStamp.Value;
             }
         }
 
@@ -226,12 +232,12 @@ namespace MediaBrowser.Controller.Entities
         /// comparison purposes to determine if the file system entries for this item have changed.
         /// </summary>
         /// <returns>Guid.</returns>
-        private string GetFileSystemStamp()
+        private Guid GetFileSystemStamp()
         {
             // If there's no path or the item is a file, there's nothing to do
             if (LocationType != LocationType.FileSystem || !ResolveArgs.IsDirectory)
             {
-                return string.Empty;
+                return Guid.Empty;
             }
 
             var sb = new StringBuilder();
@@ -247,7 +253,7 @@ namespace MediaBrowser.Controller.Entities
                 sb.Append(file.cFileName);
             }
 
-            return sb.ToString();
+            return sb.ToString().GetMD5();
         }
 
         /// <summary>
