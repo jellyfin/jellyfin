@@ -1,0 +1,48 @@
+﻿.detailTable {
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 100%;
+    max-width: 1200px;
+    text-align: left;
+}
+
+.centeredDetailTable {
+    margin: auto;
+}
+
+.stretchedDetailTable {
+    width: 100%;
+}
+
+.detailTable a {
+    text-decoration: none;
+}
+
+    .detailTable a:hover {
+        text-decoration: underline;
+    }
+
+.detailTable td {
+    border-spacing: 0;
+    border-top: 1px solid #444;
+    border-bottom: 1px solid #444;
+    padding: 3px 5px;
+}
+
+.detailTable th {
+    border-spacing: 0;
+    border-bottom: 1px solid #444;
+    padding: 5px;
+    font-weight: normal;
+    text-align: left;
+    vertical-align: top;
+}
+
+.detailTable .imgUserItemRating {
+    width: 18px;
+    height: 18px;
+}
+
+.userDataCell {
+    width: 140px;
+}

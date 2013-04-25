@@ -270,7 +270,7 @@
             loadItems(page, {
                 MediaTypes: "",
                 IncludeItemTypes: "MusicAlbum",
-                PersonTypes: "Artist",
+                PersonTypes: "",
                 Artists: ""
             });
         });
@@ -280,7 +280,7 @@
             loadItems(page, {
                 MediaTypes: "",
                 IncludeItemTypes: "Audio",
-                PersonTypes: "Artist",
+                PersonTypes: "",
                 Artists: ""
             });
         });

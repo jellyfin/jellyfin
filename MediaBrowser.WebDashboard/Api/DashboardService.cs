@@ -478,6 +478,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "musicalbums.js",
                                       "musicartists.js",
                                       "musicgenres.js",
+                                      "musicrecommended.js",
                                       "playlist.js",
                                       "plugincatalogpage.js",
                                       "pluginspage.js",
@@ -525,6 +526,8 @@ namespace MediaBrowser.WebDashboard.Api
                                   {
                                       "site.css",
                                       "librarybrowser.css",
+                                      "detailtable.css",
+                                      "posteritem.css",
                                       "pluginupdates.css",
                                       "userimage.css"
                                   };

@@ -1,0 +1,61 @@
+﻿.posterItem {
+    margin: 3px;
+    text-shadow: none;
+    font-weight: normal!important;
+    display: inline-block;
+    font-size: 14px;
+    position: relative;
+    color: #fff;
+    text-decoration: none;
+    text-align: left;
+    overflow: hidden;
+}
+
+    .posterItem:hover {
+        -moz-box-shadow: 0 0 20px 3px #2572EB;
+        -webkit-box-shadow: 0 0 20px 3px #2572EB;
+        box-shadow: 0 0 20px 3px #2572EB;
+    }
+
+.posterItemImage {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center bottom;
+    overflow: hidden;
+}
+
+.defaultPosterItemImage {
+    background-color: #999;
+}
+
+.posterItemText {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    text-wrap: none;
+    white-space: nowrap;
+    padding: 4px 5px 4px;
+    background: #181818;
+    text-shadow: none;
+}
+
+    .posterItemText + .posterItemText {
+        padding-top: 2px;
+    }
+
+.squarePosterItem {
+    width: 200px;
+}
+
+    .squarePosterItem .posterItemImage {
+        height: 200px;
+        background-size: 200px auto;
+    }
+
+.backdropPosterItem {
+    width: 160px;
+}
+
+    .backdropPosterItem .posterItemImage {
+        height: 90px;
+        background-size: 160px auto;
+    }

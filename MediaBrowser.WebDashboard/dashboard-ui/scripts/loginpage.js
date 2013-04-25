@@ -60,14 +60,10 @@
 
             var linkId = "lnkUser" + i;
 
-            var background = LibraryBrowser.getMetroColor(user.Id);
-
-            html += '<div class="posterViewItem posterViewItemWithDualText">';
-
             if (user.HasPassword) {
-                html += "<a id='" + linkId + "' data-userid='" + user.Id + "' data-username='" + user.Name + "' href='#popupLogin' data-rel='popup' onclick='LoginPage.authenticatingLinkId=this.id;' \">";
+                html += "<a class='posterItem squarePosterItem' id='" + linkId + "' data-userid='" + user.Id + "' data-username='" + user.Name + "' href='#popupLogin' data-rel='popup' onclick='LoginPage.authenticatingLinkId=this.id;' \">";
             } else {
-                html += "<a id='" + linkId + "' data-userid='" + user.Id + "' data-username='" + user.Name + "' href='#' onclick='LoginPage.authenticateUserLink(this);' \">";
+                html += "<a class='posterItem squarePosterItem' id='" + linkId + "' data-userid='" + user.Id + "' data-username='" + user.Name + "' href='#' onclick='LoginPage.authenticateUserLink(this);' \">";
             }
 
             if (user.PrimaryImageTag) {
@@ -78,13 +74,18 @@
                     type: "Primary"
                 });
 
-                html += '<img src="' + imgUrl + '" />';
-            } else {
-                html += '<img style="background:' + background + ';" src="css/images/logindefault.png"/>';
+                html += '<div class="posterItemImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
+            }
+            else {
+
+                var background = LibraryBrowser.getMetroColor(user.Id);
+
+                html += '<div class="posterItemImage" style="background-color:' + background + ';"></div>';
             }
 
-            html += '<div class="posterViewItemText posterViewItemPrimaryText">' + user.Name + '</div>';
-            html += '<div class="posterViewItemText">';
+            html += '<div class="posterItemText">' + user.Name + '</div>';
+
+            html += '<div class="posterItemText">';
             var lastSeen = LoginPage.getLastSeenText(user.LastActivityDate);
             if (lastSeen != "") {
                 html += lastSeen;
@@ -95,8 +96,6 @@
             html += '</div>';
 
             html += '</a>';
-
-            html += '</div>';
         }
 
         $('#divUsers', '#loginPage').html(html);

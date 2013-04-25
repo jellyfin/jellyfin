@@ -2,7 +2,7 @@
 
     // The base query options
     var query = {
-	    TargetSystems: 'Server,MBTheater,MBClassic'
+        TargetSystems: 'Server,MBTheater,MBClassic'
     };
 
     function reloadList(page) {
@@ -21,7 +21,7 @@
 
     function populateList(page, availablePlugins, installedPlugins) {
 
-	    Dashboard.showLoadingMsg();
+        Dashboard.showLoadingMsg();
 
         availablePlugins = availablePlugins.filter(function (p) {
             return p.type == "UserInstalled";
@@ -30,19 +30,19 @@
         });
 
         var serverhtml = '';
-	    var theatrehtml = '';
-	    var classichtml = "";
+        var theatrehtml = '';
+        var classichtml = "";
 
         for (var i = 0, length = availablePlugins.length; i < length; i++) {
-			var html = '';
+            var html = '';
             var plugin = availablePlugins[i];
 
-            html += "<div class='posterViewItem'><a href='addPlugin.html?name=" + encodeURIComponent(plugin.name) + "'>";
+            html += "<a class='posterItem backdropPosterItem' href='addPlugin.html?name=" + encodeURIComponent(plugin.name) + "'>";
 
             if (plugin.thumbImage) {
-                html += "<img src='" + plugin.thumbImage + "' style='max-width:185px;' />";
+                html += '<div class="posterItemImage" style="background-image:url(\'' + plugin.thumbImage + '\');"></div>';
             } else {
-                html += "<img style='background:#444444;max-width:185px;' src='css/images/items/list/collection.png' />";
+                html += '<div class="posterItemImage defaultPosterItemImage" style="background-image:url(\'css/images/items/list/collection.png\');"></div>';
             }
 
             if (plugin.isPremium) {
@@ -55,59 +55,57 @@
 
             var color = plugin.tileColor || LibraryBrowser.getMetroColor(plugin.name);
 
-            html += "<div class='posterViewItemText' style='background:" + color + "'>";
+            html += "<div class='posterItemText' style='background:" + color + "'>";
 
             var installedPlugin = installedPlugins.filter(function (ip) {
                 return ip.Name == plugin.name;
             })[0];
 
-            html += "<div>";
             if (installedPlugin) {
                 html += plugin.name + " (Installed)";
             } else {
                 html += plugin.name;
             }
-            html += "</div>";
 
             html += "</div>";
 
-            html += "</a></div>";
+            html += "</a>";
 
-	        if (plugin.targetSystem == "Server") {
-		        serverhtml += html;
-	        }else if (plugin.targetSystem == "MBTheater") {
-		        theatrehtml += html;
-	        }else if (plugin.targetSystem == "MBClassic") {
-		        classichtml += html;
-	        }
+            if (plugin.targetSystem == "Server") {
+                serverhtml += html;
+            } else if (plugin.targetSystem == "MBTheater") {
+                theatrehtml += html;
+            } else if (plugin.targetSystem == "MBClassic") {
+                classichtml += html;
+            }
 
         }
 
-	    if (!availablePlugins.length) {
-		    $("#noPlugins", page).hide();
-	    }
+        if (!availablePlugins.length) {
+            $("#noPlugins", page).hide();
+        }
 
-	    $('#pluginServerTiles', page).html(serverhtml);
-	    $('#pluginTheatreTiles', page).html(theatrehtml);
-	    $('#pluginClassicTiles', page).html(classichtml);
+        $('#pluginServerTiles', page).html(serverhtml);
+        $('#pluginTheatreTiles', page).html(theatrehtml);
+        $('#pluginClassicTiles', page).html(classichtml);
 
-	    if (serverhtml) {
+        if (serverhtml) {
             $('#pluginServerCollapsible', page).show();
-	    }else {
-		    $('#pluginServerCollapsible', page).hide();
-	    }
+        } else {
+            $('#pluginServerCollapsible', page).hide();
+        }
 
-	    if (theatrehtml) {
-		   $('#pluginTheatreCollapsible', page).show();
-	    }else {
-		    $('#pluginTheatreCollapsible', page).hide();
-	    }
+        if (theatrehtml) {
+            $('#pluginTheatreCollapsible', page).show();
+        } else {
+            $('#pluginTheatreCollapsible', page).hide();
+        }
 
-	    if (classichtml) {
-		   $('#pluginClassicCollapsible', page).show();
-	    }else {
-		    $('#pluginClassicCollapsible', page).hide();
-	    }
+        if (classichtml) {
+            $('#pluginClassicCollapsible', page).show();
+        } else {
+            $('#pluginClassicCollapsible', page).hide();
+        }
 
         Dashboard.hideLoadingMsg();
     }
@@ -117,7 +115,7 @@
 
         var page = this;
 
-	    reloadList(page);
+        reloadList(page);
 
         $('.chkPremiumFilter', page).on('change', function () {
 
@@ -130,7 +128,7 @@
         });
 
     }).on('pageshow', "#pluginCatalogPage", function () {
-        
+
         var page = this;
 
         // Reset form values using the last used query

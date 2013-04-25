@@ -438,10 +438,8 @@ form, .readOnlyContent {
     text-align: right;
     top: 0;
     right: 0;
-    width: 75px!important;
-    height: 75px!important;
-    max-width: 75px!important;
-    max-height: 75px!important;
+    width: 60px;
+    height: 60px;
 }
 
 .posterViewItemText {
@@ -481,7 +479,7 @@ form, .readOnlyContent {
 
     .posterViewItem img {
         max-width: 190px;
-        max-height: 160px;
+        max-height: 130px;
     }
 }
 
@@ -493,7 +491,7 @@ form, .readOnlyContent {
 
         .posterViewItem img {
             max-width: 270px;
-            max-height: 220px;
+            max-height: 160px;
         }
 }
 
@@ -518,7 +516,7 @@ form, .readOnlyContent {
 
     .posterViewItem img {
         max-width: 310px;
-        max-height: 250px;
+        max-height: 210px;
     }
 }
 
