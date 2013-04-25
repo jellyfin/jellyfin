@@ -458,10 +458,10 @@ namespace MediaBrowser.Server.Implementations.Providers
                     {
                         await input.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
                     }
-
-                    // If this is ever used for something other than metadata we can add a file type param
-                    item.ResolveArgs.AddMetadataFile(path);
                 }
+
+                // If this is ever used for something other than metadata we can add a file type param
+                item.ResolveArgs.AddMetadataFile(path);
             }
             finally
             {
