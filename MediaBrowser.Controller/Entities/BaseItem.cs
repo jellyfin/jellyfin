@@ -29,6 +29,7 @@ namespace MediaBrowser.Controller.Entities
             TrailerUrls = new List<string>();
             Studios = new List<string>();
             People = new List<PersonInfo>();
+            CriticReviews = new List<ItemReview>();
         }
 
         /// <summary>
@@ -588,6 +589,18 @@ namespace MediaBrowser.Controller.Entities
         public List<string> ProductionLocations { get; set; }
 
         /// <summary>
+        /// Gets or sets the critic rating.
+        /// </summary>
+        /// <value>The critic rating.</value>
+        public float? CriticRating { get; set; }
+
+        /// <summary>
+        /// Gets or sets the critic rating summary.
+        /// </summary>
+        /// <value>The critic rating summary.</value>
+        public string CriticRatingSummary { get; set; }
+        
+        /// <summary>
         /// Gets or sets the community rating.
         /// </summary>
         /// <value>The community rating.</value>
@@ -621,6 +634,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The parent index number.</value>
         public int? ParentIndexNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the critic reviews.
+        /// </summary>
+        /// <value>The critic reviews.</value>
+        public List<ItemReview> CriticReviews { get; set; }
 
         /// <summary>
         /// The _local trailers
