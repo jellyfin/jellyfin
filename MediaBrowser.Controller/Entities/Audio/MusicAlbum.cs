@@ -111,14 +111,14 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// Gets or sets the images.
         /// </summary>
         /// <value>The images.</value>
-        public override Dictionary<string, string> Images
+        public override Dictionary<ImageType, string> Images
         {
             get
             {
                 var images = base.Images;
                 string primaryImagePath;
 
-                if (images == null || !images.TryGetValue(ImageType.Primary.ToString(), out primaryImagePath))
+                if (images == null || !images.TryGetValue(ImageType.Primary, out primaryImagePath))
                 {
                     var image = Children.Select(c => c.PrimaryImagePath).FirstOrDefault(c => !string.IsNullOrEmpty(c));
 
@@ -126,9 +126,9 @@ namespace MediaBrowser.Controller.Entities.Audio
                     {
                         if (images == null)
                         {
-                            images = new Dictionary<string, string>();
+                            images = new Dictionary<ImageType, string>();
                         }
-                        images[ImageType.Primary.ToString()] = image;
+                        images[ImageType.Primary] = image;
                     }
                 }
 
