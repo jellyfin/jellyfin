@@ -89,7 +89,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the images.
         /// </summary>
         /// <value>The images.</value>
-        public virtual Dictionary<string, string> Images { get; set; }
+        public virtual Dictionary<ImageType, string> Images { get; set; }
 
         /// <summary>
         /// Gets or sets the date created.
@@ -650,7 +650,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The _local trailers
         /// </summary>
-        private List<Video> _localTrailers;
+        private List<Trailer> _localTrailers;
         /// <summary>
         /// The _local trailers initialized
         /// </summary>
@@ -664,7 +664,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The local trailers.</value>
         [IgnoreDataMember]
-        public List<Video> LocalTrailers
+        public List<Trailer> LocalTrailers
         {
             get
             {
@@ -708,7 +708,7 @@ namespace MediaBrowser.Controller.Entities
         /// Loads local trailers from the file system
         /// </summary>
         /// <returns>List{Video}.</returns>
-        private List<Video> LoadLocalTrailers()
+        private List<Trailer> LoadLocalTrailers()
         {
             ItemResolveArgs resolveArgs;
 
@@ -719,12 +719,12 @@ namespace MediaBrowser.Controller.Entities
             catch (IOException ex)
             {
                 Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
-                return new List<Video>();
+                return new List<Trailer>();
             }
 
             if (!resolveArgs.IsDirectory)
             {
-                return new List<Video>();
+                return new List<Trailer>();
             }
 
             var folder = resolveArgs.GetFileSystemEntryByName(TrailerFolderName);
@@ -732,7 +732,7 @@ namespace MediaBrowser.Controller.Entities
             // Path doesn't exist. No biggie
             if (folder == null)
             {
-                return new List<Video>();
+                return new List<Trailer>();
             }
 
             IEnumerable<WIN32_FIND_DATA> files;
@@ -744,13 +744,13 @@ namespace MediaBrowser.Controller.Entities
             catch (IOException ex)
             {
                 Logger.ErrorException("Error loading trailers for {0}", ex, Name);
-                return new List<Video>();
+                return new List<Trailer>();
             }
 
-            return LibraryManager.ResolvePaths<Video>(files, null).Select(video =>
+            return LibraryManager.ResolvePaths<Trailer>(files, null).Select(video =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
-                var dbItem = LibraryManager.RetrieveItem(video.Id) as Video;
+                var dbItem = LibraryManager.RetrieveItem(video.Id) as Trailer;
 
                 if (dbItem != null)
                 {
@@ -1376,7 +1376,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             string val;
-            Images.TryGetValue(type.ToString(), out val);
+            Images.TryGetValue(type, out val);
             return val;
         }
 
@@ -1417,7 +1417,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentException("Screenshots should be accessed using Item.Screenshots");
             }
 
-            var typeKey = type.ToString();
+            var typeKey = type;
 
             // If it's null remove the key from the dictionary
             if (string.IsNullOrEmpty(path))
@@ -1435,7 +1435,7 @@ namespace MediaBrowser.Controller.Entities
                 // Ensure it exists
                 if (Images == null)
                 {
-                    Images = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    Images = new Dictionary<ImageType, string>();
                 }
 
                 Images[typeKey] = path;

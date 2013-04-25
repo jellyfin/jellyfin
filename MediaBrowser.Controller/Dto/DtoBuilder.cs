@@ -299,12 +299,9 @@ namespace MediaBrowser.Controller.Dto
 
                 foreach (var image in item.Images)
                 {
-                    ImageType type;
+                    var type = image.Key;
 
-                    if (Enum.TryParse(image.Key, true, out type))
-                    {
-                        dto.ImageTags[type] = Kernel.Instance.ImageManager.GetImageCacheTag(item, type, image.Value);
-                    }
+                    dto.ImageTags[type] = Kernel.Instance.ImageManager.GetImageCacheTag(item, type, image.Value);
                 }
             }
 
