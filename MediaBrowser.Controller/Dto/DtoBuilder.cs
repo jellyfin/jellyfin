@@ -615,9 +615,9 @@ namespace MediaBrowser.Controller.Dto
 
             var dictionary = entities.ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
-            for (var i = 0; i < item.People.Count; i++)
+            for (var i = 0; i < people.Count; i++)
             {
-                var person = item.People[i];
+                var person = people[i];
 
                 var baseItemPerson = new BaseItemPerson
                 {
