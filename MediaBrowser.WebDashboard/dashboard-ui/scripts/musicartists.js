@@ -5,7 +5,6 @@
 
         SortBy: "SortName",
         SortOrder: "Ascending",
-        IncludeItemTypes: "Audio",
         Recursive: true,
         Fields: "PrimaryImageAspectRatio,ItemCounts,DateCreated,UserData",
         Limit: LibraryBrowser.getDetaultPageSize(),
