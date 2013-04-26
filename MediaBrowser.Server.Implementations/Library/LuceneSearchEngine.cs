@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Lucene.Net.Analysis.Standard;
+﻿using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.QueryParsers;
@@ -11,8 +6,13 @@ using Lucene.Net.Search;
 using Lucene.Net.Store;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -22,15 +22,22 @@ namespace MediaBrowser.Server.Implementations.Library
     /// </summary>
     public class LuceneSearchEngine : ILibrarySearchEngine, IDisposable
     {
-        public LuceneSearchEngine(IServerApplicationPaths serverPaths, ILogManager logManager)
+        private readonly ILibraryManager _libraryManager;
+        private readonly ILogger _logger;
+
+        public LuceneSearchEngine(IServerApplicationPaths serverPaths, ILogManager logManager, ILibraryManager libraryManager)
         {
+            _libraryManager = libraryManager;
+
+            _logger = logManager.GetLogger("Lucene");
+
             //string luceneDbPath = serverPaths.DataPath + "\\SearchIndexDB";
             //if (!System.IO.Directory.Exists(luceneDbPath))
             //    System.IO.Directory.CreateDirectory(luceneDbPath);
             //else if(File.Exists(luceneDbPath + "\\write.lock"))
             //        File.Delete(luceneDbPath + "\\write.lock");
 
-            //LuceneSearch.Init(luceneDbPath, logManager.GetLogger("Lucene"));
+            //LuceneSearch.Init(luceneDbPath, _logger);
 
             //BaseItem.LibraryManager.LibraryChanged += LibraryChanged;
         }
@@ -81,6 +88,146 @@ namespace MediaBrowser.Server.Implementations.Library
             //BaseItem.LibraryManager.LibraryChanged -= LibraryChanged;
 
             //LuceneSearch.CloseAll();
+        }
+
+        /// <summary>
+        /// Gets the search hints.
+        /// </summary>
+        /// <param name="inputItems">The input items.</param>
+        /// <param name="searchTerm">The search term.</param>
+        /// <returns>IEnumerable{SearchHintResult}.</returns>
+        /// <exception cref="System.ArgumentNullException">searchTerm</exception>
+        public async Task<IEnumerable<BaseItem>> GetSearchHints(IEnumerable<BaseItem> inputItems, string searchTerm)
+        {
+            if (string.IsNullOrEmpty(searchTerm))
+            {
+                throw new ArgumentNullException("searchTerm");
+            }
+
+            var hints = new List<Tuple<BaseItem, int>>();
+
+            var items = inputItems.Where(i => !(i is MusicArtist)).ToList();
+
+            foreach (var item in items)
+            {
+                var index = IndexOf(item.Name, searchTerm);
+
+                if (index != -1)
+                {
+                    hints.Add(new Tuple<BaseItem, int>(item, index));
+                }
+            }
+
+            // Find artists
+            var artists = items.OfType<Audio>()
+                .SelectMany(i => new[] { i.Artist, i.AlbumArtist })
+                .Where(i => !string.IsNullOrEmpty(i))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            foreach (var item in artists)
+            {
+                var index = IndexOf(item, searchTerm);
+
+                if (index != -1)
+                {
+                    var artist = await _libraryManager.GetArtist(item).ConfigureAwait(false);
+
+                    hints.Add(new Tuple<BaseItem, int>(artist, index));
+                }
+            }
+            
+            // Find genres
+            var genres = items.SelectMany(i => i.Genres)
+                .Where(i => !string.IsNullOrEmpty(i))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            foreach (var item in genres)
+            {
+                var index = IndexOf(item, searchTerm);
+
+                if (index != -1)
+                {
+                    var genre = await _libraryManager.GetGenre(item).ConfigureAwait(false);
+
+                    hints.Add(new Tuple<BaseItem, int>(genre, index));
+                }
+            }
+
+            // Find studios
+            var studios = items.SelectMany(i => i.Studios)
+                .Where(i => !string.IsNullOrEmpty(i))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            foreach (var item in studios)
+            {
+                var index = IndexOf(item, searchTerm);
+
+                if (index != -1)
+                {
+                    var studio = await _libraryManager.GetStudio(item).ConfigureAwait(false);
+
+                    hints.Add(new Tuple<BaseItem, int>(studio, index));
+                }
+            }
+
+            // Find persons
+            var persons = items.SelectMany(i => i.People)
+                .Select(i => i.Name)
+                .Where(i => !string.IsNullOrEmpty(i))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            foreach (var item in persons)
+            {
+                var index = IndexOf(item, searchTerm);
+
+                if (index != -1)
+                {
+                    var person = await _libraryManager.GetPerson(item).ConfigureAwait(false);
+
+                    hints.Add(new Tuple<BaseItem, int>(person, index));
+                }
+            }
+
+            return hints.OrderBy(i => i.Item2).Select(i => i.Item1);
+        }
+
+        /// <summary>
+        /// Gets the words.
+        /// </summary>
+        /// <param name="term">The term.</param>
+        /// <returns>System.String[][].</returns>
+        private string[] GetWords(string term)
+        {
+            // TODO: Improve this to be more accurate and respect culture
+            var words = term.Split(' ');
+
+            return words;
+        }
+
+        /// <summary>
+        /// Indexes the of.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="term">The term.</param>
+        /// <returns>System.Int32.</returns>
+        private int IndexOf(string input, string term)
+        {
+            var index = 0;
+
+            foreach (var word in GetWords(input))
+            {
+                if (word.IndexOf(term, StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    return index;
+                }
+
+                index++;
+            }
+            return -1;
         }
     }
 

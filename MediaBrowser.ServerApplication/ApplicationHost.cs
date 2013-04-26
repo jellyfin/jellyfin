@@ -269,7 +269,7 @@ namespace MediaBrowser.ServerApplication
             DisplayPreferencesManager = new DisplayPreferencesManager(LogManager.GetLogger("DisplayPreferencesManager"));
             RegisterSingleInstance(DisplayPreferencesManager);
 
-            RegisterSingleInstance<ILibrarySearchEngine>(() => new LuceneSearchEngine(ApplicationPaths, LogManager));
+            RegisterSingleInstance<ILibrarySearchEngine>(() => new LuceneSearchEngine(ApplicationPaths, LogManager, LibraryManager));
 
             MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ZipClient, ApplicationPaths, JsonSerializer);
             RegisterSingleInstance(MediaEncoder);

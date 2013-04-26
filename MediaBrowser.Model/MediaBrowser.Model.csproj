@@ -86,6 +86,7 @@
     <Compile Include="Net\NetworkShareType.cs" />
     <Compile Include="Querying\PersonsQuery.cs" />
     <Compile Include="Querying\ThemeSongsResult.cs" />
+    <Compile Include="Search\SearchHintResult.cs" />
     <Compile Include="Serialization\IJsonSerializer.cs" />
     <Compile Include="Serialization\IXmlSerializer.cs" />
     <Compile Include="Updates\CheckForUpdateResult.cs" />

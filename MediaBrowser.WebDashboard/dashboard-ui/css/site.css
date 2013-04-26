@@ -26,6 +26,10 @@
     src: local("Open Sans"), local("OpenSans"), url(http://themes.googleusercontent.com/static/fonts/opensans/v6/K88pR3goAWT7BTt32Z01mz8E0i7KZn-EPnyo3HZu7kw.woff) format('woff');
 }
 
+* {
+    text-shadow: none!important;
+}
+
 body {
     overflow-y: scroll!important;
 }
@@ -124,16 +128,6 @@ pre, textarea.pre {
     top: 10px;
     right: 10px;
 }
-
-.headerSearch {
-    display: none;
-    margin-right: 2em;
-}
-
-    .headerSearch input {
-        width: 200px;
-        vertical-align: middle;
-    }
 
 .header .imageLink {
     display: inline-block;
@@ -275,17 +269,8 @@ form, .readOnlyContent {
 
 @media all and (min-width: 650px) {
 
-    .headerSearch {
-        display: inline-block;
-    }
-
     .imgLogoIcon {
         height: 50px;
-    }
-
-    .imgLogoText {
-        height: 50px;
-        display: inline;
     }
 
     .imageLink.supporter {
@@ -333,6 +318,11 @@ form, .readOnlyContent {
 }
 
 @media all and (min-width: 750px) {
+
+    .imgLogoText {
+        height: 50px;
+        display: inline;
+    }
 
     .content-secondary {
         width: 34%;

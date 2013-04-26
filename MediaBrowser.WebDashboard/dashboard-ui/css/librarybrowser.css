@@ -28,10 +28,6 @@
         color: #fff;
     }
 
-.type-home {
-    background: #494949 url(images/bgflip.png) repeat-x!important;
-}
-
 .listHeader {
     margin-top: .5em;
     margin-bottom: 5px;
@@ -82,10 +78,6 @@
 }
 
 @media all and (min-width: 1000px) {
-    /*.libraryPage:not(.folderListPage) > .ui-content, .libraryPage:not(.folderListPage) > .ui-panel-content-wrap {
-        margin-top: -35px!important;
-    }*/
-
     .detailPageContent {
         width: 90%;
         margin: 0 auto;
@@ -93,10 +85,6 @@
 }
 
 @media all and (min-width: 1200px) {
-
-    .libraryPage .ui-content {
-        padding-top: 0;
-    }
 
     .ehsContent {
         max-width: 850px;
@@ -125,7 +113,7 @@
 }
 
     .detailPageName + .detailPageName {
-        margin: 0 0 .4em;
+        margin: 0;
     }
 
 .detailPageParentLink {
