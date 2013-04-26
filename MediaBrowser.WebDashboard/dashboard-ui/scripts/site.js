@@ -744,7 +744,11 @@ var Dashboard = {
 
         var html = '<div class="headerSearch"><form id="searchForm" name="searchForm">';
 
-        html += '<input type="text" />';
+        html += '<input class="txtSearch" type="text" />';
+        
+        html += '<button class="btnSearch" type="submit">';
+        html += '<img src="css/images/searchbutton.png" />';
+        html += '</button>';
 
         html += '</form></div>';
 
