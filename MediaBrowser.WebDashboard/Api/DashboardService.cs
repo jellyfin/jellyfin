@@ -485,6 +485,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "pluginupdatespage.js",
                                       "scheduledtaskpage.js",
                                       "scheduledtaskspage.js",
+                                      "search.js",
                                       "songs.js",
                                       "supporterkeypage.js",
                                       "supporterpage.js",
@@ -528,6 +529,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "librarybrowser.css",
                                       "detailtable.css",
                                       "posteritem.css",
+                                      "search.css",
                                       "pluginupdates.css",
                                       "userimage.css"
                                   };

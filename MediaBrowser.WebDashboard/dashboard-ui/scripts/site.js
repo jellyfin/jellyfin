@@ -696,7 +696,7 @@ var Dashboard = {
 
         if (user && !page.hasClass('wizardPage')) {
 
-            headerHtml += Dashboard.getSearchHtml();
+            headerHtml += Search.getSearchHtml();
 
             headerHtml += '<a class="imageLink btnCurrentUser" href="#" onclick="Dashboard.showUserFlyout();"><span class="currentUsername">' + user.Name + '</span>';
 
@@ -724,7 +724,7 @@ var Dashboard = {
 
         header.append(headerHtml);
 
-        $('#searchForm', header).on("submit", Dashboard.onSearchSubmit);
+        Search.onSearchRendered(header);
 
         Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
             if (pluginSecurityInfo.IsMBSupporter) {
@@ -733,28 +733,6 @@ var Dashboard = {
         });
     },
     
-    onSearchSubmit: function() {
-
-        Dashboard.alert('Coming soon.');
-
-        return false;
-    },
-    
-    getSearchHtml: function() {
-
-        var html = '<div class="headerSearch"><form id="searchForm" name="searchForm">';
-
-        html += '<input class="txtSearch" type="text" />';
-        
-        html += '<button class="btnSearch" type="submit">';
-        html += '<img src="css/images/searchbutton.png" />';
-        html += '</button>';
-
-        html += '</form></div>';
-
-        return html;
-    },
-
     ensureToolsMenu: function (page) {
 
         if (!page.hasClass('type-interior')) {
