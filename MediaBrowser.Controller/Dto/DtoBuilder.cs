@@ -65,7 +65,7 @@ namespace MediaBrowser.Controller.Dto
             {
                 dto.Studios = item.Studios;
             }
-            
+
             if (fields.Contains(ItemFields.People))
             {
                 tasks.Add(AttachPeople(dto, item));
@@ -176,7 +176,7 @@ namespace MediaBrowser.Controller.Dto
 
             if (item.IsFolder && fields.Contains(ItemFields.DisplayPreferencesId))
             {
-                dto.DisplayPreferencesId = ((Folder) item).GetDisplayPreferencesId(user.Id).ToString();
+                dto.DisplayPreferencesId = ((Folder)item).GetDisplayPreferencesId(user.Id).ToString();
             }
 
             if (item.IsFolder)
@@ -283,7 +283,7 @@ namespace MediaBrowser.Controller.Dto
             {
                 dto.ProductionLocations = item.ProductionLocations;
             }
-            
+
             dto.AspectRatio = item.AspectRatio;
 
             dto.BackdropImageTags = GetBackdropImageTags(item);
@@ -340,7 +340,7 @@ namespace MediaBrowser.Controller.Dto
                     dto.OverviewHtml = item.Overview;
                 }
             }
-            
+
             // If there are no backdrops, indicate what parent has them in case the Ui wants to allow inheritance
             if (dto.BackdropImageTags.Count == 0)
             {
@@ -424,7 +424,7 @@ namespace MediaBrowser.Controller.Dto
                 {
                     dto.Album = audio.Album;
                     dto.AlbumArtist = audio.AlbumArtist;
-                    dto.Artist = audio.Artist;
+                    dto.Artists = new[] { audio.Artist };
                 }
 
                 var album = item as MusicAlbum;
@@ -434,7 +434,12 @@ namespace MediaBrowser.Controller.Dto
                     var songs = album.Children.OfType<Audio>().ToList();
 
                     dto.AlbumArtist = songs.Select(i => i.AlbumArtist).FirstOrDefault(i => !string.IsNullOrEmpty(i));
-                    dto.Artist = songs.Select(i => i.Artist).FirstOrDefault(i => !string.IsNullOrEmpty(i));
+
+                    dto.Artists =
+                        songs.Select(i => i.Artist ?? string.Empty)
+                             .Where(i => !string.IsNullOrEmpty(i))
+                             .Distinct(StringComparer.OrdinalIgnoreCase)
+                             .ToArray();
                 }
             }
 
