@@ -95,14 +95,16 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
             progress.Report(0);
 
             var numComplete = 0;
-            
+
             foreach (var item in items)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var album = item.Parent as MusicAlbum;
 
-                var filename = album != null && string.IsNullOrEmpty(item.Album + album.DateModified.Ticks) ? (item.Id.ToString() + item.DateModified.Ticks) : item.Album;
+                var filename = item.Album ?? string.Empty;
+
+                filename += album == null ? item.Id.ToString() + item.DateModified.Ticks : album.Id.ToString() + album.DateModified.Ticks;
 
                 var path = ImageCache.GetResourcePath(filename + "_primary", ".jpg");
 
@@ -142,7 +144,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                 percent /= items.Count;
 
                 progress.Report(100 * percent);
-                
+
                 if (success)
                 {
                     // Image is already in the cache

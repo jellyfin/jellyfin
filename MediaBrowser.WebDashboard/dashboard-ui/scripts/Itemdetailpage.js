@@ -29,12 +29,23 @@
 
             $('#itemName', page).html(name);
 
+            if (item.AlbumArtist && item.Type == "Audio") {
+                $('#albumArtist', page).html('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + item.AlbumArtist + '">' + item.AlbumArtist + '</a>').show().trigger('create');
+            }
+            else {
+                $('#albumArtist', page).hide();
+            }
+
             if (item.SeriesName) {
 
                 $('#seriesName', page).html('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>').show().trigger('create');
             }
             else if (item.Album && item.Type == "Audio" && item.ParentId) {
                 $('#seriesName', page).html('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.ParentId + '">' + item.Album + '</a>').show().trigger('create');
+
+            }
+            else if (item.AlbumArtist && item.Type == "MusicAlbum") {
+                $('#seriesName', page).html('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + item.AlbumArtist + '">' + item.AlbumArtist + '</a>').show().trigger('create');
 
             }
             else if (item.Album) {

@@ -78,7 +78,8 @@
     }
 
 
-@media all and (min-width: 750px) {
+
+@media all and (min-width: 650px) {
 
     .backdropPosterItem {
         width: 192px;
@@ -87,6 +88,9 @@
         .backdropPosterItem .posterItemImage {
             height: 108px;
         }
+}
+
+@media all and (min-width: 750px) {
 
     .squarePosterItem {
         width: 160px;
@@ -158,11 +162,11 @@
 @media all and (min-width: 1920px) {
 
     .backdropPosterItem {
-        width: 304px;
+        width: 320px;
     }
 
         .backdropPosterItem .posterItemImage {
-            height: 171px;
+            height: 180px;
         }
 
     .squarePosterItem {
