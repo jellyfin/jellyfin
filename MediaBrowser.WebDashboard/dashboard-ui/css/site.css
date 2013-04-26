@@ -132,6 +132,7 @@ pre, textarea.pre {
 
     .headerSearch input {
         width: 200px;
+        vertical-align: middle;
     }
 
 .header .imageLink {
