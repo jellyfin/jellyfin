@@ -17,10 +17,13 @@
 
 		ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
 
-			$('#recentlyAddedItems', page).html(LibraryBrowser.getEpisodePosterViewHtml({
+		    $('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
 				items: result.Items,
 				useAverageAspectRatio: true,
-			    showNewIndicator: false
+				showNewIndicator: false,
+				shape: "backdrop",
+				showTitle: true,
+				showParentTitle: true
 			}));
 
 		});
@@ -45,9 +48,12 @@
 				$('#resumableSection', page).hide();
 			}
 
-			$('#resumableItems', page).html(LibraryBrowser.getEpisodePosterViewHtml({
+			$('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
 				items: result.Items,
-				useAverageAspectRatio: true
+				useAverageAspectRatio: true,
+				shape: "backdrop",
+				showTitle: true,
+				showParentTitle: true
 			}));
 
 		});

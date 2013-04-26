@@ -4,11 +4,11 @@
 
         var html = '';
 
-        html += '<div class="posterViewItem">';
-        html += '<a href="' + view.url + '">';
-        html += '<img style="background: ' + view.background + ';" src="' + view.img + '"><div class="posterViewItemText">' + view.name + '</div>';
+        html += '<a class="posterItem backdropPosterItem" href="' + view.url + '">';
+
+        html += '<div class="posterItemImage" style="background-color: ' + view.background + ';background-image:url(\'' + view.img + '\');"></div><div class="posterItemText posterItemTextCentered">' + view.name + '</div>';
+
         html += '</a>';
-        html += '</div>';
 
         return html;
     }
@@ -32,7 +32,9 @@
 
             $('#divCollections', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                showTitle: true
+                showTitle: true,
+                shape: "backdrop",
+                centerText: true
             }));
 
         });

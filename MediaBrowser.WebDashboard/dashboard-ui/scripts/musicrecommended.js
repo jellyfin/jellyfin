@@ -19,7 +19,8 @@
             $('#recentlyAddedAlbums', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 useAverageAspectRatio: true,
-                showNewIndicator: false
+                showNewIndicator: false,
+                shape: "square"
             }));
 
         });
@@ -31,7 +32,7 @@
             IncludeItemTypes: "Audio",
             Limit: 5,
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio"
+            Fields: "PrimaryImageAspectRatio,AudioInfo"
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
@@ -39,7 +40,70 @@
             $('#recentlyAddedSongs', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 useAverageAspectRatio: true,
-                showNewIndicator: false
+                showNewIndicator: false,
+                shape: "square",
+                showTitle: true,
+                showParentTitle: true
+            }));
+
+        });
+
+        options = {
+
+            SortBy: "DatePlayed",
+            SortOrder: "Descending",
+            IncludeItemTypes: "Audio",
+            Limit: 5,
+            Recursive: true,
+            Fields: "PrimaryImageAspectRatio,AudioInfo",
+            Filters: "IsPlayed"
+        };
+
+        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+
+            if (result.Items.length) {
+                $('#recentlyPlayed', page).show();
+            } else {
+                $('#recentlyPlayed', page).hide();
+            }
+
+            $('#recentlyPlayedSongs', page).html(LibraryBrowser.getPosterViewHtml({
+                items: result.Items,
+                useAverageAspectRatio: true,
+                showNewIndicator: false,
+                shape: "square",
+                showTitle: true,
+                showParentTitle: true
+            }));
+
+        });
+
+        options = {
+
+            SortBy: "PlayCount",
+            SortOrder: "Descending",
+            IncludeItemTypes: "Audio",
+            Limit: 5,
+            Recursive: true,
+            Fields: "PrimaryImageAspectRatio,AudioInfo",
+            Filters: "IsPlayed"
+        };
+
+        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+
+            if (result.Items.length) {
+                $('#topPlayed', page).show();
+            } else {
+                $('#topPlayed', page).hide();
+            }
+
+            $('#topPlayedSongs', page).html(LibraryBrowser.getPosterViewHtml({
+                items: result.Items,
+                useAverageAspectRatio: true,
+                showNewIndicator: false,
+                shape: "square",
+                showTitle: true,
+                showParentTitle: true
             }));
 
         });

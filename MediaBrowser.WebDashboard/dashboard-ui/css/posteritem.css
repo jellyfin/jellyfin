@@ -18,10 +18,9 @@
     }
 
 .posterItemImage {
-    background-size: contain;
+    background-size: 100% auto;
     background-repeat: no-repeat;
     background-position: center bottom;
-    overflow: hidden;
 }
 
 .defaultPosterItemImage {
@@ -38,17 +37,28 @@
     text-shadow: none;
 }
 
-    .posterItemText + .posterItemText {
-        padding-top: 2px;
-    }
+.posterItemTextCentered {
+    text-align: center;
+}
+
+.posterItemText + .posterItemText {
+    padding-top: 2px;
+}
+
+.posterItemDefaultText {
+    position: absolute;
+    top: 30%;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
 
 .squarePosterItem {
-    width: 200px;
+    width: 160px;
 }
 
     .squarePosterItem .posterItemImage {
-        height: 200px;
-        background-size: 200px auto;
+        height: 160px;
     }
 
 .backdropPosterItem {
@@ -57,5 +67,123 @@
 
     .backdropPosterItem .posterItemImage {
         height: 90px;
-        background-size: 160px auto;
     }
+
+.portraitPosterItem {
+    width: 100px;
+}
+
+    .portraitPosterItem .posterItemImage {
+        height: 150px;
+    }
+
+
+@media all and (min-width: 750px) {
+
+    .backdropPosterItem {
+        width: 192px;
+    }
+
+        .backdropPosterItem .posterItemImage {
+            height: 108px;
+        }
+
+    .squarePosterItem {
+        width: 160px;
+    }
+
+        .squarePosterItem .posterItemImage {
+            height: 160px;
+        }
+
+    .portraitPosterItem {
+        width: 110px;
+    }
+
+        .portraitPosterItem .posterItemImage {
+            height: 165px;
+        }
+}
+
+@media all and (min-width: 1200px) {
+
+    .backdropPosterItem {
+        width: 272px;
+    }
+
+        .backdropPosterItem .posterItemImage {
+            height: 153px;
+        }
+
+    .squarePosterItem {
+        width: 160px;
+    }
+
+        .squarePosterItem .posterItemImage {
+            height: 160px;
+        }
+
+    .portraitPosterItem {
+        width: 100px;
+    }
+
+        .portraitPosterItem .posterItemImage {
+            height: 150px;
+        }
+
+    .posterItem {
+        font-size: 15px;
+    }
+}
+
+@media all and (min-width: 1440px) {
+
+
+
+    .squarePosterItem {
+        width: 170px;
+    }
+
+        .squarePosterItem .posterItemImage {
+            height: 170px;
+        }
+
+    .portraitPosterItem {
+        width: 112px;
+    }
+
+        .portraitPosterItem .posterItemImage {
+            height: 168px;
+        }
+}
+
+@media all and (min-width: 1920px) {
+
+    .backdropPosterItem {
+        width: 304px;
+    }
+
+        .backdropPosterItem .posterItemImage {
+            height: 171px;
+        }
+
+    .squarePosterItem {
+        width: 185px;
+    }
+
+        .squarePosterItem .posterItemImage {
+            height: 185px;
+        }
+
+    .portraitPosterItem {
+        width: 126px;
+    }
+
+        .portraitPosterItem .posterItemImage {
+            height: 189px;
+        }
+
+    .posterItem {
+        font-size: 16px;
+    }
+}

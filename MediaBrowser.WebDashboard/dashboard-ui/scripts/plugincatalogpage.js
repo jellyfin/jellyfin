@@ -55,7 +55,7 @@
 
             var color = plugin.tileColor || LibraryBrowser.getMetroColor(plugin.name);
 
-            html += "<div class='posterItemText' style='background:" + color + "'>";
+            html += "<div class='posterItemText posterItemTextCentered' style='background:" + color + "'>";
 
             var installedPlugin = installedPlugins.filter(function (ip) {
                 return ip.Name == plugin.name;

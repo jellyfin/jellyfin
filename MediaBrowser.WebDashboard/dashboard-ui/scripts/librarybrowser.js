@@ -349,66 +349,109 @@
 
             var items = options.items;
 
+            options.shape = options.shape || "portrait";
+
             var primaryImageAspectRatio = options.useAverageAspectRatio ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
 
             var html = "";
 
             for (var i = 0, length = items.length; i < length; i++) {
+
                 var item = items[i];
 
-                var hasPrimaryImage = item.ImageTags && item.ImageTags.Primary;
-
-                var showText = options.showTitle || !hasPrimaryImage;
-
-                var cssClass = showText ? "posterViewItem" : "posterViewItem posterViewItemWithNoText";
-
-                html += "<div class='" + cssClass + "'><a href='" + LibraryBrowser.getHref(item) + "'>";
+                var imgUrl = null;
+                var background;
 
                 if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
-                    html += "<img src='" + ApiClient.getImageUrl(item.Id, {
+
+                    imgUrl = ApiClient.getImageUrl(item.Id, {
                         type: "Backdrop",
                         height: 198,
                         width: 352,
                         tag: item.BackdropImageTags[0]
+                    });
 
-                    }) + "' />";
-                } else if (hasPrimaryImage) {
+                } else if (item.ImageTags && item.ImageTags.Primary) {
 
                     var height = 300;
                     var width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
 
-                    html += "<img src='" + ApiClient.getImageUrl(item.Id, {
+                    imgUrl = ApiClient.getImageUrl(item.Id, {
                         type: "Primary",
                         height: height,
                         width: width,
                         tag: item.ImageTags.Primary
-
-                    }) + "' />";
+                    });
 
                 } else if (item.BackdropImageTags && item.BackdropImageTags.length) {
-                    html += "<img src='" + ApiClient.getImageUrl(item.Id, {
+
+                    imgUrl = ApiClient.getImageUrl(item.Id, {
                         type: "Backdrop",
                         height: 198,
                         width: 352,
                         tag: item.BackdropImageTags[0]
+                    });
 
-                    }) + "' />";
                 }
                 else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
 
-                    html += "<img style='background:" + defaultBackground + ";' src='css/images/items/list/audio.png' />";
+                    if (item.Name && options.showTitle) {
+                        imgUrl = 'css/images/items/list/audio.png';
+                        background = defaultBackground;
+                    } else {
+                        background = '#555';
+                    }
                 }
                 else if (item.MediaType == "Video" || item.Type == "Season" || item.Type == "Series") {
 
-                    html += "<img style='background:" + defaultBackground + ";' src='css/images/items/list/video.png' />";
+                    if (item.Name && options.showTitle) {
+                        imgUrl = 'css/images/items/list/video.png';
+                        background = defaultBackground;
+                    } else {
+                        background = '#555';
+                    }
                 }
                 else {
-
-                    html += "<img style='background:" + LibraryBrowser.getMetroColor(item.Id) + ";' src='css/images/items/list/collection.png' />";
+                    if (item.Name && options.showTitle) {
+                        imgUrl = 'css/images/items/list/collection.png';
+                        background = LibraryBrowser.getMetroColor(item.Id);
+                    } else {
+                        background = '#555';
+                    }
                 }
 
-                if (showText) {
-                    html += "<div class='posterViewItemText'>";
+                html += '<a class="posterItem ' + options.shape + 'PosterItem" href="' + LibraryBrowser.getHref(item, options.context) + '">';
+
+                var style = "";
+
+                if (imgUrl) {
+                    style += 'background-image:url(\'' + imgUrl + '\');';
+                }
+
+                if (background) {
+                    style += "background-color:" + background + ";";
+                }
+
+                html += '<div class="posterItemImage" style="' + style + '"></div>';
+
+                if (!imgUrl && !options.showTitle) {
+                    html += "<div class='posterItemDefaultText'>";
+                    html += item.Name;
+                    html += "</div>";
+                }
+
+                var cssclass = options.centerText ? "posterItemText posterItemTextCentered" : "posterItemText";
+
+                if (options.showParentTitle) {
+
+                    html += "<div class='" + cssclass + "'>";
+                    html += item.SeriesName || item.Album || item.Artist || "&nbsp;";
+                    html += "</div>";
+                }
+
+                if (options.showTitle) {
+
+                    html += "<div class='" + cssclass + "'>";
                     html += item.Name;
                     html += "</div>";
                 }
@@ -417,84 +460,8 @@
                     html += LibraryBrowser.getNewIndicatorHtml(item);
                 }
 
-                html += "</a></div>";
-            }
+                html += "</a>";
 
-            return html;
-        },
-
-        getEpisodePosterViewHtml: function (options) {
-
-            var items = options.items;
-
-            var primaryImageAspectRatio = options.useAverageAspectRatio ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
-
-            var html = "";
-
-            for (var i = 0, length = items.length; i < length; i++) {
-                var item = items[i];
-
-                var hasPrimaryImage = item.ImageTags && item.ImageTags.Primary;
-
-                var showText = options.showTitle || !hasPrimaryImage || (item.Type !== 'Movie' && item.Type !== 'Series' && item.Type !== 'Season' && item.Type !== 'Trailer');
-
-                var cssClass = showText ? "posterViewItem posterViewItemWithDualText" : "posterViewItem posterViewItemWithNoText";
-
-                html += "<div class='" + cssClass + "'><a href='" + LibraryBrowser.getHref(item, "tv") + "'>";
-
-                if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
-                    html += "<img src='" + ApiClient.getImageUrl(item.Id, {
-                        type: "Backdrop",
-                        height: 198,
-                        width: 352,
-                        tag: item.BackdropImageTags[0]
-                    }) + "' />";
-                } else if (hasPrimaryImage) {
-
-                    var height = 300;
-                    var width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
-
-                    html += "<img src='" + ApiClient.getImageUrl(item.Id, {
-                        type: "Primary",
-                        height: height,
-                        width: width,
-                        tag: item.ImageTags.Primary
-                    }) + "' />";
-
-                } else if (item.BackdropImageTags && item.BackdropImageTags.length) {
-                    html += "<img src='" + ApiClient.getImageUrl(item.Id, {
-                        type: "Backdrop",
-                        height: 198,
-                        width: 352,
-                        tag: item.BackdropImageTags[0]
-                    }) + "' />";
-                } else {
-                    html += "<img style='background:" + defaultBackground + ";' src='css/images/items/list/collection.png' />";
-                }
-
-                if (showText) {
-                    html += "<div class='posterViewItemText posterViewItemPrimaryText'>";
-                    if (item.SeriesName != null) {
-                        html += item.SeriesName;
-                        html += "</div>";
-                        html += "<div class='posterViewItemText'>";
-                    }
-                    if (item.ParentIndexNumber != null) {
-                        html += item.ParentIndexNumber + ".";
-                    }
-                    if (item.IndexNumber != null) {
-                        html += item.IndexNumber + " -";
-                    }
-
-                    html += " " + item.Name;
-                    html += "</div>";
-                }
-
-                if (options.showNewIndicator !== false) {
-                    html += LibraryBrowser.getNewIndicatorHtml(item);
-                }
-
-                html += "</a></div>";
             }
 
             return html;
@@ -1110,7 +1077,7 @@
 
             var miscInfo = [];
             var text;
-            
+
             if (item.ProductionYear && item.Type == "Series") {
 
                 if (item.Status == "Continuing") {
@@ -1135,13 +1102,13 @@
             }
 
             if (item.Type != "Series" && item.Type != "Episode") {
-                
+
                 if (item.ProductionYear) {
 
                     miscInfo.push(item.ProductionYear);
                 }
                 else if (item.PremiereDate) {
-                    
+
                     try {
                         text = "-" + parseISO8601Date(item.PremiereDate, { toLocal: true }).getFullYear();
                         miscInfo.push(text);
