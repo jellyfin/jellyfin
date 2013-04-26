@@ -433,9 +433,18 @@
 
                 html += '<div class="posterItemImage" style="' + style + '"></div>';
 
+                var name = item.Name;
+
+                if (item.IndexNumber != null) {
+                    name = item.IndexNumber + " - " + name;
+                }
+                if (item.ParentIndexNumber != null) {
+                    name = item.ParentIndexNumber + "." + name;
+                }
+
                 if (!imgUrl && !options.showTitle) {
                     html += "<div class='posterItemDefaultText'>";
-                    html += item.Name;
+                    html += name;
                     html += "</div>";
                 }
 
@@ -451,7 +460,7 @@
                 if (options.showTitle) {
 
                     html += "<div class='" + cssclass + "'>";
-                    html += item.Name;
+                    html += name;
                     html += "</div>";
                 }
 
