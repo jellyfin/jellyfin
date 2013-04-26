@@ -24,9 +24,7 @@
 
             html += LibraryBrowser.getSongTableHtml(result.Items, {
                 showAlbum: true,
-                showArtist: true,
-                center: true,
-                strech: true
+                showArtist: true
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);

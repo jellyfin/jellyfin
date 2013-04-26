@@ -125,6 +125,15 @@ pre, textarea.pre {
     right: 10px;
 }
 
+.headerSearch {
+    display: none;
+    margin-right: 2em;
+}
+
+    .headerSearch input {
+        width: 200px;
+    }
+
 .header .imageLink {
     display: inline-block;
 }
@@ -264,6 +273,10 @@ form, .readOnlyContent {
 }
 
 @media all and (min-width: 650px) {
+
+    .headerSearch {
+        display: inline-block;
+    }
 
     .imgLogoIcon {
         height: 50px;

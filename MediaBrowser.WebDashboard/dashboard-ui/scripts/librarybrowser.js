@@ -202,13 +202,9 @@
 
             var html = '';
 
-            var cssClass = options.center ? "centeredDetailTable detailTable" : "detailTable";
+            var cssClass = "detailTable";
 
-            if (options.strech) {
-                cssClass += " stretchedDetailTable";
-            }
-
-            html += '<table class="' + cssClass + '">';
+            html += '<div class="detailTableContainer"><table class="' + cssClass + '">';
 
             html += '<tr>';
 
@@ -220,7 +216,7 @@
                 html += '<th>Album</th>';
             }
             if (options.showArtist) {
-                html += '<th>Artists</th>';
+                html += '<th>Artist</th>';
             }
 
             html += '<th>Duration</th>';
@@ -254,8 +250,11 @@
 
                 if (options.showArtist) {
 
-                    if (item.Artist) {
-                        html += '<td><a href="itembynamedetails.html?context=music&artist=' + item.Artist + '">' + item.Artist + '</a></td>';
+                    if (item.Artists && item.Artists.length) {
+
+                        var artist = item.Artists[0];
+                        
+                        html += '<td><a href="itembynamedetails.html?context=music&artist=' + artist + '">' + artist + '</a></td>';
                     } else {
                         html += '<td></td>';
                     }
@@ -272,7 +271,7 @@
                 html += '</tr>';
             }
 
-            html += '</table>';
+            html += '</table></div>';
 
             return html;
         },
@@ -445,7 +444,7 @@
                 if (options.showParentTitle) {
 
                     html += "<div class='" + cssclass + "'>";
-                    html += item.SeriesName || item.Album || item.Artist || "&nbsp;";
+                    html += item.SeriesName || item.Album || "&nbsp;";
                     html += "</div>";
                 }
 
@@ -1368,36 +1367,36 @@
 
             if (imageTags.Banner) {
 
-                html += LibraryBrowser.createGalleryImage(item.Id, "Banner", imageTags.Banner);
+                html += LibraryBrowser.createGalleryImage(item, "Banner", imageTags.Banner);
             }
 
             if (imageTags.Logo) {
 
-                html += LibraryBrowser.createGalleryImage(item.Id, "Logo", imageTags.Logo);
+                html += LibraryBrowser.createGalleryImage(item, "Logo", imageTags.Logo);
             }
             if (imageTags.Thumb) {
 
-                html += LibraryBrowser.createGalleryImage(item.Id, "Thumb", imageTags.Thumb);
+                html += LibraryBrowser.createGalleryImage(item, "Thumb", imageTags.Thumb);
             }
             if (imageTags.Art) {
 
-                html += LibraryBrowser.createGalleryImage(item.Id, "Art", imageTags.Art);
+                html += LibraryBrowser.createGalleryImage(item, "Art", imageTags.Art);
 
             }
             if (imageTags.Menu) {
 
-                html += LibraryBrowser.createGalleryImage(item.Id, "Menu", imageTags.Menu);
+                html += LibraryBrowser.createGalleryImage(item, "Menu", imageTags.Menu);
 
             }
             if (imageTags.Box) {
 
-                html += LibraryBrowser.createGalleryImage(item.Id, "Box", imageTags.Box);
+                html += LibraryBrowser.createGalleryImage(item, "Box", imageTags.Box);
             }
 
             if (item.BackdropImageTags) {
 
                 for (i = 0, length = item.BackdropImageTags.length; i < length; i++) {
-                    html += LibraryBrowser.createGalleryImage(item.Id, "Backdrop", item.BackdropImageTags[i], i);
+                    html += LibraryBrowser.createGalleryImage(item, "Backdrop", item.BackdropImageTags[i], i);
                 }
 
             }
@@ -1405,18 +1404,18 @@
             if (item.ScreenshotImageTags) {
 
                 for (i = 0, length = item.ScreenshotImageTags.length; i < length; i++) {
-                    html += LibraryBrowser.createGalleryImage(item.Id, "Screenshot", item.ScreenshotImageTags[i], i);
+                    html += LibraryBrowser.createGalleryImage(item, "Screenshot", item.ScreenshotImageTags[i], i);
                 }
             }
             if (imageTags.Disc) {
 
-                html += LibraryBrowser.createGalleryImage(item.Id, "Disc", imageTags.Disc);
+                html += LibraryBrowser.createGalleryImage(item, "Disc", imageTags.Disc);
             }
 
             return html;
         },
 
-        createGalleryImage: function (itemId, type, tag, index) {
+        createGalleryImage: function (item, type, tag, index) {
 
             var downloadWidth = 400;
             var lightboxWidth = 800;
@@ -1426,21 +1425,19 @@
 
             html += '<div class="posterViewItem" style="padding-bottom:0px;">';
             html += '<a href="#pop_' + index + '_' + tag + '" data-transition="fade" data-rel="popup" data-position-to="window">';
-            html += '<img class="galleryImage" src="' + ApiClient.getImageUrl(itemId, {
-                type: type,
-                maxwidth: downloadWidth,
-                tag: tag,
-                index: index
+            html += '<img class="galleryImage" src="' + LibraryBrowser.getImageUrl(item, type, index, {
+               maxwidth: downloadWidth,
+                tag: tag
             }) + '" />';
             html += '</div>';
 
             html += '<div class="galleryPopup" id="pop_' + index + '_' + tag + '" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
             html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
-            html += '<img class="" src="' + ApiClient.getImageUrl(itemId, {
-                type: type,
+            html += '<img class="" src="' + LibraryBrowser.getImageUrl(item, type, index, {
+
                 maxwidth: lightboxWidth,
-                tag: tag,
-                index: index
+                tag: tag
+                
             }) + '" />';
             html += '</div>';
 

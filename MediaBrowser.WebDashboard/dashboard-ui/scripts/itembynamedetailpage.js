@@ -29,7 +29,7 @@
                     getItemPromise = ApiClient.getGenre(name, Dashboard.getCurrentUserId());
                 }
                 else {
-                    
+
                     name = getParameterByName('artist');
 
                     if (name) {
@@ -72,7 +72,7 @@
     function renderHeader(page, item) {
 
         var context = getParameterByName('context');
-        
+
         if (context == "movies") {
             enableCustomHeader(page, "Movies");
             $('#standardLogo', page).hide();
@@ -206,6 +206,13 @@
         });
     }
 
+    function renderGallery(page, item) {
+
+        var html = LibraryBrowser.getGalleryHtml(item);
+
+        $('#galleryContent', page).html(html).trigger('create');
+    }
+
     function bindRadioEvents(page) {
 
         $("#radioMovies", page).on("click", function () {
@@ -293,6 +300,13 @@
         renderUserDataIcons(page, item);
         LibraryBrowser.renderLinks($('#itemLinks', page), item);
 
+        if (LibraryBrowser.shouldDisplayGallery(item)) {
+            $('#galleryCollapsible', page).show();
+            renderGallery(page, item);
+        } else {
+            $('#galleryCollapsible', page).hide();
+        }
+
         if (item.Type == "Person" && item.PremiereDate) {
 
             try {
@@ -348,7 +362,7 @@
         else if (currentItem.Type == "Artist") {
             query.Artists = currentItem.Name;
         }
-}
+    }
 
     function loadItems(page, options) {
 

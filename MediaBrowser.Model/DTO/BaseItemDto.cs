@@ -271,10 +271,10 @@ namespace MediaBrowser.Model.Dto
         public double? PrimaryImageAspectRatio { get; set; }
 
         /// <summary>
-        /// Gets or sets the artist.
+        /// Gets or sets the artists.
         /// </summary>
-        /// <value>The artist.</value>
-        public string Artist { get; set; }
+        /// <value>The artists.</value>
+        public string[] Artists { get; set; }
 
         /// <summary>
         /// Gets or sets the album.

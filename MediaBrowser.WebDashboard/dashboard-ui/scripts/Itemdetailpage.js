@@ -261,13 +261,13 @@
 
             ParentId: getParameterByName('id'),
             SortBy: "SortName",
-            Fields: "PrimaryImageAspectRatio,ItemCounts,DisplayMediaType,DateCreated,UserData"
+            Fields: "PrimaryImageAspectRatio,ItemCounts,DisplayMediaType,DateCreated,UserData,AudioInfo"
 
         }).done(function (result) {
 
             if (item.Type == "MusicAlbum") {
 
-                $('#itemSongs', page).html(LibraryBrowser.getSongTableHtml(result.Items)).trigger('create');
+                $('#itemSongs', page).html(LibraryBrowser.getSongTableHtml(result.Items, { showArtist: true })).trigger('create');
 
             } else {
                 var html = LibraryBrowser.getPosterDetailViewHtml({

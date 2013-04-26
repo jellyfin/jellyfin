@@ -695,6 +695,9 @@ var Dashboard = {
         headerHtml += '<div class="headerButtons">';
 
         if (user && !page.hasClass('wizardPage')) {
+
+            headerHtml += Dashboard.getSearchHtml();
+
             headerHtml += '<a class="imageLink btnCurrentUser" href="#" onclick="Dashboard.showUserFlyout();"><span class="currentUsername">' + user.Name + '</span>';
 
             if (user.PrimaryImageTag) {
@@ -721,11 +724,31 @@ var Dashboard = {
 
         header.append(headerHtml);
 
+        $('#searchForm', header).on("submit", Dashboard.onSearchSubmit);
+
         Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
             if (pluginSecurityInfo.IsMBSupporter) {
                 $('<a class="imageLink" href="supporter.html"><img src="css/images/supporter/supporterbadge.png" /></a>').insertBefore('.btnTools', header);
             }
         });
+    },
+    
+    onSearchSubmit: function() {
+
+        Dashboard.alert('Coming soon.');
+
+        return false;
+    },
+    
+    getSearchHtml: function() {
+
+        var html = '<div class="headerSearch"><form id="searchForm" name="searchForm">';
+
+        html += '<input type="text" />';
+
+        html += '</form></div>';
+
+        return html;
     },
 
     ensureToolsMenu: function (page) {
@@ -1087,16 +1110,7 @@ $(function () {
 
 Dashboard.jQueryMobileInit();
 
-$(document).on('pagebeforeshow', ".page", function () {
-
-    Dashboard.refreshSystemInfoFromServer();
-
-    var page = $(this);
-
-    Dashboard.ensureHeader(page);
-    Dashboard.ensurePageTitle(page);
-
-}).on('pageinit', ".page", function () {
+$(document).on('pageinit', ".page", function () {
 
     var page = $(this);
 
@@ -1120,4 +1134,14 @@ $(document).on('pagebeforeshow', ".page", function () {
             }
         });
     }
+    
+}).on('pagebeforeshow', ".page", function () {
+
+    Dashboard.refreshSystemInfoFromServer();
+
+    var page = $(this);
+
+    Dashboard.ensureHeader(page);
+    Dashboard.ensurePageTitle(page);
+
 });

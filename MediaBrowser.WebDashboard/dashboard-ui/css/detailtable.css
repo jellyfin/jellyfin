@@ -1,13 +1,16 @@
-﻿.detailTable {
-    border-collapse: collapse;
-    border-spacing: 0;
+﻿.detailTableContainer {
     width: 100%;
     max-width: 1200px;
-    text-align: left;
+    text-align: center;
+    margin: 0 auto;
 }
 
-.centeredDetailTable {
-    margin: auto;
+.detailTable {
+    border-collapse: collapse;
+    border-spacing: 0;
+    text-align: left;
+    width: 100%;
+    margin: 0 auto;
 }
 
 .stretchedDetailTable {
@@ -36,6 +39,7 @@
     font-weight: normal;
     text-align: left;
     vertical-align: top;
+    white-space: nowrap;
 }
 
 .detailTable .imgUserItemRating {
