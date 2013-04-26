@@ -118,9 +118,11 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
             }
 
+            // Find artists
             var artists = items.OfType<Audio>()
                 .SelectMany(i => new[] { i.Artist, i.AlbumArtist })
                 .Where(i => !string.IsNullOrEmpty(i))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
             foreach (var item in artists)
@@ -191,26 +193,6 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             return hints.OrderBy(i => i.Item2).Select(i => i.Item1);
-        }
-
-        /// <summary>
-        /// Gets the hints.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="searchTerm">The search term.</param>
-        /// <returns>IEnumerable{Tuple{SearchHintResultSystem.Int32}}.</returns>
-        private async Task<IEnumerable<Tuple<BaseItem, int>>> GetHints(BaseItem item, string searchTerm)
-        {
-            var hints = new List<Tuple<BaseItem, int>>();
-
-            var index = IndexOf(item.Name, searchTerm);
-
-            if (index != -1)
-            {
-                hints.Add(new Tuple<BaseItem, int>(item, index));
-            }
-
-            return hints;
         }
 
         /// <summary>
