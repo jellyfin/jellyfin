@@ -101,11 +101,11 @@
         }
 
     .portraitPosterItem {
-        width: 110px;
+        width: 100px;
     }
 
         .portraitPosterItem .posterItemImage {
-            height: 165px;
+            height: 150px;
         }
 }
 

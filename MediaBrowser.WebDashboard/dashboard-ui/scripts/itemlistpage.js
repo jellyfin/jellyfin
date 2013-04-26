@@ -62,8 +62,17 @@
 
         ApiClient.getItem(userId, query.ParentId).done(function (item) {
 
-            $('#itemName', page).html(item.Name);
+            var name = item.Name;
 
+            if (item.IndexNumber != null) {
+                name = item.IndexNumber + " - " + name;
+            }
+            if (item.ParentIndexNumber != null) {
+                name = item.ParentIndexNumber + "." + name;
+            }
+
+            $('#itemName', page).html(name);
+            Dashboard.setPageTitle(name);
         });
     }
 

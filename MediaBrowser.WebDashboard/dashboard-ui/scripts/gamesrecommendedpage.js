@@ -17,15 +17,15 @@
 
 		ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
 
-			$('#recentlyAddedItems', page).html(LibraryBrowser.getGamePosterViewHtml({
-				items: result.Items,
-				useAverageAspectRatio: true,
-				showNewIndicator: false
+			$('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
+			    items: result.Items,
+			    useAverageAspectRatio: true,
+			    showNewIndicator: false
 			}));
 
 		});
 
-		var options = {
+		options = {
 
 			SortBy: "DatePlayed",
 			SortOrder: "Descending",
@@ -38,10 +38,9 @@
 
 		ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
 
-			$('#resumableItems', page).html(LibraryBrowser.getGamePosterViewHtml({
-				items: result.Items,
-				useAverageAspectRatio: true,
-				showNewIndicator: false
+			$('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
+			    items: result.Items,
+			    useAverageAspectRatio: true
 			}));
 
 		});
