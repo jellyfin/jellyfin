@@ -124,11 +124,11 @@
         }
 
     .portraitPosterItem {
-        width: 100px;
+        width: 108px;
     }
 
         .portraitPosterItem .posterItemImage {
-            height: 150px;
+            height: 162px;
         }
 
     .posterItem {
@@ -137,8 +137,6 @@
 }
 
 @media all and (min-width: 1440px) {
-
-
 
     .squarePosterItem {
         width: 170px;
@@ -149,11 +147,11 @@
         }
 
     .portraitPosterItem {
-        width: 112px;
+        width: 120px;
     }
 
         .portraitPosterItem .posterItemImage {
-            height: 168px;
+            height: 180px;
         }
 }
 
@@ -176,11 +174,11 @@
         }
 
     .portraitPosterItem {
-        width: 126px;
+        width: 136px;
     }
 
         .portraitPosterItem .posterItemImage {
-            height: 189px;
+            height: 204px;
         }
 
     .posterItem {

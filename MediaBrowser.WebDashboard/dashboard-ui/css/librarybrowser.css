@@ -253,12 +253,12 @@
     width: 65%;
 }
 
-.cdTileItem .tileImage {
+.squareTileItem .tileImage {
     height: 100px;
     width: 35%;
 }
 
-.cdTileItem .tileContent {
+.squareTileItem .tileContent {
     width: 60%;
 }
 
@@ -313,7 +313,7 @@
         height: 120px;
     }
 
-    .cdTileItem .tileImage {
+    .squareTileItem .tileImage {
         height: 115px;
     }
 }
@@ -363,11 +363,11 @@
         height: 136px;
     }
 
-    .cdTileItem {
+    .squareTileItem {
         width: 31%;
     }
 
-        .cdTileItem .tileImage {
+        .squareTileItem .tileImage {
             height: 105px;
         }
 }
@@ -385,7 +385,7 @@
         width: 31.5%;
     }
 
-    .cdTileItem .tileImage {
+    .squareTileItem .tileImage {
         height: 130px;
     }
 
@@ -407,7 +407,7 @@
         width: 31.5%;
     }
 
-    .cdTileItem .tileImage {
+    .squareTileItem .tileImage {
         height: 155px;
     }
 
@@ -434,11 +434,11 @@
         width: 23.5%;
     }
 
-    .cdTileItem {
+    .squareTileItem {
         width: 23.5%;
     }
 
-        .cdTileItem .tileImage {
+        .squareTileItem .tileImage {
             height: 140px;
         }
 }
@@ -461,11 +461,11 @@
             height: 160px;
         }
 
-    .cdTileItem {
+    .squareTileItem {
         width: 18.8%;
     }
 
-        .cdTileItem .tileImage {
+        .squareTileItem .tileImage {
             height: 120px;
         }
 }
@@ -487,11 +487,11 @@
             height: 160px;
         }
 
-    .cdTileItem {
+    .squareTileItem {
         width: 18.8%;
     }
 
-        .cdTileItem .tileImage {
+        .squareTileItem .tileImage {
             height: 130px;
         }
 }
@@ -513,11 +513,11 @@
             height: 185px;
         }
 
-    .cdTileItem {
+    .squareTileItem {
         width: 18.8%;
     }
 
-        .cdTileItem .tileImage {
+        .squareTileItem .tileImage {
             height: 140px;
         }
 }
@@ -539,11 +539,11 @@
             height: 180px;
         }
 
-    .cdTileItem {
+    .squareTileItem {
         width: 15.8%;
     }
 
-        .cdTileItem .tileImage {
+        .squareTileItem .tileImage {
             height: 140px;
         }
 }

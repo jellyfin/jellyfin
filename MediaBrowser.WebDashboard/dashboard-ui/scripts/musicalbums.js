@@ -26,7 +26,7 @@
                 items: result.Items,
                 useAverageAspectRatio: true,
                 context: "music",
-                shape: "cd"
+                shape: "square"
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);

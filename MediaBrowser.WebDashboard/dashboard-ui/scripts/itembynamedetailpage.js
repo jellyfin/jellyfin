@@ -266,7 +266,7 @@
 
         $("#radioAlbums", page).on("click", function () {
 
-            shape = "cd";
+            shape = "square";
             loadItems(page, {
                 MediaTypes: "",
                 IncludeItemTypes: "MusicAlbum",
