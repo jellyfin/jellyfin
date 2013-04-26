@@ -86,6 +86,7 @@
     <Compile Include="ScheduledTasks\ScheduledTaskService.cs" />
     <Compile Include="ScheduledTasks\ScheduledTasksWebSocketListener.cs" />
     <Compile Include="ApiEntryPoint.cs" />
+    <Compile Include="SearchService.cs" />
     <Compile Include="SystemService.cs" />
     <Compile Include="UserLibrary\ArtistsService.cs" />
     <Compile Include="UserLibrary\BaseItemsByNameService.cs" />
