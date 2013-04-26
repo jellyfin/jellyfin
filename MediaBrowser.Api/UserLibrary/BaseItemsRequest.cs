@@ -79,7 +79,6 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "MediaTypes", Description = "Optional filter by MediaType. Allows multiple, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string MediaTypes { get; set; }
 
-        
         /// <summary>
         /// Gets the filters.
         /// </summary>
