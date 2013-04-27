@@ -296,7 +296,7 @@ namespace MediaBrowser.ServerApplication
         private void SetKernelProperties()
         {
             Parallel.Invoke(
-                () => ServerKernel.FFMpegManager = new FFMpegManager(ApplicationPaths, MediaEncoder, LibraryManager),
+                () => ServerKernel.FFMpegManager = new FFMpegManager(ApplicationPaths, MediaEncoder, LibraryManager, Logger),
                 () => ServerKernel.ImageManager = new ImageManager(ServerKernel, LogManager.GetLogger("ImageManager"), ApplicationPaths),
                 () => ServerKernel.WeatherProviders = GetExports<IWeatherProvider>(),
                 () => ServerKernel.ImageEnhancers = GetExports<IImageEnhancer>().OrderBy(e => e.Priority).ToArray(),

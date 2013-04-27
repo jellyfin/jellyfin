@@ -96,7 +96,14 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
                 Fetch(myItem, cancellationToken, result, isoMount);
 
-                cancellationToken.ThrowIfCancellationRequested();
+                var video = myItem as Video;
+
+                if (video != null)
+                {
+                    await
+                        Kernel.Instance.FFMpegManager.PopulateChapterImages(video, cancellationToken, false, false)
+                              .ConfigureAwait(false);
+                }
 
                 SetLastRefreshed(item, DateTime.UtcNow);
             }
