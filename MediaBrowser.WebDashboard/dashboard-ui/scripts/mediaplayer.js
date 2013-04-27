@@ -11,7 +11,7 @@
         function playAudio(items, params) {
             var item = items[0];
 
-	        var volume = localStorage.getItem("volume") || 0.5;
+            var volume = localStorage.getItem("volume") || 0.5;
 
             var baseParams = {
                 audioChannels: 2,
@@ -52,15 +52,18 @@
 
             $('#mediaElement', nowPlayingBar).html(html);
 
-	        $(".itemAudio").volume = volume;
+            $(".itemAudio").each(function () {
+                this.volume = volume;
+            });
 
-	        $(".itemAudio").on("ended",function(){
-		        Playlist.playNext();
-	        });
+            $(".itemAudio").on("ended", function () {
+                Playlist.playNext();
+            });
 
-	        $(".itemAudio").on("volumechange", function () {
-		        localStorage.setItem("volume", (this).volume);
-	        });
+            $(".itemAudio").on("volumechange", function () {
+
+                localStorage.setItem("volume", this.volume);
+            });
 
             return $('audio', nowPlayingBar)[0];
         }
@@ -157,14 +160,14 @@
                     videoCodec: 'theora',
                     audioCodec: 'Vorbis'
                 }));
-                
+
                 // HLS must be at the top for safari
                 // Webm must be ahead of mp4 due to the issue of mp4 playing too fast in chrome
 
-	            var mkvVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mkv', $.extend({}, baseParams, {
-		            videoCodec: 'h264',
-		            audioCodec: 'aac'
-	            }));
+                var mkvVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mkv', $.extend({}, baseParams, {
+                    videoCodec: 'h264',
+                    audioCodec: 'aac'
+                }));
 
                 (this).src([
                     { type: "application/x-mpegURL", src: hlsVideoUrl },
@@ -187,16 +190,16 @@
                 });
 
                 (this).addEvent("volumechange", function () {
-                    localStorage.setItem("volume", (this).volume());
+                    localStorage.setItem("volume", this.volume());
                 });
 
                 (this).addEvent("play", updateProgress);
 
-	            (this).addEvent("ended", function () {
-		            MediaPlayer.stopVideo();
+                (this).addEvent("ended", function () {
+                    MediaPlayer.stopVideo();
 
-		            Playlist.playNext();
-	            });
+                    Playlist.playNext();
+                });
 
                 ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id);
             });
@@ -324,7 +327,7 @@
                 seriesName = item.SeriesName || item.Album || item.ProductionYear;
             }
 
-            html += "<div><a href='itemdetails.html?id="+item.Id+"'><img class='nowPlayingBarImage ' alt='' title='' src='" + url + "' style='height:36px;display:inline-block;' /></a></div>";
+            html += "<div><a href='itemdetails.html?id=" + item.Id + "'><img class='nowPlayingBarImage ' alt='' title='' src='" + url + "' style='height:36px;display:inline-block;' /></a></div>";
             if (item.Type == "Movie")
                 html += '<div>' + name + '<br/>' + seriesName + '</div>';
             else
@@ -369,23 +372,23 @@
             currentMediaElement = null;
         };
 
-	    self.stopVideo = function () {
-		    var player = _V_("videoWindow");
+        self.stopVideo = function () {
+            var player = _V_("videoWindow");
 
-		    var startTimeTicks = player.tag.src.match(new RegExp("StartTimeTicks=[0-9]+", "g"));
-		    var startTime = startTimeTicks[0].replace("StartTimeTicks=", "");
+            var startTimeTicks = player.tag.src.match(new RegExp("StartTimeTicks=[0-9]+", "g"));
+            var startTime = startTimeTicks[0].replace("StartTimeTicks=", "");
 
-		    var itemString = player.tag.src.match(new RegExp("Videos/[0-9a-z\-]+", "g"));
-		    var itemId = itemString[0].replace("Videos/", "");
+            var itemString = player.tag.src.match(new RegExp("Videos/[0-9a-z\-]+", "g"));
+            var itemId = itemString[0].replace("Videos/", "");
 
-		    var positionTicks = parseInt(startTime) + Math.floor(10000000 * player.currentTime());
+            var positionTicks = parseInt(startTime) + Math.floor(10000000 * player.currentTime());
 
-		    ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), itemId, positionTicks);
+            ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), itemId, positionTicks);
 
-		    if (currentProgressInterval) {
-			    clearTimeout(currentProgressInterval);
-		    }
-	    }
+            if (currentProgressInterval) {
+                clearTimeout(currentProgressInterval);
+            }
+        }
 
         self.isPlaying = function () {
             return currentMediaElement;
