@@ -254,7 +254,7 @@
 
     window.Search = new search();
     
-    $(document).on('pagehide', ".page", function () {
+    $(document).on('pagehide', ".libraryPage", function () {
 
         hideFlyout(this);
 
