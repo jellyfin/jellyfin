@@ -1,6 +1,7 @@
 ﻿.headerSearch {
     display: none;
     margin-right: 3em;
+    position: relative;
 }
 
 .txtSearch {
@@ -9,12 +10,6 @@
     height: 28px;
     margin: 0 .15em 0 0;
     width: 150px;
-}
-
-.searchHints {
-    width: 148px;
-    color: #000;
-    font-family: Arial;
 }
 
 .btnSearch {
@@ -50,14 +45,60 @@
     }
 
 .searchHints {
+    width: 148px;
+    color: #000;
     background-color: #fff;
-    border: 1px solid #ccc;
+    border: 1px solid #999;
     position: absolute;
     z-index: 999;
+    margin-top: 1px;
+    font-size: 14px;
 }
 
 .searchHintsContent {
     padding: 10px;
+}
+
+.searchHint {
+    display: block;
+    text-decoration: none;
+    color: #000;
+    border-bottom: 1px solid #eee;
+}
+
+    .searchHint:hover {
+        background-color: #eee;
+    }
+
+.searchHintImage {
+    display: inline-block;
+    width: 15%;
+    vertical-align: middle;
+}
+
+.searchHintContent {
+    vertical-align: top;
+    display: inline-block;
+    width: 85%;
+}
+
+.searchHintName {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.searchHintSecondaryText {
+    font-size: 11px;
+    color: #999;
+    margin-top: 3px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.searchHintContentInner {
+    padding: 2px 5px;
 }
 
 @media all and (min-width: 650px) {
@@ -85,5 +126,25 @@
 
     .searchHints {
         width: 248px;
+    }
+}
+
+@media all and (min-width: 1200px) {
+    .txtSearch {
+        width: 350px;
+    }
+
+    .searchHints {
+        width: 348px;
+    }
+}
+
+@media all and (min-width: 1440px) {
+    .txtSearch {
+        width: 400px;
+    }
+
+    .searchHints {
+        width: 398px;
     }
 }

@@ -696,7 +696,9 @@ var Dashboard = {
 
         if (user && !page.hasClass('wizardPage')) {
 
-            headerHtml += Search.getSearchHtml();
+            if (isLibraryPage) {
+                headerHtml += Search.getSearchHtml();
+            }
 
             headerHtml += '<a class="imageLink btnCurrentUser" href="#" onclick="Dashboard.showUserFlyout();"><span class="currentUsername">' + user.Name + '</span>';
 

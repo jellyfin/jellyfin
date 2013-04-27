@@ -282,17 +282,22 @@
                 return item.url;
             }
 
+            itemByNameContext = itemByNameContext || "";
+            
+            // Handle search hints
+            var id = item.Id || item.ItemId;
+
             if (item.Type == "Series") {
-                return "itemdetails.html?id=" + item.Id;
+                return "itemdetails.html?id=" + id;
             }
             if (item.Type == "Season") {
-                return "itemdetails.html?id=" + item.Id;
+                return "itemdetails.html?id=" + id;
             }
             if (item.Type == "BoxSet") {
-                return "itemdetails.html?id=" + item.Id;
+                return "itemdetails.html?id=" + id;
             }
             if (item.Type == "MusicAlbum") {
-                return "itemdetails.html?id=" + item.Id;
+                return "itemdetails.html?id=" + id;
             }
             if (item.Type == "Genre") {
                 return "itembynamedetails.html?genre=" + encodeName(item.Name) + "&context=" + itemByNameContext;
@@ -304,10 +309,10 @@
                 return "itembynamedetails.html?person=" + encodeName(item.Name) + "&context=" + itemByNameContext;
             }
             if (item.Type == "Artist") {
-                return "itembynamedetails.html?artist=" + encodeName(item.Name) + "&context=" + itemByNameContext;
+                return "itembynamedetails.html?artist=" + encodeName(item.Name) + "&context=" + (itemByNameContext || "music");
             }
 
-            return item.IsFolder ? (item.Id ? "itemList.html?parentId=" + item.Id : "#") : "itemdetails.html?id=" + item.Id;
+            return item.IsFolder ? (id ? "itemList.html?parentId=" + id : "#") : "itemdetails.html?id=" + id;
 
         },
 
@@ -340,7 +345,8 @@
                 return ApiClient.getArtistImageUrl(item.Name, options);
             }
 
-            return ApiClient.getImageUrl(item.Id, options);
+            // For search hints
+            return ApiClient.getImageUrl(item.Id || item.ItemId, options);
 
         },
 

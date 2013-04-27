@@ -96,5 +96,17 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             return string.Equals(Artist, name, StringComparison.OrdinalIgnoreCase) || string.Equals(AlbumArtist, name, StringComparison.OrdinalIgnoreCase);
         }
+
+        public override string DisplayMediaType
+        {
+            get
+            {
+                return "Song";
+            }
+            set
+            {
+                base.DisplayMediaType = value;
+            }
+        }
     }
 }
