@@ -141,18 +141,10 @@
 
 @media all and (min-width: 1440px) {
     .txtSearch {
-        width: 450px;
+        width: 400px;
     }
 
     .searchHints {
-        width: 448px;
-    }
-
-    .searchHintImage {
-        width: 12%;
-    }
-
-    .searchHintContent {
-        width: 88%;
+        width: 398px;
     }
 }

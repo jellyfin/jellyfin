@@ -253,5 +253,13 @@
     }
 
     window.Search = new search();
+    
+    $(document).on('pagehide', ".page", function () {
+
+        hideFlyout(this);
+
+        $('#txtSearch', this).val('');
+    });
+
 
 })(jQuery, document, window, clearTimeout, setTimeout);

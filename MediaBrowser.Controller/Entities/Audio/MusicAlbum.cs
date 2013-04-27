@@ -150,6 +150,20 @@ namespace MediaBrowser.Controller.Entities.Audio
             return RecursiveChildren.OfType<Audio>().Any(i => i.HasArtist(artist));
         }
 
+        public override string Name
+        {
+            get
+            {
+                var song = RecursiveChildren.OfType<Audio>().FirstOrDefault(i => !string.IsNullOrEmpty(i.Album));
+
+                return song == null ? base.Name : song.Album;
+            }
+            set
+            {
+                base.Name = value;
+            }
+        }
+
         public override string DisplayMediaType
         {
             get
