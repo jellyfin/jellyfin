@@ -110,15 +110,12 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var items = inputItems.Where(i => !(i is MusicArtist)).ToList();
 
-            foreach (var item in items)
+            hints.AddRange(items.AsParallel().Select(item =>
             {
                 var index = GetIndex(item.Name, searchTerm, terms);
 
-                if (index.Item2 != -1)
-                {
-                    hints.Add(new Tuple<BaseItem, string, int>(item, index.Item1, index.Item2));
-                }
-            }
+                return new Tuple<BaseItem, string, int>(item, index.Item1, index.Item2);
+            }));
 
             // Find artists
             var artists = items.OfType<Audio>()
@@ -222,7 +219,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
             }
 
-            return hints.OrderBy(i => i.Item3).Select(i => new SearchHintInfo
+            return hints.Where(i => i.Item3 >= 0).OrderBy(i => i.Item3).Select(i => new SearchHintInfo
             {
                 Item = i.Item1,
                 MatchedTerm = i.Item2
@@ -268,7 +265,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     {
                         return new Tuple<string, int>(searchTerm, 3 + (i + 1) * (j + 1));
                     }
-                    
+
                     index = item.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase);
 
                     if (index == 0)
