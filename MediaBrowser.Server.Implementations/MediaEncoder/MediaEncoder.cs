@@ -535,13 +535,14 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// </summary>
         /// <param name="inputPath">The input path.</param>
         /// <param name="outputPath">The output path.</param>
+        /// <param name="offset">The offset.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">inputPath
         /// or
         /// outputPath</exception>
         /// <exception cref="System.ApplicationException"></exception>
-        public async Task ConvertTextSubtitleToAss(string inputPath, string outputPath, CancellationToken cancellationToken)
+        public async Task ConvertTextSubtitleToAss(string inputPath, string outputPath, TimeSpan offset, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
