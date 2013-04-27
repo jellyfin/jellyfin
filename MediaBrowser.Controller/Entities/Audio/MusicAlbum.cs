@@ -147,7 +147,19 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <returns><c>true</c> if the specified artist has artist; otherwise, <c>false</c>.</returns>
         public bool HasArtist(string artist)
         {
-            return Children.OfType<Audio>().Any(i => i.HasArtist(artist));
+            return RecursiveChildren.OfType<Audio>().Any(i => i.HasArtist(artist));
+        }
+
+        public override string DisplayMediaType
+        {
+            get
+            {
+                return "Album";
+            }
+            set
+            {
+                base.DisplayMediaType = value;
+            }
         }
     }
 }

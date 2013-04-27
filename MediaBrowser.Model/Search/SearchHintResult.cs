@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 namespace MediaBrowser.Model.Search
 {
     /// <summary>
@@ -8,69 +7,15 @@ namespace MediaBrowser.Model.Search
     public class SearchHintResult
     {
         /// <summary>
-        /// Gets or sets the item id.
+        /// Gets or sets the search hints.
         /// </summary>
-        /// <value>The item id.</value>
-        public string ItemId { get; set; }
+        /// <value>The search hints.</value>
+        public SearchHint[] SearchHints { get; set; }
 
         /// <summary>
-        /// Gets or sets the name.
+        /// Gets or sets the total record count.
         /// </summary>
-        /// <value>The name.</value>
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Gets or sets the index number.
-        /// </summary>
-        /// <value>The index number.</value>
-        public int? IndexNumber { get; set; }
-
-        /// <summary>
-        /// Gets or sets the parent index number.
-        /// </summary>
-        /// <value>The parent index number.</value>
-        public int? ParentIndexNumber { get; set; }
-
-        /// <summary>
-        /// Gets or sets the image tag.
-        /// </summary>
-        /// <value>The image tag.</value>
-        public Guid? PrimaryImageTag { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type.
-        /// </summary>
-        /// <value>The type.</value>
-        public string Type { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of the media.
-        /// </summary>
-        /// <value>The type of the media.</value>
-        public string MediaType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the series.
-        /// </summary>
-        /// <value>The series.</value>
-        public string Series { get; set; }
-
-        /// <summary>
-        /// Gets or sets the album.
-        /// </summary>
-        /// <value>The album.</value>
-        public string Album { get; set; }
-
-        /// <summary>
-        /// Gets or sets the album artist.
-        /// </summary>
-        /// <value>The album artist.</value>
-        public string AlbumArtist { get; set; }
-
-        /// <summary>
-        /// Gets or sets the artists.
-        /// </summary>
-        /// <value>The artists.</value>
-        public string[] Artists { get; set; }
+        /// <value>The total record count.</value>
+        public int TotalRecordCount { get; set; }
     }
 }

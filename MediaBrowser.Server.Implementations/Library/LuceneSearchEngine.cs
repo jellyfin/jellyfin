@@ -97,24 +97,26 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="searchTerm">The search term.</param>
         /// <returns>IEnumerable{SearchHintResult}.</returns>
         /// <exception cref="System.ArgumentNullException">searchTerm</exception>
-        public async Task<IEnumerable<BaseItem>> GetSearchHints(IEnumerable<BaseItem> inputItems, string searchTerm)
+        public async Task<IEnumerable<SearchHintInfo>> GetSearchHints(IEnumerable<BaseItem> inputItems, string searchTerm)
         {
             if (string.IsNullOrEmpty(searchTerm))
             {
                 throw new ArgumentNullException("searchTerm");
             }
 
-            var hints = new List<Tuple<BaseItem, int>>();
+            var terms = GetWords(searchTerm);
+
+            var hints = new List<Tuple<BaseItem, string, int>>();
 
             var items = inputItems.Where(i => !(i is MusicArtist)).ToList();
 
             foreach (var item in items)
             {
-                var index = IndexOf(item.Name, searchTerm);
+                var index = GetIndex(item.Name, searchTerm, terms);
 
-                if (index != -1)
+                if (index.Item2 != -1)
                 {
-                    hints.Add(new Tuple<BaseItem, int>(item, index));
+                    hints.Add(new Tuple<BaseItem, string, int>(item, index.Item1, index.Item2));
                 }
             }
 
@@ -127,16 +129,23 @@ namespace MediaBrowser.Server.Implementations.Library
 
             foreach (var item in artists)
             {
-                var index = IndexOf(item, searchTerm);
+                var index = GetIndex(item, searchTerm, terms);
 
-                if (index != -1)
+                if (index.Item2 != -1)
                 {
-                    var artist = await _libraryManager.GetArtist(item).ConfigureAwait(false);
+                    try
+                    {
+                        var artist = await _libraryManager.GetArtist(item).ConfigureAwait(false);
 
-                    hints.Add(new Tuple<BaseItem, int>(artist, index));
+                        hints.Add(new Tuple<BaseItem, string, int>(artist, index.Item1, index.Item2));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error getting {0}", ex, item);
+                    }
                 }
             }
-            
+
             // Find genres
             var genres = items.SelectMany(i => i.Genres)
                 .Where(i => !string.IsNullOrEmpty(i))
@@ -145,13 +154,20 @@ namespace MediaBrowser.Server.Implementations.Library
 
             foreach (var item in genres)
             {
-                var index = IndexOf(item, searchTerm);
+                var index = GetIndex(item, searchTerm, terms);
 
-                if (index != -1)
+                if (index.Item2 != -1)
                 {
-                    var genre = await _libraryManager.GetGenre(item).ConfigureAwait(false);
+                    try
+                    {
+                        var genre = await _libraryManager.GetGenre(item).ConfigureAwait(false);
 
-                    hints.Add(new Tuple<BaseItem, int>(genre, index));
+                        hints.Add(new Tuple<BaseItem, string, int>(genre, index.Item1, index.Item2));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error getting {0}", ex, item);
+                    }
                 }
             }
 
@@ -163,13 +179,20 @@ namespace MediaBrowser.Server.Implementations.Library
 
             foreach (var item in studios)
             {
-                var index = IndexOf(item, searchTerm);
+                var index = GetIndex(item, searchTerm, terms);
 
-                if (index != -1)
+                if (index.Item2 != -1)
                 {
-                    var studio = await _libraryManager.GetStudio(item).ConfigureAwait(false);
+                    try
+                    {
+                        var studio = await _libraryManager.GetStudio(item).ConfigureAwait(false);
 
-                    hints.Add(new Tuple<BaseItem, int>(studio, index));
+                        hints.Add(new Tuple<BaseItem, string, int>(studio, index.Item1, index.Item2));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error getting {0}", ex, item);
+                    }
                 }
             }
 
@@ -182,17 +205,83 @@ namespace MediaBrowser.Server.Implementations.Library
 
             foreach (var item in persons)
             {
-                var index = IndexOf(item, searchTerm);
+                var index = GetIndex(item, searchTerm, terms);
 
-                if (index != -1)
+                if (index.Item2 != -1)
                 {
-                    var person = await _libraryManager.GetPerson(item).ConfigureAwait(false);
+                    try
+                    {
+                        var person = await _libraryManager.GetPerson(item).ConfigureAwait(false);
 
-                    hints.Add(new Tuple<BaseItem, int>(person, index));
+                        hints.Add(new Tuple<BaseItem, string, int>(person, index.Item1, index.Item2));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error getting {0}", ex, item);
+                    }
                 }
             }
 
-            return hints.OrderBy(i => i.Item2).Select(i => i.Item1);
+            return hints.OrderBy(i => i.Item3).Select(i => new SearchHintInfo
+            {
+                Item = i.Item1,
+                MatchedTerm = i.Item2
+            });
+        }
+
+        /// <summary>
+        /// Gets the index.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="searchInput">The search input.</param>
+        /// <param name="searchWords">The search input.</param>
+        /// <returns>System.Int32.</returns>
+        private Tuple<string, int> GetIndex(string input, string searchInput, string[] searchWords)
+        {
+            if (string.Equals(input, searchInput, StringComparison.OrdinalIgnoreCase))
+            {
+                return new Tuple<string, int>(searchInput, 0);
+            }
+
+            var index = input.IndexOf(searchInput, StringComparison.OrdinalIgnoreCase);
+
+            if (index == 0)
+            {
+                return new Tuple<string, int>(searchInput, 1);
+            }
+            if (index > 0)
+            {
+                return new Tuple<string, int>(searchInput, 2);
+            }
+
+            var items = GetWords(input);
+
+            for (var i = 0; i < searchWords.Length; i++)
+            {
+                var searchTerm = searchWords[i];
+
+                for (var j = 0; j < items.Length; j++)
+                {
+                    var item = items[j];
+
+                    if (string.Equals(item, searchTerm, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return new Tuple<string, int>(searchTerm, 3 + (i + 1) * (j + 1));
+                    }
+                    
+                    index = item.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase);
+
+                    if (index == 0)
+                    {
+                        return new Tuple<string, int>(searchTerm, 4 + (i + 1) * (j + 1));
+                    }
+                    if (index > 0)
+                    {
+                        return new Tuple<string, int>(searchTerm, 5 + (i + 1) * (j + 1));
+                    }
+                }
+            }
+            return new Tuple<string, int>(null, -1);
         }
 
         /// <summary>
@@ -202,32 +291,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>System.String[][].</returns>
         private string[] GetWords(string term)
         {
-            // TODO: Improve this to be more accurate and respect culture
-            var words = term.Split(' ');
-
-            return words;
-        }
-
-        /// <summary>
-        /// Indexes the of.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="term">The term.</param>
-        /// <returns>System.Int32.</returns>
-        private int IndexOf(string input, string term)
-        {
-            var index = 0;
-
-            foreach (var word in GetWords(input))
-            {
-                if (word.IndexOf(term, StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    return index;
-                }
-
-                index++;
-            }
-            return -1;
+            return term.Split().Where(i => !string.IsNullOrWhiteSpace(i)).ToArray();
         }
     }
 
