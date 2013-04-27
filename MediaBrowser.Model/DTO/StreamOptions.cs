@@ -82,7 +82,7 @@
     /// <summary>
     /// Class StreamOptions
     /// </summary>
-    public abstract class StreamOptions
+    public class StreamOptions
     {
         /// <summary>
         /// Gets or sets the audio bit rate.
