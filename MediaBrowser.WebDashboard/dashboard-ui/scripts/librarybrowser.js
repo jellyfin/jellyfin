@@ -253,7 +253,7 @@
                     if (item.Artists && item.Artists.length) {
 
                         var artist = item.Artists[0];
-                        
+
                         html += '<td><a href="itembynamedetails.html?context=music&artist=' + artist + '">' + artist + '</a></td>';
                     } else {
                         html += '<td></td>';
@@ -283,7 +283,7 @@
             }
 
             itemByNameContext = itemByNameContext || "";
-            
+
             // Handle search hints
             var id = item.Id || item.ItemId;
 
@@ -652,6 +652,29 @@
                 html += '<button data-icon="arrow-left" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (query.StartIndex ? '' : 'disabled') + '>Previous Page</button>';
 
                 html += '<button data-icon="arrow-right" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (query.StartIndex + query.Limit > totalRecordCount ? 'disabled' : '') + '>Next Page</button>';
+
+                var id = "selectPageSize" + new Date().getTime();
+
+                var options = '';
+
+                function getOption(val) {
+
+                    if (query.Limit == val) {
+
+                        return '<option value="' + val + '" selected="selected">' + val + '</option>';
+
+                    } else {
+                        return '<option value="' + val + '">' + val + '</option>';
+                    }
+                }
+
+                options += getOption(20);
+                options += getOption(50);
+                options += getOption(100);
+                options += getOption(200);
+                options += getOption(300);
+
+                html += '<label class="labelPageSize" for="' + id + '">Limit: </label><select class="selectPageSize" id="' + id + '" data-enhance="false" data-role="none">' + options + '</select>';
             }
 
             html += '</div>';
@@ -1372,7 +1395,7 @@
             html += '<div class="posterViewItem" style="padding-bottom:0px;">';
             html += '<a href="#pop_' + index + '_' + tag + '" data-transition="fade" data-rel="popup" data-position-to="window">';
             html += '<img class="galleryImage" src="' + LibraryBrowser.getImageUrl(item, type, index, {
-               maxwidth: downloadWidth,
+                maxwidth: downloadWidth,
                 tag: tag
             }) + '" />';
             html += '</div>';
@@ -1383,7 +1406,7 @@
 
                 maxwidth: lightboxWidth,
                 tag: tag
-                
+
             }) + '" />';
             html += '</div>';
 

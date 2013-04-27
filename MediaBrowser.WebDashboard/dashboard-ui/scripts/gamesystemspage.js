@@ -48,6 +48,12 @@
 			    reloadItems(page);
 			});
 
+			$('.selectPageSize', page).on('change', function () {
+			    query.Limit = parseInt(this.value);
+			    query.StartIndex = 0;
+			    reloadItems(page);
+			});
+
 			Dashboard.hideLoadingMsg();
 		});
 	}
