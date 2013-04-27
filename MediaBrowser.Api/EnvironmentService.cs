@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using ServiceStack.ServiceHost;
@@ -206,19 +205,40 @@ namespace MediaBrowser.Api
         /// <returns>IEnumerable{FileSystemEntryInfo}.</returns>
         private IEnumerable<FileSystemEntryInfo> GetFileSystemEntries(GetDirectoryContents request)
         {
-            var fileSystemEntries = FileSystem.GetFileSystemEntries(request.Path, "*", request.IncludeFiles, request.IncludeDirectories).Where(f => !f.IsSystemFile);
-
-            if (!request.IncludeHidden)
+            var entries = new DirectoryInfo(request.Path).EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly).Where(i =>
             {
-                fileSystemEntries = fileSystemEntries.Where(f => !f.IsHidden);
-            }
+                if (i.Attributes.HasFlag(FileAttributes.System))
+                {
+                    return false;
+                }
 
-            return fileSystemEntries.Select(f => new FileSystemEntryInfo
-            {
-                Name = f.cFileName,
-                Path = f.Path,
-                Type = f.IsDirectory ? FileSystemEntryType.Directory : FileSystemEntryType.File
+                if (!request.IncludeHidden && i.Attributes.HasFlag(FileAttributes.Hidden))
+                {
+                    return false;
+                }
+
+                var isDirectory = i.Attributes.HasFlag(FileAttributes.Directory);
+
+                if (!request.IncludeFiles && !isDirectory)
+                {
+                    return false;
+                }
+
+                if (!request.IncludeDirectories && isDirectory)
+                {
+                    return false;
+                }
+                
+                return true;
             });
+
+            return entries.Select(f => new FileSystemEntryInfo
+            {
+                Name = f.Name,
+                Path = f.FullName,
+                Type = f.Attributes.HasFlag(FileAttributes.Directory) ? FileSystemEntryType.Directory : FileSystemEntryType.File
+
+            }).ToList();
         }
 
         /// <summary>
