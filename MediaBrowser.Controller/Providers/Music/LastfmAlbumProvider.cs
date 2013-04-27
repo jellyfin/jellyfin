@@ -65,7 +65,7 @@ namespace MediaBrowser.Controller.Providers.Music
             var folder = (Folder)item;
 
             // Get each song, distinct by the combination of AlbumArtist and Album
-            var songs = folder.Children.OfType<Audio>().DistinctBy(i => (i.AlbumArtist ?? string.Empty) + (i.Album ?? string.Empty), StringComparer.OrdinalIgnoreCase).ToList();
+            var songs = folder.RecursiveChildren.OfType<Audio>().DistinctBy(i => (i.AlbumArtist ?? string.Empty) + (i.Album ?? string.Empty), StringComparer.OrdinalIgnoreCase).ToList();
 
             foreach (var song in songs.Where(song => !string.IsNullOrEmpty(song.Album) && !string.IsNullOrEmpty(song.AlbumArtist)))
             {

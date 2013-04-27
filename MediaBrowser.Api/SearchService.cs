@@ -20,7 +20,7 @@ namespace MediaBrowser.Api
     /// </summary>
     [Route("/Search/Hints", "GET")]
     [Api(Description = "Gets search hints based on a search term")]
-    public class GetSearchHints : IReturn<List<SearchHintResult>>
+    public class GetSearchHints : IReturn<SearchHintResult>
     {
         /// <summary>
         /// Skips over a given number of items within the results. Use for paging.
@@ -96,7 +96,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task{IEnumerable{SearchHintResult}}.</returns>
-        private async Task<IEnumerable<SearchHintResult>> GetSearchHintsAsync(GetSearchHints request)
+        private async Task<SearchHintResult> GetSearchHintsAsync(GetSearchHints request)
         {
             IEnumerable<BaseItem> inputItems;
 
@@ -113,34 +113,48 @@ namespace MediaBrowser.Api
 
             var results = await _searchEngine.GetSearchHints(inputItems, request.SearchTerm).ConfigureAwait(false);
 
+            var searchResultArray = results.ToArray();
+
+            IEnumerable<SearchHintInfo> returnResults = searchResultArray;
+
             if (request.StartIndex.HasValue)
             {
-                results = results.Skip(request.StartIndex.Value);
+                returnResults = returnResults.Skip(request.StartIndex.Value);
             }
 
             if (request.Limit.HasValue)
             {
-                results = results.Take(request.Limit.Value);
+                returnResults = returnResults.Take(request.Limit.Value);
             }
 
-            return results.Select(GetSearchHintResult);
+            return new SearchHintResult
+            {
+                TotalRecordCount = searchResultArray.Length,
+
+                SearchHints = returnResults.Select(GetSearchHintResult).ToArray()
+            };
         }
 
         /// <summary>
         /// Gets the search hint result.
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="hintInfo">The hint info.</param>
         /// <returns>SearchHintResult.</returns>
-        private SearchHintResult GetSearchHintResult(BaseItem item)
+        private SearchHint GetSearchHintResult(SearchHintInfo hintInfo)
         {
-            var result = new SearchHintResult
+            var item = hintInfo.Item;
+
+            var result = new SearchHint
             {
                 Name = item.Name,
                 IndexNumber = item.IndexNumber,
                 ParentIndexNumber = item.ParentIndexNumber,
                 ItemId = DtoBuilder.GetClientItemId(item),
                 Type = item.GetType().Name,
-                MediaType = item.MediaType
+                MediaType = item.MediaType,
+                MatchedTerm = hintInfo.MatchedTerm,
+                DisplayMediaType = item.DisplayMediaType,
+                RunTimeTicks = item.RunTimeTicks
             };
 
             if (item.HasImage(ImageType.Primary))
@@ -160,14 +174,25 @@ namespace MediaBrowser.Api
             if (season != null)
             {
                 result.Series = season.Series.Name;
+
+                result.EpisodeCount = season.RecursiveChildren.OfType<Episode>().Count();
+            }
+
+            var series = item as Series;
+
+            if (series != null)
+            {
+                result.EpisodeCount = series.RecursiveChildren.OfType<Episode>().Count();
             }
 
             var album = item as MusicAlbum;
 
             if (album != null)
             {
-                var songs = album.Children.OfType<Audio>().ToList();
+                var songs = album.RecursiveChildren.OfType<Audio>().ToList();
 
+                result.SongCount = songs.Count;
+                
                 result.Artists = songs
                     .Select(i => i.Artist)
                     .Where(i => !string.IsNullOrEmpty(i))
