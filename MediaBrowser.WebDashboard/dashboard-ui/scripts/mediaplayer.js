@@ -11,6 +11,8 @@
         function playAudio(items, params) {
             var item = items[0];
 
+	        var volume = localStorage.getItem("volume") || 0.5;
+
             var baseParams = {
                 audioChannels: 2,
                 audioBitrate: 128000
@@ -50,8 +52,14 @@
 
             $('#mediaElement', nowPlayingBar).html(html);
 
+	        $(".itemAudio").volume = volume;
+
 	        $(".itemAudio").on("ended",function(){
 		        Playlist.playNext();
+	        });
+
+	        $(".itemAudio").on("volumechange", function () {
+		        localStorage.setItem("volume", (this).volume);
 	        });
 
             return $('audio', nowPlayingBar)[0];
