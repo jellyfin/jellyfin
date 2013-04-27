@@ -431,7 +431,7 @@ namespace MediaBrowser.Controller.Dto
 
                 if (album != null)
                 {
-                    var songs = album.Children.OfType<Audio>().ToList();
+                    var songs = album.RecursiveChildren.OfType<Audio>().ToList();
 
                     dto.AlbumArtist = songs.Select(i => i.AlbumArtist).FirstOrDefault(i => !string.IsNullOrEmpty(i));
 

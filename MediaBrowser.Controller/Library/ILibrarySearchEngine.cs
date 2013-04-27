@@ -23,7 +23,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="inputItems">The input items.</param>
         /// <param name="searchTerm">The search term.</param>
-        /// <returns>Task{IEnumerable{BaseItem}}.</returns>
-        Task<IEnumerable<BaseItem>> GetSearchHints(IEnumerable<BaseItem> inputItems, string searchTerm);
+        /// <returns>Task{IEnumerable{SearchHintInfo}}.</returns>
+        Task<IEnumerable<SearchHintInfo>> GetSearchHints(IEnumerable<BaseItem> inputItems, string searchTerm);
     }
 }
