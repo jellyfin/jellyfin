@@ -33,8 +33,29 @@
                         <strong>Sort By:</strong>
                     </legend>
 
-                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
+                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="Artist,Album,SortName" data-mini="true">
                     <label for="radioSortName">Name</label>
+
+                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioAlbum" value="on" checked="checked" data-sortby="Album" data-mini="true">
+                    <label for="radioAlbum">Album</label>
+
+                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioArtist" value="on" checked="checked" data-sortby="Artist" data-mini="true">
+                    <label for="radioArtist">Artist</label>
+
+                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioDateCreated" value="off" data-sortby="DateCreated,Artist,Album,SortName" data-mini="true">
+                    <label for="radioDateCreated">Date Added</label>
+
+                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioDatePlayed" value="off" data-sortby="DatePlayed,Artist,Album,SortName" data-mini="true">
+                    <label for="radioDatePlayed">Date Played</label>
+
+                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioPremiereDate" value="off" data-sortby="PremiereDate,Artist,Album,SortName" data-mini="true">
+                    <label for="radioPremiereDate">Date Released</label>
+
+                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioPlayCount" value="off" data-sortby="PlayCount,Artist,Album,SortName" data-mini="true">
+                    <label for="radioPlayCount">Play Count</label>
+
+                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioRuntime" value="off" data-sortby="Runtime" data-mini="true">
+                    <label for="radioRuntime">Runtime</label>
                 </fieldset>
 
                 <fieldset data-role="controlgroup">

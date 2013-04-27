@@ -216,7 +216,7 @@
 
             html += '</form>';
 
-            html += '<div id="searchHints" class="searchHints" style="display:none;"><div class="searchHintsContent"></div></div>';
+            html += '<div id="searchHints" class="searchHints" style="display:none;"><div class="searchHintsContent"><div class="circle"></div><div class="circle1"></div></div></div>';
 
             html += '</div>';
 

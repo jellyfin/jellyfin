@@ -210,7 +210,7 @@
 
             html += '<th></th>';
 
-            html += '<th>Track</th>';
+            html += '<th class="tabletColumn">Track</th>';
 
             if (options.showAlbum) {
                 html += '<th>Album</th>';
@@ -219,9 +219,9 @@
                 html += '<th>Artist</th>';
             }
 
-            html += '<th>Duration</th>';
-            html += '<th>Play Count</th>';
-            html += '<th class="userDataCell"></th>';
+            html += '<th class="tabletColumn">Duration</th>';
+            html += '<th class="tabletColumn">Play Count</th>';
+            html += '<th class="tabletColumn userDataCell"></th>';
 
             html += '</tr>';
 
@@ -236,7 +236,7 @@
                 if (num && item.ParentIndexNumber) {
                     num = item.ParentIndexNumber + "." + num;
                 }
-                html += '<td>' + (num || "") + '</td>';
+                html += '<td class="tabletColumn">' + (num || "") + '</td>';
 
                 html += '<td><a href="' + LibraryBrowser.getHref(item, "music") + '">' + (item.Name || "") + '</a></td>';
 
@@ -262,11 +262,11 @@
 
                 var time = DashboardPage.getDisplayText(item.RunTimeTicks || 0);
 
-                html += '<td>' + time + '</td>';
+                html += '<td class="tabletColumn">' + time + '</td>';
 
-                html += '<td>' + (item.UserData ? item.UserData.PlayCount : 0) + '</td>';
+                html += '<td class="tabletColumn">' + (item.UserData ? item.UserData.PlayCount : 0) + '</td>';
 
-                html += '<td class="userDataCell">' + LibraryBrowser.getUserDataIconsHtml(item) + '</td>';
+                html += '<td class="tabletColumn userDataCell">' + LibraryBrowser.getUserDataIconsHtml(item) + '</td>';
 
                 html += '</tr>';
             }
