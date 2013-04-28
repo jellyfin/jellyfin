@@ -5,7 +5,7 @@
     display: inline-block;
     font-size: 14px;
     position: relative;
-    color: #fff;
+    color: #fff!important;
     text-decoration: none;
     text-align: left;
     overflow: hidden;
@@ -20,7 +20,12 @@
 .posterItemImage {
     background-size: contain;
     background-repeat: no-repeat;
-    background-position: left bottom;
+    background-position:  center bottom;
+    background-color: #000;
+}
+
+.transparentPosterItem .posterItemImage {
+    background-color: transparent;
 }
 
 .defaultPosterItemImage {
