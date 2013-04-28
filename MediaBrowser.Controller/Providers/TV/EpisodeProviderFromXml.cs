@@ -71,12 +71,12 @@ namespace MediaBrowser.Controller.Providers.TV
 
             var file = item.ResolveArgs.Parent.ResolveArgs.GetMetaFileByPath(metadataFile);
 
-            if (!file.HasValue)
+            if (file == null)
             {
                 return base.CompareDate(item);
             }
 
-            return file.Value.LastWriteTimeUtc;
+            return file.LastWriteTimeUtc;
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
             var file = item.ResolveArgs.Parent.ResolveArgs.GetMetaFileByPath(metadataFile);
 
-            if (!file.HasValue)
+            if (file == null)
             {
                 return false;
             }

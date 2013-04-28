@@ -244,13 +244,13 @@ namespace MediaBrowser.Controller.Entities
 
             // Record the name of each file 
             // Need to sort these because accoring to msdn docs, our i/o methods are not guaranteed in any order
-            foreach (var file in ResolveArgs.FileSystemChildren.OrderBy(f => f.cFileName))
+            foreach (var file in ResolveArgs.FileSystemChildren.OrderBy(f => f.Name))
             {
-                sb.Append(file.cFileName);
+                sb.Append(file.Name);
             }
-            foreach (var file in ResolveArgs.MetadataFiles.OrderBy(f => f.cFileName))
+            foreach (var file in ResolveArgs.MetadataFiles.OrderBy(f => f.Name))
             {
-                sb.Append(file.cFileName);
+                sb.Append(file.Name);
             }
 
             return sb.ToString().GetMD5();
@@ -307,7 +307,7 @@ namespace MediaBrowser.Controller.Entities
         /// Resets the resolve args.
         /// </summary>
         /// <param name="pathInfo">The path info.</param>
-        public void ResetResolveArgs(WIN32_FIND_DATA? pathInfo)
+        public void ResetResolveArgs(FileSystemInfo pathInfo)
         {
             ResolveArgs = CreateResolveArgs(pathInfo);
         }
@@ -318,17 +318,14 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="pathInfo">The path info.</param>
         /// <returns>ItemResolveArgs.</returns>
         /// <exception cref="System.IO.IOException">Unable to retrieve file system info for  + path</exception>
-        protected internal virtual ItemResolveArgs CreateResolveArgs(WIN32_FIND_DATA? pathInfo = null)
+        protected internal virtual ItemResolveArgs CreateResolveArgs(FileSystemInfo pathInfo = null)
         {
             var path = Path;
 
             // non file-system entries will not have a path
             if (LocationType != LocationType.FileSystem || string.IsNullOrEmpty(path))
             {
-                return new ItemResolveArgs(ConfigurationManager.ApplicationPaths)
-                {
-                    FileInfo = new WIN32_FIND_DATA()
-                };
+                return new ItemResolveArgs(ConfigurationManager.ApplicationPaths);
             }
 
             if (UseParentPathToCreateResolveArgs)
@@ -336,16 +333,16 @@ namespace MediaBrowser.Controller.Entities
                 path = System.IO.Path.GetDirectoryName(path);
             }
 
-            pathInfo = pathInfo ?? FileSystem.GetFileData(path);
+            pathInfo = pathInfo ?? FileSystem.GetFileSystemInfo(path);
 
-            if (!pathInfo.HasValue)
+            if (pathInfo == null || !pathInfo.Exists)
             {
                 throw new IOException("Unable to retrieve file system info for " + path);
             }
 
             var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths)
             {
-                FileInfo = pathInfo.Value,
+                FileInfo = pathInfo,
                 Path = path,
                 Parent = Parent
             };
@@ -735,11 +732,11 @@ namespace MediaBrowser.Controller.Entities
                 return new List<Trailer>();
             }
 
-            IEnumerable<WIN32_FIND_DATA> files;
+            IEnumerable<FileSystemInfo> files;
 
             try
             {
-                files = FileSystem.GetFiles(folder.Value.Path);
+                files = new DirectoryInfo(folder.FullName).EnumerateFiles();
             }
             catch (IOException ex)
             {
@@ -793,11 +790,11 @@ namespace MediaBrowser.Controller.Entities
                 return new List<Audio.Audio>();
             }
 
-            IEnumerable<WIN32_FIND_DATA> files;
+            IEnumerable<FileSystemInfo> files;
 
             try
             {
-                files = FileSystem.GetFiles(folder.Value.Path);
+                files = new DirectoryInfo(folder.FullName).EnumerateFiles();
             }
             catch (IOException ex)
             {

@@ -88,7 +88,7 @@ namespace MediaBrowser.Controller.Providers
                 return DateTime.MinValue;
             }
 
-            var files = new DirectoryInfo(location).EnumerateFiles("*", SearchOption.TopDirectoryOnly).ToList();
+            var files = new DirectoryInfo(location).EnumerateFiles().ToList();
 
             if (files.Count == 0)
             {
@@ -97,52 +97,12 @@ namespace MediaBrowser.Controller.Providers
 
             return files.Select(f =>
             {
-                var lastWriteTime = GetLastWriteTimeUtc(f);
-                var creationTime = GetCreationTimeUtc(f);
+                var lastWriteTime = FileSystem.GetLastWriteTimeUtc(f, Logger);
+                var creationTime = FileSystem.GetCreationTimeUtc(f, Logger);
 
                 return creationTime > lastWriteTime ? creationTime : lastWriteTime;
 
             }).Max();
-        }
-
-        /// <summary>
-        /// Gets the creation time UTC.
-        /// </summary>
-        /// <param name="info">The info.</param>
-        /// <returns>DateTime.</returns>
-        private DateTime GetLastWriteTimeUtc(FileSystemInfo info)
-        {
-            // This could throw an error on some file systems that have dates out of range
-
-            try
-            {
-                return info.LastAccessTimeUtc;
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error determining LastAccessTimeUtc for {0}", ex, info.FullName);
-                return DateTime.MinValue;
-            }
-        }
-
-        /// <summary>
-        /// Gets the creation time UTC.
-        /// </summary>
-        /// <param name="info">The info.</param>
-        /// <returns>DateTime.</returns>
-        private DateTime GetCreationTimeUtc(FileSystemInfo info)
-        {
-            // This could throw an error on some file systems that have dates out of range
-
-            try
-            {
-                return info.CreationTimeUtc;
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error determining CreationTimeUtc for {0}", ex, info.FullName);
-                return DateTime.MinValue;
-            }
         }
 
         /// <summary>
@@ -184,15 +144,21 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="item">The item.</param>
         /// <param name="filenameWithoutExtension">The filename without extension.</param>
         /// <returns>System.Nullable{WIN32_FIND_DATA}.</returns>
-        protected override WIN32_FIND_DATA? GetImage(BaseItem item, string filenameWithoutExtension)
+        protected override FileSystemInfo GetImage(BaseItem item, string filenameWithoutExtension)
         {
             var location = GetLocation(item);
 
-            var result = FileSystem.GetFileData(Path.Combine(location, filenameWithoutExtension + ".png"));
-            if (!result.HasValue)
-                result = FileSystem.GetFileData(Path.Combine(location, filenameWithoutExtension + ".jpg"));
+            var result = new FileInfo(Path.Combine(location, filenameWithoutExtension + ".png"));
 
-            return result;
+            if (!result.Exists)
+                result = new FileInfo(Path.Combine(location, filenameWithoutExtension + ".jpg"));
+
+            if (result.Exists)
+            {
+                return result;
+            }
+
+            return null;
         }
     }
 }

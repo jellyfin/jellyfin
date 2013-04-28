@@ -115,7 +115,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// <returns>IEnumerable{Video}.</returns>
         private IEnumerable<Video> LoadSpecialFeatures()
         {
-            WIN32_FIND_DATA? folder;
+            FileSystemInfo folder;
 
             try
             {
@@ -133,11 +133,11 @@ namespace MediaBrowser.Controller.Entities.Movies
                 return new List<Video>();
             }
 
-            IEnumerable<WIN32_FIND_DATA> files;
+            IEnumerable<FileSystemInfo> files;
 
             try
             {
-                files = FileSystem.GetFiles(folder.Value.Path);
+                files = new DirectoryInfo(folder.FullName).EnumerateFiles();
             }
             catch (IOException ex)
             {

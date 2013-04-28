@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.IO;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Resolvers;
@@ -40,7 +41,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fileInfo">The file info.</param>
         /// <returns>BaseItem.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        BaseItem ResolvePath(string path, Folder parent = null, WIN32_FIND_DATA? fileInfo = null);
+        BaseItem ResolvePath(string path, Folder parent = null, FileSystemInfo fileInfo = null);
 
         /// <summary>
         /// Resolves a set of files into a list of BaseItem
@@ -49,7 +50,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="files">The files.</param>
         /// <param name="parent">The parent.</param>
         /// <returns>List{``0}.</returns>
-        List<T> ResolvePaths<T>(IEnumerable<WIN32_FIND_DATA> files, Folder parent) 
+        List<T> ResolvePaths<T>(IEnumerable<FileSystemInfo> files, Folder parent) 
             where T : BaseItem;
 
         /// <summary>

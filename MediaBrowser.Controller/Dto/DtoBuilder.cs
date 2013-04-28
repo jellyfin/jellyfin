@@ -212,7 +212,7 @@ namespace MediaBrowser.Controller.Dto
             var metaFileEntry = item.ResolveArgs.GetMetaFileByPath(path);
 
             // See if we can avoid a file system lookup by looking for the file in ResolveArgs
-            var dateModified = metaFileEntry == null ? File.GetLastWriteTimeUtc(path) : metaFileEntry.Value.LastWriteTimeUtc;
+            var dateModified = metaFileEntry == null ? File.GetLastWriteTimeUtc(path) : metaFileEntry.LastWriteTimeUtc;
 
             ImageSize size;
 

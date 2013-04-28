@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -134,9 +135,9 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             var folder = args.GetFileSystemEntryByName("metadata");
 
-            if (folder.HasValue)
+            if (folder != null)
             {
-                args.AddMetadataFiles(FileSystem.GetFiles(folder.Value.Path));
+                args.AddMetadataFiles(new DirectoryInfo(folder.FullName).EnumerateFiles());
             }
         }
 
@@ -145,7 +146,7 @@ namespace MediaBrowser.Controller.Entities.TV
         /// </summary>
         /// <param name="pathInfo">The path info.</param>
         /// <returns>ItemResolveArgs.</returns>
-        protected internal override ItemResolveArgs CreateResolveArgs(WIN32_FIND_DATA? pathInfo = null)
+        protected internal override ItemResolveArgs CreateResolveArgs(FileSystemInfo pathInfo = null)
         {
             var args = base.CreateResolveArgs(pathInfo);
 

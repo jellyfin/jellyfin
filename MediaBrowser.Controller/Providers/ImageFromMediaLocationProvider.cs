@@ -17,7 +17,8 @@ namespace MediaBrowser.Controller.Providers
     /// </summary>
     public class ImageFromMediaLocationProvider : BaseMetadataProvider
     {
-        public ImageFromMediaLocationProvider(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
+        public ImageFromMediaLocationProvider(ILogManager logManager, IServerConfigurationManager configurationManager)
+            : base(logManager, configurationManager)
         {
         }
 
@@ -62,7 +63,7 @@ namespace MediaBrowser.Controller.Providers
         public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             // Make sure current image paths still exist
             ValidateImages(item);
 
@@ -72,7 +73,7 @@ namespace MediaBrowser.Controller.Providers
             ValidateBackdrops(item);
 
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             PopulateBaseItemImages(item);
 
             SetLastRefreshed(item, DateTime.UtcNow);
@@ -95,11 +96,11 @@ namespace MediaBrowser.Controller.Providers
             {
                 var path = item.Images[image];
 
-                return IsInMetaLocation(item, path) && !item.ResolveArgs.GetMetaFileByPath(path).HasValue;
+                return IsInMetaLocation(item, path) && item.ResolveArgs.GetMetaFileByPath(path) == null;
             }).ToList();
 
             // Now remove them from the dictionary
-            foreach(var key in deletedKeys)
+            foreach (var key in deletedKeys)
             {
                 item.Images.Remove(key);
             }
@@ -117,7 +118,7 @@ namespace MediaBrowser.Controller.Providers
             }
 
             // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
-            var deletedImages = item.BackdropImagePaths.Where(path => IsInMetaLocation(item, path) && !item.ResolveArgs.GetMetaFileByPath(path).HasValue).ToList();
+            var deletedImages = item.BackdropImagePaths.Where(path => IsInMetaLocation(item, path) && item.ResolveArgs.GetMetaFileByPath(path) == null).ToList();
 
             // Now remove them from the dictionary
             foreach (var path in deletedImages)
@@ -143,7 +144,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="item">The item.</param>
         /// <param name="filenameWithoutExtension">The filename without extension.</param>
         /// <returns>System.Nullable{WIN32_FIND_DATA}.</returns>
-        protected virtual WIN32_FIND_DATA? GetImage(BaseItem item, string filenameWithoutExtension)
+        protected virtual FileSystemInfo GetImage(BaseItem item, string filenameWithoutExtension)
         {
             return item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.ResolveArgs.Path, filenameWithoutExtension + ".png")) ?? item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.ResolveArgs.Path, filenameWithoutExtension + ".jpg"));
         }
@@ -160,65 +161,65 @@ namespace MediaBrowser.Controller.Providers
             // Primary Image
             var image = GetImage(item, "folder");
 
-            if (image.HasValue)
+            if (image != null)
             {
-                item.SetImage(ImageType.Primary, image.Value.Path);
+                item.SetImage(ImageType.Primary, image.FullName);
             }
 
             // Logo Image
             image = GetImage(item, "logo");
 
-            if (image.HasValue)
+            if (image != null)
             {
-                item.SetImage(ImageType.Logo, image.Value.Path);
+                item.SetImage(ImageType.Logo, image.FullName);
             }
 
             // Banner Image
             image = GetImage(item, "banner");
 
-            if (image.HasValue)
+            if (image != null)
             {
-                item.SetImage(ImageType.Banner, image.Value.Path);
+                item.SetImage(ImageType.Banner, image.FullName);
             }
 
             // Clearart
             image = GetImage(item, "clearart");
 
-            if (image.HasValue)
+            if (image != null)
             {
-                item.SetImage(ImageType.Art, image.Value.Path);
+                item.SetImage(ImageType.Art, image.FullName);
             }
 
             // Thumbnail Image
             image = GetImage(item, "thumb");
 
-            if (image.HasValue)
+            if (image != null)
             {
-                item.SetImage(ImageType.Thumb, image.Value.Path);
+                item.SetImage(ImageType.Thumb, image.FullName);
             }
 
             // Thumbnail Image
             image = GetImage(item, "box");
 
-            if (image.HasValue)
+            if (image != null)
             {
-                item.SetImage(ImageType.Box, image.Value.Path);
+                item.SetImage(ImageType.Box, image.FullName);
             }
 
             // Thumbnail Image
             image = GetImage(item, "menu");
 
-            if (image.HasValue)
+            if (image != null)
             {
-                item.SetImage(ImageType.Menu, image.Value.Path);
+                item.SetImage(ImageType.Menu, image.FullName);
             }
 
             // Backdrop Image
             image = GetImage(item, "backdrop");
 
-            if (image.HasValue)
+            if (image != null)
             {
-                backdropFiles.Add(image.Value.Path);
+                backdropFiles.Add(image.FullName);
             }
 
             var unfound = 0;
@@ -227,9 +228,9 @@ namespace MediaBrowser.Controller.Providers
                 // Backdrop Image
                 image = GetImage(item, "backdrop" + i);
 
-                if (image.HasValue)
+                if (image != null)
                 {
-                    backdropFiles.Add(image.Value.Path);
+                    backdropFiles.Add(image.FullName);
                 }
                 else
                 {
@@ -250,9 +251,9 @@ namespace MediaBrowser.Controller.Providers
             // Screenshot Image
             image = GetImage(item, "screenshot");
 
-            if (image.HasValue)
+            if (image != null)
             {
-                screenshotFiles.Add(image.Value.Path);
+                screenshotFiles.Add(image.FullName);
             }
 
             unfound = 0;
@@ -261,9 +262,9 @@ namespace MediaBrowser.Controller.Providers
                 // Screenshot Image
                 image = GetImage(item, "screenshot" + i);
 
-                if (image.HasValue)
+                if (image != null)
                 {
-                    screenshotFiles.Add(image.Value.Path);
+                    screenshotFiles.Add(image.FullName);
                 }
                 else
                 {
