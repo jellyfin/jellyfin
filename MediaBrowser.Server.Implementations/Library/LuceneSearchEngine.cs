@@ -110,7 +110,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var items = inputItems.Where(i => !(i is MusicArtist)).ToList();
 
-            hints.AddRange(items.AsParallel().Select(item =>
+            hints.AddRange(items.Select(item =>
             {
                 var index = GetIndex(item.Name, searchTerm, terms);
 
