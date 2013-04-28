@@ -232,8 +232,16 @@ namespace MediaBrowser.Controller.Providers.TV
                     }
 
                     string s = doc.SafeGetString("//Network");
+
                     if (!string.IsNullOrWhiteSpace(s))
-                        series.AddStudios(new List<string>(s.Trim().Split('|')));
+                    {
+                        series.Studios.Clear();
+
+                        foreach (var studio in s.Trim().Split('|'))
+                        {
+                            series.AddStudio(studio);
+                        }
+                    }
 
                     series.OfficialRating = doc.SafeGetString("//ContentRating");
 
@@ -244,7 +252,12 @@ namespace MediaBrowser.Controller.Providers.TV
                         string[] genres = g.Trim('|').Split('|');
                         if (g.Length > 0)
                         {
-                            series.AddGenres(genres);
+                            series.Genres.Clear();
+
+                            foreach (var genre in genres)
+                            {
+                                series.AddGenre(genre);
+                            }
                         }
                     }
 
@@ -305,7 +318,11 @@ namespace MediaBrowser.Controller.Providers.TV
                 }
 
                 var xmlNodeList = docActors.SelectNodes("Actors/Actor");
+
                 if (xmlNodeList != null)
+                {
+                    series.People.Clear();
+
                     foreach (XmlNode p in xmlNodeList)
                     {
                         string actorName = p.SafeGetString("Name");
@@ -329,6 +346,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                         }
                     }
+                }
             }
         }
 

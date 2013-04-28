@@ -58,6 +58,11 @@ namespace MediaBrowser.Controller.Providers
                 ValidationType = ValidationType.None
             };
 
+            item.Taglines.Clear();
+            item.Studios.Clear();
+            item.Genres.Clear();
+            item.People.Clear();
+
             // Use XmlReader for best performance
             using (var reader = XmlReader.Create(metadataFile, settings))
             {
@@ -496,7 +501,10 @@ namespace MediaBrowser.Controller.Providers
                     {
                         case "Person":
                             {
-                                item.AddPeople(GetPersonsFromXmlNode(reader.ReadSubtree()));
+                                foreach (var person in GetPersonsFromXmlNode(reader.ReadSubtree()))
+                                {
+                                    item.AddPerson(person);
+                                }
                                 break;
                             }
 

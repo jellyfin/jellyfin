@@ -260,24 +260,35 @@ namespace MediaBrowser.Controller.Providers.TV
                         episode.ProductionYear = airDate.Year;
                     }
 
+                    episode.People.Clear();
+
                     var actors = doc.SafeGetString("//GuestStars");
                     if (actors != null)
                     {
-                        episode.AddPeople(actors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = PersonType.GuestStar, Name = str }));
+                        foreach (var person in actors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = PersonType.GuestStar, Name = str }))
+                        {
+                            episode.AddPerson(person);
+                        }
                     }
 
 
                     var directors = doc.SafeGetString("//Director");
                     if (directors != null)
                     {
-                        episode.AddPeople(directors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = PersonType.Director, Name = str }));
+                        foreach (var person in actors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = PersonType.Director, Name = str }))
+                        {
+                            episode.AddPerson(person);
+                        }
                     }
 
 
                     var writers = doc.SafeGetString("//Writer");
                     if (writers != null)
                     {
-                        episode.AddPeople(writers.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = PersonType.Writer, Name = str }));
+                        foreach (var person in actors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = PersonType.Writer, Name = str }))
+                        {
+                            episode.AddPerson(person);
+                        }
                     }
 
                     if (ConfigurationManager.Configuration.SaveLocalMeta)
