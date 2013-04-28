@@ -337,11 +337,11 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class GetVideoBackdrops
+    /// Class GetThemeVideos
     /// </summary>
-    [Route("/Users/{UserId}/Items/{Id}/VideoBackdrops", "GET")]
+    [Route("/Users/{UserId}/Items/{Id}/ThemeVideos", "GET")]
     [Api(Description = "Gets video backdrops for an item")]
-    public class GetVideoBackdrops : IReturn<VideoBackdropsResult>
+    public class GetThemeVideos : IReturn<ThemeVideosResult>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -491,7 +491,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetVideoBackdrops request)
+        public object Get(GetThemeVideos request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -502,9 +502,9 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
 
-            var items = item.VideoBackdrops.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).AsParallel().Select(t => t.Result).ToArray();
+            var items = item.ThemeVideos.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).AsParallel().Select(t => t.Result).ToArray();
 
-            var result = new VideoBackdropsResult
+            var result = new ThemeVideosResult
             {
                 Items = items,
                 TotalRecordCount = items.Length,

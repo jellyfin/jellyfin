@@ -1733,7 +1733,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
-        self.getVideoBackdrops = function (userId, itemId) {
+        self.getThemeVideos = function (userId, itemId) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -1742,7 +1742,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null itemId");
             }
 
-            var url = self.getUrl("Users/" + userId + "/Items/" + itemId + "/VideoBackdrops");
+            var url = self.getUrl("Users/" + userId + "/Items/" + itemId + "/ThemeVideos");
 
             return self.ajax({
                 type: "GET",

@@ -163,6 +163,12 @@
 
                     html += '<p class="itemMiscInfo">' + childText + '</p>';
                 }
+                else if (item.Type == "GamePlatform") {
+
+                    childText = item.ChildCount == 1 ? "1 Game" : item.ChildCount + " Games";
+
+                    html += '<p class="itemMiscInfo">' + childText + '</p>';
+                }
                 else if (item.Type == "MusicAlbum") {
 
                     childText = item.ChildCount == 1 ? "1 Song" : item.ChildCount + " Songs";
@@ -299,6 +305,9 @@
             if (item.Type == "MusicAlbum") {
                 return "itemdetails.html?id=" + id;
             }
+            if (item.Type == "GamePlatform") {
+                return "itemdetails.html?id=" + id;
+            }
             if (item.Type == "Genre") {
                 return "itembynamedetails.html?genre=" + encodeName(item.Name) + "&context=" + itemByNameContext;
             }
@@ -425,7 +434,16 @@
                     }
                 }
 
-                html += '<a class="posterItem ' + options.shape + 'PosterItem" href="' + LibraryBrowser.getHref(item, options.context) + '">';
+
+                var cssClass = "posterItem";
+
+                if (options.transparent) {
+                    cssClass += " transparentPosterItem";
+                }
+
+                cssClass += ' ' + options.shape + 'PosterItem';
+
+                html += '<a class="' + cssClass + '" href="' + LibraryBrowser.getHref(item, options.context) + '">';
 
                 var style = "";
 
@@ -1093,7 +1111,7 @@
             else {
                 url = "css/images/items/detail/video.png";
                 useBackgroundColor = true;
-                maxwidth = 150;
+                maxwidth = 150;p
             }
 
             if (url) {

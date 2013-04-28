@@ -20,7 +20,8 @@
 			$('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
 			    items: result.Items,
 			    useAverageAspectRatio: true,
-			    showNewIndicator: false
+			    showNewIndicator: false,
+			    transparent: true
 			}));
 
 		});
@@ -40,7 +41,8 @@
 
 			$('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
 			    items: result.Items,
-			    useAverageAspectRatio: true
+			    useAverageAspectRatio: true,
+			    transparent: true
 			}));
 
 		});

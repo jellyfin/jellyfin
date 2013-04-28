@@ -12,7 +12,7 @@
         <h1 class="libraryPageHeader" style="display: none;"><a href="index.html" class="imageLink">
             <img src="css/images/mblogoicon.png"></a><span></span></h1>
         <div data-role="content">
-            <div id="movieTabs" style="display: none;">
+            <div id="movieTabs" class="itemTabs" style="display: none;">
                 <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
                     <a href="moviesrecommended.html" data-role="button">Suggested</a>
                     <a href="movies.html" data-role="button" class="ui-btn-active">Movies</a>
@@ -23,7 +23,7 @@
                     <a href="moviestudios.html" data-role="button">Studios</a>
                 </div>
             </div>
-            <div id="boxsetTabs" style="display: none;">
+            <div id="boxsetTabs" class="itemTabs" style="display: none;">
                 <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
                     <a href="moviesrecommended.html" data-role="button">Suggested</a>
                     <a href="movies.html" data-role="button">Movies</a>
@@ -34,7 +34,7 @@
                     <a href="moviestudios.html" data-role="button">Studios</a>
                 </div>
             </div>
-            <div id="trailerTabs" style="display: none;">
+            <div id="trailerTabs" class="itemTabs" style="display: none;">
                 <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
                     <a href="moviesrecommended.html" data-role="button">Suggested</a>
                     <a href="movies.html" data-role="button">Movies</a>
@@ -45,7 +45,7 @@
                     <a href="moviestudios.html" data-role="button">Studios</a>
                 </div>
             </div>
-            <div id="tvShowsTabs" style="display: none;">
+            <div id="tvShowsTabs" class="itemTabs" style="display: none;">
                 <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
                     <a href="tvrecommended.html" data-role="button">Suggested</a>
                     <a href="tvshows.html" data-role="button" class="ui-btn-active">Shows</a>
@@ -54,7 +54,7 @@
                     <a href="tvstudios.html" data-role="button">Networks</a>
                 </div>
             </div>
-            <div id="songTabs" style="display: none;">
+            <div id="songTabs" class="itemTabs" style="display: none;">
                 <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
                     <a href="musicrecommended.html" data-role="button">Suggested</a>
                     <a href="songs.html" data-role="button" class="ui-btn-active">Songs</a>
@@ -63,7 +63,7 @@
                     <a href="musicgenres.html" data-role="button">Genres</a>
                 </div>
             </div>
-            <div id="albumTabs" style="display: none;">
+            <div id="albumTabs" class="itemTabs" style="display: none;">
                 <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
                     <a href="musicrecommended.html" data-role="button">Suggested</a>
                     <a href="songs.html" data-role="button">Songs</a>
@@ -72,7 +72,16 @@
                     <a href="musicgenres.html" data-role="button">Genres</a>
                 </div>
             </div>
-            <div id="gameTabs" style="display: none;">
+            <div id="gameTabs" class="itemTabs" style="display: none;">
+                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
+                    <a href="gamesrecommended.html" data-role="button">Suggested</a>
+                    <a href="games.html" data-role="button" class="ui-btn-active">Games</a>
+                    <a href="gamesystems.html" data-role="button">Game Systems</a>
+                    <a href="gamegenres.html" data-role="button">Genres</a>
+                    <a href="gamestudios.html" data-role="button">Studios</a>
+                </div>
+            </div>
+            <div id="gameSystemTabs" class="itemTabs" style="display: none;">
                 <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
                     <a href="gamesrecommended.html" data-role="button">Suggested</a>
                     <a href="games.html" data-role="button" class="ui-btn-active">Games</a>
@@ -171,9 +180,9 @@
                     </div>
                 </div>
                 <div>
-                    <div data-role="collapsible" id="videoBackdropsCollapsible" style="display: none;" data-mini="true" data-collapsed="false" data-corners="false">
-                        <h3>Video Backdrops</h3>
-                        <div id="videoBackdropsContent"></div>
+                    <div data-role="collapsible" id="themeVideosCollapsible" style="display: none;" data-mini="true" data-collapsed="false" data-corners="false">
+                        <h3>Theme Videos</h3>
+                        <div id="themeVideosContent"></div>
                     </div>
                 </div>
             </div>
