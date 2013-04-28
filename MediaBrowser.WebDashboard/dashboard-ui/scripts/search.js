@@ -64,7 +64,7 @@
 
         var currentTimeout = searchHintTimeout;
 
-        $.getJSON(ApiClient.getUrl("Search/Hints", { userId: Dashboard.getCurrentUserId(), searchTerm: searchTerm, limit: 10 })).done(function (result) {
+        ApiClient.getSearchHints(ApiClient.getUrl({ userId: Dashboard.getCurrentUserId(), searchTerm: searchTerm, limit: 10 })).done(function (result) {
 
             if (currentTimeout != searchHintTimeout) {
                 return;
@@ -253,7 +253,7 @@
     }
 
     window.Search = new search();
-    
+
     $(document).on('pagehide', ".libraryPage", function () {
 
         hideFlyout(this);

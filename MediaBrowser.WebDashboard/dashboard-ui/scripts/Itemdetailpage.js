@@ -221,9 +221,14 @@
         }
 
         $('#themeSongsCollapsible', page).hide();
+        $('#videoBackdropsCollapsible', page).hide();
 
         ApiClient.getThemeSongs(Dashboard.getCurrentUserId(), item.Id).done(function (result) {
             renderThemeSongs(page, item, result);
+        });
+
+        ApiClient.getVideoBackdrops(Dashboard.getCurrentUserId(), item.Id).done(function (result) {
+            renderVideoBackdrops(page, item, result);
         });
     }
 
@@ -307,6 +312,16 @@
             $('#themeSongsCollapsible', page).show();
 
             $('#themeSongsContent', page).html(LibraryBrowser.getSongTableHtml(result.Items, { showArtist: true, showAlbum: true })).trigger('create');
+        }
+    }
+
+    function renderVideoBackdrops(page, item, result) {
+
+        if (result.Items.length) {
+
+            $('#videoBackdropsCollapsible', page).show();
+
+            $('#videoBackdropsContent', page).html(getVideosHtml(result.Items)).trigger('create');
         }
     }
 
@@ -446,98 +461,65 @@
         $('#mediaInfoContent', page).html(html).trigger('create');
     }
 
-    function renderSpecials(page, item) {
+    function getVideosHtml(items) {
+
         var html = '';
+
+        for (var i = 0, length = items.length; i < length; i++) {
+
+            var item = items[i];
+
+            html += '<div class="posterViewItem posterViewItemWithDualText">';
+            html += '<a href="#" onclick="ItemDetailPage.playById(\'' + item.Id + '\');">';
+
+            var imageTags = item.ImageTags || {};
+
+            if (imageTags.Primary) {
+
+                var imgUrl = ApiClient.getImageUrl(item.Id, {
+                    maxwidth: 500,
+                    tag: imageTags.Primary,
+                    type: "primary"
+                });
+
+                html += '<img src="' + imgUrl + '" />';
+            } else {
+                html += '<img src="css/images/items/detail/video.png"/>';
+            }
+
+            html += '<div class="posterViewItemText posterViewItemPrimaryText">' + item.Name + '</div>';
+            html += '<div class="posterViewItemText">';
+
+            if (item.RunTimeTicks != "") {
+                html += ticks_to_human(item.RunTimeTicks);
+            }
+            else {
+                html += "&nbsp;";
+            }
+            html += '</div>';
+
+            html += '</a>';
+
+            html += '</div>';
+        }
+
+        return html;
+    }
+
+    function renderSpecials(page, item) {
 
         ApiClient.getSpecialFeatures(Dashboard.getCurrentUserId(), item.Id).done(function (specials) {
 
-            for (var i = 0, length = specials.length; i < length; i++) {
-
-                var special = specials[i];
-
-                html += '<div class="posterViewItem posterViewItemWithDualText">';
-                html += '<a href="#play-Special-' + i + '" onclick="ItemDetailPage.playSpecial(' + i + ');">';
-
-                var imageTags = special.ImageTags || {};
-
-                if (imageTags.Primary) {
-
-                    var imgUrl = ApiClient.getImageUrl(special.Id, {
-                        maxwidth: 500,
-                        tag: imageTags.Primary,
-                        type: "primary"
-                    });
-
-                    html += '<img src="' + imgUrl + '" />';
-                } else {
-                    html += '<img src="css/images/items/detail/video.png"/>';
-                }
-
-                html += '<div class="posterViewItemText posterViewItemPrimaryText">' + special.Name + '</div>';
-                html += '<div class="posterViewItemText">';
-
-                if (special.RunTimeTicks != "") {
-                    html += ticks_to_human(special.RunTimeTicks);
-                }
-                else {
-                    html += "&nbsp;";
-                }
-                html += '</div>';
-
-                html += '</a>';
-
-                html += '</div>';
-            }
-
-            $('#specialsContent', page).html(html);
+            $('#specialsContent', page).html(getVideosHtml(specials));
 
         });
     }
 
     function renderTrailers(page, item) {
-        var html = '';
 
         ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), item.Id).done(function (trailers) {
 
-            for (var i = 0, length = trailers.length; i < length; i++) {
-
-                var trailer = trailers[i];
-
-                html += '<div class="posterViewItem posterViewItemWithDualText">';
-                html += '<a href="#play-Trailer-' + i + '" onclick="ItemDetailPage.playTrailer(' + i + ');">';
-
-                var imageTags = trailer.ImageTags || {};
-
-                if (imageTags.Primary) {
-
-                    var imgUrl = ApiClient.getImageUrl(trailer.Id, {
-                        maxwidth: 500,
-                        tag: imageTags.Primary,
-                        type: "primary"
-                    });
-
-                    html += '<img src="' + imgUrl + '" />';
-                } else {
-                    html += '<img src="css/images/items/detail/video.png"/>';
-                }
-
-                html += '<div class="posterViewItemText posterViewItemPrimaryText">' + trailer.Name + '</div>';
-                html += '<div class="posterViewItemText">';
-
-                if (trailer.RunTimeTicks != "") {
-                    html += ticks_to_human(trailer.RunTimeTicks);
-                }
-                else {
-                    html += "&nbsp;";
-                }
-                html += '</div>';
-
-                html += '</a>';
-
-                html += '</div>';
-            }
-
-            $('#trailersContent', page).html(html);
+            $('#trailersContent', page).html(getVideosHtml(trailers));
 
         });
     }
@@ -633,15 +615,9 @@
 
         self.play = play;
 
-        self.playTrailer = function (index) {
-            ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), currentItem.Id).done(function (trailers) {
-                MediaPlayer.play([trailers[index]]);
-            });
-        };
-
-        self.playSpecial = function (index) {
-            ApiClient.getSpecialFeatures(Dashboard.getCurrentUserId(), currentItem.Id).done(function (specials) {
-                MediaPlayer.play([specials[index]]);
+        self.playById = function (id) {
+            ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
+                MediaPlayer.play([item]);
             });
         };
     }
