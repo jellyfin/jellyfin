@@ -432,7 +432,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
 
-            var items = movie.SpecialFeatures.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).AsParallel().Select(t => t.Result).ToList();
+            var items = movie.SpecialFeatures.OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).Select(t => t.Result).ToList();
 
             return ToOptimizedResult(items);
         }
@@ -453,7 +453,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
 
-            var items = item.LocalTrailers.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).AsParallel().Select(t => t.Result).ToList();
+            var items = item.LocalTrailers.OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).Select(t => t.Result).ToList();
 
             return ToOptimizedResult(items);
         }
@@ -474,7 +474,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
 
-            var items = item.ThemeSongs.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).AsParallel().Select(t => t.Result).ToArray();
+            var items = item.ThemeSongs.OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).Select(t => t.Result).ToArray();
 
             var result = new ThemeSongsResult
             {
@@ -502,7 +502,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
 
-            var items = item.ThemeVideos.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).AsParallel().Select(t => t.Result).ToArray();
+            var items = item.ThemeVideos.OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).Select(t => t.Result).ToArray();
 
             var result = new ThemeVideosResult
             {
