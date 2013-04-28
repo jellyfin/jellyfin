@@ -47,7 +47,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (args.IsDirectory)
             {
-                var filename = args.FileInfo.cFileName;
+                var filename = args.FileInfo.Name;
 
                 // Ignore any folders in our list
                 if (IgnoreFolders.Contains(filename, StringComparer.OrdinalIgnoreCase))

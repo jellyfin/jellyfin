@@ -68,7 +68,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         protected override DateTime CompareDate(BaseItem item)
         {
             var entry = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation,MetaFileName));
-            return entry != null ? entry.Value.LastWriteTimeUtc : DateTime.MinValue;
+            return entry != null ? entry.LastWriteTimeUtc : DateTime.MinValue;
         }
 
         /// <summary>

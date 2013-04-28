@@ -127,9 +127,9 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             // Loop through each child file/folder and see if we find a video
             foreach (var child in args.FileSystemChildren)
             {
-                if (child.IsDirectory)
+                if (child.Attributes.HasFlag(FileAttributes.Directory))
                 {
-                    if (IsDvdDirectory(child.cFileName))
+                    if (IsDvdDirectory(child.Name))
                     {
                         return new Movie
                         {
@@ -137,7 +137,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                             VideoType = VideoType.Dvd
                         };
                     }
-                    if (IsBluRayDirectory(child.cFileName))
+                    if (IsBluRayDirectory(child.Name))
                     {
                         return new Movie
                         {
@@ -145,7 +145,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                             VideoType = VideoType.BluRay
                         };
                     }
-                    if (IsHdDvdDirectory(child.cFileName))
+                    if (IsHdDvdDirectory(child.Name))
                     {
                         return new Movie
                         {
@@ -160,7 +160,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 var childArgs = new ItemResolveArgs(ApplicationPaths)
                 {
                     FileInfo = child,
-                    Path = child.Path
+                    Path = child.FullName
                 };
 
                 var item = base.Resolve(childArgs);

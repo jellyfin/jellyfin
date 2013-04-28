@@ -46,7 +46,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         protected override DateTime CompareDate(BaseItem item)
         {
             var entry = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, "movie.xml"));
-            return entry != null ? entry.Value.LastWriteTimeUtc : DateTime.MinValue;
+            return entry != null ? entry.LastWriteTimeUtc : DateTime.MinValue;
         }
 
         /// <summary>
@@ -73,9 +73,9 @@ namespace MediaBrowser.Controller.Providers.Movies
             
             var metadataFile = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, "movie.xml"));
 
-            if (metadataFile.HasValue)
+            if (metadataFile != null)
             {
-                var path = metadataFile.Value.Path;
+                var path = metadataFile.FullName;
                 var boxset = item as BoxSet;
 
                 await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);

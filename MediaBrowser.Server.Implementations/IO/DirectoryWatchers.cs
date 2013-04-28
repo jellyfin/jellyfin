@@ -394,9 +394,9 @@ namespace MediaBrowser.Server.Implementations.IO
         {
             try
             {
-                var data = FileSystem.GetFileData(path);
+                var data = FileSystem.GetFileSystemInfo(path);
 
-                if (!data.HasValue || data.Value.IsDirectory)
+                if (!data.Exists || data.Attributes.HasFlag(FileAttributes.Directory))
                 {
                     return false;
                 }

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.IO;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
@@ -68,7 +69,7 @@ namespace MediaBrowser.Controller.Entities.TV
         /// </summary>
         /// <param name="pathInfo">The path info.</param>
         /// <returns>ItemResolveArgs.</returns>
-        protected internal override ItemResolveArgs CreateResolveArgs(WIN32_FIND_DATA? pathInfo = null)
+        protected internal override ItemResolveArgs CreateResolveArgs(FileSystemInfo pathInfo = null)
         {
             var args = base.CreateResolveArgs(pathInfo);
 

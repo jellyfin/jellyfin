@@ -403,16 +403,16 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="fileInfo">The file info.</param>
         /// <returns>BaseItem.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public BaseItem ResolvePath(string path, Folder parent = null, WIN32_FIND_DATA? fileInfo = null)
+        public BaseItem ResolvePath(string path, Folder parent = null, FileSystemInfo fileInfo = null)
         {
             if (string.IsNullOrEmpty(path))
             {
                 throw new ArgumentNullException();
             }
 
-            fileInfo = fileInfo ?? FileSystem.GetFileData(path);
+            fileInfo = fileInfo ?? FileSystem.GetFileSystemInfo(path);
 
-            if (!fileInfo.HasValue)
+            if (!fileInfo.Exists)
             {
                 return null;
             }
@@ -421,7 +421,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 Parent = parent,
                 Path = path,
-                FileInfo = fileInfo.Value
+                FileInfo = fileInfo
             };
 
             // Return null if ignore rules deem that we should do so
@@ -468,7 +468,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="files">The files.</param>
         /// <param name="parent">The parent.</param>
         /// <returns>List{``0}.</returns>
-        public List<T> ResolvePaths<T>(IEnumerable<WIN32_FIND_DATA> files, Folder parent)
+        public List<T> ResolvePaths<T>(IEnumerable<FileSystemInfo> files, Folder parent)
             where T : BaseItem
         {
             var list = new List<T>();
@@ -477,7 +477,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 try
                 {
-                    var item = ResolvePath(f.Path, parent, f) as T;
+                    var item = ResolvePath(f.FullName, parent, f) as T;
 
                     if (item != null)
                     {
@@ -489,7 +489,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error resolving path {0}", ex, f.Path);
+                    _logger.ErrorException("Error resolving path {0}", ex, f.FullName);
                 }
             });
 
@@ -680,16 +680,16 @@ namespace MediaBrowser.Server.Implementations.Library
 
             path = Path.Combine(path, FileSystem.GetValidFilename(name));
 
-            var fileInfo = FileSystem.GetFileData(path);
+            var fileInfo = new DirectoryInfo(path);
 
             var isNew = false;
 
-            if (!fileInfo.HasValue)
+            if (!fileInfo.Exists)
             {
                 Directory.CreateDirectory(path);
-                fileInfo = FileSystem.GetFileData(path);
+                fileInfo = new DirectoryInfo(path);
 
-                if (!fileInfo.HasValue)
+                if (!fileInfo.Exists)
                 {
                     throw new IOException("Path not created: " + path);
                 }
@@ -708,8 +708,8 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     Name = name,
                     Id = id,
-                    DateCreated = fileInfo.Value.CreationTimeUtc,
-                    DateModified = fileInfo.Value.LastWriteTimeUtc,
+                    DateCreated = fileInfo.CreationTimeUtc,
+                    DateModified = fileInfo.LastWriteTimeUtc,
                     Path = path
                 };
                 isNew = true;

@@ -72,19 +72,19 @@ namespace MediaBrowser.Controller.Resolvers
             {
                 var childData = args.IsDirectory ? args.GetFileSystemEntryByPath(item.Path) : null;
 
-                if (childData.HasValue)
+                if (childData != null)
                 {
-                    item.DateCreated = childData.Value.CreationTimeUtc;
-                    item.DateModified = childData.Value.LastWriteTimeUtc;
+                    item.DateCreated = childData.CreationTimeUtc;
+                    item.DateModified = childData.LastWriteTimeUtc;
                 }
                 else
                 {
-                    var fileData = FileSystem.GetFileData(item.Path);
+                    var fileData = FileSystem.GetFileSystemInfo(item.Path);
 
-                    if (fileData.HasValue)
+                    if (fileData.Exists)
                     {
-                        item.DateCreated = fileData.Value.CreationTimeUtc;
-                        item.DateModified = fileData.Value.LastWriteTimeUtc;
+                        item.DateCreated = fileData.CreationTimeUtc;
+                        item.DateModified = fileData.LastWriteTimeUtc;
                     }
                 }
             }

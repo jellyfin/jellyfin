@@ -200,7 +200,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var directory = Path.GetDirectoryName(outputFilePath);
             var name = Path.GetFileNameWithoutExtension(outputFilePath);
 
-            var filesToDelete = Directory.EnumerateFiles(directory, "*", SearchOption.TopDirectoryOnly)
+            var filesToDelete = Directory.EnumerateFiles(directory)
                 .Where(f => f.IndexOf(name, StringComparison.OrdinalIgnoreCase) != -1)
                 .ToList();
 

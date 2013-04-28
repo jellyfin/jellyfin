@@ -47,7 +47,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         protected override DateTime CompareDate(BaseItem item)
         {
             var entry = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, LOCAL_META_FILE_NAME));
-            return entry != null ? entry.Value.LastWriteTimeUtc : DateTime.MinValue;
+            return entry != null ? entry.LastWriteTimeUtc : DateTime.MinValue;
         }
 
         /// <summary>
@@ -84,10 +84,10 @@ namespace MediaBrowser.Controller.Providers.Movies
             cancellationToken.ThrowIfCancellationRequested();
 
             var entry = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, LOCAL_META_FILE_NAME));
-            if (entry.HasValue)
+            if (entry != null)
             {
                 // read in our saved meta and pass to processing function
-                var movieData = JsonSerializer.DeserializeFromFile<CompleteMovieData>(entry.Value.Path);
+                var movieData = JsonSerializer.DeserializeFromFile<CompleteMovieData>(entry.FullName);
 
                 cancellationToken.ThrowIfCancellationRequested();
 

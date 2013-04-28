@@ -35,10 +35,10 @@ namespace MediaBrowser.Controller.Providers.Music
             cancellationToken.ThrowIfCancellationRequested();
 
             var entry = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, LastfmHelper.LocalArtistMetaFileName));
-            if (entry.HasValue)
+            if (entry != null)
             {
                 // read in our saved meta and pass to processing function
-                var data = JsonSerializer.DeserializeFromFile<LastfmArtist>(entry.Value.Path);
+                var data = JsonSerializer.DeserializeFromFile<LastfmArtist>(entry.FullName);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -93,7 +93,7 @@ namespace MediaBrowser.Controller.Providers.Music
         protected override DateTime CompareDate(BaseItem item)
         {
             var entry = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, LastfmHelper.LocalArtistMetaFileName));
-            return entry != null ? entry.Value.LastWriteTimeUtc : DateTime.MinValue;
+            return entry != null ? entry.LastWriteTimeUtc : DateTime.MinValue;
         }
 
     }

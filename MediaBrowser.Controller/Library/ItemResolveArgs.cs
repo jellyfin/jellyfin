@@ -31,7 +31,7 @@ namespace MediaBrowser.Controller.Library
         /// Gets the file system children.
         /// </summary>
         /// <value>The file system children.</value>
-        public IEnumerable<WIN32_FIND_DATA> FileSystemChildren
+        public IEnumerable<FileSystemInfo> FileSystemChildren
         {
             get { return FileSystemDictionary.Values; }
         }
@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.Library
         /// Gets or sets the file system dictionary.
         /// </summary>
         /// <value>The file system dictionary.</value>
-        public Dictionary<string, WIN32_FIND_DATA> FileSystemDictionary { get; set; }
+        public Dictionary<string, FileSystemInfo> FileSystemDictionary { get; set; }
 
         /// <summary>
         /// Gets or sets the parent.
@@ -52,7 +52,7 @@ namespace MediaBrowser.Controller.Library
         /// Gets or sets the file info.
         /// </summary>
         /// <value>The file info.</value>
-        public WIN32_FIND_DATA FileInfo { get; set; }
+        public FileSystemInfo FileInfo { get; set; }
 
         /// <summary>
         /// Gets or sets the path.
@@ -68,7 +68,7 @@ namespace MediaBrowser.Controller.Library
         {
             get
             {
-                return FileInfo.dwFileAttributes.HasFlag(FileAttributes.Directory);
+                return FileInfo.Attributes.HasFlag(FileAttributes.Directory);
             }
         }
 
@@ -80,7 +80,7 @@ namespace MediaBrowser.Controller.Library
         {
             get
             {
-                return FileInfo.IsHidden;
+                return FileInfo.Attributes.HasFlag(FileAttributes.Hidden);
             }
         }
 
@@ -92,7 +92,7 @@ namespace MediaBrowser.Controller.Library
         {
             get
             {
-                return FileInfo.IsSystemFile;
+                return FileInfo.Attributes.HasFlag(FileAttributes.System);
             }
         }
 
@@ -112,7 +112,7 @@ namespace MediaBrowser.Controller.Library
                     return false;
                 }
 
-                var parentDir = FileInfo.Path != null ? System.IO.Path.GetDirectoryName(FileInfo.Path) ?? string.Empty : string.Empty;
+                var parentDir = System.IO.Path.GetDirectoryName(FileInfo.FullName) ?? string.Empty;
 
                 return (parentDir.Length > _appPaths.RootFolderPath.Length
                     && parentDir.StartsWith(_appPaths.RootFolderPath, StringComparison.OrdinalIgnoreCase));
@@ -187,13 +187,13 @@ namespace MediaBrowser.Controller.Library
         /// Store these to reduce disk access in Resolvers
         /// </summary>
         /// <value>The metadata file dictionary.</value>
-        private Dictionary<string, WIN32_FIND_DATA> MetadataFileDictionary { get; set; }
+        private Dictionary<string, FileSystemInfo> MetadataFileDictionary { get; set; }
 
         /// <summary>
         /// Gets the metadata files.
         /// </summary>
         /// <value>The metadata files.</value>
-        public IEnumerable<WIN32_FIND_DATA> MetadataFiles
+        public IEnumerable<FileSystemInfo> MetadataFiles
         {
             get
             {
@@ -202,7 +202,7 @@ namespace MediaBrowser.Controller.Library
                     return MetadataFileDictionary.Values;
                 }
 
-                return new WIN32_FIND_DATA[] {};
+                return new FileSystemInfo[] { };
             }
         }
 
@@ -213,21 +213,21 @@ namespace MediaBrowser.Controller.Library
         /// <exception cref="System.IO.FileNotFoundException"></exception>
         public void AddMetadataFile(string path)
         {
-            var file = FileSystem.GetFileData(path);
+            var file = FileSystem.GetFileSystemInfo(path);
 
-            if (!file.HasValue)
+            if (!file.Exists)
             {
                 throw new FileNotFoundException(path);
             }
 
-            AddMetadataFile(file.Value);
+            AddMetadataFile(file);
         }
 
         /// <summary>
         /// Adds the metadata file.
         /// </summary>
         /// <param name="fileInfo">The file info.</param>
-        public void AddMetadataFile(WIN32_FIND_DATA fileInfo)
+        public void AddMetadataFile(FileSystemInfo fileInfo)
         {
             AddMetadataFiles(new[] { fileInfo });
         }
@@ -237,7 +237,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="files">The files.</param>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public void AddMetadataFiles(IEnumerable<WIN32_FIND_DATA> files)
+        public void AddMetadataFiles(IEnumerable<FileSystemInfo> files)
         {
             if (files == null)
             {
@@ -246,11 +246,11 @@ namespace MediaBrowser.Controller.Library
             
             if (MetadataFileDictionary == null)
             {
-                MetadataFileDictionary = new Dictionary<string, WIN32_FIND_DATA>(StringComparer.OrdinalIgnoreCase);
+                MetadataFileDictionary = new Dictionary<string, FileSystemInfo>(StringComparer.OrdinalIgnoreCase);
             }
             foreach (var file in files)
             {
-                MetadataFileDictionary[file.cFileName] = file;
+                MetadataFileDictionary[file.Name] = file;
             }
         }
 
@@ -258,9 +258,9 @@ namespace MediaBrowser.Controller.Library
         /// Gets the name of the file system entry by.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <returns>System.Nullable{WIN32_FIND_DATA}.</returns>
+        /// <returns>FileSystemInfo.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public WIN32_FIND_DATA? GetFileSystemEntryByName(string name)
+        public FileSystemInfo GetFileSystemEntryByName(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -274,9 +274,9 @@ namespace MediaBrowser.Controller.Library
         /// Gets the file system entry by path.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <returns>System.Nullable{WIN32_FIND_DATA}.</returns>
+        /// <returns>FileSystemInfo.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public WIN32_FIND_DATA? GetFileSystemEntryByPath(string path)
+        public FileSystemInfo GetFileSystemEntryByPath(string path)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -285,7 +285,7 @@ namespace MediaBrowser.Controller.Library
             
             if (FileSystemDictionary != null)
             {
-                WIN32_FIND_DATA entry;
+                FileSystemInfo entry;
 
                 if (FileSystemDictionary.TryGetValue(path, out entry))
                 {
@@ -300,9 +300,9 @@ namespace MediaBrowser.Controller.Library
         /// Gets the meta file by path.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <returns>System.Nullable{WIN32_FIND_DATA}.</returns>
+        /// <returns>FileSystemInfo.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public WIN32_FIND_DATA? GetMetaFileByPath(string path)
+        public FileSystemInfo GetMetaFileByPath(string path)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -311,7 +311,7 @@ namespace MediaBrowser.Controller.Library
             
             if (MetadataFileDictionary != null)
             {
-                WIN32_FIND_DATA entry;
+                FileSystemInfo entry;
 
                 if (MetadataFileDictionary.TryGetValue(System.IO.Path.GetFileName(path), out entry))
                 {
@@ -326,9 +326,9 @@ namespace MediaBrowser.Controller.Library
         /// Gets the name of the meta file by.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <returns>System.Nullable{WIN32_FIND_DATA}.</returns>
+        /// <returns>FileSystemInfo.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public WIN32_FIND_DATA? GetMetaFileByName(string name)
+        public FileSystemInfo GetMetaFileByName(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -337,7 +337,7 @@ namespace MediaBrowser.Controller.Library
             
             if (MetadataFileDictionary != null)
             {
-                WIN32_FIND_DATA entry;
+                FileSystemInfo entry;
 
                 if (MetadataFileDictionary.TryGetValue(name, out entry))
                 {
@@ -355,7 +355,7 @@ namespace MediaBrowser.Controller.Library
         /// <returns><c>true</c> if [contains meta file by name] [the specified name]; otherwise, <c>false</c>.</returns>
         public bool ContainsMetaFileByName(string name)
         {
-            return GetMetaFileByName(name).HasValue;
+            return GetMetaFileByName(name) != null;
         }
 
         /// <summary>
@@ -365,7 +365,7 @@ namespace MediaBrowser.Controller.Library
         /// <returns><c>true</c> if [contains file system entry by name] [the specified name]; otherwise, <c>false</c>.</returns>
         public bool ContainsFileSystemEntryByName(string name)
         {
-            return GetFileSystemEntryByName(name).HasValue;
+            return GetFileSystemEntryByName(name) != null;
         }
 
         #region Equality Overrides

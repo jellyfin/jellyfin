@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using MediaBrowser.Model.Logging;
+using System;
 using System.Collections.Specialized;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace MediaBrowser.Controller.IO
@@ -13,153 +12,77 @@ namespace MediaBrowser.Controller.IO
     public static class FileSystem
     {
         /// <summary>
-        /// Gets information about a path
+        /// Gets the file system info.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <returns>System.Nullable{WIN32_FIND_DATA}.</returns>
-        /// <exception cref="System.ArgumentNullException">path</exception>
-        /// <exception cref="System.IO.IOException">GetFileData failed for  + path</exception>
-        public static WIN32_FIND_DATA? GetFileData(string path)
+        /// <returns>FileSystemInfo.</returns>
+        public static FileSystemInfo GetFileSystemInfo(string path)
         {
-            if (string.IsNullOrEmpty(path))
+            // Take a guess to try and avoid two file system hits, but we'll double-check by calling Exists
+            if (Path.HasExtension(path))
             {
-                throw new ArgumentNullException("path");
-            }
+                var fileInfo = new FileInfo(path);
 
-            WIN32_FIND_DATA data;
-            var handle = NativeMethods.FindFirstFileEx(path, FINDEX_INFO_LEVELS.FindExInfoBasic, out data,
-                                          FINDEX_SEARCH_OPS.FindExSearchNameMatch, IntPtr.Zero, FindFirstFileExFlags.NONE);
-
-            var getFilename = false;
-
-            if (handle == NativeMethods.INVALID_HANDLE_VALUE && !Path.HasExtension(path))
-            {
-                if (!path.EndsWith("*", StringComparison.OrdinalIgnoreCase))
+                if (fileInfo.Exists)
                 {
-                    NativeMethods.FindClose(handle);
-
-                    handle = NativeMethods.FindFirstFileEx(Path.Combine(path, "*"), FINDEX_INFO_LEVELS.FindExInfoBasic, out data,
-                                          FINDEX_SEARCH_OPS.FindExSearchNameMatch, IntPtr.Zero, FindFirstFileExFlags.NONE);
-
-                    getFilename = true;
+                    return fileInfo;
                 }
-            }
 
-            if (handle == IntPtr.Zero)
+                return new DirectoryInfo(path);
+            }
+            else
             {
-                throw new IOException("GetFileData failed for " + path);
+                var fileInfo = new DirectoryInfo(path);
+
+                if (fileInfo.Exists)
+                {
+                    return fileInfo;
+                }
+
+                return new FileInfo(path);
             }
-
-            NativeMethods.FindClose(handle);
-
-            // According to MSDN documentation, this will default to 1601 for paths that don't exist.		
-            if (data.CreationTimeUtc.Year == 1601)
-            {
-                return null;
-            }
-
-            if (getFilename)
-            {
-                data.cFileName = Path.GetFileName(path);
-            }
-
-            data.Path = path;
-            return data;
         }
 
         /// <summary>
-        /// Gets all files within a folder
+        /// Gets the creation time UTC.
         /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="searchPattern">The search pattern.</param>
-        /// <returns>IEnumerable{WIN32_FIND_DATA}.</returns>
-        public static IEnumerable<WIN32_FIND_DATA> GetFiles(string path, string searchPattern = "*")
+        /// <param name="info">The info.</param>
+        /// <param name="logger">The logger.</param>
+        /// <returns>DateTime.</returns>
+        public static DateTime GetLastWriteTimeUtc(FileSystemInfo info, ILogger logger)
         {
-            return GetFileSystemEntries(path, searchPattern, includeDirectories: false);
+            // This could throw an error on some file systems that have dates out of range
+
+            try
+            {
+                return info.LastAccessTimeUtc;
+            }
+            catch (Exception ex)
+            {
+                logger.ErrorException("Error determining LastAccessTimeUtc for {0}", ex, info.FullName);
+                return DateTime.MinValue;
+            }
         }
 
         /// <summary>
-        /// Gets all file system entries within a foler
+        /// Gets the creation time UTC.
         /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="searchPattern">The search pattern.</param>
-        /// <param name="includeFiles">if set to <c>true</c> [include files].</param>
-        /// <param name="includeDirectories">if set to <c>true</c> [include directories].</param>
-        /// <returns>IEnumerable{WIN32_FIND_DATA}.</returns>
-        /// <exception cref="System.ArgumentNullException">path</exception>
-        /// <exception cref="System.IO.IOException">GetFileSystemEntries failed</exception>
-        public static IEnumerable<WIN32_FIND_DATA> GetFileSystemEntries(string path, string searchPattern = "*", bool includeFiles = true, bool includeDirectories = true)
+        /// <param name="info">The info.</param>
+        /// <param name="logger">The logger.</param>
+        /// <returns>DateTime.</returns>
+        public static DateTime GetCreationTimeUtc(FileSystemInfo info, ILogger logger)
         {
-            if (string.IsNullOrEmpty(path))
+            // This could throw an error on some file systems that have dates out of range
+
+            try
             {
-                throw new ArgumentNullException("path");
+                return info.CreationTimeUtc;
             }
-            
-            var lpFileName = Path.Combine(path, searchPattern);
-
-            WIN32_FIND_DATA lpFindFileData;
-            var handle = NativeMethods.FindFirstFileEx(lpFileName, FINDEX_INFO_LEVELS.FindExInfoBasic, out lpFindFileData,
-                                          FINDEX_SEARCH_OPS.FindExSearchNameMatch, IntPtr.Zero, FindFirstFileExFlags.FIND_FIRST_EX_LARGE_FETCH);
-
-            if (handle == IntPtr.Zero)
+            catch (Exception ex)
             {
-                var hr = Marshal.GetLastWin32Error();
-                if (hr != 2 && hr != 0x12)
-                {
-                    throw new IOException("GetFileSystemEntries failed");
-                }
-                yield break;
+                logger.ErrorException("Error determining CreationTimeUtc for {0}", ex, info.FullName);
+                return DateTime.MinValue;
             }
-
-            if (IncludeInFindFileOutput(lpFindFileData.cFileName, lpFindFileData.dwFileAttributes, includeFiles, includeDirectories))
-            {
-                lpFindFileData.Path = Path.Combine(path, lpFindFileData.cFileName);
-
-                yield return lpFindFileData;
-            }
-
-            while (NativeMethods.FindNextFile(handle, out lpFindFileData) != IntPtr.Zero)
-            {
-                if (IncludeInFindFileOutput(lpFindFileData.cFileName, lpFindFileData.dwFileAttributes, includeFiles, includeDirectories))
-                {
-                    lpFindFileData.Path = Path.Combine(path, lpFindFileData.cFileName);
-                    yield return lpFindFileData;
-                }
-            }
-
-            NativeMethods.FindClose(handle);
-        }
-
-        /// <summary>
-        /// Includes the in find file output.
-        /// </summary>
-        /// <param name="cFileName">Name of the c file.</param>
-        /// <param name="attributes">The attributes.</param>
-        /// <param name="includeFiles">if set to <c>true</c> [include files].</param>
-        /// <param name="includeDirectories">if set to <c>true</c> [include directories].</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        public static bool IncludeInFindFileOutput(string cFileName, FileAttributes attributes, bool includeFiles, bool includeDirectories)
-        {
-            if (cFileName.Equals(".", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-            if (cFileName.Equals("..", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (!includeFiles && !attributes.HasFlag(FileAttributes.Directory))
-            {
-                return false;
-            }
-
-            if (!includeDirectories && attributes.HasFlag(FileAttributes.Directory))
-            {
-                return false;
-            }
-
-            return true;
         }
 
         /// <summary>

@@ -15,7 +15,8 @@ namespace MediaBrowser.Controller.Providers.TV
     /// </summary>
     public class EpisodeImageFromMediaLocationProvider : BaseMetadataProvider
     {
-        public EpisodeImageFromMediaLocationProvider(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
+        public EpisodeImageFromMediaLocationProvider(ILogManager logManager, IServerConfigurationManager configurationManager)
+            : base(logManager, configurationManager)
         {
         }
 
@@ -60,7 +61,7 @@ namespace MediaBrowser.Controller.Providers.TV
         public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             var episode = (Episode)item;
 
             var episodeFileName = Path.GetFileName(episode.Path);
@@ -70,7 +71,7 @@ namespace MediaBrowser.Controller.Providers.TV
             ValidateImage(episode, item.MetaLocation);
 
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             SetPrimaryImagePath(episode, parent, item.MetaLocation, episodeFileName);
 
             SetLastRefreshed(item, DateTime.UtcNow);
@@ -98,7 +99,7 @@ namespace MediaBrowser.Controller.Providers.TV
                 return;
             }
 
-            if (!episode.Parent.ResolveArgs.GetMetaFileByPath(path).HasValue)
+            if (episode.Parent.ResolveArgs.GetMetaFileByPath(path) == null)
             {
                 episode.PrimaryImagePath = null;
             }
@@ -122,9 +123,9 @@ namespace MediaBrowser.Controller.Providers.TV
             var file = parent.ResolveArgs.GetMetaFileByPath(imageFiles[0]) ??
                        parent.ResolveArgs.GetMetaFileByPath(imageFiles[1]);
 
-            if (file.HasValue)
+            if (file != null)
             {
-                item.PrimaryImagePath = file.Value.Path;
+                item.PrimaryImagePath = file.FullName;
             }
         }
     }

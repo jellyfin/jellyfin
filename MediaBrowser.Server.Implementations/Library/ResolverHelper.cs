@@ -53,7 +53,7 @@ namespace MediaBrowser.Server.Implementations.Library
             if (string.IsNullOrEmpty(item.Name) && !string.IsNullOrEmpty(item.Path))
             {
                 //we use our resolve args name here to get the name of the containg folder, not actual video file
-                item.Name = GetMBName(item.ResolveArgs.FileInfo.cFileName, item.ResolveArgs.FileInfo.IsDirectory);
+                item.Name = GetMBName(item.ResolveArgs.FileInfo.Name, item.ResolveArgs.FileInfo.Attributes.HasFlag(FileAttributes.Directory));
             }
         }
 

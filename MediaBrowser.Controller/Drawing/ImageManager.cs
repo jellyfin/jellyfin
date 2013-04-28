@@ -428,7 +428,7 @@ namespace MediaBrowser.Controller.Drawing
             var metaFileEntry = item.ResolveArgs.GetMetaFileByPath(imagePath);
 
             // If we didn't the metafile entry, check the Season
-            if (!metaFileEntry.HasValue)
+            if (metaFileEntry == null)
             {
                 var episode = item as Episode;
 
@@ -439,7 +439,7 @@ namespace MediaBrowser.Controller.Drawing
             }
 
             // See if we can avoid a file system lookup by looking for the file in ResolveArgs
-            return metaFileEntry == null ? File.GetLastWriteTimeUtc(imagePath) : metaFileEntry.Value.LastWriteTimeUtc;
+            return metaFileEntry == null ? File.GetLastWriteTimeUtc(imagePath) : metaFileEntry.LastWriteTimeUtc;
         }
 
         /// <summary>

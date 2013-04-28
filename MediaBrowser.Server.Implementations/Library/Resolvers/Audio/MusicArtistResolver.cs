@@ -33,7 +33,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             if (args.Parent.IsRoot) return null;
 
             // If we contain an album assume we are an artist folder
-            return args.FileSystemChildren.Any(i => MusicAlbumResolver.IsMusicAlbum(i.Path)) ? new MusicArtist() : null;
+            return args.FileSystemChildren.Any(i => MusicAlbumResolver.IsMusicAlbum(i.FullName)) ? new MusicArtist() : null;
         }
 
     }

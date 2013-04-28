@@ -255,16 +255,17 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             var startIndex = video.MediaStreams == null ? 0 : video.MediaStreams.Count;
             var streams = new List<MediaStream>();
 
-            foreach (var file in fileSystemChildren.Where(f => !f.IsDirectory))
+            foreach (var file in fileSystemChildren.Where(f => !f.Attributes.HasFlag(FileAttributes.Directory)))
             {
-                var extension = Path.GetExtension(file.Path);
+                var fullName = file.FullName;
+                var extension = Path.GetExtension(fullName);
 
                 if (string.Equals(extension, ".srt", StringComparison.OrdinalIgnoreCase))
                 {
                     if (video.VideoType == VideoType.VideoFile)
                     {
                         // For video files the subtitle filename must match video filename
-                        if (!string.Equals(Path.GetFileNameWithoutExtension(video.Path), Path.GetFileNameWithoutExtension(file.Path)))
+                        if (!string.Equals(Path.GetFileNameWithoutExtension(video.Path), Path.GetFileNameWithoutExtension(fullName)))
                         {
                             continue;
                         }
@@ -275,7 +276,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
                         Index = startIndex++,
                         Type = MediaStreamType.Subtitle,
                         IsExternal = true,
-                        Path = file.Path,
+                        Path = fullName,
                         Codec = "srt"
                     });
                 }

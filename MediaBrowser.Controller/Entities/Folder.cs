@@ -768,7 +768,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected virtual IEnumerable<BaseItem> GetNonCachedChildren()
         {
-            IEnumerable<WIN32_FIND_DATA> fileSystemChildren;
+            IEnumerable<FileSystemInfo> fileSystemChildren;
 
             try
             {

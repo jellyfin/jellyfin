@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.IO;
+﻿using System.IO;
+using MediaBrowser.Controller.IO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -154,21 +155,21 @@ namespace MediaBrowser.Controller.Library
         /// <param name="path">The path.</param>
         /// <param name="fileSystemChildren">The file system children.</param>
         /// <returns><c>true</c> if [is series folder] [the specified path]; otherwise, <c>false</c>.</returns>
-        public static bool IsSeriesFolder(string path, IEnumerable<WIN32_FIND_DATA> fileSystemChildren)
+        public static bool IsSeriesFolder(string path, IEnumerable<FileSystemInfo> fileSystemChildren)
         {
             // A folder with more than 3 non-season folders in will not becounted as a series
             var nonSeriesFolders = 0;
 
             foreach (var child in fileSystemChildren)
             {
-                if (child.IsHidden || child.IsSystemFile)
+                if (child.Attributes.HasFlag(FileAttributes.Hidden) || child.Attributes.HasFlag(FileAttributes.System))
                 {
                     continue;
                 }
 
-                if (child.IsDirectory)
+                if (child.Attributes.HasFlag(FileAttributes.Directory))
                 {
-                    if (IsSeasonFolder(child.Path))
+                    if (IsSeasonFolder(child.FullName))
                     {
                         return true;
                     }
@@ -182,8 +183,8 @@ namespace MediaBrowser.Controller.Library
                 }
                 else
                 {
-                    if (EntityResolutionHelper.IsVideoFile(child.Path) &&
-                        !string.IsNullOrEmpty(EpisodeNumberFromFile(child.Path, false)))
+                    if (EntityResolutionHelper.IsVideoFile(child.FullName) &&
+                        !string.IsNullOrEmpty(EpisodeNumberFromFile(child.FullName, false)))
                     {
                         return true;
                     }
