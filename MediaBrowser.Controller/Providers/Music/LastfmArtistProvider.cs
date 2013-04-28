@@ -90,7 +90,7 @@ namespace MediaBrowser.Controller.Providers.Music
 
         public override bool Supports(BaseItem item)
         {
-            return item is MusicArtist;
+            return false;
         }
     }
 }

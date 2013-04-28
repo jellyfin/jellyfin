@@ -337,6 +337,28 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
+    /// Class GetVideoBackdrops
+    /// </summary>
+    [Route("/Users/{UserId}/Items/{Id}/VideoBackdrops", "GET")]
+    [Api(Description = "Gets video backdrops for an item")]
+    public class GetVideoBackdrops : IReturn<VideoBackdropsResult>
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public Guid UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
+    /// <summary>
     /// Class GetSpecialFeatures
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/SpecialFeatures", "GET")]
@@ -455,6 +477,34 @@ namespace MediaBrowser.Api.UserLibrary
             var items = item.ThemeSongs.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).AsParallel().Select(t => t.Result).ToArray();
 
             var result = new ThemeSongsResult
+            {
+                Items = items,
+                TotalRecordCount = items.Length,
+                OwnerId = DtoBuilder.GetClientItemId(item)
+            };
+
+            return ToOptimizedResult(result);
+        }
+
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
+        public object Get(GetVideoBackdrops request)
+        {
+            var user = _userManager.GetUserById(request.UserId);
+
+            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
+
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
+
+            var items = item.VideoBackdrops.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).AsParallel().Select(t => t.Result).ToArray();
+
+            var result = new VideoBackdropsResult
             {
                 Items = items,
                 TotalRecordCount = items.Length,

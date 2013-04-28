@@ -275,10 +275,12 @@ namespace MediaBrowser.Server.Implementations.Library
             var specialFeatures = items.OfType<Movie>().SelectMany(i => i.SpecialFeatures).ToList();
             var localTrailers = items.SelectMany(i => i.LocalTrailers).ToList();
             var themeSongs = items.SelectMany(i => i.ThemeSongs).ToList();
+            var videoBackdrops = items.SelectMany(i => i.ThemeSongs).ToList();
 
             items.AddRange(specialFeatures);
             items.AddRange(localTrailers);
             items.AddRange(themeSongs);
+            items.AddRange(videoBackdrops);
 
             // Need to use DistinctBy Id because there could be multiple instances with the same id
             // due to sharing the default library
@@ -330,15 +332,22 @@ namespace MediaBrowser.Server.Implementations.Library
             foreach (var subItem in item.LocalTrailers)
             {
                 // Prevent access to foreach variable in closure
-                var trailer1 = subItem;
-                LibraryItemsCache.AddOrUpdate(subItem.Id, subItem, delegate { return trailer1; });
+                var copy = subItem;
+                LibraryItemsCache.AddOrUpdate(subItem.Id, subItem, delegate { return copy; });
             }
 
             foreach (var subItem in item.ThemeSongs)
             {
                 // Prevent access to foreach variable in closure
-                var trailer1 = subItem;
-                LibraryItemsCache.AddOrUpdate(subItem.Id, subItem, delegate { return trailer1; });
+                var copy = subItem;
+                LibraryItemsCache.AddOrUpdate(subItem.Id, subItem, delegate { return copy; });
+            }
+
+            foreach (var subItem in item.VideoBackdrops)
+            {
+                // Prevent access to foreach variable in closure
+                var copy = subItem;
+                LibraryItemsCache.AddOrUpdate(subItem.Id, subItem, delegate { return copy; });
             }
 
             var movie = item as Movie;
