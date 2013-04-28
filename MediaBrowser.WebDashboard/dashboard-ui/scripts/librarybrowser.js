@@ -1115,7 +1115,7 @@
             else {
                 url = "css/images/items/detail/video.png";
                 useBackgroundColor = true;
-                maxwidth = 150;p
+                maxwidth = 150;
             }
 
             if (url) {
