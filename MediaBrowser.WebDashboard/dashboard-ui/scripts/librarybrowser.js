@@ -317,6 +317,9 @@
             if (item.Type == "Artist") {
                 return "itembynamedetails.html?artist=" + encodeName(item.Name) + "&context=" + (itemByNameContext || "music");
             }
+            if (item.Type == "GamePlatform") {
+                return "gamesystem.html?id=" + id;
+            }
 
             return item.IsFolder ? (id ? "itemList.html?parentId=" + id : "#") : "itemdetails.html?id=" + id;
 

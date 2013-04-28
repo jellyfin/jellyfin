@@ -126,6 +126,12 @@
         if (context == "music" && item.Type == "Artist") {
             $('#artistTabs', page).show();
         }
+        if (context == "games" && item.Type == "Genre") {
+            $('#gameGenreTabs', page).show();
+        }
+        if (context == "games" && item.Type == "Studio") {
+            $('#gameStudioTabs', page).show();
+        }
     }
 
     function renderTabs(page, item) {
