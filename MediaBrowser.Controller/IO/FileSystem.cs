@@ -79,16 +79,6 @@ namespace MediaBrowser.Controller.IO
         }
 
         /// <summary>
-        /// Gets all sub-directories within a folder
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>IEnumerable{WIN32_FIND_DATA}.</returns>
-        public static IEnumerable<WIN32_FIND_DATA> GetDirectories(string path)
-        {
-            return GetFileSystemEntries(path, includeFiles: false);
-        }
-
-        /// <summary>
         /// Gets all file system entries within a foler
         /// </summary>
         /// <param name="path">The path.</param>

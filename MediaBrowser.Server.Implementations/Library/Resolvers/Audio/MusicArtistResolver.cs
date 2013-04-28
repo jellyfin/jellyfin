@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
-using System.Linq;
 using MediaBrowser.Controller.Resolvers;
+using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 {
@@ -33,7 +33,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             if (args.Parent.IsRoot) return null;
 
             // If we contain an album assume we are an artist folder
-            return args.FileSystemChildren.Any(MusicAlbumResolver.IsMusicAlbum) ? new MusicArtist() : null;
+            return args.FileSystemChildren.Any(i => MusicAlbumResolver.IsMusicAlbum(i.Path)) ? new MusicArtist() : null;
         }
 
     }
