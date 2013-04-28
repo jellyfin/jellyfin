@@ -68,20 +68,6 @@ namespace MediaBrowser.Controller.Providers
         }
 
         /// <summary>
-        /// Needses the refresh internal.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="providerInfo">The provider info.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
-        {
-            if (item.DontFetchMeta) return false;
-
-            return DateTime.UtcNow > (providerInfo.LastRefreshed.AddDays(ConfigurationManager.Configuration.MetadataRefreshDays)) 
-                && ShouldFetch(item, providerInfo);
-        }
-
-        /// <summary>
         /// Gets a value indicating whether [requires internet].
         /// </summary>
         /// <value><c>true</c> if [requires internet]; otherwise, <c>false</c>.</value>
@@ -99,16 +85,6 @@ namespace MediaBrowser.Controller.Providers
             get { return MetadataProviderPriority.Third; }
         }
 
-        /// <summary>
-        /// Shoulds the fetch.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="providerInfo">The provider info.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        protected virtual bool ShouldFetch(BaseItem item, BaseProviderInfo providerInfo)
-        {
-            return false;
-        }
         #region Result Objects
 
         protected class FanArtImageInfo

@@ -168,36 +168,6 @@ namespace MediaBrowser.Controller.Providers.Music
             return WebUtility.UrlEncode(name);
         }
 
-        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
-        {
-            if (item.DontFetchMeta) return false;
-
-            if (RefreshOnFileSystemStampChange && HasFileSystemStampChanged(item, providerInfo))
-            {
-                //If they deleted something from file system, chances are, this item was mis-identified the first time
-                item.SetProviderId(MetadataProviders.Musicbrainz, null);
-                Logger.Debug("LastfmProvider reports file system stamp change...");
-                return true;
-            }
-
-            if (providerInfo.LastRefreshStatus != ProviderRefreshStatus.Success)
-            {
-                Logger.Debug("LastfmProvider for {0} - last attempt had errors.  Will try again.", item.Path);
-                return true;
-            }
-
-            if (RefreshOnVersionChange && ProviderVersion != providerInfo.ProviderVersion)
-            {
-                Logger.Debug("LastfmProvider version change re-running for {0}", item.Path);
-                return true;
-            }
-
-            if (DateTime.UtcNow.Subtract(providerInfo.LastRefreshed).TotalDays > ConfigurationManager.Configuration.MetadataRefreshDays) // only refresh every n days
-                return true;
-
-            return false;
-        }
-
         /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>

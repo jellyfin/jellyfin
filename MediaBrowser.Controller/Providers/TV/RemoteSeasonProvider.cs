@@ -78,19 +78,12 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            bool fetch = false;
-            var downloadDate = providerInfo.LastRefreshed;
-
-            if (ConfigurationManager.Configuration.MetadataRefreshDays == -1 && downloadDate != DateTime.MinValue)
-                return false;
-
-            if (!HasLocalMeta(item))
+            if (HasLocalMeta(item))
             {
-                fetch = ConfigurationManager.Configuration.MetadataRefreshDays != -1 &&
-                    DateTime.UtcNow.Subtract(downloadDate).TotalDays > ConfigurationManager.Configuration.MetadataRefreshDays;
+                return false;
             }
 
-            return fetch;
+            return base.NeedsRefreshInternal(item, providerInfo);
         }
 
         /// <summary>

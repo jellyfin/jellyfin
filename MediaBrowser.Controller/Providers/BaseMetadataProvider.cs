@@ -203,6 +203,8 @@ namespace MediaBrowser.Controller.Providers
                 throw new ArgumentNullException("providerInfo");
             }
 
+            if (item.DontFetchMeta && RequiresInternet) return false;
+            
             if (CompareDate(item) > providerInfo.LastRefreshed)
             {
                 return true;
@@ -218,6 +220,16 @@ namespace MediaBrowser.Controller.Providers
                 return true;
             }
 
+            if (RequiresInternet && DateTime.UtcNow > (providerInfo.LastRefreshed.AddDays(ConfigurationManager.Configuration.MetadataRefreshDays)))
+            {
+                return true;
+            }
+
+            if (providerInfo.LastRefreshStatus != ProviderRefreshStatus.Success)
+            {
+                return true;
+            }
+            
             return false;
         }
 
