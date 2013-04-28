@@ -51,7 +51,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 
             foreach (var fullName in new DirectoryInfo(path).EnumerateFiles().Select(file => file.FullName))
             {
-                if (AudioResolver.IsAudioFile(fullName)) foundAudio++;
+                if (EntityResolutionHelper.IsAudioFile(fullName)) foundAudio++;
                 if (foundAudio >= 2)
                 {
                     return true;
@@ -93,7 +93,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 
             foreach (var file in list)
             {
-                if (AudioResolver.IsAudioFile(file.FullName)) foundAudio++;
+                if (EntityResolutionHelper.IsAudioFile(file.FullName)) foundAudio++;
                 if (foundAudio >= 2)
                 {
                     return true;

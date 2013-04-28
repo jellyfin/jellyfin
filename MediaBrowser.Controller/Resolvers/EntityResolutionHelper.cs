@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.Resolvers
         /// Any extension in this list is considered a video file - can be added to at runtime for extensibility
         /// </summary>
         public static List<string> VideoFileExtensions = new List<string>
-        {
+            {
                 ".mkv",
                 ".m2t",
                 ".m2ts",
@@ -45,13 +45,40 @@ namespace MediaBrowser.Controller.Resolvers
         };
 
         /// <summary>
+        /// The audio file extensions
+        /// </summary>
+        private static readonly string[] AudioFileExtensions = new[] { 
+            ".mp3",
+            ".flac",
+            ".wma",
+            ".aac",
+            ".acc",
+            ".m4a",
+            ".m4b",
+            ".wav",
+            ".ape",
+            ".ogg",
+            ".oga"
+        };
+
+        /// <summary>
+        /// Determines whether [is audio file] [the specified args].
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns><c>true</c> if [is audio file] [the specified args]; otherwise, <c>false</c>.</returns>
+        public static bool IsAudioFile(string path)
+        {
+            return AudioFileExtensions.Contains(Path.GetExtension(path), StringComparer.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
         /// Determines whether [is video file] [the specified path].
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns><c>true</c> if [is video file] [the specified path]; otherwise, <c>false</c>.</returns>
         public static bool IsVideoFile(string path)
         {
-            var extension = Path.GetExtension(path) ?? string.Empty;
+            var extension = Path.GetExtension(path) ?? String.Empty;
             return VideoFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
         }
 
