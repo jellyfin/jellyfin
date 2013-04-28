@@ -7,7 +7,7 @@
 		SortOrder: "Ascending",
 		IncludeItemTypes: "BoxSet",
 		Recursive: true,
-		Fields: "PrimaryImageAspectRatio,DisplayMediaType,ItemCounts,DateCreated,UserData",
+		Fields: "DisplayMediaType,ItemCounts,DateCreated,UserData",
 		Limit: LibraryBrowser.getDetaultPageSize(),
 		StartIndex: 0
 	};
@@ -25,7 +25,6 @@
 
 		    html += LibraryBrowser.getPosterDetailViewHtml({
 		        items: result.Items,
-		        useAverageAspectRatio: true,
 		        context: "movies"
 		    });
 

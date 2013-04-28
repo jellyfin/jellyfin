@@ -380,7 +380,7 @@
             SortOrder: "Ascending",
             IncludeItemTypes: "",
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio,UserData,DisplayMediaType,ItemCounts,DateCreated,AudioInfo,SeriesInfo",
+            Fields: "UserData,DisplayMediaType,ItemCounts,DateCreated,AudioInfo,SeriesInfo",
             Limit: LibraryBrowser.getDetaultPageSize(),
             StartIndex: 0
         };

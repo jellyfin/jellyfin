@@ -9,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Series",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio,DisplayMediaType,SeriesInfo,ItemCounts,DateCreated,UserData",
+        Fields: "DisplayMediaType,SeriesInfo,ItemCounts,DateCreated,UserData",
         Limit: LibraryBrowser.getDetaultPageSize(),
         StartIndex: 0
     };
@@ -27,7 +27,6 @@
             if (view == "Backdrop") {
                 html += LibraryBrowser.getPosterDetailViewHtml({
                     items: result.Items,
-                    useAverageAspectRatio: true,
                     preferBackdrop: true,
                     context: "tv"
                 });
@@ -35,7 +34,6 @@
             else if (view == "Poster") {
                 html += LibraryBrowser.getPosterDetailViewHtml({
                     items: result.Items,
-                    useAverageAspectRatio: true,
                     context: "tv"
                 });
             }

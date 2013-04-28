@@ -7,7 +7,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Movie",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio,ItemCounts,DateCreated,UserData",
+        Fields: "ItemCounts,DateCreated,UserData",
         PersonTypes: "",
         Limit: LibraryBrowser.getDetaultPageSize(),
         StartIndex: 0

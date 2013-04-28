@@ -7,7 +7,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Audio",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio,ItemCounts,DateCreated,UserData,AudioInfo,ParentId",
+        Fields: "ItemCounts,DateCreated,UserData,AudioInfo,ParentId",
         Limit: 200,
         StartIndex: 0
     };

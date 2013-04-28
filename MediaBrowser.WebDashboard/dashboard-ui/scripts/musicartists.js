@@ -6,7 +6,7 @@
         SortBy: "SortName",
         SortOrder: "Ascending",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio,ItemCounts,DateCreated,UserData",
+        Fields: "ItemCounts,DateCreated,UserData",
         Limit: LibraryBrowser.getDetaultPageSize(),
         StartIndex: 0
     };

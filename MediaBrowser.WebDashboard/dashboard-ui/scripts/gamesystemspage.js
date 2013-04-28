@@ -8,7 +8,7 @@
 		SortOrder: "Ascending",
 		IncludeItemTypes: "GamePlatform",
 		Recursive: true,
-		Fields: "PrimaryImageAspectRatio,ItemCounts,ItemCounts,DateCreated,UserData",
+		Fields: "ItemCounts,ItemCounts,DateCreated,UserData",
 		Limit: LibraryBrowser.getDetaultPageSize(),
 		StartIndex: 0
 	};

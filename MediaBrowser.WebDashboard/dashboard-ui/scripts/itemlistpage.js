@@ -7,7 +7,7 @@
 
         SortBy: "SortName",
         SortOrder: "Ascending",
-        Fields: "PrimaryImageAspectRatio,UserData,DisplayMediaType,ItemCounts,DateCreated",
+        Fields: "UserData,DisplayMediaType,ItemCounts,DateCreated",
         Limit: LibraryBrowser.getDetaultPageSize(),
         StartIndex: 0
     };
@@ -27,14 +27,12 @@
             if (view == "Backdrop") {
                 html += LibraryBrowser.getPosterDetailViewHtml({
                     items: result.Items,
-                    useAverageAspectRatio: true,
                     preferBackdrop: true
                 });
             }
             else if (view == "Poster") {
                 html += LibraryBrowser.getPosterDetailViewHtml({
-                    items: result.Items,
-                    useAverageAspectRatio: true
+                    items: result.Items
                 });
             }
 

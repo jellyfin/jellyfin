@@ -7,7 +7,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "MusicAlbum",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio,ItemCounts,DateCreated,UserData",
+        Fields: "ItemCounts,DateCreated,UserData",
         Limit: LibraryBrowser.getDetaultPageSize(),
         StartIndex: 0
     };
@@ -24,7 +24,6 @@
 
             html += LibraryBrowser.getPosterDetailViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: true,
                 context: "music",
                 shape: "square"
             });
