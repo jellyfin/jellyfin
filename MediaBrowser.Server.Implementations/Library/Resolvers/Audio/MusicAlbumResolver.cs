@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -40,15 +42,29 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
         /// <summary>
         /// Determine if the supplied file data points to a music album
         /// </summary>
-        /// <param name="data">The data.</param>
+        /// <param name="path">The path.</param>
         /// <returns><c>true</c> if [is music album] [the specified data]; otherwise, <c>false</c>.</returns>
-        public static bool IsMusicAlbum(WIN32_FIND_DATA data)
+        public static bool IsMusicAlbum(string path)
         {
-            return ContainsMusic(FileSystem.GetFiles(data.Path));
+            // If list contains at least 2 audio files or at least one and no video files consider it to contain music
+            var foundAudio = 0;
+
+            foreach (var fullName in new DirectoryInfo(path).EnumerateFiles("*", SearchOption.TopDirectoryOnly).Select(file => file.FullName))
+            {
+                if (AudioResolver.IsAudioFile(fullName)) foundAudio++;
+                if (foundAudio >= 2)
+                {
+                    return true;
+                }
+                if (EntityResolutionHelper.IsVideoFile(fullName)) return false;
+            }
+
+            //  or a single audio file and no video files
+            return foundAudio > 0;
         }
 
         /// <summary>
-        /// Determine if the supplied reslove args should be considered a music album
+        /// Determine if the supplied resolve args should be considered a music album
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns><c>true</c> if [is music album] [the specified args]; otherwise, <c>false</c>.</returns>
@@ -74,20 +90,19 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
         {
             // If list contains at least 2 audio files or at least one and no video files consider it to contain music
             var foundAudio = 0;
-            var foundVideo = 0;
+
             foreach (var file in list)
             {
-                if (AudioResolver.IsAudioFile(file)) foundAudio++;
+                if (AudioResolver.IsAudioFile(file.Path)) foundAudio++;
                 if (foundAudio >= 2)
                 {
                     return true;
                 }
-                if (EntityResolutionHelper.IsVideoFile(file.Path)) foundVideo++;
+                if (EntityResolutionHelper.IsVideoFile(file.Path)) return false;
             }
 
             //  or a single audio file and no video files
-            if (foundAudio > 0 && foundVideo == 0) return true;
-            return false;
+            return foundAudio > 0;
         }
     }
 }

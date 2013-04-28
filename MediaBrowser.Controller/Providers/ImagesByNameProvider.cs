@@ -1,13 +1,12 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.Logging;
 using System;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Model.Logging;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -16,7 +15,8 @@ namespace MediaBrowser.Controller.Providers
     /// </summary>
     public class ImagesByNameProvider : ImageFromMediaLocationProvider
     {
-        public ImagesByNameProvider(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
+        public ImagesByNameProvider(ILogManager logManager, IServerConfigurationManager configurationManager)
+            : base(logManager, configurationManager)
         {
         }
 
@@ -88,14 +88,61 @@ namespace MediaBrowser.Controller.Providers
                 return DateTime.MinValue;
             }
 
-            var files = FileSystem.GetFiles(location).ToList();
+            var files = new DirectoryInfo(location).EnumerateFiles("*", SearchOption.TopDirectoryOnly).ToList();
 
             if (files.Count == 0)
             {
                 return DateTime.MinValue;
             }
 
-            return files.Select(f => f.CreationTimeUtc > f.LastWriteTimeUtc ? f.CreationTimeUtc : f.LastWriteTimeUtc).Max();
+            return files.Select(f =>
+            {
+                var lastWriteTime = GetLastWriteTimeUtc(f);
+                var creationTime = GetCreationTimeUtc(f);
+
+                return creationTime > lastWriteTime ? creationTime : lastWriteTime;
+
+            }).Max();
+        }
+
+        /// <summary>
+        /// Gets the creation time UTC.
+        /// </summary>
+        /// <param name="info">The info.</param>
+        /// <returns>DateTime.</returns>
+        private DateTime GetLastWriteTimeUtc(FileSystemInfo info)
+        {
+            // This could throw an error on some file systems that have dates out of range
+
+            try
+            {
+                return info.LastAccessTimeUtc;
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error determining LastAccessTimeUtc for {0}", ex, info.FullName);
+                return DateTime.MinValue;
+            }
+        }
+
+        /// <summary>
+        /// Gets the creation time UTC.
+        /// </summary>
+        /// <param name="info">The info.</param>
+        /// <returns>DateTime.</returns>
+        private DateTime GetCreationTimeUtc(FileSystemInfo info)
+        {
+            // This could throw an error on some file systems that have dates out of range
+
+            try
+            {
+                return info.CreationTimeUtc;
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error determining CreationTimeUtc for {0}", ex, info.FullName);
+                return DateTime.MinValue;
+            }
         }
 
         /// <summary>

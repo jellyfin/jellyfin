@@ -1,9 +1,8 @@
-﻿using MediaBrowser.Controller.IO;
-using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Resolvers;
 using System;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Controller.Resolvers;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 {
@@ -32,7 +31,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 
             if (!args.IsDirectory)
             {
-                if (IsAudioFile(args))
+                if (IsAudioFile(args.Path))
                 {
                     return new Controller.Entities.Audio.Audio();
                 }
@@ -61,21 +60,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
         /// <summary>
         /// Determines whether [is audio file] [the specified args].
         /// </summary>
-        /// <param name="args">The args.</param>
+        /// <param name="path">The path.</param>
         /// <returns><c>true</c> if [is audio file] [the specified args]; otherwise, <c>false</c>.</returns>
-        public static bool IsAudioFile(ItemResolveArgs args)
+        public static bool IsAudioFile(string path)
         {
-            return AudioFileExtensions.Contains(Path.GetExtension(args.Path), StringComparer.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Determines whether [is audio file] [the specified file].
-        /// </summary>
-        /// <param name="file">The file.</param>
-        /// <returns><c>true</c> if [is audio file] [the specified file]; otherwise, <c>false</c>.</returns>
-        public static bool IsAudioFile(WIN32_FIND_DATA file)
-        {
-            return AudioFileExtensions.Contains(Path.GetExtension(file.Path), StringComparer.OrdinalIgnoreCase);
+            return AudioFileExtensions.Contains(Path.GetExtension(path), StringComparer.OrdinalIgnoreCase);
         }
     }
 }
