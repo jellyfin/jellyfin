@@ -75,7 +75,12 @@
 		    ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), itemId);
 
 		    currentProgressInterval = setInterval(function () {
-			    ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, $(".itemAudio").currentTime);
+			    var position;
+			    $(".itemAudio").each(function () {
+				    position = Math.floor(10000000 * this.currentTime);
+			    });
+
+			    ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, position);
 		    }, 30000);
 	    }
 
@@ -204,7 +209,7 @@
                     localStorage.setItem("volume", this.volume());
                 });
 
-                (this).addEvent("play", updateProgress(item.Id));
+                (this).addEvent("play", updateProgress);
 
                 (this).addEvent("ended", function () {
                     MediaPlayer.stopVideo();
@@ -217,7 +222,11 @@
             return $('video', nowPlayingBar)[0];
         }
 
-        function updateProgress(itemId) {
+        function updateProgress() {
+	        var player = _V_("videoWindow");
+	        var itemString = player.tag.src.match(new RegExp("Videos/[0-9a-z\-]+", "g"));
+	        var itemId = itemString[0].replace("Videos/", "");
+
 	        ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), itemId);
 
             currentProgressInterval = setInterval(function () {
@@ -408,7 +417,12 @@
 		    var itemString = $(".itemAudio source").attr('src').match(new RegExp("Audio/[0-9a-z\-]+", "g"));
 		    var itemId = itemString[0].replace("Audio/", "");
 
-		    ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), itemId, $(".itemAudio").currentTime);
+		    var position;
+		    $(".itemAudio").each(function () {
+			    position = Math.floor(10000000 * this.currentTime);
+		    });
+
+		    ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), itemId, position);
 
 		    if (currentProgressInterval) {
 			    clearTimeout(currentProgressInterval);
