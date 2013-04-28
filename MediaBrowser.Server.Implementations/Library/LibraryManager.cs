@@ -275,7 +275,7 @@ namespace MediaBrowser.Server.Implementations.Library
             var specialFeatures = items.OfType<Movie>().SelectMany(i => i.SpecialFeatures).ToList();
             var localTrailers = items.SelectMany(i => i.LocalTrailers).ToList();
             var themeSongs = items.SelectMany(i => i.ThemeSongs).ToList();
-            var videoBackdrops = items.SelectMany(i => i.ThemeSongs).ToList();
+            var videoBackdrops = items.SelectMany(i => i.VideoBackdrops).ToList();
 
             items.AddRange(specialFeatures);
             items.AddRange(localTrailers);
