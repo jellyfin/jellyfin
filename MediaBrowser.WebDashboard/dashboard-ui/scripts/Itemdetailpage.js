@@ -469,26 +469,28 @@
 
             var item = items[i];
 
-            html += '<div class="posterViewItem posterViewItemWithDualText">';
-            html += '<a href="#" onclick="ItemDetailPage.playById(\'' + item.Id + '\');">';
+            html += '<a class="posterItem backdropPosterItem" href="#" onclick="ItemDetailPage.playById(\'' + item.Id + '\');">';
 
             var imageTags = item.ImageTags || {};
 
+            var imgUrl;
+
             if (imageTags.Primary) {
 
-                var imgUrl = ApiClient.getImageUrl(item.Id, {
+                imgUrl = ApiClient.getImageUrl(item.Id, {
                     maxwidth: 500,
                     tag: imageTags.Primary,
                     type: "primary"
                 });
 
-                html += '<img src="' + imgUrl + '" />';
             } else {
-                html += '<img src="css/images/items/detail/video.png"/>';
+                imgUrl = "css/images/items/detail/video.png";
             }
 
-            html += '<div class="posterViewItemText posterViewItemPrimaryText">' + item.Name + '</div>';
-            html += '<div class="posterViewItemText">';
+            html += '<div class="posterItemImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
+
+            html += '<div class="posterItemText">' + item.Name + '</div>';
+            html += '<div class="posterItemText">';
 
             if (item.RunTimeTicks != "") {
                 html += ticks_to_human(item.RunTimeTicks);
@@ -500,7 +502,6 @@
 
             html += '</a>';
 
-            html += '</div>';
         }
 
         return html;
