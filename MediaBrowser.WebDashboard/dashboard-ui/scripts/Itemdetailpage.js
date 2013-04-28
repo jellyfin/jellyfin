@@ -116,7 +116,7 @@
             enableCustomHeader(page, "Music");
             $('#standardLogo', page).hide();
         }
-        else if (item.MediaType == "Game") {
+        else if (item.MediaType == "Game" || item.Type == "GamePlatform") {
             enableCustomHeader(page, "Games");
             $('#standardLogo', page).hide();
         }
@@ -125,44 +125,38 @@
             $('#standardLogo', page).show();
         }
 
+        $('.itemTabs', page).hide();
+
         if (item.Type == "MusicAlbum") {
             $('#albumTabs', page).show();
-        } else {
-            $('#albumTabs', page).hide();
         }
 
         if (item.Type == "Audio") {
             $('#songTabs', page).show();
-        } else {
-            $('#songTabs', page).hide();
         }
 
         if (item.Type == "Movie") {
             $('#movieTabs', page).show();
-        } else {
-            $('#movieTabs', page).hide();
         }
 
         if (item.MediaType == "Game") {
             $('#gameTabs', page).show();
-        } else {
-            $('#gameTabs', page).hide();
+        }
+
+        if (item.Type == "GamePlatform") {
+            $('#gameSystemTabs', page).show();
         }
 
         if (item.Type == "BoxSet") {
             $('#boxsetTabs', page).show();
-        } else {
-            $('#boxsetTabs', page).hide();
         }
+
         if (item.Type == "Trailer") {
             $('#trailerTabs', page).show();
-        } else {
-            $('#trailerTabs', page).hide();
         }
+
         if (item.Type == "Episode" || item.Type == "Season" || item.Type == "Series") {
             $('#tvShowsTabs', page).show();
-        } else {
-            $('#tvShowsTabs', page).hide();
         }
     }
 
@@ -275,9 +269,13 @@
                 $('#itemSongs', page).html(LibraryBrowser.getSongTableHtml(result.Items, { showArtist: true })).trigger('create');
 
             } else {
+
+                var shape = "poster";
+
                 var html = LibraryBrowser.getPosterDetailViewHtml({
                     items: result.Items,
-                    useAverageAspectRatio: true
+                    useAverageAspectRatio: true,
+                    shape: shape
                 });
 
                 $('#childrenContent', page).html(html);
@@ -296,6 +294,9 @@
         }
         else if (item.Type == "MusicAlbum") {
             $('#childrenTitle', page).html('Tracks (' + item.ChildCount + ')');
+        }
+        else if (item.Type == "GamePlatform") {
+            $('#childrenTitle', page).html('Games (' + item.ChildCount + ')');
         }
         else {
             $('#childrenTitle', page).html('Items (' + item.ChildCount + ')');
