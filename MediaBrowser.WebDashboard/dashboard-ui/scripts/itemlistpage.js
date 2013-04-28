@@ -128,6 +128,7 @@
         query.Filters = "";
         query.SortBy = "SortName";
         query.SortOrder = "Ascending";
+        query.StartIndex = 0;
         
         reloadItems(this);
 
