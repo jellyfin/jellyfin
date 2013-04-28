@@ -1733,6 +1733,35 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
+        self.getVideoBackdrops = function (userId, itemId) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+            if (!itemId) {
+                throw new Error("null itemId");
+            }
+
+            var url = self.getUrl("Users/" + userId + "/Items/" + itemId + "/VideoBackdrops");
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getSearchHints = function (options) {
+
+            var url = self.getUrl("Search/Hints", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         /**
          * Gets special features for an item
          */

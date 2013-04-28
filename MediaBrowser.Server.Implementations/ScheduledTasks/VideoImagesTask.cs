@@ -99,11 +99,13 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
             var allItems = _libraryManager.RootFolder.RecursiveChildren.ToList();
 
             var localTrailers = allItems.SelectMany(i => i.LocalTrailers);
+            var videoBackdrops = allItems.SelectMany(i => i.VideoBackdrops);
 
             var videos = allItems.OfType<Video>().ToList();
 
             var items = videos;
             items.AddRange(localTrailers);
+            items.AddRange(videoBackdrops);
             items.AddRange(videos.OfType<Movie>().SelectMany(i => i.SpecialFeatures).ToList());
 
             items = items.Where(i =>
