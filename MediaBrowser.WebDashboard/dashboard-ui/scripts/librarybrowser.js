@@ -1443,7 +1443,57 @@
             html += '</div></a>';
 
             return html;
-        }
+        },
+
+	    getGameTableHtml: function (items, options) {
+
+		    options = options || {};
+
+		    var html = '';
+
+		    var cssClass = "detailTable";
+
+		    html += '<div class="detailTableContainer"><table class="' + cssClass + '">';
+
+		    html += '<tr>';
+
+		    html += '<th class="tabletColumn">Game</th>';
+
+		    if (options.showGameSystem) {
+			    html += '<th>Game System</th>';
+		    }
+
+		    //html += '<th class="tabletColumn">Release Year</th>';
+		    html += '<th class="tabletColumn">Play Count</th>';
+		    html += '<th class="tabletColumn userDataCell"></th>';
+
+		    html += '</tr>';
+
+		    for (var i = 0, length = items.length; i < length; i++) {
+
+			    var item = items[i];
+
+			    html += '<tr>';
+
+			    html += '<td><a href="' + LibraryBrowser.getHref(item, "game") + '">' + (item.Name || "") + '</a></td>';
+
+			    if (options.showGameSystem) {
+				    html += '<td class="tabletColumn">' + item.DisplayMediaType + '</td>';
+			    }
+
+			    //html += '<td class="tabletColumn">' + item.ReleaseYear + '</td>';
+
+			    html += '<td class="tabletColumn">' + (item.UserData ? item.UserData.PlayCount : 0) + '</td>';
+
+			    html += '<td class="tabletColumn userDataCell">' + LibraryBrowser.getUserDataIconsHtml(item) + '</td>';
+
+			    html += '</tr>';
+		    }
+
+		    html += '</table></div>';
+
+		    return html;
+	    }
 
     };
 
