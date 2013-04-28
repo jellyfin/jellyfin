@@ -1,7 +1,7 @@
 
 (function ($, document) {
 
-    var view = "Backdrop";
+    var view = "Poster";
 
 	// The base query options
 	var query = {
@@ -36,7 +36,6 @@
 			else if (view == "Poster") {
 				html += LibraryBrowser.getPosterDetailViewHtml({
 					items: result.Items,
-					useAverageAspectRatio: true,
 					context: "games",
 					shape: "poster"
 				});

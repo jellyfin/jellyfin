@@ -64,7 +64,7 @@
 
         var currentTimeout = searchHintTimeout;
 
-        ApiClient.getSearchHints(ApiClient.getUrl({ userId: Dashboard.getCurrentUserId(), searchTerm: searchTerm, limit: 10 })).done(function (result) {
+        ApiClient.getSearchHints({ userId: Dashboard.getCurrentUserId(), searchTerm: searchTerm, limit: 10 }).done(function (result) {
 
             if (currentTimeout != searchHintTimeout) {
                 return;
@@ -74,7 +74,6 @@
                 hideFlyout(page);
                 return;
             }
-
             renderSearchHintResult(page, result.SearchHints);
         });
     }
