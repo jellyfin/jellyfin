@@ -171,7 +171,12 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
                     val.Split(new[] {'/', '|'}, StringSplitOptions.RemoveEmptyEntries)
                        .Where(i => !string.Equals(i, audio.Artist, StringComparison.OrdinalIgnoreCase) && !string.Equals(i, audio.AlbumArtist, StringComparison.OrdinalIgnoreCase));
 
-                audio.AddStudios(studios);
+                audio.Studios.Clear();
+
+                foreach (var studio in studios)
+                {
+                    audio.AddStudio(studio);
+                }
             }
         }
 
@@ -186,7 +191,12 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
             if (!string.IsNullOrEmpty(val))
             {
-                audio.AddGenres(val.Split(new[] { '/', '|' }, StringSplitOptions.RemoveEmptyEntries));
+                audio.Genres.Clear();
+
+                foreach (var genre in val.Split(new[] { '/', '|' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    audio.AddGenre(genre);
+                }
             }
         }
 

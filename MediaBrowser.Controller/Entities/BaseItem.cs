@@ -31,6 +31,7 @@ namespace MediaBrowser.Controller.Entities
             Studios = new List<string>();
             People = new List<PersonInfo>();
             CriticReviews = new List<ItemReview>();
+            Taglines = new List<string>();
         }
 
         /// <summary>
@@ -880,10 +881,10 @@ namespace MediaBrowser.Controller.Entities
             OfficialRating = null;
             CustomRating = null;
             Overview = null;
-            Taglines = null;
+            Taglines.Clear();
             Language = null;
-            Studios = null;
-            Genres = null;
+            Studios.Clear();
+            Genres.Clear();
             CommunityRating = null;
             RunTimeTicks = null;
             AspectRatio = null;
@@ -1053,24 +1054,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Adds people to the item
-        /// </summary>
-        /// <param name="people">The people.</param>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public void AddPeople(IEnumerable<PersonInfo> people)
-        {
-            if (people == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            foreach (var person in people)
-            {
-                AddPerson(person);
-            }
-        }
-
-        /// <summary>
         /// Adds a person to the item
         /// </summary>
         /// <param name="person">The person.</param>
@@ -1085,12 +1068,6 @@ namespace MediaBrowser.Controller.Entities
             if (string.IsNullOrWhiteSpace(person.Name))
             {
                 throw new ArgumentNullException();
-            }
-
-            if (People == null)
-            {
-                People = new List<PersonInfo> { person };
-                return;
             }
 
             // If the type is GuestStar and there's already an Actor entry, then update it to avoid dupes
@@ -1124,24 +1101,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Adds studios to the item
-        /// </summary>
-        /// <param name="studios">The studios.</param>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public void AddStudios(IEnumerable<string> studios)
-        {
-            if (studios == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            foreach (var name in studios)
-            {
-                AddStudio(name);
-            }
-        }
-
-        /// <summary>
         /// Adds a studio to the item
         /// </summary>
         /// <param name="name">The name.</param>
@@ -1151,11 +1110,6 @@ namespace MediaBrowser.Controller.Entities
             if (string.IsNullOrWhiteSpace(name))
             {
                 throw new ArgumentNullException("name");
-            }
-
-            if (Studios == null)
-            {
-                Studios = new List<string>();
             }
 
             if (!Studios.Contains(name, StringComparer.OrdinalIgnoreCase))
@@ -1174,11 +1128,6 @@ namespace MediaBrowser.Controller.Entities
             if (string.IsNullOrWhiteSpace(name))
             {
                 throw new ArgumentNullException("name");
-            }
-
-            if (Taglines == null)
-            {
-                Taglines = new List<string>();
             }
 
             if (!Taglines.Contains(name, StringComparer.OrdinalIgnoreCase))
@@ -1222,11 +1171,6 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException("name");
             }
 
-            if (Genres == null)
-            {
-                Genres = new List<string>();
-            }
-
             if (!Genres.Contains(name, StringComparer.OrdinalIgnoreCase))
             {
                 Genres.Add(name);
@@ -1253,24 +1197,6 @@ namespace MediaBrowser.Controller.Entities
             if (!ProductionLocations.Contains(location, StringComparer.OrdinalIgnoreCase))
             {
                 ProductionLocations.Add(location);
-            }
-        }
-
-        /// <summary>
-        /// Adds genres to the item
-        /// </summary>
-        /// <param name="genres">The genres.</param>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public void AddGenres(IEnumerable<string> genres)
-        {
-            if (genres == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            foreach (var name in genres)
-            {
-                AddGenre(name);
             }
         }
 

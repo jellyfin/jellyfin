@@ -61,6 +61,8 @@ namespace MediaBrowser.Controller.Providers.Music
 
         private static void AddGenres(BaseItem item, LastfmTags tags)
         {
+            item.Genres.Clear();
+
             foreach (var tag in tags.tag)
             {
                 if (!string.IsNullOrEmpty(tag.name))

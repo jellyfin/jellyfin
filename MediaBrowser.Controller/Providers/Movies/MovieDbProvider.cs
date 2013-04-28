@@ -909,7 +909,12 @@ namespace MediaBrowser.Controller.Providers.Movies
                 movie.Budget = movieData.budget;
                 movie.Revenue = movieData.revenue;
 
-                if (!string.IsNullOrEmpty(movieData.tagline)) movie.AddTagline(movieData.tagline);
+                if (!string.IsNullOrEmpty(movieData.tagline))
+                {
+                    movie.Taglines.Clear();
+                    movie.AddTagline(movieData.tagline);
+                }
+
                 movie.SetProviderId(MetadataProviders.Imdb, movieData.imdb_id);
                 float rating;
                 string voteAvg = movieData.vote_average.ToString(CultureInfo.InvariantCulture);
@@ -957,15 +962,26 @@ namespace MediaBrowser.Controller.Providers.Movies
                 //studios
                 if (movieData.production_companies != null)
                 {
-                    //always clear so they don't double up
-                    movie.AddStudios(movieData.production_companies.Select(c => c.name));
+                    movie.Studios.Clear();
+
+                    foreach (var studio in movieData.production_companies.Select(c => c.name))
+                    {
+                        movie.AddStudio(studio);
+                    }
                 }
 
                 //genres
                 if (movieData.genres != null)
                 {
-                    movie.AddGenres(movieData.genres.Select(g => g.name));
+                    movie.Genres.Clear();
+
+                    foreach (var genre in movieData.genres.Select(g => g.name))
+                    {
+                        movie.AddGenre(genre);
+                    }
                 }
+
+                movie.People.Clear();
 
                 //Actors, Directors, Writers - all in People
                 //actors come from cast
