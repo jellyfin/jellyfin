@@ -39,7 +39,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 var parentFolderName = Path.GetFileName(Path.GetDirectoryName(args.Path));
 
-                if (string.Equals(parentFolderName, BaseItem.ThemeSongsFolderName, StringComparison.OrdinalIgnoreCase) || string.Equals(parentFolderName, BaseItem.VideoBackdropsFolderName, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(parentFolderName, BaseItem.ThemeSongsFolderName, StringComparison.OrdinalIgnoreCase) || string.Equals(parentFolderName, BaseItem.ThemeVideosFolderName, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
@@ -62,7 +62,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     return true;
                 }
 
-                if (string.Equals(filename, BaseItem.VideoBackdropsFolderName, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(filename, BaseItem.ThemeVideosFolderName, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
