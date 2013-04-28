@@ -13,4 +13,13 @@ namespace MediaBrowser.Model.Querying
         /// <value>The owner id.</value>
         public string OwnerId { get; set; }
     }
+
+    public class VideoBackdropsResult : ItemsResult
+    {
+        /// <summary>
+        /// Gets or sets the owner id.
+        /// </summary>
+        /// <value>The owner id.</value>
+        public string OwnerId { get; set; }
+    }
 }

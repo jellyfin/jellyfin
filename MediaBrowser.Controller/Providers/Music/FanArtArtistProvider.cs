@@ -51,7 +51,7 @@ namespace MediaBrowser.Controller.Providers.Music
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
-            return item is MusicArtist;
+            return false;
         }
 
         protected virtual bool SaveLocalMeta

@@ -39,6 +39,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public const string TrailerFolderName = "trailers";
         public const string ThemeSongsFolderName = "theme-music";
+        public const string VideoBackdropsFolderName = "backdrops";
 
         /// <summary>
         /// Gets or sets the name.
@@ -702,6 +703,28 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        private List<Video> _videoBackdrops;
+        private bool _videoBackdropsInitialized;
+        private object _videoBackdropsSyncLock = new object();
+        [IgnoreDataMember]
+        public List<Video> VideoBackdrops
+        {
+            get
+            {
+                LazyInitializer.EnsureInitialized(ref _videoBackdrops, ref _videoBackdropsInitialized, ref _videoBackdropsSyncLock, LoadVideoBackdrops);
+                return _videoBackdrops;
+            }
+            private set
+            {
+                _videoBackdrops = value;
+
+                if (value == null)
+                {
+                    _videoBackdropsInitialized = false;
+                }
+            }
+        }
+
         /// <summary>
         /// Loads local trailers from the file system
         /// </summary>
@@ -819,6 +842,64 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
+        /// Loads the video backdrops.
+        /// </summary>
+        /// <returns>List{Video}.</returns>
+        private List<Video> LoadVideoBackdrops()
+        {
+            ItemResolveArgs resolveArgs;
+
+            try
+            {
+                resolveArgs = ResolveArgs;
+            }
+            catch (IOException ex)
+            {
+                Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
+                return new List<Video>();
+            }
+
+            if (!resolveArgs.IsDirectory)
+            {
+                return new List<Video>();
+            }
+
+            var folder = resolveArgs.GetFileSystemEntryByName(VideoBackdropsFolderName);
+
+            // Path doesn't exist. No biggie
+            if (folder == null)
+            {
+                return new List<Video>();
+            }
+
+            IEnumerable<FileSystemInfo> files;
+
+            try
+            {
+                files = new DirectoryInfo(folder.FullName).EnumerateFiles();
+            }
+            catch (IOException ex)
+            {
+                Logger.ErrorException("Error loading video backdrops for {0}", ex, Name);
+                return new List<Video>();
+            }
+
+            return LibraryManager.ResolvePaths<Video>(files, null).Select(item =>
+            {
+                // Try to retrieve it from the db. If we don't find it, use the resolved version
+                var dbItem = LibraryManager.RetrieveItem(item.Id) as Video;
+
+                if (dbItem != null)
+                {
+                    dbItem.ResolveArgs = item.ResolveArgs;
+                    item = dbItem;
+                }
+
+                return item;
+            }).ToList();
+        }
+
+        /// <summary>
         /// Overrides the base implementation to refresh metadata for local trailers
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -837,6 +918,7 @@ namespace MediaBrowser.Controller.Entities
             // Lazy load these again
             LocalTrailers = null;
             ThemeSongs = null;
+            VideoBackdrops = null;
 
             // Refresh for the item
             var itemRefreshTask = ProviderManager.ExecuteMetadataProviders(this, cancellationToken, forceRefresh, allowSlowProviders);
@@ -847,12 +929,15 @@ namespace MediaBrowser.Controller.Entities
             var trailerTasks = LocalTrailers.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
 
             var themeSongTasks = ThemeSongs.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
+
+            var videoBackdropTasks = VideoBackdrops.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
             
             cancellationToken.ThrowIfCancellationRequested();
 
             // Await the trailer tasks
             await Task.WhenAll(trailerTasks).ConfigureAwait(false);
             await Task.WhenAll(themeSongTasks).ConfigureAwait(false);
+            await Task.WhenAll(videoBackdropTasks).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 

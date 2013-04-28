@@ -55,13 +55,6 @@ namespace MediaBrowser.Controller.Providers.Music
 
         private async Task<LastfmGetAlbumResult> GetAlbumResult(BaseItem item, CancellationToken cancellationToken)
         {
-            var result = await GetAlbumResult(item.Parent.Name, item.Name, cancellationToken);
-
-            if (result != null && result.album != null)
-            {
-                return result;
-            }
-
             var folder = (Folder)item;
 
             // Get each song, distinct by the combination of AlbumArtist and Album
@@ -69,7 +62,7 @@ namespace MediaBrowser.Controller.Providers.Music
 
             foreach (var song in songs.Where(song => !string.IsNullOrEmpty(song.Album) && !string.IsNullOrEmpty(song.AlbumArtist)))
             {
-                result = await GetAlbumResult(song.AlbumArtist, song.Album, cancellationToken).ConfigureAwait(false);
+                var result = await GetAlbumResult(song.AlbumArtist, song.Album, cancellationToken).ConfigureAwait(false);
 
                 if (result != null && result.album != null)
                 {
@@ -77,7 +70,8 @@ namespace MediaBrowser.Controller.Providers.Music
                 }
             }
 
-            return null;
+            // Try the folder name
+            return await GetAlbumResult(item.Parent.Name, item.Name, cancellationToken);
         }
 
         private async Task<LastfmGetAlbumResult> GetAlbumResult(string artist, string album, CancellationToken cancellationToken)
