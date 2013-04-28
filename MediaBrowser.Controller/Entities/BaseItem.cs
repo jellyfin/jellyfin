@@ -39,7 +39,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public const string TrailerFolderName = "trailers";
         public const string ThemeSongsFolderName = "theme-music";
-        public const string VideoBackdropsFolderName = "backdrops";
+        public const string ThemeVideosFolderName = "backdrops";
 
         /// <summary>
         /// Gets or sets the name.
@@ -703,24 +703,24 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        private List<Video> _videoBackdrops;
-        private bool _videoBackdropsInitialized;
-        private object _videoBackdropsSyncLock = new object();
+        private List<Video> _themeVideos;
+        private bool _themeVideosInitialized;
+        private object _themeVideosSyncLock = new object();
         [IgnoreDataMember]
-        public List<Video> VideoBackdrops
+        public List<Video> ThemeVideos
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _videoBackdrops, ref _videoBackdropsInitialized, ref _videoBackdropsSyncLock, LoadVideoBackdrops);
-                return _videoBackdrops;
+                LazyInitializer.EnsureInitialized(ref _themeVideos, ref _themeVideosInitialized, ref _themeVideosSyncLock, LoadThemeVideos);
+                return _themeVideos;
             }
             private set
             {
-                _videoBackdrops = value;
+                _themeVideos = value;
 
                 if (value == null)
                 {
-                    _videoBackdropsInitialized = false;
+                    _themeVideosInitialized = false;
                 }
             }
         }
@@ -845,7 +845,7 @@ namespace MediaBrowser.Controller.Entities
         /// Loads the video backdrops.
         /// </summary>
         /// <returns>List{Video}.</returns>
-        private List<Video> LoadVideoBackdrops()
+        private List<Video> LoadThemeVideos()
         {
             ItemResolveArgs resolveArgs;
 
@@ -864,7 +864,7 @@ namespace MediaBrowser.Controller.Entities
                 return new List<Video>();
             }
 
-            var folder = resolveArgs.GetFileSystemEntryByName(VideoBackdropsFolderName);
+            var folder = resolveArgs.GetFileSystemEntryByName(ThemeVideosFolderName);
 
             // Path doesn't exist. No biggie
             if (folder == null)
@@ -918,7 +918,7 @@ namespace MediaBrowser.Controller.Entities
             // Lazy load these again
             LocalTrailers = null;
             ThemeSongs = null;
-            VideoBackdrops = null;
+            ThemeVideos = null;
 
             // Refresh for the item
             var itemRefreshTask = ProviderManager.ExecuteMetadataProviders(this, cancellationToken, forceRefresh, allowSlowProviders);
@@ -930,7 +930,7 @@ namespace MediaBrowser.Controller.Entities
 
             var themeSongTasks = ThemeSongs.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
 
-            var videoBackdropTasks = VideoBackdrops.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
+            var videoBackdropTasks = ThemeVideos.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
             
             cancellationToken.ThrowIfCancellationRequested();
 

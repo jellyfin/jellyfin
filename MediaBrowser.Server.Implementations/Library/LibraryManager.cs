@@ -275,12 +275,12 @@ namespace MediaBrowser.Server.Implementations.Library
             var specialFeatures = items.OfType<Movie>().SelectMany(i => i.SpecialFeatures).ToList();
             var localTrailers = items.SelectMany(i => i.LocalTrailers).ToList();
             var themeSongs = items.SelectMany(i => i.ThemeSongs).ToList();
-            var videoBackdrops = items.SelectMany(i => i.VideoBackdrops).ToList();
+            var themeVideos = items.SelectMany(i => i.ThemeVideos).ToList();
 
             items.AddRange(specialFeatures);
             items.AddRange(localTrailers);
             items.AddRange(themeSongs);
-            items.AddRange(videoBackdrops);
+            items.AddRange(themeVideos);
 
             // Need to use DistinctBy Id because there could be multiple instances with the same id
             // due to sharing the default library
@@ -343,7 +343,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 LibraryItemsCache.AddOrUpdate(subItem.Id, subItem, delegate { return copy; });
             }
 
-            foreach (var subItem in item.VideoBackdrops)
+            foreach (var subItem in item.ThemeVideos)
             {
                 // Prevent access to foreach variable in closure
                 var copy = subItem;
