@@ -57,16 +57,27 @@
             });
 
             $(".itemAudio").on("ended", function () {
+	            MediaPlayer.stopAudio(item.Id);
+
                 Playlist.playNext();
             });
 
             $(".itemAudio").on("volumechange", function () {
-
                 localStorage.setItem("volume", this.volume);
             });
 
+	        $(".itemAudio").on("play", updateAudioProgress(item.Id));
+
             return $('audio', nowPlayingBar)[0];
         }
+
+	    function updateAudioProgress(itemId) {
+		    ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), itemId);
+
+		    currentProgressInterval = setInterval(function () {
+			    ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, $(".itemAudio").currentTime);
+		    }, 30000);
+	    }
 
         function playVideo(items, startPosition) {
             //stop/kill videoJS
@@ -193,7 +204,7 @@
                     localStorage.setItem("volume", this.volume());
                 });
 
-                (this).addEvent("play", updateProgress);
+                (this).addEvent("play", updateProgress(item.Id));
 
                 (this).addEvent("ended", function () {
                     MediaPlayer.stopVideo();
@@ -201,13 +212,14 @@
                     Playlist.playNext();
                 });
 
-                ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id);
             });
 
             return $('video', nowPlayingBar)[0];
         }
 
-        function updateProgress() {
+        function updateProgress(itemId) {
+	        ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), itemId);
+
             currentProgressInterval = setInterval(function () {
                 var player = _V_("videoWindow");
 
@@ -361,6 +373,8 @@
                 //player.tech.destroy();
                 player.destroy();
             } else {
+	            self.stopAudio();
+
                 elem.pause();
                 elem.src = "";
             }
@@ -389,6 +403,17 @@
                 clearTimeout(currentProgressInterval);
             }
         }
+
+	    self.stopAudio = function () {
+		    var itemString = $(".itemAudio source").attr('src').match(new RegExp("Audio/[0-9a-z\-]+", "g"));
+		    var itemId = itemString[0].replace("Audio/", "");
+
+		    ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), itemId, $(".itemAudio").currentTime);
+
+		    if (currentProgressInterval) {
+			    clearTimeout(currentProgressInterval);
+		    }
+	    }
 
         self.isPlaying = function () {
             return currentMediaElement;
