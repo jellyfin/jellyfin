@@ -96,22 +96,12 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            bool fetch = false;
-            var episode = (Episode)item;
-            var downloadDate = providerInfo.LastRefreshed;
-
-            if (ConfigurationManager.Configuration.MetadataRefreshDays == -1 && downloadDate != DateTime.MinValue)
+            if (HasLocalMeta(item))
             {
                 return false;
             }
 
-            if (!item.DontFetchMeta && !HasLocalMeta(episode))
-            {
-                fetch = ConfigurationManager.Configuration.MetadataRefreshDays != -1 &&
-                    DateTime.Today.Subtract(downloadDate).TotalDays > ConfigurationManager.Configuration.MetadataRefreshDays;
-            }
-
-            return fetch;
+            return base.NeedsRefreshInternal(item, providerInfo);
         }
 
         /// <summary>
@@ -313,7 +303,7 @@ namespace MediaBrowser.Controller.Providers.TV
         /// </summary>
         /// <param name="episode">The episode.</param>
         /// <returns><c>true</c> if [has local meta] [the specified episode]; otherwise, <c>false</c>.</returns>
-        private bool HasLocalMeta(Episode episode)
+        private bool HasLocalMeta(BaseItem episode)
         {
             return (episode.Parent.ResolveArgs.ContainsMetaFileByName(Path.GetFileNameWithoutExtension(episode.Path) + ".xml"));
         }

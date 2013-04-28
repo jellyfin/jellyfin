@@ -31,19 +31,6 @@ namespace MediaBrowser.Controller.Providers.Music
             return item is MusicAlbum;
         }
 
-        /// <summary>
-        /// Needses the refresh internal.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="providerInfo">The provider info.</param>
-        /// <returns><c>true</c> if we need refreshing, <c>false</c> otherwise</returns>
-        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
-        {
-            //we fetch if image needed and haven't already tried recently
-            return (string.IsNullOrEmpty(item.PrimaryImagePath) || !item.HasImage(ImageType.Disc)) &&
-                   DateTime.Today.Subtract(providerInfo.LastRefreshed).TotalDays > ConfigurationManager.Configuration.MetadataRefreshDays;
-        }
-
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             var mbid = item.GetProviderId(MetadataProviders.Musicbrainz);

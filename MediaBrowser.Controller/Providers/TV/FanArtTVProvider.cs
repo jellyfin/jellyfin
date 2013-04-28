@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -25,7 +24,7 @@ namespace MediaBrowser.Controller.Providers.TV
         protected IHttpClient HttpClient { get; private set; }
 
         private readonly IProviderManager _providerManager;
-        
+
         public FanArtTvProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
             : base(logManager, configurationManager)
         {
@@ -42,17 +41,27 @@ namespace MediaBrowser.Controller.Providers.TV
             return item is Series;
         }
 
-        protected override bool ShouldFetch(BaseItem item, BaseProviderInfo providerInfo)
+        /// <summary>
+        /// Needses the refresh internal.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="providerInfo">The provider info.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            if (item.DontFetchMeta || string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Tvdb))) return false; //nothing to do
-            var artExists = item.ResolveArgs.ContainsMetaFileByName(ART_FILE);
-            var logoExists = item.ResolveArgs.ContainsMetaFileByName(LOGO_FILE);
-            var thumbExists = item.ResolveArgs.ContainsMetaFileByName(THUMB_FILE);
+            if (string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Tvdb)))
+            {
+                return false;
+            }
 
+            if (!ConfigurationManager.Configuration.DownloadSeriesImages.Art &&
+                !ConfigurationManager.Configuration.DownloadSeriesImages.Logo &&
+                !ConfigurationManager.Configuration.DownloadSeriesImages.Thumb)
+            {
+                return false;
+            }
 
-            return (!artExists && ConfigurationManager.Configuration.DownloadSeriesImages.Art)
-                || (!logoExists && ConfigurationManager.Configuration.DownloadSeriesImages.Logo)
-                || (!thumbExists && ConfigurationManager.Configuration.DownloadSeriesImages.Thumb);
+            return base.NeedsRefreshInternal(item, providerInfo);
         }
 
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
@@ -61,113 +70,105 @@ namespace MediaBrowser.Controller.Providers.TV
 
             var series = (Series)item;
 
-            BaseProviderInfo providerData;
+            string language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
+            string url = string.Format(FanArtBaseUrl, APIKey, series.GetProviderId(MetadataProviders.Tvdb));
+            var doc = new XmlDocument();
 
-            if (!item.ProviderData.TryGetValue(Id, out providerData))
+            try
             {
-                providerData = new BaseProviderInfo();
+                using (var xml = await HttpClient.Get(url, FanArtResourcePool, cancellationToken).ConfigureAwait(false))
+                {
+                    doc.Load(xml);
+                }
+            }
+            catch (HttpException)
+            {
             }
 
-            if (ShouldFetch(series, providerData))
-            {
-                string language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
-                string url = string.Format(FanArtBaseUrl, APIKey, series.GetProviderId(MetadataProviders.Tvdb));
-                var doc = new XmlDocument();
+            cancellationToken.ThrowIfCancellationRequested();
 
-                try
+            if (doc.HasChildNodes)
+            {
+                string path;
+                var hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hdtv" : "clear";
+                if (ConfigurationManager.Configuration.DownloadSeriesImages.Logo && !series.ResolveArgs.ContainsMetaFileByName(LOGO_FILE))
                 {
-                    using (var xml = await HttpClient.Get(url, FanArtResourcePool, cancellationToken).ConfigureAwait(false))
+                    var node = doc.SelectSingleNode("//fanart/series/" + hd + "logos/" + hd + "logo[@lang = \"" + language + "\"]/@url") ??
+                                doc.SelectSingleNode("//fanart/series/clearlogos/clearlogo[@lang = \"" + language + "\"]/@url") ??
+                                doc.SelectSingleNode("//fanart/series/" + hd + "logos/" + hd + "logo/@url") ??
+                                doc.SelectSingleNode("//fanart/series/clearlogos/clearlogo/@url");
+                    path = node != null ? node.Value : null;
+                    if (!string.IsNullOrEmpty(path))
                     {
-                        doc.Load(xml);
+                        Logger.Debug("FanArtProvider getting ClearLogo for " + series.Name);
+                        try
+                        {
+                            series.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(series, path, LOGO_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                        }
+                        catch (HttpException)
+                        {
+                        }
+                        catch (IOException)
+                        {
+
+                        }
                     }
-                }
-                catch (HttpException)
-                {
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (doc.HasChildNodes)
+                hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hd" : "";
+                if (ConfigurationManager.Configuration.DownloadSeriesImages.Art && !series.ResolveArgs.ContainsMetaFileByName(ART_FILE))
                 {
-                    string path;
-                    var hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hdtv" : "clear";
-                    if (ConfigurationManager.Configuration.DownloadSeriesImages.Logo && !series.ResolveArgs.ContainsMetaFileByName(LOGO_FILE))
+                    var node = doc.SelectSingleNode("//fanart/series/" + hd + "cleararts/" + hd + "clearart[@lang = \"" + language + "\"]/@url") ??
+                               doc.SelectSingleNode("//fanart/series/cleararts/clearart[@lang = \"" + language + "\"]/@url") ??
+                               doc.SelectSingleNode("//fanart/series/" + hd + "cleararts/" + hd + "clearart/@url") ??
+                               doc.SelectSingleNode("//fanart/series/cleararts/clearart/@url");
+                    path = node != null ? node.Value : null;
+                    if (!string.IsNullOrEmpty(path))
                     {
-                        var node = doc.SelectSingleNode("//fanart/series/"+hd+"logos/"+hd+"logo[@lang = \"" + language + "\"]/@url") ??
-                                    doc.SelectSingleNode("//fanart/series/clearlogos/clearlogo[@lang = \"" + language + "\"]/@url") ??
-                                    doc.SelectSingleNode("//fanart/series/"+hd+"logos/"+hd+"logo/@url") ??
-                                    doc.SelectSingleNode("//fanart/series/clearlogos/clearlogo/@url");
-                        path = node != null ? node.Value : null;
-                        if (!string.IsNullOrEmpty(path))
+                        Logger.Debug("FanArtProvider getting ClearArt for " + series.Name);
+                        try
                         {
-                            Logger.Debug("FanArtProvider getting ClearLogo for " + series.Name);
-                            try
-                            {
-                                series.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(series, path, LOGO_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                            }
-                            catch (HttpException)
-                            {
-                            }
-                            catch (IOException)
-                            {
+                            series.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(series, path, ART_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                        }
+                        catch (HttpException)
+                        {
+                        }
+                        catch (IOException)
+                        {
 
-                            }
                         }
                     }
+                }
 
-                    cancellationToken.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
 
-                    hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hd" : "";
-                    if (ConfigurationManager.Configuration.DownloadSeriesImages.Art && !series.ResolveArgs.ContainsMetaFileByName(ART_FILE))
+                if (ConfigurationManager.Configuration.DownloadSeriesImages.Thumb && !series.ResolveArgs.ContainsMetaFileByName(THUMB_FILE))
+                {
+                    var node = doc.SelectSingleNode("//fanart/series/tvthumbs/tvthumb[@lang = \"" + language + "\"]/@url") ??
+                               doc.SelectSingleNode("//fanart/series/tvthumbs/tvthumb/@url");
+                    path = node != null ? node.Value : null;
+                    if (!string.IsNullOrEmpty(path))
                     {
-                        var node = doc.SelectSingleNode("//fanart/series/"+hd+"cleararts/"+hd+"clearart[@lang = \"" + language + "\"]/@url") ??
-                                   doc.SelectSingleNode("//fanart/series/cleararts/clearart[@lang = \"" + language + "\"]/@url") ??
-                                   doc.SelectSingleNode("//fanart/series/"+hd+"cleararts/"+hd+"clearart/@url") ??
-                                   doc.SelectSingleNode("//fanart/series/cleararts/clearart/@url");
-                        path = node != null ? node.Value : null;
-                        if (!string.IsNullOrEmpty(path))
+                        Logger.Debug("FanArtProvider getting ThumbArt for " + series.Name);
+                        try
                         {
-                            Logger.Debug("FanArtProvider getting ClearArt for " + series.Name);
-                            try
-                            {
-                                series.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(series, path, ART_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                            }
-                            catch (HttpException)
-                            {
-                            }
-                            catch (IOException)
-                            {
-
-                            }
+                            series.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(series, path, THUMB_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                         }
-                    }
-
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    if (ConfigurationManager.Configuration.DownloadSeriesImages.Thumb && !series.ResolveArgs.ContainsMetaFileByName(THUMB_FILE))
-                    {
-                        var node = doc.SelectSingleNode("//fanart/series/tvthumbs/tvthumb[@lang = \"" + language + "\"]/@url") ??
-                                   doc.SelectSingleNode("//fanart/series/tvthumbs/tvthumb/@url");
-                        path = node != null ? node.Value : null;
-                        if (!string.IsNullOrEmpty(path))
+                        catch (HttpException)
                         {
-                            Logger.Debug("FanArtProvider getting ThumbArt for " + series.Name);
-                            try
-                            {
-                                series.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(series, path, THUMB_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                            }
-                            catch (HttpException)
-                            {
-                            }
-                            catch (IOException)
-                            {
+                        }
+                        catch (IOException)
+                        {
 
-                            }
                         }
                     }
                 }
             }
+
             SetLastRefreshed(series, DateTime.UtcNow);
+
             return true;
         }
     }
