@@ -305,6 +305,9 @@
             if (item.Type == "MusicAlbum") {
                 return "itemdetails.html?id=" + id;
             }
+            if (item.Type == "GamePlatform") {
+                return "itemdetails.html?id=" + id;
+            }
             if (item.Type == "Genre") {
                 return "itembynamedetails.html?genre=" + encodeName(item.Name) + "&context=" + itemByNameContext;
             }
@@ -316,9 +319,6 @@
             }
             if (item.Type == "Artist") {
                 return "itembynamedetails.html?artist=" + encodeName(item.Name) + "&context=" + (itemByNameContext || "music");
-            }
-            if (item.Type == "GamePlatform") {
-                return "gamesystem.html?id=" + id;
             }
 
             return item.IsFolder ? (id ? "itemList.html?parentId=" + id : "#") : "itemdetails.html?id=" + id;
