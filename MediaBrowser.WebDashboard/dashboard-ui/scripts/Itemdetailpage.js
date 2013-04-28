@@ -221,14 +221,14 @@
         }
 
         $('#themeSongsCollapsible', page).hide();
-        $('#videoBackdropsCollapsible', page).hide();
+        $('#themeVideosCollapsible', page).hide();
 
         ApiClient.getThemeSongs(Dashboard.getCurrentUserId(), item.Id).done(function (result) {
             renderThemeSongs(page, item, result);
         });
 
-        ApiClient.getVideoBackdrops(Dashboard.getCurrentUserId(), item.Id).done(function (result) {
-            renderVideoBackdrops(page, item, result);
+        ApiClient.getThemeVideos(Dashboard.getCurrentUserId(), item.Id).done(function (result) {
+            renderThemeVideos(page, item, result);
         });
     }
 
@@ -315,13 +315,13 @@
         }
     }
 
-    function renderVideoBackdrops(page, item, result) {
+    function renderThemeVideos(page, item, result) {
 
         if (result.Items.length) {
 
-            $('#videoBackdropsCollapsible', page).show();
+            $('#themeVideosCollapsible', page).show();
 
-            $('#videoBackdropsContent', page).html(getVideosHtml(result.Items)).trigger('create');
+            $('#themeVideosContent', page).html(getVideosHtml(result.Items)).trigger('create');
         }
     }
 
