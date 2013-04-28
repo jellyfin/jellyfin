@@ -25,9 +25,22 @@
 
 			$('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
 
-			html += LibraryBrowser.getGameTableHtml(result.Items, {
-				showGameSystem: true
-			});
+			if (view == "Backdrop") {
+				html += LibraryBrowser.getPosterDetailViewHtml({
+					items: result.Items,
+					preferBackdrop: true,
+					context: "games",
+					shape: "backdrop"
+				});
+			}
+			else if (view == "Poster") {
+				html += LibraryBrowser.getPosterDetailViewHtml({
+					items: result.Items,
+					useAverageAspectRatio: true,
+					context: "games",
+					shape: "poster"
+				});
+			}
 
 			html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 
