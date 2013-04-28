@@ -36,12 +36,12 @@ namespace MediaBrowser.Server.Implementations.IO
         /// <summary>
         /// A dynamic list of paths that should be ignored.  Added to during our own file sytem modifications.
         /// </summary>
-        private readonly ConcurrentDictionary<string,string> _tempIgnoredPaths = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, string> _tempIgnoredPaths = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Any file name ending in any of these will be ignored by the watchers
         /// </summary>
-        private readonly List<string> _alwaysIgnoreFiles = new List<string> {"thumbs.db","small.jpg","albumart.jpg"}; 
+        private readonly List<string> _alwaysIgnoreFiles = new List<string> { "thumbs.db", "small.jpg", "albumart.jpg" };
 
         /// <summary>
         /// The timer lock
@@ -97,7 +97,7 @@ namespace MediaBrowser.Server.Implementations.IO
             Logger = logManager.GetLogger("DirectoryWatchers");
             ConfigurationManager = configurationManager;
         }
-        
+
         /// <summary>
         /// Starts this instance.
         /// </summary>
@@ -117,7 +117,7 @@ namespace MediaBrowser.Server.Implementations.IO
                         }
                         catch (IOException)
                         {
-                            return new string[] {};
+                            return new string[] { };
                         }
 
                     })
@@ -265,49 +265,33 @@ namespace MediaBrowser.Server.Implementations.IO
         async void watcher_Error(object sender, ErrorEventArgs e)
         {
             var ex = e.GetException();
-            var dw = (FileSystemWatcher) sender;
+            var dw = (FileSystemWatcher)sender;
 
-            Logger.ErrorException("Error in Directory watcher for: "+dw.Path, ex);
+            Logger.ErrorException("Error in Directory watcher for: " + dw.Path, ex);
 
-            if (ex.Message.Contains("network name is no longer available"))
+            //Network either dropped or, we are coming out of sleep and it hasn't reconnected yet - wait and retry
+            var retries = 0;
+            var success = false;
+            while (!success && retries < 10)
             {
-                //Network either dropped or, we are coming out of sleep and it hasn't reconnected yet - wait and retry
-                Logger.Warn("Network connection lost - will retry...");
-                var retries = 0;
-                var success = false;
-                while (!success && retries < 10)
-                {
-                    await Task.Delay(500).ConfigureAwait(false);
+                await Task.Delay(500).ConfigureAwait(false);
 
-                    try
-                    {
-                        dw.EnableRaisingEvents = false;
-                        dw.EnableRaisingEvents = true;
-                        success = true;
-                    }
-                    catch (IOException)
-                    {
-                        Logger.Warn("Network still unavailable...");
-                        retries++;
-                    }
-                }
-                if (!success)
+                try
                 {
-                    Logger.Warn("Unable to access network. Giving up.");
-                    DisposeWatcher(dw);
-                }
-
-            }
-            else
-            {
-                if (!ex.Message.Contains("BIOS command limit"))
-                {
-                    Logger.Info("Attempting to re-start watcher.");
-
                     dw.EnableRaisingEvents = false;
                     dw.EnableRaisingEvents = true;
+                    success = true;
                 }
-                
+                catch (IOException)
+                {
+                    Logger.Warn("Network still unavailable...");
+                    retries++;
+                }
+            }
+            if (!success)
+            {
+                Logger.Warn("Unable to access network. Giving up.");
+                DisposeWatcher(dw);
             }
         }
 
@@ -455,7 +439,7 @@ namespace MediaBrowser.Server.Implementations.IO
             await Task.WhenAll(itemsToRefresh.Select(i => Task.Run(async () =>
             {
                 Logger.Info(i.Name + " (" + i.Path + ") will be refreshed.");
-                
+
                 try
                 {
                     await i.ChangedExternally().ConfigureAwait(false);
@@ -531,7 +515,7 @@ namespace MediaBrowser.Server.Implementations.IO
                     _updateTimer.Dispose();
                     _updateTimer = null;
                 }
-            } 
+            }
 
             _affectedPaths.Clear();
         }
