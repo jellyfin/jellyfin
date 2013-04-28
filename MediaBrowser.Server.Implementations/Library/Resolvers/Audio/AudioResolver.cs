@@ -1,8 +1,5 @@
 ﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
-using System;
-using System.IO;
-using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 {
@@ -31,40 +28,13 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 
             if (!args.IsDirectory)
             {
-                if (IsAudioFile(args.Path))
+                if (EntityResolutionHelper.IsAudioFile(args.Path))
                 {
                     return new Controller.Entities.Audio.Audio();
                 }
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// The audio file extensions
-        /// </summary>
-        public static readonly string[] AudioFileExtensions = new[] { 
-            ".mp3",
-            ".flac",
-            ".wma",
-            ".aac",
-            ".acc",
-            ".m4a",
-            ".m4b",
-            ".wav",
-            ".ape",
-            ".ogg",
-            ".oga"
-            };
-
-        /// <summary>
-        /// Determines whether [is audio file] [the specified args].
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns><c>true</c> if [is audio file] [the specified args]; otherwise, <c>false</c>.</returns>
-        public static bool IsAudioFile(string path)
-        {
-            return AudioFileExtensions.Contains(Path.GetExtension(path), StringComparer.OrdinalIgnoreCase);
         }
     }
 }

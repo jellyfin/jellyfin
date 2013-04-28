@@ -144,9 +144,9 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns><c>true</c> if [is season folder] [the specified path]; otherwise, <c>false</c>.</returns>
-        public static bool IsSeasonFolder(string path)
+        private static bool IsSeasonFolder(string path)
         {
-            return GetSeasonNumberFromPath(path) != null;
+            return GetSeasonNumberFromPath(path) != null && !new DirectoryInfo(path).EnumerateFiles().Any(i => EntityResolutionHelper.IsAudioFile(i.FullName));
         }
 
         /// <summary>
@@ -162,12 +162,14 @@ namespace MediaBrowser.Controller.Library
 
             foreach (var child in fileSystemChildren)
             {
-                if (child.Attributes.HasFlag(FileAttributes.Hidden) || child.Attributes.HasFlag(FileAttributes.System))
+                var attributes = child.Attributes;
+
+                if (attributes.HasFlag(FileAttributes.Hidden) || attributes.HasFlag(FileAttributes.System))
                 {
                     continue;
                 }
 
-                if (child.Attributes.HasFlag(FileAttributes.Directory))
+                if (attributes.HasFlag(FileAttributes.Directory))
                 {
                     if (IsSeasonFolder(child.FullName))
                     {
