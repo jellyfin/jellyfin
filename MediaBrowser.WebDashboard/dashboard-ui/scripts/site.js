@@ -787,7 +787,7 @@ var Dashboard = {
             href: "dashboard.html",
             selected: pageElem.id == "dashboardPage"
         }, {
-            name: "Media Library",
+            name: "Default Media Library",
             href: "library.html",
             selected: pageElem.id == "mediaLibraryPage" && !getParameterByName('userId')
         }, {
