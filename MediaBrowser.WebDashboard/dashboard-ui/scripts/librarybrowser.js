@@ -441,7 +441,7 @@
 
                 var cssClass = "posterItem";
 
-                if (options.transparent) {
+                if (options.transparent !== false) {
                     cssClass += " transparentPosterItem";
                 }
 
