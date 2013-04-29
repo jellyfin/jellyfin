@@ -31,15 +31,31 @@ namespace MediaBrowser.Controller.Providers.Music
             return item is MusicAlbum;
         }
 
+        /// <summary>
+        /// Needses the refresh internal.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="providerInfo">The provider info.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
+        {
+            if (string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Musicbrainz)))
+            {
+                return false;
+            }
+
+            if (!ConfigurationManager.Configuration.DownloadMusicAlbumImages.Disc &&
+                !ConfigurationManager.Configuration.DownloadMusicAlbumImages.Primary)
+            {
+                return false;
+            }
+
+            return base.NeedsRefreshInternal(item, providerInfo);
+        }
+
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             var mbid = item.GetProviderId(MetadataProviders.Musicbrainz);
-            if (mbid == null)
-            {
-                Logger.Warn("No Musicbrainz id associated with album {0}", item.Name);
-                SetLastRefreshed(item, DateTime.UtcNow);
-                return true;
-            }
 
             cancellationToken.ThrowIfCancellationRequested();
 
