@@ -1336,6 +1336,10 @@
 
                 return true;
             }
+            if (imageTags.BoxRear) {
+
+                return true;
+            }
 
             if (item.BackdropImageTags && item.BackdropImageTags.length) {
                 return true;
@@ -1382,6 +1386,10 @@
             if (imageTags.Box) {
 
                 html += LibraryBrowser.createGalleryImage(item, "Box", imageTags.Box);
+            }
+            if (imageTags.BoxRear) {
+
+                html += LibraryBrowser.createGalleryImage(item, "Box", imageTags.BoxRear);
             }
 
             if (item.BackdropImageTags) {
