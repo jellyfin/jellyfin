@@ -1,8 +1,9 @@
 ﻿var LibraryBrowser = (function (window, $) {
 
     function encodeName(name) {
-        return name;
-        return encodeURIComponent(name).replace("'", '%27');
+
+        var val = $.param({ name: name });
+        return val.substring(val.indexOf('=') + 1);
     }
 
     var defaultBackground = "#999;";
@@ -183,7 +184,7 @@
                 }
                 else if (item.Type == "Game") {
 
-	                html += '<p class="itemMiscInfo">' + item.GameSystem + '</p>';
+                    html += '<p class="itemMiscInfo">' + item.GameSystem + '</p>';
                 }
                 else {
                     html += '<p class="itemMiscInfo">' + LibraryBrowser.getMiscInfoHtml(item) + '</p>';
