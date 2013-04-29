@@ -37,6 +37,14 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// </summary>
     public class AudioService : BaseProgressiveStreamingService
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AudioService"/> class.
+        /// </summary>
+        /// <param name="appPaths">The app paths.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="isoManager">The iso manager.</param>
+        /// <param name="mediaEncoder">The media encoder.</param>
         public AudioService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder)
             : base(appPaths, userManager, libraryManager, isoManager, mediaEncoder)
         {
@@ -67,9 +75,10 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// </summary>
         /// <param name="outputPath">The output path.</param>
         /// <param name="state">The state.</param>
+        /// <param name="performSubtitleConversions">if set to <c>true</c> [perform subtitle conversions].</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.InvalidOperationException">Only aac and mp3 audio codecs are supported.</exception>
-        protected override string GetCommandLineArguments(string outputPath, StreamState state)
+        protected override string GetCommandLineArguments(string outputPath, StreamState state, bool performSubtitleConversions)
         {
             var request = state.Request;
 

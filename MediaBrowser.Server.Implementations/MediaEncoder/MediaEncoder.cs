@@ -558,6 +558,9 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             {
                 StartInfo = new ProcessStartInfo
                 {
+                    RedirectStandardOutput = false,
+                    RedirectStandardError = true,
+                    
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     FileName = FFMpegPath,
@@ -571,9 +574,57 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             await _subtitleExtractionResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            var ranToCompletion = StartAndWaitForProcess(process);
+            var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "ffmpeg-sub-convert-" + Guid.NewGuid() + ".txt");
 
-            _subtitleExtractionResourcePool.Release();
+            var logFileStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous);
+
+            try
+            {
+                process.Start();
+            }
+            catch (Exception ex)
+            {
+                _subtitleExtractionResourcePool.Release();
+
+                logFileStream.Dispose();
+
+                _logger.ErrorException("Error starting ffmpeg", ex);
+
+                throw;
+            }
+
+            process.StandardError.BaseStream.CopyToAsync(logFileStream);
+
+            var ranToCompletion = process.WaitForExit(60000);
+
+            if (!ranToCompletion)
+            {
+                try
+                {
+                    _logger.Info("Killing ffmpeg process");
+
+                    process.Kill();
+
+                    process.WaitForExit(1000);
+                }
+                catch (Win32Exception ex)
+                {
+                    _logger.ErrorException("Error killing process", ex);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    _logger.ErrorException("Error killing process", ex);
+                }
+                catch (NotSupportedException ex)
+                {
+                    _logger.ErrorException("Error killing process", ex);
+                }
+                finally
+                {
+                    logFileStream.Dispose();
+                    _subtitleExtractionResourcePool.Release();
+                }
+            }
 
             var exitCode = ranToCompletion ? process.ExitCode : -1;
 
@@ -594,7 +645,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                     }
                     catch (IOException ex)
                     {
-                        _logger.ErrorException("Error deleting converted subtitle {0}", ex, outputPath);
+                        _logger.ErrorException("Error converted extracted subtitle {0}", ex, outputPath);
                     }
                 }
             }
@@ -605,7 +656,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             if (failed)
             {
-                var msg = string.Format("ffmpeg subtitle conversion failed for {0}", inputPath);
+                var msg = string.Format("ffmpeg subtitle converted failed for {0}", inputPath);
 
                 _logger.Error(msg);
 
@@ -669,6 +720,10 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 {
                     CreateNoWindow = true,
                     UseShellExecute = false,
+
+                    RedirectStandardOutput = false,
+                    RedirectStandardError = true,
+                    
                     FileName = FFMpegPath,
                     Arguments = string.Format("{0}-i {1} -map 0:{2} -an -vn -c:s ass \"{3}\"", offsetParam, inputPath, subtitleStreamIndex, outputPath),
                     WindowStyle = ProcessWindowStyle.Hidden,
@@ -680,9 +735,57 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             await _subtitleExtractionResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            var ranToCompletion = StartAndWaitForProcess(process);
+            var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "ffmpeg-sub-extract-" + Guid.NewGuid() + ".txt");
 
-            _subtitleExtractionResourcePool.Release();
+            var logFileStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous);
+            
+            try
+            {
+                process.Start();
+            }
+            catch (Exception ex)
+            {
+                _subtitleExtractionResourcePool.Release();
+
+                logFileStream.Dispose();
+
+                _logger.ErrorException("Error starting ffmpeg", ex);
+
+                throw;
+            }
+
+            process.StandardError.BaseStream.CopyToAsync(logFileStream);
+
+            var ranToCompletion = process.WaitForExit(60000);
+
+            if (!ranToCompletion)
+            {
+                try
+                {
+                    _logger.Info("Killing ffmpeg process");
+
+                    process.Kill();
+
+                    process.WaitForExit(1000);
+                }
+                catch (Win32Exception ex)
+                {
+                    _logger.ErrorException("Error killing process", ex);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    _logger.ErrorException("Error killing process", ex);
+                }
+                catch (NotSupportedException ex)
+                {
+                    _logger.ErrorException("Error killing process", ex);
+                }
+                finally
+                {
+                    logFileStream.Dispose();
+                    _subtitleExtractionResourcePool.Release();
+                }
+            }
 
             var exitCode = ranToCompletion ? process.ExitCode : -1;
 
@@ -857,12 +960,13 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// Starts the and wait for process.
         /// </summary>
         /// <param name="process">The process.</param>
+        /// <param name="timeout">The timeout.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private bool StartAndWaitForProcess(Process process)
+        private bool StartAndWaitForProcess(Process process, int timeout = 10000)
         {
             process.Start();
 
-            var ranToCompletion = process.WaitForExit(10000);
+            var ranToCompletion = process.WaitForExit(timeout);
 
             if (!ranToCompletion)
             {
