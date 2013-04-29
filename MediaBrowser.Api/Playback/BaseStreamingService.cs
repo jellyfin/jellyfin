@@ -77,8 +77,9 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="outputPath">The output path.</param>
         /// <param name="state">The state.</param>
+        /// <param name="performSubtitleConversions">if set to <c>true</c> [perform subtitle conversions].</param>
         /// <returns>System.String.</returns>
-        protected abstract string GetCommandLineArguments(string outputPath, StreamState state);
+        protected abstract string GetCommandLineArguments(string outputPath, StreamState state, bool performSubtitleConversions);
 
         /// <summary>
         /// Gets the type of the transcoding job.
@@ -104,7 +105,7 @@ namespace MediaBrowser.Api.Playback
         protected string GetOutputFilePath(StreamState state)
         {
             var folder = ApplicationPaths.EncodedMediaCachePath;
-            return Path.Combine(folder, GetCommandLineArguments("dummy\\dummy", state).GetMD5() + GetOutputFileExtension(state).ToLower());
+            return Path.Combine(folder, GetCommandLineArguments("dummy\\dummy", state, false).GetMD5() + GetOutputFileExtension(state).ToLower());
         }
 
         /// <summary>
@@ -222,8 +223,9 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="state">The state.</param>
         /// <param name="outputVideoCodec">The output video codec.</param>
+        /// <param name="performTextSubtitleConversion">if set to <c>true</c> [perform text subtitle conversion].</param>
         /// <returns>System.String.</returns>
-        protected string GetOutputSizeParam(StreamState state, string outputVideoCodec)
+        protected string GetOutputSizeParam(StreamState state, string outputVideoCodec, bool performTextSubtitleConversion)
         {
             // http://sonnati.wordpress.com/2012/10/19/ffmpeg-the-swiss-army-knife-of-internet-streaming-part-vi/
 
@@ -235,7 +237,7 @@ namespace MediaBrowser.Api.Playback
             {
                 if (state.SubtitleStream.Codec.IndexOf("srt", StringComparison.OrdinalIgnoreCase) != -1 || state.SubtitleStream.Codec.IndexOf("subrip", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    assSubtitleParam = GetTextSubtitleParam((Video)state.Item, state.SubtitleStream, request.StartTimeTicks);
+                    assSubtitleParam = GetTextSubtitleParam((Video)state.Item, state.SubtitleStream, request.StartTimeTicks, performTextSubtitleConversion);
                 }
             }
 
@@ -287,10 +289,11 @@ namespace MediaBrowser.Api.Playback
         /// <param name="video">The video.</param>
         /// <param name="subtitleStream">The subtitle stream.</param>
         /// <param name="startTimeTicks">The start time ticks.</param>
+        /// <param name="performConversion">if set to <c>true</c> [perform conversion].</param>
         /// <returns>System.String.</returns>
-        protected string GetTextSubtitleParam(Video video, MediaStream subtitleStream, long? startTimeTicks)
+        protected string GetTextSubtitleParam(Video video, MediaStream subtitleStream, long? startTimeTicks, bool performConversion)
         {
-            var path = subtitleStream.IsExternal ? GetConvertedAssPath(video, subtitleStream, startTimeTicks) : GetExtractedAssPath(video, subtitleStream, startTimeTicks);
+            var path = subtitleStream.IsExternal ? GetConvertedAssPath(video, subtitleStream, startTimeTicks, performConversion) : GetExtractedAssPath(video, subtitleStream, startTimeTicks, performConversion);
 
             if (string.IsNullOrEmpty(path))
             {
@@ -306,14 +309,15 @@ namespace MediaBrowser.Api.Playback
         /// <param name="video">The video.</param>
         /// <param name="subtitleStream">The subtitle stream.</param>
         /// <param name="startTimeTicks">The start time ticks.</param>
+        /// <param name="performConversion">if set to <c>true</c> [perform conversion].</param>
         /// <returns>System.String.</returns>
-        private string GetExtractedAssPath(Video video, MediaStream subtitleStream, long? startTimeTicks)
+        private string GetExtractedAssPath(Video video, MediaStream subtitleStream, long? startTimeTicks, bool performConversion)
         {
             var offset = TimeSpan.FromTicks(startTimeTicks ?? 0);
 
             var path = Kernel.Instance.FFMpegManager.GetSubtitleCachePath(video, subtitleStream.Index, offset, ".ass");
 
-            if (!File.Exists(path))
+            if (performConversion && !File.Exists(path))
             {
                 InputType type;
 
@@ -340,8 +344,9 @@ namespace MediaBrowser.Api.Playback
         /// <param name="video">The video.</param>
         /// <param name="subtitleStream">The subtitle stream.</param>
         /// <param name="startTimeTicks">The start time ticks.</param>
+        /// <param name="performConversion">if set to <c>true</c> [perform conversion].</param>
         /// <returns>System.String.</returns>
-        private string GetConvertedAssPath(Video video, MediaStream subtitleStream, long? startTimeTicks)
+        private string GetConvertedAssPath(Video video, MediaStream subtitleStream, long? startTimeTicks, bool performConversion)
         {
             var offset = startTimeTicks.HasValue
                           ? TimeSpan.FromTicks(startTimeTicks.Value)
@@ -349,7 +354,7 @@ namespace MediaBrowser.Api.Playback
 
             var path = Kernel.Instance.FFMpegManager.GetSubtitleCachePath(video, subtitleStream.Index, offset, ".ass");
 
-            if (!File.Exists(path))
+            if (performConversion && !File.Exists(path))
             {
                 try
                 {
@@ -381,7 +386,7 @@ namespace MediaBrowser.Api.Playback
             // Add resolution params, if specified
             if (request.Width.HasValue || request.Height.HasValue || request.MaxHeight.HasValue || request.MaxWidth.HasValue)
             {
-                outputSizeParam = GetOutputSizeParam(state, outputVideoCodec).TrimEnd('"');
+                outputSizeParam = GetOutputSizeParam(state, outputVideoCodec, false).TrimEnd('"');
                 outputSizeParam = "," + outputSizeParam.Substring(outputSizeParam.IndexOf("scale", StringComparison.OrdinalIgnoreCase));
             }
 
@@ -552,7 +557,7 @@ namespace MediaBrowser.Api.Playback
 
                     FileName = MediaEncoder.EncoderPath,
                     WorkingDirectory = Path.GetDirectoryName(MediaEncoder.EncoderPath),
-                    Arguments = GetCommandLineArguments(outputPath, state),
+                    Arguments = GetCommandLineArguments(outputPath, state, true),
 
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false

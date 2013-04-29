@@ -1,11 +1,11 @@
-﻿using System.IO;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
-using System;
 using MediaBrowser.Controller.Library;
 using ServiceStack.ServiceHost;
+using System;
+using System.IO;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
@@ -51,6 +51,14 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// </summary>
     public class VideoService : BaseProgressiveStreamingService
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VideoService"/> class.
+        /// </summary>
+        /// <param name="appPaths">The app paths.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="isoManager">The iso manager.</param>
+        /// <param name="mediaEncoder">The media encoder.</param>
         public VideoService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder)
             : base(appPaths, userManager, libraryManager, isoManager, mediaEncoder)
         {
@@ -66,6 +74,11 @@ namespace MediaBrowser.Api.Playback.Progressive
             return ProcessRequest(request, false);
         }
 
+        /// <summary>
+        /// Heads the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
         public object Head(GetVideoStream request)
         {
             return ProcessRequest(request, true);
@@ -76,8 +89,9 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// </summary>
         /// <param name="outputPath">The output path.</param>
         /// <param name="state">The state.</param>
+        /// <param name="performSubtitleConversions">if set to <c>true</c> [perform subtitle conversions].</param>
         /// <returns>System.String.</returns>
-        protected override string GetCommandLineArguments(string outputPath, StreamState state)
+        protected override string GetCommandLineArguments(string outputPath, StreamState state, bool performSubtitleConversions)
         {
             var video = (Video)state.Item;
 
@@ -103,7 +117,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 GetSlowSeekCommandLineParameter(state.Request),
                 keyFrame,
                 GetMapArgs(state),
-                GetVideoArguments(state, videoCodec),
+                GetVideoArguments(state, videoCodec, performSubtitleConversions),
                 threads,
                 GetAudioArguments(state),
                 format,
@@ -116,8 +130,9 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// </summary>
         /// <param name="state">The state.</param>
         /// <param name="codec">The video codec.</param>
+        /// <param name="performSubtitleConversion">if set to <c>true</c> [perform subtitle conversion].</param>
         /// <returns>System.String.</returns>
-        private string GetVideoArguments(StreamState state, string codec)
+        private string GetVideoArguments(StreamState state, string codec, bool performSubtitleConversion)
         {
             var args = "-vcodec " + codec;
 
@@ -136,7 +151,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             // Add resolution params, if specified
             if (request.Width.HasValue || request.Height.HasValue || request.MaxHeight.HasValue || request.MaxWidth.HasValue)
             {
-                args += GetOutputSizeParam(state, codec);
+                args += GetOutputSizeParam(state, codec, performSubtitleConversion);
             }
 
             if (request.Framerate.HasValue)

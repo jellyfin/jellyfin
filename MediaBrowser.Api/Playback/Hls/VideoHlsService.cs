@@ -8,6 +8,9 @@ using ServiceStack.ServiceHost;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
+    /// <summary>
+    /// Class GetHlsVideoStream
+    /// </summary>
     [Route("/Videos/{Id}/stream.m3u8", "GET")]
     [Api(Description = "Gets a video stream using HTTP live streaming.")]
     public class GetHlsVideoStream : VideoStreamRequest
@@ -15,22 +18,49 @@ namespace MediaBrowser.Api.Playback.Hls
 
     }
 
+    /// <summary>
+    /// Class GetHlsVideoSegment
+    /// </summary>
     [Route("/Videos/{Id}/segments/{SegmentId}/stream.ts", "GET")]
     [Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
     public class GetHlsVideoSegment
     {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
         public string Id { get; set; }
 
+        /// <summary>
+        /// Gets or sets the segment id.
+        /// </summary>
+        /// <value>The segment id.</value>
         public string SegmentId { get; set; }
     }
-    
+
+    /// <summary>
+    /// Class VideoHlsService
+    /// </summary>
     public class VideoHlsService : BaseHlsService
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
+        /// </summary>
+        /// <param name="appPaths">The app paths.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="isoManager">The iso manager.</param>
+        /// <param name="mediaEncoder">The media encoder.</param>
         public VideoHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder)
             : base(appPaths, userManager, libraryManager, isoManager, mediaEncoder)
         {
         }
 
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
         public object Get(GetHlsVideoSegment request)
         {
             var file = SegmentFilePrefix + request.SegmentId + Path.GetExtension(RequestContext.PathInfo);
@@ -49,7 +79,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             return ProcessRequest(request);
         }
-        
+
         /// <summary>
         /// Gets the audio arguments.
         /// </summary>
@@ -105,8 +135,9 @@ namespace MediaBrowser.Api.Playback.Hls
         /// Gets the video arguments.
         /// </summary>
         /// <param name="state">The state.</param>
+        /// <param name="performSubtitleConversion">if set to <c>true</c> [perform subtitle conversion].</param>
         /// <returns>System.String.</returns>
-        protected override string GetVideoArguments(StreamState state)
+        protected override string GetVideoArguments(StreamState state, bool performSubtitleConversion)
         {
             var codec = GetVideoCodec(state.VideoRequest);
 
@@ -128,7 +159,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // Add resolution params, if specified
             if (state.VideoRequest.Width.HasValue || state.VideoRequest.Height.HasValue || state.VideoRequest.MaxHeight.HasValue || state.VideoRequest.MaxWidth.HasValue)
             {
-                args += GetOutputSizeParam(state, codec);
+                args += GetOutputSizeParam(state, codec, performSubtitleConversion);
             }
 
             // Get the output framerate based on the FrameRate param

@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
+    /// <summary>
+    /// Class BaseHlsService
+    /// </summary>
     public abstract class BaseHlsService : BaseStreamingService
     {
         /// <summary>
@@ -18,6 +21,14 @@ namespace MediaBrowser.Api.Playback.Hls
         /// </summary>
         public const string SegmentFilePrefix = "segment-";
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
+        /// </summary>
+        /// <param name="appPaths">The app paths.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="isoManager">The iso manager.</param>
+        /// <param name="mediaEncoder">The media encoder.</param>
         protected BaseHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder) 
             : base(appPaths, userManager, libraryManager, isoManager, mediaEncoder)
         {
@@ -26,13 +37,16 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <summary>
         /// Gets the audio arguments.
         /// </summary>
+        /// <param name="state">The state.</param>
         /// <returns>System.String.</returns>
         protected abstract string GetAudioArguments(StreamState state);
         /// <summary>
         /// Gets the video arguments.
         /// </summary>
+        /// <param name="state">The state.</param>
+        /// <param name="performSubtitleConversion">if set to <c>true</c> [perform subtitle conversion].</param>
         /// <returns>System.String.</returns>
-        protected abstract string GetVideoArguments(StreamState state);
+        protected abstract string GetVideoArguments(StreamState state, bool performSubtitleConversion);
 
         /// <summary>
         /// Gets the segment file extension.
@@ -40,7 +54,7 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <param name="state">The state.</param>
         /// <returns>System.String.</returns>
         protected abstract string GetSegmentFileExtension(StreamState state);
-        
+
         /// <summary>
         /// Gets the type of the transcoding job.
         /// </summary>
@@ -53,6 +67,7 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <summary>
         /// Processes the request.
         /// </summary>
+        /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
         protected object ProcessRequest(StreamRequest request)
         {
@@ -162,14 +177,15 @@ namespace MediaBrowser.Api.Playback.Hls
             }
             return count;
         }
-        
+
         /// <summary>
         /// Gets the command line arguments.
         /// </summary>
         /// <param name="outputPath">The output path.</param>
         /// <param name="state">The state.</param>
+        /// <param name="performSubtitleConversions">if set to <c>true</c> [perform subtitle conversions].</param>
         /// <returns>System.String.</returns>
-        protected override string GetCommandLineArguments(string outputPath, StreamState state)
+        protected override string GetCommandLineArguments(string outputPath, StreamState state, bool performSubtitleConversions)
         {
             var segmentOutputPath = Path.GetDirectoryName(outputPath);
             var segmentOutputName = SegmentFilePrefix + Path.GetFileNameWithoutExtension(outputPath);
@@ -184,7 +200,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 GetInputArgument(state.Item, state.IsoMount),
                 GetSlowSeekCommandLineParameter(state.Request),
                 GetMapArgs(state),
-                GetVideoArguments(state),
+                GetVideoArguments(state, performSubtitleConversions),
                 GetAudioArguments(state),
                 outputPath,
                 segmentOutputPath
