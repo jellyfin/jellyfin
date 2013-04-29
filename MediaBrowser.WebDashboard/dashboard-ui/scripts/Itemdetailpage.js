@@ -30,7 +30,7 @@
             $('#itemName', page).html(name);
 
             if (item.AlbumArtist && item.Type == "Audio") {
-                $('#albumArtist', page).html('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + item.AlbumArtist + '">' + item.AlbumArtist + '</a>').show().trigger('create');
+                $('#albumArtist', page).html('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>').show().trigger('create');
             }
             else {
                 $('#albumArtist', page).hide();
@@ -45,7 +45,7 @@
 
             }
             else if (item.AlbumArtist && item.Type == "MusicAlbum") {
-                $('#seriesName', page).html('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + item.AlbumArtist + '">' + item.AlbumArtist + '</a>').show().trigger('create');
+                $('#albumArtist', page).html('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>').show().trigger('create');
 
             }
             else if (item.Album) {

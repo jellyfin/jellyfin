@@ -1,11 +1,5 @@
 ﻿var LibraryBrowser = (function (window, $) {
 
-    function encodeName(name) {
-
-        var val = $.param({ name: name });
-        return val.substring(val.indexOf('=') + 1);
-    }
-
     var defaultBackground = "#999;";
 
     return {
@@ -265,7 +259,7 @@
 
                         var artist = item.Artists[0];
 
-                        html += '<td><a href="itembynamedetails.html?context=music&artist=' + artist + '">' + artist + '</a></td>';
+                        html += '<td><a href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(artist) + '">' + artist + '</a></td>';
                     } else {
                         html += '<td></td>';
                     }
@@ -314,16 +308,16 @@
                 return "itemdetails.html?id=" + id;
             }
             if (item.Type == "Genre") {
-                return "itembynamedetails.html?genre=" + encodeName(item.Name) + "&context=" + itemByNameContext;
+                return "itembynamedetails.html?genre=" + ApiClient.encodeName(item.Name) + "&context=" + itemByNameContext;
             }
             if (item.Type == "Studio") {
-                return "itembynamedetails.html?studio=" + encodeName(item.Name) + "&context=" + itemByNameContext;
+                return "itembynamedetails.html?studio=" + ApiClient.encodeName(item.Name) + "&context=" + itemByNameContext;
             }
             if (item.Type == "Person") {
-                return "itembynamedetails.html?person=" + encodeName(item.Name) + "&context=" + itemByNameContext;
+                return "itembynamedetails.html?person=" + ApiClient.encodeName(item.Name) + "&context=" + itemByNameContext;
             }
             if (item.Type == "Artist") {
-                return "itembynamedetails.html?artist=" + encodeName(item.Name) + "&context=" + (itemByNameContext || "music");
+                return "itembynamedetails.html?artist=" + ApiClient.encodeName(item.Name) + "&context=" + (itemByNameContext || "music");
             }
 
             return item.IsFolder ? (id ? "itemList.html?parentId=" + id : "#") : "itemdetails.html?id=" + id;
@@ -1236,7 +1230,7 @@
                         html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
                     }
 
-                    html += '<a href="itembynamedetails.html?context=' + context + '&studio=' + encodeName(item.Studios[i]) + '">' + item.Studios[i] + '</a>';
+                    html += '<a href="itembynamedetails.html?context=' + context + '&studio=' + ApiClient.encodeName(item.Studios[i]) + '">' + item.Studios[i] + '</a>';
                 }
 
                 elem.show().html(html).trigger('create');
@@ -1258,7 +1252,7 @@
                         html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
                     }
 
-                    html += '<a href="itembynamedetails.html?context=' + context + '&genre=' + encodeName(item.Genres[i]) + '">' + item.Genres[i] + '</a>';
+                    html += '<a href="itembynamedetails.html?context=' + context + '&genre=' + ApiClient.encodeName(item.Genres[i]) + '">' + item.Genres[i] + '</a>';
                 }
 
                 elem.show().html(html).trigger('create');
@@ -1450,7 +1444,7 @@
 
             var role = cast.Role || cast.Type;
 
-            html += '<a href="itembynamedetails.html?context=' + context + '&person=' + encodeName(cast.Name) + '">';
+            html += '<a href="itembynamedetails.html?context=' + context + '&person=' + ApiClient.encodeName(cast.Name) + '">';
             html += '<div class="posterViewItem posterViewItemWithDualText">';
 
             if (cast.PrimaryImageTag) {
