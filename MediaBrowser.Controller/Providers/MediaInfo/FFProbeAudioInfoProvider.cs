@@ -51,7 +51,9 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
                 return;
             }
 
-            audio.MediaStreams = data.streams.Select(s => GetMediaStream(s, data.format)).ToList();
+            audio.MediaStreams = data.streams.Select(s => GetMediaStream(s, data.format))
+                .Where(i => i != null)
+                .ToList();
 
             // Get the first audio stream
             var stream = data.streams.First(s => s.codec_type.Equals("audio", StringComparison.OrdinalIgnoreCase));
@@ -146,7 +148,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// </summary>
         /// <param name="val">The val.</param>
         /// <returns>System.String[][].</returns>
-        private string[] Split(string  val)
+        private string[] Split(string val)
         {
             // Only use the comma as a delimeter if there are no slashes or pipes. 
             // We want to be careful not to split names that have commas in them
@@ -168,7 +170,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             if (!string.IsNullOrEmpty(val))
             {
                 var studios =
-                    val.Split(new[] {'/', '|'}, StringSplitOptions.RemoveEmptyEntries)
+                    val.Split(new[] { '/', '|' }, StringSplitOptions.RemoveEmptyEntries)
                        .Where(i => !string.Equals(i, audio.Artist, StringComparison.OrdinalIgnoreCase) && !string.Equals(i, audio.AlbumArtist, StringComparison.OrdinalIgnoreCase));
 
                 audio.Studios.Clear();

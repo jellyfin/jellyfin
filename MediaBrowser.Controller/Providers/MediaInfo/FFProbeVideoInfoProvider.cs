@@ -213,7 +213,9 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
             if (data.streams != null)
             {
-                video.MediaStreams = data.streams.Select(s => GetMediaStream(s, data.format)).ToList();
+                video.MediaStreams = data.streams.Select(s => GetMediaStream(s, data.format))
+                .Where(i => i != null)
+                .ToList();
             }
 
             if (data.Chapters != null)

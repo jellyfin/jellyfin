@@ -277,11 +277,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             {
                 stream.Type = MediaStreamType.Subtitle;
             }
-            else if (streamInfo.codec_type.Equals("data", StringComparison.OrdinalIgnoreCase))
-            {
-                stream.Type = MediaStreamType.Data;
-            }
-            else
+            else if (streamInfo.codec_type.Equals("video", StringComparison.OrdinalIgnoreCase))
             {
                 stream.Type = MediaStreamType.Video;
 
@@ -292,6 +288,10 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
                 stream.AverageFrameRate = GetFrameRate(streamInfo.avg_frame_rate);
                 stream.RealFrameRate = GetFrameRate(streamInfo.r_frame_rate);
+            }
+            else
+            {
+                return null;
             }
 
             // Get stream bitrate

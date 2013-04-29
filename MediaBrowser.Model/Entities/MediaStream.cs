@@ -143,10 +143,6 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The subtitle
         /// </summary>
-        Subtitle,
-        /// <summary>
-        /// The data
-        /// </summary>
-        Data
+        Subtitle
     }
 }

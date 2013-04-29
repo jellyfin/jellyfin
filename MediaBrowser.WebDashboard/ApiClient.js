@@ -95,9 +95,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             return name;
         }());
 
-        function encodeName(name) {
-            return encodeURIComponent(name).replace("'", '%27');
-        }
+        self.encodeName = function (name) {
+
+            var val = $.param({ name: name });
+            return val.substring(val.indexOf('=') + 1).replace("'", '%27');
+        };
 
         /**
          * Wraps around jQuery ajax methods to add additional info to the request.
@@ -874,7 +876,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 options.userId = userId;
             }
 
-            var url = self.getUrl("Studios/" + encodeName(name), options);
+            var url = self.getUrl("Studios/" + self.encodeName(name), options);
 
             return self.ajax({
                 type: "GET",
@@ -898,7 +900,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 options.userId = userId;
             }
 
-            var url = self.getUrl("Genres/" + encodeName(name), options);
+            var url = self.getUrl("Genres/" + self.encodeName(name), options);
 
             return self.ajax({
                 type: "GET",
@@ -922,7 +924,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 options.userId = userId;
             }
 
-            var url = self.getUrl("Artists/" + encodeName(name), options);
+            var url = self.getUrl("Artists/" + self.encodeName(name), options);
 
             return self.ajax({
                 type: "GET",
@@ -946,7 +948,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 options.userId = userId;
             }
 
-            var url = self.getUrl("Years/" + encodeName(name), options);
+            var url = self.getUrl("Years/" + self.encodeName(name), options);
 
             return self.ajax({
                 type: "GET",
@@ -970,7 +972,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 options.userId = userId;
             }
 
-            var url = self.getUrl("Persons/" + encodeName(name), options);
+            var url = self.getUrl("Persons/" + self.encodeName(name), options);
 
             return self.ajax({
                 type: "GET",
@@ -1096,7 +1098,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             };
 
-            var url = "Persons/" + encodeName(name) + "/Images/" + options.type;
+            var url = "Persons/" + self.encodeName(name) + "/Images/" + options.type;
 
             if (options.index != null) {
                 url += "/" + options.index;
@@ -1166,7 +1168,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             };
 
-            var url = "Genres/" + encodeName(name) + "/Images/" + options.type;
+            var url = "Genres/" + self.encodeName(name) + "/Images/" + options.type;
 
             if (options.index != null) {
                 url += "/" + options.index;
@@ -1201,7 +1203,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             };
 
-            var url = "Artists/" + encodeName(name) + "/Images/" + options.type;
+            var url = "Artists/" + self.encodeName(name) + "/Images/" + options.type;
 
             if (options.index != null) {
                 url += "/" + options.index;
@@ -1236,7 +1238,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             };
 
-            var url = "Studios/" + encodeName(name) + "/Images/" + options.type;
+            var url = "Studios/" + self.encodeName(name) + "/Images/" + options.type;
 
             if (options.index != null) {
                 url += "/" + options.index;
@@ -1880,7 +1882,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/" + userId + "/Favorites/Artists/" + encodeName(name));
+            var url = self.getUrl("Users/" + userId + "/Favorites/Artists/" + self.encodeName(name));
 
             var method = isFavorite ? "POST" : "DELETE";
 
@@ -1900,7 +1902,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/" + userId + "/Favorites/Persons/" + encodeName(name));
+            var url = self.getUrl("Users/" + userId + "/Favorites/Persons/" + self.encodeName(name));
 
             var method = isFavorite ? "POST" : "DELETE";
 
@@ -1920,7 +1922,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/" + userId + "/Favorites/Studios/" + encodeName(name));
+            var url = self.getUrl("Users/" + userId + "/Favorites/Studios/" + self.encodeName(name));
 
             var method = isFavorite ? "POST" : "DELETE";
 
@@ -1940,7 +1942,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/" + userId + "/Favorites/Genres/" + encodeName(name));
+            var url = self.getUrl("Users/" + userId + "/Favorites/Genres/" + self.encodeName(name));
 
             var method = isFavorite ? "POST" : "DELETE";
 
@@ -1966,7 +1968,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/" + userId + "/Ratings/Artists/" + encodeName(name), {
+            var url = self.getUrl("Users/" + userId + "/Ratings/Artists/" + self.encodeName(name), {
                 likes: likes
             });
 
@@ -1986,7 +1988,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/" + userId + "/Ratings/Persons/" + encodeName(name), {
+            var url = self.getUrl("Users/" + userId + "/Ratings/Persons/" + self.encodeName(name), {
                 likes: likes
             });
 
@@ -2006,7 +2008,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/" + userId + "/Ratings/Studios/" + encodeName(name), {
+            var url = self.getUrl("Users/" + userId + "/Ratings/Studios/" + self.encodeName(name), {
                 likes: likes
             });
 
@@ -2026,7 +2028,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/" + userId + "/Ratings/Genres/" + encodeName(name), {
+            var url = self.getUrl("Users/" + userId + "/Ratings/Genres/" + self.encodeName(name), {
                 likes: likes
             });
 
@@ -2051,7 +2053,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/" + userId + "/Ratings/Artists/" + encodeName(name));
+            var url = self.getUrl("Users/" + userId + "/Ratings/Artists/" + self.encodeName(name));
 
             return self.ajax({
                 type: "DELETE",
@@ -2069,7 +2071,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/" + userId + "/Ratings/Persons/" + encodeName(name));
+            var url = self.getUrl("Users/" + userId + "/Ratings/Persons/" + self.encodeName(name));
 
             return self.ajax({
                 type: "DELETE",
@@ -2087,7 +2089,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/" + userId + "/Ratings/Studios/" + encodeName(name));
+            var url = self.getUrl("Users/" + userId + "/Ratings/Studios/" + self.encodeName(name));
 
             return self.ajax({
                 type: "DELETE",
@@ -2105,7 +2107,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/" + userId + "/Ratings/Genres/" + encodeName(name));
+            var url = self.getUrl("Users/" + userId + "/Ratings/Genres/" + self.encodeName(name));
 
             return self.ajax({
                 type: "DELETE",
@@ -2126,7 +2128,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Persons/" + encodeName(name) + "/Counts", {
+            var url = self.getUrl("Persons/" + self.encodeName(name) + "/Counts", {
                 userId: userId
             });
 
@@ -2150,7 +2152,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Genres/" + encodeName(name) + "/Counts", {
+            var url = self.getUrl("Genres/" + self.encodeName(name) + "/Counts", {
                 userId: userId
             });
 
@@ -2174,7 +2176,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Artists/" + encodeName(name) + "/Counts", {
+            var url = self.getUrl("Artists/" + self.encodeName(name) + "/Counts", {
                 userId: userId
             });
 
@@ -2198,7 +2200,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Studios/" + encodeName(name) + "/Counts", {
+            var url = self.getUrl("Studios/" + self.encodeName(name) + "/Counts", {
                 userId: userId
             });
 
