@@ -138,6 +138,21 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                 images = images.Concat(item.ScreenshotImagePaths);
             }
 
+            if (item.LocalTrailers != null)
+            {
+                images = item.LocalTrailers.Aggregate(images, (current, subItem) => current.Concat(GetPathsInUse(subItem)));
+            }
+
+            if (item.ThemeSongs != null)
+            {
+                images = item.ThemeSongs.Aggregate(images, (current, subItem) => current.Concat(GetPathsInUse(subItem)));
+            }
+
+            if (item.ThemeVideos != null)
+            {
+                images = item.ThemeVideos.Aggregate(images, (current, subItem) => current.Concat(GetPathsInUse(subItem)));
+            }
+
             var video = item as Video;
 
             if (video != null && video.Chapters != null)
@@ -145,22 +160,11 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                 images = images.Concat(video.Chapters.Where(i => !string.IsNullOrEmpty(i.ImagePath)).Select(i => i.ImagePath));
             }
 
-            if (item.LocalTrailers != null)
-            {
-                foreach (var subItem in item.LocalTrailers)
-                {
-                    images = images.Concat(GetPathsInUse(subItem));
-                }
-            }
-
             var movie = item as Movie;
 
             if (movie != null && movie.SpecialFeatures != null)
             {
-                foreach (var subItem in movie.SpecialFeatures)
-                {
-                    images = images.Concat(GetPathsInUse(subItem));
-                }
+                images = movie.SpecialFeatures.Aggregate(images, (current, subItem) => current.Concat(GetPathsInUse(subItem)));
             }
             
             return images;
