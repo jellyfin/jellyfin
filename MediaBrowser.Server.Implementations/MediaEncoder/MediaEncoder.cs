@@ -645,7 +645,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                     }
                     catch (IOException ex)
                     {
-                        _logger.ErrorException("Error converted extracted subtitle {0}", ex, outputPath);
+                        _logger.ErrorException("Error deleting converted subtitle {0}", ex, outputPath);
                     }
                 }
             }
