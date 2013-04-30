@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
@@ -146,6 +147,21 @@ namespace MediaBrowser.Api.UserLibrary
         /// <value>The max offical rating.</value>
         [ApiMember(Name = "MaxOfficialRating", Description = "Optional filter by maximum official rating (PG, PG-13, TV-MA, etc).", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string MaxOfficialRating { get; set; }
+
+        [ApiMember(Name = "HasThemeSong", Description = "Optional filter by items with theme songs.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public bool? HasThemeSong { get; set; }
+
+        [ApiMember(Name = "HasThemeVideo", Description = "Optional filter by items with theme videos.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public bool? HasThemeVideo { get; set; }
+
+        [ApiMember(Name = "HasSubtitles", Description = "Optional filter by items with subtitles.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public bool? HasSubtitles { get; set; }
+
+        [ApiMember(Name = "HasSpecialFeature", Description = "Optional filter by items with special features.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public bool? HasSpecialFeature { get; set; }
+
+        [ApiMember(Name = "HasTrailer", Description = "Optional filter by items with trailers.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public bool? HasTrailer { get; set; }
         
         /// <summary>
         /// Gets the order by.
@@ -527,6 +543,41 @@ namespace MediaBrowser.Api.UserLibrary
                             item.People.Any(p =>
                                 p.Name.Equals(personName, StringComparison.OrdinalIgnoreCase) && types.Contains(p.Type, StringComparer.OrdinalIgnoreCase)));
                 }
+            }
+
+            if (request.HasTrailer.HasValue)
+            {
+                items = items.Where(i => request.HasTrailer.Value ? i.LocalTrailers.Count > 0 : i.LocalTrailers.Count == 0);
+            }
+
+            if (request.HasThemeSong.HasValue)
+            {
+                items = items.Where(i => request.HasThemeSong.Value ? i.ThemeSongs.Count > 0 : i.ThemeSongs.Count == 0);
+            }
+
+            if (request.HasThemeVideo.HasValue)
+            {
+                items = items.Where(i => request.HasThemeVideo.Value ? i.ThemeVideos.Count > 0 : i.ThemeVideos.Count == 0);
+            }
+
+            if (request.HasSpecialFeature.HasValue)
+            {
+                items = items.OfType<Movie>().Where(i => request.HasSpecialFeature.Value ? i.SpecialFeatures.Count > 0 : i.SpecialFeatures.Count == 0);
+            }
+
+            if (request.HasSubtitles.HasValue)
+            {
+                items = items.OfType<Video>().Where(i =>
+                {
+                    if (request.HasSubtitles.Value)
+                    {
+                        return i.MediaStreams != null && i.MediaStreams.Any(m => m.Type == MediaStreamType.Subtitle);
+                    }
+                    else
+                    {
+                        return i.MediaStreams == null || i.MediaStreams.All(m => m.Type != MediaStreamType.Subtitle);
+                    }
+                });
             }
 
             return items;
