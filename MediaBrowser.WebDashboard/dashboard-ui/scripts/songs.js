@@ -8,7 +8,7 @@
         IncludeItemTypes: "Audio",
         Recursive: true,
         Fields: "ItemCounts,DateCreated,UserData,AudioInfo,ParentId",
-        Limit: 200,
+        Limit: 300,
         StartIndex: 0
     };
 

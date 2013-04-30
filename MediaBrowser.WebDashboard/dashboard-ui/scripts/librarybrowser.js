@@ -215,7 +215,7 @@
 
             html += '<th></th>';
 
-            html += '<th class="tabletColumn">Track</th>';
+            html += '<th>Track</th>';
 
             if (options.showAlbum) {
                 html += '<th>Album</th>';
@@ -241,7 +241,7 @@
                 if (num && item.ParentIndexNumber) {
                     num = item.ParentIndexNumber + "." + num;
                 }
-                html += '<td class="tabletColumn">' + (num || "") + '</td>';
+                html += '<td>' + (num || "") + '</td>';
 
                 html += '<td><a href="' + LibraryBrowser.getHref(item, "music") + '">' + (item.Name || "") + '</a></td>';
 

@@ -241,20 +241,15 @@ namespace MediaBrowser.Server.Implementations.Library
                 return new Tuple<string, int>(searchInput, 0);
             }
 
-            var match = Regex.Match(input, searchInput, RegexOptions.IgnoreCase);
+            var index = input.IndexOf(searchInput, StringComparison.OrdinalIgnoreCase);
 
-            if (match.Success)
+            if (index == 0)
             {
-                var index = match.Index;
-
-                if (index == 0)
-                {
-                    return new Tuple<string, int>(searchInput, 1);
-                }
-                if (index > 0)
-                {
-                    return new Tuple<string, int>(searchInput, 2);
-                }
+                return new Tuple<string, int>(searchInput, 1);
+            }
+            if (index > 0)
+            {
+                return new Tuple<string, int>(searchInput, 2);
             }
 
             var items = GetWords(input);
@@ -272,20 +267,15 @@ namespace MediaBrowser.Server.Implementations.Library
                         return new Tuple<string, int>(searchTerm, 3 + (i + 1) * (j + 1));
                     }
 
-                    match = Regex.Match(item, searchTerm, RegexOptions.IgnoreCase);
+                    index = item.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase);
 
-                    if (match.Success)
+                    if (index == 0)
                     {
-                        var index = match.Index;
-
-                        if (index == 0)
-                        {
-                            return new Tuple<string, int>(searchTerm, 4 + (i + 1) * (j + 1));
-                        }
-                        if (index > 0)
-                        {
-                            return new Tuple<string, int>(searchTerm, 5 + (i + 1) * (j + 1));
-                        }
+                        return new Tuple<string, int>(searchTerm, 4 + (i + 1) * (j + 1));
+                    }
+                    if (index > 0)
+                    {
+                        return new Tuple<string, int>(searchTerm, 5 + (i + 1) * (j + 1));
                     }
                 }
             }
