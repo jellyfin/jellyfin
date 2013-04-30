@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -281,13 +282,26 @@ namespace MediaBrowser.Controller.Providers
 
                 case "Actors":
                     {
-                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Actor }))
+
+                        var actors = reader.ReadInnerXml();
+                        
+                        if (actors.Contains("<"))
                         {
-                            if (string.IsNullOrWhiteSpace(p.Name))
+                            // This is one of the mis-named "Actors" full nodes created by MB2
+                            // Create a reader and pass it to the persons node processor
+                            FetchDataFromPersonsNode(new XmlTextReader(new StringReader("<Persons>" + actors + "</Persons>")), item);
+                        }
+                        else
+                        {
+                            // Old-style piped string
+                            foreach (var p in SplitNames(actors).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Actor }))
                             {
-                                continue;
+                                if (string.IsNullOrWhiteSpace(p.Name))
+                                {
+                                    continue;
+                                }
+                                item.AddPerson(p);
                             }
-                            item.AddPerson(p);
                         }
                         break;
                     }
@@ -500,6 +514,7 @@ namespace MediaBrowser.Controller.Providers
                     switch (reader.Name)
                     {
                         case "Person":
+                        case "Actor":
                             {
                                 foreach (var person in GetPersonsFromXmlNode(reader.ReadSubtree()))
                                 {
@@ -619,7 +634,7 @@ namespace MediaBrowser.Controller.Providers
         private IEnumerable<PersonInfo> GetPersonsFromXmlNode(XmlReader reader)
         {
             var names = new List<string>();
-            var type = string.Empty;
+            var type = "Actor";  // If type is not specified assume actor
             var role = string.Empty;
 
             reader.MoveToContent();
