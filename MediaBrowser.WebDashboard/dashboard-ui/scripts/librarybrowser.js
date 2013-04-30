@@ -1,4 +1,4 @@
-﻿var LibraryBrowser = (function (window, $) {
+﻿var LibraryBrowser = (function (window, document, $) {
 
     var defaultBackground = "#999;";
 
@@ -214,6 +214,7 @@
             html += '<tr>';
 
             html += '<th></th>';
+            html += '<th></th>';
 
             html += '<th>Track</th>';
 
@@ -235,6 +236,8 @@
                 var item = items[i];
 
                 html += '<tr>';
+
+                html += '<td><button data-icon="play" data-mini="true" data-iconpos="notext" onclick="LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'Audio\');">Options</button></td>';
 
                 var num = item.IndexNumber;
 
@@ -279,6 +282,50 @@
             html += '</table></div>';
 
             return html;
+        },
+
+        showPlayMenu: function (positionTo, itemId, mediaType, resumePositionTicks) {
+
+            var isPlaying = MediaPlayer.isPlaying();
+
+            if (!isPlaying && !resumePositionTicks) {
+                MediaPlayer.playById(itemId);
+                return;
+            }
+
+            $('.playFlyout').popup("close").remove();
+
+            var html = '<div data-role="popup" class="playFlyout" style="max-width:300px;" data-corners="false" data-theme="c" data-history="false">';
+
+            html += '<ul data-role="listview" style="min-width: 150px;" data-theme="c">';
+            html += '<li data-role="list-divider" data-theme="a">Play Menu</li>';
+
+            html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
+
+            if (resumePositionTicks) {
+                html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\', resumePositionTicks);LibraryBrowser.closePlayMenu();">Play</a></li>';
+            }
+
+            if (isPlaying && MediaPlayer.canQueue(mediaType)) {
+                html += '<li><a href="#" onclick="MediaPlayer.playNext(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play Next</a></li>';
+                html += '<li><a href="#" onclick="MediaPlayer.playLast(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play Last</a></li>';
+            }
+
+            html += '</ul>';
+
+            html += '</div>';
+
+            $($.mobile.activePage).append(html);
+
+            $('.playFlyout').popup({ positionTo: positionTo || "window" }).trigger('create').popup("open").on("popupafterclose", function () {
+
+                $(this).off("popupafterclose").remove();
+
+            }).parents(".ui-popup-container").css("margin-left", 100);
+        },
+
+        closePlayMenu: function () {
+            $('.playFlyout').popup("close").remove();
         },
 
         getHref: function (item, itemByNameContext) {
@@ -1472,4 +1519,4 @@
 
     };
 
-})(window, jQuery);
+})(window, document, jQuery);

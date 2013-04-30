@@ -1,4 +1,4 @@
-﻿(function (document, clearTimeout, screen, localStorage, _V_, $, setInterval) {
+﻿(function (document, clearTimeout, screen, localStorage, _V_, $, setInterval, window) {
 
     function mediaPlayer() {
         var self = this;
@@ -8,8 +8,7 @@
         var currentMediaElement;
         var currentProgressInterval;
 
-        function playAudio(items, params) {
-            var item = items[0];
+        function playAudio(item, params) {
 
             var volume = localStorage.getItem("volume") || 0.5;
 
@@ -57,7 +56,7 @@
             });
 
             $(".itemAudio").on("ended", function () {
-	            MediaPlayer.stopAudio(item.Id);
+                MediaPlayer.stopAudio(item.Id);
 
                 Playlist.playNext();
             });
@@ -66,29 +65,28 @@
                 localStorage.setItem("volume", this.volume);
             });
 
-	        $(".itemAudio").on("play", updateAudioProgress(item.Id));
+            $(".itemAudio").on("play", updateAudioProgress(item.Id));
 
             return $('audio', nowPlayingBar)[0];
         }
 
-	    function updateAudioProgress(itemId) {
-		    ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), itemId);
+        function updateAudioProgress(itemId) {
+            ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), itemId);
 
-		    currentProgressInterval = setInterval(function () {
-			    var position;
-			    $(".itemAudio").each(function () {
-				    position = Math.floor(10000000 * this.currentTime);
-			    });
+            currentProgressInterval = setInterval(function () {
+                var position;
+                $(".itemAudio").each(function () {
+                    position = Math.floor(10000000 * this.currentTime);
+                });
 
-			    ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, position);
-		    }, 30000);
-	    }
+                ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, position);
+            }, 30000);
+        }
 
-        function playVideo(items, startPosition) {
+        function playVideo(item, startPosition) {
+
             //stop/kill videoJS
             if (currentMediaElement) self.stop();
-
-            var item = items[0];
 
             // Account for screen rotation. Use the larger dimension as the width.
             var screenWidth = Math.max(screen.height, screen.width);
@@ -223,11 +221,11 @@
         }
 
         function updateProgress() {
-	        var player = _V_("videoWindow");
-	        var itemString = player.tag.src.match(new RegExp("Videos/[0-9a-z\-]+", "g"));
-	        var itemId = itemString[0].replace("Videos/", "");
+            var player = _V_("videoWindow");
+            var itemString = player.tag.src.match(new RegExp("Videos/[0-9a-z\-]+", "g"));
+            var itemId = itemString[0].replace("Videos/", "");
 
-	        ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), itemId);
+            ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), itemId);
 
             currentProgressInterval = setInterval(function () {
                 var player = _V_("videoWindow");
@@ -282,10 +280,10 @@
 
             if (item.MediaType === "Video") {
 
-                mediaElement = playVideo(items, startPosition);
+                mediaElement = playVideo(item, startPosition);
             } else if (item.MediaType === "Audio") {
 
-                mediaElement = playAudio(items);
+                mediaElement = playAudio(item);
             }
 
             if (!mediaElement) {
@@ -357,6 +355,28 @@
             $('#mediaInfo', nowPlayingBar).html(html);
         };
 
+        self.playById = function (id, startPositionTicks) {
+
+            ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
+
+                self.play([item], startPositionTicks);
+
+            });
+
+        };
+
+        self.canQueue = function (mediaType) {
+            return mediaType == "Audio";
+        };
+
+        self.playLast = function(itemId) {
+
+        };
+
+        self.playNext = function (itemId) {
+
+        };
+
         self.stop = function () {
 
             var elem = currentMediaElement;
@@ -382,7 +402,7 @@
                 //player.tech.destroy();
                 player.destroy();
             } else {
-	            self.stopAudio();
+                self.stopAudio();
 
                 elem.pause();
                 elem.src = "";
@@ -411,23 +431,23 @@
             if (currentProgressInterval) {
                 clearTimeout(currentProgressInterval);
             }
-        }
+        };
 
-	    self.stopAudio = function () {
-		    var itemString = $(".itemAudio source").attr('src').match(new RegExp("Audio/[0-9a-z\-]+", "g"));
-		    var itemId = itemString[0].replace("Audio/", "");
+        self.stopAudio = function () {
+            var itemString = $(".itemAudio source").attr('src').match(new RegExp("Audio/[0-9a-z\-]+", "g"));
+            var itemId = itemString[0].replace("Audio/", "");
 
-		    var position;
-		    $(".itemAudio").each(function () {
-			    position = Math.floor(10000000 * this.currentTime);
-		    });
+            var position;
+            $(".itemAudio").each(function () {
+                position = Math.floor(10000000 * this.currentTime);
+            });
 
-		    ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), itemId, position);
+            ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), itemId, position);
 
-		    if (currentProgressInterval) {
-			    clearTimeout(currentProgressInterval);
-		    }
-	    }
+            if (currentProgressInterval) {
+                clearTimeout(currentProgressInterval);
+            }
+        };
 
         self.isPlaying = function () {
             return currentMediaElement;
@@ -436,4 +456,4 @@
 
     window.MediaPlayer = new mediaPlayer();
 
-})(document, clearTimeout, screen, localStorage, _V_, $, setInterval);
+})(document, clearTimeout, screen, localStorage, _V_, $, setInterval, window);

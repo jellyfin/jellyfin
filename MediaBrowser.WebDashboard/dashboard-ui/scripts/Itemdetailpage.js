@@ -472,7 +472,7 @@
 
             var item = items[i];
 
-            html += '<a class="posterItem backdropPosterItem" href="#" onclick="ItemDetailPage.playById(\'' + item.Id + '\');">';
+            html += '<a class="posterItem backdropPosterItem" href="#" onclick="MediaPlayer.playById(\'' + item.Id + '\');">';
 
             var imageTags = item.ImageTags || {};
 
@@ -618,12 +618,6 @@
         var self = this;
 
         self.play = play;
-
-        self.playById = function (id) {
-            ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
-                MediaPlayer.play([item]);
-            });
-        };
     }
 
     window.ItemDetailPage = new itemDetailPage();
