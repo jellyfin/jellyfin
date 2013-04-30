@@ -120,6 +120,10 @@
     }
 }
 
+.playFlyout a {
+    font-size: 14px;
+}
+
 .detailPageName {
     margin: 0 0 .1em;
 }

@@ -4,6 +4,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Connectivity;
@@ -721,6 +722,11 @@ namespace MediaBrowser.Server.Implementations.Library
                         data.Played = true;
                     }
                 }
+            }
+
+            if (item is Audio)
+            {
+                data.PlaybackPositionTicks = 0;
             }
 
             data.PlaybackPositionTicks = positionTicks;

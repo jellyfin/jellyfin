@@ -237,7 +237,7 @@
 
                 html += '<tr>';
 
-                html += '<td><button data-icon="play" data-mini="true" data-iconpos="notext" onclick="LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'Audio\');">Options</button></td>';
+                html += '<td><button type="button" data-role="none" style="border:0;padding:0;margin:0;background:none;" onclick="LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'Audio\');"><img src="css/images/media/playCircle.png" style="height: 16px;"></button></td>';
 
                 var num = item.IndexNumber;
 
@@ -297,7 +297,7 @@
 
             var html = '<div data-role="popup" class="playFlyout" style="max-width:300px;" data-corners="false" data-theme="c" data-history="false">';
 
-            html += '<ul data-role="listview" style="min-width: 150px;" data-theme="c">';
+            html += '<ul data-role="listview" style="min-width: 150px;font-size:14px;" data-theme="c">';
             html += '<li data-role="list-divider" data-theme="a">Play Menu</li>';
 
             html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
@@ -321,7 +321,7 @@
 
                 $(this).off("popupafterclose").remove();
 
-            }).parents(".ui-popup-container").css("margin-left", 110).css("margin-top", 50);
+            }).parents(".ui-popup-container").css("margin-left", 100).css("margin-top", 35);
         },
 
         closePlayMenu: function () {

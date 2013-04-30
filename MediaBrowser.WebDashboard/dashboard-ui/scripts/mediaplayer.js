@@ -8,6 +8,15 @@
         var currentMediaElement;
         var currentProgressInterval;
 
+        function endsWith(text, pattern) {
+
+            text = text.toLowerCase();
+            pattern = pattern.toLowerCase();
+
+            var d = text.length - pattern.length;
+            return d >= 0 && text.lastIndexOf(pattern) === d;
+        }
+
         function playAudio(item, params) {
 
             var volume = localStorage.getItem("volume") || 0.5;
@@ -30,6 +39,26 @@
             var webmUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
                 audioCodec: 'Vorbis'
             }));
+
+            var mediaStreams = item.MediaStreams || [];
+
+            for (var i = 0, length = mediaStreams.length; i < length; i++) {
+
+                var stream = mediaStreams[i];
+
+                if (stream.Type == "Audio") {
+
+                    // Stream statically when possible
+                    if (endsWith(item.Path, ".aac") && stream.BitRate <= 256000) {
+                        aacUrl += "&static=true";
+                    }
+                    else if (endsWith(item.Path, ".mp3") && stream.BitRate <= 256000) {
+                        mp3Url += "&static=true";
+                    }
+                    break;
+                }
+
+            }
 
             /* ffmpeg always says the ogg stream is corrupt after conversion
              var oggUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.oga', $.extend({}, baseParams, {
@@ -369,7 +398,7 @@
             return mediaType == "Audio";
         };
 
-        self.playLast = function(itemId) {
+        self.playLast = function (itemId) {
 
         };
 

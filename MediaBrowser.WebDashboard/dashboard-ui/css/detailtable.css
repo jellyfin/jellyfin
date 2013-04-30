@@ -49,7 +49,8 @@
 }
 
 .userDataCell {
-    width: 140px;
+    width: 130px;
+    text-align: right;
 }
 
 .tabletColumn {
