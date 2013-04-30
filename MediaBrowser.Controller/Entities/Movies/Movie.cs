@@ -115,6 +115,11 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// <returns>IEnumerable{Video}.</returns>
         private IEnumerable<Video> LoadSpecialFeatures()
         {
+            if (LocationType != LocationType.FileSystem)
+            {
+                return new List<Video>();
+            }
+
             FileSystemInfo folder;
 
             try
