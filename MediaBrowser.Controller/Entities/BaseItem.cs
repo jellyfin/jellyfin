@@ -731,6 +731,11 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>List{Video}.</returns>
         private List<Trailer> LoadLocalTrailers()
         {
+            if (LocationType != LocationType.FileSystem)
+            {
+                return new List<Trailer>();
+            }
+
             ItemResolveArgs resolveArgs;
 
             try
@@ -789,6 +794,11 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>List{Audio.Audio}.</returns>
         private List<Audio.Audio> LoadThemeSongs()
         {
+            if (LocationType != LocationType.FileSystem)
+            {
+                return new List<Audio.Audio>();
+            }
+
             ItemResolveArgs resolveArgs;
 
             try
@@ -847,6 +857,11 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>List{Video}.</returns>
         private List<Video> LoadThemeVideos()
         {
+            if (LocationType != LocationType.FileSystem)
+            {
+                return new List<Video>();
+            }
+
             ItemResolveArgs resolveArgs;
 
             try
