@@ -69,45 +69,6 @@ namespace MediaBrowser.Controller.IO
         /// The STG m_ READ
         /// </summary>
         public const uint STGM_READ = 0;
-
-        /// <summary>
-        /// Finds the first file ex.
-        /// </summary>
-        /// <param name="lpFileName">Name of the lp file.</param>
-        /// <param name="fInfoLevelId">The f info level id.</param>
-        /// <param name="lpFindFileData">The lp find file data.</param>
-        /// <param name="fSearchOp">The f search op.</param>
-        /// <param name="lpSearchFilter">The lp search filter.</param>
-        /// <param name="dwAdditionalFlags">The dw additional flags.</param>
-        /// <returns>IntPtr.</returns>
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern IntPtr FindFirstFileEx(string lpFileName, FINDEX_INFO_LEVELS fInfoLevelId, out WIN32_FIND_DATA lpFindFileData, FINDEX_SEARCH_OPS fSearchOp, IntPtr lpSearchFilter, int dwAdditionalFlags);
-
-        /// <summary>
-        /// Finds the first file.
-        /// </summary>
-        /// <param name="fileName">Name of the file.</param>
-        /// <param name="lpFindFileData">The lp find file data.</param>
-        /// <returns>IntPtr.</returns>
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern IntPtr FindFirstFile(string fileName, out WIN32_FIND_DATA lpFindFileData);
-
-        /// <summary>
-        /// Finds the next file.
-        /// </summary>
-        /// <param name="hFindFile">The h find file.</param>
-        /// <param name="lpFindFileData">The lp find file data.</param>
-        /// <returns>IntPtr.</returns>
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern IntPtr FindNextFile(IntPtr hFindFile, out WIN32_FIND_DATA lpFindFileData);
-
-        /// <summary>
-        /// Finds the close.
-        /// </summary>
-        /// <param name="hFindFile">The h find file.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        [DllImport("kernel32")]
-        public static extern bool FindClose(IntPtr hFindFile);
     }
 
     //create a _SERVER_INFO_100 STRUCTURE

@@ -143,7 +143,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="filenameWithoutExtension">The filename without extension.</param>
-        /// <returns>System.Nullable{WIN32_FIND_DATA}.</returns>
+        /// <returns>FileSystemInfo.</returns>
         protected virtual FileSystemInfo GetImage(BaseItem item, string filenameWithoutExtension)
         {
             return item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.ResolveArgs.Path, filenameWithoutExtension + ".png")) ?? item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.ResolveArgs.Path, filenameWithoutExtension + ".jpg"));

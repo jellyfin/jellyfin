@@ -143,7 +143,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="filenameWithoutExtension">The filename without extension.</param>
-        /// <returns>System.Nullable{WIN32_FIND_DATA}.</returns>
+        /// <returns>FileSystemInfo.</returns>
         protected override FileSystemInfo GetImage(BaseItem item, string filenameWithoutExtension)
         {
             var location = GetLocation(item);
