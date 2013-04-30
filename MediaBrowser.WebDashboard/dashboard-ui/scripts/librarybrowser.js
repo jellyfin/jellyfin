@@ -1282,7 +1282,7 @@
 
         renderBudget: function (elem, item) {
             if (item.Budget) {
-                elem.show().html('Budget:&nbsp;&nbsp;$' + item.Budget);
+                elem.show().html('Budget:&nbsp;&nbsp;$<span class="autoNumeric">' + item.Budget + '</span>');
             } else {
                 elem.hide();
             }
@@ -1290,7 +1290,7 @@
 
         renderRevenue: function (elem, item) {
             if (item.Revenue) {
-                elem.show().html('Revenue:&nbsp;&nbsp;$' + item.Revenue);
+                elem.show().html('Revenue:&nbsp;&nbsp;$<span class="autoNumeric">' + item.Revenue + '</span>');
             } else {
                 elem.hide();
             }
