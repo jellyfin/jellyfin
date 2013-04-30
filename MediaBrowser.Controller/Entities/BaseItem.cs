@@ -1169,10 +1169,17 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.Equals(person.Type, PersonType.Actor, StringComparison.OrdinalIgnoreCase))
             {
-                // Only add actors if there isn't an existing one of type Actor or GuestStar
-                if (!People.Any(p => p.Name.Equals(person.Name, StringComparison.OrdinalIgnoreCase) && (p.Type.Equals(PersonType.Actor, StringComparison.OrdinalIgnoreCase) || p.Type.Equals(PersonType.GuestStar, StringComparison.OrdinalIgnoreCase))))
+                // If the actor already exists without a role and we have one, fill it in
+                var existing = People.FirstOrDefault(p => p.Name.Equals(person.Name, StringComparison.OrdinalIgnoreCase) && (p.Type.Equals(PersonType.Actor, StringComparison.OrdinalIgnoreCase) || p.Type.Equals(PersonType.GuestStar, StringComparison.OrdinalIgnoreCase)));
+                if (existing == null)
                 {
+                    // Wasn't there - add it
                     People.Add(person);
+                }
+                else
+                {
+                    // Was there, if no role and we have one - fill it in
+                    if (string.IsNullOrWhiteSpace(existing.Role) && !string.IsNullOrWhiteSpace(person.Role)) existing.Role = person.Role;
                 }
             }
             else
