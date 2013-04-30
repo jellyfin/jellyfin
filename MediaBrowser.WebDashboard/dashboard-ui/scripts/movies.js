@@ -134,6 +134,47 @@
 
             reloadItems(page);
         });
+        
+        $('#chkSubtitle', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasSubtitles = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+        
+        $('#chkTrailer', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasTrailer = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+        
+        $('#chkSpecialFeature', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasSpecialFeature = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+        
+        $('#chkThemeSong', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasThemeSong = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+        
+        $('#chkThemeVideo', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasThemeVideo = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+
 
     }).on('pagebeforeshow', "#moviesPage", function () {
 
@@ -175,6 +216,13 @@
         $('#selectView', this).val(view).selectmenu('refresh');
 
         $('#chk3D', this).checked(query.VideoFormats == "Digital3D,Sbs3D").checkboxradio('refresh');
+
+        $('#chkSubtitle', this).checked(query.HasSubtitles == true).checkboxradio('refresh');
+        $('#chkTrailer', this).checked(query.HasTrailer == true).checkboxradio('refresh');
+        $('#chkSpecialFeature', this).checked(query.HasSpecialFeature == true).checkboxradio('refresh');
+        $('#chkThemeSong', this).checked(query.HasThemeSong == true).checkboxradio('refresh');
+        $('#chkThemeVideo', this).checked(query.HasThemeVideo == true).checkboxradio('refresh');
+
     });
 
 })(jQuery, document);
