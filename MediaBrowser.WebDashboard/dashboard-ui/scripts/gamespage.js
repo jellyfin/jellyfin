@@ -3,146 +3,172 @@
 
     var view = "Poster";
 
-	// The base query options
-	var query = {
+    // The base query options
+    var query = {
 
-		SortBy: "SortName",
-		SortOrder: "Ascending",
-		MediaTypes: "Game",
-		Recursive: true,
-		Fields: "UserData,DisplayMediaType,Genres,Studios",
-		Limit: LibraryBrowser.getDetaultPageSize(),
-		StartIndex: 0
-	};
+        SortBy: "SortName",
+        SortOrder: "Ascending",
+        MediaTypes: "Game",
+        Recursive: true,
+        Fields: "UserData,DisplayMediaType,Genres,Studios",
+        Limit: LibraryBrowser.getDetaultPageSize(),
+        StartIndex: 0
+    };
 
-	function reloadItems(page) {
+    function reloadItems(page) {
 
-		Dashboard.showLoadingMsg();
+        Dashboard.showLoadingMsg();
 
-		ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
+        ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
 
-			var html = '';
+            var html = '';
 
-			$('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
+            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
 
-			if (view == "Backdrop") {
-				html += LibraryBrowser.getPosterDetailViewHtml({
-					items: result.Items,
-					preferBackdrop: true,
-					context: "games",
-					shape: "backdrop"
-				});
-			}
-			else if (view == "Poster") {
-				html += LibraryBrowser.getPosterDetailViewHtml({
-					items: result.Items,
-					context: "games",
-					shape: "poster"
-				});
-			}
+            if (view == "Backdrop") {
+                html += LibraryBrowser.getPosterDetailViewHtml({
+                    items: result.Items,
+                    preferBackdrop: true,
+                    context: "games",
+                    shape: "backdrop"
+                });
+            }
+            else if (view == "Poster") {
+                html += LibraryBrowser.getPosterDetailViewHtml({
+                    items: result.Items,
+                    context: "games",
+                    shape: "poster"
+                });
+            }
 
-			html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
+            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 
-			$('#items', page).html(html).trigger('create');
+            $('#items', page).html(html).trigger('create');
 
-			$('.selectPage', page).on('change', function () {
-			    query.StartIndex = (parseInt(this.value) - 1) * query.Limit;
-				reloadItems(page);
-			});
+            $('.selectPage', page).on('change', function () {
+                query.StartIndex = (parseInt(this.value) - 1) * query.Limit;
+                reloadItems(page);
+            });
 
-			$('.btnNextPage', page).on('click', function () {
-			    query.StartIndex += query.Limit;
-			    reloadItems(page);
-			});
+            $('.btnNextPage', page).on('click', function () {
+                query.StartIndex += query.Limit;
+                reloadItems(page);
+            });
 
-			$('.btnPreviousPage', page).on('click', function () {
-			    query.StartIndex -= query.Limit;
-			    reloadItems(page);
-			});
+            $('.btnPreviousPage', page).on('click', function () {
+                query.StartIndex -= query.Limit;
+                reloadItems(page);
+            });
 
-			$('.selectPageSize', page).on('change', function () {
-			    query.Limit = parseInt(this.value);
-			    query.StartIndex = 0;
-			    reloadItems(page);
-			});
+            $('.selectPageSize', page).on('change', function () {
+                query.Limit = parseInt(this.value);
+                query.StartIndex = 0;
+                reloadItems(page);
+            });
 
-			Dashboard.hideLoadingMsg();
-		});
-	}
+            Dashboard.hideLoadingMsg();
+        });
+    }
 
-	$(document).on('pageinit', "#gamesPage", function () {
+    $(document).on('pageinit', "#gamesPage", function () {
 
-		var page = this;
+        var page = this;
 
-		$('.radioSortBy', this).on('click', function () {
-			query.StartIndex = 0;
-			query.SortBy = this.getAttribute('data-sortby');
-			reloadItems(page);
-		});
+        $('.radioSortBy', this).on('click', function () {
+            query.StartIndex = 0;
+            query.SortBy = this.getAttribute('data-sortby');
+            reloadItems(page);
+        });
 
-		$('.radioSortOrder', this).on('click', function () {
-			query.StartIndex = 0;
-			query.SortOrder = this.getAttribute('data-sortorder');
-			reloadItems(page);
-		});
+        $('.radioSortOrder', this).on('click', function () {
+            query.StartIndex = 0;
+            query.SortOrder = this.getAttribute('data-sortorder');
+            reloadItems(page);
+        });
 
-		$('.chkStandardFilter', this).on('change', function () {
+        $('.chkStandardFilter', this).on('change', function () {
 
-			var filterName = this.getAttribute('data-filter');
-			var filters = query.Filters || "";
+            var filterName = this.getAttribute('data-filter');
+            var filters = query.Filters || "";
 
-			filters = (',' + filters).replace(',' + filterName, '').substring(1);
+            filters = (',' + filters).replace(',' + filterName, '').substring(1);
 
-			if (this.checked) {
-				filters = filters ? (filters + ',' + filterName) : filterName;
-			}
+            if (this.checked) {
+                filters = filters ? (filters + ',' + filterName) : filterName;
+            }
 
-			query.StartIndex = 0;
-			query.Filters = filters;
+            query.StartIndex = 0;
+            query.Filters = filters;
 
-			reloadItems(page);
-		});
+            reloadItems(page);
+        });
 
-		$('#selectView', this).on('change', function () {
+        $('#selectView', this).on('change', function () {
 
-			view = this.value;
+            view = this.value;
 
-			reloadItems(page);
-		});
+            reloadItems(page);
+        });
+
+        $('#chkTrailer', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasTrailer = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+
+        $('#chkThemeSong', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasThemeSong = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+
+        $('#chkThemeVideo', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasThemeVideo = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+
+    }).on('pagebeforeshow', "#gamesPage", function () {
+
+        reloadItems(this);
+
+    }).on('pageshow', "#gamesPage", function () {
 
 
-	}).on('pagebeforeshow', "#gamesPage", function () {
+        // Reset form values using the last used query
+        $('.radioSortBy', this).each(function () {
 
-			reloadItems(this);
+            this.checked = query.SortBy == this.getAttribute('data-sortby');
 
-		}).on('pageshow', "#gamesPage", function () {
+        }).checkboxradio('refresh');
 
+        $('.radioSortOrder', this).each(function () {
 
-			// Reset form values using the last used query
-			$('.radioSortBy', this).each(function () {
+            this.checked = query.SortOrder == this.getAttribute('data-sortorder');
 
-				this.checked = query.SortBy == this.getAttribute('data-sortby');
+        }).checkboxradio('refresh');
 
-			}).checkboxradio('refresh');
+        $('.chkStandardFilter', this).each(function () {
 
-			$('.radioSortOrder', this).each(function () {
+            var filters = "," + (query.Filters || "");
+            var filterName = this.getAttribute('data-filter');
 
-				this.checked = query.SortOrder == this.getAttribute('data-sortorder');
+            this.checked = filters.indexOf(',' + filterName) != -1;
 
-			}).checkboxradio('refresh');
-
-			$('.chkStandardFilter', this).each(function () {
-
-				var filters = "," + (query.Filters || "");
-				var filterName = this.getAttribute('data-filter');
-
-				this.checked = filters.indexOf(',' + filterName) != -1;
-
-			}).checkboxradio('refresh');
+        }).checkboxradio('refresh');
 
 
-			$('#selectView', this).val(view).selectmenu('refresh');
+        $('#selectView', this).val(view).selectmenu('refresh');
 
-		});
+        $('#chkTrailer', this).checked(query.HasTrailer == true).checkboxradio('refresh');
+        $('#chkThemeSong', this).checked(query.HasThemeSong == true).checkboxradio('refresh');
+        $('#chkThemeVideo', this).checked(query.HasThemeVideo == true).checkboxradio('refresh');
+    });
 
 })(jQuery, document);

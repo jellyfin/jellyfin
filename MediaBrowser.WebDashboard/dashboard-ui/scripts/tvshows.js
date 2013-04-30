@@ -138,6 +138,30 @@
             reloadItems(page);
         });
 
+        $('#chkTrailer', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasTrailer = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+
+        $('#chkThemeSong', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasThemeSong = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+
+        $('#chkThemeVideo', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasThemeVideo = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+
     }).on('pagebeforeshow', "#tvShowsPage", function () {
 
         reloadItems(this);
@@ -185,6 +209,10 @@
         }).checkboxradio('refresh');
 
         $('#selectView', this).val(view).selectmenu('refresh');
+
+        $('#chkTrailer', this).checked(query.HasTrailer == true).checkboxradio('refresh');
+        $('#chkThemeSong', this).checked(query.HasThemeSong == true).checkboxradio('refresh');
+        $('#chkThemeVideo', this).checked(query.HasThemeVideo == true).checkboxradio('refresh');
     });
 
 })(jQuery, document);
