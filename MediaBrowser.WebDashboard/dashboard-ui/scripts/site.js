@@ -1082,7 +1082,7 @@ $(function () {
 
     $(document.body).append(footerHtml);
 
-    if ($.browser.msie && parseInt($.browser.version) > 10) {
+    if ($.browser.msie && parseInt($.browser.version) < 10) {
         Dashboard.confirm("This is an unsupported version of Internet Explorer. Please consider upgrading to IE10.", "Unsupported Browser", function (result) {
 
             if (result) {
