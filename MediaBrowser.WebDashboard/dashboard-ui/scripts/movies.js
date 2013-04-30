@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = "Backdrop";
+    var view = "Poster";
 
     // The base query options
     var query = {

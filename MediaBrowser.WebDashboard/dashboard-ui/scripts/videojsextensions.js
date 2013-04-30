@@ -306,7 +306,7 @@ _V_.ResolutionMenuItem = _V_.MenuItem.extend({
 		resolutions['medium'] = new Array(750000, 128000, 1280, 720);
 		resolutions['low'] = new Array(200000, 128000, 720, 480);
 
-		var current_time = this.player.currentTime();
+		var currentTime = this.player.currentTime();
 
 		// Set the button text to the newly chosen quality
 		jQuery(this.player.controlBar.el).find('.vjs-quality-text').html(this.options.label);
@@ -321,11 +321,11 @@ _V_.ResolutionMenuItem = _V_.MenuItem.extend({
 		if (this.player.duration() == "Infinity") {
 			if (currentSrc.indexOf("StartTimeTicks") >= 0) {
 				var startTimeTicks = currentSrc.match(new RegExp("StartTimeTicks=[0-9]+", "g"));
-				var start_time = startTimeTicks[0].replace("StartTimeTicks=", "");
+				var startTime = startTimeTicks[0].replace("StartTimeTicks=", "");
 
-				newSrc += "&StartTimeTicks=" + Math.floor(parseInt(start_time) + (10000000 * current_time));
+				newSrc += "&StartTimeTicks=" + Math.floor(parseInt(startTime) + (10000000 * currentTime));
 			} else {
-				newSrc += "&StartTimeTicks=" + Math.floor(10000000 * current_time);
+				newSrc += "&StartTimeTicks=" + Math.floor(10000000 * currentTime);
 			}
 
 			this.player.src(newSrc).one('loadedmetadata', function () {
@@ -334,7 +334,7 @@ _V_.ResolutionMenuItem = _V_.MenuItem.extend({
 		} else {
 			newSrc += "&StartTimeTicks=0";
 			this.player.src(newSrc).one('loadedmetadata', function () {
-				this.currentTime(current_time);
+				this.currentTime(currentTime);
 				this.play();
 			});
 		}
@@ -444,13 +444,13 @@ _V_.ChapterSelector = _V_.Button.extend({
 
 		//find the current chapter and mark it active in the list
 		//need to determine current position plus the start point of the file to know where we are.
-		var current_time = this.player.currentTime();
+		var currentTime = this.player.currentTime();
 		var startTimeTicks = this.player.tag.src.match(new RegExp("StartTimeTicks=[0-9]+", "g"));
-		var now_ticks = Math.floor(parseInt(startTimeTicks[0].replace("StartTimeTicks=","")) + (10000000 * current_time));
+		var nowTicks = Math.floor(parseInt(startTimeTicks[0].replace("StartTimeTicks=","")) + (10000000 * currentTime));
 
 		var activeChapter;
 		this.each(this.Chapters, function (chapter) {
-			if (now_ticks > chapter[0].StartPositionTicks) {
+			if (nowTicks > chapter[0].StartPositionTicks) {
 				activeChapter = chapter[0];
 			}
 		});
@@ -510,13 +510,16 @@ _V_.ChapterMenuItem = _V_.MenuItem.extend({
 		// Set the button text to the newly chosen chapter
 		//jQuery( this.player.controlBar.el ).find( '.vjs-chapter-text' ).html( this.options.label );
 
-		if (this.player.duration() == "Infinity") {
+	    if (this.player.duration() == "Infinity") {
+	        
 			var currentSrc = this.player.tag.src;
 
+			var newSrc;
+		    
 			if (currentSrc.indexOf("StartTimeTicks") >= 0) {
-				var newSrc = currentSrc.replace(new RegExp("StartTimeTicks=[0-9]+", "g"), "StartTimeTicks=" + this.options.src[0].StartPositionTicks);
+				newSrc = currentSrc.replace(new RegExp("StartTimeTicks=[0-9]+", "g"), "StartTimeTicks=" + this.options.src[0].StartPositionTicks);
 			} else {
-				var newSrc = currentSrc += "&StartTimeTicks=" + this.options.src[0].StartPositionTicks;
+				newSrc = currentSrc += "&StartTimeTicks=" + this.options.src[0].StartPositionTicks;
 			}
 
 			this.player.src(newSrc).one('loadedmetadata', function () {
@@ -712,7 +715,7 @@ _V_.SubtitleMenuItem = _V_.MenuItem.extend({
 		if (this.options.label === this.player.options.currentSubtitle)
 			return;
 
-		var current_time = this.player.currentTime();
+		var currentTime = this.player.currentTime();
 
 		// Set the button text to the newly chosen subtitle
 		jQuery(this.player.controlBar.el).find('.vjs-quality-text').html(this.options.label);
@@ -731,9 +734,9 @@ _V_.SubtitleMenuItem = _V_.MenuItem.extend({
 				var startTimeTicks = currentSrc.match(new RegExp("StartTimeTicks=[0-9]+", "g"));
 				var start_time = startTimeTicks[0].replace("StartTimeTicks=", "");
 
-				newSrc += "&StartTimeTicks=" + Math.floor(parseInt(start_time) + (10000000 * current_time));
+				newSrc += "&StartTimeTicks=" + Math.floor(parseInt(start_time) + (10000000 * currentTime));
 			} else {
-				newSrc += "&StartTimeTicks=" + Math.floor(10000000 * current_time);
+				newSrc += "&StartTimeTicks=" + Math.floor(10000000 * currentTime);
 			}
 
 			this.player.src(newSrc).one('loadedmetadata', function () {
@@ -742,7 +745,7 @@ _V_.SubtitleMenuItem = _V_.MenuItem.extend({
 		} else {
 			newSrc += "&StartTimeTicks=0";
 			this.player.src(newSrc).one('loadedmetadata', function () {
-				this.currentTime(current_time);
+				this.currentTime(currentTime);
 				this.play();
 			});
 		}
@@ -773,7 +776,7 @@ _V_.SubtitleMenuItem = _V_.MenuItem.extend({
  */
 _V_.LanguageSelector = _V_.Button.extend({
 
-	kind: "language",
+	kind: "Audio",
 	className: "vjs-language-button",
 
 	init: function (player, options) {
@@ -914,9 +917,9 @@ _V_.LanguageMenuItem = _V_.MenuItem.extend({
 		if (this.player.duration() == "Infinity") {
 			if (currentSrc.indexOf("StartTimeTicks") >= 0) {
 				var startTimeTicks = currentSrc.match(new RegExp("StartTimeTicks=[0-9]+", "g"));
-				var start_time = startTimeTicks[0].replace("StartTimeTicks=", "");
+				var startTime = startTimeTicks[0].replace("StartTimeTicks=", "");
 
-				newSrc += "&StartTimeTicks=" + Math.floor(parseInt(start_time) + (10000000 * current_time));
+				newSrc += "&StartTimeTicks=" + Math.floor(parseInt(startTime) + (10000000 * current_time));
 			} else {
 				newSrc += "&StartTimeTicks=" + Math.floor(10000000 * current_time);
 			}

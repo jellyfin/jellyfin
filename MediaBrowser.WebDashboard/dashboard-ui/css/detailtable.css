@@ -40,7 +40,10 @@
     font-weight: normal;
     text-align: left;
     vertical-align: top;
-    white-space: nowrap;
+}
+
+.detailTable tr:hover {
+    background: #444;
 }
 
 .detailTable .imgUserItemRating {

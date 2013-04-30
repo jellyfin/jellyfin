@@ -181,12 +181,14 @@
 
                 var mp4VideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mp4', $.extend({}, baseParams, {
                     videoCodec: 'h264',
-                    audioCodec: 'aac'
+                    audioCodec: 'aac',
+                    profile: 'high'
                 }));
 
                 var tsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ts', $.extend({}, baseParams, {
                     videoCodec: 'h264',
-                    audioCodec: 'aac'
+                    audioCodec: 'aac',
+                    profile: 'high'
                 }));
 
                 var webmVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
@@ -207,14 +209,8 @@
                 // HLS must be at the top for safari
                 // Webm must be ahead of mp4 due to the issue of mp4 playing too fast in chrome
 
-                var mkvVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mkv', $.extend({}, baseParams, {
-                    videoCodec: 'h264',
-                    audioCodec: 'aac'
-                }));
-
                 (this).src([
                     { type: "application/x-mpegURL", src: hlsVideoUrl },
-	                { type: "video/x-matroska", src: mkvVideoUrl },
                     { type: "video/webm", src: webmVideoUrl },
                     { type: "video/mp4", src: mp4VideoUrl },
                     { type: "video/mp2t; codecs='h264, aac'", src: tsVideoUrl },
