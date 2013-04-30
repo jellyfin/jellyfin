@@ -237,7 +237,7 @@
 
                 html += '<tr>';
 
-                html += '<td><button type="button" data-role="none" style="border:0;padding:0;margin:0;background:none;" onclick="LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'Audio\');"><img src="css/images/media/playCircle.png" style="height: 16px;"></button></td>';
+                html += '<td><button class="btnPlay" type="button" data-role="none" onclick="LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'Audio\');"><img src="css/images/media/playCircle.png" style="height: 20px;"></button></td>';
 
                 var num = item.IndexNumber;
 

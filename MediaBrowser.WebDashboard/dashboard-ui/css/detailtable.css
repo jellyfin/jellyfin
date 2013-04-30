@@ -57,6 +57,18 @@
     display: none;
 }
 
+.detailTable .btnPlay {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background: none;
+    cursor: pointer;
+}
+
+    .detailTable .btnPlay:hover {
+        opacity: .6;
+    }
+
 @media all and (min-width: 750px) {
     .tabletColumn {
         display: table-cell;
