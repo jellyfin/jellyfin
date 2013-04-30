@@ -32,6 +32,9 @@ namespace MediaBrowser.Controller.Entities
             People = new List<PersonInfo>();
             CriticReviews = new List<ItemReview>();
             Taglines = new List<string>();
+            ScreenshotImagePaths = new List<string>();
+            BackdropImagePaths = new List<string>();
+            ProductionLocations = new List<string>();
         }
 
         /// <summary>
