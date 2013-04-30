@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -61,6 +62,14 @@ namespace MediaBrowser.Controller.Entities
             get
             {
                 return ShadowItem != null && ShadowItem.GroupInIndex;
+            }
+        }
+
+        public override LocationType LocationType
+        {
+            get
+            {
+                return LocationType.Virtual;
             }
         }
 
