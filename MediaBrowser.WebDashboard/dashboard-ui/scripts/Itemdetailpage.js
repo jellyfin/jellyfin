@@ -73,6 +73,8 @@
                 $('#btnQueueMenu', page).hide();
             }
 
+	        $(".autoNumeric").autoNumeric('init');
+
             Dashboard.hideLoadingMsg();
         });
     }
@@ -422,13 +424,13 @@
                 html += '<li><span class="mediaInfoLabel">Aspect Ratio</span> ' + stream.AspectRatio + '</li>';
             }
             if (stream.BitRate) {
-                html += '<li><span class="mediaInfoLabel">Bitrate</span> ' + stream.BitRate + '</li>';
+                html += '<li><span class="mediaInfoLabel">Bitrate</span> <span class="autoNumeric">' + stream.BitRate + '</span></li>';
             }
             if (stream.Channels) {
                 html += '<li><span class="mediaInfoLabel">Channels</span> ' + stream.Channels + '</li>';
             }
             if (stream.SampleRate) {
-                html += '<li><span class="mediaInfoLabel">Sample Rate</span> ' + stream.SampleRate + '</li>';
+                html += '<li><span class="mediaInfoLabel">Sample Rate</span> <span class="autoNumeric">' + stream.SampleRate + '</span></li>';
             }
 
             var framerate = stream.AverageFrameRate || stream.RealFrameRate;
