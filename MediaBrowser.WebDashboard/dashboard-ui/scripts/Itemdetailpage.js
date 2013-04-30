@@ -61,16 +61,11 @@
             renderDetails(page, item, context);
 
             if (MediaPlayer.canPlay(item)) {
-                $('#btnPlayMenu', page).show();
+                $('#btnPlay', page).show();
                 $('#playButtonShadow', page).show();
-                if (MediaPlayer.isPlaying())
-                    $('#btnQueueMenu', page).show();
-                else
-                    $('#btnQueueMenu', page).hide();
             } else {
-                $('#btnPlayMenu', page).hide();
+                $('#btnPlay', page).hide();
                 $('#playButtonShadow', page).hide();
-                $('#btnQueueMenu', page).hide();
             }
 
 	        $(".autoNumeric").autoNumeric('init');
@@ -552,54 +547,9 @@
 
         var page = this;
 
-        $('#btnPlayMenu', page).on('click', function () {
-
-            var userdata = currentItem.UserData || {};
-
-            if (userdata.PlaybackPositionTicks) {
-
-                var pos = $('#playMenuAnchor', page).offset();
-
-                $('#playMenu', page).popup("open", {
-                    x: pos.left + 125,
-                    y: pos.top + 20
-                });
-
-            }
-            else {
-                play();
-            }
-        });
-
-        $('#btnQueueMenu', page).on('click', function () {
-            var pos = $('#queueMenuAnchor', page).offset();
-
-            $('#queueMenu', page).popup("open", {
-                x: pos.left + 165,
-                y: pos.top + 20
-            });
-        });
-
-
         $('#btnPlay', page).on('click', function () {
-
-            $('#playMenu', page).popup("close");
-            play();
-        });
-
-        $('#btnResume', page).on('click', function () {
-
-            $('#playMenu', page).popup("close");
-
             var userdata = currentItem.UserData || {};
-
-            play(userdata.PlaybackPositionTicks);
-        });
-
-        $('#btnQueue', page).on('click', function () {
-
-            $('#queueMenu', page).popup("close");
-            Playlist.add(currentItem);
+            LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.MediaType, userdata.PlaybackPositionTicks);
         });
 
     }).on('pageshow', "#itemDetailPage", function () {

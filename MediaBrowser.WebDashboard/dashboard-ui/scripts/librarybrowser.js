@@ -303,7 +303,7 @@
             html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
 
             if (resumePositionTicks) {
-                html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\', resumePositionTicks);LibraryBrowser.closePlayMenu();">Play</a></li>';
+                html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\', ' + resumePositionTicks + ');LibraryBrowser.closePlayMenu();">Resume</a></li>';
             }
 
             if (isPlaying && MediaPlayer.canQueue(mediaType)) {
@@ -321,7 +321,7 @@
 
                 $(this).off("popupafterclose").remove();
 
-            }).parents(".ui-popup-container").css("margin-left", 100);
+            }).parents(".ui-popup-container").css("margin-left", 110).css("margin-top", 50);
         },
 
         closePlayMenu: function () {
