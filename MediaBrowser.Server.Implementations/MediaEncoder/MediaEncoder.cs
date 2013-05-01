@@ -554,6 +554,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 throw new ArgumentNullException("outputPath");
             }
 
+            var offsetParam = offset.Ticks > 0 ? "-ss " + offset.TotalSeconds + " " : string.Empty;
+            
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo
@@ -564,7 +566,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     FileName = FFMpegPath,
-                    Arguments = string.Format("-i \"{0}\" \"{1}\"", inputPath, outputPath),
+                    Arguments = string.Format("{0}-i \"{1}\" \"{2}\"", offsetParam, inputPath, outputPath),
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false
                 }
@@ -593,7 +595,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 throw;
             }
 
-            process.StandardError.BaseStream.CopyToAsync(logFileStream);
+            var logTask = process.StandardError.BaseStream.CopyToAsync(logFileStream);
 
             var ranToCompletion = process.WaitForExit(60000);
 
@@ -606,6 +608,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                     process.Kill();
 
                     process.WaitForExit(1000);
+
+                    await logTask.ConfigureAwait(false);
                 }
                 catch (Win32Exception ex)
                 {
@@ -621,6 +625,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 }
                 finally
                 {
+
                     logFileStream.Dispose();
                     _subtitleExtractionResourcePool.Release();
                 }
