@@ -9,14 +9,15 @@ function parse_src_url(url) {
 	array['Type'] = parts[len - 2];
 	array['item_id'] = parts[len - 1];
 
-	for (i = 0; i < query.length; i++) {
-		if (i == 0) {
-			var pairs = query[i].split(".");
-		} else {
-			var pairs = query[i].split("=");
-		}
+	for (var i = 0; i < query.length; i++) {
+	    var pairs;
+	    if (i == 0) {
+	        pairs = query[i].split(".");
+	    } else {
+	        pairs = query[i].split("=");
+	    }
 
-		array[pairs[0]] = pairs[1];
+	    array[pairs[0]] = pairs[1];
 	}
 
 	return array;
@@ -527,9 +528,9 @@ _V_.ChapterMenuItem = _V_.MenuItem.extend({
 			});
 		} else {
 			//figure out the time from ticks
-			var current_time = parseFloat(this.options.src[0].StartPositionTicks) / 10000000;
+			var currentTime = parseFloat(this.options.src[0].StartPositionTicks) / 10000000;
 
-			this.player.currentTime(current_time);
+			this.player.currentTime(currentTime);
 		}
 
 		// Save the newly selected chapter in our player options property
@@ -732,9 +733,9 @@ _V_.SubtitleMenuItem = _V_.MenuItem.extend({
 		if (this.player.duration() == "Infinity") {
 			if (currentSrc.indexOf("StartTimeTicks") >= 0) {
 				var startTimeTicks = currentSrc.match(new RegExp("StartTimeTicks=[0-9]+", "g"));
-				var start_time = startTimeTicks[0].replace("StartTimeTicks=", "");
+				var startTime = startTimeTicks[0].replace("StartTimeTicks=", "");
 
-				newSrc += "&StartTimeTicks=" + Math.floor(parseInt(start_time) + (10000000 * currentTime));
+				newSrc += "&StartTimeTicks=" + Math.floor(parseInt(startTime) + (10000000 * currentTime));
 			} else {
 				newSrc += "&StartTimeTicks=" + Math.floor(10000000 * currentTime);
 			}
