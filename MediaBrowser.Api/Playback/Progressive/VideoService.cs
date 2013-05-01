@@ -108,10 +108,11 @@ namespace MediaBrowser.Api.Playback.Progressive
                 format = " -f mp4 -movflags frag_keyframe+empty_moov";
             }
 
-            var threads = videoCodec.Equals("libvpx", StringComparison.OrdinalIgnoreCase) ? 2 : 0;
+            var threads = 0;
 
-            return string.Format("{0} {1} -i {2}{3}{4} {5} {6} -threads {7} {8}{9} \"{10}\"",
+            return string.Format("{0} {1} {2} -i {3}{4}{5} {6} {7} -threads {8} {9}{10} \"{11}\"",
                 probeSize,
+                GetUserAgentParam(state.Item),
                 GetFastSeekCommandLineParameter(state.Request),
                 GetInputArgument(video, state.IsoMount),
                 GetSlowSeekCommandLineParameter(state.Request),
@@ -139,7 +140,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             // See if we can save come cpu cycles by avoiding encoding
             if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
-                return IsH264(state.VideoStream) ? args + " -bsf h264_mp4toannexb" : args;
+                return state.VideoStream != null && IsH264(state.VideoStream) ? args + " -bsf h264_mp4toannexb" : args;
             }
 
             const string keyFrameArg = " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,0),gte(t,prev_forced_t+2))";

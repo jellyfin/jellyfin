@@ -99,6 +99,10 @@ namespace MediaBrowser.Common.MediaInfo
         /// <summary>
         /// The DVD
         /// </summary>
-        Dvd
+        Dvd,
+        /// <summary>
+        /// The URL
+        /// </summary>
+        Url
     }
 }

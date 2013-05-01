@@ -194,8 +194,9 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var probeSize = GetProbeSizeArgument(state.Item);
 
-            return string.Format("{0} {1} -i {2}{3} -threads 0 {4} {5} {6} -f ssegment -segment_list_flags +live -segment_time 10 -segment_list \"{7}\" \"{8}\"",
+            return string.Format("{0} {1} {2} -i {3}{4} -threads 0 {5} {6} {7} -f ssegment -segment_list_flags +live -segment_time 10 -segment_list \"{8}\" \"{9}\"",
                 probeSize,
+                GetUserAgentParam(state.Item),
                 GetFastSeekCommandLineParameter(state.Request),
                 GetInputArgument(state.Item, state.IsoMount),
                 GetSlowSeekCommandLineParameter(state.Request),
