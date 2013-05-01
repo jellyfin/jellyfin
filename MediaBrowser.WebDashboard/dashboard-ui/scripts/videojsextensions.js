@@ -519,7 +519,7 @@ _V_.ChapterMenuItem = _V_.MenuItem.extend({
 			if (currentSrc.indexOf("StartTimeTicks") >= 0) {
 				newSrc = currentSrc.replace(new RegExp("StartTimeTicks=[0-9]+", "g"), "StartTimeTicks=" + this.options.src[0].StartPositionTicks);
 			} else {
-				newSrc = currentSrc += "&StartTimeTicks=" + this.options.src[0].StartPositionTicks;
+				newSrc = currentSrc + "&StartTimeTicks=" + this.options.src[0].StartPositionTicks;
 			}
 
 			this.player.src(newSrc).one('loadedmetadata', function () {
@@ -906,6 +906,7 @@ _V_.LanguageMenuItem = _V_.MenuItem.extend({
 			return;
 
 		// Change the source and make sure we don't start the video over
+		var currentTime = this.player.currentTime();
 		var currentSrc = this.player.tag.src;
 		var src = parse_src_url(currentSrc);
 
@@ -919,9 +920,9 @@ _V_.LanguageMenuItem = _V_.MenuItem.extend({
 				var startTimeTicks = currentSrc.match(new RegExp("StartTimeTicks=[0-9]+", "g"));
 				var startTime = startTimeTicks[0].replace("StartTimeTicks=", "");
 
-				newSrc += "&StartTimeTicks=" + Math.floor(parseInt(startTime) + (10000000 * current_time));
+				newSrc += "&StartTimeTicks=" + Math.floor(parseInt(startTime) + (10000000 * currentTime));
 			} else {
-				newSrc += "&StartTimeTicks=" + Math.floor(10000000 * current_time);
+				newSrc += "&StartTimeTicks=" + Math.floor(10000000 * currentTime);
 			}
 
 			this.player.src(newSrc).one('loadedmetadata', function () {
@@ -930,7 +931,7 @@ _V_.LanguageMenuItem = _V_.MenuItem.extend({
 		} else {
 			newSrc += "&StartTimeTicks=0";
 			this.player.src(newSrc).one('loadedmetadata', function () {
-				this.currentTime(current_time);
+				this.currentTime(currentTime);
 				this.play();
 			});
 		}
