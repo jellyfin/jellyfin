@@ -265,7 +265,7 @@ namespace MediaBrowser.Controller.Providers.TV
                     var directors = doc.SafeGetString("//Director");
                     if (directors != null)
                     {
-                        foreach (var person in actors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = PersonType.Director, Name = str }))
+                        foreach (var person in directors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = PersonType.Director, Name = str }))
                         {
                             episode.AddPerson(person);
                         }
@@ -275,7 +275,7 @@ namespace MediaBrowser.Controller.Providers.TV
                     var writers = doc.SafeGetString("//Writer");
                     if (writers != null)
                     {
-                        foreach (var person in actors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = PersonType.Writer, Name = str }))
+                        foreach (var person in writers.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = PersonType.Writer, Name = str }))
                         {
                             episode.AddPerson(person);
                         }
