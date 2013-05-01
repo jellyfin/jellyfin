@@ -36,8 +36,10 @@
         $('#chkDownloadArtistBackdrops', page).checked(config.DownloadMusicArtistImages.Backdrops).checkboxradio("refresh");
         $('#chkDownloadArtistLogo', page).checked(config.DownloadMusicArtistImages.Logo).checkboxradio("refresh");
         $('#chkDownloadArtistBanner', page).checked(config.DownloadMusicArtistImages.Banner).checkboxradio("refresh");
+
         $('#chkDownloadAlbumPrimary', page).checked(config.DownloadMusicAlbumImages.Primary).checkboxradio("refresh");
         $('#chkDownloadAlbumBackdrops', page).checked(config.DownloadMusicAlbumImages.Backdrops).checkboxradio("refresh");
+        $('#chkMusicAlbumDisc', page).checked(config.DownloadMusicAlbumImages.Disc).checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
     },
@@ -72,8 +74,10 @@
             config.DownloadMusicArtistImages.Logo = $('#chkDownloadArtistLogo', form).checked();
             config.DownloadMusicArtistImages.Thumb = $('#chkDownloadArtistThumb', form).checked();
             config.DownloadMusicArtistImages.Banner = $('#chkDownloadArtistBanner', form).checked();
+
             config.DownloadMusicAlbumImages.Primary = $('#chkDownloadAlbumPrimary', form).checked();
             config.DownloadMusicAlbumImages.Backdrops = $('#chkDownloadAlbumBackdrops', form).checked();
+            config.DownloadMusicAlbumImages.Disc = $('#chkMusicAlbumDisc', form).checked();
 
             ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
         });
