@@ -166,6 +166,11 @@ namespace MediaBrowser.Api.Playback
         {
             var args = string.Empty;
 
+            if (state.Item.LocationType == LocationType.Remote)
+            {
+                return string.Empty;
+            }
+
             if (state.VideoStream != null)
             {
                 args += string.Format("-map 0:{0}", state.VideoStream.Index);
@@ -179,6 +184,7 @@ namespace MediaBrowser.Api.Playback
             {
                 args += string.Format(" -map 0:{0}", state.AudioStream.Index);
             }
+
             else
             {
                 args += " -map -0:a";
@@ -268,8 +274,20 @@ namespace MediaBrowser.Api.Playback
             // Need to perform calculations manually
 
             // Try to account for bad media info
-            var currentHeight = state.VideoStream.Height ?? request.MaxHeight ?? request.Height ?? 0;
-            var currentWidth = state.VideoStream.Width ?? request.MaxWidth ?? request.Width ?? 0;
+            var currentHeight = request.MaxHeight ?? request.Height ?? 0;
+            var currentWidth = request.MaxWidth ?? request.Width ?? 0;
+
+            if (state.VideoStream != null)
+            {
+                if (state.VideoStream.Height.HasValue)
+                {
+                    currentHeight = state.VideoStream.Height.Value;
+                }
+                if (state.VideoStream.Width.HasValue)
+                {
+                    currentWidth = state.VideoStream.Width.Value;
+                }
+            }
 
             var outputSize = DrawingUtils.Resize(currentWidth, currentHeight, request.Width, request.Height, request.MaxWidth, request.MaxHeight);
 
@@ -604,6 +622,21 @@ namespace MediaBrowser.Api.Playback
         }
 
         /// <summary>
+        /// Gets the user agent param.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>System.String.</returns>
+        protected string GetUserAgentParam(BaseItem item)
+        {
+            if (item.Path.IndexOf("apple.com", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                return "-user-agent \"QuickTime/7.6.2\"";
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Processes the exited.
         /// </summary>
         /// <param name="process">The process.</param>
@@ -703,7 +736,6 @@ namespace MediaBrowser.Api.Playback
             {
                 state.AudioStream = GetMediaStream(media.MediaStreams, null, MediaStreamType.Audio, true);
             }
-
 
             return state;
         }

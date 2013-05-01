@@ -47,6 +47,14 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
                         }
                     }
                     break;
+                case VideoType.VideoFile:
+                    {
+                        if (video.LocationType == LocationType.Remote)
+                        {
+                            type = InputType.Url;
+                        }
+                        break;
+                    }
             }
 
             return inputPath;

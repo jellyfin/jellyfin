@@ -310,11 +310,26 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 case InputType.Bluray:
                     inputPath = GetBlurayInputArgument(inputFiles[0]);
                     break;
+                case InputType.Url:
+                    inputPath = GetHttpInputArgument(inputFiles);
+                    break;
                 default:
                     throw new ArgumentException("Unrecognized InputType");
             }
 
             return inputPath;
+        }
+
+        /// <summary>
+        /// Gets the HTTP input argument.
+        /// </summary>
+        /// <param name="inputFiles">The input files.</param>
+        /// <returns>System.String.</returns>
+        private string GetHttpInputArgument(string[] inputFiles)
+        {
+            var url = inputFiles[0];
+
+            return string.Format("\"{0}\"", url);
         }
 
         /// <summary>
@@ -1005,7 +1020,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>System.String.</returns>
-        public string GetFileInputArgument(string path)
+        private string GetFileInputArgument(string path)
         {
             return string.Format("file:\"{0}\"", path);
         }
@@ -1015,7 +1030,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// </summary>
         /// <param name="playableStreamFiles">The playable stream files.</param>
         /// <returns>System.String.</returns>
-        public string GetConcatInputArgument(string[] playableStreamFiles)
+        private string GetConcatInputArgument(string[] playableStreamFiles)
         {
             // Get all streams
             // If there's more than one we'll need to use the concat command
@@ -1027,7 +1042,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             }
 
             // Determine the input path for video files
-            return string.Format("file:\"{0}\"", playableStreamFiles[0]);
+            return GetFileInputArgument(playableStreamFiles[0]);
         }
 
         /// <summary>
@@ -1035,7 +1050,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// </summary>
         /// <param name="blurayRoot">The bluray root.</param>
         /// <returns>System.String.</returns>
-        public string GetBlurayInputArgument(string blurayRoot)
+        private string GetBlurayInputArgument(string blurayRoot)
         {
             return string.Format("bluray:\"{0}\"", blurayRoot);
         }
