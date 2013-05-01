@@ -31,6 +31,22 @@ namespace MediaBrowser.Controller.Providers.Music
             return item is MusicAlbum;
         }
 
+        protected override bool RefreshOnVersionChange
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        protected override string ProviderVersion
+        {
+            get
+            {
+                return "20130501.5";
+            }
+        }
+
         /// <summary>
         /// Needses the refresh internal.
         /// </summary>
@@ -55,8 +71,6 @@ namespace MediaBrowser.Controller.Providers.Music
 
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            var mbid = item.GetProviderId(MetadataProviders.Musicbrainz);
-
             cancellationToken.ThrowIfCancellationRequested();
 
             var url = string.Format("http://api.fanart.tv/webservice/album/{0}/{1}/xml/all/1/1", APIKey, item.GetProviderId(MetadataProviders.Musicbrainz));
@@ -80,7 +94,7 @@ namespace MediaBrowser.Controller.Providers.Music
             {
                 if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Disc && !item.ResolveArgs.ContainsMetaFileByName(DISC_FILE))
                 {
-                    var node = doc.SelectSingleNode("//fanart/music/albums/album//cdart/@url");
+                    var node = doc.SelectSingleNode("//fanart/music/albums/album/cdart/@url");
 
                     var path = node != null ? node.Value : null;
 
@@ -103,7 +117,7 @@ namespace MediaBrowser.Controller.Providers.Music
 
                 if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Primary && !item.ResolveArgs.ContainsMetaFileByName(PRIMARY_FILE))
                 {
-                    var node = doc.SelectSingleNode("//fanart/music/albums/album//albumcover/@url");
+                    var node = doc.SelectSingleNode("//fanart/music/albums/album/albumcover/@url");
 
                     var path = node != null ? node.Value : null;
 

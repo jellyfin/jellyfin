@@ -638,7 +638,7 @@ namespace MediaBrowser.Api.Playback
 
             ApiEntryPoint.Instance.OnTranscodingFinished(outputFilePath, TranscodingJobType);
 
-            if (!exitCode.HasValue || exitCode.Value != 0 || state.Item is Video)
+            if (!exitCode.HasValue || exitCode.Value != 0)
             {
                 Logger.Info("Deleting partial stream file(s) {0}", outputFilePath);
 
