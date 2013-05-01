@@ -19,7 +19,7 @@
             if (item.IndexNumber != null) {
                 name = item.IndexNumber + " - " + name;
             }
-            if (item.ParentIndexNumber != null) {
+            if (item.ParentIndexNumber != null && item.Type != "Episode") {
                 name = item.ParentIndexNumber + "." + name;
             }
 
@@ -30,30 +30,41 @@
             $('#itemName', page).html(name);
 
             if (item.AlbumArtist && item.Type == "Audio") {
-                $('#albumArtist', page).html('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>').show().trigger('create');
+                $('#grandParentName', page).html('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>').show().trigger('create');
+            }
+            else if (item.AlbumArtist && item.Type == "MusicAlbum") {
+                $('#grandParentName', page).html('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>').show().trigger('create');
+            }
+            else if (item.SeriesName && item.Type == "Episode") {
+
+                $('#grandParentName', page).html('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>').show().trigger('create');
             }
             else {
-                $('#albumArtist', page).hide();
+                $('#grandParentName', page).hide();
             }
 
-            if (item.SeriesName) {
+            if (item.SeriesName && item.Type == "Season") {
 
-                $('#seriesName', page).html('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>').show().trigger('create');
+                $('#parentName', page).html('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>').show().trigger('create');
+            }
+            else if (item.ParentIndexNumber && item.Type == "Episode") {
+
+                $('#parentName', page).html('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.ParentId + '">Season ' + item.ParentIndexNumber + '</a>').show().trigger('create');
             }
             else if (item.Album && item.Type == "Audio" && item.ParentId) {
-                $('#seriesName', page).html('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.ParentId + '">' + item.Album + '</a>').show().trigger('create');
+                $('#parentName', page).html('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.ParentId + '">' + item.Album + '</a>').show().trigger('create');
 
             }
             else if (item.AlbumArtist && item.Type == "MusicAlbum") {
-                $('#albumArtist', page).html('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>').show().trigger('create');
+                $('#grandParentName', page).html('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>').show().trigger('create');
 
             }
             else if (item.Album) {
-                $('#seriesName', page).html(item.Album).show();
+                $('#parentName', page).html(item.Album).show();
 
             }
             else {
-                $('#seriesName', page).hide();
+                $('#parentName', page).hide();
             }
 
             var context = getContext(item);
@@ -68,7 +79,7 @@
                 $('#playButtonShadow', page).hide();
             }
 
-	        $(".autoNumeric").autoNumeric('init');
+            $(".autoNumeric").autoNumeric('init');
 
             Dashboard.hideLoadingMsg();
         });

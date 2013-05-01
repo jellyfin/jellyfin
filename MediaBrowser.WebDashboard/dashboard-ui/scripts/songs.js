@@ -3,7 +3,7 @@
     // The base query options
     var query = {
 
-        SortBy: "Artist,Album,SortName",
+        SortBy: "Album,SortName",
         SortOrder: "Ascending",
         IncludeItemTypes: "Audio",
         Recursive: true,

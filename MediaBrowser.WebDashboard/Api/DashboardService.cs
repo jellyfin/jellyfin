@@ -101,7 +101,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         /// <value>The request context.</value>
         public IRequestContext RequestContext { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the task manager.
         /// </summary>
@@ -122,6 +122,9 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
+        /// <summary>
+        /// The _server configuration manager
+        /// </summary>
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
@@ -490,6 +493,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "supporterkeypage.js",
                                       "supporterpage.js",
                                       "tvgenres.js",
+                                      "tvnextup.js",
                                       "tvpeople.js",
                                       "tvrecommended.js",
                                       "tvshows.js",
@@ -546,7 +550,7 @@ namespace MediaBrowser.WebDashboard.Api
             memoryStream.Position = 0;
             return memoryStream;
         }
-        
+
         /// <summary>
         /// Appends the resource.
         /// </summary>

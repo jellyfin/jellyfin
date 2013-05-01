@@ -88,6 +88,7 @@
     <Compile Include="ApiEntryPoint.cs" />
     <Compile Include="SearchService.cs" />
     <Compile Include="SystemService.cs" />
+    <Compile Include="TvShowsService.cs" />
     <Compile Include="UserLibrary\ArtistsService.cs" />
     <Compile Include="UserLibrary\BaseItemsByNameService.cs" />
     <Compile Include="UserLibrary\BaseItemsRequest.cs" />
