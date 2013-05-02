@@ -35,6 +35,8 @@ namespace MediaBrowser.Controller.Entities
             ScreenshotImagePaths = new List<string>();
             BackdropImagePaths = new List<string>();
             ProductionLocations = new List<string>();
+            Images = new Dictionary<ImageType, string>();
+            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -977,10 +979,10 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public virtual void ClearMetaValues()
         {
-            Images = null;
+            Images.Clear();
             ForcedSortName = null;
             PremiereDate = null;
-            BackdropImagePaths = null;
+            BackdropImagePaths.Clear();
             OfficialRating = null;
             CustomRating = null;
             Overview = null;
@@ -992,7 +994,7 @@ namespace MediaBrowser.Controller.Entities
             RunTimeTicks = null;
             AspectRatio = null;
             ProductionYear = null;
-            ProviderIds = null;
+            ProviderIds.Clear();
             DisplayMediaType = GetType().Name;
             ResolveArgs = null;
         }
@@ -1465,12 +1467,6 @@ namespace MediaBrowser.Controller.Entities
             }
             else
             {
-                // Ensure it exists
-                if (Images == null)
-                {
-                    Images = new Dictionary<ImageType, string>();
-                }
-
                 Images[typeKey] = path;
             }
         }

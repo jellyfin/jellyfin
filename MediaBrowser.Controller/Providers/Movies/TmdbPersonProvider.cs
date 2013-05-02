@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <summary>
         /// The meta file name
         /// </summary>
-        protected const string MetaFileName = "mbperson.js";
+        protected const string MetaFileName = "mbperson.json";
 
         protected readonly IProviderManager ProviderManager;
         

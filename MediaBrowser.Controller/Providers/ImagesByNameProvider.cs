@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Logging;
@@ -52,7 +53,7 @@ namespace MediaBrowser.Controller.Providers
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
             // Force a refresh if the IBN path changed
-            if (!string.Equals(providerInfo.CustomData, ConfigurationManager.ApplicationPaths.ItemsByNamePath, StringComparison.OrdinalIgnoreCase))
+            if (providerInfo.Data != ConfigurationManager.ApplicationPaths.ItemsByNamePath.GetMD5())
             {
                 return true;
             }
@@ -120,7 +121,7 @@ namespace MediaBrowser.Controller.Providers
 
             if (item.ProviderData.TryGetValue(Id, out data))
             {
-                data.CustomData = ConfigurationManager.ApplicationPaths.ItemsByNamePath;
+                data.Data = ConfigurationManager.ApplicationPaths.ItemsByNamePath.GetMD5();
             }
 
             return result;
