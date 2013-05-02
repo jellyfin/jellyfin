@@ -518,6 +518,8 @@ namespace MediaBrowser.Server.Implementations.Library
             // Add in the plug-in folders
             foreach (var child in PluginFolderCreators)
             {
+                var folder = child.GetFolder();
+
                 rootFolder.AddVirtualChild(child.GetFolder());
             }
 

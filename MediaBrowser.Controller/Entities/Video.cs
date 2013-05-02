@@ -11,6 +11,13 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Video : BaseItem, IHasMediaStreams
     {
+        public Video()
+        {
+            MediaStreams = new List<MediaStream>();
+            Chapters = new List<ChapterInfo>();
+            PlayableStreamFileNames = new List<string>();
+        }
+
         /// <summary>
         /// Gets or sets the type of the video.
         /// </summary>

@@ -264,30 +264,24 @@ namespace MediaBrowser.Api.Playback
             }
 
             // If a max width was requested
-            if (request.MaxWidth.HasValue && !request.MaxHeight.HasValue)
+            if (request.MaxWidth.HasValue && (!request.MaxHeight.HasValue || state.VideoStream == null))
             {
                 return isH264Output ?
                     string.Format(" -vf \"scale=min(iw\\,{0}):trunc(ow/a/2)*2{1}\"", request.MaxWidth.Value, assSubtitleParam) :
                     string.Format(" -vf \"scale=min(iw\\,{0}):-1{1}\"", request.MaxWidth.Value, assSubtitleParam);
             }
 
+            if (state.VideoStream == null)
+            {
+                // No way to figure this out
+                return string.Empty;
+            }
+
             // Need to perform calculations manually
 
             // Try to account for bad media info
-            var currentHeight = request.MaxHeight ?? request.Height ?? 0;
-            var currentWidth = request.MaxWidth ?? request.Width ?? 0;
-
-            if (state.VideoStream != null)
-            {
-                if (state.VideoStream.Height.HasValue)
-                {
-                    currentHeight = state.VideoStream.Height.Value;
-                }
-                if (state.VideoStream.Width.HasValue)
-                {
-                    currentWidth = state.VideoStream.Width.Value;
-                }
-            }
+            var currentHeight = state.VideoStream.Height ?? request.MaxHeight ?? request.Height ?? 0;
+            var currentWidth = state.VideoStream.Width ?? request.MaxWidth ?? request.Width ?? 0;
 
             var outputSize = DrawingUtils.Resize(currentWidth, currentHeight, request.Width, request.Height, request.MaxWidth, request.MaxHeight);
 
