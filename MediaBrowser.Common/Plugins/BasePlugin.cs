@@ -253,6 +253,8 @@ namespace MediaBrowser.Common.Plugins
         {
             ApplicationPaths = applicationPaths;
             XmlSerializer = xmlSerializer;
+
+            IsFirstRun = !File.Exists(ConfigurationFilePath);
         }
 
         /// <summary>
