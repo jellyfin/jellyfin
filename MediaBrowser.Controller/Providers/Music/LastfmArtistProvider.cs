@@ -47,9 +47,11 @@ namespace MediaBrowser.Controller.Providers.Music
                 throw;
             }
 
-            if (searchResult != null && searchResult.results != null && searchResult.results.artistmatches != null && searchResult.results.artistmatches.artist.Any())
+            if (searchResult != null && searchResult.results != null && searchResult.results.artistmatches != null && searchResult.results.artistmatches.artist.Count > 0)
             {
-                return searchResult.results.artistmatches.artist.First().mbid;
+                var artist = searchResult.results.artistmatches.artist.FirstOrDefault(i => string.Equals(i.name, item.Name, System.StringComparison.OrdinalIgnoreCase));
+
+                return artist != null ? artist.mbid : searchResult.results.artistmatches.artist[0].mbid;
             }
 
             return null;
