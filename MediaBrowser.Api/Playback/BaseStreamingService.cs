@@ -635,7 +635,7 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="process">The process.</param>
         /// <param name="state">The state.</param>
-        protected void OnFfMpegProcessExited(Process process, StreamState state)
+        protected async void OnFfMpegProcessExited(Process process, StreamState state)
         {
             if (state.IsoMount != null)
             {
@@ -666,6 +666,8 @@ namespace MediaBrowser.Api.Playback
             if (!exitCode.HasValue || exitCode.Value != 0)
             {
                 Logger.Info("Deleting partial stream file(s) {0}", outputFilePath);
+
+                await Task.Delay(1000).ConfigureAwait(false);
 
                 try
                 {

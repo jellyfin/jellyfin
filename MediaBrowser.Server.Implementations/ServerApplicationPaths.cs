@@ -132,6 +132,7 @@ namespace MediaBrowser.Server.Implementations
                 _musicArtistsPath = null;
                 _generalPath = null;
                 _ratingsPath = null;
+                _mediaInfoImagesPath = null;
             }
         }
 
@@ -282,6 +283,31 @@ namespace MediaBrowser.Server.Implementations
                 }
 
                 return _ratingsPath;
+            }
+        }
+
+        /// <summary>
+        /// The _media info images path
+        /// </summary>
+        private string _mediaInfoImagesPath;
+        /// <summary>
+        /// Gets the media info images path.
+        /// </summary>
+        /// <value>The media info images path.</value>
+        public string MediaInfoImagesPath
+        {
+            get
+            {
+                if (_mediaInfoImagesPath == null)
+                {
+                    _mediaInfoImagesPath = Path.Combine(ItemsByNamePath, "MediaInfo");
+                    if (!Directory.Exists(_mediaInfoImagesPath))
+                    {
+                        Directory.CreateDirectory(_mediaInfoImagesPath);
+                    }
+                }
+
+                return _mediaInfoImagesPath;
             }
         }
 
