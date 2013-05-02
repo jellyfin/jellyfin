@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller;
 using ServiceStack.ServiceHost;
 using System.IO;
 
@@ -22,7 +23,7 @@ namespace MediaBrowser.Api.Images
     /// <summary>
     /// Class GetRatingImage
     /// </summary>
-    [Route("/Images/{Theme}/Ratings/{Name}", "GET")]
+    [Route("/Images/Ratings/{Theme}/{Name}", "GET")]
     [Api(Description = "Gets a rating image by name")]
     public class GetRatingImage : ImageRequest
     {
@@ -44,7 +45,7 @@ namespace MediaBrowser.Api.Images
     /// <summary>
     /// Class GetMediaInfoImage
     /// </summary>
-    [Route("/Images/{Theme}/MediaInfo/{Name}", "GET")]
+    [Route("/Images/MediaInfo/{Theme}/{Name}", "GET")]
     [Api(Description = "Gets a media info image by name")]
     public class GetMediaInfoImage : ImageRequest
     {
@@ -101,9 +102,45 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetRatingImage request)
         {
-            var file = Path.Combine(_appPaths.GeneralPath, request.Theme);
-            
-            return GetImageByName(_appPaths.RatingsPath, request.Name);
+            var themeFolder = Path.Combine(_appPaths.RatingsPath, request.Theme);
+
+            if (Directory.Exists(themeFolder))
+            {
+                var file = Path.Combine(themeFolder, request.Name + ".png");
+
+                if (File.Exists(file))
+                {
+                    return ToStaticFileResult(file);
+                }
+
+                file = Path.Combine(themeFolder, request.Name + ".jpg");
+
+                if (File.Exists(file))
+                {
+                    return ToStaticFileResult(file);
+                }
+            }
+
+            var allFolder = Path.Combine(_appPaths.RatingsPath, "all");
+
+            if (Directory.Exists(allFolder))
+            {
+                var file = Path.Combine(allFolder, request.Name + ".png");
+
+                if (File.Exists(file))
+                {
+                    return ToStaticFileResult(file);
+                }
+
+                file = Path.Combine(allFolder, request.Name + ".jpg");
+
+                if (File.Exists(file))
+                {
+                    return ToStaticFileResult(file);
+                }
+            }
+
+            throw new ResourceNotFoundException("MediaInfo image not found: " + request.Name);
         }
 
         /// <summary>
@@ -113,20 +150,45 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetMediaInfoImage request)
         {
-            return GetImageByName(_appPaths.MediaInfoImagesPath, request.Name);
-        }
+            var themeFolder = Path.Combine(_appPaths.MediaInfoImagesPath, request.Theme);
 
-        /// <summary>
-        /// Gets the name of the image by.
-        /// </summary>
-        /// <param name="directory">The directory.</param>
-        /// <param name="name">The name.</param>
-        /// <returns>System.Object.</returns>
-        private object GetImageByName(string directory, string name)
-        {
-            var file = Path.Combine(directory, name, "folder.jpg");
+            if (Directory.Exists(themeFolder))
+            {
+                var file = Path.Combine(themeFolder, request.Name + ".png");
 
-            return ToStaticFileResult(File.Exists(file) ? file : Path.ChangeExtension(file, ".png"));
+                if (File.Exists(file))
+                {
+                    return ToStaticFileResult(file);
+                }
+
+                file = Path.Combine(themeFolder, request.Name + ".jpg");
+
+                if (File.Exists(file))
+                {
+                    return ToStaticFileResult(file);
+                }
+            }
+            
+            var allFolder = Path.Combine(_appPaths.MediaInfoImagesPath, "all");
+
+            if (Directory.Exists(allFolder))
+            {
+                var file = Path.Combine(allFolder, request.Name  + ".png");
+
+                if (File.Exists(file))
+                {
+                    return ToStaticFileResult(file);
+                }
+
+                file = Path.Combine(allFolder, request.Name + ".jpg");
+
+                if (File.Exists(file))
+                {
+                    return ToStaticFileResult(file);
+                }
+            }
+
+            throw new ResourceNotFoundException("MediaInfo image not found: " + request.Name);
         }
     }
 }
