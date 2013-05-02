@@ -71,6 +71,12 @@ namespace MediaBrowser.Controller
         string RatingsPath { get; }
 
         /// <summary>
+        /// Gets the media info images path.
+        /// </summary>
+        /// <value>The media info images path.</value>
+        string MediaInfoImagesPath { get; }
+        
+        /// <summary>
         /// Gets the path to the user configuration directory
         /// </summary>
         /// <value>The user configuration directory path.</value>

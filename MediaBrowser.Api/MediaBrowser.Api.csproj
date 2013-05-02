@@ -64,6 +64,7 @@
     <Compile Include="BaseApiService.cs" />
     <Compile Include="DisplayPreferencesService.cs" />
     <Compile Include="EnvironmentService.cs" />
+    <Compile Include="Images\ImageByNameService.cs" />
     <Compile Include="Images\ImageRequest.cs" />
     <Compile Include="Images\ImageService.cs" />
     <Compile Include="Images\ImageWriter.cs" />

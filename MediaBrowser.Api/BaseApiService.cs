@@ -76,6 +76,16 @@ namespace MediaBrowser.Api
         {
             return ResultFactory.GetCachedResult(RequestContext, cacheKey, lastDateModified, cacheDuration, factoryFn, contentType);
         }
+
+        /// <summary>
+        /// To the static file result.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>System.Object.</returns>
+        protected object ToStaticFileResult(string path)
+        {
+            return ResultFactory.GetStaticFileResult(RequestContext, path);
+        }
     }
 
     /// <summary>

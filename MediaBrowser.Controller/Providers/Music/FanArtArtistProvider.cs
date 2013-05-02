@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
@@ -49,7 +50,7 @@ namespace MediaBrowser.Controller.Providers.Music
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
-            return false;
+            return item is MusicArtist;
         }
 
         protected virtual bool SaveLocalMeta
