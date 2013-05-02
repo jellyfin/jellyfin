@@ -1,7 +1,9 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MoreLinq;
@@ -32,6 +34,24 @@ namespace MediaBrowser.Controller.Providers.Music
             return BlankId;
         }
 
+        /// <summary>
+        /// Needses the refresh internal.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="providerInfo">The provider info.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
+        {
+            // If song metadata has changed and we don't have an mbid, refresh
+            if (string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Musicbrainz)) &&
+                GetComparisonData(item as MusicAlbum) != providerInfo.Data)
+            {
+                return true;
+            }
+
+            return base.NeedsRefreshInternal(item, providerInfo);
+        }
+
         protected override async Task FetchLastfmData(BaseItem item, string id, CancellationToken cancellationToken)
         {
             var result = await GetAlbumResult(item, cancellationToken).ConfigureAwait(false);
@@ -50,6 +70,13 @@ namespace MediaBrowser.Controller.Providers.Music
                     await _providerManager.SaveToLibraryFilesystem(item, Path.Combine(item.MetaLocation, LocalMetaFileName), ms, cancellationToken).ConfigureAwait(false);
                     
                 }
+            }
+
+            BaseProviderInfo data;
+
+            if (item.ProviderData.TryGetValue(Id, out data))
+            {
+                data.Data = GetComparisonData(item as MusicAlbum);
             }
         }
 
@@ -101,6 +128,30 @@ namespace MediaBrowser.Controller.Providers.Music
             {
                 return true;
             }
+        }
+
+        /// <summary>
+        /// Gets the data.
+        /// </summary>
+        /// <param name="album">The album.</param>
+        /// <returns>Guid.</returns>
+        private Guid GetComparisonData(MusicAlbum album)
+        {
+            var songs = album.RecursiveChildren.OfType<Audio>().ToList();
+
+            var albumArtists = songs.Select(i => i.AlbumArtist)
+                .Where(i => !string.IsNullOrEmpty(i))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var albumNames = songs.Select(i => i.AlbumArtist)
+                .Where(i => !string.IsNullOrEmpty(i))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            albumArtists.AddRange(albumNames);
+
+            return string.Join(string.Empty, albumArtists.OrderBy(i => i).ToArray()).GetMD5();
         }
     }
 }

@@ -6,6 +6,5 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// </summary>
     public class MusicArtist : Folder
     {
-
     }
 }

@@ -58,6 +58,22 @@ namespace MediaBrowser.Controller.Providers.Music
             get { return ConfigurationManager.Configuration.SaveLocalMeta; }
         }
 
+        protected override bool RefreshOnVersionChange
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        protected override string ProviderVersion
+        {
+            get
+            {
+                return "1";
+            }
+        }
+
         /// <summary>
         /// Needses the refresh internal.
         /// </summary>

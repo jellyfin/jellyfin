@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -114,7 +115,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             }
 
             // Refresh if imdb id has changed
-            if (!string.Equals(item.GetProviderId(MetadataProviders.Imdb), providerInfo.CustomData))
+            if (providerInfo.Data != GetComparisonData(item.GetProviderId(MetadataProviders.Imdb)))
             {
                 return true;
             }
@@ -144,12 +145,22 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             if (item.ProviderData.TryGetValue(Id, out data))
             {
-                data.CustomData = item.GetProviderId(MetadataProviders.Imdb);
+                data.Data = GetComparisonData(item.GetProviderId(MetadataProviders.Imdb));
             }
 
             SetLastRefreshed(item, DateTime.UtcNow);
 
             return Task.FromResult(true);
+        }
+
+        /// <summary>
+        /// Gets the comparison data.
+        /// </summary>
+        /// <param name="imdbId">The imdb id.</param>
+        /// <returns>Guid.</returns>
+        private Guid GetComparisonData(string imdbId)
+        {
+            return string.IsNullOrEmpty(imdbId) ? Guid.Empty : imdbId.GetMD5();
         }
 
         /// <summary>

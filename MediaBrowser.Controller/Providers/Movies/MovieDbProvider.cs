@@ -253,7 +253,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             new Regex(@"(?<name>.*)") // last resort matches the whole string as the name
         };
 
-        public const string LOCAL_META_FILE_NAME = "mbmovie.js";
+        public const string LOCAL_META_FILE_NAME = "mbmovie.json";
         public const string ALT_META_FILE_NAME = "movie.xml";
         protected string ItemType = "movie";
 

@@ -7,18 +7,41 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 
 namespace MediaBrowser.Controller.Providers.Music
 {
+    /// <summary>
+    /// Class FanArtAlbumProvider
+    /// </summary>
     public class FanArtAlbumProvider : FanartBaseProvider
     {
+        /// <summary>
+        /// The _provider manager
+        /// </summary>
         private readonly IProviderManager _providerManager;
 
+        /// <summary>
+        /// The _music brainz resource pool
+        /// </summary>
+        private readonly SemaphoreSlim _musicBrainzResourcePool = new SemaphoreSlim(1, 1);
+
+        /// <summary>
+        /// Gets the HTTP client.
+        /// </summary>
+        /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FanArtAlbumProvider"/> class.
+        /// </summary>
+        /// <param name="httpClient">The HTTP client.</param>
+        /// <param name="logManager">The log manager.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="providerManager">The provider manager.</param>
         public FanArtAlbumProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
             : base(logManager, configurationManager)
         {
@@ -26,11 +49,20 @@ namespace MediaBrowser.Controller.Providers.Music
             HttpClient = httpClient;
         }
 
+        /// <summary>
+        /// Supportses the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
             return item is MusicAlbum;
         }
 
+        /// <summary>
+        /// Gets a value indicating whether [refresh on version change].
+        /// </summary>
+        /// <value><c>true</c> if [refresh on version change]; otherwise, <c>false</c>.</value>
         protected override bool RefreshOnVersionChange
         {
             get
@@ -39,11 +71,15 @@ namespace MediaBrowser.Controller.Providers.Music
             }
         }
 
+        /// <summary>
+        /// Gets the provider version.
+        /// </summary>
+        /// <value>The provider version.</value>
         protected override string ProviderVersion
         {
             get
             {
-                return "20130501.5";
+                return "11";
             }
         }
 
@@ -69,11 +105,27 @@ namespace MediaBrowser.Controller.Providers.Music
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
+        /// <summary>
+        /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="force">if set to <c>true</c> [force].</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{System.Boolean}.</returns>
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var url = string.Format("http://api.fanart.tv/webservice/album/{0}/{1}/xml/all/1/1", APIKey, item.GetProviderId(MetadataProviders.Musicbrainz));
+            var releaseGroupId = await GetReleaseGroupId(item.GetProviderId(MetadataProviders.Musicbrainz), cancellationToken).ConfigureAwait(false);
+
+            if (string.IsNullOrEmpty(releaseGroupId))
+            {
+                SetLastRefreshed(item, DateTime.UtcNow);
+
+                return true;
+            }
+
+            var url = string.Format("http://api.fanart.tv/webservice/album/{0}/{1}/xml/all/1/1", APIKey, releaseGroupId);
 
             var doc = new XmlDocument();
 
@@ -142,6 +194,69 @@ namespace MediaBrowser.Controller.Providers.Music
             SetLastRefreshed(item, DateTime.UtcNow);
 
             return true;
+        }
+
+        /// <summary>
+        /// The _last music brainz request
+        /// </summary>
+        private DateTime _lastMusicBrainzRequest = DateTime.MinValue;
+
+        /// <summary>
+        /// Gets the release group id.
+        /// </summary>
+        /// <param name="releaseEntryId">The release entry id.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{System.String}.</returns>
+        private async Task<string> GetReleaseGroupId(string releaseEntryId, CancellationToken cancellationToken)
+        {
+            await _musicBrainzResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                var diff = 1000 - (DateTime.Now - _lastMusicBrainzRequest).TotalMilliseconds;
+
+                // MusicBrainz is extremely adamant about limiting to one request per second
+
+                if (diff > 0)
+                {
+                    await Task.Delay(Convert.ToInt32(diff), cancellationToken).ConfigureAwait(false);
+                }
+
+                _lastMusicBrainzRequest = DateTime.Now;
+
+                return await GetReleaseGroupIdInternal(releaseEntryId, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _musicBrainzResourcePool.Release();
+            }
+        }
+
+        /// <summary>
+        /// Gets the release group id internal.
+        /// </summary>
+        /// <param name="releaseEntryId">The release entry id.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{System.String}.</returns>
+        private async Task<string> GetReleaseGroupIdInternal(string releaseEntryId, CancellationToken cancellationToken)
+        {
+            var url = string.Format("http://www.musicbrainz.org/ws/2/release-group/?query=reid:{0}", releaseEntryId);
+
+            var doc = new XmlDocument();
+
+            using (var xml = await HttpClient.Get(url, cancellationToken).ConfigureAwait(false))
+            {
+                using (var oReader = new StreamReader(xml, Encoding.UTF8))
+                {
+                    doc.Load(oReader);
+                } 
+            }
+
+            var ns = new XmlNamespaceManager(doc.NameTable);
+            ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
+            var node = doc.SelectSingleNode("//mb:release-group-list/mb:release-group/@id", ns);
+
+            return node != null ? node.Value : null;
         }
     }
 }

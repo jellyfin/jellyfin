@@ -129,10 +129,13 @@ namespace MediaBrowser.Server.Implementations.Providers
             var providersChanged = false;
 
             item.ProviderData.TryGetValue(_supportedProvidersKey, out supportedProvidersInfo);
+
+            var supportedProvidersHash = supportedProvidersValue.GetMD5();
+
             if (supportedProvidersInfo != null)
             {
                 // Force refresh if the supported providers have changed
-                providersChanged = force = force || !string.Equals(supportedProvidersInfo.CustomData, supportedProvidersValue);
+                providersChanged = force = force || supportedProvidersHash != supportedProvidersInfo.Data;
 
                 // If providers have changed, clear provider info and update the supported providers hash
                 if (providersChanged)
@@ -144,7 +147,7 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             if (providersChanged)
             {
-                supportedProvidersInfo.CustomData = supportedProvidersValue;
+                supportedProvidersInfo.Data = supportedProvidersHash;
             }
 
             if (force) item.ClearMetaValues();
