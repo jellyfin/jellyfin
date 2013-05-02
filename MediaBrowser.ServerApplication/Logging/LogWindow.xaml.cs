@@ -69,7 +69,16 @@ namespace MediaBrowser.ServerApplication.Logging
         /// <param name="msg">The MSG.</param>
         public async void LogMessage(string msg)
         {
-            await Task.Factory.StartNew(() => lbxLogData.Items.Insert(0, msg.TrimEnd('\n')), CancellationToken.None, TaskCreationOptions.None, _uiThread);
+            await Task.Factory.StartNew(() =>
+                                            {
+                                                if (lbxLogData.Items.Count > 10000)
+                                                {
+                                                    //I think the quickest and safest thing to do here is just clear it out
+                                                    lbxLogData.Items.Clear();
+                                                }
+
+                                                lbxLogData.Items.Insert(0, msg.TrimEnd('\n'));
+                                            }, CancellationToken.None, TaskCreationOptions.None, _uiThread);
         }
 
         /// <summary>
