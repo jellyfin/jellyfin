@@ -171,7 +171,8 @@ namespace MediaBrowser.Api
         {
             var allEpisodes = series.GetRecursiveChildren(user)
                 .OfType<Episode>()
-                .OrderByDescending(i => i.PremiereDate)
+                .OrderByDescending(i => i.PremiereDate ?? DateTime.MinValue)
+                .ThenByDescending(i => i.IndexNumber ?? 0)
                 .ToList();
 
             Episode lastWatched = null;
