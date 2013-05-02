@@ -1,14 +1,13 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -29,7 +28,7 @@ namespace MediaBrowser.Controller.Providers
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
-            return item.ResolveArgs.IsDirectory && item.LocationType == LocationType.FileSystem;
+            return item.LocationType == LocationType.FileSystem && item.ResolveArgs.IsDirectory;
         }
 
         /// <summary>

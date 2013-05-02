@@ -29,7 +29,20 @@ namespace MediaBrowser.Controller.Entities
             {
                 base.Id = value;
             }
+        }        
+        
+        /// <summary>
+        /// Gets or sets the type of the location.
+        /// </summary>
+        /// <value>The type of the location.</value>
+        public override LocationType LocationType
+        {
+            get
+            {
+                return LocationType.Virtual;
+            }
         }
+
 
         /// <summary>
         /// We don't resolve normally so need to fill this in
