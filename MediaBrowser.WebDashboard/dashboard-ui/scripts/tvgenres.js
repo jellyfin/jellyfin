@@ -8,7 +8,7 @@
         IncludeItemTypes: "Series",
         Recursive: true,
         Fields: "ItemCounts,DateCreated,UserData",
-        Limit: LibraryBrowser.getDetaultPageSize(),
+        Limit: LibraryBrowser.getDefaultPageSize(),
         StartIndex: 0
     };
 

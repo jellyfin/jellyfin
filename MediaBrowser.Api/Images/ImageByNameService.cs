@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using ServiceStack.ServiceHost;
+using System;
 using System.IO;
 
 namespace MediaBrowser.Api.Images
@@ -93,7 +94,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetGeneralImage request)
         {
-            var filename = string.Equals(request.Type, "primary", System.StringComparison.OrdinalIgnoreCase)
+            var filename = string.Equals(request.Type, "primary", StringComparison.OrdinalIgnoreCase)
                                ? "folder"
                                : request.Type;
 

@@ -9,7 +9,7 @@
 		IncludeItemTypes: "GamePlatform",
 		Recursive: true,
 		Fields: "ItemCounts,ItemCounts,DateCreated,UserData",
-		Limit: LibraryBrowser.getDetaultPageSize(),
+		Limit: LibraryBrowser.getDefaultPageSize(),
 		StartIndex: 0
 	};
 

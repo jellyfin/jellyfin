@@ -535,6 +535,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "librarybrowser.css",
                                       "detailtable.css",
                                       "posteritem.css",
+                                      "tileitem.css",
                                       "search.css",
                                       "pluginupdates.css",
                                       "userimage.css"

@@ -8,7 +8,7 @@
         IncludeItemTypes: "BoxSet",
         Recursive: true,
         Fields: "DisplayMediaType,ItemCounts,DateCreated,UserData",
-        Limit: LibraryBrowser.getDetaultPageSize(),
+        Limit: LibraryBrowser.getDefaultPageSize(),
         StartIndex: 0
     };
 

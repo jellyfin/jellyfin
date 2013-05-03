@@ -10,7 +10,7 @@
         IncludeItemTypes: "Trailer",
         Recursive: true,
         Fields: "UserData,DisplayMediaType,ItemCounts,DateCreated",
-        Limit: LibraryBrowser.getDetaultPageSize(),
+        Limit: LibraryBrowser.getDefaultPageSize(),
         StartIndex: 0
     };
 

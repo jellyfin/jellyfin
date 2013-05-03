@@ -9,7 +9,7 @@
         Recursive: true,
         Fields: "ItemCounts,DateCreated,UserData",
         PersonTypes: "",
-        Limit: LibraryBrowser.getDetaultPageSize(),
+        Limit: LibraryBrowser.getDefaultPageSize(),
         StartIndex: 0
     };
 

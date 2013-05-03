@@ -10,7 +10,7 @@
         IncludeItemTypes: "Series",
         Recursive: true,
         Fields: "DisplayMediaType,SeriesInfo,ItemCounts,DateCreated,UserData",
-        Limit: LibraryBrowser.getDetaultPageSize(),
+        Limit: LibraryBrowser.getDefaultPageSize(),
         StartIndex: 0
     };
 

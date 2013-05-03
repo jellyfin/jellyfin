@@ -381,7 +381,7 @@
             IncludeItemTypes: "",
             Recursive: true,
             Fields: "UserData,DisplayMediaType,ItemCounts,DateCreated,AudioInfo,SeriesInfo",
-            Limit: LibraryBrowser.getDetaultPageSize(),
+            Limit: LibraryBrowser.getDefaultPageSize(),
             StartIndex: 0
         };
 

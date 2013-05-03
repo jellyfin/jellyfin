@@ -11,7 +11,7 @@
         MediaTypes: "Game",
         Recursive: true,
         Fields: "UserData,DisplayMediaType,Genres,Studios",
-        Limit: LibraryBrowser.getDetaultPageSize(),
+        Limit: LibraryBrowser.getDefaultPageSize(),
         StartIndex: 0
     };
 

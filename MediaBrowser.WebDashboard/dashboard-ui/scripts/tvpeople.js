@@ -5,11 +5,11 @@
 
         SortBy: "SortName",
         SortOrder: "Ascending",
-        IncludeItemTypes: "Series",
+        IncludeItemTypes: "Series,Season,Episode",
         Recursive: true,
         Fields: "ItemCounts,DateCreated,UserData",
         PersonTypes: "",
-        Limit: LibraryBrowser.getDetaultPageSize(),
+        Limit: LibraryBrowser.getDefaultPageSize(),
         StartIndex: 0
     };
 

@@ -189,99 +189,6 @@
     font-weight: bold;
 }
 
-.tileItem {
-    background: #333;
-    padding: 10px 7px 5px;
-    margin: 3px 0;
-    text-shadow: none;
-    font-weight: normal!important;
-    display: block;
-    font-size: 14px;
-    position: relative;
-}
-
-
-    .tileItem .itemProgress {
-        font-size: 14px;
-    }
-
-    .tileItem .starRating {
-        width: 15px;
-        height: 13px;
-    }
-
-.tileImage {
-    display: inline-block;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center top;
-}
-
-.defaultTileImage {
-    background-color: #999;
-}
-
-.tileItem p {
-    margin: .35em 0 0;
-}
-
-.tileItem .imgUserItemRating {
-    height: 18px;
-    width: 18px;
-}
-
-.tileContent {
-    display: inline-block;
-    padding-left: 10px;
-    color: #fff;
-    text-align: left;
-    vertical-align: top;
-    overflow: hidden;
-}
-
-.backdropTileItem .tileImage {
-    height: 90px;
-    width: 45%;
-}
-
-.backdropTileItem .tileContent {
-    width: 50%;
-}
-
-.posterTileItem .tileImage {
-    height: 120px;
-    width: 30%;
-}
-
-.posterTileItem .tileContent {
-    width: 65%;
-}
-
-.squareTileItem .tileImage {
-    height: 100px;
-    width: 35%;
-}
-
-.squareTileItem .tileContent {
-    width: 60%;
-}
-
-.tileName {
-    font-weight: bold;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
-
-    .tileName + .tileName {
-        margin-top: .75em;
-    }
-
-.tileItem .userDataIcons img {
-    height: 14px;
-    width: 14px;
-}
-
 .detailPagePrimaryInfo {
     margin: 1em 0;
 }
@@ -301,257 +208,77 @@
     }
 }
 
-@media all and (min-width: 750px) {
-    .tileItem {
-        width: 46%;
-        display: inline-block;
-        margin-left: 3px;
-        margin-right: 3px;
-    }
-
-    .backdropTileItem .tileImage {
-        height: 88px;
-    }
-
-    .posterTileItem .tileImage {
-        height: 120px;
-    }
-
-    .squareTileItem .tileImage {
-        height: 115px;
-    }
-}
-
-@media all and (min-width: 850px) {
-
-    .backdropTileItem .tileImage {
-        height: 105px;
-    }
-
-    .posterTileItem .tileImage {
-        height: 120px;
-    }
-
-    .posterTileItem {
-        width: 31%;
-    }
-
-    .tileItem .userDataIcons img {
-        height: 18px;
-        width: 18px;
-    }
-
-    .tileItem p {
-        margin: .75em 0 0;
-    }
-
-    .tileItem .itemProgress {
-        font-size: 17px;
-    }
-}
-
-@media all and (min-width: 1000px) {
-    .tileItem {
-        width: 47.5%;
-    }
-
-    .posterTileItem {
-        width: 31%;
-    }
-
-    .backdropTileItem .tileImage {
-        height: 110px;
-    }
-
-    .posterTileItem .tileImage {
-        height: 136px;
-    }
-
-    .squareTileItem {
-        width: 31%;
-    }
-
-        .squareTileItem .tileImage {
-            height: 105px;
-        }
+.itemsContainer {
+    text-align: center;
 }
 
 @media all and (min-width: 1200px) {
-    .backdropTileItem .tileImage {
-        height: 100px;
-    }
-
-    .posterTileItem .tileImage {
-        height: 160px;
-    }
-
-    .tileItem {
-        width: 31.5%;
-    }
-
-    .squareTileItem .tileImage {
-        height: 130px;
-    }
 
     .scenePosterViewItem img {
         max-width: 200px!important;
     }
 }
 
-@media all and (min-width: 1440px) {
-    .backdropTileItem .tileImage {
-        height: 110px;
-    }
-
-    .posterTileItem .tileImage {
-        height: 150px;
-    }
-
-    .tileItem {
-        width: 31.5%;
-    }
-
-    .squareTileItem .tileImage {
-        height: 155px;
-    }
-
-    .posterTileItem {
-        width: 23.5%;
-    }
+/* All HTML5 progress enabled browsers */
+.itemProgressBar {
+    /* Turns off styling - not usually needed, but good to know. */
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    /* gets rid of default border in Firefox and Opera. */
+    border: 0;
+    margin: 0;
+    height: 12px;
 }
 
-@media all and (min-width: 1700px) {
-
-    .backdropTileItem .tileImage {
-        height: 132px;
+    /* Polyfill */
+    .itemProgressBar[role]:after {
+        background-image: none; /* removes default background from polyfill */
     }
 
-    .posterTileItem .tileImage {
-        height: 170px;
-    }
+/*
+ * Background of the progress bar background
+ */
 
-    .tileItem {
-        width: 32%;
-    }
-
-    .posterTileItem {
-        width: 23.5%;
-    }
-
-    .squareTileItem {
-        width: 23.5%;
-    }
-
-        .squareTileItem .tileImage {
-            height: 140px;
-        }
+/* Firefox and Polyfill */
+.itemProgressBar {
+    background: #050505 !important; /* !important only needed in polyfill */
 }
 
-
-@media all and (min-width: 1920px) {
-    .tileItem {
-        width: 31.5%;
+    /* Chrome */
+    .itemProgressBar::-webkit-progress-bar {
+        background: #050505;
     }
 
-    .tileImage {
-        height: 155px;
+    /*
+ * Background of the progress bar value
+ */
+
+    /* Firefox */
+    .itemProgressBar::-moz-progress-bar {
+        border-radius: 0;
+        background-image: none;
+        background-color: #A92D2D;
     }
 
-    .posterTileItem {
-        width: 18.8%;
+    /* Chrome */
+    .itemProgressBar::-webkit-progress-value {
+        border-radius: 0;
+        background-image: none;
+        background-color: #A92D2D;
     }
 
-        .posterTileItem .tileImage {
-            height: 160px;
-        }
-
-    .squareTileItem {
-        width: 18.8%;
+    /* Polyfill */
+    .itemProgressBar[aria-valuenow]:before {
+        border-radius: 0;
+        background-image: none;
+        background-color: #A92D2D;
     }
 
-        .squareTileItem .tileImage {
-            height: 120px;
-        }
-}
-
-@media all and (min-width: 2000px) {
-    .tileItem {
-        width: 23.5%;
-    }
-
-    .tileImage {
-        height: 117px;
-    }
-
-    .posterTileItem {
-        width: 18.8%;
-    }
-
-        .posterTileItem .tileImage {
-            height: 160px;
-        }
-
-    .squareTileItem {
-        width: 18.8%;
-    }
-
-        .squareTileItem .tileImage {
-            height: 130px;
-        }
-}
-
-@media all and (min-width: 2200px) {
-    .tileItem {
-        width: 24%;
-    }
-
-    .tileImage {
-        height: 145px;
-    }
-
-    .posterTileItem {
-        width: 18.8%;
-    }
-
-        .posterTileItem .tileImage {
-            height: 185px;
-        }
-
-    .squareTileItem {
-        width: 18.8%;
-    }
-
-        .squareTileItem .tileImage {
-            height: 140px;
-        }
-}
-
-@media all and (min-width: 2540px) {
-    .tileItem {
-        width: 18.75%;
-    }
-
-    .tileImage {
-        height: 120px;
-    }
-
-    .posterTileItem {
-        width: 15.8%;
-    }
-
-        .posterTileItem .tileImage {
-            height: 180px;
-        }
-
-    .squareTileItem {
-        width: 15.8%;
-    }
-
-        .squareTileItem .tileImage {
-            height: 140px;
-        }
-}
-
-.itemsContainer {
-    text-align: center;
+.userDataIcons .itemProgressBar {
+    vertical-align: top;
+    position: relative;
+    top: 4px;
+    margin-right: 1em;
+    width: 40px;
 }

@@ -4,7 +4,7 @@
 
     return {
 
-        getDetaultPageSize: function () {
+        getDefaultPageSize: function () {
 
             if (window.location.toString().toLowerCase().indexOf('localhost') != -1) {
                 return 100;
@@ -794,7 +794,8 @@
 
             if (item.PlayedPercentage) {
 
-                tooltip = '';
+                tooltip = Math.round(item.PlayedPercentage) + '% played';
+                
                 pct = item.PlayedPercentage;
             }
             else if (item.UserData && item.UserData.PlaybackPositionTicks && item.RunTimeTicks) {
@@ -804,11 +805,10 @@
                 pct = (item.UserData.PlaybackPositionTicks / item.RunTimeTicks) * 100;
             }
 
-            if (pct) {
+            if (pct && pct < 100) {
 
-                pct = parseInt(pct);
-
-                html += '<span title="' + tooltip + '" class="itemProgress">' + pct + '%</span>';
+                html += '<progress title="' + tooltip + '" class="itemProgressBar" min="0" max="100" value="' + pct + '">';
+                html += '</progress>';
             }
 
             var userData = item.UserData || {};
