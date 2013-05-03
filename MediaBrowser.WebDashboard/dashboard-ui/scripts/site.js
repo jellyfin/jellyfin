@@ -983,10 +983,20 @@ var Dashboard = {
             clearTimeout(Dashboard.newItemTimeout);
         }
 
-        Dashboard.newItemTimeout = setTimeout(Dashboard.onNewItemTimerStopped, 60000);
+        Dashboard.newItemTimeout = setTimeout(function() {
+
+            Dashboard.onNewItemTimerStopped(data);
+
+        }, 60000);
     },
 
-    onNewItemTimerStopped: function () {
+    onNewItemTimerStopped: function (data) {
+
+        var newItems = data.ItemsAdded;
+        
+        if (!newItems.length) {
+            return;
+        }
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), {
 
@@ -995,7 +1005,8 @@ var Dashboard = {
             Filters: "IsNotFolder",
             SortBy: "DateCreated",
             SortOrder: "Descending",
-            ImageTypes: "Primary"
+            ImageTypes: "Primary",
+            Ids: newItems.join(',')
 
         }).done(function (result) {
 
@@ -1005,7 +1016,7 @@ var Dashboard = {
 
                 var item = items[i];
 
-                var data = {
+                var notification = {
                     title: "New " + item.Type,
                     body: item.Name,
                     timeout: 5000
@@ -1015,14 +1026,14 @@ var Dashboard = {
 
                 if (imageTags.Primary) {
 
-                    data.icon = ApiClient.getImageUrl(item.Id, {
+                    notification.icon = ApiClient.getImageUrl(item.Id, {
                         width: 100,
                         tag: imageTags.Primary,
                         type: "Primary"
                     });
                 }
 
-                WebNotifications.show(data);
+                WebNotifications.show(notification);
             }
         });
 

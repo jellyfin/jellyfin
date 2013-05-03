@@ -170,7 +170,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EntryPoints\LoadRegistrations.cs" />
-    <Compile Include="EntryPoints\NewItemNotifier.cs" />
     <Compile Include="EntryPoints\RefreshUsersMetadata.cs" />
     <Compile Include="EntryPoints\StartupWizard.cs" />
     <Compile Include="EntryPoints\WebSocketEvents.cs" />
@@ -180,10 +179,6 @@
     <Page Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Controls\ItemUpdateNotification.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="LibraryExplorer.xaml">
       <SubType>Designer</SubType>
@@ -205,9 +200,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ApplicationHost.cs" />
-    <Compile Include="Controls\ItemUpdateNotification.xaml.cs">
-      <DependentUpon>ItemUpdateNotification.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Implementations\DotNetZipClient.cs" />
     <Compile Include="LibraryExplorer.xaml.cs">
       <DependentUpon>LibraryExplorer.xaml</DependentUpon>

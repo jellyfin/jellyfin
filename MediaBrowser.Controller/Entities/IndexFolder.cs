@@ -1,11 +1,11 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Model.Entities;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -196,18 +196,10 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <param name="resetResolveArgs">if set to <c>true</c> [reset resolve args].</param>
         /// <returns>Task{System.Boolean}.</returns>
-        public override async Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true, bool resetResolveArgs = true)
+        public override Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true, bool resetResolveArgs = true)
         {
-            if (ShadowItem != null)
-            {
-                var changed = await ShadowItem.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs).ConfigureAwait(false);
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                SetShadowValues();
-                return changed;
-            }
-            return false;
+            // We should never get in here since these are not part of the library
+            return Task.FromResult(false);
         }
     }
 }
