@@ -69,7 +69,7 @@ namespace MediaBrowser.Controller.Entities
         /// Our children are actually just references to the ones in the physical root...
         /// </summary>
         /// <value>The actual children.</value>
-        protected override ConcurrentBag<BaseItem> ActualChildren
+        protected override ConcurrentDictionary<Guid,BaseItem> ActualChildren
         {
             get
             {
@@ -92,7 +92,7 @@ namespace MediaBrowser.Controller.Entities
                           .Where(i => folderIds.Contains(i.Id))
                           .SelectMany(c => c.Children);
 
-                return new ConcurrentBag<BaseItem>(ourChildren);
+                return new ConcurrentDictionary<Guid,BaseItem>(ourChildren.ToDictionary(i => i.Id));
             }
         }
     }
