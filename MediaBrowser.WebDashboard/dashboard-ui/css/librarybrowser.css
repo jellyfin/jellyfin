@@ -94,19 +94,20 @@
         width: 90%;
         margin: 0 auto;
     }
+
+    .ehsContent {
+        max-width: 800px;
+    }
 }
 
 @media all and (min-width: 1200px) {
 
     .ehsContent {
-        max-width: 850px;
+        max-width: 940px;
     }
 }
 
 @media all and (min-width: 1440px) {
-    .ehsContent {
-        max-width: 900px;
-    }
 
     .detailPageContent {
         width: 70%;
@@ -228,7 +229,7 @@
     /* gets rid of default border in Firefox and Opera. */
     border: 0;
     margin: 0;
-    height: 12px;
+    height: 14px;
 }
 
     /* Polyfill */
@@ -278,7 +279,12 @@
 .userDataIcons .itemProgressBar {
     vertical-align: top;
     position: relative;
-    top: 4px;
+    top: 3px;
     margin-right: 1em;
+    width: 50px;
+}
+
+.tileItem .itemProgressBar {
+    top: 2px;
     width: 40px;
 }

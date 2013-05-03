@@ -1458,7 +1458,6 @@
 
         createGalleryImage: function (item, type, tag, index) {
 
-            var downloadWidth = 400;
             var lightboxWidth = 800;
             var html = '';
 
@@ -1467,7 +1466,7 @@
             html += '<div class="posterViewItem" style="padding-bottom:0px;">';
             html += '<a href="#pop_' + index + '_' + tag + '" data-transition="fade" data-rel="popup" data-position-to="window">';
             html += '<img class="galleryImage" src="' + LibraryBrowser.getImageUrl(item, type, index, {
-                maxwidth: downloadWidth,
+                maxwidth: lightboxWidth,
                 tag: tag
             }) + '" />';
             html += '</div>';

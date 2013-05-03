@@ -344,33 +344,32 @@
             var chapter = chapters[i];
             var chapterName = chapter.Name || "Chapter " + i;
 
-            html += '<div class="scenePosterViewItem posterViewItem posterViewItemWithDualText">';
-            html += '<a href="#play-Chapter-' + i + '" onclick="ItemDetailPage.play(' + chapter.StartPositionTicks + ');">';
+            html += '<a class="posterItem smallBackdropPosterItem" href="#play-Chapter-' + i + '" onclick="ItemDetailPage.play(' + chapter.StartPositionTicks + ');">';
+
+            var imgUrl;
 
             if (chapter.ImageTag) {
 
-                var imgUrl = ApiClient.getImageUrl(item.Id, {
+                imgUrl = ApiClient.getImageUrl(item.Id, {
                     width: 400,
                     tag: chapter.ImageTag,
                     type: "Chapter",
                     index: i
                 });
-
-                html += '<img src="' + imgUrl + '" />';
             } else {
-                html += '<img src="css/images/items/list/chapter.png"/>';
+                imgUrl = "css/images/items/list/chapter.png";
             }
 
-            html += '<div class="posterViewItemText posterViewItemPrimaryText">' + chapterName + '</div>';
-            html += '<div class="posterViewItemText">';
+            html += '<div class="posterItemImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
+
+            html += '<div class="posterItemText">' + chapterName + '</div>';
+            html += '<div class="posterItemText">';
 
             html += ticks_to_human(chapter.StartPositionTicks);
 
             html += '</div>';
 
             html += '</a>';
-
-            html += '</div>';
         }
 
         $('#scenesContent', page).html(html);
@@ -478,7 +477,7 @@
 
             var item = items[i];
 
-            html += '<a class="posterItem backdropPosterItem" href="#" onclick="MediaPlayer.playById(\'' + item.Id + '\');">';
+            html += '<a class="posterItem smallBackdropPosterItem" href="#" onclick="MediaPlayer.playById(\'' + item.Id + '\');">';
 
             var imageTags = item.ImageTags || {};
 

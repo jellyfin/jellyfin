@@ -699,8 +699,8 @@ progress {
 }
 
 .imgUserItemRating {
-    height: 24px;
-    width: 24px;
+    height: 20px;
+    width: 20px;
     margin-right: 1em;
     cursor: pointer;
 }
