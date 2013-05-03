@@ -436,7 +436,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The children.</value>
         [IgnoreDataMember]
-        public IEnumerable<BaseItem> Children
+        public ConcurrentBag<BaseItem> Children
         {
             get
             {
