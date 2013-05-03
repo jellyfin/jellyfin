@@ -43,21 +43,21 @@ namespace MediaBrowser.Server.Implementations.Library
             //BaseItem.LibraryManager.LibraryChanged += LibraryChanged;
         }
 
-        public void LibraryChanged(object source, ChildrenChangedEventArgs changeInformation)
-        {
-            Task.Run(() =>
-            {
-                if (changeInformation.ItemsAdded.Count + changeInformation.ItemsUpdated.Count > 0)
-                {
-                    LuceneSearch.AddUpdateLuceneIndex(changeInformation.ItemsAdded.Concat(changeInformation.ItemsUpdated));
-                }
+        //public void LibraryChanged(object source, ChildrenChangedEventArgs changeInformation)
+        //{
+        //    Task.Run(() =>
+        //    {
+        //        if (changeInformation.ItemsAdded.Count + changeInformation.ItemsUpdated.Count > 0)
+        //        {
+        //            LuceneSearch.AddUpdateLuceneIndex(changeInformation.ItemsAdded.Concat(changeInformation.ItemsUpdated));
+        //        }
 
-                if (changeInformation.ItemsRemoved.Count > 0)
-                {
-                    LuceneSearch.RemoveFromLuceneIndex(changeInformation.ItemsRemoved);
-                }
-            });
-        }
+        //        if (changeInformation.ItemsRemoved.Count > 0)
+        //        {
+        //            LuceneSearch.RemoveFromLuceneIndex(changeInformation.ItemsRemoved);
+        //        }
+        //    });
+        //}
 
         public void AddItemsToIndex(IEnumerable<BaseItem> items)
         {

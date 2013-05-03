@@ -436,7 +436,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The children.</value>
         [IgnoreDataMember]
-        public ConcurrentBag<BaseItem> Children
+        public IEnumerable<BaseItem> Children
         {
             get
             {
@@ -557,8 +557,6 @@ namespace MediaBrowser.Controller.Entities
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var changedArgs = new ChildrenChangedEventArgs(this);
-
             //get the current valid children from filesystem (or wherever)
             var nonCachedChildren = GetNonCachedChildren();
 
@@ -571,6 +569,7 @@ namespace MediaBrowser.Controller.Entities
 
             //create a list for our validated children
             var validChildren = new ConcurrentBag<Tuple<BaseItem, bool>>();
+            var newItems = new ConcurrentBag<BaseItem>();
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -592,7 +591,6 @@ namespace MediaBrowser.Controller.Entities
                     {
                         EntityResolutionHelper.EnsureDates(currentChild, child.ResolveArgs);
 
-                        changedArgs.AddUpdatedItem(currentChild);
                         validChildren.Add(new Tuple<BaseItem, bool>(currentChild, true));
                     }
                     else
@@ -603,36 +601,36 @@ namespace MediaBrowser.Controller.Entities
                 else
                 {
                     //brand new item - needs to be added
-                    changedArgs.AddNewItem(child);
+                    newItems.Add(child);
 
                     validChildren.Add(new Tuple<BaseItem, bool>(child, true));
                 }
             });
 
             // If any items were added or removed....
-            if (!changedArgs.ItemsAdded.IsEmpty || currentChildren.Count != validChildren.Count)
+            if (!newItems.IsEmpty || currentChildren.Count != validChildren.Count)
             {
                 var newChildren = validChildren.Select(c => c.Item1).ToList();
 
                 //that's all the new and changed ones - now see if there are any that are missing
-                changedArgs.ItemsRemoved = currentChildren.Values.Except(newChildren).ToList();
-
-                foreach (var item in changedArgs.ItemsRemoved)
-                {
-                    Logger.Debug("** " + item.Name + " Removed from library.");
-                }
+                var itemsRemoved = currentChildren.Values.Except(newChildren).ToList();
 
                 var childrenReplaced = false;
 
-                if (changedArgs.ItemsRemoved.Count > 0)
+                if (itemsRemoved.Count > 0)
                 {
                     ActualChildren = new ConcurrentBag<BaseItem>(newChildren);
                     childrenReplaced = true;
+
+                    foreach (var item in itemsRemoved)
+                    {
+                        LibraryManager.ReportItemRemoved(item);
+                    }
                 }
 
                 var saveTasks = new List<Task>();
 
-                foreach (var item in changedArgs.ItemsAdded)
+                foreach (var item in newItems)
                 {
                     Logger.Debug("** " + item.Name + " Added to library.");
 
@@ -647,23 +645,15 @@ namespace MediaBrowser.Controller.Entities
                         saveTasks.Clear();
                     }
 
-                    saveTasks.Add(LibraryManager.SaveItem(item, CancellationToken.None));
+                    saveTasks.Add(LibraryManager.CreateItem(item, CancellationToken.None));
                 }
 
                 await Task.WhenAll(saveTasks).ConfigureAwait(false);
 
-                //and save children in repo...
-                Logger.Debug("*** Saving " + newChildren.Count + " children for " + Name);
                 await LibraryManager.SaveChildren(Id, newChildren, CancellationToken.None).ConfigureAwait(false);
-            }
 
-            if (changedArgs.HasChange)
-            {
                 //force the indexes to rebuild next time
                 IndexCache.Clear();
-
-                //and fire event
-                LibraryManager.ReportLibraryChanged(changedArgs);
             }
 
             progress.Report(10);

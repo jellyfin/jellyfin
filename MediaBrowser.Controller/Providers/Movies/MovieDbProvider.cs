@@ -438,9 +438,10 @@ namespace MediaBrowser.Controller.Providers.Movies
             var boxset = item as BoxSet;
             if (boxset != null)
             {
-                if (!boxset.Children.IsEmpty)
+                var firstChild = boxset.Children.FirstOrDefault();
+
+                if (firstChild != null)
                 {
-                    var firstChild = boxset.Children.First();
                     Logger.Debug("MovieDbProvider - Attempting to find boxset ID from: " + firstChild.Name);
                     string childName;
                     int? childYear;
@@ -953,7 +954,10 @@ namespace MediaBrowser.Controller.Providers.Movies
                 {
                     var boxset = movie as BoxSet;
                     Logger.Info("MovieDbProvider - Using rating of first child of boxset...");
-                    boxset.OfficialRating = !boxset.Children.IsEmpty ? boxset.Children.First().OfficialRating : null;
+
+                    var firstChild = boxset.Children.FirstOrDefault();
+
+                    boxset.OfficialRating = firstChild != null ? firstChild.OfficialRating : null;
                 }
 
                 if (movie.RunTimeTicks == null && movieData.runtime > 0)

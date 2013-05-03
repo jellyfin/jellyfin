@@ -968,7 +968,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await LibraryManager.SaveItem(this, cancellationToken).ConfigureAwait(false);
+                await LibraryManager.UpdateItem(this, cancellationToken).ConfigureAwait(false);
             }
 
             return changed;
