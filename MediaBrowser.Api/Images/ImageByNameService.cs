@@ -8,9 +8,9 @@ namespace MediaBrowser.Api.Images
     /// <summary>
     /// Class GetGeneralImage
     /// </summary>
-    [Route("/Images/General/{Name}", "GET")]
+    [Route("/Images/General/{Name}/{Type}", "GET")]
     [Api(Description = "Gets a general image by name")]
-    public class GetGeneralImage : ImageRequest
+    public class GetGeneralImage
     {
         /// <summary>
         /// Gets or sets the name.
@@ -18,6 +18,9 @@ namespace MediaBrowser.Api.Images
         /// <value>The name.</value>
         [ApiMember(Name = "Name", Description = "The name of the image", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Name { get; set; }
+
+        [ApiMember(Name = "Type", Description = "Image Type (primary, backdrop, logo, etc).", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Type { get; set; }
     }
 
     /// <summary>
@@ -25,7 +28,7 @@ namespace MediaBrowser.Api.Images
     /// </summary>
     [Route("/Images/Ratings/{Theme}/{Name}", "GET")]
     [Api(Description = "Gets a rating image by name")]
-    public class GetRatingImage : ImageRequest
+    public class GetRatingImage
     {
         /// <summary>
         /// Gets or sets the name.
@@ -47,7 +50,7 @@ namespace MediaBrowser.Api.Images
     /// </summary>
     [Route("/Images/MediaInfo/{Theme}/{Name}", "GET")]
     [Api(Description = "Gets a media info image by name")]
-    public class GetMediaInfoImage : ImageRequest
+    public class GetMediaInfoImage
     {
         /// <summary>
         /// Gets or sets the name.
@@ -90,7 +93,11 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetGeneralImage request)
         {
-            var file = Path.Combine(_appPaths.GeneralPath, request.Name, "folder.jpg");
+            var filename = string.Equals(request.Type, "primary", System.StringComparison.OrdinalIgnoreCase)
+                               ? "folder"
+                               : request.Type;
+
+            var file = Path.Combine(_appPaths.GeneralPath, request.Name, filename + ".jpg");
 
             return ToStaticFileResult(File.Exists(file) ? file : Path.ChangeExtension(file, ".png"));
         }
@@ -168,12 +175,12 @@ namespace MediaBrowser.Api.Images
                     return ToStaticFileResult(file);
                 }
             }
-            
+
             var allFolder = Path.Combine(_appPaths.MediaInfoImagesPath, "all");
 
             if (Directory.Exists(allFolder))
             {
-                var file = Path.Combine(allFolder, request.Name  + ".png");
+                var file = Path.Combine(allFolder, request.Name + ".png");
 
                 if (File.Exists(file))
                 {
