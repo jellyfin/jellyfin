@@ -169,7 +169,7 @@
                 baseParams['StartTimeTicks'] = startPosition;
             }
 
-            var html = '<video id="videoWindow" class="itemVideo video-js vjs-default-skin"></video>';
+            var html = '<video id="videoWindow" class="itemVideo video-js tubecss"></video>';
 
             var nowPlayingBar = $('#nowPlayingBar');
             //hide stop button
@@ -235,9 +235,9 @@
                 (this).addEvent("play", updateProgress);
 
                 (this).addEvent("ended", function () {
-                    MediaPlayer.stopVideo();
-
-                    Playlist.playNext();
+                    //MediaPlayer.stopVideo();
+                    //Playlist.playNext();
+	                MediaPlayer.stop();
                 });
 
             });
@@ -402,7 +402,7 @@
 
         self.playNext = function (itemId) {
 	        ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(function (item) {
-		        Playlist.playNext(item);
+		        Playlist.addNext(item);
 	        });
         };
 

@@ -31,8 +31,13 @@
 
 	    self.playNext = function (item) {
 		    if (typeof self.queue[0] != "undefined") {
-			    //MediaPlayer.play(new Array(self.queue[0]));
-			    //self.queue.shift();
+			    MediaPlayer.play(new Array(self.queue[0]));
+			    self.queue.shift();
+		    }
+	    };
+
+	    self.addNext = function (item) {
+		    if (typeof self.queue[0] != "undefined") {
 			    self.queue.unshift(item);
 		    }else {
 			    self.add(item);
