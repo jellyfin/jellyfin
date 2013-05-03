@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
@@ -82,6 +81,50 @@ namespace MediaBrowser.Controller.Entities
         public Guid GetDisplayPreferencesId(Guid userId)
         {
             return (userId + DisplayPreferencesId.ToString()).GetMD5();
+        }
+
+        /// <summary>
+        /// Adds the child.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="System.InvalidOperationException">Unable to add  + item.Name</exception>
+        public async Task AddChild(BaseItem item, CancellationToken cancellationToken)
+        {
+            if (!_children.TryAdd(item.Id, item))
+            {
+                throw new InvalidOperationException("Unable to add " + item.Name);
+            }
+
+            var newChildren = Children.ToList();
+
+            await LibraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
+
+            await LibraryManager.SaveChildren(Id, newChildren, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Removes the child.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="System.InvalidOperationException">Unable to remove  + item.Name</exception>
+        public Task RemoveChild(BaseItem item, CancellationToken cancellationToken)
+        {
+            BaseItem removed;
+
+            if (!_children.TryRemove(item.Id, out removed))
+            {
+                throw new InvalidOperationException("Unable to remove " + item.Name);
+            }
+
+            var newChildren = Children.ToList();
+
+            LibraryManager.ReportItemRemoved(item);
+
+            return LibraryManager.SaveChildren(Id, newChildren, cancellationToken);
         }
 
         #region Indexing
@@ -400,7 +443,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The children
         /// </summary>
-        private ConcurrentBag<BaseItem> _children;
+        private ConcurrentDictionary<Guid, BaseItem> _children;
         /// <summary>
         /// The _children initialized
         /// </summary>
@@ -413,7 +456,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the actual children.
         /// </summary>
         /// <value>The actual children.</value>
-        protected virtual ConcurrentBag<BaseItem> ActualChildren
+        protected virtual ConcurrentDictionary<Guid,BaseItem> ActualChildren
         {
             get
             {
@@ -436,11 +479,11 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The children.</value>
         [IgnoreDataMember]
-        public ConcurrentBag<BaseItem> Children
+        public IEnumerable<BaseItem> Children
         {
             get
             {
-                return ActualChildren;
+                return ActualChildren.Values;
             }
         }
 
@@ -476,10 +519,10 @@ namespace MediaBrowser.Controller.Entities
         /// We want this sychronous.
         /// </summary>
         /// <returns>ConcurrentBag{BaseItem}.</returns>
-        protected virtual ConcurrentBag<BaseItem> LoadChildren()
+        protected virtual ConcurrentDictionary<Guid,BaseItem> LoadChildren()
         {
             //just load our children from the repo - the library will be validated and maintained in other processes
-            return new ConcurrentBag<BaseItem>(GetCachedChildren());
+            return new ConcurrentDictionary<Guid,BaseItem>(GetCachedChildren().ToDictionary(i => i.Id));
         }
 
         /// <summary>
@@ -565,7 +608,7 @@ namespace MediaBrowser.Controller.Entities
             progress.Report(5);
 
             //build a dictionary of the current children we have now by Id so we can compare quickly and easily
-            var currentChildren = ActualChildren.ToDictionary(i => i.Id);
+            var currentChildren = ActualChildren;
 
             //create a list for our validated children
             var validChildren = new ConcurrentBag<Tuple<BaseItem, bool>>();
@@ -615,14 +658,15 @@ namespace MediaBrowser.Controller.Entities
                 //that's all the new and changed ones - now see if there are any that are missing
                 var itemsRemoved = currentChildren.Values.Except(newChildren).ToList();
 
-                var childrenReplaced = false;
-
-                if (itemsRemoved.Count > 0)
+                foreach (var item in itemsRemoved)
                 {
-                    ActualChildren = new ConcurrentBag<BaseItem>(newChildren);
-                    childrenReplaced = true;
+                    BaseItem removed;
 
-                    foreach (var item in itemsRemoved)
+                    if (!_children.TryRemove(item.Id, out removed))
+                    {
+                        Logger.Error("Failed to remove {0}", item.Name);
+                    }
+                    else
                     {
                         LibraryManager.ReportItemRemoved(item);
                     }
@@ -632,17 +676,19 @@ namespace MediaBrowser.Controller.Entities
 
                 foreach (var item in newItems)
                 {
-                    Logger.Debug("** " + item.Name + " Added to library.");
-
-                    if (!childrenReplaced)
-                    {
-                        _children.Add(item);
-                    }
-
                     if (saveTasks.Count > 50)
                     {
                         await Task.WhenAll(saveTasks).ConfigureAwait(false);
                         saveTasks.Clear();
+                    }
+
+                    if (!_children.TryAdd(item.Id, item))
+                    {
+                        Logger.Error("Failed to add {0}", item.Name);
+                    }
+                    else
+                    {
+                        Logger.Debug("** " + item.Name + " Added to library.");
                     }
 
                     saveTasks.Add(LibraryManager.CreateItem(item, CancellationToken.None));
@@ -807,7 +853,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // If indexed is false or the indexing function is null
-            return result ?? (ActualChildren.Where(c => c.IsVisible(user)));
+            return result ?? (Children.Where(c => c.IsVisible(user)));
         }
 
         /// <summary>
