@@ -395,11 +395,15 @@
         };
 
         self.playLast = function (itemId) {
-
+	        ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(function (item) {
+				Playlist.add(item);
+	        });
         };
 
         self.playNext = function (itemId) {
-
+	        ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(function (item) {
+		        Playlist.playNext(item);
+	        });
         };
 
         self.stop = function () {
