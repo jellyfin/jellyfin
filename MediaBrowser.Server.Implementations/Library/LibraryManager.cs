@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
@@ -69,24 +68,20 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <value>The item repository.</value>
         public IItemRepository ItemRepository { get; set; }
 
-        #region LibraryChanged Event
         /// <summary>
-        /// Fires whenever any validation routine adds or removes items.  The added and removed items are properties of the args.
-        /// *** Will fire asynchronously. ***
+        /// Occurs when [item added].
         /// </summary>
-        public event EventHandler<ChildrenChangedEventArgs> LibraryChanged;
+        public event EventHandler<ItemChangeEventArgs> ItemAdded;
 
         /// <summary>
-        /// Reports the library changed.
+        /// Occurs when [item updated].
         /// </summary>
-        /// <param name="args">The <see cref="ChildrenChangedEventArgs" /> instance containing the event data.</param>
-        public void ReportLibraryChanged(ChildrenChangedEventArgs args)
-        {
-            UpdateLibraryCache(args);
+        public event EventHandler<ItemChangeEventArgs> ItemUpdated;
 
-            EventHelper.FireEventIfNotNull(LibraryChanged, this, args, _logger);
-        }
-        #endregion
+        /// <summary>
+        /// Occurs when [item removed].
+        /// </summary>
+        public event EventHandler<ItemChangeEventArgs> ItemRemoved;
 
         /// <summary>
         /// The _logger
@@ -300,25 +295,6 @@ namespace MediaBrowser.Server.Implementations.Library
             items.AddRange(userFolders);
 
             return new ConcurrentDictionary<Guid, BaseItem>(items.ToDictionary(i => i.Id));
-        }
-
-        /// <summary>
-        /// Updates the library cache.
-        /// </summary>
-        /// <param name="args">The <see cref="ChildrenChangedEventArgs"/> instance containing the event data.</param>
-        private void UpdateLibraryCache(ChildrenChangedEventArgs args)
-        {
-            UpdateItemInLibraryCache(args.Folder);
-
-            foreach (var item in args.ItemsAdded)
-            {
-                UpdateItemInLibraryCache(item);
-            }
-
-            foreach (var item in args.ItemsUpdated)
-            {
-                UpdateItemInLibraryCache(item);
-            }
         }
 
         /// <summary>
@@ -1070,12 +1046,60 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
+        /// Creates the item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public async Task CreateItem(BaseItem item, CancellationToken cancellationToken)
+        {
+            await SaveItem(item, cancellationToken).ConfigureAwait(false);
+
+            UpdateItemInLibraryCache(item);
+            
+            if (ItemAdded != null)
+            {
+                ItemAdded(this, new ItemChangeEventArgs { Item = item });
+            }
+        }
+
+        /// <summary>
+        /// Updates the item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public async Task UpdateItem(BaseItem item, CancellationToken cancellationToken)
+        {
+            await SaveItem(item, cancellationToken).ConfigureAwait(false);
+
+            UpdateItemInLibraryCache(item);
+
+            if (ItemUpdated != null)
+            {
+                ItemUpdated(this, new ItemChangeEventArgs { Item = item });
+            }
+        }
+
+        /// <summary>
+        /// Reports the item removed.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        public void ReportItemRemoved(BaseItem item)
+        {
+            if (ItemRemoved != null)
+            {
+                ItemRemoved(this, new ItemChangeEventArgs { Item = item });
+            }
+        }
+
+        /// <summary>
         /// Saves the item.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task SaveItem(BaseItem item, CancellationToken cancellationToken)
+        private Task SaveItem(BaseItem item, CancellationToken cancellationToken)
         {
             return ItemRepository.SaveItem(item, cancellationToken);
         }

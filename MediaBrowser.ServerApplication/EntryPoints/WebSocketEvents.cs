@@ -101,9 +101,11 @@ namespace MediaBrowser.ServerApplication.EntryPoints
             _userManager.UserDeleted += userManager_UserDeleted;
             _userManager.UserUpdated += userManager_UserUpdated;
 
-            _libraryManager.LibraryChanged += libraryManager_LibraryChanged;
-
             _appHost.HasPendingRestartChanged += kernel_HasPendingRestartChanged;
+
+            _libraryManager.ItemAdded += libraryManager_ItemAdded;
+            _libraryManager.ItemUpdated += libraryManager_ItemUpdated;
+            _libraryManager.ItemRemoved += libraryManager_ItemRemoved;
 
             _installationManager.PluginUninstalled += InstallationManager_PluginUninstalled;
             _installationManager.PackageInstalling += installationManager_PackageInstalling;
@@ -122,7 +124,7 @@ namespace MediaBrowser.ServerApplication.EntryPoints
 
         void _taskManager_TaskExecuting(object sender, EventArgs e)
         {
-            var task = (IScheduledTask) sender;
+            var task = (IScheduledTask)sender;
             _serverManager.SendWebSocketMessage("ScheduledTaskStarted", task.Name);
         }
 
@@ -167,11 +169,11 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         }
 
         /// <summary>
-        /// Handles the LibraryChanged event of the libraryManager control.
+        /// Handles the ItemAdded event of the libraryManager control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="ChildrenChangedEventArgs" /> instance containing the event data.</param>
-        void libraryManager_LibraryChanged(object sender, ChildrenChangedEventArgs e)
+        /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
+        void libraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
         {
             lock (_libraryChangedSyncLock)
             {
@@ -190,11 +192,78 @@ namespace MediaBrowser.ServerApplication.EntryPoints
                     LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
                 }
 
-                LibraryUpdateInfo.Folders.Add(e.Folder.Id);
+                if (e.Item.Parent != null)
+                {
+                    LibraryUpdateInfo.Folders.Add(e.Item.Parent.Id);
+                }
 
-                LibraryUpdateInfo.ItemsAdded.AddRange(e.ItemsAdded.Select(i => i.Id));
-                LibraryUpdateInfo.ItemsUpdated.AddRange(e.ItemsUpdated.Select(i => i.Id));
-                LibraryUpdateInfo.ItemsRemoved.AddRange(e.ItemsRemoved.Select(i => i.Id));
+                LibraryUpdateInfo.ItemsAdded.Add(e.Item.Id);
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemUpdated event of the libraryManager control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
+        void libraryManager_ItemUpdated(object sender, ItemChangeEventArgs e)
+        {
+            lock (_libraryChangedSyncLock)
+            {
+                if (LibraryUpdateInfo == null)
+                {
+                    LibraryUpdateInfo = new LibraryUpdateInfo();
+                }
+
+                if (LibraryUpdateTimer == null)
+                {
+                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
+                                                   Timeout.Infinite);
+                }
+                else
+                {
+                    LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
+                }
+
+                if (e.Item.Parent != null)
+                {
+                    LibraryUpdateInfo.Folders.Add(e.Item.Parent.Id);
+                }
+
+                LibraryUpdateInfo.ItemsUpdated.Add(e.Item.Id);
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemRemoved event of the libraryManager control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
+        void libraryManager_ItemRemoved(object sender, ItemChangeEventArgs e)
+        {
+            lock (_libraryChangedSyncLock)
+            {
+                if (LibraryUpdateInfo == null)
+                {
+                    LibraryUpdateInfo = new LibraryUpdateInfo();
+                }
+
+                if (LibraryUpdateTimer == null)
+                {
+                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
+                                                   Timeout.Infinite);
+                }
+                else
+                {
+                    LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
+                }
+
+                if (e.Item.Parent != null)
+                {
+                    LibraryUpdateInfo.Folders.Add(e.Item.Parent.Id);
+                }
+
+                LibraryUpdateInfo.ItemsRemoved.Add(e.Item.Id);
             }
         }
 
@@ -281,11 +350,13 @@ namespace MediaBrowser.ServerApplication.EntryPoints
                     LibraryUpdateTimer.Dispose();
                     LibraryUpdateTimer = null;
                 }
+
+                _libraryManager.ItemAdded -= libraryManager_ItemAdded;
+                _libraryManager.ItemUpdated -= libraryManager_ItemUpdated;
+                _libraryManager.ItemRemoved -= libraryManager_ItemRemoved;
                 
                 _userManager.UserDeleted -= userManager_UserDeleted;
                 _userManager.UserUpdated -= userManager_UserUpdated;
-
-                _libraryManager.LibraryChanged -= libraryManager_LibraryChanged;
 
                 _installationManager.PluginUninstalled -= InstallationManager_PluginUninstalled;
                 _installationManager.PackageInstalling -= installationManager_PackageInstalling;

@@ -92,6 +92,7 @@
     <Compile Include="Entities\Person.cs" />
     <Compile Include="Library\IDisplayPreferencesManager.cs" />
     <Compile Include="Library\ILibrarySearchEngine.cs" />
+    <Compile Include="Library\ItemChangeEventArgs.cs" />
     <Compile Include="Library\PlaybackProgressEventArgs.cs" />
     <Compile Include="Entities\Studio.cs" />
     <Compile Include="Entities\Trailer.cs" />
@@ -110,7 +111,6 @@
     <Compile Include="IO\NativeMethods.cs" />
     <Compile Include="IServerApplicationHost.cs" />
     <Compile Include="IServerApplicationPaths.cs" />
-    <Compile Include="Library\ChildrenChangedEventArgs.cs" />
     <Compile Include="Dto\DtoBuilder.cs" />
     <Compile Include="Library\SearchHintInfo.cs" />
     <Compile Include="Providers\IProviderManager.cs" />

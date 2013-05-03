@@ -103,7 +103,8 @@ namespace MediaBrowser.Server.Implementations.IO
         /// </summary>
         public void Start()
         {
-            LibraryManager.LibraryChanged += Instance_LibraryChanged;
+            LibraryManager.ItemAdded += LibraryManager_ItemAdded;
+            LibraryManager.ItemRemoved += LibraryManager_ItemRemoved;
 
             var pathsToWatch = new List<string> { LibraryManager.RootFolder.Path };
 
@@ -134,6 +135,32 @@ namespace MediaBrowser.Server.Implementations.IO
             foreach (var path in pathsToWatch)
             {
                 StartWatchingPath(path);
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemRemoved event of the LibraryManager control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
+        void LibraryManager_ItemRemoved(object sender, ItemChangeEventArgs e)
+        {
+            if (e.Item.Parent is AggregateFolder)
+            {
+                StopWatchingPath(e.Item.Path);
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemAdded event of the LibraryManager control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
+        void LibraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
+        {
+            if (e.Item.Parent is AggregateFolder)
+            {
+                StartWatchingPath(e.Item.Path);
             }
         }
 
@@ -229,32 +256,6 @@ namespace MediaBrowser.Server.Implementations.IO
             watchers.Remove(watcher);
 
             _fileSystemWatchers = new ConcurrentBag<FileSystemWatcher>(watchers);
-        }
-
-        /// <summary>
-        /// Handles the LibraryChanged event of the Kernel
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="MediaBrowser.Controller.Library.ChildrenChangedEventArgs" /> instance containing the event data.</param>
-        void Instance_LibraryChanged(object sender, ChildrenChangedEventArgs e)
-        {
-            if (e.Folder is AggregateFolder && e.HasAddOrRemoveChange)
-            {
-                if (e.ItemsRemoved != null)
-                {
-                    foreach (var item in e.ItemsRemoved.OfType<Folder>())
-                    {
-                        StopWatchingPath(item.Path);
-                    }
-                }
-                if (e.ItemsAdded != null)
-                {
-                    foreach (var item in e.ItemsAdded.OfType<Folder>())
-                    {
-                        StartWatchingPath(item.Path);
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -497,7 +498,8 @@ namespace MediaBrowser.Server.Implementations.IO
         /// </summary>
         public void Stop()
         {
-            LibraryManager.LibraryChanged -= Instance_LibraryChanged;
+            LibraryManager.ItemAdded -= LibraryManager_ItemAdded;
+            LibraryManager.ItemRemoved -= LibraryManager_ItemRemoved;
 
             FileSystemWatcher watcher;
 

@@ -1,12 +1,11 @@
-﻿using System.IO;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,18 +13,6 @@ namespace MediaBrowser.Controller.Library
 {
     public interface ILibraryManager
     {
-        /// <summary>
-        /// Fires whenever any validation routine adds or removes items.  The added and removed items are properties of the args.
-        /// *** Will fire asynchronously. ***
-        /// </summary>
-        event EventHandler<ChildrenChangedEventArgs> LibraryChanged;
-
-        /// <summary>
-        /// Reports the library changed.
-        /// </summary>
-        /// <param name="args">The <see cref="ChildrenChangedEventArgs"/> instance containing the event data.</param>
-        void ReportLibraryChanged(ChildrenChangedEventArgs args);
-
         /// <summary>
         /// Resolves the item.
         /// </summary>
@@ -185,13 +172,21 @@ namespace MediaBrowser.Controller.Library
         UserRootFolder GetUserRootFolder(string userRootPath);
 
         /// <summary>
-        /// Saves the item.
+        /// Creates the item.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveItem(BaseItem item, CancellationToken cancellationToken);
+        Task CreateItem(BaseItem item, CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Updates the item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task UpdateItem(BaseItem item, CancellationToken cancellationToken);
+        
         /// <summary>
         /// Retrieves the item.
         /// </summary>
@@ -222,5 +217,25 @@ namespace MediaBrowser.Controller.Library
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
         Task ValidateArtists(CancellationToken cancellationToken, IProgress<double> progress);
+
+        /// <summary>
+        /// Occurs when [item added].
+        /// </summary>
+        event EventHandler<ItemChangeEventArgs> ItemAdded;
+
+        /// <summary>
+        /// Occurs when [item updated].
+        /// </summary>
+        event EventHandler<ItemChangeEventArgs> ItemUpdated;
+        /// <summary>
+        /// Occurs when [item removed].
+        /// </summary>
+        event EventHandler<ItemChangeEventArgs> ItemRemoved;
+
+        /// <summary>
+        /// Reports the item removed.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        void ReportItemRemoved(BaseItem item);
     }
 }
