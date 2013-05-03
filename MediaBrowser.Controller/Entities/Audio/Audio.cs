@@ -1,5 +1,5 @@
-﻿using System;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Entities;
+using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
@@ -10,6 +10,11 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// </summary>
     public class Audio : BaseItem, IHasMediaStreams
     {
+        public Audio()
+        {
+            MediaStreams = new List<MediaStream>();
+        }
+
         /// <summary>
         /// Gets or sets the media streams.
         /// </summary>

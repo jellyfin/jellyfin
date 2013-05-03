@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MoreLinq;
 
 namespace MediaBrowser.Server.Implementations.ScheduledTasks
 {
@@ -30,19 +31,83 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
+        private readonly List<Video> _newlyAddedItems = new List<Video>();
+
+        private const int NewItemDelay = 300000;
+
+        /// <summary>
+        /// The current new item timer
+        /// </summary>
+        /// <value>The new item timer.</value>
+        private Timer NewItemTimer { get; set; }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ChapterImagesTask" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
-        /// <param name="logger">The logger.</param>
+        /// <param name="logManager">The log manager.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public ChapterImagesTask(Kernel kernel, ILogger logger, ILibraryManager libraryManager)
+        public ChapterImagesTask(Kernel kernel, ILogManager logManager, ILibraryManager libraryManager)
         {
             _kernel = kernel;
-            _logger = logger;
+            _logger = logManager.GetLogger(GetType().Name);
             _libraryManager = libraryManager;
+
+            libraryManager.ItemAdded += libraryManager_ItemAdded;
+            libraryManager.ItemUpdated += libraryManager_ItemAdded;
         }
 
+        void libraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
+        {
+            var video = e.Item as Video;
+
+            if (video != null)
+            {
+                lock (_newlyAddedItems)
+                {
+                    _newlyAddedItems.Add(video);
+
+                    if (NewItemTimer == null)
+                    {
+                        NewItemTimer = new Timer(NewItemTimerCallback, null, NewItemDelay, Timeout.Infinite);
+                    }
+                    else
+                    {
+                        NewItemTimer.Change(NewItemDelay, Timeout.Infinite);
+                    }
+                }
+            }
+        }
+
+        private async void NewItemTimerCallback(object state)
+        {
+            List<Video> newItems;
+
+            // Lock the list and release all resources
+            lock (_newlyAddedItems)
+            {
+                newItems = _newlyAddedItems.DistinctBy(i => i.Id).ToList();
+                _newlyAddedItems.Clear();
+
+                NewItemTimer.Dispose();
+                NewItemTimer = null;
+            }
+
+            foreach (var item in newItems
+                .Where(i => i.LocationType == LocationType.FileSystem && string.IsNullOrEmpty(i.PrimaryImagePath) && i.MediaStreams.Any(m => m.Type == MediaStreamType.Video))
+                .Take(5))
+            {
+                try
+                {
+                    await _kernel.FFMpegManager.PopulateChapterImages(item, CancellationToken.None, true, true);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error creating image for {0}", ex, item.Name);
+                }
+            }
+        }
+        
         /// <summary>
         /// Creates the triggers that define when the task will run
         /// </summary>

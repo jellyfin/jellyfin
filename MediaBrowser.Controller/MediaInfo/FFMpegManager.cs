@@ -5,9 +5,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers.MediaInfo;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MoreLinq;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -39,22 +37,6 @@ namespace MediaBrowser.Controller.MediaInfo
         private readonly ILogger _logger;
 
         /// <summary>
-        /// Holds the list of new items to generate chapter image for when the NewItemTimer expires
-        /// </summary>
-        private readonly List<Video> _newlyAddedItems = new List<Video>();
-
-        /// <summary>
-        /// The amount of time to wait before generating chapter images
-        /// </summary>
-        private const int NewItemDelay = 300000;
-
-        /// <summary>
-        /// The current new item timer
-        /// </summary>
-        /// <value>The new item timer.</value>
-        private Timer NewItemTimer { get; set; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="FFMpegManager" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
@@ -71,38 +53,6 @@ namespace MediaBrowser.Controller.MediaInfo
 
             VideoImageCache = new FileSystemRepository(VideoImagesDataPath);
             SubtitleCache = new FileSystemRepository(SubtitleCachePath);
-
-            libraryManager.ItemAdded += libraryManager_ItemAdded;
-            libraryManager.ItemUpdated += libraryManager_ItemAdded;
-        }
-
-        /// <summary>
-        /// Handles the ItemAdded event of the libraryManager control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
-        void libraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
-        {
-            var video = e.Item as Video;
-
-            if (video == null)
-            {
-                return;
-            }
-
-            lock (_newlyAddedItems)
-            {
-                _newlyAddedItems.Add(video);
-
-                if (NewItemTimer == null)
-                {
-                    NewItemTimer = new Timer(NewItemTimerCallback, null, NewItemDelay, Timeout.Infinite);
-                }
-                else
-                {
-                    NewItemTimer.Change(NewItemDelay, Timeout.Infinite);
-                }
-            }
         }
 
         /// <summary>
@@ -180,40 +130,6 @@ namespace MediaBrowser.Controller.MediaInfo
                 }
 
                 return _subtitleCachePath;
-            }
-        }
-
-        /// <summary>
-        /// Called when the new item timer expires
-        /// </summary>
-        /// <param name="state">The state.</param>
-        private async void NewItemTimerCallback(object state)
-        {
-            List<Video> newItems;
-
-            // Lock the list and release all resources
-            lock (_newlyAddedItems)
-            {
-                newItems = _newlyAddedItems.DistinctBy(i => i.Id).ToList();
-                _newlyAddedItems.Clear();
-
-                NewItemTimer.Dispose();
-                NewItemTimer = null;
-            }
-
-            // Limit the number of videos we generate images for
-            // The idea is to catch new items that are added here and there
-            // Mass image generation can be left to the scheduled task
-            foreach (var video in newItems.Where(c => c.Chapters != null).Take(5))
-            {
-                try
-                {
-                    await PopulateChapterImages(video, CancellationToken.None, true, true).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error creating chapter images for {0}", ex, video.Name);
-                }
             }
         }
         
