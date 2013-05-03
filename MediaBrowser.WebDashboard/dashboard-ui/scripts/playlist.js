@@ -29,10 +29,13 @@
 	        self.queue.splice(index, 1);
         };
 
-	    self.playNext = function () {
+	    self.playNext = function (item) {
 		    if (typeof self.queue[0] != "undefined") {
-			    MediaPlayer.play(new Array(self.queue[0]));
-			    self.queue.shift();
+			    //MediaPlayer.play(new Array(self.queue[0]));
+			    //self.queue.shift();
+			    self.queue.unshift(item);
+		    }else {
+			    self.add(item);
 		    }
 	    };
 
@@ -85,7 +88,7 @@
 			html += '<td>' + name + '</td>';
 			html += '<td>' + seriesName + '</td>';
 			html += '<td>' + ticks_to_human(item.RunTimeTicks) + '</td>';
-			html += '<td></td>';
+			html += '<td>' + LibraryBrowser.getUserDataIconsHtml(item) + '</td>';
 			html += '<td><a href="" data-queue-index="'+i+'" onclick="Playlist.remove(this)">remove</a></td>';
 			html += '</tr>';
 
