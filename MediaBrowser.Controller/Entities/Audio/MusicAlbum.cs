@@ -150,6 +150,10 @@ namespace MediaBrowser.Controller.Entities.Audio
             return RecursiveChildren.OfType<Audio>().Any(i => i.HasArtist(artist));
         }
 
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
         public override string Name
         {
             get
@@ -164,6 +168,10 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
+        /// <summary>
+        /// Gets or sets the display type of the media.
+        /// </summary>
+        /// <value>The display type of the media.</value>
         public override string DisplayMediaType
         {
             get
@@ -175,5 +183,11 @@ namespace MediaBrowser.Controller.Entities.Audio
                 base.DisplayMediaType = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the music brainz release group id.
+        /// </summary>
+        /// <value>The music brainz release group id.</value>
+        public string MusicBrainzReleaseGroupId { get; set; }
     }
 }

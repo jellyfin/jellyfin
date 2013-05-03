@@ -116,16 +116,22 @@ namespace MediaBrowser.Controller.Providers.Music
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var releaseGroupId = await GetReleaseGroupId(item.GetProviderId(MetadataProviders.Musicbrainz), cancellationToken).ConfigureAwait(false);
+            var album = (MusicAlbum)item;
 
-            if (string.IsNullOrEmpty(releaseGroupId))
+            if (string.IsNullOrEmpty(album.MusicBrainzReleaseGroupId))
+            {
+                album.MusicBrainzReleaseGroupId = await GetReleaseGroupId(item.GetProviderId(MetadataProviders.Musicbrainz), cancellationToken).ConfigureAwait(false);
+            }
+
+            // If still empty there's nothing more we can do
+            if (string.IsNullOrEmpty(album.MusicBrainzReleaseGroupId))
             {
                 SetLastRefreshed(item, DateTime.UtcNow);
 
                 return true;
             }
 
-            var url = string.Format("http://api.fanart.tv/webservice/album/{0}/{1}/xml/all/1/1", APIKey, releaseGroupId);
+            var url = string.Format("http://api.fanart.tv/webservice/album/{0}/{1}/xml/all/1/1", APIKey, album.MusicBrainzReleaseGroupId);
 
             var doc = new XmlDocument();
 
