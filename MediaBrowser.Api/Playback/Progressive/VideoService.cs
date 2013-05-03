@@ -108,9 +108,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 format = " -f mp4 -movflags frag_keyframe+empty_moov";
             }
 
-            var threads = 0;
-
-            return string.Format("{0} {1} {2} -i {3}{4}{5} {6} {7} -threads {8} {9}{10} \"{11}\"",
+            return string.Format("{0} {1} {2} -i {3}{4}{5} {6} {7} -threads 0 {8}{9} \"{10}\"",
                 probeSize,
                 GetUserAgentParam(state.Item),
                 GetFastSeekCommandLineParameter(state.Request),
@@ -119,7 +117,6 @@ namespace MediaBrowser.Api.Playback.Progressive
                 keyFrame,
                 GetMapArgs(state),
                 GetVideoArguments(state, videoCodec, performSubtitleConversions),
-                threads,
                 GetAudioArguments(state),
                 format,
                 outputPath

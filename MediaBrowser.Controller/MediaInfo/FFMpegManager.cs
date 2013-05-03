@@ -1,16 +1,17 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers.MediaInfo;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
+using MoreLinq;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Controller.MediaInfo
 {
@@ -71,35 +72,35 @@ namespace MediaBrowser.Controller.MediaInfo
             VideoImageCache = new FileSystemRepository(VideoImagesDataPath);
             SubtitleCache = new FileSystemRepository(SubtitleCachePath);
 
-            libraryManager.LibraryChanged += libraryManager_LibraryChanged;
+            libraryManager.ItemAdded += libraryManager_ItemAdded;
+            libraryManager.ItemUpdated += libraryManager_ItemAdded;
         }
 
         /// <summary>
-        /// Handles the LibraryChanged event of the libraryManager control.
+        /// Handles the ItemAdded event of the libraryManager control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="ChildrenChangedEventArgs"/> instance containing the event data.</param>
-        void libraryManager_LibraryChanged(object sender, ChildrenChangedEventArgs e)
+        /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
+        void libraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
         {
-            var videos = e.ItemsAdded.OfType<Video>().ToList();
+            var video = e.Item as Video;
 
-            videos.AddRange(e.ItemsUpdated.OfType<Video>());
-
-            // Use a timer to prevent lots of these notifications from showing in a short period of time
-            if (videos.Count > 0)
+            if (video == null)
             {
-                lock (_newlyAddedItems)
-                {
-                    _newlyAddedItems.AddRange(videos);
+                return;
+            }
 
-                    if (NewItemTimer == null)
-                    {
-                        NewItemTimer = new Timer(NewItemTimerCallback, null, NewItemDelay, Timeout.Infinite);
-                    }
-                    else
-                    {
-                        NewItemTimer.Change(NewItemDelay, Timeout.Infinite);
-                    }
+            lock (_newlyAddedItems)
+            {
+                _newlyAddedItems.Add(video);
+
+                if (NewItemTimer == null)
+                {
+                    NewItemTimer = new Timer(NewItemTimerCallback, null, NewItemDelay, Timeout.Infinite);
+                }
+                else
+                {
+                    NewItemTimer.Change(NewItemDelay, Timeout.Infinite);
                 }
             }
         }
@@ -193,7 +194,7 @@ namespace MediaBrowser.Controller.MediaInfo
             // Lock the list and release all resources
             lock (_newlyAddedItems)
             {
-                newItems = _newlyAddedItems.ToList();
+                newItems = _newlyAddedItems.DistinctBy(i => i.Id).ToList();
                 _newlyAddedItems.Clear();
 
                 NewItemTimer.Dispose();
@@ -297,7 +298,7 @@ namespace MediaBrowser.Controller.MediaInfo
 
             if (saveItem && changesMade)
             {
-                await _libraryManager.SaveItem(video, CancellationToken.None).ConfigureAwait(false);
+                await _libraryManager.UpdateItem(video, CancellationToken.None).ConfigureAwait(false);
             }
         }
 
