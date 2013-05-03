@@ -1059,7 +1059,14 @@ namespace MediaBrowser.Server.Implementations.Library
             
             if (ItemAdded != null)
             {
-                ItemAdded(this, new ItemChangeEventArgs { Item = item });
+                try
+                {
+                    ItemAdded(this, new ItemChangeEventArgs { Item = item });
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in ItemUpdated event handler", ex);
+                }
             }
         }
 
@@ -1077,7 +1084,14 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (ItemUpdated != null)
             {
-                ItemUpdated(this, new ItemChangeEventArgs { Item = item });
+                try
+                {
+                    ItemUpdated(this, new ItemChangeEventArgs { Item = item });
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in ItemUpdated event handler", ex);
+                }
             }
         }
 
@@ -1089,7 +1103,14 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             if (ItemRemoved != null)
             {
-                ItemRemoved(this, new ItemChangeEventArgs { Item = item });
+                try
+                {
+                    ItemRemoved(this, new ItemChangeEventArgs { Item = item });
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in ItemRemoved event handler", ex);
+                }
             }
         }
 
