@@ -1297,7 +1297,7 @@
                         html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
                     }
 
-                    html += '<a href="itembynamedetails.html?context=' + context + '&studio=' + ApiClient.encodeName(item.Studios[i]) + '">' + item.Studios[i] + '</a>';
+                    html += '<a href="itembynamedetails.html?context=' + context + '&studio=' + ApiClient.encodeName(item.Studios[i].Name) + '">' + item.Studios[i].Name + '</a>';
                 }
 
                 elem.show().html(html).trigger('create');
