@@ -537,6 +537,17 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
+        self.getNextUpEpisodes = function (options) {
+
+            var url = self.getUrl("Shows/NextUp", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         /**
         * Stops a scheduled task
         */
