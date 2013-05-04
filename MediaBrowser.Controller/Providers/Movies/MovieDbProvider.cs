@@ -161,7 +161,14 @@ namespace MediaBrowser.Controller.Providers.Movies
         {
             try
             {
-                using (var json = await httpClient.Get(String.Format(TmdbConfigUrl, ApiKey), Current.MovieDbResourcePool, CancellationToken.None).ConfigureAwait(false))
+                using (var json = await httpClient.Get(new HttpRequestOptions
+                {
+                    Url = string.Format(TmdbConfigUrl, ApiKey),
+                    CancellationToken = CancellationToken.None,
+                    ResourcePool = Current.MovieDbResourcePool,
+                    AcceptHeader = AcceptHeader
+
+                }).ConfigureAwait(false))
                 {
                     return jsonSerializer.DeserializeFromStream<TmdbSettingsResult>(json);
                 }
@@ -246,7 +253,8 @@ namespace MediaBrowser.Controller.Providers.Movies
         private const string CastInfo = @"http://api.themoviedb.org/3/movie/{0}/casts?api_key={1}";
         private const string ReleaseInfo = @"http://api.themoviedb.org/3/movie/{0}/releases?api_key={1}";
         private const string GetImages = @"http://api.themoviedb.org/3/{2}/{0}/images?api_key={1}";
-        public static string ApiKey = "f6bd687ffa63cd282b6ff2c6877f2669";
+        internal static string ApiKey = "f6bd687ffa63cd282b6ff2c6877f2669";
+        internal static string AcceptHeader = "application/json,image/*";
 
         static readonly Regex[] NameMatches = new[] {
             new Regex(@"(?<name>.*)\((?<year>\d{4})\)"), // matches "My Movie (2001)" and gives us the name and the year
@@ -504,7 +512,14 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             try
             {
-                using (Stream json = await HttpClient.Get(url3, MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
+                using (Stream json = await HttpClient.Get(new HttpRequestOptions
+                {
+                    Url = url3,
+                    CancellationToken = cancellationToken,
+                    ResourcePool = Current.MovieDbResourcePool,
+                    AcceptHeader = AcceptHeader
+
+                }).ConfigureAwait(false))
                 {
                     searchResult = JsonSerializer.DeserializeFromStream<TmdbMovieSearchResults>(json);
                 }
@@ -536,7 +551,14 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                 try
                 {
-                    using (var json = await HttpClient.Get(url3, MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
+                    using (var json = await HttpClient.Get(new HttpRequestOptions
+                    {
+                        Url = url3,
+                        CancellationToken = cancellationToken,
+                        ResourcePool = Current.MovieDbResourcePool,
+                        AcceptHeader = AcceptHeader
+
+                    }).ConfigureAwait(false))
                     {
                         searchResult = JsonSerializer.DeserializeFromStream<TmdbMovieSearchResults>(json);
                     }
@@ -575,7 +597,14 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                         try
                         {
-                            using (var json = await HttpClient.Get(url3, MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
+                            using (var json = await HttpClient.Get(new HttpRequestOptions
+                            {
+                                Url = url3,
+                                CancellationToken = cancellationToken,
+                                ResourcePool = Current.MovieDbResourcePool,
+                                AcceptHeader = AcceptHeader
+
+                            }).ConfigureAwait(false))
                             {
                                 var response = JsonSerializer.DeserializeFromStream<TmdbAltTitleResults>(json);
 
@@ -657,7 +686,14 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                 try
                 {
-                    using (Stream json = await HttpClient.Get(url, MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
+                    using (Stream json = await HttpClient.Get(new HttpRequestOptions
+                    {
+                        Url = url,
+                        CancellationToken = cancellationToken,
+                        ResourcePool = Current.MovieDbResourcePool,
+                        AcceptHeader = AcceptHeader
+
+                    }).ConfigureAwait(false))
                     {
                         var movieResult = JsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
 
@@ -758,7 +794,14 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             try
             {
-                using (var json = await HttpClient.Get(url, MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
+                using (var json = await HttpClient.Get(new HttpRequestOptions
+                {
+                    Url = url,
+                    CancellationToken = cancellationToken,
+                    ResourcePool = Current.MovieDbResourcePool,
+                    AcceptHeader = AcceptHeader
+
+                }).ConfigureAwait(false))
                 {
                     mainResult = JsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
                 }
@@ -790,7 +833,14 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                     try
                     {
-                        using (Stream json = await HttpClient.Get(url, MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
+                        using (Stream json = await HttpClient.Get(new HttpRequestOptions
+                        {
+                            Url = url,
+                            CancellationToken = cancellationToken,
+                            ResourcePool = Current.MovieDbResourcePool,
+                            AcceptHeader = AcceptHeader
+
+                        }).ConfigureAwait(false))
                         {
                             mainResult = JsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
                         }
@@ -826,7 +876,14 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             try
             {
-                using (Stream json = await HttpClient.Get(url, MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
+                using (Stream json = await HttpClient.Get(new HttpRequestOptions
+                {
+                    Url = url,
+                    CancellationToken = cancellationToken,
+                    ResourcePool = Current.MovieDbResourcePool,
+                    AcceptHeader = AcceptHeader
+
+                }).ConfigureAwait(false))
                 {
                     cast = JsonSerializer.DeserializeFromStream<TmdbCastResult>(json);
                 }
@@ -853,7 +910,14 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             try
             {
-                using (Stream json = await HttpClient.Get(url, MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
+                using (Stream json = await HttpClient.Get(new HttpRequestOptions
+                {
+                    Url = url,
+                    CancellationToken = cancellationToken,
+                    ResourcePool = Current.MovieDbResourcePool,
+                    AcceptHeader = AcceptHeader
+
+                }).ConfigureAwait(false))
                 {
                     releases = JsonSerializer.DeserializeFromStream<TmdbReleasesResult>(json);
                 }
@@ -882,7 +946,14 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             try
             {
-                using (Stream json = await HttpClient.Get(url, MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
+                using (Stream json = await HttpClient.Get(new HttpRequestOptions
+                {
+                    Url = url,
+                    CancellationToken = cancellationToken,
+                    ResourcePool = Current.MovieDbResourcePool,
+                    AcceptHeader = AcceptHeader
+
+                }).ConfigureAwait(false))
                 {
                     images = JsonSerializer.DeserializeFromStream<TmdbImages>(json);
                 }

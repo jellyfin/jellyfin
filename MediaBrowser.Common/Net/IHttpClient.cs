@@ -28,7 +28,14 @@ namespace MediaBrowser.Common.Net
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
         Task<Stream> Get(string url, CancellationToken cancellationToken);
-        
+
+        /// <summary>
+        /// Gets the specified options.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>Task{Stream}.</returns>
+        Task<Stream> Get(HttpRequestOptions options);
+
         /// <summary>
         /// Performs a POST request
         /// </summary>

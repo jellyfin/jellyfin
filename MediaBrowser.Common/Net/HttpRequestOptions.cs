@@ -15,6 +15,12 @@ namespace MediaBrowser.Common.Net
         public string Url { get; set; }
 
         /// <summary>
+        /// Gets or sets the accept header.
+        /// </summary>
+        /// <value>The accept header.</value>
+        public string AcceptHeader { get; set; }
+        
+        /// <summary>
         /// Gets or sets the cancellation token.
         /// </summary>
         /// <value>The cancellation token.</value>
