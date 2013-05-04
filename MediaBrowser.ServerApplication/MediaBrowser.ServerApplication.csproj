@@ -123,6 +123,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\DotNetZip.1.9.1.8\lib\net20\Ionic.Zip.dll</HintPath>
     </Reference>
+    <Reference Include="MahApps.Metro">
+      <HintPath>..\packages\MahApps.Metro.0.11.0.17-ALPHA\lib\net45\MahApps.Metro.dll</HintPath>
+    </Reference>
     <Reference Include="MediaBrowser.IsoMounter, Version=1.0.4827.21973, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.51\lib\net45\MediaBrowser.IsoMounter.dll</HintPath>
@@ -157,6 +160,9 @@
     <Reference Include="System.Net" />
     <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\MahApps.Metro.0.11.0.17-ALPHA\lib\net45\System.Windows.Interactivity.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
