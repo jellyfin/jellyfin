@@ -172,10 +172,10 @@
                 html += '<label for="radioShows">TV Shows (' + result.SeriesCount + ')</label>';
             }
 
-            if (result.EpisodeGuestStarCount) {
+            if (result.EpisodeCount) {
 
-                html += '<input type="radio" name="ibnItems" id="radioGuestStar" value="on" data-mini="true">';
-                html += '<label for="radioGuestStar">Guest Star (' + result.EpisodeGuestStarCount + ')</label>';
+                html += '<input type="radio" name="ibnItems" id="radioEpisodes" value="on" data-mini="true">';
+                html += '<label for="radioEpisodes">Episodes (' + result.EpisodeCount + ')</label>';
             }
 
             if (result.TrailerCount) {
@@ -266,13 +266,13 @@
             });
         });
 
-        $("#radioGuestStar", page).on("click", function () {
+        $("#radioEpisodes", page).on("click", function () {
 
             shape = "backdrop";
             loadItems(page, {
                 MediaTypes: "",
                 IncludeItemTypes: "Episode",
-                PersonTypes: "GuestStar",
+                PersonTypes: "",
                 Artists: ""
             });
         });
