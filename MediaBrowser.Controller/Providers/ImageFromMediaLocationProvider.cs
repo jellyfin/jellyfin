@@ -197,12 +197,20 @@ namespace MediaBrowser.Controller.Providers
                 item.SetImage(ImageType.Thumb, image.FullName);
             }
 
-            // Thumbnail Image
+            // Box Image
             image = GetImage(item, "box");
 
             if (image != null)
             {
                 item.SetImage(ImageType.Box, image.FullName);
+            }
+
+            // BoxRear Image
+            image = GetImage(item, "boxrear");
+
+            if (image != null)
+            {
+                item.SetImage(ImageType.BoxRear, image.FullName);
             }
 
             // Thumbnail Image

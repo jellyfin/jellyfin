@@ -455,6 +455,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "boxsets.js",
                                       "clientsettings.js",
                                       "dashboardpage.js",
+                                      "edititemimages.js",
                                       "edituserpage.js",
                                       "gamesrecommendedpage.js",
                                       "gamesystemspage.js",
