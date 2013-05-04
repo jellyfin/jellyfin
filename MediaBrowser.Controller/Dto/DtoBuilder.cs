@@ -63,7 +63,7 @@ namespace MediaBrowser.Controller.Dto
 
             if (fields.Contains(ItemFields.Studios))
             {
-                dto.Studios = item.Studios;
+                tasks.Add(AttachStudios(dto, item));
             }
 
             if (fields.Contains(ItemFields.People))
@@ -124,7 +124,7 @@ namespace MediaBrowser.Controller.Dto
 
             if (fields.Contains(ItemFields.Studios))
             {
-                dto.Studios = item.Studios;
+                tasks.Add(AttachStudios(dto, item));
             }
 
             if (fields.Contains(ItemFields.People))
@@ -641,6 +641,67 @@ namespace MediaBrowser.Controller.Dto
                 }
 
                 dto.People[i] = baseItemPerson;
+            }
+        }
+
+        /// <summary>
+        /// Attaches the studios.
+        /// </summary>
+        /// <param name="dto">The dto.</param>
+        /// <param name="item">The item.</param>
+        /// <returns>Task.</returns>
+        private async Task AttachStudios(BaseItemDto dto, BaseItem item)
+        {
+            if (item.Studios == null)
+            {
+                return;
+            }
+
+            var studios = item.Studios.ToList();
+
+            dto.Studios = new StudioDto[studios.Count];
+
+            var entities = await Task.WhenAll(studios.Distinct(StringComparer.OrdinalIgnoreCase).Select(c =>
+
+                    Task.Run(async () =>
+                    {
+                        try
+                        {
+                            return await _libraryManager.GetStudio(c).ConfigureAwait(false);
+                        }
+                        catch (IOException ex)
+                        {
+                            _logger.ErrorException("Error getting studio {0}", ex, c);
+                            return null;
+                        }
+                    })
+
+            )).ConfigureAwait(false);
+
+            var dictionary = entities.ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
+
+            for (var i = 0; i < studios.Count; i++)
+            {
+                var studio = studios[i];
+
+                var studioDto = new StudioDto
+                {
+                    Name = studio
+                };
+
+                Studio entity;
+
+                if (dictionary.TryGetValue(studio, out entity))
+                {
+                    var primaryImagePath = entity.PrimaryImagePath;
+
+                    if (!string.IsNullOrEmpty(primaryImagePath))
+                    {
+                        studioDto.PrimaryImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(entity, ImageType.Primary, primaryImagePath);
+                    }
+                }
+
+                dto.Studios[i] = studioDto;
             }
         }
 

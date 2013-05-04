@@ -11,7 +11,7 @@
             IncludeItemTypes: "Movie",
             Limit: 7,
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio",
+            Fields: "PrimaryImageAspectRatio,DateCreated,UserData",
             Filters: "IsUnplayed"
         };
 
@@ -34,7 +34,7 @@
             Filters: "IsResumable",
             Limit: 7,
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio"
+            Fields: "PrimaryImageAspectRatio,DateCreated,UserData"
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
@@ -47,7 +47,8 @@
             
             $('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: true
+                useAverageAspectRatio: true,
+                showProgressBar: true
             }));
 
         });
@@ -60,7 +61,7 @@
             IncludeItemTypes: "Trailer",
             Limit: 7,
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio,DateCreated",
+            Fields: "PrimaryImageAspectRatio,DateCreated,UserData",
             Filters: "IsUnplayed"
         };
 
