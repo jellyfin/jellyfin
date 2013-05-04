@@ -871,17 +871,26 @@ progress {
 }
 
 #videoWindow.tubecss .vjs-menu-button.vjs-quality-button div {
-    background: url("images/media/quality.png");
+    background: url("images/media/settings.png");
     height: 16px;
     width: 16px;
+	background-size: cover;
+	opacity: 0.5;
+}
+#videoWindow.tubecss .vjs-menu-button.vjs-quality-button div:hover {
+	opacity: 1.0;
 }
 
 #videoWindow.tubecss .vjs-chapter-button div {
     background: url("images/media/chapter.png");
     height: 16px;
     width: 16px;
+	background-size: cover;
+	opacity: 0.5;
 }
-
+#videoWindow.tubecss .vjs-chapter-button div:hover {
+	opacity: 1.0;
+}
 .vjs-chapter-button.vjs-menu-button ul {
     width: auto;
     max-width: 25em;
@@ -907,8 +916,11 @@ progress {
     height: 26px;
     width: 26px;
     margin: -.7em .5em auto 0;
+	opacity: 0.5;
 }
-
+#videoWindow.tubecss .vjs-menu-button.vjs-stop-button div:hover {
+	opacity: 1.0;
+}
 .vjs-subtitle-button div {
     background-position: -25px -75px !important;
 }
@@ -930,8 +942,12 @@ progress {
     background: url("images/media/language.png") !important;
     height: 16px;
     width: 16px;
+	background-size: cover;
+	opacity: 0.5;
 }
-
+#videoWindow.tubecss .vjs-menu-button.vjs-language-button div:hover {
+	opacity: 1.0;
+}
 .vjs-language-button.vjs-menu-button ul {
     width: auto;
     max-width: 25em;
@@ -961,7 +977,18 @@ progress {
 	bottom: 0;
 	top: auto;
 	height: auto;
+	width: 0px;
 }
 #videoWindow.tubecss .vjs-time-divider {
 	bottom: 0.4em;
+	left: 25.3em;
+}
+#videoWindow.tubecss .vjs-menu-item {
+	font-size: 1em;
+}
+#videoWindow.tubecss .vjs-current-time {
+	left: 26em;
+}
+#videoWindow.tubecss .vjs-duration {
+	left: 22.5em;
 }
