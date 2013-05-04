@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common;
+﻿using MahApps.Metro.Controls;
+using MediaBrowser.Common;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -27,7 +28,7 @@ namespace MediaBrowser.ServerApplication
     /// <summary>
     /// Interaction logic for LibraryExplorer.xaml
     /// </summary>
-    public partial class LibraryExplorer : Window
+    public partial class LibraryExplorer : MetroWindow
     {
         private readonly ILogger _logger;
 

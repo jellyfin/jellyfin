@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common;
+﻿using MahApps.Metro.Controls;
+using MediaBrowser.Common;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
