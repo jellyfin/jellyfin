@@ -5,7 +5,7 @@
 
         SortBy: "SortName",
         SortOrder: "Ascending",
-        IncludeItemTypes: "Series,Season,Episode",
+        IncludeItemTypes: "Series,Episode",
         Recursive: true,
         Fields: "ItemCounts,DateCreated,UserData",
         PersonTypes: "",

@@ -163,7 +163,14 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             try
             {
-                using (Stream json = await HttpClient.Get(url, MovieDbProvider.Current.MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
+                using (Stream json = await HttpClient.Get(new HttpRequestOptions
+                {
+                    Url = url,
+                    CancellationToken = cancellationToken,
+                    ResourcePool = MovieDbProvider.Current.MovieDbResourcePool,
+                    AcceptHeader = MovieDbProvider.AcceptHeader
+
+                }).ConfigureAwait(false))
                 {
                     searchResult = JsonSerializer.DeserializeFromStream<PersonSearchResults>(json);
                 }
@@ -189,7 +196,14 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             try
             {
-                using (Stream json = await HttpClient.Get(url, MovieDbProvider.Current.MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
+                using (Stream json = await HttpClient.Get(new HttpRequestOptions
+                {
+                    Url = url,
+                    CancellationToken = cancellationToken,
+                    ResourcePool = MovieDbProvider.Current.MovieDbResourcePool,
+                    AcceptHeader = MovieDbProvider.AcceptHeader
+
+                }).ConfigureAwait(false))
                 {
                     if (json != null)
                     {
@@ -267,7 +281,14 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             try
             {
-                using (Stream json = await HttpClient.Get(url, MovieDbProvider.Current.MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
+                using (Stream json = await HttpClient.Get(new HttpRequestOptions
+                {
+                    Url = url,
+                    CancellationToken = cancellationToken,
+                    ResourcePool = MovieDbProvider.Current.MovieDbResourcePool,
+                    AcceptHeader = MovieDbProvider.AcceptHeader
+
+                }).ConfigureAwait(false))
                 {
                     if (json != null)
                     {

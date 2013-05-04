@@ -163,7 +163,7 @@ namespace MediaBrowser.Api.UserLibrary
 
                 AlbumCount = items.OfType<MusicAlbum>().Count(),
 
-                EpisodeGuestStarCount = items.OfType<Episode>().Count(i => i.People.Any(p => string.Equals(p.Name, request.Name, StringComparison.OrdinalIgnoreCase) && string.Equals(p.Type, PersonType.GuestStar)))
+                EpisodeCount = items.OfType<Episode>().Count()
             };
 
             return ToOptimizedResult(counts);

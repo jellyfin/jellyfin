@@ -22,10 +22,10 @@ namespace MediaBrowser.Model.Dto
         /// <value>The series count.</value>
         public int SeriesCount { get; set; }
         /// <summary>
-        /// Gets or sets the episode guest star count.
+        /// Gets or sets the episode count.
         /// </summary>
-        /// <value>The episode guest star count.</value>
-        public int EpisodeGuestStarCount { get; set; }
+        /// <value>The episode count.</value>
+        public int EpisodeCount { get; set; }
         /// <summary>
         /// Gets or sets the game count.
         /// </summary>
