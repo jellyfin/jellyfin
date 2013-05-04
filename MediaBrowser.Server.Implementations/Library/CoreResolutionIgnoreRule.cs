@@ -44,6 +44,15 @@ namespace MediaBrowser.Server.Implementations.Library
                     return false;
                 }
 
+                // Drives will sometimes be hidden
+                if (args.Path.EndsWith(":\\", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (new DriveInfo(args.Path).IsReady)
+                    {
+                        return false;
+                    }
+                }
+
                 return true;
             }
 
