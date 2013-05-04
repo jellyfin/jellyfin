@@ -79,6 +79,19 @@
     font-weight: normal;
 }
 
+.smallBackdropTileItem .tileImage {
+    height: 125px;
+    width: 45%;
+}
+
+.smallBackdropTileItem .tileContent {
+    width: 50%;
+}
+
+.smallBackdropTileItem .tileName {
+    font-weight: normal;
+}
+
 .squareTileItem .tileImage {
     height: 100px;
     width: 35%;
@@ -121,6 +134,11 @@
         margin-right: 3px;
     }
 
+    .smallBackdropTileItem {
+        display: block;
+    }
+
+
     .backdropTileItem, .posterTileItem, .squareTileItem {
         width: 46%;
     }
@@ -139,6 +157,15 @@
 }
 
 @media all and (min-width: 850px) {
+
+    .smallBackdropTileItem {
+        width: 370px;
+        display: inline-block;
+    }
+
+        .smallBackdropTileItem .tileImage {
+            height: 95px;
+        }
 
     .backdropTileItem .tileImage {
         height: 105px;
