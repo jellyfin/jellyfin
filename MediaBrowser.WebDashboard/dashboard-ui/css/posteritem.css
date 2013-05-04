@@ -101,17 +101,10 @@
     height: 150px;
 }
 
-
-.posterItemProgress {
-    font-size: 12px;
-    color: #bbb;
-    vertical-align: middle;
+.posterItemProgress .itemProgressBar {
+    height: 12px;
+    width: 35%;
 }
-
-    .posterItemProgress .itemProgressBar {
-        height: 12px;
-        width: 35%;
-    }
 
 .portraitPosterItem .itemProgressText {
     display: none;
@@ -119,11 +112,6 @@
 
 .portraitPosterItem .itemProgressBar {
     width: 100%;
-}
-
-.posterItem .itemProgressText {
-    margin-left: 5px;
-    vertical-align: middle;
 }
 
 @media all and (min-width: 650px) {

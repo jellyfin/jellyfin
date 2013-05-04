@@ -66,6 +66,19 @@
     width: 65%;
 }
 
+.smallPosterTileItem .tileImage {
+    height: 125px;
+    width: 30%;
+}
+
+.smallPosterTileItem .tileContent {
+    width: 65%;
+}
+
+.smallPosterTileItem .tileName {
+    font-weight: normal;
+}
+
 .squareTileItem .tileImage {
     height: 100px;
     width: 35%;
@@ -91,25 +104,38 @@
     width: 18px;
 }
 
+@media all and (min-width: 600px) {
+
+
+    .smallPosterTileItem {
+        width: 270px;
+        display: inline-block;
+        margin: 3px;
+    }
+}
+
 @media all and (min-width: 750px) {
     .tileItem {
-        width: 46%;
         display: inline-block;
         margin-left: 3px;
         margin-right: 3px;
     }
 
-    .backdropTileItem .tileImage {
-        height: 88px;
+    .backdropTileItem, .posterTileItem, .squareTileItem {
+        width: 46%;
     }
 
-    .posterTileItem .tileImage {
-        height: 120px;
-    }
+        .backdropTileItem .tileImage {
+            height: 88px;
+        }
 
-    .squareTileItem .tileImage {
-        height: 115px;
-    }
+        .posterTileItem .tileImage {
+            height: 120px;
+        }
+
+        .squareTileItem .tileImage {
+            height: 115px;
+        }
 }
 
 @media all and (min-width: 850px) {
@@ -136,7 +162,7 @@
 }
 
 @media all and (min-width: 1000px) {
-    .tileItem {
+    .backdropTileItem, .posterTileItem, .squareTileItem {
         width: 47.5%;
     }
 
@@ -170,13 +196,13 @@
         height: 160px;
     }
 
-    .tileItem {
+    .backdropTileItem, .posterTileItem, .squareTileItem {
         width: 31.5%;
     }
 
-    .squareTileItem .tileImage {
-        height: 130px;
-    }
+        .squareTileItem .tileImage {
+            height: 130px;
+        }
 }
 
 @media all and (min-width: 1440px) {
@@ -188,13 +214,13 @@
         height: 150px;
     }
 
-    .tileItem {
+    .backdropTileItem, .squareTileItem {
         width: 31.5%;
     }
 
-    .squareTileItem .tileImage {
-        height: 155px;
-    }
+        .squareTileItem .tileImage {
+            height: 155px;
+        }
 
     .posterTileItem {
         width: 23.5%;
@@ -211,7 +237,7 @@
         height: 170px;
     }
 
-    .tileItem {
+    .backdropTileItem {
         width: 32%;
     }
 
@@ -230,7 +256,7 @@
 
 
 @media all and (min-width: 1920px) {
-    .tileItem {
+    .backdropTileItem {
         width: 31.5%;
     }
 
@@ -256,7 +282,7 @@
 }
 
 @media all and (min-width: 2000px) {
-    .tileItem {
+    .backdropTileItem {
         width: 23.5%;
     }
 
@@ -282,7 +308,7 @@
 }
 
 @media all and (min-width: 2200px) {
-    .tileItem {
+    .backdropTileItem {
         width: 24%;
     }
 
@@ -308,7 +334,7 @@
 }
 
 @media all and (min-width: 2540px) {
-    .tileItem {
+    .backdropTileItem {
         width: 18.75%;
     }
 

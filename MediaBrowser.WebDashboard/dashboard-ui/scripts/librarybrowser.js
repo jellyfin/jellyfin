@@ -535,9 +535,9 @@
                 }
 
                 if (options.showProgressBar) {
-                    
+
                     html += "<div class='posterItemText posterItemProgress'>";
-                    html += LibraryBrowser.getItemProgressBarHtml(item, true) || "&nbsp;";
+                    html += LibraryBrowser.getItemProgressBarHtml(item) || "&nbsp;";
                     html += "</div>";
                 }
 
@@ -563,7 +563,7 @@
                 var date = item.DateCreated;
 
                 try {
-                    if (date && (new Date().getTime() - parseISO8601Date(date).getTime()) < 1209600000) {
+                    if (date && (new Date().getTime() - parseISO8601Date(date).getTime()) < 864000000) {
                         return "<div class='posterRibbon'>New</div>";
                     }
                 } catch (err) {
@@ -792,7 +792,7 @@
             return html;
         },
 
-        getItemProgressBarHtml: function (item, showProgressText) {
+        getItemProgressBarHtml: function (item) {
 
             var html = '';
 
@@ -801,7 +801,13 @@
 
             if (item.PlayedPercentage) {
 
-                tooltip = Math.round(item.PlayedPercentage) + '% played';
+                tooltip = Math.round(item.PlayedPercentage) + '% ';
+
+                if (item.Type == "Series" || item.Type == "Season" || item.Type == "BoxSet") {
+                    tooltip += "watched";
+                } else {
+                    tooltip += "played";
+                }
 
                 pct = item.PlayedPercentage;
             }
@@ -817,9 +823,7 @@
                 html += '<progress title="' + tooltip + '" class="itemProgressBar" min="0" max="100" value="' + pct + '">';
                 html += '</progress>';
 
-                if (showProgressText) {
-                    html += '<span class="itemProgressText">' + tooltip + '</span>';
-                }
+                html += '<span class="itemProgressText">' + tooltip + '</span>';
             }
 
             return html;
@@ -1483,7 +1487,7 @@
 
             if (typeof (index) == "undefined") index = 0;
 
-            html += '<div class="posterViewItem" style="padding-bottom:0px;">';
+            html += '<div class="galleryImageContainer">';
             html += '<a href="#pop_' + index + '_' + tag + '" data-transition="fade" data-rel="popup" data-position-to="window">';
             html += '<img class="galleryImage" src="' + LibraryBrowser.getImageUrl(item, type, index, {
                 maxwidth: lightboxWidth,
@@ -1510,28 +1514,35 @@
 
             var role = cast.Role || cast.Type;
 
-            html += '<a href="itembynamedetails.html?context=' + context + '&person=' + ApiClient.encodeName(cast.Name) + '">';
-            html += '<div class="posterViewItem posterViewItemWithDualText">';
+            html += '<a class="tileItem smallPosterTileItem" href="itembynamedetails.html?context=' + context + '&person=' + ApiClient.encodeName(cast.Name) + '">';
+
+            var imgUrl;
 
             if (cast.PrimaryImageTag) {
 
-                var imgUrl = ApiClient.getPersonImageUrl(cast.Name, {
+                imgUrl = ApiClient.getPersonImageUrl(cast.Name, {
                     width: 185,
                     tag: cast.PrimaryImageTag,
                     type: "primary"
                 });
 
-                html += '<img src="' + imgUrl + '" />';
             } else {
-                var style = "background-color:" + defaultBackground + ";";
 
-                html += '<img src="css/images/items/list/person.png" style="max-width:185px; ' + style + '"/>';
+                imgUrl = "css/images/items/list/person.png";
             }
 
-            html += '<div class="posterViewItemText posterViewItemPrimaryText">' + cast.Name + '</div>';
-            html += '<div class="posterViewItemText">' + role + '</div>';
+            html += '<div class="tileImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
 
-            html += '</div></a>';
+
+
+            html += '<div class="tileContent">';
+
+            html += '<p>' + cast.Name + '</p>';
+            html += '<p>' + (cast.Role || cast.Type) + '</p>';
+
+            html += '</div>';
+
+            html += '</a>';
 
             return html;
         }

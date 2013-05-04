@@ -278,7 +278,11 @@
 
             } else {
 
-                var shape = "poster";
+                var shape = "smallPoster";
+                
+                if (item.Type == "Season") {
+                    shape = "smallBackdrop";
+                }
 
                 var html = LibraryBrowser.getPosterDetailViewHtml({
                     items: result.Items,

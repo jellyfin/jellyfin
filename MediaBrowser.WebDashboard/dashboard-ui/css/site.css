@@ -684,12 +684,6 @@ progress {
     background-size: cover;
 }
 
-.galleryImage {
-    width: 120px;
-    display: inline-block;
-    margin: 5px;
-}
-
 .halfStarRating {
     background-position: center center;
 }
@@ -724,10 +718,6 @@ progress {
         width: 57%;
         padding-left: 20px;
     }
-
-    .galleryImage {
-        width: 150px;
-    }
 }
 
 @media all and (min-width: 750px) {
@@ -745,14 +735,6 @@ progress {
 
     .itemDetailBlock {
         width: 60%;
-    }
-}
-
-
-@media all and (min-width: 1200px) {
-
-    .galleryImage {
-        width: 200px;
     }
 }
 
@@ -853,8 +835,9 @@ progress {
 
 /* VideoJS overrides */
 #videoWindow.tubecss .vjs-controls {
-	height: 5em!important;
+    height: 5em!important;
 }
+
 #videoWindow.tubecss .vjs-menu-button {
     width: 1.5em;
     border: 0;
@@ -874,35 +857,38 @@ progress {
     background: url("images/media/settings.png");
     height: 16px;
     width: 16px;
-	background-size: cover;
-	opacity: 0.5;
+    background-size: cover;
+    opacity: 0.5;
 }
-#videoWindow.tubecss .vjs-menu-button.vjs-quality-button div:hover {
-	opacity: 1.0;
-}
+
+    #videoWindow.tubecss .vjs-menu-button.vjs-quality-button div:hover {
+        opacity: 1.0;
+    }
 
 #videoWindow.tubecss .vjs-chapter-button div {
     background: url("images/media/chapter.png");
     height: 16px;
     width: 16px;
-	background-size: cover;
-	opacity: 0.5;
+    background-size: cover;
+    opacity: 0.5;
 }
-#videoWindow.tubecss .vjs-chapter-button div:hover {
-	opacity: 1.0;
-}
+
+    #videoWindow.tubecss .vjs-chapter-button div:hover {
+        opacity: 1.0;
+    }
+
 .vjs-chapter-button.vjs-menu-button ul {
     width: auto;
     max-width: 25em;
     overflow-y: scroll;
 }
 
-.vjs-chapter-button.vjs-menu-button ul li {
-    width: auto;
-    white-space: nowrap;
-    font-size: 1.1em;
-    padding-right: 10px;
-}
+    .vjs-chapter-button.vjs-menu-button ul li {
+        width: auto;
+        white-space: nowrap;
+        font-size: 1.1em;
+        padding-right: 10px;
+    }
 
 #videoWindow.tubecss .vjs-menu-button.vjs-stop-button {
     float: left;
@@ -911,16 +897,18 @@ progress {
     width: 2.5em;
 }
 
-#videoWindow.tubecss .vjs-menu-button.vjs-stop-button div {
-    background: url("images/media/stop.png");
-    height: 26px;
-    width: 26px;
-    margin: -.7em .5em auto 0;
-	opacity: 0.5;
-}
-#videoWindow.tubecss .vjs-menu-button.vjs-stop-button div:hover {
-	opacity: 1.0;
-}
+    #videoWindow.tubecss .vjs-menu-button.vjs-stop-button div {
+        background: url("images/media/stop.png");
+        height: 26px;
+        width: 26px;
+        margin: -.7em .5em auto 0;
+        opacity: 0.5;
+    }
+
+        #videoWindow.tubecss .vjs-menu-button.vjs-stop-button div:hover {
+            opacity: 1.0;
+        }
+
 .vjs-subtitle-button div {
     background-position: -25px -75px !important;
 }
@@ -931,64 +919,72 @@ progress {
     overflow-y: scroll;
 }
 
-.vjs-subtitle-button.vjs-menu-button ul li {
-    width: auto;
-    white-space: nowrap;
-    font-size: 1.1em;
-    padding-right: 10px;
-}
+    .vjs-subtitle-button.vjs-menu-button ul li {
+        width: auto;
+        white-space: nowrap;
+        font-size: 1.1em;
+        padding-right: 10px;
+    }
 
 #videoWindow.tubecss .vjs-menu-button.vjs-language-button div {
     background: url("images/media/language.png") !important;
     height: 16px;
     width: 16px;
-	background-size: cover;
-	opacity: 0.5;
+    background-size: cover;
+    opacity: 0.5;
 }
-#videoWindow.tubecss .vjs-menu-button.vjs-language-button div:hover {
-	opacity: 1.0;
-}
+
+    #videoWindow.tubecss .vjs-menu-button.vjs-language-button div:hover {
+        opacity: 1.0;
+    }
+
 .vjs-language-button.vjs-menu-button ul {
     width: auto;
     max-width: 25em;
     overflow-y: scroll;
 }
 
-.vjs-language-button.vjs-menu-button ul li {
-    width: auto;
-    white-space: nowrap;
-    font-size: 1.1em;
-    padding-right: 10px;
-}
+    .vjs-language-button.vjs-menu-button ul li {
+        width: auto;
+        white-space: nowrap;
+        font-size: 1.1em;
+        padding-right: 10px;
+    }
 
 
 #videoWindow.tubecss .vjs-mute-control {
-	position: absolute;
-	bottom: 0;
+    position: absolute;
+    bottom: 0;
 }
+
 #videoWindow.tubecss .vjs-volume-control {
-	position: absolute;
-	bottom: 0;
-	top: auto;
-	left: 4em;
+    position: absolute;
+    bottom: 0;
+    top: auto;
+    left: 4em;
 }
+
 #videoWindow.tubecss .vjs-time-controls, #videoWindow.tubecss .vjs-time-divider {
-	position: absolute;
-	bottom: 0;
-	top: auto;
-	height: auto;
-	width: 0px;
+    position: absolute;
+    bottom: 0;
+    top: auto;
+    height: auto;
+    width: 0px;
 }
+
 #videoWindow.tubecss .vjs-time-divider {
-	bottom: 0.4em;
-	left: 25.3em;
+    bottom: 0.4em;
+    left: 25.3em;
 }
+
 #videoWindow.tubecss .vjs-menu-item {
-	font-size: 1em;
+    font-size: 1em;
 }
+
 #videoWindow.tubecss .vjs-current-time {
-	left: 26em;
+    left: 26em;
 }
+
 #videoWindow.tubecss .vjs-duration {
-	left: 22.5em;
+    left: 22.5em;
 }
