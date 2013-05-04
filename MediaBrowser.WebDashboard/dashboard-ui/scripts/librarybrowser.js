@@ -1203,6 +1203,22 @@
             var miscInfo = [];
             var text;
 
+            if (item.Type == "Episode") {
+
+                if (item.PremiereDate) {
+
+                    try {
+                        var date = parseISO8601Date(item.PremiereDate, { toLocal: true });
+
+                        text = (date.getMonth() + 1) + "/" + (date.getDate()) + "/" + date.getFullYear();
+                        miscInfo.push(text);
+                    }
+                    catch (e) {
+                        console.log("Error parsing date: " + item.PremiereDate);
+                    }
+                }
+            }
+
             if (item.ProductionYear && item.Type == "Series") {
 
                 if (item.Status == "Continuing") {
@@ -1244,10 +1260,6 @@
                 }
             }
 
-            if (item.OfficialRating) {
-                miscInfo.push(item.OfficialRating);
-            }
-
             if (item.RunTimeTicks) {
 
                 if (item.Type == "Audio") {
@@ -1260,6 +1272,10 @@
 
                     miscInfo.push(parseInt(minutes) + "min");
                 }
+            }
+
+            if (item.OfficialRating) {
+                miscInfo.push(item.OfficialRating);
             }
 
             if (item.MediaType && item.DisplayMediaType && item.DisplayMediaType != item.Type) {
@@ -1512,8 +1528,6 @@
 
             var html = '';
 
-            var role = cast.Role || cast.Type;
-
             html += '<a class="tileItem smallPosterTileItem" href="itembynamedetails.html?context=' + context + '&person=' + ApiClient.encodeName(cast.Name) + '">';
 
             var imgUrl;
@@ -1538,7 +1552,10 @@
             html += '<div class="tileContent">';
 
             html += '<p>' + cast.Name + '</p>';
-            html += '<p>' + (cast.Role || cast.Type) + '</p>';
+
+            var role = cast.Role ? "as " + cast.Role : cast.Type;
+
+            html += '<p>' + (role || "") + '</p>';
 
             html += '</div>';
 

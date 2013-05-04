@@ -250,7 +250,13 @@
             $('#itemCommunityRating', page).hide();
         }
 
-        LibraryBrowser.renderPremiereDate($('#itemPremiereDate', page), item);
+        if (item.Type != "Episode") {
+            var premiereDateElem = $('#itemPremiereDate', page).show();
+            LibraryBrowser.renderPremiereDate(premiereDateElem, item);
+        } else {
+            $('#itemPremiereDate', page).hide();
+        }
+        
         LibraryBrowser.renderBudget($('#itemBudget', page), item);
         LibraryBrowser.renderRevenue($('#itemRevenue', page), item);
 
