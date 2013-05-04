@@ -839,6 +839,63 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             return deferred.promise();
         };
 
+        self.uploadImage = function (itemId, imageType, file) {
+
+            if (!itemId) {
+                throw new Error("null itemId");
+            }
+
+            if (!imageType) {
+                throw new Error("null imageType");
+            }
+
+            if (!file) {
+                throw new Error("File must be an image.");
+            }
+
+            if (file.type != "image/png" && file.type != "image/jpeg" && file.type != "image/jpeg") {
+                throw new Error("File must be an image.");
+            }
+
+            var deferred = $.Deferred();
+
+            var reader = new FileReader();
+
+            reader.onerror = function () {
+                deferred.reject();
+            };
+
+            reader.onabort = function () {
+                deferred.reject();
+            };
+
+            // Closure to capture the file information.
+            reader.onload = function (e) {
+
+                var data = window.btoa(e.target.result);
+
+                var url = self.getUrl("Items/" + itemId + "/Images/" + imageType);
+
+                self.ajax({
+                    type: "POST",
+                    url: url,
+                    data: data,
+                    contentType: "image/" + file.name.substring(file.name.lastIndexOf('.') + 1)
+                }).done(function (result) {
+
+                    deferred.resolveWith(null, [result]);
+
+                }).fail(function () {
+                    deferred.reject();
+                });
+            };
+
+            // Read in the image file as a data URL.
+            reader.readAsBinaryString(file);
+
+            return deferred.promise();
+        };
+
         /**
          * Gets the list of installed plugins on the server
          */

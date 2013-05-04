@@ -76,9 +76,7 @@
         Dashboard.showError('File read cancelled');
     }
 
-    function setFiles(files) {
-
-        var page = $.mobile.activePage;
+    function setFiles(page, files) {
 
         var file = files[0];
 
@@ -117,7 +115,7 @@
 
         e.preventDefault();
 
-        setFiles(e.originalEvent.dataTransfer.files);
+        setFiles($.mobile.activePage, e.originalEvent.dataTransfer.files);
 
         return false;
     }
@@ -174,7 +172,7 @@
 
         self.onFileUploadChange = function (fileUpload) {
 
-            setFiles(fileUpload.files);
+            setFiles($.mobile.activePage, fileUpload.files);
         };
     }
 

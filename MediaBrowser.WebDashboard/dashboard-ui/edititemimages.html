@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Media Browser</title>
+</head>
+<body>
+    <div id="editItemImagesPage" data-role="page" class="page libraryPage" data-theme="a">
+        <div data-role="content">
+
+            <div class="ehsContent">
+                <h1 id="grandParentName" class="detailPageName hide"></h1>
+                <h1 id="parentName" class="detailPageName hide"></h1>
+                <h1 id="itemName" class="detailPageName"></h1>
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="#" data-role="button" class="ui-btn-active">Images</a>
+                </div>
+
+                <form style="max-width: 100%;">
+                    <h2>Add/Update Image</h2>
+                    <div>
+                        <p>JPG/PNG only.</p>
+                        <input type="file" accept="image/*" id="uploadImage" name="uploadImage" />
+
+                        <div id="imageDropZone" class="imageDropZone">
+                            <h3>Drop Image Here</h3>
+                            <output id="imageOutput"></output>
+                        </div>
+                        <div id="fldUpload" style="display: none;">
+                            <p data-role="fieldcontain">
+                                <label for="selectImageType">Image Type:</label>
+                                <select id="selectImageType" name="selectImageType">
+                                    <option value="Primary">Primary</option>
+                                    <option value="Art">Art</option>
+                                    <option value="Backdrop">Backdrop</option>
+                                    <option value="Banner">Banner</option>
+                                    <option value="Box">Box</option>
+                                    <option value="BoxRear">Box rear</option>
+                                    <option value="Disc">Disc</option>
+                                    <option value="Logo">Logo</option>
+                                    <option value="Menu">Menu</option>
+                                    <option value="Screenshot">Screenshot</option>
+                                    <option value="Thumb">Thumb</option>
+                                </select>
+                            </p>
+                            <button type="submit" data-icon="picture" data-theme="b">Upload</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $('#editItemImagesPage').on('submit', EditItemImagesPage.onSubmit);
+        </script>
+
+    </div>
+</body>
+</html>

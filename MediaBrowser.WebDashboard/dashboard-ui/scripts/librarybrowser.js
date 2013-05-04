@@ -630,6 +630,60 @@
 
         },
 
+        renderTitle: function (item, nameElem, parentNameElem, grandParentNameElem) {
+            
+            var name = item.Name;
+
+            if (item.IndexNumber != null) {
+                name = item.IndexNumber + " - " + name;
+            }
+            if (item.ParentIndexNumber != null && item.Type != "Episode") {
+                name = item.ParentIndexNumber + "." + name;
+            }
+
+            Dashboard.setPageTitle(name);
+
+            nameElem.html(name);
+
+            if (item.AlbumArtist && item.Type == "Audio") {
+                grandParentNameElem.html('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>').show().trigger('create');
+            }
+            else if (item.AlbumArtist && item.Type == "MusicAlbum") {
+                grandParentNameElem.html('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>').show().trigger('create');
+            }
+            else if (item.SeriesName && item.Type == "Episode") {
+
+                grandParentNameElem.html('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>').show().trigger('create');
+            }
+            else {
+                grandParentNameElem.hide();
+            }
+
+            if (item.SeriesName && item.Type == "Season") {
+
+                parentNameElem.html('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>').show().trigger('create');
+            }
+            else if (item.ParentIndexNumber && item.Type == "Episode") {
+
+                parentNameElem.html('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.ParentId + '">Season ' + item.ParentIndexNumber + '</a>').show().trigger('create');
+            }
+            else if (item.Album && item.Type == "Audio" && item.ParentId) {
+                parentNameElem.html('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.ParentId + '">' + item.Album + '</a>').show().trigger('create');
+
+            }
+            else if (item.AlbumArtist && item.Type == "MusicAlbum") {
+                grandParentNameElem.html('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>').show().trigger('create');
+
+            }
+            else if (item.Album) {
+                parentNameElem.html(item.Album).show();
+
+            }
+            else {
+                parentNameElem.hide();
+            }
+        },
+
         renderLinks: function (linksElem, item) {
 
             var links = [];

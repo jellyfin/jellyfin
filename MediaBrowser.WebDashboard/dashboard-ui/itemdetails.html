@@ -97,10 +97,12 @@
                         <div id="itemMedia" style="position: relative;">
                             <div id="itemImage"></div>
 
-                            <div id="playButtonShadow" style="display: none; height: 48px; position: absolute; bottom: 0; left: 0; right: 0; background: black; opacity: .75;"></div>
-                            <button id="btnPlay" type="button" class="imageButton" style="display: none; position: absolute; bottom: 5px; left: 10px;" data-role="none" title="Play">
-                                <img src="css/images/media/playCircle.png" style="height: 28px;" />
-                            </button>
+                            <div style="text-align: center;">
+                                <span id="playButtonContainer" style="display: none;">
+                                    <button id="btnPlay" type="button" data-icon="play" data-inline="true" data-mini="true" data-theme="a">Play</button>
+                                </span>
+                                <button id="btnEdit" type="button" data-icon="pencil" data-inline="true" data-mini="true" data-theme="a">Edit</button>
+                            </div>
                         </div>
                         <div id="playMenuAnchor"></div>
                         <div id="queueMenuAnchor"></div>

@@ -14,69 +14,18 @@
 
             renderHeader(page, item);
 
-            var name = item.Name;
-
-            if (item.IndexNumber != null) {
-                name = item.IndexNumber + " - " + name;
-            }
-            if (item.ParentIndexNumber != null && item.Type != "Episode") {
-                name = item.ParentIndexNumber + "." + name;
-            }
-
             $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item));
-
-            Dashboard.setPageTitle(name);
-
-            $('#itemName', page).html(name);
-
-            if (item.AlbumArtist && item.Type == "Audio") {
-                $('#grandParentName', page).html('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>').show().trigger('create');
-            }
-            else if (item.AlbumArtist && item.Type == "MusicAlbum") {
-                $('#grandParentName', page).html('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>').show().trigger('create');
-            }
-            else if (item.SeriesName && item.Type == "Episode") {
-
-                $('#grandParentName', page).html('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>').show().trigger('create');
-            }
-            else {
-                $('#grandParentName', page).hide();
-            }
-
-            if (item.SeriesName && item.Type == "Season") {
-
-                $('#parentName', page).html('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>').show().trigger('create');
-            }
-            else if (item.ParentIndexNumber && item.Type == "Episode") {
-
-                $('#parentName', page).html('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.ParentId + '">Season ' + item.ParentIndexNumber + '</a>').show().trigger('create');
-            }
-            else if (item.Album && item.Type == "Audio" && item.ParentId) {
-                $('#parentName', page).html('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.ParentId + '">' + item.Album + '</a>').show().trigger('create');
-
-            }
-            else if (item.AlbumArtist && item.Type == "MusicAlbum") {
-                $('#grandParentName', page).html('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>').show().trigger('create');
-
-            }
-            else if (item.Album) {
-                $('#parentName', page).html(item.Album).show();
-
-            }
-            else {
-                $('#parentName', page).hide();
-            }
+            
+            LibraryBrowser.renderTitle(item, $('#itemName', page), $('#parentName', page), $('#grandParentName', page));
 
             var context = getContext(item);
             setInitialCollapsibleState(page, item, context);
             renderDetails(page, item, context);
 
             if (MediaPlayer.canPlay(item)) {
-                $('#btnPlay', page).show();
-                $('#playButtonShadow', page).show();
+                $('#playButtonContainer', page).show();
             } else {
-                $('#btnPlay', page).hide();
-                $('#playButtonShadow', page).hide();
+                $('#playButtonContainer', page).hide();
             }
 
             $(".autoNumeric").autoNumeric('init');
@@ -256,7 +205,7 @@
         } else {
             $('#itemPremiereDate', page).hide();
         }
-        
+
         LibraryBrowser.renderBudget($('#itemBudget', page), item);
         LibraryBrowser.renderRevenue($('#itemRevenue', page), item);
 
@@ -285,7 +234,7 @@
             } else {
 
                 var shape = "smallPoster";
-                
+
                 if (item.Type == "Season") {
                     shape = "smallBackdrop";
                 }
@@ -570,6 +519,11 @@
         $('#btnPlay', page).on('click', function () {
             var userdata = currentItem.UserData || {};
             LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.MediaType, userdata.PlaybackPositionTicks);
+        });
+
+        $('#btnEdit', page).on('click', function () {
+
+            Dashboard.navigate("edititemimages.html?id=" + currentItem.Id);
         });
 
     }).on('pageshow', "#itemDetailPage", function () {

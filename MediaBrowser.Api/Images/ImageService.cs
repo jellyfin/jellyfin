@@ -159,6 +159,25 @@ namespace MediaBrowser.Api.Images
         /// <value>The request stream.</value>
         public Stream RequestStream { get; set; }
     }
+
+    [Route("/Items/{Id}/Images/{Type}", "POST")]
+    [Route("/Items/{Id}/Images/{Type}/{Index}", "POST")]
+    [Api(Description = "Posts an item image")]
+    public class PostItemImage : DeleteImageRequest, IRequiresRequestStream, IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// The raw Http Request Input Stream
+        /// </summary>
+        /// <value>The request stream.</value>
+        public Stream RequestStream { get; set; }
+    }
     
     /// <summary>
     /// Class ImageService
@@ -282,6 +301,24 @@ namespace MediaBrowser.Api.Images
             request.Type = (ImageType)Enum.Parse(typeof(ImageType), pathInfo.GetArgumentValue<string>(3), true);
 
             var item = _userManager.Users.First(i => i.Id == id);
+
+            var task = PostImage(item, request.RequestStream, request.Type, RequestContext.ContentType);
+
+            Task.WaitAll(task);
+        }
+
+        /// <summary>
+        /// Posts the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        public void Post(PostItemImage request)
+        {
+            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var id = new Guid(pathInfo.GetArgumentValue<string>(1));
+
+            request.Type = (ImageType)Enum.Parse(typeof(ImageType), pathInfo.GetArgumentValue<string>(3), true);
+
+            var item = _libraryManager.GetItemById(id);
 
             var task = PostImage(item, request.RequestStream, request.Type, RequestContext.ContentType);
 
