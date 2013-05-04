@@ -107,14 +107,13 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <summary>
         /// Performs a GET request and returns the resulting stream
         /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="resourcePool">The resource pool.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="options">The options.</param>
         /// <returns>Task{Stream}.</returns>
+        /// <exception cref="HttpException"></exception>
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public async Task<Stream> Get(string url, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
+        public async Task<Stream> Get(HttpRequestOptions options)
         {
-            ValidateParams(url, cancellationToken);
+            ValidateParams(options.Url, options.CancellationToken);
 
             //var urlHash = url.GetMD5().ToString();
             //var infoPath = _cacheRepository.GetResourcePath(urlHash + ".js");
@@ -136,9 +135,9 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             //    return GetCachedResponse(responsePath);
             //}
 
-            cancellationToken.ThrowIfCancellationRequested();
+            options.CancellationToken.ThrowIfCancellationRequested();
 
-            var message = new HttpRequestMessage(HttpMethod.Get, url);
+            var message = GetHttpRequestMessage(options);
 
             //if (cachedInfo != null)
             //{
@@ -152,22 +151,22 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             //    }
             //}
 
-            if (resourcePool != null)
+            if (options.ResourcePool != null)
             {
-                await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+                await options.ResourcePool.WaitAsync(options.CancellationToken).ConfigureAwait(false);
             }
 
-            _logger.Info("HttpClientManager.Get url: {0}", url);
+            _logger.Info("HttpClientManager.Get url: {0}", options.Url);
 
             try
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                options.CancellationToken.ThrowIfCancellationRequested();
 
-                var response = await GetHttpClient(GetHostFromUrl(url)).SendAsync(message, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                var response = await GetHttpClient(GetHostFromUrl(options.Url)).SendAsync(message, HttpCompletionOption.ResponseHeadersRead, options.CancellationToken).ConfigureAwait(false);
 
                 EnsureSuccessStatusCode(response);
 
-                cancellationToken.ThrowIfCancellationRequested();
+                options.CancellationToken.ThrowIfCancellationRequested();
 
                 //cachedInfo = UpdateInfoCache(cachedInfo, url, infoPath, response);
 
@@ -187,28 +186,57 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
             catch (OperationCanceledException ex)
             {
-                throw GetCancellationException(url, cancellationToken, ex);
+                throw GetCancellationException(options.Url, options.CancellationToken, ex);
             }
             catch (HttpRequestException ex)
             {
-                _logger.ErrorException("Error getting response from " + url, ex);
+                _logger.ErrorException("Error getting response from " + options.Url, ex);
 
                 throw new HttpException(ex.Message, ex);
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error getting response from " + url, ex);
+                _logger.ErrorException("Error getting response from " + options.Url, ex);
 
                 throw;
             }
             finally
             {
-                if (resourcePool != null)
+                if (options.ResourcePool != null)
                 {
-                    resourcePool.Release();
+                    options.ResourcePool.Release();
                 }
             }
         }
+
+        /// <summary>
+        /// Performs a GET request and returns the resulting stream
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="resourcePool">The resource pool.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{Stream}.</returns>
+        public Task<Stream> Get(string url, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
+        {
+            return Get(new HttpRequestOptions
+            {
+                Url = url,
+                ResourcePool = resourcePool,
+                CancellationToken = cancellationToken,
+            });
+        }
+
+        /// <summary>
+        /// Gets the specified URL.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{Stream}.</returns>
+        public Task<Stream> Get(string url, CancellationToken cancellationToken)
+        {
+            return Get(url, null, cancellationToken);
+        }
+
 
         /// <summary>
         /// Gets the cached response.
@@ -393,13 +421,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             options.CancellationToken.ThrowIfCancellationRequested();
 
-            var message = new HttpRequestMessage(HttpMethod.Get, options.Url);
-
-            if (!string.IsNullOrEmpty(options.UserAgent))
-            {
-                message.Headers.Add("User-Agent", options.UserAgent);
-            }
-
             if (options.ResourcePool != null)
             {
                 await options.ResourcePool.WaitAsync(options.CancellationToken).ConfigureAwait(false);
@@ -413,7 +434,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 options.CancellationToken.ThrowIfCancellationRequested();
 
-                using (var response = await GetHttpClient(GetHostFromUrl(options.Url)).SendAsync(message, HttpCompletionOption.ResponseHeadersRead, options.CancellationToken).ConfigureAwait(false))
+                using (var response = await GetHttpClient(GetHostFromUrl(options.Url)).SendAsync(GetHttpRequestMessage(options), HttpCompletionOption.ResponseHeadersRead, options.CancellationToken).ConfigureAwait(false))
                 {
                     EnsureSuccessStatusCode(response);
 
@@ -461,6 +482,28 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
 
             return tempFile;
+        }
+
+        /// <summary>
+        /// Gets the message.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>HttpResponseMessage.</returns>
+        private HttpRequestMessage GetHttpRequestMessage(HttpRequestOptions options)
+        {
+            var message = new HttpRequestMessage(HttpMethod.Get, options.Url);
+
+            if (!string.IsNullOrEmpty(options.UserAgent))
+            {
+                message.Headers.Add("User-Agent", options.UserAgent);
+            }
+
+            if (!string.IsNullOrEmpty(options.AcceptHeader))
+            {
+                message.Headers.Add("Accept", options.AcceptHeader);
+            }
+
+            return message;
         }
 
         /// <summary>
@@ -614,17 +657,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 throw new HttpException(response.ReasonPhrase) { StatusCode = response.StatusCode };
             }
-        }
-
-        /// <summary>
-        /// Gets the specified URL.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{Stream}.</returns>
-        public Task<Stream> Get(string url, CancellationToken cancellationToken)
-        {
-            return Get(url, null, cancellationToken);
         }
 
         /// <summary>
