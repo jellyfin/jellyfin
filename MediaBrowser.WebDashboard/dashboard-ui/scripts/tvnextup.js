@@ -11,7 +11,7 @@
             UserId: Dashboard.getCurrentUserId()
         };
 
-        $.getJSON(ApiClient.getUrl("Shows/NextUp", options)).done(function (result) {
+        ApiClient.getNextUpEpisodes(options).done(function (result) {
 
             if (result.Items.length) {
                 $('#resumableSection', page).show();
