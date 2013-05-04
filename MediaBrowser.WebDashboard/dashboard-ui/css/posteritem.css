@@ -9,6 +9,7 @@
     text-decoration: none;
     text-align: left;
     overflow: hidden;
+    border: 1px solid #666;
 }
 
     .posterItem:hover {
@@ -37,7 +38,7 @@
     overflow: hidden;
     text-wrap: none;
     white-space: nowrap;
-    padding: 4px;
+    padding: 5px 4px 4px;
     background: #181818;
     text-shadow: none;
 }
@@ -48,6 +49,7 @@
 
 .posterItemText + .posterItemText {
     padding-top: 2px;
+    border-top: 0;
 }
 
 .posterItemDefaultText {
@@ -84,13 +86,41 @@
 
 .portraitPosterItem {
     width: 100px;
+    border-color: #555;
 }
 
-    .portraitPosterItem .posterItemImage {
-        height: 150px;
+.smallBackdropPosterItem {
+    border-color: #555;
+}
+
+.portraitPosterItem .posterItemImage {
+    height: 150px;
+}
+
+
+.posterItemProgress {
+    font-size: 12px;
+    color: #bbb;
+    vertical-align: middle;
+}
+
+    .posterItemProgress .itemProgressBar {
+        height: 12px;
+        width: 35%;
     }
 
+.portraitPosterItem .itemProgressText {
+    display: none;
+}
 
+.portraitPosterItem .itemProgressBar {
+    width: 100%;
+}
+
+.posterItem .itemProgressText {
+    margin-left: 5px;
+    vertical-align: middle;
+}
 
 @media all and (min-width: 650px) {
 
@@ -124,6 +154,10 @@
             height: 126px;
         }
 
+        .backdropPosterItem .itemProgressBar {
+            width: 55%;
+        }
+
     .portraitPosterItem {
         width: 108px;
     }
@@ -144,33 +178,57 @@
         }
 
     .portraitPosterItem {
-        width: 120px;
+        width: 134px;
     }
 
         .portraitPosterItem .posterItemImage {
-            height: 180px;
+            height: 201px;
         }
+
+    .backdropPosterItem {
+        width: 256px;
+    }
+
+        .backdropPosterItem .posterItemImage {
+            height: 144px;
+        }
+
+    .portraitPosterItem .itemProgressText {
+        display: inline;
+    }
+
+    .portraitPosterItem .itemProgressBar {
+        width: 20%;
+    }
 }
 
 @media all and (min-width: 1920px) {
 
     .squarePosterItem {
-        width: 185px;
+        width: 200px;
     }
 
         .squarePosterItem .posterItemImage {
-            height: 185px;
+            height: 200px;
         }
 
     .portraitPosterItem {
-        width: 136px;
+        width: 160px;
     }
 
         .portraitPosterItem .posterItemImage {
-            height: 204px;
+            height: 240px;
         }
 
-    .posterItem {
-        font-size: 16px;
+    .backdropPosterItem {
+        width: 288px;
+    }
+
+        .backdropPosterItem .posterItemImage {
+            height: 162px;
+        }
+
+    .portraitPosterItem .itemProgressBar {
+        width: 30%;
     }
 }

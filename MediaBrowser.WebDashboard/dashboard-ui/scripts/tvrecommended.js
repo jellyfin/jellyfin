@@ -9,9 +9,9 @@
             SortBy: "DateCreated",
             SortOrder: "Descending",
             IncludeItemTypes: "Episode",
-            Limit: 6,
+            Limit: 8,
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio,SeriesInfo",
+            Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
             Filters: "IsUnplayed"
         };
 
@@ -34,9 +34,9 @@
             SortOrder: "Descending",
             IncludeItemTypes: "Episode",
             Filters: "IsResumable",
-            Limit: 6,
+            Limit: 8,
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated"
+            Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
@@ -52,7 +52,8 @@
                 useAverageAspectRatio: true,
                 shape: "backdrop",
                 showTitle: true,
-                showParentTitle: true
+                showParentTitle: true,
+                showProgressBar: true
             }));
 
         });

@@ -534,6 +534,13 @@
                     html += "</div>";
                 }
 
+                if (options.showProgressBar) {
+                    
+                    html += "<div class='posterItemText posterItemProgress'>";
+                    html += LibraryBrowser.getItemProgressBarHtml(item, true) || "&nbsp;";
+                    html += "</div>";
+                }
+
                 if (options.showNewIndicator !== false) {
                     html += LibraryBrowser.getNewIndicatorHtml(item);
                 }
@@ -785,7 +792,7 @@
             return html;
         },
 
-        getUserDataIconsHtml: function (item) {
+        getItemProgressBarHtml: function (item, showProgressText) {
 
             var html = '';
 
@@ -795,7 +802,7 @@
             if (item.PlayedPercentage) {
 
                 tooltip = Math.round(item.PlayedPercentage) + '% played';
-                
+
                 pct = item.PlayedPercentage;
             }
             else if (item.UserData && item.UserData.PlaybackPositionTicks && item.RunTimeTicks) {
@@ -809,7 +816,20 @@
 
                 html += '<progress title="' + tooltip + '" class="itemProgressBar" min="0" max="100" value="' + pct + '">';
                 html += '</progress>';
+
+                if (showProgressText) {
+                    html += '<span class="itemProgressText">' + tooltip + '</span>';
+                }
             }
+
+            return html;
+        },
+
+        getUserDataIconsHtml: function (item) {
+
+            var html = '';
+
+            html += LibraryBrowser.getItemProgressBarHtml(item);
 
             var userData = item.UserData || {};
 
