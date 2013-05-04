@@ -33,6 +33,10 @@
     background-color: #999;
 }
 
+.borderlessPosterItem {
+    border: 0;
+}
+
 .posterItemText {
     text-overflow: ellipsis;
     overflow: hidden;
@@ -164,6 +168,14 @@
 
         .portraitPosterItem .posterItemImage {
             height: 162px;
+        }
+
+    .smallBackdropPosterItem {
+        width: 192px;
+    }
+
+        .smallBackdropPosterItem .posterItemImage {
+            height: 108px;
         }
 }
 

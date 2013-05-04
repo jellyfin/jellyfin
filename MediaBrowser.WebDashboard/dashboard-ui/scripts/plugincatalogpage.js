@@ -37,7 +37,7 @@
             var html = '';
             var plugin = availablePlugins[i];
 
-            html += "<a style='border:0;' class='posterItem backdropPosterItem transparentPosterItem' href='addPlugin.html?name=" + encodeURIComponent(plugin.name) + "'>";
+            html += "<a class='posterItem smallBackdropPosterItem transparentPosterItem borderlessPosterItem' href='addPlugin.html?name=" + encodeURIComponent(plugin.name) + "'>";
 
             if (plugin.thumbImage) {
                 html += '<div class="posterItemImage" style="background-image:url(\'' + plugin.thumbImage + '\');"></div>';
