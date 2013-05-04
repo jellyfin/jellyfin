@@ -483,7 +483,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                return ActualChildren.Values;
+                return ActualChildren.Values.ToList();
             }
         }
 

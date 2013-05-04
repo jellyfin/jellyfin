@@ -160,7 +160,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the studios.
         /// </summary>
         /// <value>The studios.</value>
-        public List<string> Studios { get; set; }
+        public StudioDto[] Studios { get; set; }
 
         /// <summary>
         /// If the item does not have a logo, this will hold the Id of the Parent that has one.
