@@ -3,13 +3,11 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using System.IO;
-using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace MediaBrowser.Controller.Providers.Music
 {
@@ -24,37 +22,22 @@ namespace MediaBrowser.Controller.Providers.Music
             LocalMetaFileName = LastfmHelper.LocalArtistMetaFileName;
         }
 
+        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
+        {
+            return true;
+        }
+
         protected override async Task<string> FindId(BaseItem item, CancellationToken cancellationToken)
         {
-            //Execute the Artist search against our name and assume first one is the one we want
-            var url = RootUrl + string.Format("method=artist.search&artist={0}&api_key={1}&format=json", UrlEncode(item.Name), ApiKey);
+            var url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=artistaccent:{0}", UrlEncode(item.Name));
 
-            LastfmArtistSearchResults searchResult;
+            var doc = await FanArtAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
 
-            try
-            {
-                using (var json = await HttpClient.Get(url, LastfmResourcePool, cancellationToken).ConfigureAwait(false))
-                {
-                    searchResult = JsonSerializer.DeserializeFromStream<LastfmArtistSearchResults>(json);
-                }
-            }
-            catch (HttpException e)
-            {
-                if (e.StatusCode == HttpStatusCode.NotFound)
-                {
-                    return null;
-                }
-                throw;
-            }
+            var ns = new XmlNamespaceManager(doc.NameTable);
+            ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
+            var node = doc.SelectSingleNode("//mb:artist-list/mb:artist/@id", ns);
 
-            if (searchResult != null && searchResult.results != null && searchResult.results.artistmatches != null && searchResult.results.artistmatches.artist.Count > 0)
-            {
-                var artist = searchResult.results.artistmatches.artist.FirstOrDefault(i => string.Equals(i.name, item.Name, System.StringComparison.OrdinalIgnoreCase));
-
-                return artist != null ? artist.mbid : searchResult.results.artistmatches.artist[0].mbid;
-            }
-
-            return null;
+            return node != null ? node.Value : null;
         }
 
         protected override async Task FetchLastfmData(BaseItem item, string id, CancellationToken cancellationToken)

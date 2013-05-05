@@ -35,6 +35,8 @@ namespace MediaBrowser.Controller.Providers.Music
         /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
 
+        internal static FanArtAlbumProvider Current { get; private set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FanArtAlbumProvider"/> class.
         /// </summary>
@@ -47,6 +49,8 @@ namespace MediaBrowser.Controller.Providers.Music
         {
             _providerManager = providerManager;
             HttpClient = httpClient;
+
+            Current = this;
         }
 
         /// <summary>
@@ -208,12 +212,12 @@ namespace MediaBrowser.Controller.Providers.Music
         private DateTime _lastMusicBrainzRequest = DateTime.MinValue;
 
         /// <summary>
-        /// Gets the release group id.
+        /// Gets the music brainz response.
         /// </summary>
-        /// <param name="releaseEntryId">The release entry id.</param>
+        /// <param name="url">The URL.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{System.String}.</returns>
-        private async Task<string> GetReleaseGroupId(string releaseEntryId, CancellationToken cancellationToken)
+        /// <returns>Task{XmlDocument}.</returns>
+        internal async Task<XmlDocument> GetMusicBrainzResponse(string url, CancellationToken cancellationToken)
         {
             await _musicBrainzResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -230,7 +234,17 @@ namespace MediaBrowser.Controller.Providers.Music
 
                 _lastMusicBrainzRequest = DateTime.Now;
 
-                return await GetReleaseGroupIdInternal(releaseEntryId, cancellationToken).ConfigureAwait(false);
+                var doc = new XmlDocument();
+
+                using (var xml = await HttpClient.Get(url, cancellationToken).ConfigureAwait(false))
+                {
+                    using (var oReader = new StreamReader(xml, Encoding.UTF8))
+                    {
+                        doc.Load(oReader);
+                    }
+                }
+
+                return doc;
             }
             finally
             {
@@ -244,19 +258,11 @@ namespace MediaBrowser.Controller.Providers.Music
         /// <param name="releaseEntryId">The release entry id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.String}.</returns>
-        private async Task<string> GetReleaseGroupIdInternal(string releaseEntryId, CancellationToken cancellationToken)
+        private async Task<string> GetReleaseGroupId(string releaseEntryId, CancellationToken cancellationToken)
         {
             var url = string.Format("http://www.musicbrainz.org/ws/2/release-group/?query=reid:{0}", releaseEntryId);
 
-            var doc = new XmlDocument();
-
-            using (var xml = await HttpClient.Get(url, cancellationToken).ConfigureAwait(false))
-            {
-                using (var oReader = new StreamReader(xml, Encoding.UTF8))
-                {
-                    doc.Load(oReader);
-                } 
-            }
+            var doc = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
 
             var ns = new XmlNamespaceManager(doc.NameTable);
             ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
