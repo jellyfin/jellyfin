@@ -754,7 +754,7 @@ namespace MediaBrowser.Api.Images
                 }
 
                 // Don't save locally if there's no parent (special feature, trailer, etc)
-                var saveLocally = !(entity is Audio) && entity.Parent != null;
+                var saveLocally = !(entity is Audio) && entity.Parent != null && !string.IsNullOrEmpty(entity.MetaLocation);
 
                 if (imageType != ImageType.Primary)
                 {
