@@ -758,7 +758,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
          * @param {String} userId
          * @param {String} imageType The type of image to delete, based on the server-side ImageType enum.
          */
-        self.deleteUserImage = function (userId, imageType) {
+        self.deleteUserImage = function (userId, imageType, imageIndex) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -770,9 +770,68 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             var url = self.getUrl("Users/" + userId + "/Images/" + imageType);
 
+            if (imageIndex != null) {
+                url += "/" + imageIndex;
+            }
+
             return self.ajax({
                 type: "DELETE",
                 url: url
+            });
+        };
+
+        self.deleteItemImage = function (itemId, imageType, imageIndex) {
+
+            if (!itemId) {
+                throw new Error("null itemId");
+            }
+
+            if (!imageType) {
+                throw new Error("null imageType");
+            }
+
+            var url = self.getUrl("Items/" + itemId + "/Images/" + imageType);
+
+            if (imageIndex != null) {
+                url += "/" + imageIndex;
+            }
+
+            return self.ajax({
+                type: "DELETE",
+                url: url
+            });
+        };
+
+        self.updateItemImageIndex = function (itemId, imageType, imageIndex, newIndex) {
+
+            if (!itemId) {
+                throw new Error("null itemId");
+            }
+
+            if (!imageType) {
+                throw new Error("null imageType");
+            }
+
+            var url = self.getUrl("Items/" + itemId + "/Images/" + imageType + "/" + imageIndex + "/Index", { newIndex: newIndex });
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
+        self.getItemImageInfos = function (itemId) {
+
+            if (!itemId) {
+                throw new Error("null itemId");
+            }
+
+            var url = self.getUrl("Items/" + itemId + "/Images");
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
             });
         };
 
@@ -839,7 +898,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             return deferred.promise();
         };
 
-        self.uploadImage = function (itemId, imageType, file) {
+        self.uploadItemImage = function (itemId, imageType, file) {
 
             if (!itemId) {
                 throw new Error("null itemId");

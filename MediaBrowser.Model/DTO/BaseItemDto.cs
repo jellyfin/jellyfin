@@ -339,6 +339,12 @@ namespace MediaBrowser.Model.Dto
         public List<Guid> BackdropImageTags { get; set; }
 
         /// <summary>
+        /// Gets or sets the screenshot image tags.
+        /// </summary>
+        /// <value>The screenshot image tags.</value>
+        public List<Guid> ScreenshotImageTags { get; set; }
+        
+        /// <summary>
         /// Gets or sets the parent logo image tag.
         /// </summary>
         /// <value>The parent logo image tag.</value>
@@ -440,6 +446,16 @@ namespace MediaBrowser.Model.Dto
             get { return BackdropImageTags == null ? 0 : BackdropImageTags.Count; }
         }
 
+        /// <summary>
+        /// Gets the screenshot count.
+        /// </summary>
+        /// <value>The screenshot count.</value>
+        [IgnoreDataMember]
+        public int ScreenshotCount
+        {
+            get { return ScreenshotImageTags == null ? 0 : ScreenshotImageTags.Count; }
+        }
+        
         /// <summary>
         /// Gets a value indicating whether this instance has banner.
         /// </summary>
