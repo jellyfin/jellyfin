@@ -23,7 +23,7 @@ namespace MediaBrowser.Server.Implementations.IO
         /// <summary>
         /// The file system watchers
         /// </summary>
-        private ConcurrentBag<FileSystemWatcher> _fileSystemWatchers = new ConcurrentBag<FileSystemWatcher>();
+        private ConcurrentDictionary<string, FileSystemWatcher> _fileSystemWatchers = new ConcurrentDictionary<string,FileSystemWatcher>(StringComparer.OrdinalIgnoreCase);
         /// <summary>
         /// The update timer
         /// </summary>
@@ -210,10 +210,17 @@ namespace MediaBrowser.Server.Implementations.IO
 
                 try
                 {
-                    newWatcher.EnableRaisingEvents = true;
-                    _fileSystemWatchers.Add(newWatcher);
+                    if (_fileSystemWatchers.TryAdd(path, newWatcher))
+                    {
+                        newWatcher.EnableRaisingEvents = true;
+                        Logger.Info("Watching directory " + path);
+                    }
+                    else
+                    {
+                        Logger.Info("Unable to add directory watcher for {0}. It already exists in the dictionary." + path);
+                        newWatcher.Dispose();
+                    }
 
-                    Logger.Info("Watching directory " + path);
                 }
                 catch (IOException ex)
                 {
@@ -232,9 +239,9 @@ namespace MediaBrowser.Server.Implementations.IO
         /// <param name="path">The path.</param>
         private void StopWatchingPath(string path)
         {
-            var watcher = _fileSystemWatchers.FirstOrDefault(f => f.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
+            FileSystemWatcher watcher;
 
-            if (watcher != null)
+            if (_fileSystemWatchers.TryGetValue(path, out watcher))
             {
                 DisposeWatcher(watcher);
             }
@@ -251,11 +258,18 @@ namespace MediaBrowser.Server.Implementations.IO
             watcher.EnableRaisingEvents = false;
             watcher.Dispose();
 
-            var watchers = _fileSystemWatchers.ToList();
+            RemoveWatcherFromList(watcher);
+        }
 
-            watchers.Remove(watcher);
+        /// <summary>
+        /// Removes the watcher from list.
+        /// </summary>
+        /// <param name="watcher">The watcher.</param>
+        private void RemoveWatcherFromList(FileSystemWatcher watcher)
+        {
+            FileSystemWatcher removed;
 
-            _fileSystemWatchers = new ConcurrentBag<FileSystemWatcher>(watchers);
+            _fileSystemWatchers.TryRemove(watcher.Path, out removed);
         }
 
         /// <summary>
@@ -282,6 +296,11 @@ namespace MediaBrowser.Server.Implementations.IO
                     dw.EnableRaisingEvents = false;
                     dw.EnableRaisingEvents = true;
                     success = true;
+                }
+                catch (ObjectDisposedException)
+                {
+                    RemoveWatcherFromList(dw);
+                    return;
                 }
                 catch (IOException)
                 {
@@ -501,9 +520,7 @@ namespace MediaBrowser.Server.Implementations.IO
             LibraryManager.ItemAdded -= LibraryManager_ItemAdded;
             LibraryManager.ItemRemoved -= LibraryManager_ItemRemoved;
 
-            FileSystemWatcher watcher;
-
-            while (_fileSystemWatchers.TryTake(out watcher))
+            foreach (var watcher in _fileSystemWatchers.Values.ToList())
             {
                 watcher.Changed -= watcher_Changed;
                 watcher.EnableRaisingEvents = false;
