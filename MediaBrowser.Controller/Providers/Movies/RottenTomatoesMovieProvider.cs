@@ -9,6 +9,8 @@ using MediaBrowser.Model.Serialization;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.IO;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Providers.Movies
 {
@@ -22,6 +24,12 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// The API key
         /// </summary>
         private const string ApiKey = "x9wjnvv39ntjmt9zs95nm7bg";
+
+        private const string BasicUrl = @"http://api.rottentomatoes.com/api/public/v1.0/";
+        private const string Movie = @"movies/{1}.json?apikey={0}";
+        private const string MovieImdb = @"movie_alias.json?id={1}&type=imdb&apikey={0}";
+        private const string MovieSearch = @"movies.json?q={1}&apikey={0}&page_limit=20&page={2}";
+        private const string MoviesReviews = @"movies/{1}/reviews.json?review_type=top_critic&page_limit=10&page=1&country=us&apikey={0}";
 
         /// <summary>
         /// The _rotten tomatoes resource pool
@@ -91,7 +99,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         }
 
         /// <summary>
-        /// Supportses the specified item.
+        /// Supports the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
@@ -108,6 +116,8 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
+            return true;
+
             if (providerInfo.LastRefreshStatus != ProviderRefreshStatus.Success)
             {
                 Logger.Debug("RottenTomatoesMovieProvider for {0} - last attempt had errors.  Will try again.", item.Path);
@@ -137,20 +147,145 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <returns>Task{System.Boolean}.</returns>
         public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            // Do work here
-
-
             // Lastly, record the Imdb id here
             BaseProviderInfo data;
 
+            string imdbId = null;
             if (item.ProviderData.TryGetValue(Id, out data))
             {
-                data.Data = GetComparisonData(item.GetProviderId(MetadataProviders.Imdb));
+                imdbId = item.GetProviderId(MetadataProviders.Imdb);
+                data.Data = GetComparisonData(imdbId);
+            }
+            else
+            {
+                // Wat
+            }
+
+
+
+            RTMovieSearchResult hit = null;
+            Stream stream = null;
+            if (string.IsNullOrEmpty(imdbId))
+            {
+                // No IMDB Id, search RT for an ID
+
+                int page = 1;
+                stream = HttpClient.Get(MovieSearchUrl(item.Name, page), cancellationToken).Result;
+                RTSearchResults result = JsonSerializer.DeserializeFromStream<RTSearchResults>(stream);
+  
+                if (result.total == 1)
+                {
+                    hit = result.movies[0];
+                }
+                else if (result.total > 1)
+                {
+                    while (hit == null)
+                    {
+                        // See if there's an absolute hit somewhere
+                        foreach (var searchHit in result.movies)
+                        {   
+                            if (string.Equals(searchHit.title, item.Name, StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                hit = searchHit;
+                                break;
+                            }
+                        }
+
+                        if (hit == null)
+                        {
+                            Stream newPageStream = HttpClient.Get(MovieSearchUrl(item.Name, page++), cancellationToken).Result;
+                            result = JsonSerializer.DeserializeFromStream<RTSearchResults>(stream);
+
+                            if (result.total == 0)
+                            {
+                                // No results found on RottenTomatoes
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // Have IMDB Id
+                stream = HttpClient.Get(MovieImdbUrl(imdbId), cancellationToken).Result;
+                RTMovieSearchResult result = JsonSerializer.DeserializeFromStream<RTMovieSearchResult>(stream);
+
+                if (!string.IsNullOrEmpty(result.id))
+                {
+                    // got a result
+                    hit = result;
+                }
+            }
+            stream.Dispose();
+            stream = null;
+
+            if (hit != null)
+            {
+                item.CriticRatingSummary = hit.critics_concensus;
+                item.CriticRating = float.Parse(hit.ratings.critics_score);
+
+                stream = HttpClient.Get(MovieReviewsUrl(hit.id), cancellationToken).Result;
+                RTReviewList result = JsonSerializer.DeserializeFromStream<RTReviewList>(stream);
+
+                item.CriticReviews.Clear();
+                foreach (var rtReview in result.reviews)
+                {
+                    ItemReview review = new ItemReview();
+
+                    review.ReviewerName = rtReview.critic;
+                    review.Publisher = rtReview.publication;
+                    review.Date = DateTime.Parse(rtReview.date).ToUniversalTime();
+                    review.Caption = rtReview.quote;
+                    review.Url = rtReview.links.review;
+
+                    item.CriticReviews.Add(review);
+                }
+
+                if (data == null)
+                {
+                    data = new BaseProviderInfo();
+                }
+
+                data.Data = GetComparisonData(hit.alternate_ids.imdb);
+
+                item.SetProviderId(MetadataProviders.Imdb, hit.alternate_ids.imdb);
+                item.SetProviderId(MetadataProviders.RottenTomatoes, hit.id);
+
+                stream.Dispose();
+                stream = null;
+            }
+            else
+            {
+                // Nothing found on RT
+                Logger.Info("Nothing found on RottenTomatoes for Movie \"{0}\"", item.Name);
+
+                // TODO: When alternative names are implemented search for those instead
             }
 
             SetLastRefreshed(item, DateTime.UtcNow);
 
             return Task.FromResult(true);
+        }
+
+        private string MovieUrl(string rtId)
+        {
+            return BasicUrl + string.Format(Movie, ApiKey, rtId);
+        }
+
+        private string MovieImdbUrl(string imdbId)
+        {
+            return BasicUrl + string.Format(MovieImdb, ApiKey, imdbId.TrimStart('t'));
+        }
+
+        private string MovieSearchUrl(string query, int page = 1)
+        {
+            return BasicUrl + string.Format(MovieSearch, ApiKey, Uri.EscapeDataString(query), page);
+        }
+
+        private string MovieReviewsUrl(string rtId)
+        {
+            return BasicUrl + string.Format(MoviesReviews, ApiKey, rtId);
         }
 
         /// <summary>
@@ -174,6 +309,68 @@ namespace MediaBrowser.Controller.Providers.Movies
                 // Run after moviedb and xml providers
                 return MetadataProviderPriority.Last;
             }
+        }
+
+        // Data contract classes for use with the Rotten Tomatoes API
+
+        protected class RTSearchResults
+        {
+            public int total { get; set; }
+            public List<RTMovieSearchResult> movies { get; set; }
+            public RTSearchLinks links { get; set; }
+            public string link_template { get; set; }
+        }
+
+        protected class RTSearchLinks
+        {
+            public string self { get; set; }
+            public string next { get; set; }
+            public string previous { get; set; }
+        }
+
+        protected class RTMovieSearchResult
+        {
+            public string title { get; set; }
+            public int year { get; set; }
+            public string runtime { get; set; }
+            public string synopsis { get; set; }
+            public string critics_concensus { get; set; }
+            public string mpaa_rating { get; set; }
+            public string id { get; set; }
+            public RTRatings ratings { get; set; }
+            public RTAlternateIds alternate_ids { get; set; }
+        }
+
+        protected class RTRatings
+        {
+            public string critics_rating { get; set; }
+            public string critics_score { get; set; }
+        }
+
+        protected class RTAlternateIds
+        {
+            public string imdb { get; set; }
+        }
+
+        protected class RTReviewList
+        {
+            public int total { get; set; }
+            public List<RTReview> reviews { get; set; }
+        }
+
+        protected class RTReview
+        {
+            public string critic { get; set; }
+            public string date { get; set; }
+            public string freshness { get; set; }
+            public string publication { get; set; }
+            public string quote { get; set; }
+            public RTReviewLink links { get; set; }
+        }
+
+        protected class RTReviewLink 
+        {
+            public string review { get; set; }
         }
     }
 }
