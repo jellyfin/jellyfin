@@ -78,6 +78,16 @@
             $('#itemName', page).html(name);
             Dashboard.setPageTitle(name);
         });
+        
+        Dashboard.getCurrentUser().done(function (user) {
+
+            if (user.Configuration.IsAdministrator) {
+                $('#editButtonContainer', page).show();
+            } else {
+                $('#editButtonContainer', page).hide();
+            }
+
+        });
     }
 
     $(document).on('pageinit', "#itemListPage", function () {
@@ -118,6 +128,11 @@
             view = this.value;
 
             reloadItems(page);
+        });
+
+        $('#btnEdit', page).on('click', function () {
+
+            Dashboard.navigate("edititemimages.html?id=" + query.ParentId);
         });
 
     }).on('pageshow', "#itemListPage", function () {

@@ -616,10 +616,10 @@
         getMetroColor: function (str) {
 
             if (str) {
-                var char = String(str.substr(0, 1).charCodeAt());
+                var character = String(str.substr(0, 1).charCodeAt());
                 var sum = 0;
-                for (var i = 0; i < char.length; i++) {
-                    sum += parseInt(char.charAt(i));
+                for (var i = 0; i < character.length; i++) {
+                    sum += parseInt(character.charAt(i));
                 }
                 var index = String(sum).substr(-1);
 
@@ -630,11 +630,11 @@
 
         },
 
-        renderTitle: function (item, nameElem, parentNameElem, grandParentNameElem) {
-            
+        renderTitle: function (item, nameElem, parentNameElem, grandParentNameElem, linkToElement) {
+
             var name = item.Name;
 
-            if (item.IndexNumber != null) {
+            if (item.IndexNumber != null && item.Type !== "Season") {
                 name = item.IndexNumber + " - " + name;
             }
             if (item.ParentIndexNumber != null && item.Type != "Episode") {
@@ -643,7 +643,11 @@
 
             Dashboard.setPageTitle(name);
 
-            nameElem.html(name);
+            if (linkToElement) {
+                nameElem.html('<a class="detailPageParentLink" href="' + LibraryBrowser.getHref(item) + '">' + name + '</a>').trigger('create');
+            } else {
+                nameElem.html(name);
+            }
 
             if (item.AlbumArtist && item.Type == "Audio") {
                 grandParentNameElem.html('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>').show().trigger('create');

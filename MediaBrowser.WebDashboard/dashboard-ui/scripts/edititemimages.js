@@ -13,10 +13,111 @@
 
             currentItem = item;
 
-            LibraryBrowser.renderTitle(item, $('#itemName', page), $('#parentName', page), $('#grandParentName', page));
+            LibraryBrowser.renderTitle(item, $('#itemName', page), $('#parentName', page), $('#grandParentName', page), true);
 
-            Dashboard.hideLoadingMsg();
+            ApiClient.getItemImageInfos(currentItem.Id).done(function (imageInfos) {
+                renderStandardImages(page, item, imageInfos);
+                renderBackdrops(page, item, imageInfos);
+                renderScreenshots(page, item, imageInfos);
+                Dashboard.hideLoadingMsg();
+            });
         });
+    }
+
+    function renderImages(page, item, images, elem) {
+
+        var html = '';
+
+        for (var i = 0, length = images.length; i < length; i++) {
+
+            var image = images[i];
+
+            html += '<div style="display:inline-block;margin:5px;background:#202020;padding:10px;font-size:14px;">';
+
+            html += '<div style="float:left;height:100px;width:175px;vertical-align:top;background-repeat:no-repeat;background-size:contain;background-image:url(\'' + LibraryBrowser.getImageUrl(currentItem, image.ImageType, image.ImageIndex, { maxwidth: 300 }) + '\');"></div>';
+
+            html += '<div style="float:right;vertical-align:top;margin-left:1em;width:125px;">';
+            html += '<p style="margin-top:0;">' + image.ImageType + '</p>';
+
+            html += '<p>' + image.Width + ' * ' + image.Height + '</p>';
+
+            html += '<p>' + (parseInt(image.Size / 1024)) + ' KB</p>';
+
+            html += '<p style="margin-left:-5px;">';
+
+            if (image.ImageType == "Backdrop" || image.ImageType == "Screenshot") {
+
+                if (i > 0) {
+                    html += '<button type="button" data-icon="arrow-left" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.moveImage(\'' + image.ImageType + '\', ' + image.ImageIndex + ', ' + (i - 1) + ');">Move left</button>';
+                } else {
+                    html += '<button type="button" data-icon="arrow-left" data-mini="true" data-inline="true" data-iconpos="notext" disabled>Move left</button>';
+                }
+
+                if (i < length - 1) {
+                    html += '<button type="button" data-icon="arrow-right" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.moveImage(\'' + image.ImageType + '\', ' + image.ImageIndex + ', ' + (i + 1) + ');">Move right</button>';
+                } else {
+                    html += '<button type="button" data-icon="arrow-right" data-mini="true" data-inline="true" data-iconpos="notext" disabled>Move right</button>';
+                }
+            }
+
+            html += '<button type="button" data-icon="delete" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.deleteImage(\'' + image.ImageType + '\', ' + (image.ImageIndex != null ? image.ImageIndex : "null") + ');">Delete</button>';
+
+            html += '</p>';
+
+            html += '</div>';
+
+            html += '</div>';
+        }
+
+        elem.html(html).trigger('create');
+    }
+
+    function renderStandardImages(page, item, imageInfos) {
+
+        var images = imageInfos.filter(function (i) {
+            return i.ImageType != "Screenshot" && i.ImageType != "Backdrop" && i.ImageType != "Chapter";
+        });
+
+        if (images.length) {
+            $('#imagesContainer', page).show();
+            renderImages(page, item, images, $('#images', page));
+        } else {
+            $('#imagesContainer', page).hide();
+        }
+    }
+
+    function renderBackdrops(page, item, imageInfos) {
+
+        var images = imageInfos.filter(function (i) {
+            return i.ImageType == "Backdrop";
+
+        }).sort(function (a, b) {
+            return a.ImageIndex - b.ImageIndex;
+        });
+
+        if (images.length) {
+            $('#backdropsContainer', page).show();
+            renderImages(page, item, images, $('#backdrops', page));
+        } else {
+            $('#backdropsContainer', page).hide();
+        }
+    }
+
+    function renderScreenshots(page, item, imageInfos) {
+
+        var images = imageInfos.filter(function (i) {
+            return i.ImageType == "Screenshot";
+
+        }).sort(function (a, b) {
+            return a.ImageIndex - b.ImageIndex;
+        });
+
+        if (images.length) {
+            $('#screenshotsContainer', page).show();
+            renderImages(page, item, images, $('#screenshots', page));
+        } else {
+            $('#screenshotsContainer', page).hide();
+        }
     }
 
     function onFileReaderError(evt) {
@@ -79,9 +180,6 @@
 
     function processImageChangeResult(page) {
 
-        Dashboard.hideLoadingMsg();
-
-        Dashboard.validateCurrentUser(page);
         reload(page);
     }
 
@@ -107,13 +205,47 @@
 
             var imageType = $('#selectImageType', page).val();
 
-            ApiClient.uploadImage(currentItem.Id, imageType, file).done(function () {
+            ApiClient.uploadItemImage(currentItem.Id, imageType, file).done(function () {
 
+                $('#uploadImage', page).val('').trigger('change');
+                $('#popupUpload', page).popup("close");
                 processImageChangeResult(page);
 
             });
 
             return false;
+        };
+
+        self.deleteImage = function (type, index) {
+
+            var page = $.mobile.activePage;
+
+            Dashboard.confirm("Are you sure you wish to delete this image?", "Delete " + type + " Image", function (result) {
+
+                if (result) {
+                    ApiClient.deleteItemImage(currentItem.Id, type, index).done(function () {
+
+                        processImageChangeResult(page);
+
+                    });
+                }
+
+            });
+
+
+        };
+
+        self.moveImage = function (type, index, newIndex) {
+
+            var page = $.mobile.activePage;
+
+            ApiClient.updateItemImageIndex(currentItem.Id, type, index, newIndex).done(function () {
+
+                processImageChangeResult(page);
+
+            });
+
+
         };
     }
 
@@ -129,6 +261,10 @@
         var page = this;
 
         reload(page);
+
+        $('#uploadImage', page).on("change", function () {
+            setFiles(page, this.files);
+        });
 
         $("#imageDropZone", page).on('dragover', function (e) {
 
@@ -152,6 +288,8 @@
         var page = this;
 
         currentItem = null;
+
+        $('#uploadImage', page).off("change");
 
         $("#imageDropZone", page).off('dragover').off('drop');
     });

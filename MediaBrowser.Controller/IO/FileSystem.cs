@@ -55,7 +55,7 @@ namespace MediaBrowser.Controller.IO
 
             try
             {
-                return info.LastAccessTimeUtc;
+                return info.LastWriteTimeUtc;
             }
             catch (Exception ex)
             {

@@ -287,6 +287,7 @@ namespace MediaBrowser.Controller.Dto
             dto.AspectRatio = item.AspectRatio;
 
             dto.BackdropImageTags = GetBackdropImageTags(item);
+            dto.ScreenshotImageTags = GetScreenshotImageTags(item);
 
             if (fields.Contains(ItemFields.Genres))
             {
@@ -980,6 +981,21 @@ namespace MediaBrowser.Controller.Dto
             }
 
             return item.BackdropImagePaths.Select(p => Kernel.Instance.ImageManager.GetImageCacheTag(item, ImageType.Backdrop, p)).ToList();
+        }
+
+        /// <summary>
+        /// Gets the screenshot image tags.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>List{Guid}.</returns>
+        private List<Guid> GetScreenshotImageTags(BaseItem item)
+        {
+            if (item.ScreenshotImagePaths == null)
+            {
+                return new List<Guid>();
+            }
+
+            return item.ScreenshotImagePaths.Select(p => Kernel.Instance.ImageManager.GetImageCacheTag(item, ImageType.Screenshot, p)).ToList();
         }
     }
 }

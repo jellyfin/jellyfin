@@ -397,6 +397,19 @@ namespace MediaBrowser.Server.Implementations.Providers
             return localPath;
         }
 
+        /// <summary>
+        /// Gets the save path.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="targetFileName">Name of the target file.</param>
+        /// <param name="saveLocally">if set to <c>true</c> [save locally].</param>
+        /// <returns>System.String.</returns>
+        public string GetSavePath(BaseItem item, string targetFileName, bool saveLocally)
+        {
+            return (saveLocally && item.MetaLocation != null) ?
+                Path.Combine(item.MetaLocation, targetFileName) :
+                _remoteImageCache.GetResourcePath(item.GetType().FullName + item.Path.ToLower(), targetFileName);
+        }
 
         /// <summary>
         /// Saves to library filesystem.

@@ -15,7 +15,7 @@
             renderHeader(page, item);
 
             $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item));
-            
+
             LibraryBrowser.renderTitle(item, $('#itemName', page), $('#parentName', page), $('#grandParentName', page));
 
             var context = getContext(item);
@@ -27,6 +27,16 @@
             } else {
                 $('#playButtonContainer', page).hide();
             }
+
+            Dashboard.getCurrentUser().done(function (user) {
+
+                if (user.Configuration.IsAdministrator) {
+                    $('#editButtonContainer', page).show();
+                } else {
+                    $('#editButtonContainer', page).hide();
+                }
+
+            });
 
             $(".autoNumeric").autoNumeric('init');
 
@@ -367,57 +377,65 @@
             html += '<ul class="mediaInfoDetails">';
 
             if (stream.Codec) {
-                html += '<li><span class="mediaInfoLabel">Codec</span> ' + stream.Codec + '</li>';
+                html += '<li><span class="mediaInfoLabel">Codec: </span> ' + stream.Codec + '</li>';
             }
             if (stream.Profile) {
-                html += '<li><span class="mediaInfoLabel">Profile</span> ' + stream.Profile + '</li>';
+                html += '<li><span class="mediaInfoLabel">Profile: </span> ' + stream.Profile + '</li>';
             }
             if (stream.Level) {
-                html += '<li><span class="mediaInfoLabel">Level</span> ' + stream.Level + '</li>';
+                html += '<li><span class="mediaInfoLabel">Level: </span> ' + stream.Level + '</li>';
             }
             if (stream.Language) {
-                html += '<li><span class="mediaInfoLabel">Language</span> ' + stream.Language + '</li>';
+                html += '<li><span class="mediaInfoLabel">Language: </span> ' + stream.Language + '</li>';
             }
             if (stream.Width) {
-                html += '<li><span class="mediaInfoLabel">Width</span> ' + stream.Width + '</li>';
+                html += '<li><span class="mediaInfoLabel">Width: </span> ' + stream.Width + '</li>';
             }
             if (stream.Height) {
-                html += '<li><span class="mediaInfoLabel">Height</span> ' + stream.Height + '</li>';
+                html += '<li><span class="mediaInfoLabel">Height: </span> ' + stream.Height + '</li>';
             }
             if (stream.AspectRatio) {
-                html += '<li><span class="mediaInfoLabel">Aspect Ratio</span> ' + stream.AspectRatio + '</li>';
+                html += '<li><span class="mediaInfoLabel">Aspect Ratio: </span> ' + stream.AspectRatio + '</li>';
             }
             if (stream.BitRate) {
-                html += '<li><span class="mediaInfoLabel">Bitrate</span> <span class="autoNumeric" data-a-pad="false">' + stream.BitRate + '</span></li>';
+                html += '<li><span class="mediaInfoLabel">Bitrate: </span> <span class="autoNumeric" data-a-pad="false">' + stream.BitRate + '</span></li>';
             }
             if (stream.Channels) {
-                html += '<li><span class="mediaInfoLabel">Channels</span> ' + stream.Channels + '</li>';
+                html += '<li><span class="mediaInfoLabel">Channels: </span> ' + stream.Channels + '</li>';
             }
             if (stream.SampleRate) {
-                html += '<li><span class="mediaInfoLabel">Sample Rate</span> <span class="autoNumeric" data-a-pad="false">' + stream.SampleRate + '</span></li>';
+                html += '<li><span class="mediaInfoLabel">Sample Rate: </span> <span class="autoNumeric" data-a-pad="false">' + stream.SampleRate + '</span></li>';
             }
 
             var framerate = stream.AverageFrameRate || stream.RealFrameRate;
 
             if (framerate) {
-                html += '<li><span class="mediaInfoLabel">Framerate</span> ' + framerate + '</li>';
+                html += '<li><span class="mediaInfoLabel">Framerate: </span> ' + framerate + '</li>';
             }
 
             if (stream.PixelFormat) {
-                html += '<li><span class="mediaInfoLabel">Pixel Format</span> ' + stream.PixelFormat + '</li>';
+                html += '<li><span class="mediaInfoLabel">Pixel Format: </span> ' + stream.PixelFormat + '</li>';
             }
 
-            if (stream.IsDefault) {
-                html += '<li>Default</li>';
+            if (stream.IsDefault || stream.IsForced || stream.IsExternal) {
+
+                var vals = [];
+
+                if (stream.IsDefault) {
+                    vals.push("Default");
+                }
+                if (stream.IsForced) {
+                    vals.push("Forced");
+                }
+                if (stream.IsExternal) {
+                    vals.push("External");
+                }
+
+                html += '<li><span class="mediaInfoLabel">Flags: </span> ' + vals.join(", ") + '</li>';
             }
-            if (stream.IsForced) {
-                html += '<li>Forced</li>';
-            }
-            if (stream.IsExternal) {
-                html += '<li>External</li>';
-            }
+
             if (stream.Path) {
-                html += '<li><span class="mediaInfoLabel">Path</span> ' + stream.Path + '</li>';
+                html += '<li><span class="mediaInfoLabel">Path: </span> ' + stream.Path + '</li>';
             }
 
             html += '</ul>';

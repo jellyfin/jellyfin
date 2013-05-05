@@ -47,5 +47,14 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="providers">The providers.</param>
         void AddMetadataProviders(IEnumerable<BaseMetadataProvider> providers);
+
+        /// <summary>
+        /// Gets the save path.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="targetFileName">Name of the target file.</param>
+        /// <param name="saveLocally">if set to <c>true</c> [save locally].</param>
+        /// <returns>System.String.</returns>
+        string GetSavePath(BaseItem item, string targetFileName, bool saveLocally);
     }
 }

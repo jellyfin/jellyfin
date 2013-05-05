@@ -199,6 +199,10 @@
     overflow: hidden;
 }
 
+.itemMediaInfo {
+    font-size: 14px;
+}
+
 .mediaInfoStream {
     display: inline-block;
     vertical-align: top;
@@ -212,13 +216,14 @@
 }
 
 .mediaInfoDetails {
-    margin: 0 0 0 1.5em;
+    margin: 0 0 0 .25em;
     padding: 0;
-    list-style-type: circle;
+    list-style-type: none;
 }
 
 .mediaInfoLabel {
     color: #bbb;
+    margin-right: 3px;
 }
 
 .posterRibbon {

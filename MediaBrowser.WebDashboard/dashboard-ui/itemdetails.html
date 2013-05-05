@@ -101,7 +101,9 @@
                                 <span id="playButtonContainer" style="display: none;">
                                     <button id="btnPlay" type="button" data-icon="play" data-inline="true" data-mini="true" data-theme="a">Play</button>
                                 </span>
-                                <button id="btnEdit" type="button" data-icon="pencil" data-inline="true" data-mini="true" data-theme="a">Edit</button>
+                                <span id="editButtonContainer" style="display: none;">
+                                    <button id="btnEdit" type="button" data-icon="pencil" data-inline="true" data-mini="true" data-theme="a">Edit</button>
+                                </span>
                             </div>
                         </div>
                         <div id="playMenuAnchor"></div>
@@ -139,7 +141,7 @@
                 <div style="display: inline-block; vertical-align: top;">
                     <div data-role="collapsible" id="mediaInfoCollapsible" style="display: none;" data-mini="true" data-collapsed="false" data-corners="false">
                         <h3>Media Info</h3>
-                        <div id="mediaInfoContent"></div>
+                        <div id="mediaInfoContent" class="itemMediaInfo"></div>
                     </div>
                 </div>
                 <div style="display: inline-block; vertical-align: top;">

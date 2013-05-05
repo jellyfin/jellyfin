@@ -7,7 +7,11 @@
     <div id="itemListPage" data-role="page" class="page libraryPage folderListPage" data-theme="a">
         <div data-role="content" class="itemListContent">
 
-            <h1 id="itemName" class="listHeader" style="margin: 0;"></h1>
+            <h1 class="listHeader" style="margin: 0;"><span id="itemName"></span>
+                <span id="editButtonContainer" style="display: none; margin-left: 1em;">
+                    <button id="btnEdit" type="button" data-icon="pencil" data-inline="true" data-mini="true" data-theme="a">Edit</button>
+                </span>
+            </h1>
             <div class="viewSettings">
                 <div class="viewControls">
                     <div style="display: inline-block;">

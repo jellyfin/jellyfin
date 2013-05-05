@@ -1475,22 +1475,49 @@ namespace MediaBrowser.Controller.Entities
         /// Deletes the image.
         /// </summary>
         /// <param name="type">The type.</param>
+        /// <param name="index">The index.</param>
         /// <returns>Task.</returns>
-        public async Task DeleteImage(ImageType type)
+        public Task DeleteImage(ImageType type, int? index)
         {
-            if (!HasImage(type))
+            if (type == ImageType.Backdrop)
             {
-                return;
+                if (!index.HasValue)
+                {
+                    throw new ArgumentException("Please specify a backdrop image index to delete.");
+                }
+
+                var file = BackdropImagePaths[index.Value];
+
+                BackdropImagePaths.Remove(file);
+
+                // Delete the source file
+                File.Delete(file);
+            }
+            else if (type == ImageType.Screenshot)
+            {
+                if (!index.HasValue)
+                {
+                    throw new ArgumentException("Please specify a screenshot image index to delete.");
+                }
+
+                var file = ScreenshotImagePaths[index.Value];
+
+                ScreenshotImagePaths.Remove(file);
+
+                // Delete the source file
+                File.Delete(file);
+            }
+            else
+            {
+                // Delete the source file
+                File.Delete(GetImage(type));
+
+                // Remove it from the item
+                SetImage(type, null);
             }
 
-            // Delete the source file
-            File.Delete(GetImage(type));
-
-            // Remove it from the item
-            SetImage(type, null);
-
             // Refresh metadata
-            await RefreshMetadata(CancellationToken.None).ConfigureAwait(false);
+            return RefreshMetadata(CancellationToken.None);
         }
     }
 }
