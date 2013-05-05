@@ -22,22 +22,36 @@ namespace MediaBrowser.Controller.Providers.Music
             LocalMetaFileName = LastfmHelper.LocalArtistMetaFileName;
         }
 
-        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
-        {
-            return true;
-        }
-
         protected override async Task<string> FindId(BaseItem item, CancellationToken cancellationToken)
         {
-            var url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=artistaccent:{0}", UrlEncode(item.Name));
+            var url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=artist:{0}", UrlEncode(item.Name));
 
             var doc = await FanArtAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
 
             var ns = new XmlNamespaceManager(doc.NameTable);
             ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
-            var node = doc.SelectSingleNode("//mb:artist-list/mb:artist/@id", ns);
+            var node = doc.SelectSingleNode("//mb:artist-list/mb:artist[@type='Group']/@id", ns);
 
-            return node != null ? node.Value : null;
+            if (node != null && node.Value != null)
+            {
+                return node.Value;
+            } 
+            
+            // Try again using the search with accent characters url
+            url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=artistaccent:{0}", UrlEncode(item.Name));
+
+            doc = await FanArtAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
+
+            ns = new XmlNamespaceManager(doc.NameTable);
+            ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
+            node = doc.SelectSingleNode("//mb:artist-list/mb:artist[@type='Group']/@id", ns);
+
+            if (node != null && node.Value != null)
+            {
+                return node.Value;
+            }
+
+            return null;
         }
 
         protected override async Task FetchLastfmData(BaseItem item, string id, CancellationToken cancellationToken)
