@@ -729,7 +729,7 @@ namespace MediaBrowser.Controller.Entities
 
             foreach (var tuple in list)
             {
-                if (tasks.Count > 5)
+                if (tasks.Count > 8)
                 {
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                 }

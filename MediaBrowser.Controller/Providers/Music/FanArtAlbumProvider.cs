@@ -83,7 +83,7 @@ namespace MediaBrowser.Controller.Providers.Music
         {
             get
             {
-                return "11";
+                return "12";
             }
         }
 
@@ -211,6 +211,8 @@ namespace MediaBrowser.Controller.Providers.Music
         /// </summary>
         private DateTime _lastMusicBrainzRequest = DateTime.MinValue;
 
+        private readonly SemaphoreSlim _musicBrainzSemaphore = new SemaphoreSlim(1, 1);
+
         /// <summary>
         /// Gets the music brainz response.
         /// </summary>
@@ -223,7 +225,7 @@ namespace MediaBrowser.Controller.Providers.Music
 
             try
             {
-                var diff = 1000 - (DateTime.Now - _lastMusicBrainzRequest).TotalMilliseconds;
+                var diff = 1500 - (DateTime.Now - _lastMusicBrainzRequest).TotalMilliseconds;
 
                 // MusicBrainz is extremely adamant about limiting to one request per second
 
@@ -236,7 +238,14 @@ namespace MediaBrowser.Controller.Providers.Music
 
                 var doc = new XmlDocument();
 
-                using (var xml = await HttpClient.Get(url, cancellationToken).ConfigureAwait(false))
+                using (var xml = await HttpClient.Get(new HttpRequestOptions
+                {
+                    Url = url,
+                    CancellationToken = cancellationToken,
+                    ResourcePool = _musicBrainzSemaphore,
+                    UserAgent = "MediaBrowserServer/www.mediabrowser3.com"
+
+                }).ConfigureAwait(false))
                 {
                     using (var oReader = new StreamReader(xml, Encoding.UTF8))
                     {
@@ -248,6 +257,8 @@ namespace MediaBrowser.Controller.Providers.Music
             }
             finally
             {
+                _lastMusicBrainzRequest = DateTime.Now;
+
                 _musicBrainzResourcePool.Release();
             }
         }
