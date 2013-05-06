@@ -500,7 +500,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                         id = await AttemptFindId(name, year, "en", cancellationToken).ConfigureAwait(false);
 
                     }
-                    if (id == null)
+                    if (id == null && item.LocationType == LocationType.FileSystem)
                     {
                         //last resort - try using the actual folder name
                         id = await AttemptFindId(Path.GetFileName(item.ResolveArgs.Path), year, "en", cancellationToken).ConfigureAwait(false);
