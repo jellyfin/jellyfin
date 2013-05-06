@@ -135,6 +135,22 @@ namespace MediaBrowser.Controller.Providers.Movies
             }
         }
 
+        protected override bool RefreshOnVersionChange
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        protected override string ProviderVersion
+        {
+            get
+            {
+                return "2";
+            }
+        }
+
         /// <summary>
         /// The _TMDB settings task
         /// </summary>
@@ -258,10 +274,9 @@ namespace MediaBrowser.Controller.Providers.Movies
         private const string TmdbConfigUrl = "http://api.themoviedb.org/3/configuration?api_key={0}";
         private const string Search3 = @"http://api.themoviedb.org/3/search/movie?api_key={1}&query={0}&language={2}";
         private const string AltTitleSearch = @"http://api.themoviedb.org/3/movie/{0}/alternative_titles?api_key={1}&country={2}";
-        private const string GetInfo3 = @"http://api.themoviedb.org/3/{3}/{0}?api_key={1}&language={2}";
-        private const string CastInfo = @"http://api.themoviedb.org/3/movie/{0}/casts?api_key={1}";
-        private const string ReleaseInfo = @"http://api.themoviedb.org/3/movie/{0}/releases?api_key={1}";
-        private const string GetImages = @"http://api.themoviedb.org/3/{2}/{0}/images?api_key={1}";
+        private const string GetMovieInfo3 = @"http://api.themoviedb.org/3/movie/{0}?api_key={1}&language={2}&append_to_response=casts,releases,images,keywords";
+        private const string GetBoxSetInfo3 = @"http://api.themoviedb.org/3/collection/{0}?api_key={1}&language={2}&append_to_response=images";
+
         internal static string ApiKey = "f6bd687ffa63cd282b6ff2c6877f2669";
         internal static string AcceptHeader = "application/json,image/*";
 
@@ -270,9 +285,8 @@ namespace MediaBrowser.Controller.Providers.Movies
             new Regex(@"(?<name>.*)") // last resort matches the whole string as the name
         };
 
-        public const string LOCAL_META_FILE_NAME = "mbmovie.json";
+        public const string LOCAL_META_FILE_NAME = "tmdb3.json";
         public const string ALT_META_FILE_NAME = "movie.xml";
-        protected string ItemType = "movie";
 
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
@@ -295,6 +309,11 @@ namespace MediaBrowser.Controller.Providers.Movies
                 return true;
             }
 
+            if (RefreshOnVersionChange && !String.Equals(ProviderVersion, providerInfo.ProviderVersion))
+            {
+                return true;
+            }
+            
             var downloadDate = providerInfo.LastRefreshed;
 
             if (ConfigurationManager.Configuration.MetadataRefreshDays == -1 && downloadDate != DateTime.MinValue)
@@ -308,7 +327,6 @@ namespace MediaBrowser.Controller.Providers.Movies
             if (HasAltMeta(item))
                 return false; //never refresh if has meta from other source
 
-            Logger.Debug("MovieDbProvider - " + item.Name + " needs refresh.  Download date: " + downloadDate + " item created date: " + item.DateCreated + " Check for Update age: " + ConfigurationManager.Configuration.MetadataRefreshDays);
             return true;
         }
 
@@ -715,7 +733,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             string childId = await AttemptFindId(name, year, language, cancellationToken).ConfigureAwait(false);
             if (childId != null)
             {
-                string url = string.Format(GetInfo3, childId, ApiKey, language, ItemType);
+                string url = string.Format(GetMovieInfo3, childId, ApiKey, language);
 
                 try
                 {
@@ -765,39 +783,16 @@ namespace MediaBrowser.Controller.Providers.Movies
                 return;
             }
             if (item.GetProviderId(MetadataProviders.Tmdb) == null) item.SetProviderId(MetadataProviders.Tmdb, id);
-            var mainTask = FetchMainResult(item, id, cancellationToken);
-            var castTask = FetchCastInfo(item, id, cancellationToken);
-            var releaseTask = FetchReleaseInfo(item, id, cancellationToken);
-            var imageTask = FetchImageInfo(item, id, cancellationToken);
 
-            await Task.WhenAll(mainTask, castTask, releaseTask).ConfigureAwait(false);
+            var mainResult = await FetchMainResult(item, id, cancellationToken).ConfigureAwait(false);
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var mainResult = mainTask.Result;
             if (mainResult == null) return;
-
-            if (castTask.Result != null)
-            {
-                mainResult.cast = castTask.Result.cast;
-                mainResult.crew = castTask.Result.crew;
-            }
-
-            if (releaseTask.Result != null)
-            {
-                mainResult.countries = releaseTask.Result.countries;
-            }
 
             ProcessMainInfo(item, mainResult);
 
-            await Task.WhenAll(imageTask).ConfigureAwait(false);
-
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (imageTask.Result != null)
-            {
-                await ProcessImages(item, imageTask.Result, cancellationToken).ConfigureAwait(false);
-            }
+            await ProcessImages(item, mainResult.images, cancellationToken).ConfigureAwait(false);
 
             //and save locally
             if (ConfigurationManager.Configuration.SaveLocalMeta && item.LocationType == LocationType.FileSystem)
@@ -820,8 +815,9 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <returns>Task{CompleteMovieData}.</returns>
         protected async Task<CompleteMovieData> FetchMainResult(BaseItem item, string id, CancellationToken cancellationToken)
         {
-            ItemType = item is BoxSet ? "collection" : "movie";
-            string url = string.Format(GetInfo3, id, ApiKey, ConfigurationManager.Configuration.PreferredMetadataLanguage, ItemType);
+            var baseUrl = item is BoxSet ? GetBoxSetInfo3 : GetMovieInfo3;
+
+            string url = string.Format(baseUrl, id, ApiKey, ConfigurationManager.Configuration.PreferredMetadataLanguage);
             CompleteMovieData mainResult;
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -864,7 +860,8 @@ namespace MediaBrowser.Controller.Providers.Movies
                 if (ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower() != "en")
                 {
                     Logger.Info("MovieDbProvider couldn't find meta for language " + ConfigurationManager.Configuration.PreferredMetadataLanguage + ". Trying English...");
-                    url = string.Format(GetInfo3, id, ApiKey, "en", ItemType);
+
+                    url = string.Format(baseUrl, id, ApiKey, "en");
 
                     try
                     {
@@ -893,114 +890,6 @@ namespace MediaBrowser.Controller.Providers.Movies
                 }
             }
             return mainResult;
-        }
-
-        /// <summary>
-        /// Fetches the cast info.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="id">The id.</param>
-        /// <param name="cancellationToken">The cancellation token</param>
-        /// <returns>Task{TmdbCastResult}.</returns>
-        protected async Task<TmdbCastResult> FetchCastInfo(BaseItem item, string id, CancellationToken cancellationToken)
-        {
-            //get cast and crew info
-            var url = string.Format(CastInfo, id, ApiKey);
-            TmdbCastResult cast = null;
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                using (Stream json = await HttpClient.Get(new HttpRequestOptions
-                {
-                    Url = url,
-                    CancellationToken = cancellationToken,
-                    ResourcePool = Current.MovieDbResourcePool,
-                    AcceptHeader = AcceptHeader,
-                    EnableResponseCache = true
-
-                }).ConfigureAwait(false))
-                {
-                    cast = JsonSerializer.DeserializeFromStream<TmdbCastResult>(json);
-                }
-            }
-            catch (HttpException)
-            {
-            }
-            return cast;
-        }
-
-        /// <summary>
-        /// Fetches the release info.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="id">The id.</param>
-        /// <param name="cancellationToken">The cancellation token</param>
-        /// <returns>Task{TmdbReleasesResult}.</returns>
-        protected async Task<TmdbReleasesResult> FetchReleaseInfo(BaseItem item, string id, CancellationToken cancellationToken)
-        {
-            var url = string.Format(ReleaseInfo, id, ApiKey);
-            TmdbReleasesResult releases = null;
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                using (Stream json = await HttpClient.Get(new HttpRequestOptions
-                {
-                    Url = url,
-                    CancellationToken = cancellationToken,
-                    ResourcePool = Current.MovieDbResourcePool,
-                    AcceptHeader = AcceptHeader,
-                    EnableResponseCache = true
-
-                }).ConfigureAwait(false))
-                {
-                    releases = JsonSerializer.DeserializeFromStream<TmdbReleasesResult>(json);
-                }
-            }
-            catch (HttpException)
-            {
-            }
-
-            return releases;
-        }
-
-        /// <summary>
-        /// Fetches the image info.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="id">The id.</param>
-        /// <param name="cancellationToken">The cancellation token</param>
-        /// <returns>Task{TmdbImages}.</returns>
-        protected async Task<TmdbImages> FetchImageInfo(BaseItem item, string id, CancellationToken cancellationToken)
-        {
-            //fetch images
-            var url = string.Format(GetImages, id, ApiKey, ItemType);
-            TmdbImages images = null;
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                using (Stream json = await HttpClient.Get(new HttpRequestOptions
-                {
-                    Url = url,
-                    CancellationToken = cancellationToken,
-                    ResourcePool = Current.MovieDbResourcePool,
-                    AcceptHeader = AcceptHeader,
-                    EnableResponseCache = true
-
-                }).ConfigureAwait(false))
-                {
-                    images = JsonSerializer.DeserializeFromStream<TmdbImages>(json);
-                }
-            }
-            catch (HttpException)
-            {
-            }
-            return images;
         }
 
         /// <summary>
@@ -1035,12 +924,13 @@ namespace MediaBrowser.Controller.Providers.Movies
                     movie.CommunityRating = rating;
 
                 //release date and certification are retrieved based on configured country and we fall back on US if not there
-                if (movieData.countries != null)
+                if (movieData.releases != null && movieData.releases.countries != null)
                 {
-                    var ourRelease = movieData.countries.FirstOrDefault(c => c.iso_3166_1.Equals(ConfigurationManager.Configuration.MetadataCountryCode, StringComparison.OrdinalIgnoreCase)) ?? new Country();
-                    var usRelease = movieData.countries.FirstOrDefault(c => c.iso_3166_1.Equals("US", StringComparison.OrdinalIgnoreCase)) ?? new Country();
+                    var ourRelease = movieData.releases.countries.FirstOrDefault(c => c.iso_3166_1.Equals(ConfigurationManager.Configuration.MetadataCountryCode, StringComparison.OrdinalIgnoreCase)) ?? new Country();
+                    var usRelease = movieData.releases.countries.FirstOrDefault(c => c.iso_3166_1.Equals("US", StringComparison.OrdinalIgnoreCase)) ?? new Country();
 
                     movie.OfficialRating = ourRelease.certification ?? usRelease.certification;
+
                     if (ourRelease.release_date > new DateTime(1900, 1, 1))
                     {
                         movie.PremiereDate = ourRelease.release_date.ToUniversalTime();
@@ -1096,20 +986,25 @@ namespace MediaBrowser.Controller.Providers.Movies
                 }
 
                 movie.People.Clear();
+                movie.Tags.Clear();
 
                 //Actors, Directors, Writers - all in People
                 //actors come from cast
-                if (movieData.cast != null)
+                if (movieData.casts != null && movieData.casts.cast != null)
                 {
-                    foreach (var actor in movieData.cast.OrderBy(a => a.order)) movie.AddPerson(new PersonInfo { Name = actor.name, Role = actor.character, Type = PersonType.Actor });
+                    foreach (var actor in movieData.casts.cast.OrderBy(a => a.order)) movie.AddPerson(new PersonInfo { Name = actor.name, Role = actor.character, Type = PersonType.Actor });
                 }
+
                 //and the rest from crew
-                if (movieData.crew != null)
+                if (movieData.casts != null && movieData.casts.crew != null)
                 {
-                    foreach (var person in movieData.crew) movie.AddPerson(new PersonInfo { Name = person.name, Role = person.job, Type = person.department });
+                    foreach (var person in movieData.casts.crew) movie.AddPerson(new PersonInfo { Name = person.name, Role = person.job, Type = person.department });
                 }
 
-
+                if (movieData.keywords != null && movieData.keywords.keywords != null)
+                {
+                    movie.Tags = movieData.keywords.keywords.Select(i => i.name).ToList();
+                }
             }
 
         }
@@ -1121,7 +1016,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <param name="images">The images.</param>
         /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task.</returns>
-        protected virtual async Task ProcessImages(BaseItem item, TmdbImages images, CancellationToken cancellationToken)
+        protected virtual async Task ProcessImages(BaseItem item, MovieImagesImages images, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -1330,6 +1225,40 @@ namespace MediaBrowser.Controller.Providers.Movies
 
 
         /// <summary>
+        /// Class TmdbTitle
+        /// </summary>
+        protected class TmdbTitle
+        {
+            /// <summary>
+            /// Gets or sets the iso_3166_1.
+            /// </summary>
+            /// <value>The iso_3166_1.</value>
+            public string iso_3166_1 { get; set; }
+            /// <summary>
+            /// Gets or sets the title.
+            /// </summary>
+            /// <value>The title.</value>
+            public string title { get; set; }
+        }
+
+        /// <summary>
+        /// Class TmdbAltTitleResults
+        /// </summary>
+        protected class TmdbAltTitleResults
+        {
+            /// <summary>
+            /// Gets or sets the id.
+            /// </summary>
+            /// <value>The id.</value>
+            public int id { get; set; }
+            /// <summary>
+            /// Gets or sets the titles.
+            /// </summary>
+            /// <value>The titles.</value>
+            public List<TmdbTitle> titles { get; set; }
+        }
+
+        /// <summary>
         /// Class TmdbMovieSearchResult
         /// </summary>
         protected class TmdbMovieSearchResult
@@ -1412,361 +1341,122 @@ namespace MediaBrowser.Controller.Providers.Movies
             /// <value>The total_results.</value>
             public int total_results { get; set; }
         }
-
-        /// <summary>
-        /// Class BelongsToCollection
-        /// </summary>
+        
         protected class BelongsToCollection
         {
-            /// <summary>
-            /// Gets or sets the id.
-            /// </summary>
-            /// <value>The id.</value>
             public int id { get; set; }
-            /// <summary>
-            /// Gets or sets the name.
-            /// </summary>
-            /// <value>The name.</value>
             public string name { get; set; }
-            /// <summary>
-            /// Gets or sets the poster_path.
-            /// </summary>
-            /// <value>The poster_path.</value>
             public string poster_path { get; set; }
-            /// <summary>
-            /// Gets or sets the backdrop_path.
-            /// </summary>
-            /// <value>The backdrop_path.</value>
             public string backdrop_path { get; set; }
         }
 
-        /// <summary>
-        /// Class Genre
-        /// </summary>
-        protected class Genre
+        protected class GenreItem
         {
-            /// <summary>
-            /// Gets or sets the id.
-            /// </summary>
-            /// <value>The id.</value>
             public int id { get; set; }
-            /// <summary>
-            /// Gets or sets the name.
-            /// </summary>
-            /// <value>The name.</value>
             public string name { get; set; }
         }
 
-        /// <summary>
-        /// Class ProductionCompany
-        /// </summary>
         protected class ProductionCompany
         {
-            /// <summary>
-            /// Gets or sets the name.
-            /// </summary>
-            /// <value>The name.</value>
             public string name { get; set; }
-            /// <summary>
-            /// Gets or sets the id.
-            /// </summary>
-            /// <value>The id.</value>
             public int id { get; set; }
         }
 
-        /// <summary>
-        /// Class ProductionCountry
-        /// </summary>
         protected class ProductionCountry
         {
-            /// <summary>
-            /// Gets or sets the iso_3166_1.
-            /// </summary>
-            /// <value>The iso_3166_1.</value>
             public string iso_3166_1 { get; set; }
-            /// <summary>
-            /// Gets or sets the name.
-            /// </summary>
-            /// <value>The name.</value>
             public string name { get; set; }
         }
 
-        /// <summary>
-        /// Class SpokenLanguage
-        /// </summary>
         protected class SpokenLanguage
         {
-            /// <summary>
-            /// Gets or sets the iso_639_1.
-            /// </summary>
-            /// <value>The iso_639_1.</value>
             public string iso_639_1 { get; set; }
-            /// <summary>
-            /// Gets or sets the name.
-            /// </summary>
-            /// <value>The name.</value>
             public string name { get; set; }
         }
 
-        /// <summary>
-        /// Class Cast
-        /// </summary>
         protected class Cast
         {
-            /// <summary>
-            /// Gets or sets the id.
-            /// </summary>
-            /// <value>The id.</value>
             public int id { get; set; }
-            /// <summary>
-            /// Gets or sets the name.
-            /// </summary>
-            /// <value>The name.</value>
             public string name { get; set; }
-            /// <summary>
-            /// Gets or sets the character.
-            /// </summary>
-            /// <value>The character.</value>
             public string character { get; set; }
-            /// <summary>
-            /// Gets or sets the order.
-            /// </summary>
-            /// <value>The order.</value>
             public int order { get; set; }
-            /// <summary>
-            /// Gets or sets the profile_path.
-            /// </summary>
-            /// <value>The profile_path.</value>
+            public int cast_id { get; set; }
             public string profile_path { get; set; }
         }
 
-        /// <summary>
-        /// Class Crew
-        /// </summary>
         protected class Crew
         {
-            /// <summary>
-            /// Gets or sets the id.
-            /// </summary>
-            /// <value>The id.</value>
             public int id { get; set; }
-            /// <summary>
-            /// Gets or sets the name.
-            /// </summary>
-            /// <value>The name.</value>
             public string name { get; set; }
-            /// <summary>
-            /// Gets or sets the department.
-            /// </summary>
-            /// <value>The department.</value>
             public string department { get; set; }
-            /// <summary>
-            /// Gets or sets the job.
-            /// </summary>
-            /// <value>The job.</value>
             public string job { get; set; }
-            /// <summary>
-            /// Gets or sets the profile_path.
-            /// </summary>
-            /// <value>The profile_path.</value>
-            public object profile_path { get; set; }
+            public string profile_path { get; set; }
         }
 
-        /// <summary>
-        /// Class Country
-        /// </summary>
-        protected class Country
+        protected class Casts
         {
-            /// <summary>
-            /// Gets or sets the iso_3166_1.
-            /// </summary>
-            /// <value>The iso_3166_1.</value>
-            public string iso_3166_1 { get; set; }
-            /// <summary>
-            /// Gets or sets the certification.
-            /// </summary>
-            /// <value>The certification.</value>
-            public string certification { get; set; }
-            /// <summary>
-            /// Gets or sets the release_date.
-            /// </summary>
-            /// <value>The release_date.</value>
-            public DateTime release_date { get; set; }
-        }
-
-        //protected class TmdbMovieResult
-        //{
-        //    public bool adult { get; set; }
-        //    public string backdrop_path { get; set; }
-        //    public int belongs_to_collection { get; set; }
-        //    public int budget { get; set; }
-        //    public List<Genre> genres { get; set; }
-        //    public string homepage { get; set; }
-        //    public int id { get; set; }
-        //    public string imdb_id { get; set; }
-        //    public string original_title { get; set; }
-        //    public string overview { get; set; }
-        //    public double popularity { get; set; }
-        //    public string poster_path { get; set; }
-        //    public List<ProductionCompany> production_companies { get; set; }
-        //    public List<ProductionCountry> production_countries { get; set; }
-        //    public string release_date { get; set; }
-        //    public int revenue { get; set; }
-        //    public int runtime { get; set; }
-        //    public List<SpokenLanguage> spoken_languages { get; set; }
-        //    public string tagline { get; set; }
-        //    public string title { get; set; }
-        //    public double vote_average { get; set; }
-        //    public int vote_count { get; set; }
-        //}
-
-        /// <summary>
-        /// Class TmdbTitle
-        /// </summary>
-        protected class TmdbTitle
-        {
-            /// <summary>
-            /// Gets or sets the iso_3166_1.
-            /// </summary>
-            /// <value>The iso_3166_1.</value>
-            public string iso_3166_1 { get; set; }
-            /// <summary>
-            /// Gets or sets the title.
-            /// </summary>
-            /// <value>The title.</value>
-            public string title { get; set; }
-        }
-
-        /// <summary>
-        /// Class TmdbAltTitleResults
-        /// </summary>
-        protected class TmdbAltTitleResults
-        {
-            /// <summary>
-            /// Gets or sets the id.
-            /// </summary>
-            /// <value>The id.</value>
-            public int id { get; set; }
-            /// <summary>
-            /// Gets or sets the titles.
-            /// </summary>
-            /// <value>The titles.</value>
-            public List<TmdbTitle> titles { get; set; }
-        }
-
-        /// <summary>
-        /// Class TmdbCastResult
-        /// </summary>
-        protected class TmdbCastResult
-        {
-            /// <summary>
-            /// Gets or sets the id.
-            /// </summary>
-            /// <value>The id.</value>
-            public int id { get; set; }
-            /// <summary>
-            /// Gets or sets the cast.
-            /// </summary>
-            /// <value>The cast.</value>
             public List<Cast> cast { get; set; }
-            /// <summary>
-            /// Gets or sets the crew.
-            /// </summary>
-            /// <value>The crew.</value>
             public List<Crew> crew { get; set; }
         }
 
-        /// <summary>
-        /// Class TmdbReleasesResult
-        /// </summary>
-        protected class TmdbReleasesResult
+        protected class Country
         {
-            /// <summary>
-            /// Gets or sets the id.
-            /// </summary>
-            /// <value>The id.</value>
-            public int id { get; set; }
-            /// <summary>
-            /// Gets or sets the countries.
-            /// </summary>
-            /// <value>The countries.</value>
+            public string iso_3166_1 { get; set; }
+            public string certification { get; set; }
+            public DateTime release_date { get; set; }
+        }
+
+        protected class Releases
+        {
             public List<Country> countries { get; set; }
         }
 
-        /// <summary>
-        /// Class TmdbImage
-        /// </summary>
-        protected class TmdbImage
+        protected class Backdrop
         {
-            /// <summary>
-            /// Gets or sets the file_path.
-            /// </summary>
-            /// <value>The file_path.</value>
             public string file_path { get; set; }
-            /// <summary>
-            /// Gets or sets the width.
-            /// </summary>
-            /// <value>The width.</value>
             public int width { get; set; }
-            /// <summary>
-            /// Gets or sets the height.
-            /// </summary>
-            /// <value>The height.</value>
             public int height { get; set; }
-            /// <summary>
-            /// Gets or sets the iso_639_1.
-            /// </summary>
-            /// <value>The iso_639_1.</value>
             public string iso_639_1 { get; set; }
-            /// <summary>
-            /// Gets or sets the aspect_ratio.
-            /// </summary>
-            /// <value>The aspect_ratio.</value>
             public double aspect_ratio { get; set; }
-            /// <summary>
-            /// Gets or sets the vote_average.
-            /// </summary>
-            /// <value>The vote_average.</value>
             public double vote_average { get; set; }
-            /// <summary>
-            /// Gets or sets the vote_count.
-            /// </summary>
-            /// <value>The vote_count.</value>
             public int vote_count { get; set; }
         }
 
-        /// <summary>
-        /// Class TmdbImages
-        /// </summary>
-        protected class TmdbImages
+        protected class Poster
         {
-            /// <summary>
-            /// Gets or sets the id.
-            /// </summary>
-            /// <value>The id.</value>
-            public int id { get; set; }
-            /// <summary>
-            /// Gets or sets the backdrops.
-            /// </summary>
-            /// <value>The backdrops.</value>
-            public List<TmdbImage> backdrops { get; set; }
-            /// <summary>
-            /// Gets or sets the posters.
-            /// </summary>
-            /// <value>The posters.</value>
-            public List<TmdbImage> posters { get; set; }
+            public string file_path { get; set; }
+            public int width { get; set; }
+            public int height { get; set; }
+            public string iso_639_1 { get; set; }
+            public double aspect_ratio { get; set; }
+            public double vote_average { get; set; }
+            public int vote_count { get; set; }
         }
 
-        /// <summary>
-        /// Class CompleteMovieData
-        /// </summary>
+        protected class MovieImagesImages
+        {
+            public List<Backdrop> backdrops { get; set; }
+            public List<Poster> posters { get; set; }
+        }
+
+        protected class Keyword
+        {
+            public int id { get; set; }
+            public string name { get; set; }
+        }
+
+        protected class Keywords
+        {
+            public List<Keyword> keywords { get; set; }
+        }
+
         protected class CompleteMovieData
         {
             public bool adult { get; set; }
             public string backdrop_path { get; set; }
             public BelongsToCollection belongs_to_collection { get; set; }
             public int budget { get; set; }
-            public List<Genre> genres { get; set; }
+            public List<GenreItem> genres { get; set; }
             public string homepage { get; set; }
             public int id { get; set; }
             public string imdb_id { get; set; }
@@ -1780,13 +1470,15 @@ namespace MediaBrowser.Controller.Providers.Movies
             public int revenue { get; set; }
             public int runtime { get; set; }
             public List<SpokenLanguage> spoken_languages { get; set; }
+            public string status { get; set; }
             public string tagline { get; set; }
             public string title { get; set; }
             public double vote_average { get; set; }
             public int vote_count { get; set; }
-            public List<Country> countries { get; set; }
-            public List<Cast> cast { get; set; }
-            public List<Crew> crew { get; set; }
+            public Casts casts { get; set; }
+            public Releases releases { get; set; }
+            public MovieImagesImages images { get; set; }
+            public Keywords keywords { get; set; }
         }
 
         public class TmdbImageSettings

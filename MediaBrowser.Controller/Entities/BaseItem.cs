@@ -37,6 +37,7 @@ namespace MediaBrowser.Controller.Entities
             ProductionLocations = new List<string>();
             Images = new Dictionary<ImageType, string>();
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Tags = new List<string>();
         }
 
         /// <summary>
@@ -566,6 +567,12 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The people.</value>
         public List<PersonInfo> People { get; set; }
 
+        /// <summary>
+        /// Gets or sets the tags.
+        /// </summary>
+        /// <value>The tags.</value>
+        public List<string> Tags { get; set; }
+        
         /// <summary>
         /// Override this if you need to combine/collapse person information
         /// </summary>
