@@ -105,7 +105,16 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
-            return item is Movie || item is Trailer;
+            return false;
+            var trailer = item as Trailer;
+
+            if (trailer != null)
+            {
+                return !trailer.IsLocalTrailer;
+            }
+
+            // Don't support local trailers
+            return item is Movie;
         }
 
         /// <summary>
@@ -177,7 +186,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             RTMovieSearchResult hit = null;
 
             // Have IMDB Id
-            using (var stream = await HttpClient.Get(MovieImdbUrl(imdbId), _rottenTomatoesResourcePool, cancellationToken).ConfigureAwait(false))
+            using (var stream = await HttpClient.Get(GetMovieImdbUrl(imdbId), _rottenTomatoesResourcePool, cancellationToken).ConfigureAwait(false))
             {
                 var result = JsonSerializer.DeserializeFromStream<RTMovieSearchResult>(stream);
 
@@ -194,7 +203,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 item.CriticRatingSummary = hit.critics_consensus;
                 item.CriticRating = float.Parse(hit.ratings.critics_score);
 
-                using (var stream = await HttpClient.Get(MovieReviewsUrl(hit.id), _rottenTomatoesResourcePool, cancellationToken).ConfigureAwait(false))
+                using (var stream = await HttpClient.Get(GetMovieReviewsUrl(hit.id), _rottenTomatoesResourcePool, cancellationToken).ConfigureAwait(false))
                 {
 
                     var result = JsonSerializer.DeserializeFromStream<RTReviewList>(stream);
@@ -229,11 +238,8 @@ namespace MediaBrowser.Controller.Providers.Movies
                 // TODO: When alternative names are implemented search for those instead
             }
 
-            if (data != null)
-            {
-                data.Data = GetComparisonData(imdbId);
-                data.LastRefreshStatus = ProviderRefreshStatus.Success;
-            }
+            data.Data = GetComparisonData(imdbId);
+            data.LastRefreshStatus = ProviderRefreshStatus.Success;
 
             SetLastRefreshed(item, DateTime.UtcNow);
 
@@ -242,26 +248,15 @@ namespace MediaBrowser.Controller.Providers.Movies
 
         // Utility functions to get the URL of the API calls
 
-        private string MovieUrl(string rtId)
-        {
-            return BasicUrl + string.Format(Movie, ApiKey, rtId);
-        }
-
-        private string MovieImdbUrl(string imdbId)
+        private string GetMovieImdbUrl(string imdbId)
         {
             return BasicUrl + string.Format(MovieImdb, ApiKey, imdbId.TrimStart('t'));
         }
 
-        private string MovieSearchUrl(string query, int page = 1)
-        {
-            return BasicUrl + string.Format(MovieSearch, ApiKey, Uri.EscapeDataString(query), page);
-        }
-
-        private string MovieReviewsUrl(string rtId)
+        private string GetMovieReviewsUrl(string rtId)
         {
             return BasicUrl + string.Format(MoviesReviews, ApiKey, rtId);
         }
-
 
         // Data contract classes for use with the Rotten Tomatoes API
 
