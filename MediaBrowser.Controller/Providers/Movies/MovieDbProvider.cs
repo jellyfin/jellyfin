@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <summary>
         /// The movie db
         /// </summary>
-        internal readonly SemaphoreSlim MovieDbResourcePool = new SemaphoreSlim(4, 4);
+        internal readonly SemaphoreSlim MovieDbResourcePool = new SemaphoreSlim(3, 3);
 
         internal static MovieDbProvider Current { get; private set; }
 
@@ -101,6 +101,14 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
+            var trailer = item as Trailer;
+
+            if (trailer != null)
+            {
+                return !trailer.IsLocalTrailer;
+            }
+
+            // Don't support local trailers
             return item is Movie || item is BoxSet;
         }
 
@@ -228,7 +236,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         {
             base.SetLastRefreshed(item, value, providerVersion, status);
 
-            if (ConfigurationManager.Configuration.SaveLocalMeta)
+            if (ConfigurationManager.Configuration.SaveLocalMeta && item.LocationType == LocationType.FileSystem)
             {
                 //in addition to ours, we need to set the last refreshed time for the local data provider
                 //so it won't see the new files we download and process them all over again
@@ -269,7 +277,9 @@ namespace MediaBrowser.Controller.Providers.Movies
         {
             if (item.DontFetchMeta) return false;
 
-            if (ConfigurationManager.Configuration.SaveLocalMeta && HasFileSystemStampChanged(item, providerInfo))
+            if (item.LocationType == LocationType.FileSystem &&
+                ConfigurationManager.Configuration.SaveLocalMeta && 
+                HasFileSystemStampChanged(item, providerInfo))
             {
                 //If they deleted something from file system, chances are, this item was mis-identified the first time
                 item.SetProviderId(MetadataProviders.Tmdb, null);
@@ -296,8 +306,6 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             if (HasAltMeta(item))
                 return false; //never refresh if has meta from other source
-
-
 
             Logger.Debug("MovieDbProvider - " + item.Name + " needs refresh.  Download date: " + downloadDate + " item created date: " + item.DateCreated + " Check for Update age: " + ConfigurationManager.Configuration.MetadataRefreshDays);
             return true;
@@ -353,7 +361,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         private bool HasLocalMeta(BaseItem item)
         {
             //need at least the xml and folder.jpg/png or a movie.xml put in by someone else
-            return item.ResolveArgs.ContainsMetaFileByName(LOCAL_META_FILE_NAME);
+            return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName(LOCAL_META_FILE_NAME);
         }
 
         /// <summary>
@@ -363,7 +371,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <returns><c>true</c> if [has alt meta] [the specified item]; otherwise, <c>false</c>.</returns>
         private bool HasAltMeta(BaseItem item)
         {
-            return item.ResolveArgs.ContainsMetaFileByName(ALT_META_FILE_NAME);
+            return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName(ALT_META_FILE_NAME);
         }
 
         /// <summary>
@@ -422,12 +430,17 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <returns>Task{System.String}.</returns>
         public async Task<string> FindId(BaseItem item, int? productionYear, CancellationToken cancellationToken)
         {
-            string justName = item.Path != null ? item.Path.Substring(item.Path.LastIndexOf(Path.DirectorySeparatorChar)) : string.Empty;
-            var id = justName.GetAttributeValue("tmdbid");
-            if (id != null)
+            string id = null;
+
+            if (item.LocationType == LocationType.FileSystem)
             {
-                Logger.Debug("Using tmdb id specified in path.");
-                return id;
+                string justName = item.Path != null ? item.Path.Substring(item.Path.LastIndexOf(Path.DirectorySeparatorChar)) : string.Empty;
+                id = justName.GetAttributeValue("tmdbid");
+                if (id != null)
+                {
+                    Logger.Debug("Using tmdb id specified in path.");
+                    return id;
+                }
             }
 
             int? year;
@@ -766,7 +779,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             }
 
             //and save locally
-            if (ConfigurationManager.Configuration.SaveLocalMeta)
+            if (ConfigurationManager.Configuration.SaveLocalMeta && item.LocationType == LocationType.FileSystem)
             {
                 var ms = new MemoryStream();
                 JsonSerializer.SerializeToStream(mainResult, ms);
@@ -1086,8 +1099,10 @@ namespace MediaBrowser.Controller.Providers.Movies
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            var hasLocalPoster = item.LocationType == LocationType.FileSystem ? item.HasLocalImage("folder") : item.HasImage(ImageType.Primary);
+
             //        poster
-            if (images.posters != null && images.posters.Count > 0 && (ConfigurationManager.Configuration.RefreshItemImages || !item.HasLocalImage("folder")))
+            if (images.posters != null && images.posters.Count > 0 && (ConfigurationManager.Configuration.RefreshItemImages || !hasLocalPoster))
             {
                 var tmdbSettings = await TmdbSettings.ConfigureAwait(false);
 
@@ -1116,7 +1131,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 {
                     try
                     {
-                        item.PrimaryImagePath = await ProviderManager.DownloadAndSaveImage(item, tmdbImageUrl + poster.file_path, "folder" + Path.GetExtension(poster.file_path), ConfigurationManager.Configuration.SaveLocalMeta, MovieDbResourcePool, cancellationToken).ConfigureAwait(false);
+                        item.PrimaryImagePath = await ProviderManager.DownloadAndSaveImage(item, tmdbImageUrl + poster.file_path, "folder" + Path.GetExtension(poster.file_path), ConfigurationManager.Configuration.SaveLocalMeta && item.LocationType == LocationType.FileSystem, MovieDbResourcePool, cancellationToken).ConfigureAwait(false);
                     }
                     catch (HttpException)
                     {
@@ -1144,11 +1159,13 @@ namespace MediaBrowser.Controller.Providers.Movies
                 {
                     var bdName = "backdrop" + (i == 0 ? "" : i.ToString(CultureInfo.InvariantCulture));
 
-                    if (ConfigurationManager.Configuration.RefreshItemImages || !item.HasLocalImage(bdName))
+                    var hasLocalBackdrop = item.LocationType == LocationType.FileSystem ? item.HasLocalImage(bdName) : item.BackdropImagePaths.Count > i;
+
+                    if (ConfigurationManager.Configuration.RefreshItemImages || !hasLocalBackdrop)
                     {
                         try
                         {
-                            item.BackdropImagePaths.Add(await ProviderManager.DownloadAndSaveImage(item, tmdbImageUrl + images.backdrops[i].file_path, bdName + Path.GetExtension(images.backdrops[i].file_path), ConfigurationManager.Configuration.SaveLocalMeta, MovieDbResourcePool, cancellationToken).ConfigureAwait(false));
+                            item.BackdropImagePaths.Add(await ProviderManager.DownloadAndSaveImage(item, tmdbImageUrl + images.backdrops[i].file_path, bdName + Path.GetExtension(images.backdrops[i].file_path), ConfigurationManager.Configuration.SaveLocalMeta && item.LocationType == LocationType.FileSystem, MovieDbResourcePool, cancellationToken).ConfigureAwait(false));
                         }
                         catch (HttpException)
                         {
