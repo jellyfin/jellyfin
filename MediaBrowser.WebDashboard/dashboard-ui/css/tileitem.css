@@ -15,8 +15,19 @@
     }
 
     .tileItem .starRating {
-        width: 15px;
-        height: 13px;
+        width: 16px;
+        height: 14px;
+    }
+
+    .tileItem .rottentomatoesicon {
+        height: 14px;
+        width: 14px;
+    }
+
+    .tileItem .criticRating {
+        position: relative;
+        top: -1px;
+        font-size: 13px;
     }
 
 .tileImage {

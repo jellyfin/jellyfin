@@ -204,7 +204,7 @@
         LibraryBrowser.renderOverview($('#itemOverview', page), item);
 
         if (item.CommunityRating) {
-            $('#itemCommunityRating', page).html(LibraryBrowser.getStarRatingHtml(item)).show().attr('title', item.CommunityRating);
+            $('#itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item)).show();
         } else {
             $('#itemCommunityRating', page).hide();
         }

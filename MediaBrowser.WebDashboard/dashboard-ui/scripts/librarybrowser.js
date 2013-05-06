@@ -147,7 +147,7 @@
                 html += '<div class="tileName">' + name + '</div>';
 
                 if (item.CommunityRating) {
-                    html += '<p>' + LibraryBrowser.getFiveStarRatingHtml(item) + '</p>';
+                    html += '<p>' + LibraryBrowser.getRatingHtml(item) + '</p>';
                 }
 
                 var childText;
@@ -811,40 +811,33 @@
             return html;
         },
 
-        getStarRatingHtml: function (item) {
-            var rating = item.CommunityRating;
-
-            var html = "";
-            for (var i = 1; i <= 10; i++) {
-                if (rating < i - 1) {
-                    html += "<div class='starRating emptyStarRating'></div>";
-                }
-                else if (rating < i) {
-                    html += "<div class='starRating halfStarRating'></div>";
-                }
-                else {
-                    html += "<div class='starRating'></div>";
-                }
-            }
-
-            return html;
-        },
-
-        getFiveStarRatingHtml: function (item) {
+        getRatingHtml: function (item) {
 
             var rating = item.CommunityRating / 2;
 
             var html = "";
             for (var i = 1; i <= 5; i++) {
                 if (rating < i - 1) {
-                    html += "<div class='starRating emptyStarRating'></div>";
+                    html += "<div class='starRating emptyStarRating' title='" + item.CommunityRating + "'></div>";
                 }
                 else if (rating < i) {
-                    html += "<div class='starRating halfStarRating'></div>";
+                    html += "<div class='starRating halfStarRating' title='" + item.CommunityRating + "'></div>";
                 }
                 else {
-                    html += "<div class='starRating'></div>";
+                    html += "<div class='starRating' title='" + item.CommunityRating + "'></div>";
                 }
+            }
+
+            if (item.Type == "Movie" && item.CriticRating != null) {
+
+                if (item.CriticRating >= 60) {
+                    html += '<div class="fresh rottentomatoesicon"></div>';
+                } else {
+                    html += '<div class="rotten rottentomatoesicon"></div>';
+                }
+
+                html += '<div class="criticRating">' + item.CriticRating + '%</div>';
+
             }
 
             return html;
@@ -1344,7 +1337,7 @@
                 miscInfo.push(item.VideoFormat);
             }
 
-            return miscInfo.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+            return miscInfo.join('&nbsp;&nbsp;&nbsp;&nbsp;');
         },
 
         renderOverview: function (elem, item) {

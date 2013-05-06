@@ -34,7 +34,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <summary>
         /// The _rotten tomatoes resource pool
         /// </summary>
-        private readonly SemaphoreSlim _rottenTomatoesResourcePool = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _rottenTomatoesResourcePool = new SemaphoreSlim(2, 2);
 
         /// <summary>
         /// Gets the json serializer.
@@ -70,7 +70,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         {
             get
             {
-                return "4";
+                return "5";
             }
         }
 
@@ -236,7 +236,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             // If we found any results, that's great!
             if (hit != null)
             {
-                item.CriticRatingSummary = hit.critics_concensus;
+                item.CriticRatingSummary = hit.critics_consensus;
                 item.CriticRating = float.Parse(hit.ratings.critics_score);
 
                 using (var stream = HttpClient.Get(MovieReviewsUrl(hit.id), _rottenTomatoesResourcePool, cancellationToken).Result)
@@ -331,7 +331,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             public int year { get; set; }
             public string runtime { get; set; }
             public string synopsis { get; set; }
-            public string critics_concensus { get; set; }
+            public string critics_consensus { get; set; }
             public string mpaa_rating { get; set; }
             public string id { get; set; }
             public RTRatings ratings { get; set; }
@@ -363,6 +363,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             public string publication { get; set; }
             public string quote { get; set; }
             public RTReviewLink links { get; set; }
+            public string original_score { get; set; }
         }
 
         protected class RTReviewLink
