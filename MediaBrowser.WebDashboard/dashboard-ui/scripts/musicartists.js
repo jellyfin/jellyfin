@@ -25,8 +25,9 @@
                 items: result.Items,
                 countNameSingular: "Song",
                 countNamePlural: "Songs",
-                preferBackdrop: true,
-                context: "music"
+                preferBackdrop: false,
+                context: "music",
+                shape: "square"
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);

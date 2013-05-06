@@ -398,13 +398,13 @@
                 html += '<li><span class="mediaInfoLabel">Aspect Ratio: </span> ' + stream.AspectRatio + '</li>';
             }
             if (stream.BitRate) {
-                html += '<li><span class="mediaInfoLabel">Bitrate: </span> <span class="autoNumeric" data-a-pad="false">' + stream.BitRate + '</span></li>';
+                html += '<li><span class="mediaInfoLabel">Bitrate: </span> <span class="autoNumeric" data-a-pad="false">' + (parseInt(stream.BitRate / 1000)) + ' kbps</span></li>';
             }
             if (stream.Channels) {
                 html += '<li><span class="mediaInfoLabel">Channels: </span> ' + stream.Channels + '</li>';
             }
             if (stream.SampleRate) {
-                html += '<li><span class="mediaInfoLabel">Sample Rate: </span> <span class="autoNumeric" data-a-pad="false">' + stream.SampleRate + '</span></li>';
+                html += '<li><span class="mediaInfoLabel">Sample Rate: </span> <span class="autoNumeric" data-a-pad="false">' + stream.SampleRate + ' khz</span></li>';
             }
 
             var framerate = stream.AverageFrameRate || stream.RealFrameRate;
@@ -541,7 +541,7 @@
 
         $('#btnEdit', page).on('click', function () {
 
-            Dashboard.navigate("edititemimages.html?id=" + currentItem.Id);
+            Dashboard.navigate("edititemmetadata.html?id=" + currentItem.Id);
         });
 
     }).on('pageshow', "#itemDetailPage", function () {

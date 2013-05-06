@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Providers.Movies
 {
@@ -70,7 +71,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         {
             get
             {
-                return "1";
+                return "2";
             }
         }
 
@@ -139,8 +140,6 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            return true;
-
             // Refresh if imdb id has changed
             if (providerInfo.Data != GetComparisonData(item.GetProviderId(MetadataProviders.Imdb)))
             {
@@ -174,10 +173,10 @@ namespace MediaBrowser.Controller.Providers.Movies
             {
                 // No IMDB Id, search RT for an ID
 
-                int page = 1;
-                using (Stream stream = HttpClient.Get(MovieSearchUrl(item.Name, page), _rottenTomatoesResourcePool, cancellationToken).Result)
+                var page = 1;
+                using (var stream = HttpClient.Get(MovieSearchUrl(item.Name, page), _rottenTomatoesResourcePool, cancellationToken).Result)
                 {
-                    RTSearchResults result = JsonSerializer.DeserializeFromStream<RTSearchResults>(stream);
+                    var result = JsonSerializer.DeserializeFromStream<RTSearchResults>(stream);
 
                     if (result.total == 1)
                     {
@@ -203,9 +202,9 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                             if (hit == null)
                             {
-                                using (Stream newPageStream = HttpClient.Get(MovieSearchUrl(item.Name, page++), _rottenTomatoesResourcePool, cancellationToken).Result)
+                                using (var newPageStream = HttpClient.Get(MovieSearchUrl(item.Name, page++), _rottenTomatoesResourcePool, cancellationToken).Result)
                                 {
-                                    result = JsonSerializer.DeserializeFromStream<RTSearchResults>(stream);
+                                    result = JsonSerializer.DeserializeFromStream<RTSearchResults>(newPageStream);
 
                                     if (result.total == 0)
                                     {
@@ -223,9 +222,9 @@ namespace MediaBrowser.Controller.Providers.Movies
             else
             {
                 // Have IMDB Id
-                using (Stream stream = HttpClient.Get(MovieImdbUrl(imdbId), _rottenTomatoesResourcePool, cancellationToken).Result)
+                using (var stream = HttpClient.Get(MovieImdbUrl(imdbId), _rottenTomatoesResourcePool, cancellationToken).Result)
                 {
-                    RTMovieSearchResult result = JsonSerializer.DeserializeFromStream<RTMovieSearchResult>(stream);
+                    var result = JsonSerializer.DeserializeFromStream<RTMovieSearchResult>(stream);
 
                     if (!string.IsNullOrEmpty(result.id))
                     {
@@ -241,23 +240,20 @@ namespace MediaBrowser.Controller.Providers.Movies
                 item.CriticRatingSummary = hit.critics_concensus;
                 item.CriticRating = float.Parse(hit.ratings.critics_score);
 
-                using (Stream stream = HttpClient.Get(MovieReviewsUrl(hit.id), _rottenTomatoesResourcePool, cancellationToken).Result)
+                using (var stream = HttpClient.Get(MovieReviewsUrl(hit.id), _rottenTomatoesResourcePool, cancellationToken).Result)
                 {
 
-                    RTReviewList result = JsonSerializer.DeserializeFromStream<RTReviewList>(stream);
+                    var result = JsonSerializer.DeserializeFromStream<RTReviewList>(stream);
 
-                    item.CriticReviews.Clear();
-                    foreach (var rtReview in result.reviews)
+                    item.CriticReviews = result.reviews.Select(rtReview => new ItemReview
                     {
-                        ItemReview review = new ItemReview();
+                        ReviewerName = rtReview.critic,
+                        Publisher = rtReview.publication,
+                        Date = DateTime.Parse(rtReview.date).ToUniversalTime(),
+                        Caption = rtReview.quote,
+                        Url = rtReview.links.review
 
-                        review.ReviewerName = rtReview.critic;
-                        review.Publisher = rtReview.publication;
-                        review.Date = DateTime.Parse(rtReview.date).ToUniversalTime();
-                        review.Caption = rtReview.quote;
-                        review.Url = rtReview.links.review;
-                        item.CriticReviews.Add(review);
-                    }
+                    }).ToList();
 
                     if (data == null)
                     {
@@ -285,7 +281,6 @@ namespace MediaBrowser.Controller.Providers.Movies
             }
 
             SetLastRefreshed(item, DateTime.UtcNow);
-
 
             return Task.FromResult(true);
         }

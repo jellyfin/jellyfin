@@ -13,29 +13,35 @@
                 <h1 id="itemName" class="detailPageName"></h1>
                 <br />
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="#" data-role="button">Metadata</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('edititemmetadata.html', true);">Metadata</a>
                     <a href="#" data-role="button" class="ui-btn-active">Images</a>
                 </div>
 
-                <div style="text-align: center; margin-top: -20px;">
+                <div style="text-align: center; margin: -25px 0 1em;">
                     <a href="#popupUpload" data-rel="popup" data-role="button" data-inline="true" data-icon="plus" data-mini="true" data-transition="pop">Upload Image</a>
                 </div>
 
                 <div id="imagesContainer" style="display: none;">
-                    <h3 style="margin-top: 0;">Images</h3>
-                    <div id="images">
+                    <div data-role="collapsible" data-mini="true" data-collapsed="false" data-corners="false">
+                        <h3>Images</h3>
+                        <div id="images">
+                        </div>
                     </div>
                 </div>
 
                 <div id="backdropsContainer" style="display: none;">
-                    <h3>Backdrops</h3>
-                    <div id="backdrops">
+                    <div data-role="collapsible" data-mini="true" data-collapsed="false" data-corners="false">
+                        <h3>Backdrops</h3>
+                        <div id="backdrops">
+                        </div>
                     </div>
                 </div>
 
                 <div id="screenshotsContainer" style="display: none;">
-                    <h3>Screenshots</h3>
-                    <div id="screenshots">
+                    <div data-role="collapsible" data-mini="true" data-collapsed="false" data-corners="false">
+                        <h3>Screenshots</h3>
+                        <div id="screenshots">
+                        </div>
                     </div>
                 </div>
 
@@ -43,7 +49,7 @@
         </div>
 
         <div data-role="popup" id="popupUpload" class="ui-corner-all" data-theme="c">
-            <form style="max-width: 100%; margin: 0 1.5em 1.5em;">
+            <form id="uploadItemImageForm" style="max-width: 100%; margin: 0 1.5em 1.5em;">
                 <h2>Add/Update Image</h2>
                 <div>
                     <p>JPG/PNG only.</p>
@@ -78,7 +84,7 @@
         </div>
 
         <script type="text/javascript">
-            $('#editItemImagesPage').on('submit', EditItemImagesPage.onSubmit);
+            $('#uploadItemImageForm').on('submit', EditItemImagesPage.onSubmit);
         </script>
 
     </div>
