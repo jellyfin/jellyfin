@@ -202,7 +202,14 @@ namespace MediaBrowser.Controller.Providers.TV
 
                 try
                 {
-                    using (var xml = await HttpClient.Get(url, TvDbResourcePool, cancellationToken).ConfigureAwait(false))
+                    using (var xml = await HttpClient.Get(new HttpRequestOptions
+                    {
+                        Url = url,
+                        ResourcePool = TvDbResourcePool,
+                        CancellationToken = cancellationToken,
+                        EnableResponseCache = true
+
+                    }).ConfigureAwait(false))
                     {
                         doc.Load(xml);
                     }
@@ -294,7 +301,14 @@ namespace MediaBrowser.Controller.Providers.TV
 
             try
             {
-                using (var actors = await HttpClient.Get(urlActors, TvDbResourcePool, cancellationToken).ConfigureAwait(false))
+                using (var actors = await HttpClient.Get(new HttpRequestOptions
+                {
+                    Url = urlActors,
+                    ResourcePool = TvDbResourcePool,
+                    CancellationToken = cancellationToken,
+                    EnableResponseCache = true
+
+                }).ConfigureAwait(false))
                 {
                     docActors.Load(actors);
                 }
@@ -366,7 +380,14 @@ namespace MediaBrowser.Controller.Providers.TV
 
                 try
                 {
-                    using (var imgs = await HttpClient.Get(url, TvDbResourcePool, cancellationToken).ConfigureAwait(false))
+                    using (var imgs = await HttpClient.Get(new HttpRequestOptions
+                    {
+                        Url = url,
+                        ResourcePool = TvDbResourcePool,
+                        CancellationToken = cancellationToken,
+                        EnableResponseCache = true
+
+                    }).ConfigureAwait(false))
                     {
                         images.Load(imgs);
                     }
@@ -513,7 +534,14 @@ namespace MediaBrowser.Controller.Providers.TV
 
             try
             {
-                using (var results = await HttpClient.Get(url, TvDbResourcePool, cancellationToken).ConfigureAwait(false))
+                using (var results = await HttpClient.Get(new HttpRequestOptions
+                {
+                    Url = url,
+                    ResourcePool = TvDbResourcePool,
+                    CancellationToken = cancellationToken,
+                    EnableResponseCache = true
+
+                }).ConfigureAwait(false))
                 {
                     doc.Load(results);
                 }

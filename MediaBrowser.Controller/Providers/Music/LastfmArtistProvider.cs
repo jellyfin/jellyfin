@@ -100,7 +100,14 @@ namespace MediaBrowser.Controller.Providers.Music
 
             try
             {
-                using (var json = await HttpClient.Get(url, LastfmResourcePool, cancellationToken).ConfigureAwait(false))
+                using (var json = await HttpClient.Get(new HttpRequestOptions
+                {
+                    Url = url,
+                    ResourcePool = LastfmResourcePool,
+                    CancellationToken = cancellationToken,
+                    EnableResponseCache = true
+
+                }).ConfigureAwait(false))
                 {
                     searchResult = JsonSerializer.DeserializeFromStream<LastfmArtistSearchResults>(json);
                 }
@@ -180,7 +187,14 @@ namespace MediaBrowser.Controller.Providers.Music
 
             LastfmGetArtistResult result;
 
-            using (var json = await HttpClient.Get(url, LastfmResourcePool, cancellationToken).ConfigureAwait(false))
+            using (var json = await HttpClient.Get(new HttpRequestOptions
+            {
+                Url = url,
+                ResourcePool = LastfmResourcePool,
+                CancellationToken = cancellationToken,
+                EnableResponseCache = true
+
+            }).ConfigureAwait(false))
             {
                 result = JsonSerializer.DeserializeFromStream<LastfmGetArtistResult>(json);
             }

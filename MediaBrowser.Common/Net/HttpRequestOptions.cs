@@ -43,5 +43,11 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <value>The progress.</value>
         public IProgress<double> Progress { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable response caching].
+        /// </summary>
+        /// <value><c>true</c> if [enable response caching]; otherwise, <c>false</c>.</value>
+        public bool EnableResponseCache { get; set; }
     }
 }

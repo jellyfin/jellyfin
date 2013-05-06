@@ -36,7 +36,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         private readonly IApplicationPaths _appPaths;
 
         private readonly IJsonSerializer _jsonSerializer;
-        //private readonly FileSystemRepository _cacheRepository;
+        private readonly FileSystemRepository _cacheRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpClientManager" /> class.
@@ -64,7 +64,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             _jsonSerializer = jsonSerializer;
             _appPaths = appPaths;
 
-            //_cacheRepository = new FileSystemRepository(Path.Combine(_appPaths.CachePath, "http"));
+            _cacheRepository = new FileSystemRepository(Path.Combine(_appPaths.CachePath, "downloads"));
         }
 
         /// <summary>
@@ -115,41 +115,57 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         {
             ValidateParams(options.Url, options.CancellationToken);
 
-            //var urlHash = url.GetMD5().ToString();
-            //var infoPath = _cacheRepository.GetResourcePath(urlHash + ".js");
-            //var responsePath = _cacheRepository.GetResourcePath(urlHash + ".dat");
+            HttpResponseInfo cachedInfo = null;
 
-            //HttpResponseInfo cachedInfo = null;
+            var urlHash = options.Url.GetMD5().ToString();
+            var cachedInfoPath = _cacheRepository.GetResourcePath(urlHash + ".js");
+            var cachedReponsePath = _cacheRepository.GetResourcePath(urlHash + ".dat");
 
-            //try
-            //{
-            //    cachedInfo = _jsonSerializer.DeserializeFromFile<HttpResponseInfo>(infoPath);
-            //}
-            //catch (FileNotFoundException)
-            //{
+            if (options.EnableResponseCache)
+            {
+                try
+                {
+                    cachedInfo = _jsonSerializer.DeserializeFromFile<HttpResponseInfo>(cachedInfoPath);
+                }
+                catch (FileNotFoundException)
+                {
 
-            //}
+                }
 
-            //if (cachedInfo != null && !cachedInfo.MustRevalidate && cachedInfo.Expires.HasValue && cachedInfo.Expires.Value > DateTime.UtcNow)
-            //{
-            //    return GetCachedResponse(responsePath);
-            //}
+                if (cachedInfo != null)
+                {
+                    var isCacheValid = (!cachedInfo.MustRevalidate && !string.IsNullOrEmpty(cachedInfo.Etag)) 
+                        || (cachedInfo.Expires.HasValue && cachedInfo.Expires.Value > DateTime.UtcNow);
+
+                    if (isCacheValid)
+                    {
+                        try
+                        {
+                            return GetCachedResponse(cachedReponsePath);
+                        }
+                        catch (FileNotFoundException)
+                        {
+
+                        }
+                    }
+                }
+            }
 
             options.CancellationToken.ThrowIfCancellationRequested();
 
             var message = GetHttpRequestMessage(options);
 
-            //if (cachedInfo != null)
-            //{
-            //    if (!string.IsNullOrEmpty(cachedInfo.Etag))
-            //    {
-            //        message.Headers.Add("If-None-Match", cachedInfo.Etag);
-            //    }
-            //    else if (cachedInfo.LastModified.HasValue)
-            //    {
-            //        message.Headers.IfModifiedSince = new DateTimeOffset(cachedInfo.LastModified.Value);
-            //    }
-            //}
+            if (options.EnableResponseCache && cachedInfo != null)
+            {
+                if (!string.IsNullOrEmpty(cachedInfo.Etag))
+                {
+                    message.Headers.Add("If-None-Match", cachedInfo.Etag);
+                }
+                else if (cachedInfo.LastModified.HasValue)
+                {
+                    message.Headers.IfModifiedSince = new DateTimeOffset(cachedInfo.LastModified.Value);
+                }
+            }
 
             if (options.ResourcePool != null)
             {
@@ -168,19 +184,22 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                 options.CancellationToken.ThrowIfCancellationRequested();
 
-                //cachedInfo = UpdateInfoCache(cachedInfo, url, infoPath, response);
+                if (options.EnableResponseCache)
+                {
+                    cachedInfo = UpdateInfoCache(cachedInfo, options.Url, cachedInfoPath, response);
 
-                //if (response.StatusCode == HttpStatusCode.NotModified)
-                //{
-                //    return GetCachedResponse(responsePath);
-                //}
+                    if (response.StatusCode == HttpStatusCode.NotModified)
+                    {
+                        return GetCachedResponse(cachedReponsePath);
+                    }
 
-                //if (!string.IsNullOrEmpty(cachedInfo.Etag) || cachedInfo.LastModified.HasValue || (cachedInfo.Expires.HasValue && cachedInfo.Expires.Value > DateTime.UtcNow))
-                //{
-                //    await UpdateResponseCache(response, responsePath).ConfigureAwait(false);
+                    if (!string.IsNullOrEmpty(cachedInfo.Etag) || cachedInfo.LastModified.HasValue || (cachedInfo.Expires.HasValue && cachedInfo.Expires.Value > DateTime.UtcNow))
+                    {
+                        await UpdateResponseCache(response, cachedReponsePath).ConfigureAwait(false);
 
-                //    return GetCachedResponse(responsePath);
-                //}
+                        return GetCachedResponse(cachedReponsePath);
+                    }
+                }
 
                 return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             }
@@ -236,7 +255,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         {
             return Get(url, null, cancellationToken);
         }
-
 
         /// <summary>
         /// Gets the cached response.

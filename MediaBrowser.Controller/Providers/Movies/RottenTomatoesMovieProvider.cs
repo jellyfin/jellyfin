@@ -186,7 +186,14 @@ namespace MediaBrowser.Controller.Providers.Movies
             RTMovieSearchResult hit = null;
 
             // Have IMDB Id
-            using (var stream = await HttpClient.Get(GetMovieImdbUrl(imdbId), _rottenTomatoesResourcePool, cancellationToken).ConfigureAwait(false))
+            using (var stream = await HttpClient.Get(new HttpRequestOptions
+            {
+                Url = GetMovieImdbUrl(imdbId),
+                ResourcePool = _rottenTomatoesResourcePool,
+                CancellationToken = cancellationToken,
+                EnableResponseCache = true
+
+            }).ConfigureAwait(false))
             {
                 var result = JsonSerializer.DeserializeFromStream<RTMovieSearchResult>(stream);
 
@@ -203,7 +210,14 @@ namespace MediaBrowser.Controller.Providers.Movies
                 item.CriticRatingSummary = hit.critics_consensus;
                 item.CriticRating = float.Parse(hit.ratings.critics_score);
 
-                using (var stream = await HttpClient.Get(GetMovieReviewsUrl(hit.id), _rottenTomatoesResourcePool, cancellationToken).ConfigureAwait(false))
+                using (var stream = await HttpClient.Get(new HttpRequestOptions
+                {
+                    Url = GetMovieReviewsUrl(hit.id),
+                    ResourcePool = _rottenTomatoesResourcePool,
+                    CancellationToken = cancellationToken,
+                    EnableResponseCache = true
+
+                }).ConfigureAwait(false))
                 {
 
                     var result = JsonSerializer.DeserializeFromStream<RTReviewList>(stream);
