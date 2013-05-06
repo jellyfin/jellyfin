@@ -312,6 +312,12 @@ namespace MediaBrowser.Controller.Dto
             dto.Language = item.Language;
             dto.MediaType = item.MediaType;
             dto.LocationType = item.LocationType;
+            dto.CriticRating = item.CriticRating;
+
+            if (fields.Contains(ItemFields.CriticRatingSummary))
+            {
+                dto.CriticRatingSummary = item.CriticRatingSummary;
+            }
 
             var localTrailerCount = item.LocalTrailers == null ? 0 : item.LocalTrailers.Count;
 

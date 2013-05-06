@@ -43,6 +43,18 @@ namespace MediaBrowser.Model.Dto
         public DateTime? PremiereDate { get; set; }
 
         /// <summary>
+        /// Gets or sets the critic rating.
+        /// </summary>
+        /// <value>The critic rating.</value>
+        public float? CriticRating { get; set; }
+
+        /// <summary>
+        /// Gets or sets the critic rating summary.
+        /// </summary>
+        /// <value>The critic rating summary.</value>
+        public string CriticRatingSummary { get; set; }
+        
+        /// <summary>
         /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>

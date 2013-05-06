@@ -48,7 +48,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Fields to return within the items, in addition to basic information
         /// </summary>
         /// <value>The fields.</value>
-        [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: AudioInfo, Budget, Chapters, DateCreated, DisplayMediaType, DisplayPreferences, EndDate, Genres, HomePageUrl, ItemCounts, IndexOptions, Locations, MediaStreams, Overview, OverviewHtml, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SeriesInfo, SortName, Studios, Taglines, TrailerUrls, UserData", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: AudioInfo, Budget, Chapters, CriticRatingSummary, DateCreated, DisplayMediaType, EndDate, Genres, HomePageUrl, ItemCounts, IndexOptions, Locations, MediaStreams, Overview, OverviewHtml, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SeriesInfo, SortName, Studios, Taglines, TrailerUrls, UserData", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Fields { get; set; }
 
         /// <summary>
