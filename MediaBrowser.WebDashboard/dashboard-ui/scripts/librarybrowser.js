@@ -699,14 +699,16 @@
             var providerIds = item.ProviderIds || {};
 
             if (providerIds.Imdb) {
-                if (item.Type == "Movie" || item.Type == "Episode")
+                if (item.Type == "Movie" || item.Type == "Episode" || item.Type == "Trailer")
                     links.push('<a class="ui-link" href="http://www.imdb.com/title/' + providerIds.Imdb + '" target="_blank">IMDb</a>');
                 else if (item.Type == "Person")
                     links.push('<a class="ui-link" href="http://www.imdb.com/name/' + providerIds.Imdb + '" target="_blank">IMDb</a>');
             }
             if (providerIds.Tmdb) {
-                if (item.Type == "Movie")
+                if (item.Type == "Movie" || item.Type == "Trailer")
                     links.push('<a class="ui-link" href="http://www.themoviedb.org/movie/' + providerIds.Tmdb + '" target="_blank">TMDB</a>');
+                else if (item.Type == "BoxSet")
+                    links.push('<a class="ui-link" href="http://www.themoviedb.org/collection/' + providerIds.Tmdb + '" target="_blank">TMDB</a>');
                 else if (item.Type == "Person")
                     links.push('<a class="ui-link" href="http://www.themoviedb.org/person/' + providerIds.Tmdb + '" target="_blank">TMDB</a>');
             }
@@ -831,7 +833,7 @@
                 }
             }
 
-            if (item.Type == "Movie" && item.CriticRating != null) {
+            if ((item.Type == "Movie" || item.Type == "Trailer") && item.CriticRating != null) {
 
                 if (item.CriticRating >= 60) {
                     html += '<div class="fresh rottentomatoesicon"></div>';

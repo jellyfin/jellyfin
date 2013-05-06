@@ -28,7 +28,7 @@
             $('#fldEndDate', page).hide();
         }
 
-        if (item.Type == "Movie" || item.MediaType == "Game") {
+        if (item.Type == "Movie" || item.MediaType == "Game" || item.MediaType == "Trailer") {
             $('#fldBudget', page).show();
             $('#fldRevenue', page).show();
         } else {
