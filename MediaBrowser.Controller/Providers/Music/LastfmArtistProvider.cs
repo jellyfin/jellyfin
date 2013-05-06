@@ -6,6 +6,8 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
@@ -14,13 +16,15 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using Mediabrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Providers.Music
 {
     public class LastfmArtistProvider : LastfmBaseProvider
     {
         private readonly IProviderManager _providerManager;
-        
+        private readonly ILibraryManager _libraryManager;
+
         public LastfmArtistProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
             : base(jsonSerializer, httpClient, logManager, configurationManager)
         {
@@ -28,8 +32,25 @@ namespace MediaBrowser.Controller.Providers.Music
             LocalMetaFileName = LastfmHelper.LocalArtistMetaFileName;
         }
 
+        /// <summary>
+        /// Finds the id.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{System.String}.</returns>
         protected override async Task<string> FindId(BaseItem item, CancellationToken cancellationToken)
         {
+            if (item is Artist)
+            {
+                // Since MusicArtists are refreshed first, try to find it from one of them
+                var id = FindIdFromMusicArtistEntity(item);
+
+                if (!string.IsNullOrEmpty(id))
+                {
+                    return id;
+                }
+            }
+
             // Try to find the id using last fm
             var result = await FindIdFromLastFm(item, cancellationToken).ConfigureAwait(false);
 
@@ -59,6 +80,14 @@ namespace MediaBrowser.Controller.Providers.Music
 
                 throw;
             }
+        }
+
+        private string FindIdFromMusicArtistEntity(BaseItem item)
+        {
+            var artist = _libraryManager.RootFolder.RecursiveChildren.OfType<MusicArtist>()
+                .FirstOrDefault(i => string.Equals(i.Name, item.Name, StringComparison.OrdinalIgnoreCase));
+
+            return artist != null ? artist.GetProviderId(MetadataProviders.Musicbrainz) : null;
         }
 
         private async Task<Tuple<string,bool>> FindIdFromLastFm(BaseItem item, CancellationToken cancellationToken)
