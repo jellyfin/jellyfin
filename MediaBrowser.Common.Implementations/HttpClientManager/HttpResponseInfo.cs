@@ -36,5 +36,11 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// </summary>
         /// <value><c>true</c> if [must revalidate]; otherwise, <c>false</c>.</value>
         public bool MustRevalidate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the request date.
+        /// </summary>
+        /// <value>The request date.</value>
+        public DateTime RequestDate { get; set; }
     }
 }
