@@ -46,11 +46,25 @@ namespace MediaBrowser.Controller.Entities
         public const string ThemeSongsFolderName = "theme-music";
         public const string ThemeVideosFolderName = "backdrops";
 
+        private string _name;
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
-        public virtual string Name { get; set; }
+        public virtual string Name
+        {
+            get
+            {
+                return _name;
+            }
+            set
+            {
+                _name = value;
+
+                // lazy load this again
+                _sortName = null;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the id.
