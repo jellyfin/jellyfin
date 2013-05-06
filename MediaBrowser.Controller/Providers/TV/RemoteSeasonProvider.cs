@@ -149,7 +149,14 @@ namespace MediaBrowser.Controller.Providers.TV
 
                     try
                     {
-                        using (var imgs = await HttpClient.Get(url, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false))
+                        using (var imgs = await HttpClient.Get(new HttpRequestOptions
+                        {
+                            Url = url,
+                            ResourcePool = RemoteSeriesProvider.Current.TvDbResourcePool,
+                            CancellationToken = cancellationToken,
+                            EnableResponseCache = true
+
+                        }).ConfigureAwait(false))
                         {
                             images.Load(imgs);
                         }

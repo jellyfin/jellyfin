@@ -185,7 +185,14 @@ namespace MediaBrowser.Controller.Providers.TV
 
                 try
                 {
-                    using (var result = await HttpClient.Get(url, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false))
+                    using (var result = await HttpClient.Get(new HttpRequestOptions
+                    {
+                        Url = url,
+                        ResourcePool = RemoteSeriesProvider.Current.TvDbResourcePool,
+                        CancellationToken = cancellationToken,
+                        EnableResponseCache = true
+
+                    }).ConfigureAwait(false))
                     {
                         doc.Load(result);
                     }
@@ -203,7 +210,14 @@ namespace MediaBrowser.Controller.Providers.TV
 
                     try
                     {
-                        using (var result = await HttpClient.Get(url, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false))
+                        using (var result = await HttpClient.Get(new HttpRequestOptions
+                        {
+                            Url = url,
+                            ResourcePool = RemoteSeriesProvider.Current.TvDbResourcePool,
+                            CancellationToken = cancellationToken,
+                            EnableResponseCache = true
+
+                        }).ConfigureAwait(false))
                         {
                             if (result != null) doc.Load(result);
                             usingAbsoluteData = true;

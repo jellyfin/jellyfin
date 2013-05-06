@@ -108,7 +108,14 @@ namespace MediaBrowser.Controller.Providers.Music
             // Get albu info using artist and album name
             var url = RootUrl + string.Format("method=album.getInfo&artist={0}&album={1}&api_key={2}&format=json", UrlEncode(artist), UrlEncode(album), ApiKey);
 
-            using (var json = await HttpClient.Get(url, LastfmResourcePool, cancellationToken).ConfigureAwait(false))
+            using (var json = await HttpClient.Get(new HttpRequestOptions
+            {
+                Url = url,
+                ResourcePool = LastfmResourcePool,
+                CancellationToken = cancellationToken,
+                EnableResponseCache = true
+
+            }).ConfigureAwait(false))
             {
                 return JsonSerializer.DeserializeFromStream<LastfmGetAlbumResult>(json);
             }

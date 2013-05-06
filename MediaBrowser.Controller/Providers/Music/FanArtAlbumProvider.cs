@@ -141,7 +141,14 @@ namespace MediaBrowser.Controller.Providers.Music
 
             try
             {
-                using (var xml = await HttpClient.Get(url, FanArtResourcePool, cancellationToken).ConfigureAwait(false))
+                using (var xml = await HttpClient.Get(new HttpRequestOptions
+                {
+                    Url = url,
+                    ResourcePool = FanArtResourcePool,
+                    CancellationToken = cancellationToken,
+                    EnableResponseCache = true
+
+                }).ConfigureAwait(false))
                 {
                     doc.Load(xml);
                 }
@@ -243,7 +250,8 @@ namespace MediaBrowser.Controller.Providers.Music
                     Url = url,
                     CancellationToken = cancellationToken,
                     ResourcePool = _musicBrainzSemaphore,
-                    UserAgent = "MediaBrowserServer/www.mediabrowser3.com"
+                    UserAgent = "MediaBrowserServer/www.mediabrowser3.com",
+                    EnableResponseCache = true
 
                 }).ConfigureAwait(false))
                 {

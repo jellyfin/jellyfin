@@ -76,7 +76,14 @@ namespace MediaBrowser.Controller.Providers.TV
 
             try
             {
-                using (var xml = await HttpClient.Get(url, FanArtResourcePool, cancellationToken).ConfigureAwait(false))
+                using (var xml = await HttpClient.Get(new HttpRequestOptions
+                {
+                    Url = url,
+                    ResourcePool = FanArtResourcePool,
+                    CancellationToken = cancellationToken,
+                    EnableResponseCache = true
+
+                }).ConfigureAwait(false))
                 {
                     doc.Load(xml);
                 }

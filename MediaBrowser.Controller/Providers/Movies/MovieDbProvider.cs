@@ -174,7 +174,8 @@ namespace MediaBrowser.Controller.Providers.Movies
                     Url = string.Format(TmdbConfigUrl, ApiKey),
                     CancellationToken = CancellationToken.None,
                     ResourcePool = Current.MovieDbResourcePool,
-                    AcceptHeader = AcceptHeader
+                    AcceptHeader = AcceptHeader,
+                    EnableResponseCache = true
 
                 }).ConfigureAwait(false))
                 {
@@ -546,7 +547,8 @@ namespace MediaBrowser.Controller.Providers.Movies
                     Url = url3,
                     CancellationToken = cancellationToken,
                     ResourcePool = Current.MovieDbResourcePool,
-                    AcceptHeader = AcceptHeader
+                    AcceptHeader = AcceptHeader,
+                    EnableResponseCache = true
 
                 }).ConfigureAwait(false))
                 {
@@ -585,7 +587,8 @@ namespace MediaBrowser.Controller.Providers.Movies
                         Url = url3,
                         CancellationToken = cancellationToken,
                         ResourcePool = Current.MovieDbResourcePool,
-                        AcceptHeader = AcceptHeader
+                        AcceptHeader = AcceptHeader,
+                        EnableResponseCache = true
 
                     }).ConfigureAwait(false))
                     {
@@ -631,7 +634,8 @@ namespace MediaBrowser.Controller.Providers.Movies
                                 Url = url3,
                                 CancellationToken = cancellationToken,
                                 ResourcePool = Current.MovieDbResourcePool,
-                                AcceptHeader = AcceptHeader
+                                AcceptHeader = AcceptHeader,
+                                EnableResponseCache = true
 
                             }).ConfigureAwait(false))
                             {
@@ -720,7 +724,8 @@ namespace MediaBrowser.Controller.Providers.Movies
                         Url = url,
                         CancellationToken = cancellationToken,
                         ResourcePool = Current.MovieDbResourcePool,
-                        AcceptHeader = AcceptHeader
+                        AcceptHeader = AcceptHeader,
+                        EnableResponseCache = true
 
                     }).ConfigureAwait(false))
                     {
@@ -828,7 +833,8 @@ namespace MediaBrowser.Controller.Providers.Movies
                     Url = url,
                     CancellationToken = cancellationToken,
                     ResourcePool = Current.MovieDbResourcePool,
-                    AcceptHeader = AcceptHeader
+                    AcceptHeader = AcceptHeader,
+                    EnableResponseCache = true
 
                 }).ConfigureAwait(false))
                 {
@@ -867,7 +873,8 @@ namespace MediaBrowser.Controller.Providers.Movies
                             Url = url,
                             CancellationToken = cancellationToken,
                             ResourcePool = Current.MovieDbResourcePool,
-                            AcceptHeader = AcceptHeader
+                            AcceptHeader = AcceptHeader,
+                            EnableResponseCache = true
 
                         }).ConfigureAwait(false))
                         {
@@ -910,7 +917,8 @@ namespace MediaBrowser.Controller.Providers.Movies
                     Url = url,
                     CancellationToken = cancellationToken,
                     ResourcePool = Current.MovieDbResourcePool,
-                    AcceptHeader = AcceptHeader
+                    AcceptHeader = AcceptHeader,
+                    EnableResponseCache = true
 
                 }).ConfigureAwait(false))
                 {
@@ -944,7 +952,8 @@ namespace MediaBrowser.Controller.Providers.Movies
                     Url = url,
                     CancellationToken = cancellationToken,
                     ResourcePool = Current.MovieDbResourcePool,
-                    AcceptHeader = AcceptHeader
+                    AcceptHeader = AcceptHeader,
+                    EnableResponseCache = true
 
                 }).ConfigureAwait(false))
                 {
@@ -980,7 +989,8 @@ namespace MediaBrowser.Controller.Providers.Movies
                     Url = url,
                     CancellationToken = cancellationToken,
                     ResourcePool = Current.MovieDbResourcePool,
-                    AcceptHeader = AcceptHeader
+                    AcceptHeader = AcceptHeader,
+                    EnableResponseCache = true
 
                 }).ConfigureAwait(false))
                 {
