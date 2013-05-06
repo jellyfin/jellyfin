@@ -34,7 +34,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <summary>
         /// The _rotten tomatoes resource pool
         /// </summary>
-        private readonly SemaphoreSlim _rottenTomatoesResourcePool = new SemaphoreSlim(2, 2);
+        private readonly SemaphoreSlim _rottenTomatoesResourcePool = new SemaphoreSlim(1, 1);
 
         /// <summary>
         /// Gets the json serializer.
@@ -105,7 +105,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
-            return item is Movie;
+            return item is Movie || item is Trailer;
         }
 
         /// <summary>
@@ -155,81 +155,36 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             BaseProviderInfo data;
 
-            // See whether there's an IMDB Id available
-            string imdbId = null;
-            if (item.ProviderData.TryGetValue(Id, out data))
+            if (!item.ProviderData.TryGetValue(Id, out data))
             {
-                imdbId = item.GetProviderId(MetadataProviders.Imdb);
+                data = new BaseProviderInfo();
+                item.ProviderData[Id] = data;
+            }
+
+            var imdbId = item.GetProviderId(MetadataProviders.Imdb);
+            
+            if (string.IsNullOrEmpty(imdbId))
+            {
+                data.Data = GetComparisonData(imdbId);
+                data.LastRefreshStatus = ProviderRefreshStatus.Success;
+                return true;
             }
 
             RTMovieSearchResult hit = null;
 
-            if (string.IsNullOrEmpty(imdbId))
+            // Have IMDB Id
+            using (var stream = await HttpClient.Get(MovieImdbUrl(imdbId), _rottenTomatoesResourcePool, cancellationToken).ConfigureAwait(false))
             {
-                // No IMDB Id, search RT for an ID
+                var result = JsonSerializer.DeserializeFromStream<RTMovieSearchResult>(stream);
 
-                var page = 1;
-                using (var stream = HttpClient.Get(MovieSearchUrl(item.Name, page), _rottenTomatoesResourcePool, cancellationToken).Result)
+                if (!string.IsNullOrEmpty(result.id))
                 {
-                    var result = JsonSerializer.DeserializeFromStream<RTSearchResults>(stream);
-
-                    if (result.total == 1)
-                    {
-                        // With only one result we'll have to assume that this is the movie we're searching for
-                        hit = result.movies[0];
-                    }
-                    else if (result.total > 1)
-                    {
-                        // If there are more results than one
-                        // Step 1: Loop through all current results, see if there's an exact match (not case sensitive) somewhere, if so, accept that as the searched item, else go to step 2
-                        // Step 2: Retrieve the next page and go to step 1 if there are results, else, stop checking
-
-                        while (hit == null)
-                        {
-                            foreach (var searchHit in result.movies)
-                            {
-                                if (string.Equals(searchHit.title, item.Name, StringComparison.InvariantCultureIgnoreCase))
-                                {
-                                    hit = searchHit;
-                                    break;
-                                }
-                            }
-
-                            if (hit == null)
-                            {
-                                using (var newPageStream = HttpClient.Get(MovieSearchUrl(item.Name, page++), _rottenTomatoesResourcePool, cancellationToken).Result)
-                                {
-                                    result = JsonSerializer.DeserializeFromStream<RTSearchResults>(newPageStream);
-
-                                    if (result.total == 0)
-                                    {
-                                        // No results found on RottenTomatoes
-                                        break;
-                                    }
-                                }
-                            }
-                            // while end
-                        }
-                    }
-                }
-                // if null end
-            }
-            else
-            {
-                // Have IMDB Id
-                using (var stream = HttpClient.Get(MovieImdbUrl(imdbId), _rottenTomatoesResourcePool, cancellationToken).Result)
-                {
-                    var result = JsonSerializer.DeserializeFromStream<RTMovieSearchResult>(stream);
-
-                    if (!string.IsNullOrEmpty(result.id))
-                    {
-                        // Got a result
-                        hit = result;
-                    }
+                    // Got a result
+                    hit = result;
                 }
             }
 
@@ -239,7 +194,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 item.CriticRatingSummary = hit.critics_consensus;
                 item.CriticRating = float.Parse(hit.ratings.critics_score);
 
-                using (var stream = HttpClient.Get(MovieReviewsUrl(hit.id), _rottenTomatoesResourcePool, cancellationToken).Result)
+                using (var stream = await HttpClient.Get(MovieReviewsUrl(hit.id), _rottenTomatoesResourcePool, cancellationToken).ConfigureAwait(false))
                 {
 
                     var result = JsonSerializer.DeserializeFromStream<RTReviewList>(stream);
@@ -282,7 +237,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             SetLastRefreshed(item, DateTime.UtcNow);
 
-            return Task.FromResult(true);
+            return true;
         }
 
         // Utility functions to get the URL of the API calls
