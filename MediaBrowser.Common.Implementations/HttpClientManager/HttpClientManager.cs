@@ -134,11 +134,15 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                 if (cachedInfo != null)
                 {
-                    var isCacheValid = (!cachedInfo.MustRevalidate && !string.IsNullOrEmpty(cachedInfo.Etag)) 
-                        || (cachedInfo.Expires.HasValue && cachedInfo.Expires.Value > DateTime.UtcNow);
+                    var now = DateTime.UtcNow;
+
+                    var isCacheValid = (!cachedInfo.MustRevalidate && !string.IsNullOrEmpty(cachedInfo.Etag) && (now - cachedInfo.RequestDate).TotalDays < 14)
+                        || (cachedInfo.Expires.HasValue && cachedInfo.Expires.Value > now);
 
                     if (isCacheValid)
                     {
+                        _logger.Debug("Cache is still valid for {0}", options.Url);
+
                         try
                         {
                             return GetCachedResponse(cachedReponsePath);
@@ -180,25 +184,37 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                 var response = await GetHttpClient(GetHostFromUrl(options.Url)).SendAsync(message, HttpCompletionOption.ResponseHeadersRead, options.CancellationToken).ConfigureAwait(false);
 
-                EnsureSuccessStatusCode(response);
-
-                options.CancellationToken.ThrowIfCancellationRequested();
-
                 if (options.EnableResponseCache)
                 {
+                    if (response.StatusCode != HttpStatusCode.NotModified)
+                    {
+                        EnsureSuccessStatusCode(response);
+                    }
+
+                    options.CancellationToken.ThrowIfCancellationRequested();
+
                     cachedInfo = UpdateInfoCache(cachedInfo, options.Url, cachedInfoPath, response);
 
                     if (response.StatusCode == HttpStatusCode.NotModified)
                     {
+                        _logger.Debug("Server indicates not modified for {0}. Returning cached result.", options.Url);
+                        
                         return GetCachedResponse(cachedReponsePath);
                     }
 
-                    if (!string.IsNullOrEmpty(cachedInfo.Etag) || cachedInfo.LastModified.HasValue || (cachedInfo.Expires.HasValue && cachedInfo.Expires.Value > DateTime.UtcNow))
+                    if (!string.IsNullOrEmpty(cachedInfo.Etag) || cachedInfo.LastModified.HasValue ||
+                        (cachedInfo.Expires.HasValue && cachedInfo.Expires.Value > DateTime.UtcNow))
                     {
                         await UpdateResponseCache(response, cachedReponsePath).ConfigureAwait(false);
 
                         return GetCachedResponse(cachedReponsePath);
                     }
+                }
+                else
+                {
+                    EnsureSuccessStatusCode(response);
+
+                    options.CancellationToken.ThrowIfCancellationRequested();
                 }
 
                 return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -284,6 +300,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
 
             cachedInfo.Url = url;
+            cachedInfo.RequestDate = DateTime.UtcNow;
 
             var etag = response.Headers.ETag;
             if (etag != null)

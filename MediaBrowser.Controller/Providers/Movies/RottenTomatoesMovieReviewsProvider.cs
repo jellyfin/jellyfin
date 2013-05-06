@@ -17,23 +17,11 @@ namespace MediaBrowser.Controller.Providers.Movies
     /// <summary>
     /// Class RottenTomatoesMovieProvider
     /// </summary>
-    public class RottenTomatoesMovieProvider : BaseMetadataProvider
+    public class RottenTomatoesMovieReviewsProvider : BaseMetadataProvider
     {
         // http://developer.rottentomatoes.com/iodocs
-        /// <summary>
-        /// The API key
-        /// </summary>
-        internal const string ApiKey = "x9wjnvv39ntjmt9zs95nm7bg";
 
-        internal const string BasicUrl = @"http://api.rottentomatoes.com/api/public/v1.0/";
-        private const string MovieImdb = @"movie_alias.json?id={1}&type=imdb&apikey={0}";
-
-        internal static RottenTomatoesMovieProvider Current { get; private set; }
-
-        /// <summary>
-        /// The _rotten tomatoes resource pool
-        /// </summary>
-        internal readonly SemaphoreSlim RottenTomatoesResourcePool = new SemaphoreSlim(1, 1);
+        private const string MoviesReviews = @"movies/{1}/reviews.json?review_type=top_critic&page_limit=10&page=1&country=us&apikey={0}";
 
         /// <summary>
         /// Gets the json serializer.
@@ -54,12 +42,11 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="httpClient">The HTTP client.</param>
-        public RottenTomatoesMovieProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IHttpClient httpClient)
+        public RottenTomatoesMovieReviewsProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IHttpClient httpClient)
             : base(logManager, configurationManager)
         {
             JsonSerializer = jsonSerializer;
             HttpClient = httpClient;
-            Current = this;
         }
 
         /// <summary>
@@ -136,7 +123,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             get
             {
                 // Run after moviedb and xml providers
-                return MetadataProviderPriority.Third;
+                return MetadataProviderPriority.Last;
             }
         }
 
@@ -148,8 +135,8 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            // Refresh if imdb id has changed
-            if (providerInfo.Data != GetComparisonData(item.GetProviderId(MetadataProviders.Imdb)))
+            // Refresh if rt id has changed
+            if (providerInfo.Data != GetComparisonData(item.GetProviderId(MetadataProviders.RottenTomatoes)))
             {
                 return true;
             }
@@ -174,43 +161,42 @@ namespace MediaBrowser.Controller.Providers.Movies
                 item.ProviderData[Id] = data;
             }
 
-            var imdbId = item.GetProviderId(MetadataProviders.Imdb);
+            var rottenTomatoesId = item.GetProviderId(MetadataProviders.RottenTomatoes);
+
             
-            if (string.IsNullOrEmpty(imdbId))
+            if (string.IsNullOrEmpty(rottenTomatoesId))
             {
-                data.Data = GetComparisonData(imdbId);
+                data.Data = GetComparisonData(rottenTomatoesId);
                 data.LastRefreshStatus = ProviderRefreshStatus.Success;
                 return true;
             }
 
-            // Have IMDB Id
             using (var stream = await HttpClient.Get(new HttpRequestOptions
             {
-                Url = GetMovieImdbUrl(imdbId),
-                ResourcePool = RottenTomatoesResourcePool,
+                Url = GetMovieReviewsUrl(rottenTomatoesId),
+                ResourcePool = RottenTomatoesMovieProvider.Current.RottenTomatoesResourcePool,
                 CancellationToken = cancellationToken,
                 EnableResponseCache = true
 
             }).ConfigureAwait(false))
             {
-                var hit = JsonSerializer.DeserializeFromStream<RTMovieSearchResult>(stream);
 
-                if (!string.IsNullOrEmpty(hit.id))
+                var result = JsonSerializer.DeserializeFromStream<RTReviewList>(stream);
+
+                item.CriticReviews = result.reviews.Select(rtReview => new ItemReview
                 {
-                    // Got a result
-                    item.CriticRatingSummary = hit.critics_consensus;
-                    item.CriticRating = float.Parse(hit.ratings.critics_score);
+                    ReviewerName = rtReview.critic,
+                    Publisher = rtReview.publication,
+                    Date = DateTime.Parse(rtReview.date).ToUniversalTime(),
+                    Caption = rtReview.quote,
+                    Url = rtReview.links.review,
+                    Likes = string.Equals(rtReview.freshness, "fresh", StringComparison.OrdinalIgnoreCase)
 
-                    data.Data = GetComparisonData(hit.alternate_ids.imdb);
-
-                    item.SetProviderId(MetadataProviders.Imdb, hit.alternate_ids.imdb);
-                    item.SetProviderId(MetadataProviders.RottenTomatoes, hit.id);
-                }
+                }).ToList();
             }
 
-            data.Data = GetComparisonData(imdbId);
+            data.Data = GetComparisonData(rottenTomatoesId);
             data.LastRefreshStatus = ProviderRefreshStatus.Success;
-
             SetLastRefreshed(item, DateTime.UtcNow);
 
             return true;
@@ -218,50 +204,33 @@ namespace MediaBrowser.Controller.Providers.Movies
 
         // Utility functions to get the URL of the API calls
 
-        private string GetMovieImdbUrl(string imdbId)
+        private string GetMovieReviewsUrl(string rtId)
         {
-            return BasicUrl + string.Format(MovieImdb, ApiKey, imdbId.TrimStart('t'));
+            return RottenTomatoesMovieProvider.BasicUrl + string.Format(MoviesReviews, RottenTomatoesMovieProvider.ApiKey, rtId);
         }
 
         // Data contract classes for use with the Rotten Tomatoes API
 
-        protected class RTSearchResults
+        protected class RTReviewList
         {
             public int total { get; set; }
-            public List<RTMovieSearchResult> movies { get; set; }
-            public RTSearchLinks links { get; set; }
-            public string link_template { get; set; }
+            public List<RTReview> reviews { get; set; }
         }
 
-        protected class RTSearchLinks
+        protected class RTReview
         {
-            public string self { get; set; }
-            public string next { get; set; }
-            public string previous { get; set; }
+            public string critic { get; set; }
+            public string date { get; set; }
+            public string freshness { get; set; }
+            public string publication { get; set; }
+            public string quote { get; set; }
+            public RTReviewLink links { get; set; }
+            public string original_score { get; set; }
         }
 
-        protected class RTMovieSearchResult
+        protected class RTReviewLink
         {
-            public string title { get; set; }
-            public int year { get; set; }
-            public string runtime { get; set; }
-            public string synopsis { get; set; }
-            public string critics_consensus { get; set; }
-            public string mpaa_rating { get; set; }
-            public string id { get; set; }
-            public RTRatings ratings { get; set; }
-            public RTAlternateIds alternate_ids { get; set; }
-        }
-
-        protected class RTRatings
-        {
-            public string critics_rating { get; set; }
-            public string critics_score { get; set; }
-        }
-
-        protected class RTAlternateIds
-        {
-            public string imdb { get; set; }
+            public string review { get; set; }
         }
     }
 }
