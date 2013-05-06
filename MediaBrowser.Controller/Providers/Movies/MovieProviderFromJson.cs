@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -18,6 +19,11 @@ namespace MediaBrowser.Controller.Providers.Movies
         public MovieProviderFromJson(ILogManager logManager, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IHttpClient httpClient, IProviderManager providerManager)
             : base(logManager, configurationManager, jsonSerializer, httpClient, providerManager)
         {
+        }
+
+        public override bool Supports(BaseItem item)
+        {
+            return item is Movie || item is BoxSet;
         }
 
         /// <summary>

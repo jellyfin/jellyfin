@@ -494,8 +494,6 @@ namespace MediaBrowser.Server.Implementations.Library
             // Add in the plug-in folders
             foreach (var child in PluginFolderCreators)
             {
-                var folder = child.GetFolder();
-
                 rootFolder.AddVirtualChild(child.GetFolder());
             }
 
@@ -1154,7 +1152,14 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>IEnumerable{BaseItem}.</returns>
         public IEnumerable<BaseItem> RetrieveChildren(Folder parent)
         {
-            return ItemRepository.RetrieveChildren(parent);
+            var children = ItemRepository.RetrieveChildren(parent).ToList();
+
+            foreach (var child in children)
+            {
+                child.Parent = parent;
+            }
+
+            return children;
         }
     }
 }

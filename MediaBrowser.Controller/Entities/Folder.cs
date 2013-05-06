@@ -97,6 +97,8 @@ namespace MediaBrowser.Controller.Entities
                 throw new InvalidOperationException("Unable to add " + item.Name);
             }
 
+            item.Parent = this;
+
             var newChildren = Children.ToList();
 
             await LibraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
@@ -120,6 +122,8 @@ namespace MediaBrowser.Controller.Entities
                 throw new InvalidOperationException("Unable to remove " + item.Name);
             }
 
+            item.Parent = null;
+            
             var newChildren = Children.ToList();
 
             LibraryManager.ReportItemRemoved(item);
@@ -193,7 +197,6 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         private IEnumerable<BaseItem> GetIndexByPerson(User user, List<string> personTypes, bool includeAudio, string indexName)
         {
-
             // Even though this implementation means multiple iterations over the target list - it allows us to defer
             // the retrieval of the individual children for each index value until they are requested.
             using (new Profiler(indexName + " Index Build for " + Name, Logger))
