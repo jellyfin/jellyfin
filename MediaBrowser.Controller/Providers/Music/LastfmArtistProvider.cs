@@ -3,8 +3,10 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -24,6 +26,48 @@ namespace MediaBrowser.Controller.Providers.Music
 
         protected override async Task<string> FindId(BaseItem item, CancellationToken cancellationToken)
         {
+            // Try to find the id using last fm
+            var id = await FindIdFromLastFm(item, cancellationToken).ConfigureAwait(false);
+
+            if (!string.IsNullOrEmpty(id))
+            {
+                return id;
+            }
+
+            // If we don't get anything, go directly to music brainz
+
+            return await FindIdFromMusicBrainz(item, cancellationToken).ConfigureAwait(false);
+        }
+
+        private async Task<string> FindIdFromLastFm(BaseItem item, CancellationToken cancellationToken)
+        {
+            //Execute the Artist search against our name and assume first one is the one we want
+            var url = RootUrl + string.Format("method=artist.search&artist={0}&api_key={1}&format=json", UrlEncode(item.Name), ApiKey);
+
+            LastfmArtistSearchResults searchResult;
+
+            try
+            {
+                using (var json = await HttpClient.Get(url, LastfmResourcePool, cancellationToken).ConfigureAwait(false))
+                {
+                    searchResult = JsonSerializer.DeserializeFromStream<LastfmArtistSearchResults>(json);
+                }
+            }
+            catch (HttpException e)
+            {
+                return null;
+            }
+
+            if (searchResult != null && searchResult.results != null && searchResult.results.artistmatches != null && searchResult.results.artistmatches.artist.Any())
+            {
+                return searchResult.results.artistmatches.artist.First().mbid;
+            }
+
+            return null;
+        }
+
+        private async Task<string> FindIdFromMusicBrainz(BaseItem item, CancellationToken cancellationToken)
+        {
             var url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=artist:{0}", UrlEncode(item.Name));
 
             var doc = await FanArtAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
@@ -35,8 +79,8 @@ namespace MediaBrowser.Controller.Providers.Music
             if (node != null && node.Value != null)
             {
                 return node.Value;
-            } 
-            
+            }
+
             // Try again using the search with accent characters url
             url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=artistaccent:{0}", UrlEncode(item.Name));
 
@@ -53,7 +97,7 @@ namespace MediaBrowser.Controller.Providers.Music
 
             return null;
         }
-
+        
         protected override async Task FetchLastfmData(BaseItem item, string id, CancellationToken cancellationToken)
         {
             // Get artist info with provided id
