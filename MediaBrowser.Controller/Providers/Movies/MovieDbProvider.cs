@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <summary>
         /// The movie db
         /// </summary>
-        internal readonly SemaphoreSlim MovieDbResourcePool = new SemaphoreSlim(3, 3);
+        internal readonly SemaphoreSlim MovieDbResourcePool = new SemaphoreSlim(2, 2);
 
         internal static MovieDbProvider Current { get; private set; }
 
@@ -488,25 +488,41 @@ namespace MediaBrowser.Controller.Providers.Movies
                 else
                 {
                     // try with dot and _ turned to space
+                    var originalName = name;
+
                     name = name.Replace(",", " ");
                     name = name.Replace(".", " ");
-                    name = name.Replace("  ", " ");
                     name = name.Replace("_", " ");
                     name = name.Replace("-", "");
-                    id = await AttemptFindId(name, year, language, cancellationToken).ConfigureAwait(false);
-                    if (id == null && language != "en")
-                    {
-                        //one more time, in english
-                        id = await AttemptFindId(name, year, "en", cancellationToken).ConfigureAwait(false);
 
+                    // Search again if the new name is different
+                    if (!string.Equals(name, originalName))
+                    {
+                        id = await AttemptFindId(name, year, language, cancellationToken).ConfigureAwait(false);
+
+                        if (id == null && language != "en")
+                        {
+                            //one more time, in english
+                            id = await AttemptFindId(name, year, "en", cancellationToken).ConfigureAwait(false);
+
+                        }
                     }
+
                     if (id == null && item.LocationType == LocationType.FileSystem)
                     {
                         //last resort - try using the actual folder name
-                        id = await AttemptFindId(Path.GetFileName(item.ResolveArgs.Path), year, "en", cancellationToken).ConfigureAwait(false);
+                        var pathName = Path.GetFileName(item.ResolveArgs.Path);
+
+                        // Only search if it's a name we haven't already tried.
+                        if (!string.Equals(pathName, name, StringComparison.OrdinalIgnoreCase)
+                            && !string.Equals(pathName, originalName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            id = await AttemptFindId(pathName, year, "en", cancellationToken).ConfigureAwait(false);
+                        }
                     }
                 }
             }
+
             return id;
         }
 
