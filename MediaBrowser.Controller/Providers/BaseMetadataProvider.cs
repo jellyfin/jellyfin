@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Threading;
@@ -140,7 +141,7 @@ namespace MediaBrowser.Controller.Providers
             data.ProviderVersion = providerVersion;
 
             // Save the file system stamp for future comparisons
-            if (RefreshOnFileSystemStampChange)
+            if (RefreshOnFileSystemStampChange && item.LocationType == LocationType.FileSystem)
             {
                 data.FileStamp = GetCurrentFileSystemStamp(item);
             }
@@ -210,7 +211,7 @@ namespace MediaBrowser.Controller.Providers
                 return true;
             }
 
-            if (RefreshOnFileSystemStampChange && HasFileSystemStampChanged(item, providerInfo))
+            if (RefreshOnFileSystemStampChange && item.LocationType == LocationType.FileSystem && HasFileSystemStampChanged(item, providerInfo))
             {
                 return true;
             }
