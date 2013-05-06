@@ -7,11 +7,10 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Providers.Movies
 {
@@ -35,7 +34,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <summary>
         /// The _rotten tomatoes resource pool
         /// </summary>
-        private readonly SemaphoreSlim _rottenTomatoesResourcePool = new SemaphoreSlim(3, 3);
+        private readonly SemaphoreSlim _rottenTomatoesResourcePool = new SemaphoreSlim(1, 1);
 
         /// <summary>
         /// Gets the json serializer.
@@ -71,7 +70,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         {
             get
             {
-                return "2";
+                return "4";
             }
         }
 
@@ -251,7 +250,8 @@ namespace MediaBrowser.Controller.Providers.Movies
                         Publisher = rtReview.publication,
                         Date = DateTime.Parse(rtReview.date).ToUniversalTime(),
                         Caption = rtReview.quote,
-                        Url = rtReview.links.review
+                        Url = rtReview.links.review,
+                        Likes = string.Equals(rtReview.freshness, "fresh", StringComparison.OrdinalIgnoreCase)
 
                     }).ToList();
 

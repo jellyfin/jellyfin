@@ -161,6 +161,7 @@
     <Compile Include="Sorting\ArtistComparer.cs" />
     <Compile Include="Sorting\BudgetComparer.cs" />
     <Compile Include="Sorting\CommunityRatingComparer.cs" />
+    <Compile Include="Sorting\CriticRatingComparer.cs" />
     <Compile Include="Sorting\DateCreatedComparer.cs" />
     <Compile Include="Sorting\DatePlayedComparer.cs" />
     <Compile Include="Sorting\PlayCountComparer.cs" />

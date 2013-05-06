@@ -22,6 +22,11 @@ namespace MediaBrowser.Model.Querying
         Chapters,
 
         /// <summary>
+        /// The critic rating summary
+        /// </summary>
+        CriticRatingSummary,
+
+        /// <summary>
         /// The date created of the item
         /// </summary>
         DateCreated,

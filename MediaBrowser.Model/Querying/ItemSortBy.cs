@@ -62,5 +62,10 @@ namespace MediaBrowser.Model.Querying
         /// The play count
         /// </summary>
         public const string PlayCount = "PlayCount";
+        /// <summary>
+        /// The critic rating
+        /// </summary>
+        public const string CriticRating = "CriticRating";
+
     }
 }

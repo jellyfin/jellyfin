@@ -223,7 +223,7 @@
 
         $("#radioMovies", page).on("click", function () {
 
-            shape = "backdrop";
+            shape = "poster";
             loadItems(page, {
                 MediaTypes: "",
                 IncludeItemTypes: "Movie",
@@ -235,7 +235,7 @@
 
         $("#radioShows", page).on("click", function () {
 
-            shape = "backdrop";
+            shape = "poster";
             loadItems(page, {
                 MediaTypes: "",
                 IncludeItemTypes: "Series",
