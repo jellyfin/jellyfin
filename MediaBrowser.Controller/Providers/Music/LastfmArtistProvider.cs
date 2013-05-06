@@ -25,10 +25,11 @@ namespace MediaBrowser.Controller.Providers.Music
         private readonly IProviderManager _providerManager;
         private readonly ILibraryManager _libraryManager;
 
-        public LastfmArtistProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
+        public LastfmArtistProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, ILibraryManager libraryManager)
             : base(jsonSerializer, httpClient, logManager, configurationManager)
         {
             _providerManager = providerManager;
+            _libraryManager = libraryManager;
             LocalMetaFileName = LastfmHelper.LocalArtistMetaFileName;
         }
 
