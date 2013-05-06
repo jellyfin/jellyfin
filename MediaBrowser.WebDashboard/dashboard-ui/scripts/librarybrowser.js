@@ -813,18 +813,21 @@
 
         getRatingHtml: function (item) {
 
-            var rating = item.CommunityRating / 2;
-
             var html = "";
-            for (var i = 1; i <= 5; i++) {
-                if (rating < i - 1) {
-                    html += "<div class='starRating emptyStarRating' title='" + item.CommunityRating + "'></div>";
-                }
-                else if (rating < i) {
-                    html += "<div class='starRating halfStarRating' title='" + item.CommunityRating + "'></div>";
-                }
-                else {
-                    html += "<div class='starRating' title='" + item.CommunityRating + "'></div>";
+
+            if (item.CommunityRating) {
+                var rating = item.CommunityRating / 2;
+
+                for (var i = 1; i <= 5; i++) {
+                    if (rating < i - 1) {
+                        html += "<div class='starRating emptyStarRating' title='" + item.CommunityRating + "'></div>";
+                    }
+                    else if (rating < i) {
+                        html += "<div class='starRating halfStarRating' title='" + item.CommunityRating + "'></div>";
+                    }
+                    else {
+                        html += "<div class='starRating' title='" + item.CommunityRating + "'></div>";
+                    }
                 }
             }
 
@@ -837,7 +840,6 @@
                 }
 
                 html += '<div class="criticRating">' + item.CriticRating + '%</div>';
-
             }
 
             return html;

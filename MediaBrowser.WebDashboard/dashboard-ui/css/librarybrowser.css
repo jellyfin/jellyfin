@@ -128,6 +128,21 @@
     display: inline-block;
 }
 
+.criticRatingSummary {
+    padding: 5px;
+    font-size: 13px;
+    background: #555;
+    margin-top: 1em;
+}
+
+.criticRatingSummaryHeader {
+    text-transform: uppercase;
+    margin-bottom: 5px;
+    display: block;
+}
+
+
+
 @media all and (min-width: 750px) {
 
     .galleryImage {
@@ -245,7 +260,7 @@
 .detailPageName .itemMiscInfo {
     margin-left: 1.5em;
     font-family: Arial;
-    color: #bbb;
+    color: #ccc;
 }
 
 .itemMediaInfo {

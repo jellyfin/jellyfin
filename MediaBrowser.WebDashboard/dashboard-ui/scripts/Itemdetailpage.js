@@ -203,7 +203,7 @@
 
         LibraryBrowser.renderOverview($('#itemOverview', page), item);
 
-        if (item.CommunityRating) {
+        if (item.CommunityRating || item.CriticRating) {
             $('#itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item)).show();
         } else {
             $('#itemCommunityRating', page).hide();
@@ -225,6 +225,14 @@
         LibraryBrowser.renderStudios($('#itemStudios', page), item, context);
         renderUserDataIcons(page, item);
         LibraryBrowser.renderLinks($('#itemLinks', page), item);
+        
+        if (item.CriticRatingSummary) {
+            $('#criticRatingSummary', page).show();
+            $('#criticRatingSummaryText', page).html(item.CriticRatingSummary);
+
+        } else {
+            $('#criticRatingSummary', page).hide();
+        }
     }
 
     function renderChildren(page, item) {
