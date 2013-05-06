@@ -131,7 +131,7 @@
 .criticRatingSummary {
     padding: 5px;
     font-size: 13px;
-    background: #555;
+    background: #2489ce;
     margin-top: 1em;
 }
 
@@ -420,7 +420,7 @@
 
 .itemProgressText {
     font-size: 12px;
-    color: #bbb;
+    color: #ddd;
     vertical-align: middle;
 }
 

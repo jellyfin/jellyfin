@@ -73,11 +73,13 @@ namespace MediaBrowser.Controller.Providers.Music
             }
 
             BaseProviderInfo data;
-
-            if (item.ProviderData.TryGetValue(Id, out data))
+            if (!item.ProviderData.TryGetValue(Id, out data))
             {
-                data.Data = GetComparisonData(item as MusicAlbum);
+                data = new BaseProviderInfo();
+                item.ProviderData[Id] = data;
             }
+
+            data.Data = GetComparisonData(item as MusicAlbum);
         }
 
         private async Task<LastfmGetAlbumResult> GetAlbumResult(BaseItem item, CancellationToken cancellationToken)

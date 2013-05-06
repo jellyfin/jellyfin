@@ -119,11 +119,14 @@ namespace MediaBrowser.Controller.Providers
 
             BaseProviderInfo data;
 
-            if (item.ProviderData.TryGetValue(Id, out data))
+            if (!item.ProviderData.TryGetValue(Id, out data))
             {
-                data.Data = ConfigurationManager.ApplicationPaths.ItemsByNamePath.GetMD5();
+                data = new BaseProviderInfo();
+                item.ProviderData[Id] = data;
             }
 
+            data.Data = ConfigurationManager.ApplicationPaths.ItemsByNamePath.GetMD5();
+            
             return result;
         }
 
