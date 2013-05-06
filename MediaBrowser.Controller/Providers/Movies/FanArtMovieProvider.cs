@@ -69,6 +69,13 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
+            var trailer = item as Trailer;
+
+            if (trailer != null)
+            {
+                return !trailer.IsLocalTrailer;
+            }
+
             return item is Movie || item is BoxSet;
         }
 
@@ -125,11 +132,19 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            var saveLocal = ConfigurationManager.Configuration.SaveLocalMeta &&
+                            item.LocationType == LocationType.FileSystem;
+
             if (doc.HasChildNodes)
             {
                 string path;
                 var hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hd" : "";
-                if (ConfigurationManager.Configuration.DownloadMovieImages.Logo && !item.ResolveArgs.ContainsMetaFileByName(LOGO_FILE))
+
+                var hasLogo = item.LocationType == LocationType.FileSystem ? 
+                    item.ResolveArgs.ContainsMetaFileByName(LOGO_FILE) 
+                    : item.HasImage(ImageType.Logo);
+
+                if (ConfigurationManager.Configuration.DownloadMovieImages.Logo && !hasLogo)
                 {
                     var node =
                         doc.SelectSingleNode("//fanart/movie/movielogos/" + hd + "movielogo[@lang = \"" + language + "\"]/@url") ??
@@ -142,10 +157,9 @@ namespace MediaBrowser.Controller.Providers.Movies
                     path = node != null ? node.Value : null;
                     if (!string.IsNullOrEmpty(path))
                     {
-                        Logger.Debug("FanArtProvider getting ClearLogo for " + movie.Name);
                         try
                         {
-                            movie.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(movie, path, LOGO_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                            movie.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(movie, path, LOGO_FILE, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                         }
                         catch (HttpException)
                         {
@@ -158,7 +172,11 @@ namespace MediaBrowser.Controller.Providers.Movies
                 }
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (ConfigurationManager.Configuration.DownloadMovieImages.Art && !item.ResolveArgs.ContainsMetaFileByName(ART_FILE))
+                var hasArt = item.LocationType == LocationType.FileSystem ?
+                    item.ResolveArgs.ContainsMetaFileByName(ART_FILE)
+                    : item.HasImage(ImageType.Art);
+
+                if (ConfigurationManager.Configuration.DownloadMovieImages.Art && !hasArt)
                 {
                     var node =
                         doc.SelectSingleNode("//fanart/movie/moviearts/" + hd + "movieart[@lang = \"" + language + "\"]/@url") ??
@@ -168,10 +186,9 @@ namespace MediaBrowser.Controller.Providers.Movies
                     path = node != null ? node.Value : null;
                     if (!string.IsNullOrEmpty(path))
                     {
-                        Logger.Debug("FanArtProvider getting ClearArt for " + movie.Name);
                         try
                         {
-                            movie.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(movie, path, ART_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                            movie.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(movie, path, ART_FILE, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                         }
                         catch (HttpException)
                         {
@@ -184,17 +201,20 @@ namespace MediaBrowser.Controller.Providers.Movies
                 }
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (ConfigurationManager.Configuration.DownloadMovieImages.Disc && !item.ResolveArgs.ContainsMetaFileByName(DISC_FILE))
+                var hasDisc = item.LocationType == LocationType.FileSystem ?
+                    item.ResolveArgs.ContainsMetaFileByName(DISC_FILE)
+                    : item.HasImage(ImageType.Disc);
+
+                if (ConfigurationManager.Configuration.DownloadMovieImages.Disc && !hasDisc)
                 {
                     var node = doc.SelectSingleNode("//fanart/movie/moviediscs/moviedisc[@lang = \"" + language + "\"]/@url") ??
                                doc.SelectSingleNode("//fanart/movie/moviediscs/moviedisc/@url");
                     path = node != null ? node.Value : null;
                     if (!string.IsNullOrEmpty(path))
                     {
-                        Logger.Debug("FanArtProvider getting DiscArt for " + movie.Name);
                         try
                         {
-                            movie.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(movie, path, DISC_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                            movie.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(movie, path, DISC_FILE, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                         }
                         catch (HttpException)
                         {
@@ -208,17 +228,20 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (ConfigurationManager.Configuration.DownloadMovieImages.Banner && !item.ResolveArgs.ContainsMetaFileByName(BANNER_FILE))
+                var hasBanner = item.LocationType == LocationType.FileSystem ?
+                    item.ResolveArgs.ContainsMetaFileByName(BANNER_FILE)
+                    : item.HasImage(ImageType.Banner);
+
+                if (ConfigurationManager.Configuration.DownloadMovieImages.Banner && !hasBanner)
                 {
                     var node = doc.SelectSingleNode("//fanart/movie/moviebanners/moviebanner[@lang = \"" + language + "\"]/@url") ??
                                doc.SelectSingleNode("//fanart/movie/moviebanners/moviebanner/@url");
                     path = node != null ? node.Value : null;
                     if (!string.IsNullOrEmpty(path))
                     {
-                        Logger.Debug("FanArtProvider getting Banner for " + movie.Name);
                         try
                         {
-                            movie.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(movie, path, BANNER_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                            movie.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(movie, path, BANNER_FILE, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                         }
                         catch (HttpException)
                         {
@@ -232,17 +255,20 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (ConfigurationManager.Configuration.DownloadMovieImages.Thumb && !item.ResolveArgs.ContainsMetaFileByName(THUMB_FILE))
+                var hasThumb = item.LocationType == LocationType.FileSystem ?
+                    item.ResolveArgs.ContainsMetaFileByName(THUMB_FILE)
+                    : item.HasImage(ImageType.Thumb);
+
+                if (ConfigurationManager.Configuration.DownloadMovieImages.Thumb && !hasThumb)
                 {
                     var node = doc.SelectSingleNode("//fanart/movie/moviethumbs/moviethumb[@lang = \"" + language + "\"]/@url") ??
                                doc.SelectSingleNode("//fanart/movie/moviethumbs/moviethumb/@url");
                     path = node != null ? node.Value : null;
                     if (!string.IsNullOrEmpty(path))
                     {
-                        Logger.Debug("FanArtProvider getting Banner for " + movie.Name);
                         try
                         {
-                            movie.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(movie, path, THUMB_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                            movie.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(movie, path, THUMB_FILE, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                         }
                         catch (HttpException)
                         {
