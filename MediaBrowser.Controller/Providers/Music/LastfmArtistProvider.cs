@@ -1,4 +1,8 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System;
+using System.Globalization;
+using System.Net;
+using System.Text;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -27,19 +31,37 @@ namespace MediaBrowser.Controller.Providers.Music
         protected override async Task<string> FindId(BaseItem item, CancellationToken cancellationToken)
         {
             // Try to find the id using last fm
-            var id = await FindIdFromLastFm(item, cancellationToken).ConfigureAwait(false);
+            var result = await FindIdFromLastFm(item, cancellationToken).ConfigureAwait(false);
 
-            if (!string.IsNullOrEmpty(id))
+            if (!string.IsNullOrEmpty(result.Item1))
             {
-                return id;
+                return result.Item1;
             }
 
-            // If we don't get anything, go directly to music brainz
+            // If there were no artists returned at all, then don't bother with musicbrainz
+            if (!result.Item2)
+            {
+                return null;
+            }
 
-            return await FindIdFromMusicBrainz(item, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                // If we don't get anything, go directly to music brainz
+                return await FindIdFromMusicBrainz(item, cancellationToken).ConfigureAwait(false);
+            }
+            catch (HttpException e)
+            {
+                if (e.StatusCode.HasValue && e.StatusCode.Value == HttpStatusCode.BadRequest)
+                {
+                    // They didn't like a character in the name. Handle the exception so that the provider doesn't keep retrying over and over
+                    return null;
+                }
+
+                throw;
+            }
         }
 
-        private async Task<string> FindIdFromLastFm(BaseItem item, CancellationToken cancellationToken)
+        private async Task<Tuple<string,bool>> FindIdFromLastFm(BaseItem item, CancellationToken cancellationToken)
         {
             //Execute the Artist search against our name and assume first one is the one we want
             var url = RootUrl + string.Format("method=artist.search&artist={0}&api_key={1}&format=json", UrlEncode(item.Name), ApiKey);
@@ -58,17 +80,23 @@ namespace MediaBrowser.Controller.Providers.Music
                 return null;
             }
 
-            if (searchResult != null && searchResult.results != null && searchResult.results.artistmatches != null && searchResult.results.artistmatches.artist.Any())
+            if (searchResult != null && searchResult.results != null && searchResult.results.artistmatches != null && searchResult.results.artistmatches.artist.Count > 0)
             {
-                return searchResult.results.artistmatches.artist.First().mbid;
+                var artist = searchResult.results.artistmatches.artist.FirstOrDefault(i => i.name != null && string.Compare(i.name, item.Name, CultureInfo.CurrentCulture, CompareOptions.IgnoreNonSpace) == 0) ??
+                    searchResult.results.artistmatches.artist.First();
+
+                return new Tuple<string, bool>(artist.mbid, true);
             }
 
-            return null;
+            return new Tuple<string,bool>(null, false);
         }
 
         private async Task<string> FindIdFromMusicBrainz(BaseItem item, CancellationToken cancellationToken)
         {
-            var url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=artist:{0}", UrlEncode(item.Name));
+            // They seem to throw bad request failures on any term with a slash
+            var nameToSearch = item.Name.Replace('/', ' ');
+
+            var url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=artist:{0}", UrlEncode(nameToSearch));
 
             var doc = await FanArtAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
 
@@ -81,21 +109,38 @@ namespace MediaBrowser.Controller.Providers.Music
                 return node.Value;
             }
 
-            // Try again using the search with accent characters url
-            url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=artistaccent:{0}", UrlEncode(item.Name));
-
-            doc = await FanArtAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
-
-            ns = new XmlNamespaceManager(doc.NameTable);
-            ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
-            node = doc.SelectSingleNode("//mb:artist-list/mb:artist[@type='Group']/@id", ns);
-
-            if (node != null && node.Value != null)
+            if (HasDiacritics(item.Name))
             {
-                return node.Value;
+                // Try again using the search with accent characters url
+                url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=artistaccent:{0}", UrlEncode(nameToSearch));
+
+                doc = await FanArtAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
+
+                ns = new XmlNamespaceManager(doc.NameTable);
+                ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
+                node = doc.SelectSingleNode("//mb:artist-list/mb:artist[@type='Group']/@id", ns);
+
+                if (node != null && node.Value != null)
+                {
+                    return node.Value;
+                }
             }
 
             return null;
+        }
+
+        private bool HasDiacritics(string text)
+        {
+            return !string.Equals(text, RemoveDiacritics(text), StringComparison.Ordinal);
+        }
+        
+        private string RemoveDiacritics(string text)
+        {
+            return string.Concat(
+                text.Normalize(NormalizationForm.FormD)
+                .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) !=
+                                              UnicodeCategory.NonSpacingMark)
+              ).Normalize(NormalizationForm.FormC);
         }
         
         protected override async Task FetchLastfmData(BaseItem item, string id, CancellationToken cancellationToken)
