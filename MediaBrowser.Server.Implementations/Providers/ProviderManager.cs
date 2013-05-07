@@ -457,9 +457,9 @@ namespace MediaBrowser.Server.Implementations.Providers
             {
                 var ms = new MemoryStream();
 
-                using (var input = dataToSave)
+                using (dataToSave)
                 {
-                    await input.CopyToAsync(ms).ConfigureAwait(false);
+                    await dataToSave.CopyToAsync(ms).ConfigureAwait(false);
                 }
 
                 ms.Position = 0;
@@ -470,9 +470,9 @@ namespace MediaBrowser.Server.Implementations.Providers
             {
                 using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
                 {
-                    using (var input = dataToSave)
+                    using (dataToSave)
                     {
-                        await input.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
+                        await dataToSave.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
                     }
                 }
 

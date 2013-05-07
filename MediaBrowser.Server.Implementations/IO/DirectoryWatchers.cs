@@ -410,11 +410,13 @@ namespace MediaBrowser.Server.Implementations.IO
                 return false;
             }
 
-            FileStream stream = null;
-
             try
             {
-                stream = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+                using (new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
+                {
+                    //file is not locked
+                    return false;
+                }
             }
             catch
             {
@@ -424,14 +426,6 @@ namespace MediaBrowser.Server.Implementations.IO
                 //or does not exist (has already been processed)
                 return true;
             }
-            finally
-            {
-                if (stream != null)
-                    stream.Close();
-            }
-
-            //file is not locked
-            return false;
         }
 
         /// <summary>
