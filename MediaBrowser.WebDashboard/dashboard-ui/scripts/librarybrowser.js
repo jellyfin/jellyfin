@@ -836,9 +836,9 @@
             if ((item.Type == "Movie" || item.Type == "Trailer") && item.CriticRating != null) {
 
                 if (item.CriticRating >= 60) {
-                    html += '<div class="fresh rottentomatoesicon"></div>';
+                    html += '<div class="fresh rottentomatoesicon" title="fresh"></div>';
                 } else {
-                    html += '<div class="rotten rottentomatoesicon"></div>';
+                    html += '<div class="rotten rottentomatoesicon" title="rotten"></div>';
                 }
 
                 html += '<div class="criticRating">' + item.CriticRating + '%</div>';

@@ -7,21 +7,15 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Providers.Movies
 {
-    /// <summary>
-    /// Class RottenTomatoesMovieProvider
-    /// </summary>
-    public class RottenTomatoesMovieReviewsProvider : BaseMetadataProvider
+    public class OpenMovieDatabaseProvider : BaseMetadataProvider
     {
-        // http://developer.rottentomatoes.com/iodocs
-
-        private const string MoviesReviews = @"movies/{1}/reviews.json?review_type=top_critic&page_limit=10&page=1&country=us&apikey={0}";
+        private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
 
         /// <summary>
         /// Gets the json serializer.
@@ -35,14 +29,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RottenTomatoesMovieProvider"/> class.
-        /// </summary>
-        /// <param name="logManager">The log manager.</param>
-        /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
-        /// <param name="httpClient">The HTTP client.</param>
-        public RottenTomatoesMovieReviewsProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IHttpClient httpClient)
+        public OpenMovieDatabaseProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IHttpClient httpClient)
             : base(logManager, configurationManager)
         {
             JsonSerializer = jsonSerializer;
@@ -57,7 +44,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         {
             get
             {
-                return "5";
+                return "6";
             }
         }
 
@@ -92,15 +79,14 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
-            return false;
             var trailer = item as Trailer;
 
+            // Don't support local trailers
             if (trailer != null)
             {
                 return !trailer.IsLocalTrailer;
             }
 
-            // Don't support local trailers
             return item is Movie;
         }
 
@@ -136,7 +122,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
             // Refresh if rt id has changed
-            if (providerInfo.Data != GetComparisonData(item.GetProviderId(MetadataProviders.RottenTomatoes)))
+            if (providerInfo.Data != GetComparisonData(item.GetProviderId(MetadataProviders.Imdb)))
             {
                 return true;
             }
@@ -144,13 +130,8 @@ namespace MediaBrowser.Controller.Providers.Movies
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
-        /// <summary>
-        /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="force">if set to <c>true</c> [force].</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{System.Boolean}.</returns>
+        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             BaseProviderInfo data;
@@ -161,76 +142,85 @@ namespace MediaBrowser.Controller.Providers.Movies
                 item.ProviderData[Id] = data;
             }
 
-            var rottenTomatoesId = item.GetProviderId(MetadataProviders.RottenTomatoes);
+            var imdbId = item.GetProviderId(MetadataProviders.Imdb);
 
-            
-            if (string.IsNullOrEmpty(rottenTomatoesId))
+            if (string.IsNullOrEmpty(imdbId))
             {
-                data.Data = GetComparisonData(rottenTomatoesId);
+                data.Data = GetComparisonData(imdbId);
                 data.LastRefreshStatus = ProviderRefreshStatus.Success;
                 return true;
             }
 
+            var imdbParam = imdbId.StartsWith("tt", StringComparison.OrdinalIgnoreCase) ? imdbId : "tt" + imdbId;
+
+            var url = string.Format("http://www.omdbapi.com/?i={0}&tomatoes=true", imdbParam);
+
             using (var stream = await HttpClient.Get(new HttpRequestOptions
             {
-                Url = GetMovieReviewsUrl(rottenTomatoesId),
-                ResourcePool = RottenTomatoesMovieProvider.Current.RottenTomatoesResourcePool,
+                Url = url,
+                ResourcePool = _resourcePool,
                 CancellationToken = cancellationToken,
                 EnableResponseCache = true
 
             }).ConfigureAwait(false))
             {
+                var result = JsonSerializer.DeserializeFromStream<RootObject>(stream);
 
-                var result = JsonSerializer.DeserializeFromStream<RTReviewList>(stream);
+                int tomatoMeter;
 
-                item.CriticReviews = result.reviews.Select(rtReview => new ItemReview
+                if (!string.IsNullOrEmpty(result.tomatoMeter) && int.TryParse(result.tomatoMeter, NumberStyles.Integer, UsCulture, out tomatoMeter))
                 {
-                    ReviewerName = rtReview.critic,
-                    Publisher = rtReview.publication,
-                    Date = DateTime.Parse(rtReview.date).ToUniversalTime(),
-                    Caption = rtReview.quote,
-                    Url = rtReview.links.review,
-                    Likes = string.Equals(rtReview.freshness, "fresh", StringComparison.OrdinalIgnoreCase)
+                    item.CriticRating = tomatoMeter;
+                }
 
-                }).ToList();
+                if (!string.IsNullOrEmpty(result.tomatoConsensus)
+                    && !string.Equals(result.tomatoConsensus, "n/a", StringComparison.OrdinalIgnoreCase)
+                    && !string.Equals(result.tomatoConsensus, "No consensus yet.", StringComparison.OrdinalIgnoreCase))
+                {
+                    item.CriticRatingSummary = result.tomatoConsensus;
+                }
             }
-
-            data.Data = GetComparisonData(rottenTomatoesId);
+            
+            data.Data = GetComparisonData(item.GetProviderId(MetadataProviders.Imdb));
             data.LastRefreshStatus = ProviderRefreshStatus.Success;
             SetLastRefreshed(item, DateTime.UtcNow);
 
             return true;
         }
 
-        // Utility functions to get the URL of the API calls
 
-        private string GetMovieReviewsUrl(string rtId)
+        protected class RootObject
         {
-            return RottenTomatoesMovieProvider.BasicUrl + string.Format(MoviesReviews, RottenTomatoesMovieProvider.ApiKey, rtId);
-        }
-
-        // Data contract classes for use with the Rotten Tomatoes API
-
-        protected class RTReviewList
-        {
-            public int total { get; set; }
-            public List<RTReview> reviews { get; set; }
-        }
-
-        protected class RTReview
-        {
-            public string critic { get; set; }
-            public string date { get; set; }
-            public string freshness { get; set; }
-            public string publication { get; set; }
-            public string quote { get; set; }
-            public RTReviewLink links { get; set; }
-            public string original_score { get; set; }
-        }
-
-        protected class RTReviewLink
-        {
-            public string review { get; set; }
+            public string Title { get; set; }
+            public string Year { get; set; }
+            public string Rated { get; set; }
+            public string Released { get; set; }
+            public string Runtime { get; set; }
+            public string Genre { get; set; }
+            public string Director { get; set; }
+            public string Writer { get; set; }
+            public string Actors { get; set; }
+            public string Plot { get; set; }
+            public string Poster { get; set; }
+            public string imdbRating { get; set; }
+            public string imdbVotes { get; set; }
+            public string imdbID { get; set; }
+            public string Type { get; set; }
+            public string tomatoMeter { get; set; }
+            public string tomatoImage { get; set; }
+            public string tomatoRating { get; set; }
+            public string tomatoReviews { get; set; }
+            public string tomatoFresh { get; set; }
+            public string tomatoRotten { get; set; }
+            public string tomatoConsensus { get; set; }
+            public string tomatoUserMeter { get; set; }
+            public string tomatoUserRating { get; set; }
+            public string tomatoUserReviews { get; set; }
+            public string DVD { get; set; }
+            public string BoxOffice { get; set; }
+            public string Production { get; set; }
+            public string Website { get; set; }
+            public string Response { get; set; }
         }
     }
 }

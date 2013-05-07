@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using MediaBrowser.Controller;
+﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -9,9 +8,10 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Search;
 using ServiceStack.ServiceHost;
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {

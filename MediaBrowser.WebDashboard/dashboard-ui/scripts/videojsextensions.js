@@ -302,10 +302,34 @@ _V_.ResolutionMenuItem = _V_.MenuItem.extend({
 			return;
 
 		var resolutions = new Array();
-		resolutions['ultra'] = new Array(2500000, 128000, 1920, 1080);
-		resolutions['high'] = new Array(1500000, 128000, 1920, 1080);
-		resolutions['medium'] = new Array(750000, 128000, 1280, 720);
-		resolutions['low'] = new Array(200000, 128000, 720, 480);
+		resolutions['ultra'] = new Array('webm','mp4','ts','m3u8','ogv');
+		resolutions['high'] = new Array('webm','mp4','ts','m3u8','ogv');
+		resolutions['medium'] = new Array('webm','mp4','ts','m3u8','ogv');
+		resolutions['low'] = new Array('webm','mp4','ts','m3u8','ogv');
+
+		resolutions['ultra']['webm'] = new Array(4000000, 128000, 1920, 1080);
+		resolutions['ultra']['mp4'] = new Array(4000000, 128000, 1920, 1080);
+		resolutions['ultra']['ts'] = new Array(4000000, 128000, 1920, 1080);
+		resolutions['ultra']['m3u8'] = new Array(2500000, 128000, 1920, 1080);
+		resolutions['ultra']['ogv'] = new Array(2500000, 128000, 1920, 1080);
+
+		resolutions['high']['webm'] = new Array(2500000, 128000, 1920, 1080);
+		resolutions['high']['mp4'] = new Array(2500000, 128000, 1920, 1080);
+		resolutions['high']['ts'] = new Array(2500000, 128000, 1920, 1080);
+		resolutions['high']['m3u8'] = new Array(1500000, 128000, 1920, 1080);
+		resolutions['high']['ogv'] = new Array(1500000, 128000, 1920, 1080);
+
+		resolutions['medium']['webm'] = new Array(1000000, 128000, 1280, 720);
+		resolutions['medium']['mp4'] = new Array(1000000, 128000, 1280, 720);
+		resolutions['medium']['ts'] = new Array(1000000, 128000, 1280, 720);
+		resolutions['medium']['m3u8'] = new Array(750000, 128000, 1280, 720);
+		resolutions['medium']['ogv'] = new Array(750000, 128000, 1280, 720);
+
+		resolutions['low']['webm'] = new Array(400000, 128000, 720, 480);
+		resolutions['low']['mp4'] = new Array(400000, 128000, 720, 480);
+		resolutions['low']['ts'] = new Array(400000, 128000, 720, 480);
+		resolutions['low']['m3u8'] = new Array(200000, 128000, 720, 480);
+		resolutions['low']['ogv'] = new Array(200000, 128000, 720, 480);
 
 		var currentTime = this.player.currentTime();
 
@@ -315,8 +339,8 @@ _V_.ResolutionMenuItem = _V_.MenuItem.extend({
 		// Change the source and make sure we don't start the video over
 		var currentSrc = this.player.tag.src;
 		var src = parse_src_url(currentSrc);
-		var newSrc = "/mediabrowser/" + src.Type + "/" + src.item_id + "/stream." + src.stream + "?audioChannels=" + src.audioChannels + "&audioBitrate=" + resolutions[this.options.src[0].res][1] +
-			"&videoBitrate=" + resolutions[this.options.src[0].res][0] + "&maxWidth=" + resolutions[this.options.src[0].res][2] + "&maxHeight=" + resolutions[this.options.src[0].res][3] +
+		var newSrc = "/mediabrowser/" + src.Type + "/" + src.item_id + "/stream." + src.stream + "?audioChannels=" + src.audioChannels + "&audioBitrate=" + resolutions[this.options.src[0].res][src.stream][1] +
+			"&videoBitrate=" + resolutions[this.options.src[0].res][src.stream][0] + "&maxWidth=" + resolutions[this.options.src[0].res][src.stream][2] + "&maxHeight=" + resolutions[this.options.src[0].res][src.stream][3] +
 			"&videoCodec=" + src.videoCodec + "&audioCodec=" + src.audioCodec;
 
 		if (this.player.duration() == "Infinity") {

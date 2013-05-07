@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.Globalization;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -364,6 +365,8 @@ namespace MediaBrowser.Controller.Providers.TV
             }
         }
 
+        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        
         /// <summary>
         /// Fetches the images.
         /// </summary>
@@ -455,7 +458,7 @@ namespace MediaBrowser.Controller.Providers.TV
                             var p = b.SelectSingleNode("./BannerPath");
                             if (p != null)
                             {
-                                var bdName = "backdrop" + (bdNo > 0 ? bdNo.ToString() : "");
+                                var bdName = "backdrop" + (bdNo > 0 ? bdNo.ToString(UsCulture) : "");
                                 if (ConfigurationManager.Configuration.RefreshItemImages || !series.HasLocalImage(bdName))
                                 {
                                     try

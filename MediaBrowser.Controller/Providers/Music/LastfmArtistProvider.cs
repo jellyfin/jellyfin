@@ -55,15 +55,18 @@ namespace MediaBrowser.Controller.Providers.Music
             // Try to find the id using last fm
             var result = await FindIdFromLastFm(item, cancellationToken).ConfigureAwait(false);
 
-            if (!string.IsNullOrEmpty(result.Item1))
+            if (result != null)
             {
-                return result.Item1;
-            }
+                if (!string.IsNullOrEmpty(result.Item1))
+                {
+                    return result.Item1;
+                }
 
-            // If there were no artists returned at all, then don't bother with musicbrainz
-            if (!result.Item2)
-            {
-                return null;
+                // If there were no artists returned at all, then don't bother with musicbrainz
+                if (!result.Item2)
+                {
+                    return null;
+                }
             }
 
             try

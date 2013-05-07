@@ -116,8 +116,8 @@
     <Compile Include="Providers\IProviderManager.cs" />
     <Compile Include="Providers\MediaInfo\MediaEncoderHelpers.cs" />
     <Compile Include="Providers\MetadataProviderPriority.cs" />
+    <Compile Include="Providers\Movies\OpenMovieDatabaseProvider.cs" />
     <Compile Include="Providers\Movies\RottenTomatoesMovieProvider.cs" />
-    <Compile Include="Providers\Movies\RottenTomatoesMovieReviewsProvider.cs" />
     <Compile Include="Providers\Music\FanArtArtistByNameProvider.cs" />
     <Compile Include="Providers\Music\LastfmAlbumProvider.cs" />
     <Compile Include="Providers\Music\FanArtAlbumProvider.cs" />
