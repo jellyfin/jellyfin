@@ -148,7 +148,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// </summary>
         /// <param name="val">The val.</param>
         /// <returns>System.String[][].</returns>
-        private string[] Split(string val)
+        private IEnumerable<string> Split(string val)
         {
             // Only use the comma as a delimeter if there are no slashes or pipes. 
             // We want to be careful not to split names that have commas in them

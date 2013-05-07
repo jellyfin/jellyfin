@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.Globalization;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -99,6 +100,8 @@ namespace MediaBrowser.Controller.Providers.Music
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
+        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        
         /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>
@@ -178,7 +181,7 @@ namespace MediaBrowser.Controller.Providers.Music
                                 Logger.Debug("FanArtProvider getting Backdrop for " + item.Name);
                                 try
                                 {
-                                    item.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(item, path, ("Backdrop" + (numBackdrops > 0 ? numBackdrops.ToString() : "") + ".jpg"), SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                    item.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(item, path, ("Backdrop" + (numBackdrops > 0 ? numBackdrops.ToString(UsCulture) : "") + ".jpg"), SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                                     numBackdrops++;
                                     if (numBackdrops >= ConfigurationManager.Configuration.MaxBackdrops) break;
                                 }
