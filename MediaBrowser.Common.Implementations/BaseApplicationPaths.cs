@@ -295,7 +295,7 @@ namespace MediaBrowser.Common.Implementations
         {
             var programDataPath = _useDebugPath ? ConfigurationManager.AppSettings["DebugProgramDataPath"] : Path.Combine(ConfigurationManager.AppSettings["ReleaseProgramDataPath"], ConfigurationManager.AppSettings["ProgramDataFolderName"]);
 
-            programDataPath = programDataPath.Replace("%CommonApplicationData%", Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData));
+            programDataPath = programDataPath.Replace("%ApplicationData%", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
 
             // If it's a relative path, e.g. "..\"
             if (!Path.IsPathRooted(programDataPath))
