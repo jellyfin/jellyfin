@@ -682,6 +682,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
                 throw new ApplicationException(msg);
             }
+            await SetAssFont(outputPath).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -842,6 +843,36 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 _logger.Error(msg);
 
                 throw new ApplicationException(msg);
+            }
+
+            await SetAssFont(outputPath).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Sets the ass font.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <returns>Task.</returns>
+        private async Task SetAssFont(string file)
+        {
+            string text;
+            Encoding encoding;
+
+            using (var reader = new StreamReader(file, detectEncodingFromByteOrderMarks: true))
+            {
+                encoding = reader.CurrentEncoding;
+
+                text = await reader.ReadToEndAsync().ConfigureAwait(false);
+            }
+
+            var newText = text.Replace(",Arial,", ",Arial Unicode MS,");
+
+            if (!string.Equals(text, newText))
+            {
+                using (var writer = new StreamWriter(file, false, encoding))
+                {
+                    writer.Write(newText);
+                }
             }
         }
 

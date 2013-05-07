@@ -382,7 +382,8 @@ namespace MediaBrowser.ServerApplication
                     HttpServer.Init(GetExports<IRestfulService>(false));
 
                     ServerManager.AddWebSocketListeners(GetExports<IWebSocketListener>(false));
-                    ServerManager.Start();
+
+                    StartServer(true);
                 },
 
                 () => LibraryManager.AddParts(GetExports<IResolverIgnoreRule>(), GetExports<IVirtualFolderCreator>(), GetExports<IItemResolver>(), GetExports<IIntroProvider>(), GetExports<IBaseItemComparer>()),
@@ -403,6 +404,52 @@ namespace MediaBrowser.ServerApplication
                     }
                 }
                 );
+        }
+
+        /// <summary>
+        /// Starts the server.
+        /// </summary>
+        /// <param name="retryOnFailure">if set to <c>true</c> [retry on failure].</param>
+        private void StartServer(bool retryOnFailure)
+        {
+            try
+            {
+                ServerManager.Start();
+            }
+            catch
+            {
+                if (retryOnFailure)
+                {
+                    RegisterServerWithAdministratorAccess();
+
+                    StartServer(false);
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when [configuration updated].
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected override void OnConfigurationUpdated(object sender, EventArgs e)
+        {
+            base.OnConfigurationUpdated(sender, e);
+
+            if (!string.Equals(HttpServer.UrlPrefix, ServerKernel.HttpServerUrlPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                NotifyPendingRestart();
+            }
+
+            else if (!ServerManager.SupportsNativeWebSocket && ServerManager.WebSocketPortNumber != ServerConfigurationManager.Configuration.LegacyWebSocketPortNumber)
+            {
+                NotifyPendingRestart();
+            }
+
         }
 
         /// <summary>
