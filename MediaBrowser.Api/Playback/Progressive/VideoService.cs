@@ -258,7 +258,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             // webm
             if (videoCodec.Equals("libvpx", StringComparison.OrdinalIgnoreCase))
             {
-                args = "-quality realtime -speed 0 -qmin 0 -qmax 30 -profile:v 0 -slices 8";
+                args = "-speed 16 -quality good -profile:v 0 -slices 8";
             }
 
             // asf/wmv
