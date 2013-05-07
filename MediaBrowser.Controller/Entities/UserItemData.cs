@@ -22,8 +22,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the users 0-10 rating
         /// </summary>
         /// <value>The rating.</value>
-        /// <exception cref="System.ArgumentOutOfRangeException">A 0-10 rating is required for UserItemData.</exception>
-        /// <exception cref="System.InvalidOperationException">A 0-10 rating is required for UserItemData.</exception>
+        /// <exception cref="System.ArgumentOutOfRangeException">Rating;A 0 to 10 rating is required for UserItemData.</exception>
         public float? Rating
         {
             get
@@ -36,7 +35,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     if (value.Value < 0 || value.Value > 10)
                     {
-                        throw new ArgumentOutOfRangeException("A 0-10 rating is required for UserItemData.");
+                        throw new ArgumentOutOfRangeException("value", "A 0 to 10 rating is required for UserItemData.");
                     }
                 }
 
