@@ -132,6 +132,11 @@ namespace MediaBrowser.Model.Querying
         Taglines,
 
         /// <summary>
+        /// The tags
+        /// </summary>
+        Tags,
+        
+        /// <summary>
         /// The trailer url of the item
         /// </summary>
         TrailerUrls,
