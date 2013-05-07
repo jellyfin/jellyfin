@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <summary>
         /// The meta file name
         /// </summary>
-        protected const string MetaFileName = "mbperson.json";
+        protected const string MetaFileName = "tmdb3.json";
 
         protected readonly IProviderManager ProviderManager;
         
@@ -66,6 +66,22 @@ namespace MediaBrowser.Controller.Providers.Movies
             return item is Person;
         }
 
+        protected override bool RefreshOnVersionChange
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        protected override string ProviderVersion
+        {
+            get
+            {
+                return "2";
+            }
+        }
+        
         /// <summary>
         /// Needses the refresh internal.
         /// </summary>
@@ -74,6 +90,11 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
+            if (RefreshOnVersionChange && !String.Equals(ProviderVersion, providerInfo.ProviderVersion))
+            {
+                return true;
+            }
+            
             //we fetch if either info or image needed and haven't already tried recently
             return (string.IsNullOrEmpty(item.PrimaryImagePath) || !item.ResolveArgs.ContainsMetaFileByName(MetaFileName))
                 && DateTime.Today.Subtract(providerInfo.LastRefreshed).TotalDays > ConfigurationManager.Configuration.MetadataRefreshDays;
@@ -91,7 +112,6 @@ namespace MediaBrowser.Controller.Providers.Movies
             cancellationToken.ThrowIfCancellationRequested();
 
             var person = (Person)item;
-            var tasks = new List<Task>();
 
             var id = person.GetProviderId(MetadataProviders.Tmdb);
 
@@ -105,20 +125,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             if (!string.IsNullOrEmpty(id))
             {
-                //get info only if not already saved
-                if (!item.ResolveArgs.ContainsMetaFileByName(MetaFileName))
-                {
-                    tasks.Add(FetchInfo(person, id, cancellationToken));
-                }
-
-                //get image only if not already there
-                if (string.IsNullOrEmpty(item.PrimaryImagePath))
-                {
-                    tasks.Add(FetchImages(person, id, cancellationToken));
-                }
-
-                //and wait for them to complete
-                await Task.WhenAll(tasks).ConfigureAwait(false);
+                await FetchInfo(person, id, cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -150,6 +157,8 @@ namespace MediaBrowser.Controller.Providers.Movies
             }
         }
 
+        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        
         /// <summary>
         /// Gets the TMDB id.
         /// </summary>
@@ -180,7 +189,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             {
             }
 
-            return searchResult != null && searchResult.Total_Results > 0 ? searchResult.Results[0].Id.ToString() : null;
+            return searchResult != null && searchResult.Total_Results > 0 ? searchResult.Results[0].Id.ToString(UsCulture) : null;
         }
 
         /// <summary>
@@ -192,12 +201,12 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <returns>Task.</returns>
         private async Task FetchInfo(Person person, string id, CancellationToken cancellationToken)
         {
-            string url = string.Format(@"http://api.themoviedb.org/3/person/{1}?api_key={0}", MovieDbProvider.ApiKey, id);
+            string url = string.Format(@"http://api.themoviedb.org/3/person/{1}?api_key={0}&append_to_response=credits,images", MovieDbProvider.ApiKey, id);
             PersonResult searchResult = null;
 
             try
             {
-                using (Stream json = await HttpClient.Get(new HttpRequestOptions
+                using (var json = await HttpClient.Get(new HttpRequestOptions
                 {
                     Url = url,
                     CancellationToken = cancellationToken,
@@ -207,10 +216,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                 }).ConfigureAwait(false))
                 {
-                    if (json != null)
-                    {
-                        searchResult = JsonSerializer.DeserializeFromStream<PersonResult>(json);
-                    }
+                    searchResult = JsonSerializer.DeserializeFromStream<PersonResult>(json);
                 }
             }
             catch (HttpException)
@@ -219,7 +225,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (searchResult != null && searchResult.Biography != null)
+            if (searchResult != null)
             {
                 ProcessInfo(person, searchResult);
 
@@ -231,6 +237,8 @@ namespace MediaBrowser.Controller.Providers.Movies
                 await ProviderManager.SaveToLibraryFilesystem(person, Path.Combine(person.MetaLocation, MetaFileName), memoryStream, cancellationToken);
 
                 Logger.Debug("TmdbPersonProvider downloaded and saved information for {0}", person.Name);
+
+                await FetchImages(person, searchResult.images, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -241,99 +249,73 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <param name="searchResult">The search result.</param>
         protected void ProcessInfo(Person person, PersonResult searchResult)
         {
-            person.Overview = searchResult.Biography;
+            person.Overview = searchResult.biography;
 
             DateTime date;
 
-            if (DateTime.TryParseExact(searchResult.Birthday, "yyyy-MM-dd", new CultureInfo("en-US"), DateTimeStyles.None, out date))
+            if (DateTime.TryParseExact(searchResult.birthday, "yyyy-MM-dd", new CultureInfo("en-US"), DateTimeStyles.None, out date))
             {
                 person.PremiereDate = date.ToUniversalTime();
             }
 
-            if (DateTime.TryParseExact(searchResult.Deathday, "yyyy-MM-dd", new CultureInfo("en-US"), DateTimeStyles.None, out date))
+            if (DateTime.TryParseExact(searchResult.deathday, "yyyy-MM-dd", new CultureInfo("en-US"), DateTimeStyles.None, out date))
             {
                 person.EndDate = date.ToUniversalTime();
             }
 
-            if (!string.IsNullOrEmpty(searchResult.Homepage))
+            if (!string.IsNullOrEmpty(searchResult.homepage))
             {
-                person.HomePageUrl = searchResult.Homepage;
+                person.HomePageUrl = searchResult.homepage;
             }
 
-            if (!string.IsNullOrEmpty(searchResult.Place_Of_Birth))
+            if (!string.IsNullOrEmpty(searchResult.place_of_birth))
             {
-                person.AddProductionLocation(searchResult.Place_Of_Birth);
+                person.AddProductionLocation(searchResult.place_of_birth);
             }
             
-            person.SetProviderId(MetadataProviders.Tmdb, searchResult.Id.ToString());
+            person.SetProviderId(MetadataProviders.Tmdb, searchResult.id.ToString(UsCulture));
         }
 
         /// <summary>
         /// Fetches the images.
         /// </summary>
         /// <param name="person">The person.</param>
-        /// <param name="id">The id.</param>
+        /// <param name="searchResult">The search result.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task FetchImages(Person person, string id, CancellationToken cancellationToken)
+        private async Task FetchImages(Person person, Images searchResult, CancellationToken cancellationToken)
         {
-            string url = string.Format(@"http://api.themoviedb.org/3/person/{1}/images?api_key={0}", MovieDbProvider.ApiKey, id);
-
-            PersonImages searchResult = null;
-
-            try
-            {
-                using (Stream json = await HttpClient.Get(new HttpRequestOptions
-                {
-                    Url = url,
-                    CancellationToken = cancellationToken,
-                    ResourcePool = MovieDbProvider.Current.MovieDbResourcePool,
-                    AcceptHeader = MovieDbProvider.AcceptHeader,
-                    EnableResponseCache = true
-
-                }).ConfigureAwait(false))
-                {
-                    if (json != null)
-                    {
-                        searchResult = JsonSerializer.DeserializeFromStream<PersonImages>(json);
-                    }
-                }
-            }
-            catch (HttpException)
-            {
-            }
-
-            if (searchResult != null && searchResult.Profiles.Count > 0)
+            if (searchResult != null && searchResult.profiles.Count > 0)
             {
                 //get our language
                 var profile =
-                    searchResult.Profiles.FirstOrDefault(
+                    searchResult.profiles.FirstOrDefault(
                         p =>
-                        !string.IsNullOrEmpty(p.Iso_639_1) &&
-                        p.Iso_639_1.Equals(ConfigurationManager.Configuration.PreferredMetadataLanguage,
+                        !string.IsNullOrEmpty(GetIso639(p)) &&
+                        GetIso639(p).Equals(ConfigurationManager.Configuration.PreferredMetadataLanguage,
                                           StringComparison.OrdinalIgnoreCase));
                 if (profile == null)
                 {
                     //didn't find our language - try first null one
                     profile =
-                        searchResult.Profiles.FirstOrDefault(
+                        searchResult.profiles.FirstOrDefault(
                             p =>
-                                !string.IsNullOrEmpty(p.Iso_639_1) &&
-                            p.Iso_639_1.Equals(ConfigurationManager.Configuration.PreferredMetadataLanguage,
+                                !string.IsNullOrEmpty(GetIso639(p)) &&
+                            GetIso639(p).Equals(ConfigurationManager.Configuration.PreferredMetadataLanguage,
                                               StringComparison.OrdinalIgnoreCase));
 
                 }
                 if (profile == null)
                 {
                     //still nothing - just get first one
-                    profile = searchResult.Profiles[0];
+                    profile = searchResult.profiles[0];
                 }
                 if (profile != null)
                 {
                     var tmdbSettings = await MovieDbProvider.Current.TmdbSettings.ConfigureAwait(false);
 
-                    var img = await DownloadAndSaveImage(person, tmdbSettings.images.base_url + ConfigurationManager.Configuration.TmdbFetchedProfileSize + profile.File_Path,
-                                             "folder" + Path.GetExtension(profile.File_Path), cancellationToken).ConfigureAwait(false);
+                    var img = await DownloadAndSaveImage(person, tmdbSettings.images.base_url + ConfigurationManager.Configuration.TmdbFetchedProfileSize + profile.file_path,
+                                             "folder" + Path.GetExtension(profile.file_path), cancellationToken).ConfigureAwait(false);
 
                     if (!string.IsNullOrEmpty(img))
                     {
@@ -341,6 +323,11 @@ namespace MediaBrowser.Controller.Providers.Movies
                     }
                 }
             }
+        }
+
+        private string GetIso639(Profile p)
+        {
+            return p.iso_639_1 == null ? string.Empty : p.iso_639_1.ToString();
         }
 
         /// <summary>
@@ -373,7 +360,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <summary>
         /// Class PersonSearchResult
         /// </summary>
-        public class PersonSearchResult
+        protected class PersonSearchResult
         {
             /// <summary>
             /// Gets or sets a value indicating whether this <see cref="PersonSearchResult" /> is adult.
@@ -400,7 +387,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <summary>
         /// Class PersonSearchResults
         /// </summary>
-        public class PersonSearchResults
+        protected class PersonSearchResults
         {
             /// <summary>
             /// Gets or sets the page.
@@ -424,110 +411,65 @@ namespace MediaBrowser.Controller.Providers.Movies
             public int Total_Results { get; set; }
         }
 
-        /// <summary>
-        /// Class PersonResult
-        /// </summary>
-        public class PersonResult
+        protected class Cast
         {
-            /// <summary>
-            /// Gets or sets a value indicating whether this <see cref="PersonResult" /> is adult.
-            /// </summary>
-            /// <value><c>true</c> if adult; otherwise, <c>false</c>.</value>
-            public bool Adult { get; set; }
-            /// <summary>
-            /// Gets or sets the also_ known_ as.
-            /// </summary>
-            /// <value>The also_ known_ as.</value>
-            public List<object> Also_Known_As { get; set; }
-            /// <summary>
-            /// Gets or sets the biography.
-            /// </summary>
-            /// <value>The biography.</value>
-            public string Biography { get; set; }
-            /// <summary>
-            /// Gets or sets the birthday.
-            /// </summary>
-            /// <value>The birthday.</value>
-            public string Birthday { get; set; }
-            /// <summary>
-            /// Gets or sets the deathday.
-            /// </summary>
-            /// <value>The deathday.</value>
-            public string Deathday { get; set; }
-            /// <summary>
-            /// Gets or sets the homepage.
-            /// </summary>
-            /// <value>The homepage.</value>
-            public string Homepage { get; set; }
-            /// <summary>
-            /// Gets or sets the id.
-            /// </summary>
-            /// <value>The id.</value>
-            public int Id { get; set; }
-            /// <summary>
-            /// Gets or sets the name.
-            /// </summary>
-            /// <value>The name.</value>
-            public string Name { get; set; }
-            /// <summary>
-            /// Gets or sets the place_ of_ birth.
-            /// </summary>
-            /// <value>The place_ of_ birth.</value>
-            public string Place_Of_Birth { get; set; }
-            /// <summary>
-            /// Gets or sets the profile_ path.
-            /// </summary>
-            /// <value>The profile_ path.</value>
-            public string Profile_Path { get; set; }
+            public int id { get; set; }
+            public string title { get; set; }
+            public string character { get; set; }
+            public string original_title { get; set; }
+            public string poster_path { get; set; }
+            public string release_date { get; set; }
+            public bool adult { get; set; }
         }
 
-        /// <summary>
-        /// Class PersonProfile
-        /// </summary>
-        public class PersonProfile
+        protected class Crew
         {
-            /// <summary>
-            /// Gets or sets the aspect_ ratio.
-            /// </summary>
-            /// <value>The aspect_ ratio.</value>
-            public double Aspect_Ratio { get; set; }
-            /// <summary>
-            /// Gets or sets the file_ path.
-            /// </summary>
-            /// <value>The file_ path.</value>
-            public string File_Path { get; set; }
-            /// <summary>
-            /// Gets or sets the height.
-            /// </summary>
-            /// <value>The height.</value>
-            public int Height { get; set; }
-            /// <summary>
-            /// Gets or sets the iso_639_1.
-            /// </summary>
-            /// <value>The iso_639_1.</value>
-            public string Iso_639_1 { get; set; }
-            /// <summary>
-            /// Gets or sets the width.
-            /// </summary>
-            /// <value>The width.</value>
-            public int Width { get; set; }
+            public int id { get; set; }
+            public string title { get; set; }
+            public string original_title { get; set; }
+            public string department { get; set; }
+            public string job { get; set; }
+            public string poster_path { get; set; }
+            public string release_date { get; set; }
+            public bool adult { get; set; }
         }
 
-        /// <summary>
-        /// Class PersonImages
-        /// </summary>
-        public class PersonImages
+        protected class Credits
         {
-            /// <summary>
-            /// Gets or sets the id.
-            /// </summary>
-            /// <value>The id.</value>
-            public int Id { get; set; }
-            /// <summary>
-            /// Gets or sets the profiles.
-            /// </summary>
-            /// <value>The profiles.</value>
-            public List<PersonProfile> Profiles { get; set; }
+            public List<Cast> cast { get; set; }
+            public List<Crew> crew { get; set; }
+        }
+
+        protected class Profile
+        {
+            public string file_path { get; set; }
+            public int width { get; set; }
+            public int height { get; set; }
+            public object iso_639_1 { get; set; }
+            public double aspect_ratio { get; set; }
+        }
+
+        protected class Images
+        {
+            public List<Profile> profiles { get; set; }
+        }
+
+        protected class PersonResult
+        {
+            public bool adult { get; set; }
+            public List<object> also_known_as { get; set; }
+            public string biography { get; set; }
+            public string birthday { get; set; }
+            public string deathday { get; set; }
+            public string homepage { get; set; }
+            public int id { get; set; }
+            public string imdb_id { get; set; }
+            public string name { get; set; }
+            public string place_of_birth { get; set; }
+            public double popularity { get; set; }
+            public string profile_path { get; set; }
+            public Credits credits { get; set; }
+            public Images images { get; set; }
         }
 
         #endregion
