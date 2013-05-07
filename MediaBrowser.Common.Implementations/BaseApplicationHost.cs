@@ -201,7 +201,7 @@ namespace MediaBrowser.Common.Implementations
 
                 Task.Run(() => ConfigureAutoRunAtStartup());
 
-                ConfigurationManager.ConfigurationUpdated += ConfigurationManager_ConfigurationUpdated;
+                ConfigurationManager.ConfigurationUpdated += OnConfigurationUpdated;
             });
         }
 
@@ -459,7 +459,7 @@ namespace MediaBrowser.Common.Implementations
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        void ConfigurationManager_ConfigurationUpdated(object sender, EventArgs e)
+        protected virtual void OnConfigurationUpdated(object sender, EventArgs e)
         {
             ConfigureAutoRunAtStartup();
         }

@@ -114,6 +114,8 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             _applicationHost = applicationHost;
             ConfigurationManager = configurationManager;
             _kernel = kernel;
+
+            ConfigurationManager.ConfigurationUpdated += ConfigurationUpdated;
         }
 
         /// <summary>
@@ -127,8 +129,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             {
                 ReloadExternalWebSocketServer();
             }
-
-            ConfigurationManager.ConfigurationUpdated += ConfigurationUpdated;
         }
 
         /// <summary>
@@ -352,16 +352,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         void ConfigurationUpdated(object sender, EventArgs e)
         {
             HttpServer.EnableHttpRequestLogging = ConfigurationManager.Configuration.EnableHttpLevelLogging;
-
-            if (!string.Equals(HttpServer.UrlPrefix, _kernel.HttpServerUrlPrefix, StringComparison.OrdinalIgnoreCase))
-            {
-                _applicationHost.NotifyPendingRestart();
-            }
-
-            else if (!SupportsNativeWebSocket && ExternalWebSocketServer != null && ExternalWebSocketServer.Port != ConfigurationManager.Configuration.LegacyWebSocketPortNumber)
-            {
-                _applicationHost.NotifyPendingRestart();
-            }
         }
 
         /// <summary>

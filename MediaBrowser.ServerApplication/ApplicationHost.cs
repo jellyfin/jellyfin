@@ -432,6 +432,27 @@ namespace MediaBrowser.ServerApplication
         }
 
         /// <summary>
+        /// Called when [configuration updated].
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected override void OnConfigurationUpdated(object sender, EventArgs e)
+        {
+            base.OnConfigurationUpdated(sender, e);
+
+            if (!string.Equals(HttpServer.UrlPrefix, ServerKernel.HttpServerUrlPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                NotifyPendingRestart();
+            }
+
+            else if (!ServerManager.SupportsNativeWebSocket && ServerManager.WebSocketPortNumber != ServerConfigurationManager.Configuration.LegacyWebSocketPortNumber)
+            {
+                NotifyPendingRestart();
+            }
+
+        }
+
+        /// <summary>
         /// Restarts this instance.
         /// </summary>
         public override void Restart()
