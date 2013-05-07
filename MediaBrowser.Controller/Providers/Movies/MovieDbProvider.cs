@@ -939,20 +939,29 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                     if (ourRelease.release_date > new DateTime(1900, 1, 1))
                     {
-                        movie.PremiereDate = ourRelease.release_date.ToUniversalTime();
-                        movie.ProductionYear = ourRelease.release_date.Year;
+                        if (ourRelease.release_date.Year != 1)
+                        {
+                            movie.PremiereDate = ourRelease.release_date.ToUniversalTime();
+                            movie.ProductionYear = ourRelease.release_date.Year;
+                        }
                     }
                     else
                     {
-                        movie.PremiereDate = usRelease.release_date.ToUniversalTime();
-                        movie.ProductionYear = usRelease.release_date.Year;
+                        if (usRelease.release_date.Year != 1)
+                        {
+                            movie.PremiereDate = usRelease.release_date.ToUniversalTime();
+                            movie.ProductionYear = usRelease.release_date.Year;
+                        }
                     }
                 }
                 else
                 {
-                    //no specific country release info at all
-                    movie.PremiereDate = movieData.release_date.ToUniversalTime();
-                    movie.ProductionYear = movieData.release_date.Year;
+                    if (movieData.release_date.Year != 1)
+                    {
+                        //no specific country release info at all
+                        movie.PremiereDate = movieData.release_date.ToUniversalTime();
+                        movie.ProductionYear = movieData.release_date.Year;
+                    }
                 }
 
                 //if that didn't find a rating and we are a boxset, use the one from our first child
@@ -966,8 +975,8 @@ namespace MediaBrowser.Controller.Providers.Movies
                     boxset.OfficialRating = firstChild != null ? firstChild.OfficialRating : null;
                 }
 
-                //if (movie.RunTimeTicks == null && movieData.runtime > 0)
-                //    movie.RunTimeTicks = TimeSpan.FromMinutes(movieData.runtime).Ticks;
+                if (movie.RunTimeTicks == null && movieData.runtime > 0)
+                    movie.RunTimeTicks = TimeSpan.FromMinutes(movieData.runtime).Ticks;
 
                 //studios
                 if (movieData.production_companies != null)
