@@ -29,6 +29,10 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The rotten tomatoes
         /// </summary>
-        RottenTomatoes
+        RottenTomatoes,
+        /// <summary>
+        /// Tmdb Collection Id
+        /// </summary>
+        TmdbCollection
     }
 }

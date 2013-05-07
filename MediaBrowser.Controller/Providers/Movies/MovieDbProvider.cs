@@ -916,6 +916,12 @@ namespace MediaBrowser.Controller.Providers.Movies
                 }
 
                 movie.SetProviderId(MetadataProviders.Imdb, movieData.imdb_id);
+
+                if (movieData.belongs_to_collection != null)
+                {
+                    movie.SetProviderId(MetadataProviders.TmdbCollection, movieData.belongs_to_collection.id.ToString(CultureInfo.InvariantCulture));
+                }
+
                 float rating;
                 string voteAvg = movieData.vote_average.ToString(CultureInfo.InvariantCulture);
                 //tmdb appears to have unified their numbers to always report "7.3" regardless of country
