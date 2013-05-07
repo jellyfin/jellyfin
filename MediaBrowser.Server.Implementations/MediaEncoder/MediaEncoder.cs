@@ -865,11 +865,14 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 text = await reader.ReadToEndAsync().ConfigureAwait(false);
             }
 
-            text = text.Replace(",Arial,", ",Arial Unicode MS,");
+            var newText = text.Replace(",Arial,", ",Arial Unicode MS,");
 
-            using (var writer = new StreamWriter(file, false, encoding))
+            if (!string.Equals(text, newText))
             {
-                writer.Write(text);
+                using (var writer = new StreamWriter(file, false, encoding))
+                {
+                    writer.Write(newText);
+                }
             }
         }
 
