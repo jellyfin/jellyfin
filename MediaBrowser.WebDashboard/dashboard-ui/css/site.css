@@ -965,9 +965,10 @@ progress {
 }
 
 #videoWindow.tubecss .vjs-current-time {
-    left: 26em;
+    left: 22.5em;
+	border: 0;
 }
 
 #videoWindow.tubecss .vjs-duration {
-    left: 22.5em;
+    left: 26em;
 }

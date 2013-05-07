@@ -234,6 +234,7 @@
 
                 (this).addEvent("loadstart", function () {
                     $(".vjs-remaining-time-display").hide();
+	                $(".vjs-duration-display").hide();
                 });
 
                 (this).addEvent("durationchange", function () {
