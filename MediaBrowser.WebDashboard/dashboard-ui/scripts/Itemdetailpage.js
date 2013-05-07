@@ -225,13 +225,34 @@
         LibraryBrowser.renderStudios($('#itemStudios', page), item, context);
         renderUserDataIcons(page, item);
         LibraryBrowser.renderLinks($('#itemLinks', page), item);
-        
+
         if (item.CriticRatingSummary) {
             $('#criticRatingSummary', page).show();
             $('#criticRatingSummaryText', page).html(item.CriticRatingSummary);
 
         } else {
             $('#criticRatingSummary', page).hide();
+        }
+
+        renderTags(page, item);
+    }
+
+    function renderTags(page, item) {
+
+        if (item.Tags && item.Tags.length) {
+
+            var html = '';
+
+            for (var i = 0, length = item.Tags.length; i < length; i++) {
+
+                html += '<div class="itemTag">' + item.Tags[i] + '</div>';
+
+            }
+
+            $('#itemTags', page).show().html(html);
+
+        } else {
+            $('#itemTags', page).hide();
         }
     }
 
