@@ -277,6 +277,12 @@ namespace MediaBrowser.Model.Dto
         public string[] IndexOptions { get; set; }
 
         /// <summary>
+        /// Gets or sets the tags.
+        /// </summary>
+        /// <value>The tags.</value>
+        public List<string> Tags { get; set; }
+        
+        /// <summary>
         /// Gets or sets the primary image aspect ratio.
         /// </summary>
         /// <value>The primary image aspect ratio.</value>
