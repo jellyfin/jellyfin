@@ -355,12 +355,12 @@ namespace MediaBrowser.Server.Implementations.ServerManager
 
             if (!string.Equals(HttpServer.UrlPrefix, _kernel.HttpServerUrlPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                ReloadHttpServer();
+                _applicationHost.NotifyPendingRestart();
             }
 
-            if (!SupportsNativeWebSocket && ExternalWebSocketServer != null && ExternalWebSocketServer.Port != ConfigurationManager.Configuration.LegacyWebSocketPortNumber)
+            else if (!SupportsNativeWebSocket && ExternalWebSocketServer != null && ExternalWebSocketServer.Port != ConfigurationManager.Configuration.LegacyWebSocketPortNumber)
             {
-                ReloadExternalWebSocketServer();
+                _applicationHost.NotifyPendingRestart();
             }
         }
 
