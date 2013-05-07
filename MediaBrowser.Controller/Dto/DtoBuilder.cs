@@ -279,6 +279,11 @@ namespace MediaBrowser.Controller.Dto
                 dto.HomePageUrl = item.HomePageUrl;
             }
 
+            if (fields.Contains(ItemFields.Tags))
+            {
+                dto.Tags = item.Tags;
+            }
+            
             if (fields.Contains(ItemFields.ProductionLocations))
             {
                 dto.ProductionLocations = item.ProductionLocations;

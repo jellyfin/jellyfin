@@ -141,6 +141,14 @@
     display: block;
 }
 
+.itemTag {
+    display: inline-block;
+    background-color: #999;
+    border-radius: 4px;
+    padding: 3px 5px;
+    font-size: 13px;
+    margin: 0 5px 0 0;
+}
 
 
 @media all and (min-width: 750px) {
