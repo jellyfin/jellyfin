@@ -192,18 +192,21 @@
                 var mp4VideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mp4', $.extend({}, baseParams, {
                     videoCodec: 'h264',
                     audioCodec: 'aac',
-                    profile: 'high'
+                    profile: 'high',
+	                videoBitrate: 2500000
                 }));
 
                 var tsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ts', $.extend({}, baseParams, {
                     videoCodec: 'h264',
                     audioCodec: 'aac',
-                    profile: 'high'
+                    profile: 'high',
+	                videoBitrate: 2500000
                 }));
 
                 var webmVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
                     videoCodec: 'vpx',
-                    audioCodec: 'Vorbis'
+                    audioCodec: 'Vorbis',
+	                videoBitrate: 2500000
                 }));
 
                 var hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.m3u8', $.extend({}, baseParams, {
