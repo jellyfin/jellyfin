@@ -56,7 +56,7 @@
 
     function loadUser(page, user, loggedInUser, parentalRatingsPromise, allCulturesPromise) {
 
-        if (!loggedInUser.Configuration.IsAdministrator || user.Id == loggedInUser.Id) {
+        if (!loggedInUser.Configuration.IsAdministrator) {
 
             $('#fldIsAdmin', page).hide();
             $('#fldMaxParentalRating', page).hide();
