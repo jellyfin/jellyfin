@@ -167,7 +167,7 @@
 
 @media all and (min-width: 650px) {
     .libraryPage .ui-content {
-        padding: 10px 20px 100px;
+        padding: 0 20px 100px;
     }
 
     .viewControls, .listTopPaging {

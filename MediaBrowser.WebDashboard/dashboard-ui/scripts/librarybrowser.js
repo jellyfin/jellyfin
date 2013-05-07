@@ -379,7 +379,14 @@
 
             if (type == 'Backdrop') {
                 options.tag = item.BackdropImageTags[index];
-            } else {
+            }
+            else if (type == 'Screenshot') {
+                options.tag = item.ScreenshotImageTags[index];
+            }
+            else if (type == 'Primary') {
+                options.tag = item.PrimaryImageTag || item.ImageTags[type];
+            }
+            else {
                 options.tag = item.ImageTags[type];
             }
 
