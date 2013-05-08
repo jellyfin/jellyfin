@@ -915,11 +915,20 @@ progress {
     width: 16px;
     background-size: cover;
     opacity: 0.5;
+	margin: .2em -4px;
 }
 
     #videoWindow.tubecss .vjs-menu-button.vjs-language-button div:hover {
         opacity: 1.0;
     }
+
+#videoWindow.tubecss .vjs-menu-button.vjs-subtitle-button div {
+	margin: .2em -8px;
+}
+
+#videoWindow.tubecss .vjs-menu-button.vjs-subtitle-button div:hover {
+	opacity: 1.0;
+}
 
 .vjs-language-button.vjs-menu-button ul {
     width: auto;
@@ -958,6 +967,7 @@ progress {
 #videoWindow.tubecss .vjs-time-divider {
     bottom: 0.4em;
     left: 25.3em;
+	display: none;
 }
 
 #videoWindow.tubecss .vjs-menu-item {
@@ -965,10 +975,17 @@ progress {
 }
 
 #videoWindow.tubecss .vjs-current-time {
-    left: 22.5em;
-	border: 0;
+    left: .1em;
+	top: -2em;
+	z-index: 2;
 }
 
 #videoWindow.tubecss .vjs-duration {
-    left: 26em;
+    right: .1em;
+	text-align:right;
+	z-index: 2;
+}
+
+#videoWindow.tubecss .vjs-progress-holder {
+	margin: 0 6em;
 }
