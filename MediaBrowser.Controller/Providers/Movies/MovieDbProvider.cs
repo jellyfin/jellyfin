@@ -274,6 +274,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         private const string TmdbConfigUrl = "http://api.themoviedb.org/3/configuration?api_key={0}";
         private const string Search3 = @"http://api.themoviedb.org/3/search/movie?api_key={1}&query={0}&language={2}";
         private const string AltTitleSearch = @"http://api.themoviedb.org/3/movie/{0}/alternative_titles?api_key={1}&country={2}";
+        private const string GetImages = @"http://api.themoviedb.org/3/{2}/{0}/images?api_key={1}";
         private const string GetMovieInfo3 = @"http://api.themoviedb.org/3/movie/{0}?api_key={1}&language={2}&append_to_response=casts,releases,images,keywords";
         private const string GetBoxSetInfo3 = @"http://api.themoviedb.org/3/collection/{0}?api_key={1}&language={2}&append_to_response=images";
 
@@ -792,6 +793,8 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            mainResult.images = await FetchImages(item, id, cancellationToken).ConfigureAwait(false);
+
             await ProcessImages(item, mainResult.images, cancellationToken).ConfigureAwait(false);
 
             //and save locally
@@ -803,6 +806,22 @@ namespace MediaBrowser.Controller.Providers.Movies
                 cancellationToken.ThrowIfCancellationRequested();
 
                 await ProviderManager.SaveToLibraryFilesystem(item, Path.Combine(item.MetaLocation, LOCAL_META_FILE_NAME), ms, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private async Task<MovieImages> FetchImages(BaseItem item, string id, CancellationToken cancellationToken)
+        {
+            using (var json = await HttpClient.Get(new HttpRequestOptions
+            {
+                Url = string.Format(GetImages, id, ApiKey, item is BoxSet ? "collection" : "movie"),
+                CancellationToken = cancellationToken,
+                ResourcePool = Current.MovieDbResourcePool,
+                AcceptHeader = AcceptHeader,
+                EnableResponseCache = true
+
+            }).ConfigureAwait(false))
+            {
+                return JsonSerializer.DeserializeFromStream<MovieImages>(json);
             }
         }
 
@@ -1031,7 +1050,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <param name="images">The images.</param>
         /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task.</returns>
-        protected virtual async Task ProcessImages(BaseItem item, MovieImagesImages images, CancellationToken cancellationToken)
+        protected virtual async Task ProcessImages(BaseItem item, MovieImages images, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -1448,7 +1467,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             public int vote_count { get; set; }
         }
 
-        protected class MovieImagesImages
+        protected class MovieImages
         {
             public List<Backdrop> backdrops { get; set; }
             public List<Poster> posters { get; set; }
@@ -1492,7 +1511,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             public int vote_count { get; set; }
             public Casts casts { get; set; }
             public Releases releases { get; set; }
-            public MovieImagesImages images { get; set; }
+            public MovieImages images { get; set; }
             public Keywords keywords { get; set; }
         }
 
