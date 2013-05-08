@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -39,7 +41,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="logger">The logger.</param>
         /// <returns>The dimensions of the specified image.</returns>
         /// <exception cref="ArgumentException">The image was of an unrecognised format.</exception>
-        public static Size GetDimensions(string path, ILogger logger)
+        public static async Task<Size> GetDimensions(string path, ILogger logger)
         {
             try
             {
@@ -54,11 +56,17 @@ namespace MediaBrowser.Controller.Drawing
             catch
             {
                 logger.Info("Failed to read image header for {0}. Doing it the slow way.", path);
+            }
 
-                using (var fs = File.OpenRead(path))
+            // Buffer to memory stream to avoid image locking file
+            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, true))
+            {
+                using (var memoryStream = new MemoryStream())
                 {
+                    await fs.CopyToAsync(memoryStream).ConfigureAwait(false);
+
                     // Co it the old fashioned way
-                    using (var b = Image.FromStream(fs, true, false))
+                    using (var b = Image.FromStream(memoryStream, true, false))
                     {
                         return b.Size;
                     }
