@@ -172,48 +172,54 @@ namespace MediaBrowser.Controller.Drawing
 
             try
             {
-                using (var fileStream = File.OpenRead(originalImagePath))
+                using (var fileStream = new FileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, true))
                 {
-                    using (var originalImage = Image.FromStream(fileStream, true, false))
+                    // Copy to memory stream to avoid Image locking file
+                    using (var memoryStream = new MemoryStream())
                     {
-                        var newWidth = Convert.ToInt32(newSize.Width);
-                        var newHeight = Convert.ToInt32(newSize.Height);
+                        await fileStream.CopyToAsync(memoryStream).ConfigureAwait(false);
 
-                        // Graphics.FromImage will throw an exception if the PixelFormat is Indexed, so we need to handle that here
-                        var thumbnail = !ImageExtensions.IsPixelFormatSupportedByGraphicsObject(originalImage.PixelFormat) ? new Bitmap(originalImage, newWidth, newHeight) : new Bitmap(newWidth, newHeight, originalImage.PixelFormat);
-
-                        // Preserve the original resolution
-                        thumbnail.SetResolution(originalImage.HorizontalResolution, originalImage.VerticalResolution);
-
-                        var thumbnailGraph = Graphics.FromImage(thumbnail);
-
-                        thumbnailGraph.CompositingQuality = CompositingQuality.HighQuality;
-                        thumbnailGraph.SmoothingMode = SmoothingMode.HighQuality;
-                        thumbnailGraph.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                        thumbnailGraph.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                        thumbnailGraph.CompositingMode = CompositingMode.SourceOver;
-
-                        thumbnailGraph.DrawImage(originalImage, 0, 0, newWidth, newHeight);
-
-                        var outputFormat = originalImage.RawFormat;
-
-                        using (var memoryStream = new MemoryStream())
+                        using (var originalImage = Image.FromStream(fileStream, true, false))
                         {
-                            // Save to the memory stream
-                            thumbnail.Save(outputFormat, memoryStream, quality.Value);
+                            var newWidth = Convert.ToInt32(newSize.Width);
+                            var newHeight = Convert.ToInt32(newSize.Height);
 
-                            var bytes = memoryStream.ToArray();
+                            // Graphics.FromImage will throw an exception if the PixelFormat is Indexed, so we need to handle that here
+                            using (var thumbnail = !ImageExtensions.IsPixelFormatSupportedByGraphicsObject(originalImage.PixelFormat) ? new Bitmap(originalImage, newWidth, newHeight) : new Bitmap(newWidth, newHeight, originalImage.PixelFormat))
+                            {
+                                // Preserve the original resolution
+                                thumbnail.SetResolution(originalImage.HorizontalResolution, originalImage.VerticalResolution);
 
-                            var outputTask = toStream.WriteAsync(bytes, 0, bytes.Length);
+                                using (var thumbnailGraph = Graphics.FromImage(thumbnail))
+                                {
+                                    thumbnailGraph.CompositingQuality = CompositingQuality.HighQuality;
+                                    thumbnailGraph.SmoothingMode = SmoothingMode.HighQuality;
+                                    thumbnailGraph.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                                    thumbnailGraph.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                                    thumbnailGraph.CompositingMode = CompositingMode.SourceOver;
 
-                            // kick off a task to cache the result
-                            await CacheResizedImage(cacheFilePath, bytes).ConfigureAwait(false);
+                                    thumbnailGraph.DrawImage(originalImage, 0, 0, newWidth, newHeight);
 
-                            await outputTask.ConfigureAwait(false);
+                                    var outputFormat = originalImage.RawFormat;
+
+                                    using (var outputMemoryStream = new MemoryStream())
+                                    {
+                                        // Save to the memory stream
+                                        thumbnail.Save(outputFormat, outputMemoryStream, quality.Value);
+
+                                        var bytes = outputMemoryStream.ToArray();
+
+                                        var outputTask = toStream.WriteAsync(bytes, 0, bytes.Length);
+
+                                        // kick off a task to cache the result
+                                        await CacheResizedImage(cacheFilePath, bytes).ConfigureAwait(false);
+
+                                        await outputTask.ConfigureAwait(false);
+                                    }
+                                }
+                            }
+
                         }
-
-                        thumbnailGraph.Dispose();
-                        thumbnail.Dispose();
                     }
                 }
             }
@@ -320,9 +326,7 @@ namespace MediaBrowser.Controller.Drawing
                     // Cache file doesn't exist no biggie
                 }
 
-                _logger.Debug("Getting image size for {0}", imagePath);
-
-                var size = ImageHeader.GetDimensions(imagePath, _logger);
+                var size = await ImageHeader.GetDimensions(imagePath, _logger).ConfigureAwait(false);
 
                 // Update the file system cache
                 File.WriteAllText(fullCachePath, size.Width.ToString(UsCulture) + @"|" + size.Height.ToString(UsCulture));
@@ -468,17 +472,23 @@ namespace MediaBrowser.Controller.Drawing
             
             try
             {
-                using (var fileStream = File.OpenRead(originalImagePath))
+                using (var fileStream = new FileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, true))
                 {
-                    using (var originalImage = (Bitmap)Image.FromStream(fileStream, true, false))
+                    // Copy to memory stream to avoid Image locking file
+                    using (var memoryStream = new MemoryStream())
                     {
-                        var outputFormat = originalImage.RawFormat;
+                        await fileStream.CopyToAsync(memoryStream).ConfigureAwait(false);
 
-                        using (var croppedImage = originalImage.CropWhitespace())
+                        using (var originalImage = (Bitmap)Image.FromStream(memoryStream, true, false))
                         {
-                            using (var outputStream = new FileStream(croppedImagePath, FileMode.Create, FileAccess.Write, FileShare.Read))
+                            var outputFormat = originalImage.RawFormat;
+
+                            using (var croppedImage = originalImage.CropWhitespace())
                             {
-                                croppedImage.Save(outputFormat, outputStream, 100);
+                                using (var outputStream = new FileStream(croppedImagePath, FileMode.Create, FileAccess.Write, FileShare.Read))
+                                {
+                                    croppedImage.Save(outputFormat, outputStream, 100);
+                                }
                             }
                         }
                     }
@@ -547,17 +557,23 @@ namespace MediaBrowser.Controller.Drawing
 
             try
             {
-                using (var fileStream = File.OpenRead(originalImagePath))
+                using (var fileStream = new FileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, true))
                 {
-                    using (var originalImage = Image.FromStream(fileStream, true, false))
+                    // Copy to memory stream to avoid Image locking file
+                    using (var memoryStream = new MemoryStream())
                     {
-                        //Pass the image through registered enhancers
-                        using (var newImage = await ExecuteImageEnhancers(supportedEnhancers, originalImage, item, imageType, imageIndex).ConfigureAwait(false))
+                        await fileStream.CopyToAsync(memoryStream).ConfigureAwait(false);
+
+                        using (var originalImage = Image.FromStream(memoryStream, true, false))
                         {
-                            //And then save it in the cache
-                            using (var outputStream = new FileStream(enhancedImagePath, FileMode.Create, FileAccess.Write, FileShare.Read))
+                            //Pass the image through registered enhancers
+                            using (var newImage = await ExecuteImageEnhancers(supportedEnhancers, originalImage, item, imageType, imageIndex).ConfigureAwait(false))
                             {
-                                newImage.Save(ImageFormat.Png, outputStream, 100);
+                                //And then save it in the cache
+                                using (var outputStream = new FileStream(enhancedImagePath, FileMode.Create, FileAccess.Write, FileShare.Read))
+                                {
+                                    newImage.Save(ImageFormat.Png, outputStream, 100);
+                                }
                             }
                         }
                     }
@@ -649,8 +665,6 @@ namespace MediaBrowser.Controller.Drawing
             foreach (var enhancer in imageEnhancers)
             {
                 var typeName = enhancer.GetType().Name;
-
-                _logger.Debug("Running {0} for {1}", typeName, item.Path ?? item.Name ?? "--Unknown--");
 
                 try
                 {
