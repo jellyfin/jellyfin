@@ -863,7 +863,7 @@
 
             if (item.PlayedPercentage) {
 
-                tooltip = Math.round(item.PlayedPercentage) + '% ';
+                tooltip = item.PlayedPercentage.toFixed(1).toString().replace(".0", '') + '% ';
 
                 if (item.Type == "Series" || item.Type == "Season" || item.Type == "BoxSet") {
                     tooltip += "watched";
