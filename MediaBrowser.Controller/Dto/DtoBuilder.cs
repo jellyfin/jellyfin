@@ -331,7 +331,7 @@ namespace MediaBrowser.Controller.Dto
                 dto.CriticRatingSummary = item.CriticRatingSummary;
             }
 
-            var localTrailerCount = item.LocalTrailers == null ? 0 : item.LocalTrailers.Count;
+            var localTrailerCount = item.LocalTrailerIds.Count;
 
             if (localTrailerCount > 0)
             {
@@ -492,7 +492,7 @@ namespace MediaBrowser.Controller.Dto
 
             if (movie != null)
             {
-                var specialFeatureCount = movie.SpecialFeatures == null ? 0 : movie.SpecialFeatures.Count;
+                var specialFeatureCount = movie.SpecialFeatureIds.Count;
 
                 if (specialFeatureCount > 0)
                 {
