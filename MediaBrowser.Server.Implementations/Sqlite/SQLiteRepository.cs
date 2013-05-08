@@ -121,13 +121,14 @@ namespace MediaBrowser.Server.Implementations.Sqlite
             {
                 try
                 {
-                    var cmd = connection.CreateCommand();
-
-                    foreach (var query in queries)
+                    using (var cmd = connection.CreateCommand())
                     {
-                        cmd.Transaction = tran;
-                        cmd.CommandText = query;
-                        cmd.ExecuteNonQuery();
+                        foreach (var query in queries)
+                        {
+                            cmd.Transaction = tran;
+                            cmd.CommandText = query;
+                            cmd.ExecuteNonQuery();
+                        }
                     }
 
                     tran.Commit();
@@ -268,6 +269,9 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                         command.Transaction = tran;
 
                         command.ExecuteNonQuery();
+
+                        command.Dispose();
+
                         numCommands++;
                     }
 

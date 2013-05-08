@@ -127,29 +127,31 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var cmd = connection.CreateCommand();
-            cmd.CommandText = "replace into users (guid, data) values (@1, @2)";
-            cmd.AddParam("@1", user.Id);
-            cmd.AddParam("@2", serialized);
-
-            using (var tran = connection.BeginTransaction())
+            using (var cmd = connection.CreateCommand())
             {
-                try
-                {
-                    cmd.Transaction = tran;
+                cmd.CommandText = "replace into users (guid, data) values (@1, @2)";
+                cmd.AddParam("@1", user.Id);
+                cmd.AddParam("@2", serialized);
 
-                    await cmd.ExecuteNonQueryAsync(cancellationToken);
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        cmd.Transaction = tran;
 
-                    tran.Commit();
-                }
-                catch (OperationCanceledException)
-                {
-                    tran.Rollback();
-                }
-                catch (Exception e)
-                {
-                    Logger.ErrorException("Failed to commit transaction.", e);
-                    tran.Rollback();
+                        await cmd.ExecuteNonQueryAsync(cancellationToken);
+
+                        tran.Commit();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        tran.Rollback();
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.ErrorException("Failed to commit transaction.", e);
+                        tran.Rollback();
+                    }
                 }
             }
         }
@@ -160,17 +162,19 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <returns>IEnumerable{User}.</returns>
         public IEnumerable<User> RetrieveAllUsers()
         {
-            var cmd = connection.CreateCommand();
-            cmd.CommandText = "select data from users";
-
-            using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+            using (var cmd = connection.CreateCommand())
             {
-                while (reader.Read())
+                cmd.CommandText = "select data from users";
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
                 {
-                    using (var stream = GetStream(reader, 0))
+                    while (reader.Read())
                     {
-                        var user = _jsonSerializer.DeserializeFromStream<User>(stream);
-                        yield return user;
+                        using (var stream = GetStream(reader, 0))
+                        {
+                            var user = _jsonSerializer.DeserializeFromStream<User>(stream);
+                            yield return user;
+                        }
                     }
                 }
             }
@@ -197,12 +201,14 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var cmd = connection.CreateCommand();
-            cmd.CommandText = "delete from users where guid=@guid";
-            var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
-            guidParam.Value = user.Id;
+            using (var cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = "delete from users where guid=@guid";
+                var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
+                guidParam.Value = user.Id;
 
-            return ExecuteCommand(cmd);
+                return ExecuteCommand(cmd);
+            }
         }
     }
 }

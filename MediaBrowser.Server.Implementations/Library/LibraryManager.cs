@@ -4,7 +4,6 @@ using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -267,16 +266,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
             items.Add(RootFolder);
 
-            var specialFeatures = items.OfType<Movie>().SelectMany(i => i.SpecialFeatures).ToList();
-            var localTrailers = items.SelectMany(i => i.LocalTrailers).ToList();
-            var themeSongs = items.SelectMany(i => i.ThemeSongs).ToList();
-            var themeVideos = items.SelectMany(i => i.ThemeVideos).ToList();
-
-            items.AddRange(specialFeatures);
-            items.AddRange(localTrailers);
-            items.AddRange(themeSongs);
-            items.AddRange(themeVideos);
-
             // Need to use DistinctBy Id because there could be multiple instances with the same id
             // due to sharing the default library
             var userRootFolders = _userManager.Users.Select(i => i.RootFolder)
@@ -304,39 +293,6 @@ namespace MediaBrowser.Server.Implementations.Library
         private void UpdateItemInLibraryCache(BaseItem item)
         {
             LibraryItemsCache.AddOrUpdate(item.Id, item, delegate { return item; });
-
-            foreach (var subItem in item.LocalTrailers)
-            {
-                // Prevent access to foreach variable in closure
-                var copy = subItem;
-                LibraryItemsCache.AddOrUpdate(subItem.Id, subItem, delegate { return copy; });
-            }
-
-            foreach (var subItem in item.ThemeSongs)
-            {
-                // Prevent access to foreach variable in closure
-                var copy = subItem;
-                LibraryItemsCache.AddOrUpdate(subItem.Id, subItem, delegate { return copy; });
-            }
-
-            foreach (var subItem in item.ThemeVideos)
-            {
-                // Prevent access to foreach variable in closure
-                var copy = subItem;
-                LibraryItemsCache.AddOrUpdate(subItem.Id, subItem, delegate { return copy; });
-            }
-
-            var movie = item as Movie;
-
-            if (movie != null)
-            {
-                foreach (var subItem in movie.SpecialFeatures)
-                {
-                    // Prevent access to foreach variable in closure
-                    var special1 = subItem;
-                    LibraryItemsCache.AddOrUpdate(subItem.Id, subItem, delegate { return special1; });
-                }
-            }
         }
 
         /// <summary>
@@ -661,8 +617,6 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            _logger.Debug("Getting {0}: {1}", typeof(T).Name, name);
-
             path = Path.Combine(path, FileSystem.GetValidFilename(name));
 
             var fileInfo = new DirectoryInfo(path);
@@ -968,9 +922,12 @@ namespace MediaBrowser.Server.Implementations.Library
 
             BaseItem item;
 
-            LibraryItemsCache.TryGetValue(id, out item);
+            if (LibraryItemsCache.TryGetValue(id, out item))
+            {
+                return item;
+            }
 
-            return item;
+            return ItemRepository.GetItem(id);
         }
 
         /// <summary>
@@ -1130,7 +1087,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task{BaseItem}.</returns>
         public BaseItem RetrieveItem(Guid id)
         {
-            return ItemRepository.RetrieveItem(id);
+            return ItemRepository.GetItem(id);
         }
 
         /// <summary>

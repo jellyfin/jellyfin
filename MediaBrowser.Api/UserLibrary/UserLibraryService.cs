@@ -399,19 +399,23 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
+        private readonly IItemRepository _itemRepo;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserLibraryService" /> class.
         /// </summary>
         /// <param name="userManager">The user manager.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
+        /// <param name="itemRepo">The item repo.</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
-        public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository)
+        public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepo)
             : base()
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
             _userDataRepository = userDataRepository;
+            _itemRepo = itemRepo;
         }
 
         /// <summary>
@@ -432,7 +436,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
 
-            var items = movie.SpecialFeatures.OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).Select(t => t.Result).ToList();
+            var items = _itemRepo.GetItems(movie.SpecialFeatureIds).OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).Select(t => t.Result).ToList();
 
             return ToOptimizedResult(items);
         }
@@ -453,7 +457,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
 
-            var items = item.LocalTrailers.OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).Select(t => t.Result).ToList();
+            var items = _itemRepo.GetItems(item.LocalTrailerIds).OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).Select(t => t.Result).ToList();
 
             return ToOptimizedResult(items);
         }
@@ -474,7 +478,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
 
-            var items = item.ThemeSongs.OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).Select(t => t.Result).ToArray();
+            var items = _itemRepo.GetItems(item.ThemeSongIds).OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).Select(t => t.Result).ToArray();
 
             var result = new ThemeSongsResult
             {
@@ -502,7 +506,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
 
-            var items = item.ThemeVideos.OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).Select(t => t.Result).ToArray();
+            var items = _itemRepo.GetItems(item.ThemeVideoIds).OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).Select(t => t.Result).ToArray();
 
             var result = new ThemeVideosResult
             {

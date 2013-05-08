@@ -136,7 +136,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 {
                     var now = DateTime.UtcNow;
 
-                    var isCacheValid = (!cachedInfo.MustRevalidate && !string.IsNullOrEmpty(cachedInfo.Etag) && (now - cachedInfo.RequestDate).TotalDays < 14)
+                    var isCacheValid = (!cachedInfo.MustRevalidate && !string.IsNullOrEmpty(cachedInfo.Etag) && (now - cachedInfo.RequestDate).TotalDays < 7)
                         || (cachedInfo.Expires.HasValue && cachedInfo.Expires.Value > now);
 
                     if (isCacheValid)

@@ -1,3 +1,4 @@
+using System.Linq;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
@@ -156,14 +157,30 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
         /// <exception cref="System.ArgumentException"></exception>
-        public BaseItem RetrieveItem(Guid id)
+        public BaseItem GetItem(Guid id)
         {
             if (id == Guid.Empty)
             {
-                throw new ArgumentException();
+                throw new ArgumentNullException("id");
             }
 
             return RetrieveItemInternal(id);
+        }
+
+        /// <summary>
+        /// Retrieves the items.
+        /// </summary>
+        /// <param name="ids">The ids.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        /// <exception cref="System.ArgumentNullException">ids</exception>
+        public IEnumerable<BaseItem> GetItems(IEnumerable<Guid> ids)
+        {
+            if (ids == null)
+            {
+                throw new ArgumentNullException("ids");
+            }
+
+            return ids.Select(RetrieveItemInternal);
         }
 
         /// <summary>
@@ -176,35 +193,37 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         {
             if (id == Guid.Empty)
             {
-                throw new ArgumentException();
+                throw new ArgumentNullException("id");
             }
 
-            var cmd = connection.CreateCommand();
-            cmd.CommandText = "select obj_type,data from items where guid = @guid";
-            var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
-            guidParam.Value = id;
-
-            using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
+            using (var cmd = connection.CreateCommand())
             {
-                if (reader.Read())
+                cmd.CommandText = "select obj_type,data from items where guid = @guid";
+                var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
+                guidParam.Value = id;
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
                 {
-                    var type = reader.GetString(0);
-                    using (var stream = GetStream(reader, 1))
+                    if (reader.Read())
                     {
-                        var itemType = _typeMapper.GetType(type);
-
-                        if (itemType == null)
+                        var type = reader.GetString(0);
+                        using (var stream = GetStream(reader, 1))
                         {
-                            Logger.Error("Cannot find type {0}.  Probably belongs to plug-in that is no longer loaded.", type);
-                            return null;
-                        }
+                            var itemType = _typeMapper.GetType(type);
 
-                        var item = _jsonSerializer.DeserializeFromStream(stream, itemType);
-                        return item as BaseItem;
+                            if (itemType == null)
+                            {
+                                Logger.Error("Cannot find type {0}.  Probably belongs to plug-in that is no longer loaded.", type);
+                                return null;
+                            }
+
+                            var item = _jsonSerializer.DeserializeFromStream(stream, itemType);
+                            return item as BaseItem;
+                        }
                     }
                 }
+                return null;
             }
-            return null;
         }
 
         /// <summary>
@@ -220,30 +239,32 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 throw new ArgumentNullException();
             }
 
-            var cmd = connection.CreateCommand();
-            cmd.CommandText = "select obj_type,data from items where guid in (select child from children where guid = @guid)";
-            var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
-            guidParam.Value = parent.Id;
-
-            using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+            using (var cmd = connection.CreateCommand())
             {
-                while (reader.Read())
-                {
-                    var type = reader.GetString(0);
+                cmd.CommandText = "select obj_type,data from items where guid in (select child from children where guid = @guid)";
+                var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
+                guidParam.Value = parent.Id;
 
-                    using (var stream = GetStream(reader, 1))
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
                     {
-                        var itemType = _typeMapper.GetType(type);
-                        if (itemType == null)
+                        var type = reader.GetString(0);
+
+                        using (var stream = GetStream(reader, 1))
                         {
-                            Logger.Error("Cannot find type {0}.  Probably belongs to plug-in that is no longer loaded.", type);
-                            continue;
-                        }
-                        var item = _jsonSerializer.DeserializeFromStream(stream, itemType) as BaseItem;
-                        if (item != null)
-                        {
-                            item.Parent = parent;
-                            yield return item;
+                            var itemType = _typeMapper.GetType(type);
+                            if (itemType == null)
+                            {
+                                Logger.Error("Cannot find type {0}.  Probably belongs to plug-in that is no longer loaded.", type);
+                                continue;
+                            }
+                            var item = _jsonSerializer.DeserializeFromStream(stream, itemType) as BaseItem;
+                            if (item != null)
+                            {
+                                item.Parent = parent;
+                                yield return item;
+                            }
                         }
                     }
                 }

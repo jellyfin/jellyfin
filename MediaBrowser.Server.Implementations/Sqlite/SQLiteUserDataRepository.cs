@@ -184,30 +184,32 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var cmd = connection.CreateCommand();
-            cmd.CommandText = "replace into userdata (key, userId, data) values (@1, @2, @3)";
-            cmd.AddParam("@1", key);
-            cmd.AddParam("@2", userId);
-            cmd.AddParam("@3", serialized);
-
-            using (var tran = connection.BeginTransaction())
+            using (var cmd = connection.CreateCommand())
             {
-                try
-                {
-                    cmd.Transaction = tran;
+                cmd.CommandText = "replace into userdata (key, userId, data) values (@1, @2, @3)";
+                cmd.AddParam("@1", key);
+                cmd.AddParam("@2", userId);
+                cmd.AddParam("@3", serialized);
 
-                    await cmd.ExecuteNonQueryAsync(cancellationToken);
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        cmd.Transaction = tran;
 
-                    tran.Commit();
-                }
-                catch (OperationCanceledException)
-                {
-                    tran.Rollback();
-                }
-                catch (Exception e)
-                {
-                    Logger.ErrorException("Failed to commit transaction.", e);
-                    tran.Rollback();
+                        await cmd.ExecuteNonQueryAsync(cancellationToken);
+
+                        tran.Commit();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        tran.Rollback();
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.ErrorException("Failed to commit transaction.", e);
+                        tran.Rollback();
+                    }
                 }
             }
         }
@@ -245,27 +247,29 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <returns>Task{UserItemData}.</returns>
         private async Task<UserItemData> RetrieveUserData(Guid userId, string key)
         {
-            var cmd = connection.CreateCommand();
-            cmd.CommandText = "select data from userdata where key = @key and userId=@userId";
-
-            var idParam = cmd.Parameters.Add("@key", DbType.String);
-            idParam.Value = key;
-
-            var userIdParam = cmd.Parameters.Add("@userId", DbType.Guid);
-            userIdParam.Value = userId;
-
-            using (var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow).ConfigureAwait(false))
+            using (var cmd = connection.CreateCommand())
             {
-                if (reader.Read())
+                cmd.CommandText = "select data from userdata where key = @key and userId=@userId";
+
+                var idParam = cmd.Parameters.Add("@key", DbType.String);
+                idParam.Value = key;
+
+                var userIdParam = cmd.Parameters.Add("@userId", DbType.Guid);
+                userIdParam.Value = userId;
+
+                using (var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow).ConfigureAwait(false))
                 {
-                    using (var stream = GetStream(reader, 0))
+                    if (reader.Read())
                     {
-                        return _jsonSerializer.DeserializeFromStream<UserItemData>(stream);
+                        using (var stream = GetStream(reader, 0))
+                        {
+                            return _jsonSerializer.DeserializeFromStream<UserItemData>(stream);
+                        }
                     }
                 }
-            }
 
-            return new UserItemData();
+                return new UserItemData();
+            }
         }
     }
 }
