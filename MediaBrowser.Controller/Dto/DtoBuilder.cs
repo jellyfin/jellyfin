@@ -167,21 +167,16 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="fields">The fields.</param>
         private async Task AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, List<ItemFields> fields)
         {
-            if (fields.Contains(ItemFields.UserData))
-            {
-                var userData = await _userDataRepository.GetUserData(user.Id, item.GetUserDataKey()).ConfigureAwait(false);
-
-                dto.UserData = GetUserItemDataDto(userData);
-            }
-
             if (item.IsFolder && fields.Contains(ItemFields.DisplayPreferencesId))
             {
                 dto.DisplayPreferencesId = ((Folder)item).GetDisplayPreferencesId(user.Id).ToString();
             }
 
+            var addUserData = fields.Contains(ItemFields.UserData);
+
             if (item.IsFolder)
             {
-                if (fields.Contains(ItemFields.ItemCounts))
+                if (fields.Contains(ItemFields.ItemCounts) || addUserData)
                 {
                     var folder = (Folder)item;
 
@@ -189,6 +184,18 @@ namespace MediaBrowser.Controller.Dto
                     dto.ChildCount = folder.GetChildren(user).Count();
 
                     await SetSpecialCounts(folder, user, dto, _userDataRepository).ConfigureAwait(false);
+                }
+            }
+
+            if (addUserData)
+            {
+                var userData = await _userDataRepository.GetUserData(user.Id, item.GetUserDataKey()).ConfigureAwait(false);
+
+                dto.UserData = GetUserItemDataDto(userData);
+
+                if (item.IsFolder)
+                {
+                    dto.UserData.Played = dto.PlayedPercentage.HasValue && dto.PlayedPercentage.Value >= 100;
                 }
             }
         }
@@ -567,7 +574,7 @@ namespace MediaBrowser.Controller.Dto
                 // Incrememt totalPercentPlayed
                 if (userdata != null)
                 {
-                    if (userdata.PlayCount > 0)
+                    if (userdata.Played)
                     {
                         totalPercentPlayed += 100;
                     }
