@@ -817,9 +817,6 @@ progress {
 
 
 /* VideoJS overrides */
-#videoWindow.tubecss .vjs-controls {
-    height: 5em!important;
-}
 
 #videoWindow.tubecss .vjs-menu-button {
     width: 1.5em;
@@ -913,9 +910,9 @@ progress {
     background: url("images/media/language.png") !important;
     height: 16px;
     width: 16px;
-    background-size: cover;
+	background-size: cover!important;
     opacity: 0.5;
-	margin: .2em -4px;
+	margin: .2em;
 }
 
     #videoWindow.tubecss .vjs-menu-button.vjs-language-button div:hover {
@@ -923,7 +920,7 @@ progress {
     }
 
 #videoWindow.tubecss .vjs-menu-button.vjs-subtitle-button div {
-	margin: .2em -8px;
+	margin: .2em 0px;
 }
 
 #videoWindow.tubecss .vjs-menu-button.vjs-subtitle-button div:hover {
@@ -946,14 +943,13 @@ progress {
 
 #videoWindow.tubecss .vjs-mute-control {
     position: absolute;
-    bottom: 0;
+	left: 5.5em;
 }
 
 #videoWindow.tubecss .vjs-volume-control {
     position: absolute;
-    bottom: 0;
     top: auto;
-    left: 4em;
+    left: 9em;
 }
 
 #videoWindow.tubecss .vjs-time-controls, #videoWindow.tubecss .vjs-time-divider {
@@ -987,5 +983,5 @@ progress {
 }
 
 #videoWindow.tubecss .vjs-progress-holder {
-	margin: 0 6em;
+	margin: 0 5em;
 }
