@@ -275,6 +275,10 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         {
             lock (_libraryChangedSyncLock)
             {
+                // Remove dupes in case some were saved multiple times
+                LibraryUpdateInfo.Folders = LibraryUpdateInfo.Folders.Distinct().ToList();
+                LibraryUpdateInfo.ItemsUpdated = LibraryUpdateInfo.ItemsUpdated.Distinct().ToList();
+
                 _serverManager.SendWebSocketMessage("LibraryChanged", LibraryUpdateInfo);
 
                 if (LibraryUpdateTimer != null)
