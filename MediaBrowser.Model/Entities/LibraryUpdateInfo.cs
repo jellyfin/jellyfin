@@ -9,10 +9,15 @@ namespace MediaBrowser.Model.Entities
     public class LibraryUpdateInfo
     {
         /// <summary>
-        /// Gets or sets the folders.
+        /// Gets or sets the folders added to.
         /// </summary>
-        /// <value>The folders.</value>
-        public List<Guid> Folders { get; set; }
+        /// <value>The folders added to.</value>
+        public List<Guid> FoldersAddedTo { get; set; }
+        /// <summary>
+        /// Gets or sets the folders removed from.
+        /// </summary>
+        /// <value>The folders removed from.</value>
+        public List<Guid> FoldersRemovedFrom { get; set; }
 
         /// <summary>
         /// Gets or sets the items added.
@@ -37,7 +42,8 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         public LibraryUpdateInfo()
         {
-            Folders = new List<Guid>();
+            FoldersAddedTo = new List<Guid>();
+            FoldersRemovedFrom = new List<Guid>();
             ItemsAdded = new List<Guid>();
             ItemsRemoved = new List<Guid>();
             ItemsUpdated = new List<Guid>();

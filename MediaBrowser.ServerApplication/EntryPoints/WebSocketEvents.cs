@@ -194,7 +194,7 @@ namespace MediaBrowser.ServerApplication.EntryPoints
 
                 if (e.Item.Parent != null)
                 {
-                    LibraryUpdateInfo.Folders.Add(e.Item.Parent.Id);
+                    LibraryUpdateInfo.FoldersAddedTo.Add(e.Item.Parent.Id);
                 }
 
                 LibraryUpdateInfo.ItemsAdded.Add(e.Item.Id);
@@ -223,11 +223,6 @@ namespace MediaBrowser.ServerApplication.EntryPoints
                 else
                 {
                     LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
-                }
-
-                if (e.Item.Parent != null)
-                {
-                    LibraryUpdateInfo.Folders.Add(e.Item.Parent.Id);
                 }
 
                 LibraryUpdateInfo.ItemsUpdated.Add(e.Item.Id);
@@ -260,7 +255,7 @@ namespace MediaBrowser.ServerApplication.EntryPoints
 
                 if (e.Item.Parent != null)
                 {
-                    LibraryUpdateInfo.Folders.Add(e.Item.Parent.Id);
+                    LibraryUpdateInfo.FoldersRemovedFrom.Add(e.Item.Parent.Id);
                 }
 
                 LibraryUpdateInfo.ItemsRemoved.Add(e.Item.Id);
@@ -276,7 +271,8 @@ namespace MediaBrowser.ServerApplication.EntryPoints
             lock (_libraryChangedSyncLock)
             {
                 // Remove dupes in case some were saved multiple times
-                LibraryUpdateInfo.Folders = LibraryUpdateInfo.Folders.Distinct().ToList();
+                LibraryUpdateInfo.FoldersAddedTo = LibraryUpdateInfo.FoldersAddedTo.Distinct().ToList();
+                LibraryUpdateInfo.FoldersRemovedFrom = LibraryUpdateInfo.FoldersRemovedFrom.Distinct().ToList();
                 LibraryUpdateInfo.ItemsUpdated = LibraryUpdateInfo.ItemsUpdated.Distinct().ToList();
 
                 _serverManager.SendWebSocketMessage("LibraryChanged", LibraryUpdateInfo);
