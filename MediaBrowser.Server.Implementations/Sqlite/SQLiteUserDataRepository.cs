@@ -94,8 +94,9 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             string[] queries = {
 
-                                "create table if not exists userdata (key nvarchar, userId GUID, data BLOB)",
-                                "create unique index if not exists userdataindex on userdata (key, userId)",
+                                "create table if not exists useritemdata (key nvarchar, userId GUID, Rating float null, PlaybackPositionTicks bigint, PlayCount int, IsFavorite bit, Played bit, LastPlayedDate bigint null)",
+                                "create unique index if not exists useritemdataindex on useritemdata (key, userId)",
+                                
                                 "create table if not exists schema_version (table_name primary key, version)",
                                 //pragmas
                                 "pragma temp_store = memory"
@@ -180,16 +181,26 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var serialized = _jsonSerializer.SerializeToBytes(userData);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
             using (var cmd = connection.CreateCommand())
             {
-                cmd.CommandText = "replace into userdata (key, userId, data) values (@1, @2, @3)";
+                cmd.CommandText = "replace into useritemdata (key, userId, Rating,PlaybackPositionTicks,PlayCount,IsFavorite,Played,LastPlayedDate) values (@1, @2, @3, @4, @5, @6, @7, @8)";
                 cmd.AddParam("@1", key);
                 cmd.AddParam("@2", userId);
-                cmd.AddParam("@3", serialized);
+
+                cmd.AddParam("@3", userData.Rating);
+                cmd.AddParam("@4", userData.PlaybackPositionTicks);
+                cmd.AddParam("@5", userData.PlayCount);
+                cmd.AddParam("@6", userData.IsFavorite);
+                cmd.AddParam("@7", userData.Played);
+
+                if (userData.LastPlayedDate.HasValue)
+                {
+                    cmd.AddParam("@8", userData.LastPlayedDate.Value.Ticks);
+                }
+                else
+                {
+                    cmd.AddParam("@8", null);
+                }
 
                 using (var tran = connection.BeginTransaction())
                 {
@@ -249,7 +260,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         {
             using (var cmd = connection.CreateCommand())
             {
-                cmd.CommandText = "select data from userdata where key = @key and userId=@userId";
+                cmd.CommandText = "select Rating,PlaybackPositionTicks,PlayCount,IsFavorite,Played,LastPlayedDate from useritemdata where key = @key and userId=@userId";
 
                 var idParam = cmd.Parameters.Add("@key", DbType.String);
                 idParam.Value = key;
@@ -257,18 +268,31 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 var userIdParam = cmd.Parameters.Add("@userId", DbType.Guid);
                 userIdParam.Value = userId;
 
+                var userdata = new UserItemData();
+
                 using (var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow).ConfigureAwait(false))
                 {
                     if (reader.Read())
                     {
-                        using (var stream = GetStream(reader, 0))
+                        if (!reader.IsDBNull(0))
                         {
-                            return _jsonSerializer.DeserializeFromStream<UserItemData>(stream);
+                            userdata.Rating = reader.GetDouble(0);
+                        }
+                        userdata.PlaybackPositionTicks = reader.GetInt64(1);
+                        userdata.PlayCount = reader.GetInt32(2);
+                        userdata.IsFavorite = reader.GetBoolean(3);
+                        userdata.Played = reader.GetBoolean(4);
+
+                        var ticks = (long?) reader.GetValue(5);
+
+                        if (ticks.HasValue)
+                        {
+                            userdata.LastPlayedDate = new DateTime(ticks.Value);
                         }
                     }
                 }
 
-                return new UserItemData();
+                return userdata;
             }
         }
     }
