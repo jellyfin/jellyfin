@@ -868,7 +868,7 @@ namespace MediaBrowser.Controller.Dto
                 return GetClientItemId(indexFolder.Parent) + IndexFolderDelimeter + (indexFolder.IndexName ?? string.Empty) + IndexFolderDelimeter + indexFolder.Id;
             }
 
-            return item.Id.ToString();
+            return item.Id.ToString("N");
         }
 
         /// <summary>

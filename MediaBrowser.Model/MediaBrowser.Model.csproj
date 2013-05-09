@@ -56,7 +56,9 @@
     <Compile Include="Querying\ArtistsQuery.cs" />
     <Compile Include="Querying\ItemsByNameQuery.cs" />
     <Compile Include="Entities\BaseItemInfo.cs" />
-    <Compile Include="Session\SessionInfo.cs" />
+    <Compile Include="Session\BrowseRequest.cs" />
+    <Compile Include="Session\PlayRequest.cs" />
+    <Compile Include="Session\PlaystateRequest.cs" />
     <Compile Include="Entities\ImageDownloadOptions.cs" />
     <Compile Include="Logging\ILogManager.cs" />
     <Compile Include="MediaInfo\BlurayDiscInfo.cs" />
@@ -92,6 +94,7 @@
     <Compile Include="Search\SearchHintResult.cs" />
     <Compile Include="Serialization\IJsonSerializer.cs" />
     <Compile Include="Serialization\IXmlSerializer.cs" />
+    <Compile Include="Session\SessionInfoDto.cs" />
     <Compile Include="Updates\CheckForUpdateResult.cs" />
     <Compile Include="Updates\PackageTargetSystem.cs" />
     <Compile Include="Updates\InstallationInfo.cs" />

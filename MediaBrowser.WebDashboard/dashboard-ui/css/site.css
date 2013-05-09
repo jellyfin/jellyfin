@@ -566,11 +566,11 @@ form, .readOnlyContent {
     }
 
 .tblConnections img {
-    height: 50px;
+    height: 60px;
 }
 
 .clientNowPlayingImage {
-    border: 1px solid #999;
+    border: 1px solid #aaa;
     padding: 1px;
 }
 

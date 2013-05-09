@@ -326,7 +326,7 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         /// <param name="e">The e.</param>
         void userManager_UserDeleted(object sender, GenericEventArgs<User> e)
         {
-            _serverManager.SendWebSocketMessage("UserDeleted", e.Argument.Id.ToString());
+            _serverManager.SendWebSocketMessage("UserDeleted", e.Argument.Id.ToString("N"));
         }
 
         /// <summary>

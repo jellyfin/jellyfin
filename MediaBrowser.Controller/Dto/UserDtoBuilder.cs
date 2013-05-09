@@ -41,7 +41,7 @@ namespace MediaBrowser.Controller.Dto
 
             var dto = new UserDto
             {
-                Id = user.Id.ToString(),
+                Id = user.Id.ToString("N"),
                 Name = user.Name,
                 HasPassword = !String.IsNullOrEmpty(user.Password),
                 LastActivityDate = user.LastActivityDate,

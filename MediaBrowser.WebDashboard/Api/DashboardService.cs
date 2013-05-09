@@ -210,7 +210,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var dtoBuilder = new UserDtoBuilder(logger);
 
-            var tasks = userManager.Users.Where(u => connections.Any(c => new Guid(c.UserId) == u.Id)).Select(dtoBuilder.GetUserDto);
+            var tasks = userManager.Users.Where(u => connections.Any(c => c.UserId.HasValue && c.UserId.Value == u.Id)).Select(dtoBuilder.GetUserDto);
 
             var users = await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -224,7 +224,7 @@ namespace MediaBrowser.WebDashboard.Api
 
                 ApplicationUpdateTaskId = taskManager.ScheduledTasks.First(t => t.ScheduledTask.GetType().Name.Equals("SystemUpdateTask", StringComparison.OrdinalIgnoreCase)).Id,
 
-                ActiveConnections = connections,
+                ActiveConnections = connections.Select(SessionInfoDtoBuilder.GetSessionInfoDto).ToArray(),
 
                 Users = users.ToArray()
             };

@@ -3,10 +3,7 @@ using System;
 
 namespace MediaBrowser.Model.Session
 {
-    /// <summary>
-    /// Class SessionInfo
-    /// </summary>
-    public class SessionInfo
+    public class SessionInfoDto
     {
         /// <summary>
         /// Gets or sets the id.
@@ -55,5 +52,11 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The device id.</value>
         public string DeviceId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [supports remote control].
+        /// </summary>
+        /// <value><c>true</c> if [supports remote control]; otherwise, <c>false</c>.</value>
+        public bool SupportsRemoteControl { get; set; }
     }
 }
