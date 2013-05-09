@@ -283,11 +283,9 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                         userdata.IsFavorite = reader.GetBoolean(3);
                         userdata.Played = reader.GetBoolean(4);
 
-                        var ticks = (long?) reader.GetValue(5);
-
-                        if (ticks.HasValue)
+                        if (!reader.IsDBNull(5))
                         {
-                            userdata.LastPlayedDate = new DateTime(ticks.Value);
+                            userdata.LastPlayedDate = new DateTime(reader.GetInt64(5));
                         }
                     }
                 }
