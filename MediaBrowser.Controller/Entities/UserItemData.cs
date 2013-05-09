@@ -17,13 +17,13 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The _rating
         /// </summary>
-        private float? _rating;
+        private double? _rating;
         /// <summary>
         /// Gets or sets the users 0-10 rating
         /// </summary>
         /// <value>The rating.</value>
         /// <exception cref="System.ArgumentOutOfRangeException">Rating;A 0 to 10 rating is required for UserItemData.</exception>
-        public float? Rating
+        public double? Rating
         {
             get
             {

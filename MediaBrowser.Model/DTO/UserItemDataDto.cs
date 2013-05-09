@@ -12,7 +12,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the rating.
         /// </summary>
         /// <value>The rating.</value>
-        public float? Rating { get; set; }
+        public double? Rating { get; set; }
 
         /// <summary>
         /// Gets or sets the playback position ticks.
