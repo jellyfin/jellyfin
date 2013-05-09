@@ -230,6 +230,13 @@ namespace MediaBrowser.Controller.MediaInfo
         {
             var ticksParam = offset.HasValue ? "_" + offset.Value.Ticks : "";
 
+            var stream = input.MediaStreams[subtitleStreamIndex];
+
+            if (stream.IsExternal)
+            {
+                ticksParam += File.GetLastWriteTimeUtc(stream.Path).Ticks;
+            }
+
             return SubtitleCache.GetResourcePath(input.Id + "_" + subtitleStreamIndex + "_" + input.DateModified.Ticks + ticksParam, outputExtension);
         }
     }
