@@ -1,7 +1,7 @@
-﻿using System.Linq;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Session;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Session
