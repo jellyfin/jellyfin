@@ -156,16 +156,7 @@
 
         if (item) {
 
-            if (item.BackdropImageTag) {
-                var url = ApiClient.getImageUrl(item.Id, {
-                    type: "Backdrop",
-                    height: 100,
-                    tag: item.BackdropImageTag
-                });
-
-                return "<img class='clientNowPlayingImage' src='" + url + "' alt='" + item.Name + "' title='" + item.Name + "' />";
-            }
-            else if (item.PrimaryImageTag) {
+            if (item.PrimaryImageTag) {
 
                 var url = ApiClient.getImageUrl(item.Id, {
                     type: "Primary",

@@ -832,6 +832,7 @@ namespace MediaBrowser.Controller.Dto
             {
                 Id = GetClientItemId(item),
                 Name = item.Name,
+                MediaType = item.MediaType,
                 Type = item.GetType().Name,
                 IsFolder = item.IsFolder,
                 RunTimeTicks = item.RunTimeTicks
@@ -842,16 +843,6 @@ namespace MediaBrowser.Controller.Dto
             if (!string.IsNullOrEmpty(imagePath))
             {
                 info.PrimaryImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(item, ImageType.Primary, imagePath);
-            }
-
-            if (item.BackdropImagePaths != null && item.BackdropImagePaths.Count > 0)
-            {
-                imagePath = item.BackdropImagePaths[0];
-
-                if (!string.IsNullOrEmpty(imagePath))
-                {
-                    info.BackdropImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(item, ImageType.Backdrop, imagePath);
-                }
             }
 
             return info;

@@ -683,7 +683,7 @@ namespace MediaBrowser.Controller.Entities
         /// Loads local trailers from the file system
         /// </summary>
         /// <returns>List{Video}.</returns>
-        private List<Trailer> LoadLocalTrailers()
+        private IEnumerable<Trailer> LoadLocalTrailers()
         {
             if (LocationType != LocationType.FileSystem)
             {
@@ -746,7 +746,7 @@ namespace MediaBrowser.Controller.Entities
         /// Loads the theme songs.
         /// </summary>
         /// <returns>List{Audio.Audio}.</returns>
-        private List<Audio.Audio> LoadThemeSongs()
+        private IEnumerable<Audio.Audio> LoadThemeSongs()
         {
             if (LocationType != LocationType.FileSystem)
             {
@@ -809,7 +809,7 @@ namespace MediaBrowser.Controller.Entities
         /// Loads the video backdrops.
         /// </summary>
         /// <returns>List{Video}.</returns>
-        private List<Video> LoadThemeVideos()
+        private IEnumerable<Video> LoadThemeVideos()
         {
             if (LocationType != LocationType.FileSystem)
             {

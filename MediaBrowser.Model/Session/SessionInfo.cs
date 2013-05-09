@@ -1,13 +1,19 @@
 ﻿using MediaBrowser.Model.Entities;
 using System;
 
-namespace MediaBrowser.Model.Connectivity
+namespace MediaBrowser.Model.Session
 {
     /// <summary>
-    /// Class ClientConnectionInfo
+    /// Class SessionInfo
     /// </summary>
-    public class ClientConnectionInfo
+    public class SessionInfo
     {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        public Guid Id { get; set; }
+
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>

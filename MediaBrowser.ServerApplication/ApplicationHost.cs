@@ -20,6 +20,7 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Updates;
 using MediaBrowser.Controller.Weather;
@@ -37,6 +38,7 @@ using MediaBrowser.Server.Implementations.Library;
 using MediaBrowser.Server.Implementations.MediaEncoder;
 using MediaBrowser.Server.Implementations.Providers;
 using MediaBrowser.Server.Implementations.ServerManager;
+using MediaBrowser.Server.Implementations.Session;
 using MediaBrowser.Server.Implementations.Sqlite;
 using MediaBrowser.Server.Implementations.Udp;
 using MediaBrowser.Server.Implementations.Updates;
@@ -251,7 +253,7 @@ namespace MediaBrowser.ServerApplication
             ItemRepository = new SQLiteItemRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(ItemRepository);
 
-            UserManager = new UserManager(Logger, ServerConfigurationManager, UserDataRepository);
+            UserManager = new UserManager(Logger, ServerConfigurationManager);
             RegisterSingleInstance(UserManager);
 
             LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataRepository);
@@ -273,6 +275,9 @@ namespace MediaBrowser.ServerApplication
 
             MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ZipClient, ApplicationPaths, JsonSerializer);
             RegisterSingleInstance(MediaEncoder);
+
+            var clientConnectionManager = new SessionManager(UserDataRepository, ServerConfigurationManager, Logger, UserRepository);
+            RegisterSingleInstance<ISessionManager>(clientConnectionManager);
 
             HttpServer = await _httpServerCreationTask.ConfigureAwait(false);
             RegisterSingleInstance(HttpServer, false);

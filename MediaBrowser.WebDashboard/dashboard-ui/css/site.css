@@ -570,8 +570,8 @@ form, .readOnlyContent {
 }
 
 .clientNowPlayingImage {
-    border-radius: 5px;
-    border: 2px solid #ccc;
+    border: 1px solid #999;
+    padding: 1px;
 }
 
 /* Footer */

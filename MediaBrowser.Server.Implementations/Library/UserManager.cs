@@ -7,7 +7,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Model.Connectivity;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
@@ -17,6 +16,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -28,8 +28,8 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <summary>
         /// The _active connections
         /// </summary>
-        private readonly ConcurrentDictionary<string, ClientConnectionInfo> _activeConnections =
-            new ConcurrentDictionary<string, ClientConnectionInfo>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections =
+            new ConcurrentDictionary<string, SessionInfo>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// The _users
@@ -70,7 +70,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Gets all connections.
         /// </summary>
         /// <value>All connections.</value>
-        public IEnumerable<ClientConnectionInfo> AllConnections
+        public IEnumerable<SessionInfo> AllConnections
         {
             get { return _activeConnections.Values.OrderByDescending(c => c.LastActivityDate); }
         }
@@ -79,7 +79,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Gets the active connections.
         /// </summary>
         /// <value>The active connections.</value>
-        public IEnumerable<ClientConnectionInfo> RecentConnections
+        public IEnumerable<SessionInfo> RecentConnections
         {
             get { return AllConnections.Where(c => (DateTime.UtcNow - c.LastActivityDate).TotalMinutes <= 5); }
         }
@@ -89,8 +89,6 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         private readonly ILogger _logger;
 
-        private readonly IUserDataRepository _userDataRepository;
-        
         /// <summary>
         /// Gets or sets the configuration manager.
         /// </summary>
@@ -109,11 +107,10 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="logger">The logger.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
-        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserDataRepository userDataRepository)
+        public UserManager(ILogger logger, IServerConfigurationManager configurationManager)
         {
             _logger = logger;
             ConfigurationManager = configurationManager;
-            _userDataRepository = userDataRepository;
         }
 
         #region Events
@@ -220,116 +217,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 var hash = provider.ComputeHash(Encoding.UTF8.GetBytes(str));
                 return BitConverter.ToString(hash).Replace("-", string.Empty);
             }
-        }
-
-        /// <summary>
-        /// Logs the user activity.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">user</exception>
-        public Task LogUserActivity(User user, string clientType, string deviceId, string deviceName)
-        {
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
-            }
-
-            var activityDate = DateTime.UtcNow;
-
-            var lastActivityDate = user.LastActivityDate;
-
-            user.LastActivityDate = activityDate;
-
-            LogConnection(user.Id, clientType, deviceId, deviceName, activityDate);
-
-            // Don't log in the db anymore frequently than 10 seconds
-            if (lastActivityDate.HasValue && (activityDate - lastActivityDate.Value).TotalSeconds < 10)
-            {
-                return Task.FromResult(true);
-            }
-
-            // Save this directly. No need to fire off all the events for this.
-            return UserRepository.SaveUser(user, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Updates the now playing item id.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="currentPositionTicks">The current position ticks.</param>
-        private void UpdateNowPlayingItemId(User user, string clientType, string deviceId, string deviceName, BaseItem item, long? currentPositionTicks = null)
-        {
-            var conn = GetConnection(user.Id, clientType, deviceId, deviceName);
-
-            conn.NowPlayingPositionTicks = currentPositionTicks;
-            conn.NowPlayingItem = DtoBuilder.GetBaseItemInfo(item);
-            conn.LastActivityDate = DateTime.UtcNow;
-        }
-
-        /// <summary>
-        /// Removes the now playing item id.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <param name="item">The item.</param>
-        private void RemoveNowPlayingItemId(User user, string clientType, string deviceId, string deviceName, BaseItem item)
-        {
-            var conn = GetConnection(user.Id, clientType, deviceId, deviceName);
-
-            if (conn.NowPlayingItem != null && conn.NowPlayingItem.Id.Equals(item.Id.ToString()))
-            {
-                conn.NowPlayingItem = null;
-                conn.NowPlayingPositionTicks = null;
-            }
-        }
-
-        /// <summary>
-        /// Logs the connection.
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <param name="lastActivityDate">The last activity date.</param>
-        private void LogConnection(Guid userId, string clientType, string deviceId, string deviceName, DateTime lastActivityDate)
-        {
-            GetConnection(userId, clientType, deviceId, deviceName).LastActivityDate = lastActivityDate;
-        }
-
-        /// <summary>
-        /// Gets the connection.
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <returns>ClientConnectionInfo.</returns>
-        private ClientConnectionInfo GetConnection(Guid userId, string clientType, string deviceId, string deviceName)
-        {
-            var key = clientType + deviceId;
-
-            var connection = _activeConnections.GetOrAdd(key, keyName => new ClientConnectionInfo
-            {
-                UserId = userId.ToString(),
-                Client = clientType,
-                DeviceName = deviceName,
-                DeviceId = deviceId
-            });
-
-            connection.DeviceName = deviceName;
-            connection.UserId = userId.ToString();
-            
-            return connection;
         }
 
         /// <summary>
@@ -559,183 +446,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 DateCreated = DateTime.UtcNow,
                 DateModified = DateTime.UtcNow
             };
-        }
-
-        /// <summary>
-        /// Used to report that playback has started for an item
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public void OnPlaybackStart(User user, BaseItem item, string clientType, string deviceId, string deviceName)
-        {
-            if (user == null)
-            {
-                throw new ArgumentNullException();
-            }
-            if (item == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            UpdateNowPlayingItemId(user, clientType, deviceId, deviceName, item);
-
-            // Nothing to save here
-            // Fire events to inform plugins
-            EventHelper.QueueEventIfNotNull(PlaybackStart, this, new PlaybackProgressEventArgs
-            {
-                Item = item,
-                User = user
-            }, _logger);
-        }
-
-        /// <summary>
-        /// Used to report playback progress for an item
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="positionTicks">The position ticks.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public async Task OnPlaybackProgress(User user, BaseItem item, long? positionTicks, string clientType, string deviceId, string deviceName)
-        {
-            if (user == null)
-            {
-                throw new ArgumentNullException();
-            }
-            if (item == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            UpdateNowPlayingItemId(user, clientType, deviceId, deviceName, item, positionTicks);
-
-            var key = item.GetUserDataKey();
-            
-            if (positionTicks.HasValue)
-            {
-                var data = await _userDataRepository.GetUserData(user.Id, key).ConfigureAwait(false);
-
-                UpdatePlayState(item, data, positionTicks.Value, false);
-                await _userDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None).ConfigureAwait(false);
-            }
-
-            EventHelper.QueueEventIfNotNull(PlaybackProgress, this, new PlaybackProgressEventArgs
-            {
-                Item = item,
-                User = user,
-                PlaybackPositionTicks = positionTicks
-            }, _logger);
-        }
-
-        /// <summary>
-        /// Used to report that playback has ended for an item
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="positionTicks">The position ticks.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public async Task OnPlaybackStopped(User user, BaseItem item, long? positionTicks, string clientType, string deviceId, string deviceName)
-        {
-            if (user == null)
-            {
-                throw new ArgumentNullException();
-            }
-            if (item == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            RemoveNowPlayingItemId(user, clientType, deviceId, deviceName, item);
-
-            var key = item.GetUserDataKey();
-
-            var data = await _userDataRepository.GetUserData(user.Id, key).ConfigureAwait(false);
-
-            if (positionTicks.HasValue)
-            {
-                UpdatePlayState(item, data, positionTicks.Value, true);
-            }
-            else
-            {
-                // If the client isn't able to report this, then we'll just have to make an assumption
-                data.PlayCount++;
-                data.Played = true;
-            }
-
-            await _userDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None).ConfigureAwait(false);
-
-            EventHelper.QueueEventIfNotNull(PlaybackStopped, this, new PlaybackProgressEventArgs
-            {
-                Item = item,
-                User = user,
-                PlaybackPositionTicks = positionTicks
-            }, _logger);
-        }
-
-        /// <summary>
-        /// Updates playstate position for an item but does not save
-        /// </summary>
-        /// <param name="item">The item</param>
-        /// <param name="data">User data for the item</param>
-        /// <param name="positionTicks">The current playback position</param>
-        /// <param name="incrementPlayCount">Whether or not to increment playcount</param>
-        private void UpdatePlayState(BaseItem item, UserItemData data, long positionTicks, bool incrementPlayCount)
-        {
-            // If a position has been reported, and if we know the duration
-            if (positionTicks > 0 && item.RunTimeTicks.HasValue && item.RunTimeTicks > 0)
-            {
-                var pctIn = Decimal.Divide(positionTicks, item.RunTimeTicks.Value) * 100;
-
-                // Don't track in very beginning
-                if (pctIn < ConfigurationManager.Configuration.MinResumePct)
-                {
-                    positionTicks = 0;
-                    incrementPlayCount = false;
-                }
-
-                // If we're at the end, assume completed
-                else if (pctIn > ConfigurationManager.Configuration.MaxResumePct || positionTicks >= item.RunTimeTicks.Value)
-                {
-                    positionTicks = 0;
-                    data.Played = true;
-                }
-
-                else
-                {
-                    // Enforce MinResumeDuration
-                    var durationSeconds = TimeSpan.FromTicks(item.RunTimeTicks.Value).TotalSeconds;
-
-                    if (durationSeconds < ConfigurationManager.Configuration.MinResumeDurationSeconds)
-                    {
-                        positionTicks = 0;
-                        data.Played = true;
-                    }
-                }
-            }
-
-            if (item is Audio)
-            {
-                data.PlaybackPositionTicks = 0;
-            }
-
-            data.PlaybackPositionTicks = positionTicks;
-
-            if (incrementPlayCount)
-            {
-                data.PlayCount++;
-                data.LastPlayedDate = DateTime.UtcNow;
-            }
         }
     }
 }

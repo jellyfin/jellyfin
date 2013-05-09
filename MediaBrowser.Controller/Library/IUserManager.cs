@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Connectivity;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -18,12 +17,6 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <value>The users.</value>
         IEnumerable<User> Users { get; }
-
-        /// <summary>
-        /// Gets the active connections.
-        /// </summary>
-        /// <value>The active connections.</value>
-        IEnumerable<ClientConnectionInfo> RecentConnections { get; }
 
         /// <summary>
         /// Occurs when [playback start].
@@ -68,17 +61,6 @@ namespace MediaBrowser.Controller.Library
         Task<bool> AuthenticateUser(User user, string password);
 
         /// <summary>
-        /// Logs the user activity.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">user</exception>
-        Task LogUserActivity(User user, string clientType, string deviceId, string deviceName);
-
-        /// <summary>
         /// Refreshes metadata for each user
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -121,43 +103,6 @@ namespace MediaBrowser.Controller.Library
         /// <exception cref="System.ArgumentNullException">user</exception>
         /// <exception cref="System.ArgumentException"></exception>
         Task DeleteUser(User user);
-
-        /// <summary>
-        /// Used to report that playback has started for an item
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        void OnPlaybackStart(User user, BaseItem item, string clientType, string deviceId, string deviceName);
-
-        /// <summary>
-        /// Used to report playback progress for an item
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="positionTicks">The position ticks.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        Task OnPlaybackProgress(User user, BaseItem item, long? positionTicks, string clientType, string deviceId, string deviceName);
-
-        /// <summary>
-        /// Used to report that playback has ended for an item
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="positionTicks">The position ticks.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        Task OnPlaybackStopped(User user, BaseItem item, long? positionTicks, string clientType, string deviceId, string deviceName);
 
         /// <summary>
         /// Resets the password.
