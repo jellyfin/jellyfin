@@ -216,7 +216,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
             var filename = item.Album ?? string.Empty;
 
-            filename += album == null ? item.Id.ToString() + item.DateModified.Ticks : album.Id.ToString() + album.DateModified.Ticks;
+            filename += album == null ? item.Id.ToString("N") + item.DateModified.Ticks : album.Id.ToString() + album.DateModified.Ticks;
 
             var path = ImageCache.GetResourcePath(filename + "_primary", ".jpg");
 

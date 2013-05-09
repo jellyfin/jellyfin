@@ -41,9 +41,6 @@ namespace MediaBrowser.Server.Implementations.Session
         private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections =
             new ConcurrentDictionary<string, SessionInfo>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly ConcurrentDictionary<Guid, IWebSocketConnection> _websocketConnections =
-         new ConcurrentDictionary<Guid, IWebSocketConnection>();
-        
         /// <summary>
         /// Occurs when [playback start].
         /// </summary>
@@ -133,7 +130,7 @@ namespace MediaBrowser.Server.Implementations.Session
             var conn = GetConnection(clientType, deviceId, deviceName, user);
 
             conn.NowPlayingPositionTicks = currentPositionTicks;
-            conn.NowPlayingItem = DtoBuilder.GetBaseItemInfo(item);
+            conn.NowPlayingItem = item;
             conn.LastActivityDate = DateTime.UtcNow;
         }
 
@@ -149,7 +146,7 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var conn = GetConnection(clientType, deviceId, deviceName, user);
 
-            if (conn.NowPlayingItem != null && conn.NowPlayingItem.Id.Equals(item.Id.ToString()))
+            if (conn.NowPlayingItem != null && conn.NowPlayingItem.Id == item.Id)
             {
                 conn.NowPlayingItem = null;
                 conn.NowPlayingPositionTicks = null;
@@ -177,7 +174,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             connection.DeviceName = deviceName;
 
-            connection.UserId = user == null ? null : user.Id.ToString();
+            connection.UserId = user == null ? (Guid?)null : user.Id;
 
             return connection;
         }
@@ -366,7 +363,12 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="webSocket">The web socket.</param>
         public void IdentifyWebSocket(Guid sessionId, IWebSocketConnection webSocket)
         {
-            _websocketConnections.AddOrUpdate(sessionId, webSocket, (key, existing) => webSocket);
+            var session = AllConnections.FirstOrDefault(i => i.Id == sessionId);
+
+            if (session != null)
+            {
+                session.WebSocket = webSocket;
+            }
         }
     }
 }

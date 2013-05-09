@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Session;
+﻿using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Session;
 using ServiceStack.ServiceHost;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace MediaBrowser.Api
     /// </summary>
     [Route("/Sessions", "GET")]
     [Api(("Gets a list of sessions"))]
-    public class GetSessions : IReturn<List<SessionInfo>>
+    public class GetSessions : IReturn<List<SessionInfoDto>>
     {
         /// <summary>
         /// Gets or sets a value indicating whether this instance is recent.
@@ -48,7 +49,7 @@ namespace MediaBrowser.Api
         {
             var result = request.IsRecent ? _sessionManager.RecentConnections : _sessionManager.AllConnections;
 
-            return ToOptimizedResult(result.ToList());
+            return ToOptimizedResult(result.Select(SessionInfoDtoBuilder.GetSessionInfoDto).ToList());
         }
     }
 }

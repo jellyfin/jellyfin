@@ -33,7 +33,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// Gets or sets the active connections.
         /// </summary>
         /// <value>The active connections.</value>
-        public SessionInfo[] ActiveConnections { get; set; }
+        public SessionInfoDto[] ActiveConnections { get; set; }
 
         /// <summary>
         /// Gets or sets the users.
