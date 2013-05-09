@@ -37,12 +37,12 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <returns>Task.</returns>
         public Task ProcessMessage(WebSocketMessageInfo message)
         {
-            if (string.Equals(message.MessageType, "Identify", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(message.MessageType, "Identity", StringComparison.OrdinalIgnoreCase))
             {
                 var vals = message.Data.Split('|');
 
-                var deviceId = vals[0];
-                var client = vals[1];
+                var client = vals[0];
+                var deviceId = vals[1];
 
                 var session = _sessionManager.AllConnections.FirstOrDefault(i => string.Equals(i.DeviceId, deviceId) && string.Equals(i.Client, client));
 
