@@ -2,6 +2,7 @@
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
@@ -36,6 +37,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
+        private readonly ISessionManager _sessionManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardInfoWebSocketListener" /> class.
@@ -45,13 +47,14 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="taskManager">The task manager.</param>
         /// <param name="userManager">The user manager.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public DashboardInfoWebSocketListener(IServerApplicationHost appHost, ILogger logger, ITaskManager taskManager, IUserManager userManager, ILibraryManager libraryManager)
+        public DashboardInfoWebSocketListener(IServerApplicationHost appHost, ILogger logger, ITaskManager taskManager, IUserManager userManager, ILibraryManager libraryManager, ISessionManager sessionManager)
             : base(logger)
         {
             _appHost = appHost;
             _taskManager = taskManager;
             _userManager = userManager;
             _libraryManager = libraryManager;
+            _sessionManager = sessionManager;
         }
 
         /// <summary>
@@ -61,7 +64,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>Task{IEnumerable{TaskInfo}}.</returns>
         protected override Task<DashboardInfo> GetDataToSend(object state)
         {
-            return DashboardService.GetDashboardInfo(_appHost, Logger, _taskManager, _userManager, _libraryManager);
+            return DashboardService.GetDashboardInfo(_appHost, Logger, _taskManager, _userManager, _libraryManager, _sessionManager);
         }
     }
 }

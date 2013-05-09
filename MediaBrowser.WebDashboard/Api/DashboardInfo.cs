@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Model.Connectivity;
-using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Session;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using System;
@@ -33,7 +33,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// Gets or sets the active connections.
         /// </summary>
         /// <value>The active connections.</value>
-        public ClientConnectionInfo[] ActiveConnections { get; set; }
+        public SessionInfo[] ActiveConnections { get; set; }
 
         /// <summary>
         /// Gets or sets the users.

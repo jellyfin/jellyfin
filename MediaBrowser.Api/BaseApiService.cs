@@ -1,5 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
@@ -100,6 +102,8 @@ namespace MediaBrowser.Api
         /// <value>The user manager.</value>
         public IUserManager UserManager { get; set; }
 
+        public ISessionManager SessionManager { get; set; }
+
         /// <summary>
         /// Gets or sets the logger.
         /// </summary>
@@ -122,11 +126,20 @@ namespace MediaBrowser.Api
             {
                 var userId = auth["UserId"];
 
+                User user = null;
+
                 if (!string.IsNullOrEmpty(userId))
                 {
-                    var user = UserManager.GetUserById(new Guid(userId));
+                    user = UserManager.GetUserById(new Guid(userId));
+                }
 
-                    UserManager.LogUserActivity(user, auth["Client"], auth["DeviceId"], auth["Device"] ?? string.Empty);
+                var deviceId = auth["DeviceId"];
+                var device = auth["Device"];
+                var client = auth["Client"];
+
+                if (!string.IsNullOrEmpty(client) && !string.IsNullOrEmpty(deviceId) && !string.IsNullOrEmpty(device))
+                {
+                    SessionManager.LogConnectionActivity(client, deviceId, device, user);
                 }
             }
         }

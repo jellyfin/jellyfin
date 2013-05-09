@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using ServiceStack.ServiceHost;
@@ -127,6 +128,8 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
+        private readonly ISessionManager _sessionManager;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardService" /> class.
         /// </summary>
@@ -135,13 +138,14 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="appHost">The app host.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="serverConfigurationManager">The server configuration manager.</param>
-        public DashboardService(ITaskManager taskManager, IUserManager userManager, IServerApplicationHost appHost, ILibraryManager libraryManager, IServerConfigurationManager serverConfigurationManager)
+        public DashboardService(ITaskManager taskManager, IUserManager userManager, IServerApplicationHost appHost, ILibraryManager libraryManager, IServerConfigurationManager serverConfigurationManager, ISessionManager sessionManager)
         {
             _taskManager = taskManager;
             _userManager = userManager;
             _appHost = appHost;
             _libraryManager = libraryManager;
             _serverConfigurationManager = serverConfigurationManager;
+            _sessionManager = sessionManager;
         }
 
         /// <summary>
@@ -180,7 +184,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.Object.</returns>
         public object Get(GetDashboardInfo request)
         {
-            var result =  GetDashboardInfo(_appHost, Logger, _taskManager, _userManager, _libraryManager).Result;
+            var result =  GetDashboardInfo(_appHost, Logger, _taskManager, _userManager, _libraryManager, _sessionManager).Result;
 
             return ResultFactory.GetOptimizedResult(RequestContext, result);
         }
@@ -193,10 +197,16 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="taskManager">The task manager.</param>
         /// <param name="userManager">The user manager.</param>
         /// <param name="libraryManager">The library manager.</param>
+        /// <param name="connectionManager">The connection manager.</param>
         /// <returns>DashboardInfo.</returns>
-        public static async Task<DashboardInfo> GetDashboardInfo(IServerApplicationHost appHost, ILogger logger, ITaskManager taskManager, IUserManager userManager, ILibraryManager libraryManager)
+        public static async Task<DashboardInfo> GetDashboardInfo(IServerApplicationHost appHost, 
+            ILogger logger, 
+            ITaskManager taskManager, 
+            IUserManager userManager, 
+            ILibraryManager libraryManager,
+            ISessionManager connectionManager)
         {
-            var connections = userManager.RecentConnections.ToArray();
+            var connections = connectionManager.RecentConnections.ToArray();
 
             var dtoBuilder = new UserDtoBuilder(logger);
 

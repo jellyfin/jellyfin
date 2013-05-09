@@ -159,6 +159,9 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             webSocket.onopen = function () {
                 setTimeout(function () {
+
+                    self.sendWebSocketMessage("Identify", deviceId + "|" + clientName);
+
                     $(self).trigger("websocketopen");
                 }, 500);
             };

@@ -70,6 +70,7 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="Configuration\IServerConfigurationManager.cs" />
+    <Compile Include="Session\ISessionManager.cs" />
     <Compile Include="Drawing\ImageExtensions.cs" />
     <Compile Include="Drawing\ImageHeader.cs" />
     <Compile Include="Drawing\ImageManager.cs" />

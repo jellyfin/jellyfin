@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
@@ -401,6 +402,8 @@ namespace MediaBrowser.Api.UserLibrary
 
         private readonly IItemRepository _itemRepo;
 
+        private readonly ISessionManager _sessionManager;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserLibraryService" /> class.
         /// </summary>
@@ -409,13 +412,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="userDataRepository">The user data repository.</param>
         /// <param name="itemRepo">The item repo.</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
-        public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepo)
+        public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepo, ISessionManager sessionManager)
             : base()
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
             _userDataRepository = userDataRepository;
             _itemRepo = itemRepo;
+            _sessionManager = sessionManager;
         }
 
         /// <summary>
@@ -693,7 +697,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (auth != null)
             {
-                _userManager.OnPlaybackStart(user, item, auth["Client"], auth["DeviceId"], auth["Device"] ?? string.Empty);
+                _sessionManager.OnPlaybackStart(user, item, auth["Client"], auth["DeviceId"], auth["Device"] ?? string.Empty);
             }
         }
 
@@ -711,7 +715,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (auth != null)
             {
-                var task = _userManager.OnPlaybackProgress(user, item, request.PositionTicks, auth["Client"], auth["DeviceId"], auth["Device"] ?? string.Empty);
+                var task = _sessionManager.OnPlaybackProgress(user, item, request.PositionTicks, auth["Client"], auth["DeviceId"], auth["Device"] ?? string.Empty);
 
                 Task.WaitAll(task);
             }
@@ -731,7 +735,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (auth != null)
             {
-                var task = _userManager.OnPlaybackStopped(user, item, request.PositionTicks, auth["Client"], auth["DeviceId"], auth["Device"] ?? string.Empty);
+                var task = _sessionManager.OnPlaybackStopped(user, item, request.PositionTicks, auth["Client"], auth["DeviceId"], auth["Device"] ?? string.Empty);
 
                 Task.WaitAll(task);
             }

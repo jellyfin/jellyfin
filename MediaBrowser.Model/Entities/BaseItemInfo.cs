@@ -27,6 +27,12 @@ namespace MediaBrowser.Model.Entities
         public string Type { get; set; }
 
         /// <summary>
+        /// Gets or sets the type of the media.
+        /// </summary>
+        /// <value>The type of the media.</value>
+        public string MediaType { get; set; }
+        
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is folder.
         /// </summary>
         /// <value><c>true</c> if this instance is folder; otherwise, <c>false</c>.</value>
@@ -45,12 +51,6 @@ namespace MediaBrowser.Model.Entities
         public Guid? PrimaryImageTag { get; set; }
 
         /// <summary>
-        /// Gets or sets the backdrop image tag.
-        /// </summary>
-        /// <value>The backdrop image tag.</value>
-        public Guid? BackdropImageTag { get; set; }
-
-        /// <summary>
         /// Gets a value indicating whether this instance has primary image.
         /// </summary>
         /// <value><c>true</c> if this instance has primary image; otherwise, <c>false</c>.</value>
@@ -58,16 +58,6 @@ namespace MediaBrowser.Model.Entities
         public bool HasPrimaryImage
         {
             get { return PrimaryImageTag.HasValue; }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has backdrop.
-        /// </summary>
-        /// <value><c>true</c> if this instance has backdrop; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public bool HasBackdrop
-        {
-            get { return BackdropImageTag.HasValue; }
         }
     }
 }
