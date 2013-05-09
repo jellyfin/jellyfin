@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.IO;
+﻿using System;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.IO;
@@ -14,6 +15,13 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// </summary>
     public class Movie : Video
     {
+        public List<Guid> SpecialFeatureIds { get; set; }
+
+        public Movie()
+        {
+            SpecialFeatureIds = new List<Guid>();
+        }
+        
         /// <summary>
         /// Should be overridden to return the proper folder where metadata lives
         /// </summary>
@@ -34,41 +42,6 @@ namespace MediaBrowser.Controller.Entities.Movies
         public override string GetUserDataKey()
         {
             return this.GetProviderId(MetadataProviders.Tmdb) ?? this.GetProviderId(MetadataProviders.Imdb) ?? base.GetUserDataKey();
-        }
-
-        /// <summary>
-        /// The _special features
-        /// </summary>
-        private List<Video> _specialFeatures;
-        /// <summary>
-        /// The _special features initialized
-        /// </summary>
-        private bool _specialFeaturesInitialized;
-        /// <summary>
-        /// The _special features sync lock
-        /// </summary>
-        private object _specialFeaturesSyncLock = new object();
-        /// <summary>
-        /// Gets the special features.
-        /// </summary>
-        /// <value>The special features.</value>
-        [IgnoreDataMember]
-        public List<Video> SpecialFeatures
-        {
-            get
-            {
-                LazyInitializer.EnsureInitialized(ref _specialFeatures, ref _specialFeaturesInitialized, ref _specialFeaturesSyncLock, () => LoadSpecialFeatures().ToList());
-                return _specialFeatures;
-            }
-            private set
-            {
-                _specialFeatures = value;
-
-                if (value == null)
-                {
-                    _specialFeaturesInitialized = false;
-                }
-            }
         }
 
         /// <summary>
@@ -94,21 +67,30 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// <returns>Task{System.Boolean}.</returns>
         public override async Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true, bool resetResolveArgs = true)
         {
-            // Lazy load these again
-            SpecialFeatures = null;
-
             // Kick off a task to refresh the main item
             var result = await base.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs).ConfigureAwait(false);
 
-            var tasks = SpecialFeatures.Select(item => item.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
+            var specialFeaturesChanged = await RefreshSpecialFeatures(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
 
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return result;
+            return specialFeaturesChanged || result;
         }
 
+        private async Task<bool> RefreshSpecialFeatures(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
+        {
+            var newItems = LoadSpecialFeatures().ToList();
+            var newItemIds = newItems.Select(i => i.Id).ToList();
+
+            var itemsChanged = !SpecialFeatureIds.SequenceEqual(newItemIds);
+
+            var tasks = newItems.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
+
+            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            SpecialFeatureIds = newItemIds;
+
+            return itemsChanged || results.Contains(true);
+        }
+        
         /// <summary>
         /// Loads the special features.
         /// </summary>

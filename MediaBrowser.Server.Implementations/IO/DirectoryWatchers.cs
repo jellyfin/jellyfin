@@ -23,7 +23,7 @@ namespace MediaBrowser.Server.Implementations.IO
         /// <summary>
         /// The file system watchers
         /// </summary>
-        private ConcurrentDictionary<string, FileSystemWatcher> _fileSystemWatchers = new ConcurrentDictionary<string,FileSystemWatcher>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, FileSystemWatcher> _fileSystemWatchers = new ConcurrentDictionary<string,FileSystemWatcher>(StringComparer.OrdinalIgnoreCase);
         /// <summary>
         /// The update timer
         /// </summary>
@@ -424,6 +424,7 @@ namespace MediaBrowser.Server.Implementations.IO
                 //still being written to
                 //or being processed by another thread
                 //or does not exist (has already been processed)
+                Logger.Debug("{0} is locked.", path);
                 return true;
             }
         }

@@ -146,7 +146,6 @@ namespace MediaBrowser.Controller.Providers.TV
             string name = episode.Name;
             string location = episode.Path;
 
-            Logger.Debug("TvDbProvider: Fetching episode data for: " + name);
             string epNum = TVUtils.EpisodeNumberFromFile(location, episode.Season != null);
 
             if (epNum == null)

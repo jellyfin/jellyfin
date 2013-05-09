@@ -5,6 +5,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers.MediaInfo;
 using MediaBrowser.Model.Entities;
 using System;
@@ -43,6 +44,8 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// </summary>
         private readonly IIsoManager _isoManager;
 
+        private readonly IItemRepository _itemRepo;
+        
         private readonly ILogger _logger;
         
         /// <summary>
@@ -67,11 +70,12 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <param name="logManager">The log manager.</param>
         /// <param name="mediaEncoder">The media encoder.</param>
         /// <param name="isoManager">The iso manager.</param>
-        public VideoImagesTask(ILibraryManager libraryManager, ILogManager logManager, IMediaEncoder mediaEncoder, IIsoManager isoManager)
+        public VideoImagesTask(ILibraryManager libraryManager, ILogManager logManager, IMediaEncoder mediaEncoder, IIsoManager isoManager, IItemRepository itemRepo)
         {
             _libraryManager = libraryManager;
             _mediaEncoder = mediaEncoder;
             _isoManager = isoManager;
+            _itemRepo = itemRepo;
             _logger = logManager.GetLogger(GetType().Name);
 
             ImageCache = new FileSystemRepository(Kernel.Instance.FFMpegManager.VideoImagesDataPath);
@@ -205,15 +209,18 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         {
             var allItems = sourceItems.ToList();
 
-            var localTrailers = allItems.SelectMany(i => i.LocalTrailers);
-            var themeVideos = allItems.SelectMany(i => i.ThemeVideos);
+            var localTrailers = allItems.SelectMany(i => _itemRepo.GetItems(i.LocalTrailerIds).Cast<Video>());
+
+            var themeVideos = allItems.SelectMany(i => _itemRepo.GetItems(i.ThemeVideoIds).Cast<Video>());
 
             var videos = allItems.OfType<Video>().ToList();
 
             var items = videos;
             items.AddRange(localTrailers);
+
             items.AddRange(themeVideos);
-            items.AddRange(videos.OfType<Movie>().SelectMany(i => i.SpecialFeatures).ToList());
+
+            items.AddRange(videos.OfType<Movie>().SelectMany(i => _itemRepo.GetItems(i.SpecialFeatureIds).Cast<Video>()).ToList());
 
             return items.Where(i =>
             {

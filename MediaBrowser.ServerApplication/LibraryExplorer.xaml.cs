@@ -175,16 +175,9 @@ namespace MediaBrowser.ServerApplication
             {
                 var item = (BaseItem)(tvwLibrary.SelectedItem as TreeViewItem).Tag;
                 lblObjType.Content = "Type: " + item.GetType().Name;
-                var trailers = item.LocalTrailers != null && item.LocalTrailers.Count > 0
-                                   ? "\nTrailers: " +
-                                     String.Join(Environment.NewLine, item.LocalTrailers.Select(t => t.Path))
-                                   : "";
+
                 var movie = item as Movie;
-                var features = movie != null && movie.SpecialFeatures != null
-                                   ? "\nSpecial Features: " +
-                                     string.Join(Environment.NewLine,
-                                                 movie.SpecialFeatures.Select(f => f.Path))
-                                   : "";
+
                 var folder = item as Folder;
                 if (folder != null)
                 {
@@ -222,7 +215,7 @@ namespace MediaBrowser.ServerApplication
                     lblIndexBy.Visibility = ddlIndexBy.Visibility = ddlSortBy.Visibility = lblSortBy.Visibility = Visibility.Hidden;
 
                 }
-                txtData.Text = FormatJson(_jsonSerializer.SerializeToString(item)) + trailers + features;
+                txtData.Text = FormatJson(_jsonSerializer.SerializeToString(item));
 
                 var previews = new List<PreviewItem>();
                 await Task.Run(() =>

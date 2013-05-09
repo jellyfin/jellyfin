@@ -132,29 +132,31 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var cmd = connection.CreateCommand();
-            cmd.CommandText = "replace into displaypreferences (id, data) values (@1, @2)";
-            cmd.AddParam("@1", displayPreferences.Id);
-            cmd.AddParam("@2", serialized);
-
-            using (var tran = connection.BeginTransaction())
+            using (var cmd = connection.CreateCommand())
             {
-                try
-                {
-                    cmd.Transaction = tran;
+                cmd.CommandText = "replace into displaypreferences (id, data) values (@1, @2)";
+                cmd.AddParam("@1", displayPreferences.Id);
+                cmd.AddParam("@2", serialized);
 
-                    await cmd.ExecuteNonQueryAsync(cancellationToken);
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        cmd.Transaction = tran;
 
-                    tran.Commit();
-                }
-                catch (OperationCanceledException)
-                {
-                    tran.Rollback();
-                }
-                catch (Exception e)
-                {
-                    Logger.ErrorException("Failed to commit transaction.", e);
-                    tran.Rollback();
+                        await cmd.ExecuteNonQueryAsync(cancellationToken);
+
+                        tran.Commit();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        tran.Rollback();
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.ErrorException("Failed to commit transaction.", e);
+                        tran.Rollback();
+                    }
                 }
             }
         }
@@ -174,7 +176,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             var cmd = connection.CreateCommand();
             cmd.CommandText = "select data from displaypreferences where id = @id";
-            
+
             var idParam = cmd.Parameters.Add("@id", DbType.Guid);
             idParam.Value = displayPreferencesId;
 

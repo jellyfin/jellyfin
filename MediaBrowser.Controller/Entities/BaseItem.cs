@@ -38,6 +38,9 @@ namespace MediaBrowser.Controller.Entities
             Images = new Dictionary<ImageType, string>();
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             Tags = new List<string>();
+            ThemeSongIds = new List<Guid>();
+            ThemeVideoIds = new List<Guid>();
+            LocalTrailerIds = new List<Guid>();
         }
 
         /// <summary>
@@ -572,7 +575,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The tags.</value>
         public List<string> Tags { get; set; }
-        
+
         /// <summary>
         /// Override this if you need to combine/collapse person information
         /// </summary>
@@ -612,7 +615,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The revenue.</value>
         public double? Revenue { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the production locations.
         /// </summary>
@@ -630,7 +633,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The critic rating summary.</value>
         public string CriticRatingSummary { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the community rating.
         /// </summary>
@@ -672,84 +675,9 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The critic reviews.</value>
         public List<ItemReview> CriticReviews { get; set; }
 
-        /// <summary>
-        /// The _local trailers
-        /// </summary>
-        private List<Trailer> _localTrailers;
-        /// <summary>
-        /// The _local trailers initialized
-        /// </summary>
-        private bool _localTrailersInitialized;
-        /// <summary>
-        /// The _local trailers sync lock
-        /// </summary>
-        private object _localTrailersSyncLock = new object();
-        /// <summary>
-        /// Gets the local trailers.
-        /// </summary>
-        /// <value>The local trailers.</value>
-        [IgnoreDataMember]
-        public List<Trailer> LocalTrailers
-        {
-            get
-            {
-                LazyInitializer.EnsureInitialized(ref _localTrailers, ref _localTrailersInitialized, ref _localTrailersSyncLock, LoadLocalTrailers);
-                return _localTrailers;
-            }
-            private set
-            {
-                _localTrailers = value;
-
-                if (value == null)
-                {
-                    _localTrailersInitialized = false;
-                }
-            }
-        }
-
-        private List<Audio.Audio> _themeSongs;
-        private bool _themeSongsInitialized;
-        private object _themeSongsSyncLock = new object();
-        [IgnoreDataMember]
-        public List<Audio.Audio> ThemeSongs
-        {
-            get
-            {
-                LazyInitializer.EnsureInitialized(ref _themeSongs, ref _themeSongsInitialized, ref _themeSongsSyncLock, LoadThemeSongs);
-                return _themeSongs;
-            }
-            private set
-            {
-                _themeSongs = value;
-
-                if (value == null)
-                {
-                    _themeSongsInitialized = false;
-                }
-            }
-        }
-
-        private List<Video> _themeVideos;
-        private bool _themeVideosInitialized;
-        private object _themeVideosSyncLock = new object();
-        [IgnoreDataMember]
-        public List<Video> ThemeVideos
-        {
-            get
-            {
-                LazyInitializer.EnsureInitialized(ref _themeVideos, ref _themeVideosInitialized, ref _themeVideosSyncLock, LoadThemeVideos);
-                return _themeVideos;
-            }
-            private set
-            {
-                _themeVideos = value;
-
-                if (value == null)
-                {
-                    _themeVideosInitialized = false;
-                }
-            }
-        }
+        public List<Guid> ThemeSongIds { get; set; }
+        public List<Guid> ThemeVideoIds { get; set; }
+        public List<Guid> LocalTrailerIds { get; set; }
 
         /// <summary>
         /// Loads local trailers from the file system
@@ -956,36 +884,25 @@ namespace MediaBrowser.Controller.Entities
                 ResolveArgs = null;
             }
 
-            // Lazy load these again
-            LocalTrailers = null;
-            ThemeSongs = null;
-            ThemeVideos = null;
-
             // Refresh for the item
             var itemRefreshTask = ProviderManager.ExecuteMetadataProviders(this, cancellationToken, forceRefresh, allowSlowProviders);
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Refresh metadata for local trailers
-            var trailerTasks = LocalTrailers.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
+            var themeSongsChanged = await RefreshThemeSongs(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
 
-            var themeSongTasks = ThemeSongs.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
+            var themeVideosChanged = await RefreshThemeVideos(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
 
-            var videoBackdropTasks = ThemeVideos.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
-            
+            var localTrailersChanged = await RefreshLocalTrailers(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+
             cancellationToken.ThrowIfCancellationRequested();
-
-            // Await the trailer tasks
-            await Task.WhenAll(trailerTasks).ConfigureAwait(false);
-            await Task.WhenAll(themeSongTasks).ConfigureAwait(false);
-            await Task.WhenAll(videoBackdropTasks).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 
             // Get the result from the item task
             var changed = await itemRefreshTask.ConfigureAwait(false);
 
-            if (changed || forceSave)
+            if (changed || forceSave || themeSongsChanged || themeVideosChanged || localTrailersChanged)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -993,6 +910,57 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return changed;
+        }
+
+        private async Task<bool> RefreshLocalTrailers(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
+        {
+            var newItems = LoadLocalTrailers().ToList();
+            var newItemIds = newItems.Select(i => i.Id).ToList();
+
+            var itemsChanged = !LocalTrailerIds.SequenceEqual(newItemIds);
+
+            var tasks = newItems.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
+
+            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            LocalTrailerIds = newItemIds;
+
+            return itemsChanged || results.Contains(true);
+        }
+        
+        private async Task<bool> RefreshThemeVideos(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
+        {
+            var newThemeVideos = LoadThemeVideos().ToList();
+            var newThemeVideoIds = newThemeVideos.Select(i => i.Id).ToList();
+
+            var themeVideosChanged = !ThemeVideoIds.SequenceEqual(newThemeVideoIds);
+
+            var tasks = newThemeVideos.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
+
+            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            ThemeVideoIds = newThemeVideoIds;
+
+            return themeVideosChanged || results.Contains(true);
+        }
+        
+        /// <summary>
+        /// Refreshes the theme songs.
+        /// </summary>
+        private async Task<bool> RefreshThemeSongs(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
+        {
+            var newThemeSongs = LoadThemeSongs().ToList();
+            var newThemeSongIds = newThemeSongs.Select(i => i.Id).ToList();
+
+            var themeSongsChanged = !ThemeSongIds.SequenceEqual(newThemeSongIds);
+
+            var tasks = newThemeSongs.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
+
+            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            ThemeSongIds = newThemeSongIds;
+
+            return themeSongsChanged || results.Contains(true);
         }
 
         /// <summary>

@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
-        BaseItem RetrieveItem(Guid id);
+        BaseItem GetItem(Guid id);
 
         /// <summary>
         /// Gets children of a given Folder
@@ -32,6 +32,13 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="parent">The parent.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
         IEnumerable<BaseItem> RetrieveChildren(Folder parent);
+
+        /// <summary>
+        /// Retrieves the items.
+        /// </summary>
+        /// <param name="ids">The ids.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        IEnumerable<BaseItem> GetItems(IEnumerable<Guid> ids);
 
         /// <summary>
         /// Saves children of a given Folder
