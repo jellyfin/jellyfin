@@ -84,9 +84,10 @@ namespace MediaBrowser.Server.Implementations.Configuration
         {
             var newConfig = (ServerConfiguration) newConfiguration;
 
-            var newIbnPath = newConfig.ItemsByNamePath ?? string.Empty;
+            var newIbnPath = newConfig.ItemsByNamePath;
 
-            if (!string.Equals(Configuration.ItemsByNamePath ?? string.Empty, newIbnPath))
+            if (!string.IsNullOrEmpty(newIbnPath)
+                && !string.Equals(Configuration.ItemsByNamePath ?? string.Empty, newIbnPath))
             {
                 // Validate
                 if (!Directory.Exists(newIbnPath))
