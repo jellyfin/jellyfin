@@ -340,8 +340,6 @@ namespace MediaBrowser.Common.Implementations
         protected void RegisterSingleInstance<T>(T obj, bool manageLifetime = true)
             where T : class
         {
-            Logger.Info("Registering " + obj.GetType().Name);
-
             Container.RegisterSingle(obj);
 
             if (manageLifetime)
@@ -420,8 +418,6 @@ namespace MediaBrowser.Common.Implementations
         public IEnumerable<T> GetExports<T>(bool manageLiftime = true)
         {
             var currentType = typeof(T);
-
-            Logger.Info("Composing instances of " + currentType.Name);
 
             var parts = AllConcreteTypes.AsParallel().Where(currentType.IsAssignableFrom).Select(CreateInstance).Cast<T>().ToArray();
 

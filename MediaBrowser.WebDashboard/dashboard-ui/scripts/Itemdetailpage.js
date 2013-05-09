@@ -209,7 +209,7 @@
             $('#itemCommunityRating', page).hide();
         }
 
-        if (item.Type != "Episode") {
+        if (item.Type != "Episode" && item.Type != "Movie") {
             var premiereDateElem = $('#itemPremiereDate', page).show();
             LibraryBrowser.renderPremiereDate(premiereDateElem, item);
         } else {

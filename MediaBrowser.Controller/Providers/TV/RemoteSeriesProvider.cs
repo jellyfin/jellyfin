@@ -193,7 +193,6 @@ namespace MediaBrowser.Controller.Providers.TV
             var success = false;
 
             var name = series.Name;
-            Logger.Debug("TvDbProvider: Fetching series data: " + name);
 
             if (!string.IsNullOrEmpty(seriesId))
             {

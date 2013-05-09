@@ -3,6 +3,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IServerApplicationPaths _appPaths;
+        private readonly IItemRepository _itemRepo;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageCleanupTask" /> class.
@@ -36,12 +38,13 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <param name="logger">The logger.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="appPaths">The app paths.</param>
-        public ImageCleanupTask(Kernel kernel, ILogger logger, ILibraryManager libraryManager, IServerApplicationPaths appPaths)
+        public ImageCleanupTask(Kernel kernel, ILogger logger, ILibraryManager libraryManager, IServerApplicationPaths appPaths, IItemRepository itemRepo)
         {
             _kernel = kernel;
             _logger = logger;
             _libraryManager = libraryManager;
             _appPaths = appPaths;
+            _itemRepo = itemRepo;
         }
 
         /// <summary>
@@ -138,20 +141,14 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                 images = images.Concat(item.ScreenshotImagePaths);
             }
 
-            if (item.LocalTrailers != null)
-            {
-                images = item.LocalTrailers.Aggregate(images, (current, subItem) => current.Concat(GetPathsInUse(subItem)));
-            }
+            var localTrailers = _itemRepo.GetItems(item.LocalTrailerIds).ToList();
+            images = localTrailers.Aggregate(images, (current, subItem) => current.Concat(GetPathsInUse(subItem)));
 
-            if (item.ThemeSongs != null)
-            {
-                images = item.ThemeSongs.Aggregate(images, (current, subItem) => current.Concat(GetPathsInUse(subItem)));
-            }
+            var themeSongs = _itemRepo.GetItems(item.ThemeSongIds).ToList();
+            images = themeSongs.Aggregate(images, (current, subItem) => current.Concat(GetPathsInUse(subItem)));
 
-            if (item.ThemeVideos != null)
-            {
-                images = item.ThemeVideos.Aggregate(images, (current, subItem) => current.Concat(GetPathsInUse(subItem)));
-            }
+            var themeVideos = _itemRepo.GetItems(item.ThemeVideoIds).ToList();
+            images = themeVideos.Aggregate(images, (current, subItem) => current.Concat(GetPathsInUse(subItem)));
 
             var video = item as Video;
 
@@ -162,9 +159,10 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
             var movie = item as Movie;
 
-            if (movie != null && movie.SpecialFeatures != null)
+            if (movie != null)
             {
-                images = movie.SpecialFeatures.Aggregate(images, (current, subItem) => current.Concat(GetPathsInUse(subItem)));
+                var specialFeattures = _itemRepo.GetItems(movie.SpecialFeatureIds).ToList();
+                images = specialFeattures.Aggregate(images, (current, subItem) => current.Concat(GetPathsInUse(subItem)));
             }
             
             return images;

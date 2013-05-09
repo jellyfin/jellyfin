@@ -130,7 +130,6 @@ namespace MediaBrowser.Controller.Providers.TV
         {
             string name = season.Name;
 
-            Logger.Debug("TvDbProvider: Fetching season data: " + name);
             var seasonNumber = TVUtils.GetSeasonNumberFromPath(season.Path) ?? -1;
 
             season.IndexNumber = seasonNumber;

@@ -547,22 +547,22 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (request.HasTrailer.HasValue)
             {
-                items = items.Where(i => request.HasTrailer.Value ? i.LocalTrailers.Count > 0 : i.LocalTrailers.Count == 0);
+                items = items.Where(i => request.HasTrailer.Value ? i.LocalTrailerIds.Count > 0 : i.LocalTrailerIds.Count == 0);
             }
 
             if (request.HasThemeSong.HasValue)
             {
-                items = items.Where(i => request.HasThemeSong.Value ? i.ThemeSongs.Count > 0 : i.ThemeSongs.Count == 0);
+                items = items.Where(i => request.HasThemeSong.Value ? i.ThemeSongIds.Count > 0 : i.ThemeSongIds.Count == 0);
             }
 
             if (request.HasThemeVideo.HasValue)
             {
-                items = items.Where(i => request.HasThemeVideo.Value ? i.ThemeVideos.Count > 0 : i.ThemeVideos.Count == 0);
+                items = items.Where(i => request.HasThemeVideo.Value ? i.ThemeVideoIds.Count > 0 : i.ThemeVideoIds.Count == 0);
             }
 
             if (request.HasSpecialFeature.HasValue)
             {
-                items = items.OfType<Movie>().Where(i => request.HasSpecialFeature.Value ? i.SpecialFeatures.Count > 0 : i.SpecialFeatures.Count == 0);
+                items = items.OfType<Movie>().Where(i => request.HasSpecialFeature.Value ? i.SpecialFeatureIds.Count > 0 : i.SpecialFeatureIds.Count == 0);
             }
 
             if (request.HasSubtitles.HasValue)
@@ -573,10 +573,8 @@ namespace MediaBrowser.Api.UserLibrary
                     {
                         return i.MediaStreams != null && i.MediaStreams.Any(m => m.Type == MediaStreamType.Subtitle);
                     }
-                    else
-                    {
-                        return i.MediaStreams == null || i.MediaStreams.All(m => m.Type != MediaStreamType.Subtitle);
-                    }
+
+                    return i.MediaStreams == null || i.MediaStreams.All(m => m.Type != MediaStreamType.Subtitle);
                 });
             }
 

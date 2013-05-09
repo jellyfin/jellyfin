@@ -57,15 +57,9 @@ namespace MediaBrowser.Controller.Providers.Music
 
             if (result != null)
             {
-                if (!string.IsNullOrEmpty(result.Item1))
+                if (!string.IsNullOrEmpty(result))
                 {
-                    return result.Item1;
-                }
-
-                // If there were no artists returned at all, then don't bother with musicbrainz
-                if (!result.Item2)
-                {
-                    return null;
+                    return result;
                 }
             }
 
@@ -94,7 +88,7 @@ namespace MediaBrowser.Controller.Providers.Music
             return artist != null ? artist.GetProviderId(MetadataProviders.Musicbrainz) : null;
         }
 
-        private async Task<Tuple<string,bool>> FindIdFromLastFm(BaseItem item, CancellationToken cancellationToken)
+        private async Task<string> FindIdFromLastFm(BaseItem item, CancellationToken cancellationToken)
         {
             //Execute the Artist search against our name and assume first one is the one we want
             var url = RootUrl + string.Format("method=artist.search&artist={0}&api_key={1}&format=json", UrlEncode(item.Name), ApiKey);
@@ -125,10 +119,10 @@ namespace MediaBrowser.Controller.Providers.Music
                 var artist = searchResult.results.artistmatches.artist.FirstOrDefault(i => i.name != null && string.Compare(i.name, item.Name, CultureInfo.CurrentCulture, CompareOptions.IgnoreNonSpace) == 0) ??
                     searchResult.results.artistmatches.artist.First();
 
-                return new Tuple<string, bool>(artist.mbid, true);
+                return artist.mbid;
             }
 
-            return new Tuple<string,bool>(null, false);
+            return null;
         }
 
         private async Task<string> FindIdFromMusicBrainz(BaseItem item, CancellationToken cancellationToken)
