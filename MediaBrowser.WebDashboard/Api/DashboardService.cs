@@ -13,7 +13,6 @@ using MediaBrowser.Model.Tasks;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -82,7 +81,6 @@ namespace MediaBrowser.WebDashboard.Api
     /// <summary>
     /// Class DashboardService
     /// </summary>
-    [Export(typeof(IRestfulService))]
     public class DashboardService : IRestfulService, IHasResultFactory
     {
         /// <summary>
