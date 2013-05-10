@@ -93,8 +93,6 @@ namespace MediaBrowser.Controller.Providers.Music
             //Execute the Artist search against our name and assume first one is the one we want
             var url = RootUrl + string.Format("method=artist.search&artist={0}&api_key={1}&format=json", UrlEncode(item.Name), ApiKey);
 
-            LastfmArtistSearchResults searchResult;
-
             try
             {
                 using (var json = await HttpClient.Get(new HttpRequestOptions
@@ -106,20 +104,31 @@ namespace MediaBrowser.Controller.Providers.Music
 
                 }).ConfigureAwait(false))
                 {
-                    searchResult = JsonSerializer.DeserializeFromStream<LastfmArtistSearchResults>(json);
+                    using (var reader = new StreamReader(json, true))
+                    {
+                        var jsonString = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                        // Sometimes they send back an empty response or just the text "null"
+                        if (!jsonString.StartsWith("{", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return null;
+                        }
+
+                        var searchResult = JsonSerializer.DeserializeFromString<LastfmArtistSearchResults>(jsonString);
+
+                        if (searchResult != null && searchResult.results != null && searchResult.results.artistmatches != null && searchResult.results.artistmatches.artist.Count > 0)
+                        {
+                            var artist = searchResult.results.artistmatches.artist.FirstOrDefault(i => i.name != null && string.Compare(i.name, item.Name, CultureInfo.CurrentCulture, CompareOptions.IgnoreNonSpace) == 0) ??
+                                searchResult.results.artistmatches.artist.First();
+
+                            return artist.mbid;
+                        }
+                    }
                 }
             }
-            catch (HttpException e)
+            catch (HttpException)
             {
                 return null;
-            }
-
-            if (searchResult != null && searchResult.results != null && searchResult.results.artistmatches != null && searchResult.results.artistmatches.artist.Count > 0)
-            {
-                var artist = searchResult.results.artistmatches.artist.FirstOrDefault(i => i.name != null && string.Compare(i.name, item.Name, CultureInfo.CurrentCulture, CompareOptions.IgnoreNonSpace) == 0) ??
-                    searchResult.results.artistmatches.artist.First();
-
-                return artist.mbid;
             }
 
             return null;
@@ -167,7 +176,7 @@ namespace MediaBrowser.Controller.Providers.Music
         {
             return !string.Equals(text, RemoveDiacritics(text), StringComparison.Ordinal);
         }
-        
+
         private string RemoveDiacritics(string text)
         {
             return string.Concat(
@@ -176,7 +185,7 @@ namespace MediaBrowser.Controller.Providers.Music
                                               UnicodeCategory.NonSpacingMark)
               ).Normalize(NormalizationForm.FormC);
         }
-        
+
         protected override async Task FetchLastfmData(BaseItem item, string id, CancellationToken cancellationToken)
         {
             // Get artist info with provided id
@@ -212,7 +221,7 @@ namespace MediaBrowser.Controller.Providers.Music
                     }
 
                     await _providerManager.SaveToLibraryFilesystem(item, Path.Combine(item.MetaLocation, LocalMetaFileName), ms, cancellationToken).ConfigureAwait(false);
-                    
+
                 }
             }
         }
