@@ -122,7 +122,7 @@
         }
         if (clientLowered == "mb-classic") {
 
-            return "<img src='css/images/clients/mb.png' alt='Media Browser Classic' title='Media Browser Classic' />";
+            return "<img src='css/images/clients/mbc.png' alt='Media Browser Classic' title='Media Browser Classic' />";
         }
         if (clientLowered == "media browser theater") {
 
