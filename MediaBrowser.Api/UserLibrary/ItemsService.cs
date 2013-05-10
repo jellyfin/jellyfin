@@ -367,7 +367,7 @@ namespace MediaBrowser.Api.UserLibrary
                     {
                         var userdata = repository.GetUserData(user.Id, item.GetUserDataKey()).Result;
 
-                        return userdata != null && userdata.PlayCount > 0;
+                        return userdata != null && userdata.Played;
                     });
 
                 case ItemFilter.IsUnplayed:
@@ -375,7 +375,7 @@ namespace MediaBrowser.Api.UserLibrary
                     {
                         var userdata = repository.GetUserData(user.Id, item.GetUserDataKey()).Result;
 
-                        return userdata == null || userdata.PlayCount == 0;
+                        return userdata == null || !userdata.Played;
                     });
 
                 case ItemFilter.IsFolder:
