@@ -4,7 +4,6 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
-using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.WebDashboard.Api
@@ -12,7 +11,6 @@ namespace MediaBrowser.WebDashboard.Api
     /// <summary>
     /// Class DashboardInfoWebSocketListener
     /// </summary>
-    [Export(typeof(IWebSocketListener))]
     class DashboardInfoWebSocketListener : BasePeriodicWebSocketListener<DashboardInfo, object>
     {
         /// <summary>
