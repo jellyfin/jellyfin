@@ -120,7 +120,7 @@
 
             return "<img src='css/images/clients/html5.png' alt='Dashboard' title='Dashboard' />";
         }
-        if (clientLowered == "MB-Classic") {
+        if (clientLowered == "mb-classic") {
 
             return "<img src='css/images/clients/mb.png' alt='Media Browser Classic' title='Media Browser Classic' />";
         }
