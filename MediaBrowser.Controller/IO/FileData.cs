@@ -32,8 +32,7 @@ namespace MediaBrowser.Controller.IO
 
             var dict = new Dictionary<string, FileSystemInfo>(StringComparer.OrdinalIgnoreCase);
             
-            var entries = new DirectoryInfo(path).EnumerateFileSystemInfos(searchPattern, SearchOption.TopDirectoryOnly)
-                .Where(i => !i.Attributes.HasFlag(FileAttributes.System) && !i.Name.Equals(".") && !i.Name.Equals(".."));
+            var entries = new DirectoryInfo(path).EnumerateFileSystemInfos(searchPattern, SearchOption.TopDirectoryOnly);
 
             foreach (var entry in entries)
             {

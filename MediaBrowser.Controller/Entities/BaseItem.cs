@@ -269,7 +269,9 @@ namespace MediaBrowser.Controller.Entities
 
             // Record the name of each file 
             // Need to sort these because accoring to msdn docs, our i/o methods are not guaranteed in any order
-            foreach (var file in ResolveArgs.FileSystemChildren.OrderBy(f => f.Name))
+            foreach (var file in ResolveArgs.FileSystemChildren
+                .Where(i => !i.Attributes.HasFlag(FileAttributes.System))
+                .OrderBy(f => f.Name))
             {
                 sb.Append(file.Name);
             }
