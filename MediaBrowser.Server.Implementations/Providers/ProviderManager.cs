@@ -374,14 +374,6 @@ namespace MediaBrowser.Server.Implementations.Providers
 
                 try
                 {
-                    // If the file already exists but is hidden, the below save will throw an UnauthorizedAccessException
-                    var existingFileInfo = new FileInfo(localPath);
-
-                    if (existingFileInfo.Exists && existingFileInfo.Attributes.HasFlag(FileAttributes.Hidden))
-                    {
-                        existingFileInfo.Delete();
-                    }
-
                     using (var fs = new FileStream(localPath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
                     {
                         await img.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
@@ -476,6 +468,14 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             try
             {
+                // If the file already exists but is hidden, the below save will throw an UnauthorizedAccessException
+                var existingFileInfo = new FileInfo(path);
+
+                if (existingFileInfo.Exists && existingFileInfo.Attributes.HasFlag(FileAttributes.Hidden))
+                {
+                    existingFileInfo.Delete();
+                }
+
                 using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
                 {
                     using (dataToSave)
