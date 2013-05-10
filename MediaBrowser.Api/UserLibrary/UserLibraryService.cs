@@ -262,6 +262,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// <value>The position ticks.</value>
         [ApiMember(Name = "PositionTicks", Description = "Optional. The current position, in ticks. 1 tick = 10000 ms", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "POST")]
         public long? PositionTicks { get; set; }
+
+        [ApiMember(Name = "IsPaused", Description = "Indicates if the player is paused.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "POST")]
+        public bool IsPaused { get; set; }
     }
 
     /// <summary>
@@ -715,7 +718,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (auth != null)
             {
-                var task = _sessionManager.OnPlaybackProgress(user, item, request.PositionTicks, auth["Client"], auth["DeviceId"], auth["Device"] ?? string.Empty);
+                var task = _sessionManager.OnPlaybackProgress(user, item, request.PositionTicks, request.IsPaused, auth["Client"], auth["DeviceId"], auth["Device"] ?? string.Empty);
 
                 Task.WaitAll(task);
             }

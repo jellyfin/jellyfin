@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Library;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Controller.Session
 {
@@ -28,16 +27,10 @@ namespace MediaBrowser.Controller.Session
         event EventHandler<PlaybackProgressEventArgs> PlaybackStopped;
 
         /// <summary>
-        /// Gets all connections.
+        /// Gets the sessions.
         /// </summary>
-        /// <value>All connections.</value>
-        IEnumerable<SessionInfo> AllConnections { get; }
-
-        /// <summary>
-        /// Gets the active connections.
-        /// </summary>
-        /// <value>The active connections.</value>
-        IEnumerable<SessionInfo> RecentConnections { get; }
+        /// <value>The sessions.</value>
+        IEnumerable<SessionInfo> Sessions { get; }
 
         /// <summary>
         /// Logs the user activity.
@@ -67,12 +60,13 @@ namespace MediaBrowser.Controller.Session
         /// <param name="user">The user.</param>
         /// <param name="item">The item.</param>
         /// <param name="positionTicks">The position ticks.</param>
+        /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
         /// <param name="clientType">Type of the client.</param>
         /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        Task OnPlaybackProgress(User user, BaseItem item, long? positionTicks, string clientType, string deviceId, string deviceName);
+        Task OnPlaybackProgress(User user, BaseItem item, long? positionTicks, bool isPaused, string clientType, string deviceId, string deviceName);
 
         /// <summary>
         /// Used to report that playback has ended for an item

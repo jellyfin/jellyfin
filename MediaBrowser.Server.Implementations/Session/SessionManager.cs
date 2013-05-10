@@ -1,14 +1,12 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -18,10 +16,19 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Session
 {
+    /// <summary>
+    /// Class SessionManager
+    /// </summary>
     public class SessionManager : ISessionManager
     {
+        /// <summary>
+        /// The _user data repository
+        /// </summary>
         private readonly IUserDataRepository _userDataRepository;
 
+        /// <summary>
+        /// The _user repository
+        /// </summary>
         private readonly IUserRepository _userRepository;
 
         /// <summary>
@@ -54,6 +61,13 @@ namespace MediaBrowser.Server.Implementations.Session
         /// </summary>
         public event EventHandler<PlaybackProgressEventArgs> PlaybackStopped;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SessionManager"/> class.
+        /// </summary>
+        /// <param name="userDataRepository">The user data repository.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="userRepository">The user repository.</param>
         public SessionManager(IUserDataRepository userDataRepository, IServerConfigurationManager configurationManager, ILogger logger, IUserRepository userRepository)
         {
             _userDataRepository = userDataRepository;
@@ -66,20 +80,14 @@ namespace MediaBrowser.Server.Implementations.Session
         /// Gets all connections.
         /// </summary>
         /// <value>All connections.</value>
-        public IEnumerable<SessionInfo> AllConnections
+        public IEnumerable<SessionInfo> Sessions
         {
-            get { return _activeConnections.Values.OrderByDescending(c => c.LastActivityDate); }
+            get { return _activeConnections.Values.OrderByDescending(c => c.LastActivityDate).ToList(); }
         }
 
         /// <summary>
-        /// Gets the active connections.
+        /// The _true task result
         /// </summary>
-        /// <value>The active connections.</value>
-        public IEnumerable<SessionInfo> RecentConnections
-        {
-            get { return AllConnections.Where(c => (DateTime.UtcNow - c.LastActivityDate).TotalMinutes <= 5); }
-        }
-
         private readonly Task _trueTaskResult = Task.FromResult(true);
 
         /// <summary>
@@ -124,11 +132,13 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="item">The item.</param>
+        /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
         /// <param name="currentPositionTicks">The current position ticks.</param>
-        private void UpdateNowPlayingItemId(User user, string clientType, string deviceId, string deviceName, BaseItem item, long? currentPositionTicks = null)
+        private void UpdateNowPlayingItemId(User user, string clientType, string deviceId, string deviceName, BaseItem item, bool isPaused, long? currentPositionTicks = null)
         {
             var conn = GetConnection(clientType, deviceId, deviceName, user);
 
+            conn.IsPaused = isPaused;
             conn.NowPlayingPositionTicks = currentPositionTicks;
             conn.NowPlayingItem = item;
             conn.LastActivityDate = DateTime.UtcNow;
@@ -150,6 +160,7 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 conn.NowPlayingItem = null;
                 conn.NowPlayingPositionTicks = null;
+                conn.IsPaused = null;
             }
         }
 
@@ -187,7 +198,8 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="clientType">Type of the client.</param>
         /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="System.ArgumentNullException">
+        /// </exception>
         public void OnPlaybackStart(User user, BaseItem item, string clientType, string deviceId, string deviceName)
         {
             if (user == null)
@@ -199,7 +211,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 throw new ArgumentNullException();
             }
 
-            UpdateNowPlayingItemId(user, clientType, deviceId, deviceName, item);
+            UpdateNowPlayingItemId(user, clientType, deviceId, deviceName, item, false);
 
             // Nothing to save here
             // Fire events to inform plugins
@@ -216,12 +228,14 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="user">The user.</param>
         /// <param name="item">The item.</param>
         /// <param name="positionTicks">The position ticks.</param>
+        /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
         /// <param name="clientType">Type of the client.</param>
         /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public async Task OnPlaybackProgress(User user, BaseItem item, long? positionTicks, string clientType, string deviceId, string deviceName)
+        /// <exception cref="System.ArgumentNullException">
+        /// </exception>
+        public async Task OnPlaybackProgress(User user, BaseItem item, long? positionTicks, bool isPaused, string clientType, string deviceId, string deviceName)
         {
             if (user == null)
             {
@@ -232,7 +246,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 throw new ArgumentNullException();
             }
 
-            UpdateNowPlayingItemId(user, clientType, deviceId, deviceName, item, positionTicks);
+            UpdateNowPlayingItemId(user, clientType, deviceId, deviceName, item, isPaused, positionTicks);
 
             var key = item.GetUserDataKey();
 
@@ -262,7 +276,8 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="System.ArgumentNullException">
+        /// </exception>
         public async Task OnPlaybackStopped(User user, BaseItem item, long? positionTicks, string clientType, string deviceId, string deviceName)
         {
             if (user == null)
@@ -353,21 +368,6 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 data.PlayCount++;
                 data.LastPlayedDate = DateTime.UtcNow;
-            }
-        }
-
-        /// <summary>
-        /// Identifies the web socket.
-        /// </summary>
-        /// <param name="sessionId">The session id.</param>
-        /// <param name="webSocket">The web socket.</param>
-        public void IdentifyWebSocket(Guid sessionId, IWebSocketConnection webSocket)
-        {
-            var session = AllConnections.FirstOrDefault(i => i.Id == sessionId);
-
-            if (session != null)
-            {
-                session.WebSocket = webSocket;
             }
         }
     }

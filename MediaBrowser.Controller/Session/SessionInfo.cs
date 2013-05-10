@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Net;
 using System;
 
 namespace MediaBrowser.Controller.Session
@@ -40,6 +41,24 @@ namespace MediaBrowser.Controller.Session
         public string DeviceName { get; set; }
 
         /// <summary>
+        /// Gets or sets the now viewing context.
+        /// </summary>
+        /// <value>The now viewing context.</value>
+        public string NowViewingContext { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the now viewing item.
+        /// </summary>
+        /// <value>The type of the now viewing item.</value>
+        public string NowViewingItemType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the now viewing item identifier.
+        /// </summary>
+        /// <value>The now viewing item identifier.</value>
+        public string NowViewingItemIdentifier { get; set; }
+        
+        /// <summary>
         /// Gets or sets the now playing item.
         /// </summary>
         /// <value>The now playing item.</value>
@@ -52,6 +71,12 @@ namespace MediaBrowser.Controller.Session
         public long? NowPlayingPositionTicks { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is paused.
+        /// </summary>
+        /// <value><c>true</c> if this instance is paused; otherwise, <c>false</c>.</value>
+        public bool? IsPaused { get; set; }
+
+        /// <summary>
         /// Gets or sets the device id.
         /// </summary>
         /// <value>The device id.</value>
@@ -62,5 +87,34 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <value>The web socket.</value>
         public IWebSocketConnection WebSocket { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value><c>true</c> if this instance is active; otherwise, <c>false</c>.</value>
+        public bool IsActive
+        {
+            get
+            {
+                if (WebSocket != null)
+                {
+                    return WebSocket.State == WebSocketState.Open;
+                }
+
+                return (DateTime.UtcNow - LastActivityDate).TotalMinutes <= 5;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether [supports remote control].
+        /// </summary>
+        /// <value><c>true</c> if [supports remote control]; otherwise, <c>false</c>.</value>
+        public bool SupportsRemoteControl
+        {
+            get
+            {
+                return WebSocket != null && WebSocket.State == WebSocketState.Open;
+            }
+        }
     }
 }
