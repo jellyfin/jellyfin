@@ -2379,6 +2379,16 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null itemId");
             }
 
+            if (self.isWebSocketOpen()) {
+
+                var deferred = $.Deferred();
+
+                self.sendWebSocketMessage("PlaybackStart", itemId);
+
+                deferred.resolveWith(null, []);
+                return deferred.promise();
+            }
+
             var url = self.getUrl("Users/" + userId + "/PlayingItems/" + itemId);
 
             return self.ajax({
@@ -2392,7 +2402,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
          * @param {String} userId
          * @param {String} itemId
          */
-        self.reportPlaybackProgress = function (userId, itemId, positionTicks) {
+        self.reportPlaybackProgress = function (userId, itemId, positionTicks, isPaused) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2400,6 +2410,16 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             if (!itemId) {
                 throw new Error("null itemId");
+            }
+
+            if (self.isWebSocketOpen()) {
+
+                var deferred = $.Deferred();
+
+                self.sendWebSocketMessage("PlaybackProgress", itemId + "|" + (positionTicks == null ? "" : positionTicks) + "|" + (isPaused == null ? "" : isPaused));
+
+                deferred.resolveWith(null, []);
+                return deferred.promise();
             }
 
             var params = {
@@ -2431,6 +2451,16 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             if (!itemId) {
                 throw new Error("null itemId");
+            }
+
+            if (self.isWebSocketOpen()) {
+
+                var deferred = $.Deferred();
+
+                self.sendWebSocketMessage("PlaybackStopped", itemId + "|" + (positionTicks == null ? "" : positionTicks));
+
+                deferred.resolveWith(null, []);
+                return deferred.promise();
             }
 
             var params = {

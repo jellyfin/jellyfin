@@ -59,6 +59,19 @@
             renderDetails(page, item);
             renderTabs(page, item);
 
+            if (ApiClient.isWebSocketOpen()) {
+
+                var vals = [item.Type, item.Name];
+
+                var context = getParameterByName('context');
+                
+                if (context) {
+                    vals.push(vals);
+                }
+
+                ApiClient.sendWebSocketMessage("Context", vals.join('|'));
+            }
+
             Dashboard.hideLoadingMsg();
         });
     }

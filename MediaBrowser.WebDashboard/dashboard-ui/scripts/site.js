@@ -17,7 +17,7 @@
 });
 
 if ($.browser.msie) {
-    
+
     // This is unfortuantely required due to IE's over-aggressive caching. 
     // https://github.com/MediaBrowser/MediaBrowser/issues/179
     $.ajaxSetup({
@@ -734,7 +734,7 @@ var Dashboard = {
             }
         });
     },
-    
+
     ensureToolsMenu: function (page) {
 
         if (!page.hasClass('type-interior')) {
@@ -886,6 +886,53 @@ var Dashboard = {
 
             Dashboard.showTaskCompletionNotification(msg.Data);
         }
+        else if (msg.MessageType === "Browse") {
+
+            Dashboard.onBrowseCommand(msg.Data);
+        }
+        else if (msg.MessageType === "Play") {
+
+
+
+        }
+        else if (msg.MessageType === "UpdatePlaystate") {
+
+            // TODO for Craig
+        }
+    },
+
+    onBrowseCommand: function (cmd) {
+
+        var context = cmd.Context || "";
+
+        var url;
+
+        var type = cmd.ItemType.toLowerCase();
+
+        if (type == "genre") {
+            url = "itembynamedetails.html?genre=" + ApiClient.encodeName(cmd.ItemIdentifier) + "&context=" + context;
+        }
+        else if (type == "studio") {
+            url = "itembynamedetails.html?studio=" + ApiClient.encodeName(cmd.ItemIdentifier) + "&context=" + context;
+        }
+        else if (type == "person") {
+            url = "itembynamedetails.html?person=" + ApiClient.encodeName(cmd.ItemIdentifier) + "&context=" + context;
+        }
+        else if (type == "artist") {
+            url = "itembynamedetails.html?artist=" + ApiClient.encodeName(cmd.ItemIdentifier) + "&context=" + (context || "music");
+        }
+        
+        if (url) {
+            Dashboard.navigate(url);
+            return;
+        }
+
+        ApiClient.getItem(Dashboard.getCurrentUserId(), cmd.ItemIdentifier).done(function (item) {
+
+            Dashboard.navigate(LibraryBrowser.getHref(item, context));
+
+        });
+
     },
 
     showTaskCompletionNotification: function (result) {
@@ -983,7 +1030,7 @@ var Dashboard = {
             clearTimeout(Dashboard.newItemTimeout);
         }
 
-        Dashboard.newItemTimeout = setTimeout(function() {
+        Dashboard.newItemTimeout = setTimeout(function () {
 
             Dashboard.onNewItemTimerStopped(data);
 
@@ -993,7 +1040,7 @@ var Dashboard = {
     onNewItemTimerStopped: function (data) {
 
         var newItems = data.ItemsAdded;
-        
+
         if (!newItems.length) {
             return;
         }
@@ -1129,7 +1176,7 @@ $(document).on('pageinit', ".page", function () {
             }
         });
     }
-    
+
 }).on('pagebeforeshow', ".page", function () {
 
     Dashboard.refreshSystemInfoFromServer();

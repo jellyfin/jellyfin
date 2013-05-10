@@ -40,6 +40,10 @@
 
             $(".autoNumeric").autoNumeric('init');
 
+            if (ApiClient.isWebSocketOpen()) {
+                ApiClient.sendWebSocketMessage("Context", [item.Type, item.Id, context].join('|'));
+            }
+
             Dashboard.hideLoadingMsg();
         });
     }

@@ -207,7 +207,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="swagger-ui\css\hightlight.default.css" />
+    <Content Include="swagger-ui\css\hightlight.default.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="swagger-ui\css\screen.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -32,7 +32,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <summary>
         /// The _send semaphore
         /// </summary>
-        private readonly SemaphoreSlim _sendSemaphore = new SemaphoreSlim(1,1);
+        private readonly SemaphoreSlim _sendSemaphore = new SemaphoreSlim(1, 1);
 
         /// <summary>
         /// The logger
@@ -100,7 +100,13 @@ namespace MediaBrowser.Server.Implementations.ServerManager
 
                 using (var memoryStream = new MemoryStream(bytes))
                 {
-                    info = (WebSocketMessageInfo)_jsonSerializer.DeserializeFromStream(memoryStream, typeof(WebSocketMessageInfo));
+                    var stub = (WebSocketMessage<object>)_jsonSerializer.DeserializeFromStream(memoryStream, typeof(WebSocketMessage<object>));
+
+                    info = new WebSocketMessageInfo
+                    {
+                        MessageType = stub.MessageType,
+                        Data = stub.Data == null ? null : stub.Data.ToString()
+                    };
                 }
 
                 info.Connection = this;
@@ -163,7 +169,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             {
                 throw new ArgumentNullException("cancellationToken");
             }
-            
+
             cancellationToken.ThrowIfCancellationRequested();
 
             // Per msdn docs, attempting to send simultaneous messages will result in one failing.

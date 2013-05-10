@@ -264,6 +264,8 @@
 
             ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), itemId);
 
+            var intervalTime = ApiClient.isWebSocketOpen() ? 10000 : 30000;
+
             currentProgressInterval = setInterval(function () {
                 var player = _V_("videoWindow");
 
@@ -276,7 +278,8 @@
                 var positionTicks = parseInt(startTime) + Math.floor(10000000 * player.currentTime());
 
                 ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, positionTicks);
-            }, 30000);
+                
+            }, intervalTime);
         }
 
         self.canPlay = function (item) {

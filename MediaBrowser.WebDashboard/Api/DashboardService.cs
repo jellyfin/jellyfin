@@ -206,7 +206,7 @@ namespace MediaBrowser.WebDashboard.Api
             ILibraryManager libraryManager,
             ISessionManager connectionManager)
         {
-            var connections = connectionManager.RecentConnections.ToArray();
+            var connections = connectionManager.Sessions.Where(i => i.IsActive).ToArray();
 
             var dtoBuilder = new UserDtoBuilder(logger);
 

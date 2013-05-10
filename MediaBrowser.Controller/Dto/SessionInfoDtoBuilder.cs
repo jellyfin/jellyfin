@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Controller.Dto
@@ -23,7 +22,12 @@ namespace MediaBrowser.Controller.Dto
                 DeviceName = session.DeviceName,
                 Id = session.Id,
                 LastActivityDate = session.LastActivityDate,
-                NowPlayingPositionTicks = session.NowPlayingPositionTicks
+                NowPlayingPositionTicks = session.NowPlayingPositionTicks,
+                SupportsRemoteControl = session.SupportsRemoteControl,
+                IsPaused = session.IsPaused,
+                NowViewingContext = session.NowViewingContext,
+                NowViewingItemIdentifier = session.NowViewingItemIdentifier,
+                NowViewingItemType = session.NowViewingItemType
             };
 
             if (session.NowPlayingItem != null)
@@ -35,9 +39,6 @@ namespace MediaBrowser.Controller.Dto
             {
                 dto.UserId = session.UserId.Value.ToString("N");
             }
-
-            dto.SupportsRemoteControl = session.WebSocket != null &&
-                                        session.WebSocket.State == WebSocketState.Open;
 
             return dto;
         }
