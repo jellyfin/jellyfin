@@ -122,15 +122,13 @@ namespace MediaBrowser.Api
 
             var auth = GetAuthorization(request);
 
-            if (auth != null && auth.ContainsKey("UserId"))
+            if (auth != null)
             {
-                var userId = auth["UserId"];
-
                 User user = null;
 
-                if (!string.IsNullOrEmpty(userId))
+                if (auth.ContainsKey("UserId"))
                 {
-                    user = UserManager.GetUserById(new Guid(userId));
+                    user = UserManager.GetUserById(new Guid(auth["UserId"]));
                 }
 
                 var deviceId = auth["DeviceId"];
