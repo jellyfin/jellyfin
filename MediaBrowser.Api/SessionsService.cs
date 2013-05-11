@@ -98,12 +98,15 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException(string.Format("Session {0} not found.", request.Id));
             }
 
-            session.WebSocket.SendAsync(new WebSocketMessage<BrowseTo>
+            foreach (var socket in session.WebSockets)
             {
-                MessageType = "Browse",
-                Data = request
+                socket.SendAsync(new WebSocketMessage<BrowseTo>
+                {
+                    MessageType = "Browse",
+                    Data = request
 
-            }, CancellationToken.None);
+                }, CancellationToken.None);
+            }
         }
     }
 }

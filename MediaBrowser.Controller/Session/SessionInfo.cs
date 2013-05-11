@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.Collections.Generic;
+using System.Linq;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Net;
 using System;
@@ -10,6 +12,11 @@ namespace MediaBrowser.Controller.Session
     /// </summary>
     public class SessionInfo
     {
+        public SessionInfo()
+        {
+            WebSockets = new List<IWebSocketConnection>();
+        }
+
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
@@ -86,7 +93,7 @@ namespace MediaBrowser.Controller.Session
         /// Gets or sets the web socket.
         /// </summary>
         /// <value>The web socket.</value>
-        public IWebSocketConnection WebSocket { get; set; }
+        public List<IWebSocketConnection> WebSockets { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is active.
@@ -96,9 +103,9 @@ namespace MediaBrowser.Controller.Session
         {
             get
             {
-                if (WebSocket != null)
+                if (WebSockets.Count > 0)
                 {
-                    return WebSocket.State == WebSocketState.Open;
+                    return WebSockets.Any(i => i.State == WebSocketState.Open);
                 }
 
                 return (DateTime.UtcNow - LastActivityDate).TotalMinutes <= 5;
@@ -113,7 +120,7 @@ namespace MediaBrowser.Controller.Session
         {
             get
             {
-                return WebSocket != null && WebSocket.State == WebSocketState.Open;
+                return WebSockets.Any(i => i.State == WebSocketState.Open);
             }
         }
     }
