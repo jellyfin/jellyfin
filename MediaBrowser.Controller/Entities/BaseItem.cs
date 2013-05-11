@@ -30,7 +30,6 @@ namespace MediaBrowser.Controller.Entities
             TrailerUrls = new List<string>();
             Studios = new List<string>();
             People = new List<PersonInfo>();
-            CriticReviews = new List<ItemReview>();
             Taglines = new List<string>();
             ScreenshotImagePaths = new List<string>();
             BackdropImagePaths = new List<string>();
@@ -670,12 +669,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The parent index number.</value>
         public int? ParentIndexNumber { get; set; }
-
-        /// <summary>
-        /// Gets or sets the critic reviews.
-        /// </summary>
-        /// <value>The critic reviews.</value>
-        public List<ItemReview> CriticReviews { get; set; }
 
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }

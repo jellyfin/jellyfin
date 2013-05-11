@@ -2,6 +2,7 @@ using System.Linq;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Server.Implementations.Reflection;
@@ -319,6 +320,65 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                     childParam.Value = guid;
                     QueueCommand(cmd);
                 }
+            });
+        }
+
+        /// <summary>
+        /// Gets the critic reviews path.
+        /// </summary>
+        /// <value>The critic reviews path.</value>
+        private string CriticReviewsPath
+        {
+            get
+            {
+                var path = Path.Combine(_appPaths.DataPath, "critic-reviews");
+
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+
+                return path;
+            }
+        }
+
+        /// <summary>
+        /// Gets the critic reviews.
+        /// </summary>
+        /// <param name="itemId">The item id.</param>
+        /// <returns>Task{IEnumerable{ItemReview}}.</returns>
+        public Task<IEnumerable<ItemReview>> GetCriticReviews(Guid itemId)
+        {
+            return Task.Run<IEnumerable<ItemReview>>(() =>
+            {
+
+                try
+                {
+                    var path = Path.Combine(CriticReviewsPath, itemId + ".json");
+
+                    return _jsonSerializer.DeserializeFromFile<List<ItemReview>>(path);
+                }
+                catch (FileNotFoundException)
+                {
+                    return new List<ItemReview>();
+                }
+
+            });
+        }
+
+        /// <summary>
+        /// Saves the critic reviews.
+        /// </summary>
+        /// <param name="itemId">The item id.</param>
+        /// <param name="criticReviews">The critic reviews.</param>
+        /// <returns>Task.</returns>
+        public Task SaveCriticReviews(Guid itemId, IEnumerable<ItemReview> criticReviews)
+        {
+            return Task.Run(() =>
+            {
+                var path = Path.Combine(CriticReviewsPath, itemId + ".json");
+
+                _jsonSerializer.SerializeToFile(criticReviews.ToList(), path);
             });
         }
     }

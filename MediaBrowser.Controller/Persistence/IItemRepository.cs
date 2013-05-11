@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Persistence
 {
@@ -48,5 +49,20 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SaveChildren(Guid parentId, IEnumerable<BaseItem> children, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the critic reviews.
+        /// </summary>
+        /// <param name="itemId">The item id.</param>
+        /// <returns>Task{IEnumerable{ItemReview}}.</returns>
+        Task<IEnumerable<ItemReview>> GetCriticReviews(Guid itemId);
+
+        /// <summary>
+        /// Saves the critic reviews.
+        /// </summary>
+        /// <param name="itemId">The item id.</param>
+        /// <param name="criticReviews">The critic reviews.</param>
+        /// <returns>Task.</returns>
+        Task SaveCriticReviews(Guid itemId, IEnumerable<ItemReview> criticReviews);
     }
 }
