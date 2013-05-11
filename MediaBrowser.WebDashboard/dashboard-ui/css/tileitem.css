@@ -78,7 +78,7 @@
 }
 
 .smallPosterTileItem .tileImage {
-    height: 125px;
+    height: 95px;
     width: 30%;
 }
 
@@ -132,7 +132,7 @@
 
 
     .smallPosterTileItem {
-        width: 270px;
+        width: 210px;
         display: inline-block;
         margin: 3px;
     }

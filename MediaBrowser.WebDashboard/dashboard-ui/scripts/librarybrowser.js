@@ -1597,7 +1597,7 @@
             if (cast.PrimaryImageTag) {
 
                 imgUrl = ApiClient.getPersonImageUrl(cast.Name, {
-                    width: 185,
+                    width: 130,
                     tag: cast.PrimaryImageTag,
                     type: "primary"
                 });

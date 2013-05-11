@@ -19,21 +19,6 @@ namespace MediaBrowser.Controller.Library
         IEnumerable<User> Users { get; }
 
         /// <summary>
-        /// Occurs when [playback start].
-        /// </summary>
-        event EventHandler<PlaybackProgressEventArgs> PlaybackStart;
-
-        /// <summary>
-        /// Occurs when [playback progress].
-        /// </summary>
-        event EventHandler<PlaybackProgressEventArgs> PlaybackProgress;
-
-        /// <summary>
-        /// Occurs when [playback stopped].
-        /// </summary>
-        event EventHandler<PlaybackProgressEventArgs> PlaybackStopped;
-
-        /// <summary>
         /// Occurs when [user updated].
         /// </summary>
         event EventHandler<GenericEventArgs<User>> UserUpdated;

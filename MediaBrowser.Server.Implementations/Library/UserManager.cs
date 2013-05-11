@@ -107,27 +107,11 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="userDataRepository">The user data repository.</param>
         public UserManager(ILogger logger, IServerConfigurationManager configurationManager)
         {
             _logger = logger;
             ConfigurationManager = configurationManager;
         }
-
-        #region Events
-        /// <summary>
-        /// Occurs when [playback start].
-        /// </summary>
-        public event EventHandler<PlaybackProgressEventArgs> PlaybackStart;
-        /// <summary>
-        /// Occurs when [playback progress].
-        /// </summary>
-        public event EventHandler<PlaybackProgressEventArgs> PlaybackProgress;
-        /// <summary>
-        /// Occurs when [playback stopped].
-        /// </summary>
-        public event EventHandler<PlaybackProgressEventArgs> PlaybackStopped;
-        #endregion
 
         #region UserUpdated Event
         /// <summary>
