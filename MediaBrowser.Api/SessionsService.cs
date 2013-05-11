@@ -18,14 +18,25 @@ namespace MediaBrowser.Api
     [Api(("Gets a list of sessions"))]
     public class GetSessions : IReturn<List<SessionInfoDto>>
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether [supports remote control].
+        /// </summary>
+        /// <value><c>null</c> if [supports remote control] contains no value, <c>true</c> if [supports remote control]; otherwise, <c>false</c>.</value>
         [ApiMember(Name = "SupportsRemoteControl", Description = "Optional. Filter by sessions that can be remote controlled.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? SupportsRemoteControl { get; set; }
     }
 
+    /// <summary>
+    /// Class BrowseTo
+    /// </summary>
     [Route("/Sessions/{Id}/Viewing", "POST")]
     [Api(("Instructs a session to browse to an item or view"))]
     public class BrowseTo : IReturnVoid
     {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public Guid Id { get; set; }
 
@@ -64,7 +75,7 @@ namespace MediaBrowser.Api
         private readonly ISessionManager _sessionManager;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SessionsService"/> class.
+        /// Initializes a new instance of the <see cref="SessionsService" /> class.
         /// </summary>
         /// <param name="sessionManager">The session manager.</param>
         public SessionsService(ISessionManager sessionManager)
@@ -89,6 +100,11 @@ namespace MediaBrowser.Api
             return ToOptimizedResult(result.Select(SessionInfoDtoBuilder.GetSessionInfoDto).ToList());
         }
 
+        /// <summary>
+        /// Posts the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <exception cref="ResourceNotFoundException"></exception>
         public void Post(BrowseTo request)
         {
             var session = _sessionManager.Sessions.FirstOrDefault(i => i.Id == request.Id);
