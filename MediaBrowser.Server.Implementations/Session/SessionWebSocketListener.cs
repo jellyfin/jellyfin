@@ -7,6 +7,7 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Server.Implementations.Session
 {
@@ -66,12 +67,15 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 if (session != null)
                 {
-                    session.WebSocket = message.Connection;
+                    var sockets = session.WebSockets.Where(i => i.State == WebSocketState.Open).ToList();
+                    sockets.Add(message.Connection);
+
+                    session.WebSockets = sockets;
                 }
             }
             else if (string.Equals(message.MessageType, "Context", StringComparison.OrdinalIgnoreCase))
             {
-                var session = _sessionManager.Sessions.FirstOrDefault(i => i.WebSocket == message.Connection);
+                var session = _sessionManager.Sessions.FirstOrDefault(i => i.WebSockets.Contains(message.Connection));
 
                 if (session != null)
                 {
@@ -84,7 +88,7 @@ namespace MediaBrowser.Server.Implementations.Session
             }
             else if (string.Equals(message.MessageType, "PlaybackStart", StringComparison.OrdinalIgnoreCase))
             {
-                var session = _sessionManager.Sessions.FirstOrDefault(i => i.WebSocket == message.Connection);
+                var session = _sessionManager.Sessions.FirstOrDefault(i => i.WebSockets.Contains(message.Connection));
 
                 if (session != null && session.UserId.HasValue)
                 {
@@ -95,7 +99,7 @@ namespace MediaBrowser.Server.Implementations.Session
             }
             else if (string.Equals(message.MessageType, "PlaybackProgress", StringComparison.OrdinalIgnoreCase))
             {
-                var session = _sessionManager.Sessions.FirstOrDefault(i => i.WebSocket == message.Connection);
+                var session = _sessionManager.Sessions.FirstOrDefault(i => i.WebSockets.Contains(message.Connection));
 
                 if (session != null && session.UserId.HasValue)
                 {
@@ -122,7 +126,7 @@ namespace MediaBrowser.Server.Implementations.Session
             }
             else if (string.Equals(message.MessageType, "PlaybackStopped", StringComparison.OrdinalIgnoreCase))
             {
-                var session = _sessionManager.Sessions.FirstOrDefault(i => i.WebSocket == message.Connection);
+                var session = _sessionManager.Sessions.FirstOrDefault(i => i.WebSockets.Contains(message.Connection));
 
                 if (session != null && session.UserId.HasValue)
                 {
