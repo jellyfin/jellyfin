@@ -68,6 +68,7 @@
     <Compile Include="Images\ImageRequest.cs" />
     <Compile Include="Images\ImageService.cs" />
     <Compile Include="Images\ImageWriter.cs" />
+    <Compile Include="LibraryService.cs" />
     <Compile Include="Library\LibraryHelpers.cs" />
     <Compile Include="Library\LibraryService.cs" />
     <Compile Include="Library\LibraryStructureService.cs" />
