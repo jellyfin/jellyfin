@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.Providers.Music
                 }
             }
 
-            artist.PremiereDate = yearFormed > 0 ? new DateTime(yearFormed, 1,1) : DateTime.MinValue;
+            artist.PremiereDate = yearFormed > 0 ? new DateTime(yearFormed, 1, 1, 0, 0, 0, DateTimeKind.Utc) : (DateTime?)null;
             artist.ProductionYear = yearFormed;
             if (data.tags != null)
             {
