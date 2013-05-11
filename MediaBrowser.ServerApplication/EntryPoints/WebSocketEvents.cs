@@ -272,8 +272,13 @@ namespace MediaBrowser.ServerApplication.EntryPoints
             {
                 // Remove dupes in case some were saved multiple times
                 LibraryUpdateInfo.FoldersAddedTo = LibraryUpdateInfo.FoldersAddedTo.Distinct().ToList();
+
                 LibraryUpdateInfo.FoldersRemovedFrom = LibraryUpdateInfo.FoldersRemovedFrom.Distinct().ToList();
-                LibraryUpdateInfo.ItemsUpdated = LibraryUpdateInfo.ItemsUpdated.Distinct().ToList();
+
+                LibraryUpdateInfo.ItemsUpdated = LibraryUpdateInfo.ItemsUpdated
+                    .Where(i => !LibraryUpdateInfo.ItemsAdded.Contains(i))
+                    .Distinct()
+                    .ToList();
 
                 _serverManager.SendWebSocketMessage("LibraryChanged", LibraryUpdateInfo);
 
