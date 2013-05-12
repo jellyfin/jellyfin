@@ -1,5 +1,8 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
@@ -33,7 +36,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The request context.</value>
         public IRequestContext RequestContext { get; set; }
-        
+
         /// <summary>
         /// To the optimized result.
         /// </summary>
@@ -88,6 +91,123 @@ namespace MediaBrowser.Api
         {
             return ResultFactory.GetStaticFileResult(RequestContext, path);
         }
+
+        private readonly char[] _dashReplaceChars = new[] { '?', '/' };
+        private const char SlugChar = '-';
+
+        protected Task<Artist> GetArtist(string name, ILibraryManager libraryManager)
+        {
+            return libraryManager.GetArtist(DeSlugArtistName(name, libraryManager));
+        }
+
+        protected Task<Studio> GetStudio(string name, ILibraryManager libraryManager)
+        {
+            return libraryManager.GetStudio(DeSlugStudioName(name, libraryManager));
+        }
+
+        protected Task<Genre> GetGenre(string name, ILibraryManager libraryManager)
+        {
+            return libraryManager.GetGenre(DeSlugGenreName(name, libraryManager));
+        }
+
+        protected Task<Person> GetPerson(string name, ILibraryManager libraryManager)
+        {
+            return libraryManager.GetPerson(DeSlugPersonName(name, libraryManager));
+        }
+
+        /// <summary>
+        /// Deslugs an artist name by finding the correct entry in the library
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="libraryManager"></param>
+        /// <returns></returns>
+        protected string DeSlugArtistName(string name, ILibraryManager libraryManager)
+        {
+            if (name.IndexOf(SlugChar) == -1)
+            {
+                return name;
+            }
+            
+            return libraryManager.RootFolder.RecursiveChildren
+                .OfType<Audio>()
+                .SelectMany(i => new[] { i.Artist, i.AlbumArtist })
+                .Where(i => !string.IsNullOrEmpty(i))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .FirstOrDefault(i =>
+                {
+                    i = _dashReplaceChars.Aggregate(i, (current, c) => current.Replace(c, SlugChar));
+
+                    return string.Equals(i, name, StringComparison.OrdinalIgnoreCase);
+
+                }) ?? name;
+        }
+
+        /// <summary>
+        /// Deslugs a genre name by finding the correct entry in the library
+        /// </summary>
+        protected string DeSlugGenreName(string name, ILibraryManager libraryManager)
+        {
+            if (name.IndexOf(SlugChar) == -1)
+            {
+                return name;
+            }
+
+            return libraryManager.RootFolder.RecursiveChildren
+                .SelectMany(i => i.Genres)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .FirstOrDefault(i =>
+                {
+                    i = _dashReplaceChars.Aggregate(i, (current, c) => current.Replace(c, SlugChar));
+
+                    return string.Equals(i, name, StringComparison.OrdinalIgnoreCase);
+
+                }) ?? name;
+        }
+
+        /// <summary>
+        /// Deslugs a studio name by finding the correct entry in the library
+        /// </summary>
+        protected string DeSlugStudioName(string name, ILibraryManager libraryManager)
+        {
+            if (name.IndexOf(SlugChar) == -1)
+            {
+                return name;
+            }
+
+            return libraryManager.RootFolder.RecursiveChildren
+                .SelectMany(i => i.Studios)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .FirstOrDefault(i =>
+                {
+                    i = _dashReplaceChars.Aggregate(i, (current, c) => current.Replace(c, SlugChar));
+
+                    return string.Equals(i, name, StringComparison.OrdinalIgnoreCase);
+
+                }) ?? name;
+        }
+
+        /// <summary>
+        /// Deslugs a person name by finding the correct entry in the library
+        /// </summary>
+        protected string DeSlugPersonName(string name, ILibraryManager libraryManager)
+        {
+            if (name.IndexOf(SlugChar) == -1)
+            {
+                return name;
+            }
+
+            return libraryManager.RootFolder.RecursiveChildren
+                .SelectMany(i => i.People)
+                .Select(i => i.Name)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .FirstOrDefault(i =>
+                {
+                    i = _dashReplaceChars.Aggregate(i, (current, c) => current.Replace(c, SlugChar));
+
+                    return string.Equals(i, name, StringComparison.OrdinalIgnoreCase);
+
+                }) ?? name;
+        }
     }
 
     /// <summary>
@@ -109,7 +229,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The logger.</value>
         public ILogger Logger { get; set; }
-        
+
         /// <summary>
         /// The request filter is executed before the service.
         /// </summary>
@@ -170,7 +290,7 @@ namespace MediaBrowser.Api
 
             return GetAuthorization(auth);
         }
-        
+
         /// <summary>
         /// Gets the authorization.
         /// </summary>

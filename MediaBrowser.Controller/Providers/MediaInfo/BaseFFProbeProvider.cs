@@ -8,7 +8,6 @@ using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,33 +27,6 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         }
 
         protected readonly IJsonSerializer JsonSerializer;
-        
-        /// <summary>
-        /// Gets or sets the FF probe cache.
-        /// </summary>
-        /// <value>The FF probe cache.</value>
-        protected FileSystemRepository FFProbeCache { get; set; }
-
-        /// <summary>
-        /// Initializes this instance.
-        /// </summary>
-        protected override void Initialize()
-        {
-            base.Initialize();
-            FFProbeCache = new FileSystemRepository(Path.Combine(ConfigurationManager.ApplicationPaths.CachePath, CacheDirectoryName));
-        }
-
-        /// <summary>
-        /// Gets the name of the cache directory.
-        /// </summary>
-        /// <value>The name of the cache directory.</value>
-        protected virtual string CacheDirectoryName
-        {
-            get
-            {
-                return "ffmpeg-video-info";
-            }
-        }
 
         /// <summary>
         /// Gets the priority.
@@ -86,7 +58,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             {
                 OnPreFetch(myItem, isoMount);
 
-                var result = await GetMediaInfo(item, isoMount, item.DateModified, FFProbeCache, cancellationToken).ConfigureAwait(false);
+                var result = await GetMediaInfo(item, isoMount, cancellationToken).ConfigureAwait(false);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -123,38 +95,14 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="isoMount">The iso mount.</param>
-        /// <param name="lastDateModified">The last date modified.</param>
-        /// <param name="cache">The cache.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{MediaInfoResult}.</returns>
         /// <exception cref="System.ArgumentNullException">inputPath
         /// or
         /// cache</exception>
-        private async Task<MediaInfoResult> GetMediaInfo(BaseItem item, IIsoMount isoMount, DateTime lastDateModified, FileSystemRepository cache, CancellationToken cancellationToken)
+        private async Task<MediaInfoResult> GetMediaInfo(BaseItem item, IIsoMount isoMount, CancellationToken cancellationToken)
         {
-            if (cache == null)
-            {
-                throw new ArgumentNullException("cache");
-            }
-
-            // Put the ffmpeg version into the cache name so that it's unique per-version
-            // We don't want to try and deserialize data based on an old version, which could potentially fail
-            var resourceName = item.Id + "_" + lastDateModified.Ticks + "_" + MediaEncoder.Version;
-
-            // Forumulate the cache file path
-            var cacheFilePath = cache.GetResourcePath(resourceName, ".js");
-
             cancellationToken.ThrowIfCancellationRequested();
-
-            // Avoid File.Exists by just trying to deserialize
-            try
-            {
-                return JsonSerializer.DeserializeFromFile<MediaInfoResult>(cacheFilePath);
-            }
-            catch (FileNotFoundException)
-            {
-                // Cache file doesn't exist
-            }
 
             var type = InputType.AudioFile;
             var inputPath = isoMount == null ? new[] { item.Path } : new[] { isoMount.MountedPath };
@@ -166,11 +114,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
                 inputPath = MediaEncoderHelpers.GetInputArgument(video, isoMount, out type);
             }
 
-            var info = await MediaEncoder.GetMediaInfo(inputPath, type, cancellationToken).ConfigureAwait(false);
-
-            JsonSerializer.SerializeToFile(info, cacheFilePath);
-
-            return info;
+            return await MediaEncoder.GetMediaInfo(inputPath, type, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

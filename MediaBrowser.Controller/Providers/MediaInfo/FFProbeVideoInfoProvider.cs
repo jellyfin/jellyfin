@@ -35,15 +35,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
             _blurayExaminer = blurayExaminer;
             _isoManager = isoManager;
-
-            BdInfoCache = new FileSystemRepository(Path.Combine(ConfigurationManager.ApplicationPaths.CachePath, "bdinfo"));
         }
-
-        /// <summary>
-        /// Gets or sets the bd info cache.
-        /// </summary>
-        /// <value>The bd info cache.</value>
-        private FileSystemRepository BdInfoCache { get; set; }
 
         /// <summary>
         /// Gets or sets the bluray examiner.
@@ -231,7 +223,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             if (video.VideoType == VideoType.BluRay || (video.IsoType.HasValue && video.IsoType.Value == IsoType.BluRay))
             {
                 var inputPath = isoMount != null ? isoMount.MountedPath : video.Path;
-                FetchBdInfo(video, inputPath, BdInfoCache, cancellationToken);
+                FetchBdInfo(video, inputPath, cancellationToken);
             }
 
             AddExternalSubtitles(video);
@@ -334,29 +326,12 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="inputPath">The input path.</param>
-        /// <param name="bdInfoCache">The bd info cache.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        private void FetchBdInfo(BaseItem item, string inputPath, FileSystemRepository bdInfoCache, CancellationToken cancellationToken)
+        private void FetchBdInfo(BaseItem item, string inputPath, CancellationToken cancellationToken)
         {
             var video = (Video)item;
 
-            // Get the path to the cache file
-            var cacheName = item.Id + "_" + item.DateModified.Ticks;
-
-            var cacheFile = bdInfoCache.GetResourcePath(cacheName, ".js");
-
-            BlurayDiscInfo result;
-
-            try
-            {
-                result = JsonSerializer.DeserializeFromFile<BlurayDiscInfo>(cacheFile);
-            }
-            catch (FileNotFoundException)
-            {
-                result = GetBDInfo(inputPath);
-
-                JsonSerializer.SerializeToFile(result, cacheFile);
-            }
+            var result = GetBDInfo(inputPath);
 
             cancellationToken.ThrowIfCancellationRequested();
 

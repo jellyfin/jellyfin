@@ -97,6 +97,10 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
         self.encodeName = function (name) {
 
+            name = name.split('/').join('-');
+            
+            name = name.split('?').join('-');
+
             var val = $.param({ name: name });
             return val.substring(val.indexOf('=') + 1).replace("'", '%27');
         };

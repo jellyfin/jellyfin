@@ -24,18 +24,6 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         }
 
         /// <summary>
-        /// Gets the name of the cache directory.
-        /// </summary>
-        /// <value>The name of the cache directory.</value>
-        protected override string CacheDirectoryName
-        {
-            get
-            {
-                return "ffmpeg-audio-info";
-            }
-        }
-
-        /// <summary>
         /// Fetches the specified audio.
         /// </summary>
         /// <param name="audio">The audio.</param>

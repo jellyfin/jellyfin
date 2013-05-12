@@ -212,19 +212,19 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (string.Equals(type, "Persons"))
             {
-                item = await LibraryManager.GetPerson(name).ConfigureAwait(false);
+                item = await GetPerson(name, LibraryManager).ConfigureAwait(false);
             }
             else if (string.Equals(type, "Artists"))
             {
-                item = await LibraryManager.GetArtist(name).ConfigureAwait(false);
+                item = await GetArtist(name, LibraryManager).ConfigureAwait(false);
             }
             else if (string.Equals(type, "Genres"))
             {
-                item = await LibraryManager.GetGenre(name).ConfigureAwait(false);
+                item = await GetGenre(name, LibraryManager).ConfigureAwait(false);
             }
             else if (string.Equals(type, "Studios"))
             {
-                item = await LibraryManager.GetStudio(name).ConfigureAwait(false);
+                item = await GetStudio(name, LibraryManager).ConfigureAwait(false);
             }
             else
             {
@@ -256,19 +256,19 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (string.Equals(type, "Persons"))
             {
-                item = await LibraryManager.GetPerson(name).ConfigureAwait(false);
+                item = await GetPerson(name, LibraryManager).ConfigureAwait(false);
             }
             else if (string.Equals(type, "Artists"))
             {
-                item = await LibraryManager.GetArtist(name).ConfigureAwait(false);
+                item = await GetArtist(name, LibraryManager).ConfigureAwait(false);
             }
             else if (string.Equals(type, "Genres"))
             {
-                item = await LibraryManager.GetGenre(name).ConfigureAwait(false);
+                item = await GetGenre(name, LibraryManager).ConfigureAwait(false);
             }
             else if (string.Equals(type, "Studios"))
             {
-                item = await LibraryManager.GetStudio(name).ConfigureAwait(false);
+                item = await GetStudio(name, LibraryManager).ConfigureAwait(false);
             }
             else
             {

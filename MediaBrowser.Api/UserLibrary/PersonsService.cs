@@ -109,7 +109,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task{BaseItemDto}.</returns>
         private async Task<BaseItemDto> GetItem(GetPerson request)
         {
-            var item = await LibraryManager.GetPerson(request.Name).ConfigureAwait(false);
+            var item = await GetPerson(request.Name, LibraryManager).ConfigureAwait(false);
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
@@ -145,7 +145,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetPersonItemCounts request)
         {
-            var items = GetItems(request.UserId).Where(i => i.People != null && i.People.Any(p => string.Equals(p.Name, request.Name, StringComparison.OrdinalIgnoreCase))).ToList();
+            var name = DeSlugPersonName(request.Name, LibraryManager);
+
+            var items = GetItems(request.UserId).Where(i => i.People != null && i.People.Any(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase))).ToList();
 
             var counts = new ItemByNameCounts
             {

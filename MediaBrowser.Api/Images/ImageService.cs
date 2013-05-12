@@ -464,7 +464,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetStudioImage request)
         {
-            var item = _libraryManager.GetStudio(request.Name).Result;
+            var item = GetStudio(request.Name, _libraryManager).Result;
 
             return GetImage(request, item);
         }
@@ -476,7 +476,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetPersonImage request)
         {
-            var item = _libraryManager.GetPerson(request.Name).Result;
+            var item = GetPerson(request.Name, _libraryManager).Result;
 
             return GetImage(request, item);
         }
@@ -488,7 +488,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetArtistImage request)
         {
-            var item = _libraryManager.GetArtist(request.Name).Result;
+            var item = GetArtist(request.Name, _libraryManager).Result;
 
             return GetImage(request, item);
         }
@@ -500,7 +500,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetGenreImage request)
         {
-            var item = _libraryManager.GetGenre(request.Name).Result;
+            var item = GetGenre(request.Name, _libraryManager).Result;
 
             return GetImage(request, item);
         }
