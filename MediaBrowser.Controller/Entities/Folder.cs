@@ -92,12 +92,26 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="System.InvalidOperationException">Unable to add  + item.Name</exception>
         public async Task AddChild(BaseItem item, CancellationToken cancellationToken)
         {
+            item.Parent = this;
+
+            if (item.Id == Guid.Empty)
+            {
+                item.Id = item.Path.GetMBId(item.GetType());
+            }
+
+            if (item.DateCreated == DateTime.MinValue)
+            {
+                item.DateCreated = DateTime.Now;
+            }
+            if (item.DateModified == DateTime.MinValue)
+            {
+                item.DateModified = DateTime.Now;
+            }
+
             if (!_children.TryAdd(item.Id, item))
             {
                 throw new InvalidOperationException("Unable to add " + item.Name);
             }
-
-            item.Parent = this;
 
             var newChildren = Children.ToList();
 
