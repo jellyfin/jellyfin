@@ -1,0 +1,353 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{657B5410-7C3B-4806-9753-D254102CE537}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MediaBrowser.Model.net35</RootNamespace>
+    <AssemblyName>MediaBrowser.Model.net35</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>MediaBrowser.Model.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\MediaBrowser.Model\Configuration\BaseApplicationConfiguration.cs">
+      <Link>Configuration\BaseApplicationConfiguration.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\ServerConfiguration.cs">
+      <Link>Configuration\ServerConfiguration.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\UserConfiguration.cs">
+      <Link>Configuration\UserConfiguration.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Drawing\DrawingUtils.cs">
+      <Link>Drawing\DrawingUtils.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\BaseItemDto.cs">
+      <Link>Dto\BaseItemDto.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\BaseItemPerson.cs">
+      <Link>Dto\BaseItemPerson.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\ChapterInfoDto.cs">
+      <Link>Dto\ChapterInfoDto.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\IItemDto.cs">
+      <Link>Dto\IItemDto.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\ImageInfo.cs">
+      <Link>Dto\ImageInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\ImageOptions.cs">
+      <Link>Dto\ImageOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\ItemByNameCounts.cs">
+      <Link>Dto\ItemByNameCounts.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\StreamOptions.cs">
+      <Link>Dto\StreamOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\StudioDto.cs">
+      <Link>Dto\StudioDto.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\UserDto.cs">
+      <Link>Dto\UserDto.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\UserItemDataDto.cs">
+      <Link>Dto\UserItemDataDto.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\BaseItemInfo.cs">
+      <Link>Entities\BaseItemInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\ChapterInfo.cs">
+      <Link>Entities\ChapterInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\DisplayPreferences.cs">
+      <Link>Entities\DisplayPreferences.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\IByReferenceItem.cs">
+      <Link>Entities\IByReferenceItem.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\IHasMediaStreams.cs">
+      <Link>Entities\IHasMediaStreams.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\IHasProviderIds.cs">
+      <Link>Entities\IHasProviderIds.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\ImageDownloadOptions.cs">
+      <Link>Entities\ImageDownloadOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\ImageType.cs">
+      <Link>Entities\ImageType.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\ItemReview.cs">
+      <Link>Entities\ItemReview.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\LibraryUpdateInfo.cs">
+      <Link>Entities\LibraryUpdateInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\LocationType.cs">
+      <Link>Entities\LocationType.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\MBRegistrationRecord.cs">
+      <Link>Entities\MBRegistrationRecord.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\MediaStream.cs">
+      <Link>Entities\MediaStream.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\MediaType.cs">
+      <Link>Entities\MediaType.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\MetadataProviders.cs">
+      <Link>Entities\MetadataProviders.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\ParentalRating.cs">
+      <Link>Entities\ParentalRating.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\PersonType.cs">
+      <Link>Entities\PersonType.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\PluginSecurityInfo.cs">
+      <Link>Entities\PluginSecurityInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\RequestResult.cs">
+      <Link>Entities\RequestResult.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\SeriesStatus.cs">
+      <Link>Entities\SeriesStatus.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\VideoFormat.cs">
+      <Link>Entities\VideoFormat.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\VideoType.cs">
+      <Link>Entities\VideoType.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\VirtualFolderInfo.cs">
+      <Link>Entities\VirtualFolderInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Extensions\ModelExtensions.cs">
+      <Link>Extensions\ModelExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Globalization\CountryInfo.cs">
+      <Link>Globalization\CountryInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Globalization\CultureDto.cs">
+      <Link>Globalization\CultureDto.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\IO\FileSystemEntryInfo.cs">
+      <Link>IO\FileSystemEntryInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\IO\IZipClient.cs">
+      <Link>IO\IZipClient.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Logging\ILogger.cs">
+      <Link>Logging\ILogger.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Logging\ILogManager.cs">
+      <Link>Logging\ILogManager.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Logging\LogSeverity.cs">
+      <Link>Logging\LogSeverity.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\MediaInfo\BlurayDiscInfo.cs">
+      <Link>MediaInfo\BlurayDiscInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\MediaInfo\IBlurayExaminer.cs">
+      <Link>MediaInfo\IBlurayExaminer.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Net\HttpException.cs">
+      <Link>Net\HttpException.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Net\NetworkShare.cs">
+      <Link>Net\NetworkShare.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Net\NetworkShareType.cs">
+      <Link>Net\NetworkShareType.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Net\WebSocketMessage.cs">
+      <Link>Net\WebSocketMessage.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Net\WebSocketMessageType.cs">
+      <Link>Net\WebSocketMessageType.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Net\WebSocketState.cs">
+      <Link>Net\WebSocketState.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Plugins\BasePluginConfiguration.cs">
+      <Link>Plugins\BasePluginConfiguration.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Plugins\PluginInfo.cs">
+      <Link>Plugins\PluginInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Querying\ArtistsQuery.cs">
+      <Link>Querying\ArtistsQuery.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Querying\ItemFields.cs">
+      <Link>Querying\ItemFields.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Querying\ItemFilter.cs">
+      <Link>Querying\ItemFilter.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Querying\ItemQuery.cs">
+      <Link>Querying\ItemQuery.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Querying\ItemReviewsResult.cs">
+      <Link>Querying\ItemReviewsResult.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Querying\ItemsByNameQuery.cs">
+      <Link>Querying\ItemsByNameQuery.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Querying\ItemSortBy.cs">
+      <Link>Querying\ItemSortBy.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Querying\ItemsResult.cs">
+      <Link>Querying\ItemsResult.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Querying\PersonsQuery.cs">
+      <Link>Querying\PersonsQuery.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Querying\ThemeSongsResult.cs">
+      <Link>Querying\ThemeSongsResult.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Search\SearchHint.cs">
+      <Link>Search\SearchHint.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Search\SearchHintResult.cs">
+      <Link>Search\SearchHintResult.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Serialization\IJsonSerializer.cs">
+      <Link>Serialization\IJsonSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Serialization\IXmlSerializer.cs">
+      <Link>Serialization\IXmlSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Session\BrowseRequest.cs">
+      <Link>Session\BrowseRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Session\PlayRequest.cs">
+      <Link>Session\PlayRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Session\PlaystateRequest.cs">
+      <Link>Session\PlaystateRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Session\SessionInfoDto.cs">
+      <Link>Session\SessionInfoDto.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\System\SystemInfo.cs">
+      <Link>System\SystemInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Tasks\SystemEvent.cs">
+      <Link>Tasks\SystemEvent.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Tasks\TaskCompletionStatus.cs">
+      <Link>Tasks\TaskCompletionStatus.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Tasks\TaskInfo.cs">
+      <Link>Tasks\TaskInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Tasks\TaskResult.cs">
+      <Link>Tasks\TaskResult.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Tasks\TaskState.cs">
+      <Link>Tasks\TaskState.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Tasks\TaskTriggerInfo.cs">
+      <Link>Tasks\TaskTriggerInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Updates\CheckForUpdateResult.cs">
+      <Link>Updates\CheckForUpdateResult.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Updates\InstallationInfo.cs">
+      <Link>Updates\InstallationInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Updates\PackageInfo.cs">
+      <Link>Updates\PackageInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Updates\PackageTargetSystem.cs">
+      <Link>Updates\PackageTargetSystem.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Updates\PackageType.cs">
+      <Link>Updates\PackageType.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Updates\PackageVersionClass.cs">
+      <Link>Updates\PackageVersionClass.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Updates\PackageVersionInfo.cs">
+      <Link>Updates\PackageVersionInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Weather\WeatherForecast.cs">
+      <Link>Weather\WeatherForecast.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Weather\WeatherInfo.cs">
+      <Link>Weather\WeatherInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Weather\WeatherStatus.cs">
+      <Link>Weather\WeatherStatus.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Weather\WeatherUnits.cs">
+      <Link>Weather\WeatherUnits.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Web\QueryStringDictionary.cs">
+      <Link>Web\QueryStringDictionary.cs</Link>
+    </Compile>
+    <Compile Include="..\SharedVersion.cs">
+      <Link>Properties\SharedVersion.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MediaBrowser.Model.snk" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>if $(ConfigurationName) == Release (
+xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\" /y /d /r /i
+)</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
