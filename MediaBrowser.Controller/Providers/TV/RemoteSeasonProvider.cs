@@ -55,7 +55,8 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <value>The priority.</value>
         public override MetadataProviderPriority Priority
         {
-            get { return MetadataProviderPriority.Second; }
+            // Run after fanart
+            get { return MetadataProviderPriority.Fourth; }
         }
 
         /// <summary>
