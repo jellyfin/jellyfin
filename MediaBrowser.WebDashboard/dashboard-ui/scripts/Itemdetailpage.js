@@ -164,7 +164,7 @@
             $('#scenesCollapsible', page).hide();
         } else {
             $('#scenesCollapsible', page).show();
-            renderScenes(page, item);
+            renderScenes(page, item, 6);
         }
         if (!item.LocalTrailerCount || item.LocalTrailerCount == 0) {
             $('#trailersCollapsible', page).hide();
@@ -176,13 +176,13 @@
             $('#specialsCollapsible', page).hide();
         } else {
             $('#specialsCollapsible', page).show();
-            renderSpecials(page, item);
+            renderSpecials(page, item, 6);
         }
         if (!item.People || !item.People.length) {
             $('#castCollapsible', page).hide();
         } else {
             $('#castCollapsible', page).show();
-            renderCast(page, item, context);
+            renderCast(page, item, context, 10);
         }
 
         $('#themeSongsCollapsible', page).hide();
@@ -195,6 +195,8 @@
         ApiClient.getThemeVideos(Dashboard.getCurrentUserId(), item.Id).done(function (result) {
             renderThemeVideos(page, item, result);
         });
+
+        renderCriticReviews(page, item, 1);
     }
 
     function renderDetails(page, item, context) {
@@ -316,6 +318,97 @@
         $('#itemRatings', page).html(LibraryBrowser.getUserDataIconsHtml(item));
     }
 
+    function renderCriticReviews(page, item, limit) {
+
+        var options = {};
+
+        if (limit) {
+            options.limit = limit;
+        }
+
+        ApiClient.getCriticReviews(item.Id, options).done(function (result) {
+
+            if (result.TotalRecordCount) {
+                $('#criticReviewsCollapsible', page).show();
+                renderCriticReviewsContent(page, result, limit);
+            } else {
+                $('#criticReviewsCollapsible', page).hide();
+            }
+        });
+    }
+
+    function renderCriticReviewsContent(page, result, limit) {
+
+        var html = '';
+
+        var reviews = result.ItemReviews;
+
+        for (var i = 0, length = reviews.length; i < length; i++) {
+
+            var review = reviews[i];
+
+            html += '<div class="criticReview">';
+
+            html += '<div class="reviewScore">';
+
+
+            if (review.Score != null) {
+                html += review.Score;
+            }
+            else if (review.Likes != null) {
+
+                if (review.Likes) {
+                    html += '<img src="css/images/fresh.png" />';
+                } else {
+                    html += '<img src="css/images/rotten.png" />';
+                }
+            }
+            
+            html += '</div>';
+
+            html += '<div class="reviewCaption">' + review.Caption + '</div>';
+
+            var vals = [];
+
+            if (review.ReviewerName) {
+                vals.push(review.ReviewerName);
+            }
+            if (review.Publisher) {
+                vals.push(review.Publisher);
+            }
+
+            html += '<div class="reviewerName">' + vals.join(', ') + '.';
+
+            if (review.Date) {
+
+                try {
+
+                    var date = parseISO8601Date(review.Date, true).toLocaleDateString();
+
+                    html += '<span class="reviewDate">' + date + '</span>';
+                }
+                catch (error) {
+
+                }
+
+            }
+
+            html += '</div>';
+
+            if (review.Url) {
+                html += '<div class="reviewLink"><a class="textlink" href="' + review.Url + '" target="_blank">Full review</a></div>';
+            }
+
+            html += '</div>';
+        }
+
+        if (limit && result.TotalRecordCount > limit) {
+            html += '<p style="margin: .5em 0 0;padding-left: .5em;"><button class="moreCriticReviews" data-inline="true" data-mini="true">More ...</button></p>';
+        }
+
+        $('#criticReviewsContent', page).html(html).trigger('create');
+    }
+
     function renderThemeSongs(page, item, result) {
 
         if (result.Items.length) {
@@ -336,12 +429,16 @@
         }
     }
 
-    function renderScenes(page, item) {
+    function renderScenes(page, item, limit) {
         var html = '';
 
-        var chapters = item.Chapters || {};
+        var chapters = item.Chapters || [];
 
         for (var i = 0, length = chapters.length; i < length; i++) {
+
+            if (limit && i >= limit) {
+                break;
+            }
 
             var chapter = chapters[i];
             var chapterName = chapter.Name || "Chapter " + i;
@@ -374,7 +471,11 @@
             html += '</a>';
         }
 
-        $('#scenesContent', page).html(html);
+        if (limit && chapters.length > limit) {
+            html += '<p style="margin: .5em 0 0;padding-left: .5em;"><button class="moreScenes" data-inline="true" data-mini="true">More ...</button></p>';
+        }
+
+        $('#scenesContent', page).html(html).trigger('create');
     }
 
     function renderGallery(page, item) {
@@ -479,15 +580,21 @@
         $('#mediaInfoContent', page).html(html).trigger('create');
     }
 
-    function getVideosHtml(items) {
+    function getVideosHtml(items, limit, moreButtonClass) {
 
         var html = '';
 
         for (var i = 0, length = items.length; i < length; i++) {
 
+            if (limit && i >= limit) {
+                break;
+            }
+
             var item = items[i];
 
-            html += '<a class="posterItem smallBackdropPosterItem" href="#" onclick="MediaPlayer.playById(\'' + item.Id + '\');">';
+            var cssClass = "posterItem smallBackdropPosterItem";
+
+            html += '<a class="' + cssClass + '" href="#" onclick="MediaPlayer.playById(\'' + item.Id + '\');">';
 
             var imageTags = item.ImageTags || {};
 
@@ -522,14 +629,18 @@
 
         }
 
+        if (limit && items.length > limit) {
+            html += '<p style="margin: .5em 0 0;padding-left: .5em;"><button class="' + moreButtonClass + '" data-inline="true" data-mini="true">More ...</button></p>';
+        }
+
         return html;
     }
 
-    function renderSpecials(page, item) {
+    function renderSpecials(page, item, limit) {
 
         ApiClient.getSpecialFeatures(Dashboard.getCurrentUserId(), item.Id).done(function (specials) {
 
-            $('#specialsContent', page).html(getVideosHtml(specials));
+            $('#specialsContent', page).html(getVideosHtml(specials, limit, "moreSpecials")).trigger('create');
 
         });
     }
@@ -543,19 +654,59 @@
         });
     }
 
-    function renderCast(page, item, context) {
+    function renderCast(page, item, context, limit) {
+
         var html = '';
 
         var casts = item.People || [];
 
         for (var i = 0, length = casts.length; i < length; i++) {
 
+            if (limit && i >= limit) {
+                break;
+            }
+
             var cast = casts[i];
 
-            html += LibraryBrowser.createCastImage(cast, context);
+            html += '<a class="tileItem smallPosterTileItem" href="itembynamedetails.html?context=' + context + '&person=' + ApiClient.encodeName(cast.Name) + '">';
+
+            var imgUrl;
+
+            if (cast.PrimaryImageTag) {
+
+                imgUrl = ApiClient.getPersonImageUrl(cast.Name, {
+                    width: 130,
+                    tag: cast.PrimaryImageTag,
+                    type: "primary"
+                });
+
+            } else {
+
+                imgUrl = "css/images/items/list/person.png";
+            }
+
+            html += '<div class="tileImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
+
+
+
+            html += '<div class="tileContent">';
+
+            html += '<p>' + cast.Name + '</p>';
+
+            var role = cast.Role ? "as " + cast.Role : cast.Type;
+
+            html += '<p>' + (role || "") + '</p>';
+
+            html += '</div>';
+
+            html += '</a>';
         }
 
-        $('#castContent', page).html(html);
+        if (limit && casts.length > limit) {
+            html += '<p style="margin: .5em 0 0;padding-left: .5em;"><button class="morePeople" data-inline="true" data-mini="true">More ...</button></p>';
+        }
+
+        $('#castContent', page).html(html).trigger('create');
     }
 
     function play(startPosition) {
@@ -581,11 +732,33 @@
 
         var page = this;
 
+        $(page).on("click.moreScenes", ".moreScenes", function () {
+
+            renderScenes(page, currentItem);
+
+        }).on("click.morePeople", ".morePeople", function () {
+
+            renderCast(page, currentItem, getContext(currentItem));
+
+        }).on("click.moreSpecials", ".moreSpecials", function () {
+
+            renderSpecials(page, currentItem);
+
+        }).on("click.moreCriticReviews", ".moreCriticReviews", function () {
+
+            renderCriticReviews(page, currentItem);
+
+        });
+
         reload(page);
 
     }).on('pagehide', "#itemDetailPage", function () {
 
         currentItem = null;
+
+        var page = this;
+
+        $(page).off("click.moreScenes").off("click.morePeople").off("click.moreSpecials").off("click.moreCriticReviews");
     });
 
     function itemDetailPage() {

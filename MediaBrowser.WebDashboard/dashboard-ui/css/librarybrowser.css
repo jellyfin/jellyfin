@@ -150,6 +150,42 @@
     margin: 0 5px 5px 0;
 }
 
+.criticReview {
+    font-size: 14px;
+    margin: 1.5em 0;
+    background: #222;
+    padding: .8em .8em .8em 55px;
+    border-radius: 5px;
+    position: relative;
+}
+
+    .criticReview:first-child {
+        margin-top: .5em;
+    }
+
+    .criticReview img {
+        width: 30px;
+    }
+
+.reviewerName {
+    color: #ccc;
+    font-size: 13px;
+    margin-top: .5em;
+}
+
+.reviewLink {
+    margin-top: .5em;
+}
+
+.reviewDate {
+    margin-left: 1em;
+}
+
+.reviewScore {
+    position: absolute;
+    left: .8em;
+}
+
 
 @media all and (min-width: 750px) {
 

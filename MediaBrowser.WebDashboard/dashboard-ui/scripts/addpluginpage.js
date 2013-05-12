@@ -166,7 +166,7 @@
             $('#pViewWebsite', page).hide();
         }
 
-        if (pkg.previewImage) {
+        if (pkg.previewImage || pkg.thumbImage) {
 
             var color = pkg.tileColor || "#2572EB";
             var img = pkg.previewImage ? pkg.previewImage : pkg.thumbImage;

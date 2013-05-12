@@ -700,51 +700,51 @@
             var links = [];
 
             if (item.HomePageUrl) {
-                links.push('<a class="ui-link" href="' + item.HomePageUrl + '" target="_blank">Website</a>');
+                links.push('<a class="textlink" href="' + item.HomePageUrl + '" target="_blank">Website</a>');
             }
 
             var providerIds = item.ProviderIds || {};
 
             if (providerIds.Imdb) {
                 if (item.Type == "Movie" || item.Type == "Episode" || item.Type == "Trailer")
-                    links.push('<a class="ui-link" href="http://www.imdb.com/title/' + providerIds.Imdb + '" target="_blank">IMDb</a>');
+                    links.push('<a class="textlink" href="http://www.imdb.com/title/' + providerIds.Imdb + '" target="_blank">IMDb</a>');
                 else if (item.Type == "Person")
-                    links.push('<a class="ui-link" href="http://www.imdb.com/name/' + providerIds.Imdb + '" target="_blank">IMDb</a>');
+                    links.push('<a class="textlink" href="http://www.imdb.com/name/' + providerIds.Imdb + '" target="_blank">IMDb</a>');
             }
             if (providerIds.Tmdb) {
                 if (item.Type == "Movie" || item.Type == "Trailer")
-                    links.push('<a class="ui-link" href="http://www.themoviedb.org/movie/' + providerIds.Tmdb + '" target="_blank">TMDB</a>');
+                    links.push('<a class="textlink" href="http://www.themoviedb.org/movie/' + providerIds.Tmdb + '" target="_blank">TMDB</a>');
                 else if (item.Type == "BoxSet")
-                    links.push('<a class="ui-link" href="http://www.themoviedb.org/collection/' + providerIds.Tmdb + '" target="_blank">TMDB</a>');
+                    links.push('<a class="textlink" href="http://www.themoviedb.org/collection/' + providerIds.Tmdb + '" target="_blank">TMDB</a>');
                 else if (item.Type == "Person")
-                    links.push('<a class="ui-link" href="http://www.themoviedb.org/person/' + providerIds.Tmdb + '" target="_blank">TMDB</a>');
+                    links.push('<a class="textlink" href="http://www.themoviedb.org/person/' + providerIds.Tmdb + '" target="_blank">TMDB</a>');
             }
             if (providerIds.Tvdb)
-                links.push('<a class="ui-link" href="http://thetvdb.com/index.php?tab=series&id=' + providerIds.Tvdb + '" target="_blank">TVDB</a>');
+                links.push('<a class="textlink" href="http://thetvdb.com/index.php?tab=series&id=' + providerIds.Tvdb + '" target="_blank">TVDB</a>');
             if (providerIds.Tvcom) {
                 if (item.Type == "Episode")
-                    links.push('<a class="ui-link" href="http://www.tv.com/shows/' + providerIds.Tvcom + '" target="_blank">TV.com</a>');
+                    links.push('<a class="textlink" href="http://www.tv.com/shows/' + providerIds.Tvcom + '" target="_blank">TV.com</a>');
                 else if (item.Type == "Person")
-                    links.push('<a class="ui-link" href="http://www.tv.com/people/' + providerIds.Tvcom + '" target="_blank">TV.com</a>');
+                    links.push('<a class="textlink" href="http://www.tv.com/people/' + providerIds.Tvcom + '" target="_blank">TV.com</a>');
             }
             if (providerIds.Musicbrainz) {
 
                 if (item.Type == "MusicArtist" || item.Type == "Artist") {
-                    links.push('<a class="ui-link" href="http://musicbrainz.org/artist/' + providerIds.Musicbrainz + '" target="_blank">MusicBrainz</a>');
+                    links.push('<a class="textlink" href="http://musicbrainz.org/artist/' + providerIds.Musicbrainz + '" target="_blank">MusicBrainz</a>');
                 } else {
-                    links.push('<a class="ui-link" href="http://musicbrainz.org/release/' + providerIds.Musicbrainz + '" target="_blank">MusicBrainz</a>');
+                    links.push('<a class="textlink" href="http://musicbrainz.org/release/' + providerIds.Musicbrainz + '" target="_blank">MusicBrainz</a>');
                 }
 
             }
             if (providerIds.Gamesdb)
-                links.push('<a class="ui-link" href="http://www.games-db.com/Game/' + providerIds.Gamesdb + '" target="_blank">GamesDB</a>');
+                links.push('<a class="textlink" href="http://www.games-db.com/Game/' + providerIds.Gamesdb + '" target="_blank">GamesDB</a>');
 
 
             if (links.length) {
 
                 var html = 'Links:&nbsp;&nbsp;' + links.join('&nbsp;&nbsp;/&nbsp;&nbsp;');
 
-                $(linksElem).html(html);
+                $(linksElem).html(html).trigger('create');
 
             } else {
                 $(linksElem).hide();
@@ -1272,7 +1272,7 @@
                     try {
                         var date = parseISO8601Date(item.PremiereDate, { toLocal: true });
 
-                        text = (date.getMonth() + 1) + "/" + (date.getDate()) + "/" + date.getFullYear();
+                        text = date.toLocaleDateString();
                         miscInfo.push(text);
                     }
                     catch (e) {
@@ -1379,7 +1379,7 @@
                         html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
                     }
 
-                    html += '<a href="itembynamedetails.html?context=' + context + '&studio=' + ApiClient.encodeName(item.Studios[i].Name) + '">' + item.Studios[i].Name + '</a>';
+                    html += '<a class="textlink" href="itembynamedetails.html?context=' + context + '&studio=' + ApiClient.encodeName(item.Studios[i].Name) + '">' + item.Studios[i].Name + '</a>';
                 }
 
                 elem.show().html(html).trigger('create');
@@ -1401,7 +1401,7 @@
                         html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
                     }
 
-                    html += '<a href="itembynamedetails.html?context=' + context + '&genre=' + ApiClient.encodeName(item.Genres[i]) + '">' + item.Genres[i] + '</a>';
+                    html += '<a class="textlink" href="itembynamedetails.html?context=' + context + '&genre=' + ApiClient.encodeName(item.Genres[i]) + '">' + item.Genres[i] + '</a>';
                 }
 
                 elem.show().html(html).trigger('create');
@@ -1582,46 +1582,6 @@
 
             }) + '" />';
             html += '</div>';
-
-            return html;
-        },
-
-        createCastImage: function (cast, context) {
-
-            var html = '';
-
-            html += '<a class="tileItem smallPosterTileItem" href="itembynamedetails.html?context=' + context + '&person=' + ApiClient.encodeName(cast.Name) + '">';
-
-            var imgUrl;
-
-            if (cast.PrimaryImageTag) {
-
-                imgUrl = ApiClient.getPersonImageUrl(cast.Name, {
-                    width: 130,
-                    tag: cast.PrimaryImageTag,
-                    type: "primary"
-                });
-
-            } else {
-
-                imgUrl = "css/images/items/list/person.png";
-            }
-
-            html += '<div class="tileImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
-
-
-
-            html += '<div class="tileContent">';
-
-            html += '<p>' + cast.Name + '</p>';
-
-            var role = cast.Role ? "as " + cast.Role : cast.Type;
-
-            html += '<p>' + (role || "") + '</p>';
-
-            html += '</div>';
-
-            html += '</a>';
 
             return html;
         }

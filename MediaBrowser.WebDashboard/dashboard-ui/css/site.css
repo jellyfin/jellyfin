@@ -34,6 +34,14 @@ body {
     overflow-y: scroll!important;
 }
 
+.textlink {
+    text-decoration: none;
+}
+
+    .textlink:hover {
+        text-decoration: underline;
+    }
+
 h1 {
     font-family: 'Segoe UI Light', 'Open Sans', Arial, Helvetica, sans-serif;
     font-weight: 200;
@@ -640,7 +648,8 @@ progress {
     /* Firefox */
     progress::-moz-progress-bar {
         border-radius: 5px;
-        background-image: -moz-linear-gradient( center bottom, rgb(43,194,83) 37%, rgb(84,240,84) 69% );s
+        background-image: -moz-linear-gradient( center bottom, rgb(43,194,83) 37%, rgb(84,240,84) 69% );
+        s;
     }
 
     /* Chrome */
@@ -910,9 +919,9 @@ progress {
     background: url("images/media/language.png") !important;
     height: 16px;
     width: 16px;
-	background-size: cover!important;
+    background-size: cover!important;
     opacity: 0.5;
-	margin: .2em;
+    margin: .2em;
 }
 
     #videoWindow.tubecss .vjs-menu-button.vjs-language-button div:hover {
@@ -920,12 +929,12 @@ progress {
     }
 
 #videoWindow.tubecss .vjs-menu-button.vjs-subtitle-button div {
-	margin: .2em 0px;
+    margin: .2em 0px;
 }
 
-#videoWindow.tubecss .vjs-menu-button.vjs-subtitle-button div:hover {
-	opacity: 1.0;
-}
+    #videoWindow.tubecss .vjs-menu-button.vjs-subtitle-button div:hover {
+        opacity: 1.0;
+    }
 
 .vjs-language-button.vjs-menu-button ul {
     width: auto;
@@ -943,7 +952,7 @@ progress {
 
 #videoWindow.tubecss .vjs-mute-control {
     position: absolute;
-	left: 5.5em;
+    left: 5.5em;
 }
 
 #videoWindow.tubecss .vjs-volume-control {
@@ -963,7 +972,7 @@ progress {
 #videoWindow.tubecss .vjs-time-divider {
     bottom: 0.4em;
     left: 25.3em;
-	display: none;
+    display: none;
 }
 
 #videoWindow.tubecss .vjs-menu-item {
@@ -972,16 +981,16 @@ progress {
 
 #videoWindow.tubecss .vjs-current-time {
     left: .1em;
-	top: -2em;
-	z-index: 2;
+    top: -2em;
+    z-index: 2;
 }
 
 #videoWindow.tubecss .vjs-duration {
     right: .1em;
-	text-align:right;
-	z-index: 2;
+    text-align: right;
+    z-index: 2;
 }
 
 #videoWindow.tubecss .vjs-progress-holder {
-	margin: 0 5em;
+    margin: 0 5em;
 }
