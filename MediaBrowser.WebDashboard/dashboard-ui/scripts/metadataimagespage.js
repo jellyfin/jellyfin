@@ -32,7 +32,8 @@
         $('#chkDownloadSeasonBanner', page).checked(config.DownloadSeasonImages.Banner).checkboxradio("refresh");
         $('#chkDownloadSeasonThumb', page).checked(config.DownloadSeasonImages.Thumb).checkboxradio("refresh");
         $('#chkDownloadSeasonBackdrops', page).checked(config.DownloadSeasonImages.Backdrops).checkboxradio("refresh");
-        $('#chkDownloadArtistThumb', page).checked(config.DownloadMusicArtistImages.Thumb).checkboxradio("refresh");
+        
+        $('#chkDownloadArtistThumb', page).checked(config.DownloadMusicArtistImages.Primary).checkboxradio("refresh");
         $('#chkDownloadArtistBackdrops', page).checked(config.DownloadMusicArtistImages.Backdrops).checkboxradio("refresh");
         $('#chkDownloadArtistLogo', page).checked(config.DownloadMusicArtistImages.Logo).checkboxradio("refresh");
         $('#chkDownloadArtistBanner', page).checked(config.DownloadMusicArtistImages.Banner).checkboxradio("refresh");
@@ -70,9 +71,10 @@
             config.DownloadSeasonImages.Banner = $('#chkDownloadSeasonBanner', form).checked();
             config.DownloadSeasonImages.Thumb = $('#chkDownloadSeasonThumb', form).checked();
             config.DownloadSeasonImages.Backdrops = $('#chkDownloadSeasonBackdrops', form).checked();
+            
             config.DownloadMusicArtistImages.Backdrops = $('#chkDownloadArtistBackdrops', form).checked();
             config.DownloadMusicArtistImages.Logo = $('#chkDownloadArtistLogo', form).checked();
-            config.DownloadMusicArtistImages.Thumb = $('#chkDownloadArtistThumb', form).checked();
+            config.DownloadMusicArtistImages.Primary = $('#chkDownloadArtistThumb', form).checked();
             config.DownloadMusicArtistImages.Banner = $('#chkDownloadArtistBanner', form).checked();
 
             config.DownloadMusicAlbumImages.Primary = $('#chkDownloadAlbumPrimary', form).checked();

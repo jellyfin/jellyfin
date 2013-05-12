@@ -71,7 +71,7 @@ namespace MediaBrowser.Controller.Providers.Music
         {
             get
             {
-                return "1";
+                return "4";
             }
         }
 
