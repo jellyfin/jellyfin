@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -6,7 +7,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -53,43 +53,62 @@ namespace MediaBrowser.Controller.Providers.TV
             {
                 return false;
             }
-
+            
             if (!ConfigurationManager.Configuration.DownloadSeriesImages.Art &&
                 !ConfigurationManager.Configuration.DownloadSeriesImages.Logo &&
-                !ConfigurationManager.Configuration.DownloadSeriesImages.Thumb)
+                !ConfigurationManager.Configuration.DownloadSeriesImages.Thumb &&
+                !ConfigurationManager.Configuration.DownloadSeriesImages.Backdrops &&
+                !ConfigurationManager.Configuration.DownloadSeriesImages.Banner)
             {
                 return false;
+            }
+
+            if (providerInfo.Data != GetComparisonData(item.GetProviderId(MetadataProviders.Tvdb)))
+            {
+                return true;
             }
 
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
+        /// <summary>
+        /// Gets the comparison data.
+        /// </summary>
+        /// <returns>Guid.</returns>
+        private Guid GetComparisonData(string id)
+        {
+            return string.IsNullOrEmpty(id) ? Guid.Empty : id.GetMD5();
+        }
+        
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            var status = ProviderRefreshStatus.Success;
+            BaseProviderInfo data;
+
+            if (!item.ProviderData.TryGetValue(Id, out data))
+            {
+                data = new BaseProviderInfo();
+                item.ProviderData[Id] = data;
+            }
+            
             var series = (Series)item;
 
             string language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
             string url = string.Format(FanArtBaseUrl, APIKey, series.GetProviderId(MetadataProviders.Tvdb));
             var doc = new XmlDocument();
 
-            try
+            using (var xml = await HttpClient.Get(new HttpRequestOptions
             {
-                using (var xml = await HttpClient.Get(new HttpRequestOptions
-                {
-                    Url = url,
-                    ResourcePool = FanArtResourcePool,
-                    CancellationToken = cancellationToken,
-                    EnableResponseCache = true
+                Url = url,
+                ResourcePool = FanArtResourcePool,
+                CancellationToken = cancellationToken,
+                EnableResponseCache = true
 
-                }).ConfigureAwait(false))
-                {
-                    doc.Load(xml);
-                }
-            }
-            catch (HttpException)
+            }).ConfigureAwait(false))
             {
+                doc.Load(xml);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -114,10 +133,7 @@ namespace MediaBrowser.Controller.Providers.TV
                         }
                         catch (HttpException)
                         {
-                        }
-                        catch (IOException)
-                        {
-
+                            status = ProviderRefreshStatus.CompletedWithErrors;
                         }
                     }
                 }
@@ -141,10 +157,7 @@ namespace MediaBrowser.Controller.Providers.TV
                         }
                         catch (HttpException)
                         {
-                        }
-                        catch (IOException)
-                        {
-
+                            status = ProviderRefreshStatus.CompletedWithErrors;
                         }
                     }
                 }
@@ -161,20 +174,37 @@ namespace MediaBrowser.Controller.Providers.TV
                         Logger.Debug("FanArtProvider getting ThumbArt for " + series.Name);
                         try
                         {
-                            series.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(series, path, THUMB_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                            series.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(series, path, THUMB_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                         }
                         catch (HttpException)
                         {
+                            status = ProviderRefreshStatus.CompletedWithErrors;
                         }
-                        catch (IOException)
-                        {
+                    }
+                }
 
+                if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && !series.ResolveArgs.ContainsMetaFileByName(BANNER_FILE))
+                {
+                    var node = doc.SelectSingleNode("//fanart/series/tbbanners/tvbanner[@lang = \"" + language + "\"]/@url") ??
+                               doc.SelectSingleNode("//fanart/series/tbbanners/tvbanner/@url");
+                    path = node != null ? node.Value : null;
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        Logger.Debug("FanArtProvider getting banner for " + series.Name);
+                        try
+                        {
+                            series.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(series, path, BANNER_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                        }
+                        catch (HttpException)
+                        {
+                            status = ProviderRefreshStatus.CompletedWithErrors;
                         }
                     }
                 }
             }
 
-            SetLastRefreshed(series, DateTime.UtcNow);
+            data.Data = GetComparisonData(item.GetProviderId(MetadataProviders.Tvcom));
+            SetLastRefreshed(series, DateTime.UtcNow, status);
 
             return true;
         }
