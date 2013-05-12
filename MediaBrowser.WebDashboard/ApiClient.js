@@ -838,6 +838,32 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
+        self.getCriticReviews = function (itemId, options) {
+
+            if (!itemId) {
+                throw new Error("null itemId");
+            }
+
+            var url = self.getUrl("Items/" + itemId + "/CriticReviews", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getSessions = function (options) {
+
+            var url = self.getUrl("Sessions", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         /**
          * Uploads a user image
          * @param {String} userId

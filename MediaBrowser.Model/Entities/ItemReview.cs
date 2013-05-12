@@ -48,11 +48,5 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The caption.</value>
         public string Caption { get; set; }
-
-        /// <summary>
-        /// Gets or sets the text.
-        /// </summary>
-        /// <value>The text.</value>
-        public string Text { get; set; }
     }
 }
