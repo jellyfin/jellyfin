@@ -103,7 +103,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task{BaseItemDto}.</returns>
         private async Task<BaseItemDto> GetItem(GetArtist request)
         {
-            var item = await LibraryManager.GetArtist(request.Name).ConfigureAwait(false);
+            var item = await GetArtist(request.Name, LibraryManager).ConfigureAwait(false);
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
@@ -127,7 +127,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetArtistsItemCounts request)
         {
-            var items = GetItems(request.UserId).OfType<Audio>().Where(i => i.HasArtist(request.Name)).ToList();
+            var name = DeSlugArtistName(request.Name, LibraryManager);
+
+            var items = GetItems(request.UserId).OfType<Audio>().Where(i => i.HasArtist(name)).ToList();
 
             var counts = new ItemByNameCounts
             {

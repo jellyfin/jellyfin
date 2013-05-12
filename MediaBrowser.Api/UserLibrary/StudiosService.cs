@@ -94,7 +94,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task{BaseItemDto}.</returns>
         private async Task<BaseItemDto> GetItem(GetStudio request)
         {
-            var item = await LibraryManager.GetStudio(request.Name).ConfigureAwait(false);
+            var item = await GetStudio(request.Name, LibraryManager).ConfigureAwait(false);
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
@@ -118,7 +118,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetStudioItemCounts request)
         {
-            var items = GetItems(request.UserId).Where(i => i.Studios != null && i.Studios.Contains(request.Name, StringComparer.OrdinalIgnoreCase)).ToList();
+            var name = DeSlugStudioName(request.Name, LibraryManager);
+
+            var items = GetItems(request.UserId).Where(i => i.Studios != null && i.Studios.Contains(name, StringComparer.OrdinalIgnoreCase)).ToList();
 
             var counts = new ItemByNameCounts
             {
