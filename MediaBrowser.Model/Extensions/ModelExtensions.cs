@@ -12,7 +12,7 @@ namespace MediaBrowser.Model.Extensions
         /// <param name="str">The STR.</param>
         /// <param name="def">The def.</param>
         /// <returns>System.String.</returns>
-        public static string ValueOrDefault(this string str, string def = "")
+        internal static string ValueOrDefault(this string str, string def = "")
         {
             return string.IsNullOrEmpty(str) ? def : str;
         }

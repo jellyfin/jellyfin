@@ -713,14 +713,14 @@
             }
             if (providerIds.Tmdb) {
                 if (item.Type == "Movie" || item.Type == "Trailer")
-                    links.push('<a class="textlink" href="http://www.themoviedb.org/movie/' + providerIds.Tmdb + '" target="_blank">TMDB</a>');
+                    links.push('<a class="textlink" href="http://www.themoviedb.org/movie/' + providerIds.Tmdb + '" target="_blank">TheMovieDB</a>');
                 else if (item.Type == "BoxSet")
-                    links.push('<a class="textlink" href="http://www.themoviedb.org/collection/' + providerIds.Tmdb + '" target="_blank">TMDB</a>');
+                    links.push('<a class="textlink" href="http://www.themoviedb.org/collection/' + providerIds.Tmdb + '" target="_blank">TheMovieDB</a>');
                 else if (item.Type == "Person")
-                    links.push('<a class="textlink" href="http://www.themoviedb.org/person/' + providerIds.Tmdb + '" target="_blank">TMDB</a>');
+                    links.push('<a class="textlink" href="http://www.themoviedb.org/person/' + providerIds.Tmdb + '" target="_blank">TheMovieDB</a>');
             }
             if (providerIds.Tvdb)
-                links.push('<a class="textlink" href="http://thetvdb.com/index.php?tab=series&id=' + providerIds.Tvdb + '" target="_blank">TVDB</a>');
+                links.push('<a class="textlink" href="http://thetvdb.com/index.php?tab=series&id=' + providerIds.Tvdb + '" target="_blank">TheTVDB</a>');
             if (providerIds.Tvcom) {
                 if (item.Type == "Episode")
                     links.push('<a class="textlink" href="http://www.tv.com/shows/' + providerIds.Tvcom + '" target="_blank">TV.com</a>');
@@ -1533,7 +1533,7 @@
             }
             if (imageTags.BoxRear) {
 
-                html += LibraryBrowser.createGalleryImage(item, "Box", imageTags.BoxRear);
+                html += LibraryBrowser.createGalleryImage(item, "BoxRear", imageTags.BoxRear);
             }
 
             if (item.BackdropImageTags) {
