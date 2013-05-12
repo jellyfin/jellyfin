@@ -21,14 +21,18 @@
         $('#txtNumbackdrops', page).val(config.MaxBackdrops);
 
         $('#chkDownloadMovieArt', page).checked(config.DownloadMovieImages.Art).checkboxradio("refresh");
+        $('#chkDownloadMovieBackdrops', page).checked(config.DownloadMovieImages.Backdrops).checkboxradio("refresh");
         $('#chkDownloadMovieBanner', page).checked(config.DownloadMovieImages.Banner).checkboxradio("refresh");
         $('#chkDownloadMovieDisc', page).checked(config.DownloadMovieImages.Disc).checkboxradio("refresh");
         $('#chkDownloadMovieLogo', page).checked(config.DownloadMovieImages.Logo).checkboxradio("refresh");
         $('#chkDownloadMovieThumb', page).checked(config.DownloadMovieImages.Thumb).checkboxradio("refresh");
+        
         $('#chKDownloadTVArt', page).checked(config.DownloadSeriesImages.Art).checkboxradio("refresh");
+        $('#chkDownloadTVBackdrops', page).checked(config.DownloadSeriesImages.Backdrops).checkboxradio("refresh");
         $('#chkDownloadTVBanner', page).checked(config.DownloadSeriesImages.Banner).checkboxradio("refresh");
         $('#chkDownloadTVLogo', page).checked(config.DownloadSeriesImages.Logo).checkboxradio("refresh");
         $('#chkDownloadTVThumb', page).checked(config.DownloadSeriesImages.Thumb).checkboxradio("refresh");
+        
         $('#chkDownloadSeasonBanner', page).checked(config.DownloadSeasonImages.Banner).checkboxradio("refresh");
         $('#chkDownloadSeasonThumb', page).checked(config.DownloadSeasonImages.Thumb).checkboxradio("refresh");
         $('#chkDownloadSeasonBackdrops', page).checked(config.DownloadSeasonImages.Backdrops).checkboxradio("refresh");
@@ -60,14 +64,18 @@
             config.MaxBackdrops = $('#txtNumbackdrops', form).val();
 
             config.DownloadMovieImages.Art = $('#chkDownloadMovieArt', form).checked();
+            config.DownloadMovieImages.Backdrops = $('#chkDownloadMovieBackdrops', form).checked();
             config.DownloadMovieImages.Banner = $('#chkDownloadMovieBanner', form).checked();
             config.DownloadMovieImages.Disc = $('#chkDownloadMovieDisc', form).checked();
             config.DownloadMovieImages.Logo = $('#chkDownloadMovieLogo', form).checked();
             config.DownloadMovieImages.Thumb = $('#chkDownloadMovieThumb', form).checked();
+            
             config.DownloadSeriesImages.Art = $('#chKDownloadTVArt', form).checked();
+            config.DownloadSeriesImages.Backdrops = $('#chkDownloadMovieBackdrops', form).checked();
             config.DownloadSeriesImages.Banner = $('#chkDownloadTVBanner', form).checked();
             config.DownloadSeriesImages.Logo = $('#chkDownloadTVLogo', form).checked();
             config.DownloadSeriesImages.Thumb = $('#chkDownloadTVThumb', form).checked();
+            
             config.DownloadSeasonImages.Banner = $('#chkDownloadSeasonBanner', form).checked();
             config.DownloadSeasonImages.Thumb = $('#chkDownloadSeasonThumb', form).checked();
             config.DownloadSeasonImages.Backdrops = $('#chkDownloadSeasonBackdrops', form).checked();

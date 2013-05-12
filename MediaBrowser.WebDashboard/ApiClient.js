@@ -95,6 +95,10 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             return name;
         }());
 
+        self.deviceId = function () {
+            return deviceId;
+        };
+
         self.encodeName = function (name) {
 
             name = name.split('/').join('-');

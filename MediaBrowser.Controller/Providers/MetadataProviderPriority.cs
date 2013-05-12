@@ -24,10 +24,15 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         Third = 3,
 
+        /// <summary>
+        /// The fourth
+        /// </summary>
+        Fourth = 4,
+
         // Run this provider last
         /// <summary>
         /// The last
         /// </summary>
-        Last = 4
+        Last = 5
     }
 }

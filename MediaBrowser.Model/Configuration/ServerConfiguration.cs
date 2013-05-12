@@ -255,7 +255,7 @@ namespace MediaBrowser.Model.Configuration
             DownloadMusicArtistImages = new ImageDownloadOptions();
             DownloadMusicAlbumImages = new ImageDownloadOptions();
             DownloadHDFanArt = true;
-            MaxBackdrops = 4;
+            MaxBackdrops = 3;
 
             SortReplaceCharacters = new[] { ".", "+", "%" };
             SortRemoveCharacters = new[] { ",", "&", "-", "{", "}", "'" };
