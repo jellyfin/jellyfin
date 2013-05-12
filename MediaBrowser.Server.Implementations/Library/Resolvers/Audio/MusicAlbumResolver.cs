@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.IO;
+﻿using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 {
@@ -34,6 +33,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             //Avoid mis-identifying top folders
             if (args.Parent == null) return null;
             if (args.Parent.IsRoot) return null;
+            if (args.Parent is MusicAlbum) return null;
 
             return IsMusicAlbum(args) ? new MusicAlbum() : null;
         }

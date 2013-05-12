@@ -128,7 +128,12 @@ namespace MediaBrowser.Api
 
                 if (auth.ContainsKey("UserId"))
                 {
-                    user = UserManager.GetUserById(new Guid(auth["UserId"]));
+                    var userId = auth["UserId"];
+
+                    if (!string.IsNullOrEmpty(userId))
+                    {
+                        user = UserManager.GetUserById(new Guid(userId));
+                    }
                 }
 
                 var deviceId = auth["DeviceId"];
