@@ -121,8 +121,8 @@ namespace MediaBrowser.Controller.Providers.TV
 
                 if (seriesId != null)
                 {
-                    await FetchEpisodeData(episode, seriesId, cancellationToken).ConfigureAwait(false);
-                    SetLastRefreshed(item, DateTime.UtcNow);
+                    var status = await FetchEpisodeData(episode, seriesId, cancellationToken).ConfigureAwait(false);
+                    SetLastRefreshed(item, DateTime.UtcNow, status);
                     return true;
                 }
                 Logger.Info("Episode provider cannot determine Series Id for " + item.Path);
@@ -140,18 +140,18 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <param name="seriesId">The series id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        private async Task<bool> FetchEpisodeData(Episode episode, string seriesId, CancellationToken cancellationToken)
+        private async Task<ProviderRefreshStatus> FetchEpisodeData(Episode episode, string seriesId, CancellationToken cancellationToken)
         {
-
-            string name = episode.Name;
             string location = episode.Path;
 
             string epNum = TVUtils.EpisodeNumberFromFile(location, episode.Season != null);
 
+            var status = ProviderRefreshStatus.Success;
+
             if (epNum == null)
             {
                 Logger.Warn("TvDbProvider: Could not determine episode number for: " + episode.Path);
-                return false;
+                return status;
             }
 
             var episodeNumber = Int32.Parse(epNum);
@@ -159,7 +159,7 @@ namespace MediaBrowser.Controller.Providers.TV
             episode.IndexNumber = episodeNumber;
             var usingAbsoluteData = false;
 
-            if (string.IsNullOrEmpty(seriesId)) return false;
+            if (string.IsNullOrEmpty(seriesId)) return status;
 
             var seasonNumber = "";
             if (episode.Parent is Season)
@@ -240,10 +240,7 @@ namespace MediaBrowser.Controller.Providers.TV
                         }
                         catch (HttpException)
                         {
-                        }
-                        catch (IOException)
-                        {
-
+                            status = ProviderRefreshStatus.CompletedWithErrors;
                         }
                     }
 
@@ -303,12 +300,12 @@ namespace MediaBrowser.Controller.Providers.TV
                         await _providerManager.SaveToLibraryFilesystem(episode, Path.Combine(episode.MetaLocation, Path.GetFileNameWithoutExtension(episode.Path) + ".xml"), ms, cancellationToken).ConfigureAwait(false);
                     }
 
-                    return true;
+                    return status;
                 }
 
             }
 
-            return false;
+            return status;
         }
 
         /// <summary>

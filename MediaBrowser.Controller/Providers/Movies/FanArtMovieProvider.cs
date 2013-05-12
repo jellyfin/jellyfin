@@ -119,12 +119,6 @@ namespace MediaBrowser.Controller.Providers.Movies
             {
                 return false;
             }
-
-            // Refresh if tmdb id has changed
-            if (providerInfo.Data != GetComparisonData(item.GetProviderId(MetadataProviders.Tmdb)))
-            {
-                return true;
-            }
             
             if (!ConfigurationManager.Configuration.DownloadMovieImages.Art &&
                 !ConfigurationManager.Configuration.DownloadMovieImages.Logo &&
@@ -134,6 +128,12 @@ namespace MediaBrowser.Controller.Providers.Movies
                 !ConfigurationManager.Configuration.DownloadMovieImages.Thumb)
             {
                 return false;
+            }
+
+            // Refresh if tmdb id has changed
+            if (providerInfo.Data != GetComparisonData(item.GetProviderId(MetadataProviders.Tmdb)))
+            {
+                return true;
             }
 
             return base.NeedsRefreshInternal(item, providerInfo);

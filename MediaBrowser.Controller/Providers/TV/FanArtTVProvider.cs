@@ -203,7 +203,7 @@ namespace MediaBrowser.Controller.Providers.TV
                 }
             }
 
-            data.Data = GetComparisonData(item.GetProviderId(MetadataProviders.Tvcom));
+            data.Data = GetComparisonData(item.GetProviderId(MetadataProviders.Tvdb));
             SetLastRefreshed(series, DateTime.UtcNow, status);
 
             return true;
