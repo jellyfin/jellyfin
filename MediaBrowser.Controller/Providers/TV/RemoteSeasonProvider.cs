@@ -105,8 +105,10 @@ namespace MediaBrowser.Controller.Providers.TV
 
                 if (seriesId != null)
                 {
-                    await FetchSeasonData(season, seriesId, cancellationToken).ConfigureAwait(false);
-                    SetLastRefreshed(item, DateTime.UtcNow);
+                    var status = await FetchSeasonData(season, seriesId, cancellationToken).ConfigureAwait(false);
+
+                    SetLastRefreshed(item, DateTime.UtcNow, status);
+
                     return true;
                 }
                 Logger.Info("Season provider unable to obtain series id for {0}", item.Path);
@@ -126,10 +128,8 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <param name="seriesId">The series id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        private async Task<bool> FetchSeasonData(Season season, string seriesId, CancellationToken cancellationToken)
+        private async Task<ProviderRefreshStatus> FetchSeasonData(Season season, string seriesId, CancellationToken cancellationToken)
         {
-            string name = season.Name;
-
             var seasonNumber = TVUtils.GetSeasonNumberFromPath(season.Path) ?? -1;
 
             season.IndexNumber = seasonNumber;
@@ -139,151 +139,135 @@ namespace MediaBrowser.Controller.Providers.TV
                 season.Name = "Specials";
             }
 
-            if (!string.IsNullOrEmpty(seriesId))
+            var status = ProviderRefreshStatus.Success;
+
+            if (string.IsNullOrEmpty(seriesId))
             {
-                if ((season.PrimaryImagePath == null) || (!season.HasImage(ImageType.Banner)) || (season.BackdropImagePaths == null))
+                return status;
+            }
+
+            if ((season.PrimaryImagePath == null) || (!season.HasImage(ImageType.Banner)) || (season.BackdropImagePaths == null))
+            {
+                var images = new XmlDocument();
+                var url = string.Format("http://www.thetvdb.com/api/" + TVUtils.TVDBApiKey + "/series/{0}/banners.xml", seriesId);
+
+                using (var imgs = await HttpClient.Get(new HttpRequestOptions
                 {
-                    var images = new XmlDocument();
-                    var url = string.Format("http://www.thetvdb.com/api/" + TVUtils.TVDBApiKey + "/series/{0}/banners.xml", seriesId);
+                    Url = url,
+                    ResourcePool = RemoteSeriesProvider.Current.TvDbResourcePool,
+                    CancellationToken = cancellationToken,
+                    EnableResponseCache = true
 
-                    try
+                }).ConfigureAwait(false))
+                {
+                    images.Load(imgs);
+                }
+
+                if (images.HasChildNodes)
+                {
+                    if (ConfigurationManager.Configuration.RefreshItemImages || !season.HasLocalImage("folder"))
                     {
-                        using (var imgs = await HttpClient.Get(new HttpRequestOptions
+                        var n = images.SelectSingleNode("//Banner[BannerType='season'][BannerType2='season'][Season='" + seasonNumber + "']");
+                        if (n != null)
                         {
-                            Url = url,
-                            ResourcePool = RemoteSeriesProvider.Current.TvDbResourcePool,
-                            CancellationToken = cancellationToken,
-                            EnableResponseCache = true
+                            n = n.SelectSingleNode("./BannerPath");
 
-                        }).ConfigureAwait(false))
-                        {
-                            images.Load(imgs);
+                            try
+                            {
+                                if (n != null)
+                                    season.PrimaryImagePath = await _providerManager.DownloadAndSaveImage(season, TVUtils.BannerUrl + n.InnerText, "folder" + Path.GetExtension(n.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false);
+                            }
+                            catch (HttpException)
+                            {
+                                status = ProviderRefreshStatus.CompletedWithErrors;
+                            }
                         }
                     }
-                    catch (HttpException)
-                    {
-                    }
 
-                    if (images.HasChildNodes)
+                    if (ConfigurationManager.Configuration.DownloadSeasonImages.Banner && (ConfigurationManager.Configuration.RefreshItemImages || !season.HasLocalImage("banner")))
                     {
-                        if (ConfigurationManager.Configuration.RefreshItemImages || !season.HasLocalImage("folder"))
+                        var n = images.SelectSingleNode("//Banner[BannerType='season'][BannerType2='seasonwide'][Season='" + seasonNumber + "']");
+                        if (n != null)
                         {
-                            var n = images.SelectSingleNode("//Banner[BannerType='season'][BannerType2='season'][Season='" + seasonNumber + "']");
+                            n = n.SelectSingleNode("./BannerPath");
                             if (n != null)
                             {
-                                n = n.SelectSingleNode("./BannerPath");
-
                                 try
                                 {
-                                    if (n != null)
-                                        season.PrimaryImagePath = await _providerManager.DownloadAndSaveImage(season, TVUtils.BannerUrl + n.InnerText, "folder" + Path.GetExtension(n.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false);
+                                    var bannerImagePath =
+                                        await _providerManager.DownloadAndSaveImage(season,
+                                                                                         TVUtils.BannerUrl + n.InnerText,
+                                                                                         "banner" +
+                                                                                         Path.GetExtension(n.InnerText),
+                                                                                         ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).
+                                                           ConfigureAwait(false);
+
+                                    season.SetImage(ImageType.Banner, bannerImagePath);
                                 }
                                 catch (HttpException)
                                 {
-                                }
-                                catch (IOException)
-                                {
-
+                                    status = ProviderRefreshStatus.CompletedWithErrors;
                                 }
                             }
                         }
+                    }
 
-                        if (ConfigurationManager.Configuration.DownloadSeasonImages.Banner && (ConfigurationManager.Configuration.RefreshItemImages || !season.HasLocalImage("banner")))
+                    if (ConfigurationManager.Configuration.DownloadSeasonImages.Backdrops && (ConfigurationManager.Configuration.RefreshItemImages || !season.HasLocalImage("backdrop")))
+                    {
+                        var n = images.SelectSingleNode("//Banner[BannerType='fanart'][Season='" + seasonNumber + "']");
+                        if (n != null)
                         {
-                            var n = images.SelectSingleNode("//Banner[BannerType='season'][BannerType2='seasonwide'][Season='" + seasonNumber + "']");
+                            n = n.SelectSingleNode("./BannerPath");
                             if (n != null)
                             {
+                                try
+                                {
+                                    if (season.BackdropImagePaths == null) season.BackdropImagePaths = new List<string>();
+                                    season.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(season, TVUtils.BannerUrl + n.InnerText, "backdrop" + Path.GetExtension(n.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false));
+                                }
+                                catch (HttpException)
+                                {
+                                    status = ProviderRefreshStatus.CompletedWithErrors;
+                                }
+                            }
+                        }
+                        else if (!ConfigurationManager.Configuration.SaveLocalMeta) //if saving local - season will inherit from series
+                        {
+                            // not necessarily accurate but will give a different bit of art to each season
+                            var lst = images.SelectNodes("//Banner[BannerType='fanart']");
+                            if (lst != null && lst.Count > 0)
+                            {
+                                var num = seasonNumber % lst.Count;
+                                n = lst[num];
                                 n = n.SelectSingleNode("./BannerPath");
                                 if (n != null)
                                 {
+                                    if (season.BackdropImagePaths == null)
+                                        season.BackdropImagePaths = new List<string>();
+
                                     try
                                     {
-                                        var bannerImagePath =
+                                        season.BackdropImagePaths.Add(
                                             await _providerManager.DownloadAndSaveImage(season,
-                                                                                             TVUtils.BannerUrl + n.InnerText,
-                                                                                             "banner" +
-                                                                                             Path.GetExtension(n.InnerText),
-                                                                                             ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).
-                                                               ConfigureAwait(false);
-
-                                        season.SetImage(ImageType.Banner, bannerImagePath);
+                                                                                             TVUtils.BannerUrl +
+                                                                                             n.InnerText,
+                                                                                             "backdrop" +
+                                                                                             Path.GetExtension(
+                                                                                                 n.InnerText),
+                                                                                             ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken)
+                                                              .ConfigureAwait(false));
                                     }
                                     catch (HttpException)
                                     {
-                                    }
-                                    catch (IOException)
-                                    {
-
-                                    }
-                                }
-                            }
-                        }
-
-                        if (ConfigurationManager.Configuration.DownloadSeasonImages.Backdrops && (ConfigurationManager.Configuration.RefreshItemImages || !season.HasLocalImage("backdrop")))
-                        {
-                            var n = images.SelectSingleNode("//Banner[BannerType='fanart'][Season='" + seasonNumber + "']");
-                            if (n != null)
-                            {
-                                n = n.SelectSingleNode("./BannerPath");
-                                if (n != null)
-                                {
-                                    try
-                                    {
-                                        if (season.BackdropImagePaths == null) season.BackdropImagePaths = new List<string>();
-                                        season.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(season, TVUtils.BannerUrl + n.InnerText, "backdrop" + Path.GetExtension(n.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false));
-                                    }
-                                    catch (HttpException)
-                                    {
-                                    }
-                                    catch (IOException)
-                                    {
-
-                                    }
-                                }
-                            }
-                            else if (!ConfigurationManager.Configuration.SaveLocalMeta) //if saving local - season will inherit from series
-                            {
-                                // not necessarily accurate but will give a different bit of art to each season
-                                var lst = images.SelectNodes("//Banner[BannerType='fanart']");
-                                if (lst != null && lst.Count > 0)
-                                {
-                                    var num = seasonNumber % lst.Count;
-                                    n = lst[num];
-                                    n = n.SelectSingleNode("./BannerPath");
-                                    if (n != null)
-                                    {
-                                        if (season.BackdropImagePaths == null)
-                                            season.BackdropImagePaths = new List<string>();
-
-                                        try
-                                        {
-                                            season.BackdropImagePaths.Add(
-                                                await _providerManager.DownloadAndSaveImage(season,
-                                                                                                 TVUtils.BannerUrl +
-                                                                                                 n.InnerText,
-                                                                                                 "backdrop" +
-                                                                                                 Path.GetExtension(
-                                                                                                     n.InnerText),
-                                                                                                 ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken)
-                                                                  .ConfigureAwait(false));
-                                        }
-                                        catch (HttpException)
-                                        {
-                                        }
-                                        catch (IOException)
-                                        {
-
-                                        }
+                                        status = ProviderRefreshStatus.CompletedWithErrors;
                                     }
                                 }
                             }
                         }
                     }
                 }
-                return true;
             }
-
-            return false;
+            return status;
         }
 
         /// <summary>

@@ -270,8 +270,8 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            // backdrops
-            if (images.backdrops != null && images.backdrops.Count > 0 && ConfigurationManager.Configuration.DownloadMovieImages.Backdrops)
+            // backdrops - only download if earlier providers didn't find any (fanart)
+            if (images.backdrops != null && images.backdrops.Count > 0 && ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && item.BackdropImagePaths.Count == 0)
             {
                 item.BackdropImagePaths = new List<string>();
 
