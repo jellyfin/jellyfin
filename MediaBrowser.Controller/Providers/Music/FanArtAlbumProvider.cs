@@ -139,22 +139,18 @@ namespace MediaBrowser.Controller.Providers.Music
 
             var doc = new XmlDocument();
 
-            try
+            var status = ProviderRefreshStatus.Success;
+            
+            using (var xml = await HttpClient.Get(new HttpRequestOptions
             {
-                using (var xml = await HttpClient.Get(new HttpRequestOptions
-                {
-                    Url = url,
-                    ResourcePool = FanArtResourcePool,
-                    CancellationToken = cancellationToken,
-                    EnableResponseCache = true
+                Url = url,
+                ResourcePool = FanArtResourcePool,
+                CancellationToken = cancellationToken,
+                EnableResponseCache = true
 
-                }).ConfigureAwait(false))
-                {
-                    doc.Load(xml);
-                }
-            }
-            catch (HttpException)
+            }).ConfigureAwait(false))
             {
+                doc.Load(xml);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -176,10 +172,7 @@ namespace MediaBrowser.Controller.Providers.Music
                         }
                         catch (HttpException)
                         {
-                        }
-                        catch (IOException)
-                        {
-
+                            status = ProviderRefreshStatus.CompletedWithErrors;
                         }
                     }
                 }
@@ -199,16 +192,13 @@ namespace MediaBrowser.Controller.Providers.Music
                         }
                         catch (HttpException)
                         {
-                        }
-                        catch (IOException)
-                        {
-
+                            status = ProviderRefreshStatus.CompletedWithErrors;
                         }
                     }
                 }
             }
 
-            SetLastRefreshed(item, DateTime.UtcNow);
+            SetLastRefreshed(item, DateTime.UtcNow, status);
 
             return true;
         }

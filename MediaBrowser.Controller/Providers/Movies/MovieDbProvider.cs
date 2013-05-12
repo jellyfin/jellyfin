@@ -274,7 +274,6 @@ namespace MediaBrowser.Controller.Providers.Movies
         private const string TmdbConfigUrl = "http://api.themoviedb.org/3/configuration?api_key={0}";
         private const string Search3 = @"http://api.themoviedb.org/3/search/movie?api_key={1}&query={0}&language={2}";
         private const string AltTitleSearch = @"http://api.themoviedb.org/3/movie/{0}/alternative_titles?api_key={1}&country={2}";
-        private const string GetImages = @"http://api.themoviedb.org/3/{2}/{0}/images?api_key={1}";
         private const string GetMovieInfo3 = @"http://api.themoviedb.org/3/movie/{0}?api_key={1}&language={2}&append_to_response=casts,releases,images,keywords";
         private const string GetBoxSetInfo3 = @"http://api.themoviedb.org/3/collection/{0}?api_key={1}&language={2}&append_to_response=images";
 
@@ -793,10 +792,6 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            mainResult.images = await FetchImages(item, id, cancellationToken).ConfigureAwait(false);
-
-            await ProcessImages(item, mainResult.images, cancellationToken).ConfigureAwait(false);
-
             //and save locally
             if (ConfigurationManager.Configuration.SaveLocalMeta && item.LocationType == LocationType.FileSystem)
             {
@@ -806,22 +801,6 @@ namespace MediaBrowser.Controller.Providers.Movies
                 cancellationToken.ThrowIfCancellationRequested();
 
                 await ProviderManager.SaveToLibraryFilesystem(item, Path.Combine(item.MetaLocation, LOCAL_META_FILE_NAME), ms, cancellationToken).ConfigureAwait(false);
-            }
-        }
-
-        private async Task<MovieImages> FetchImages(BaseItem item, string id, CancellationToken cancellationToken)
-        {
-            using (var json = await HttpClient.Get(new HttpRequestOptions
-            {
-                Url = string.Format(GetImages, id, ApiKey, item is BoxSet ? "collection" : "movie"),
-                CancellationToken = cancellationToken,
-                ResourcePool = Current.MovieDbResourcePool,
-                AcceptHeader = AcceptHeader,
-                EnableResponseCache = true
-
-            }).ConfigureAwait(false))
-            {
-                return JsonSerializer.DeserializeFromStream<MovieImages>(json);
             }
         }
 
@@ -1041,97 +1020,6 @@ namespace MediaBrowser.Controller.Providers.Movies
                 }
             }
 
-        }
-
-        /// <summary>
-        /// Processes the images.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="images">The images.</param>
-        /// <param name="cancellationToken">The cancellation token</param>
-        /// <returns>Task.</returns>
-        protected virtual async Task ProcessImages(BaseItem item, MovieImages images, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var hasLocalPoster = item.LocationType == LocationType.FileSystem ? item.HasLocalImage("folder") : item.HasImage(ImageType.Primary);
-
-            //        poster
-            if (images.posters != null && images.posters.Count > 0 && (ConfigurationManager.Configuration.RefreshItemImages || !hasLocalPoster))
-            {
-                var tmdbSettings = await TmdbSettings.ConfigureAwait(false);
-
-                var tmdbImageUrl = tmdbSettings.images.base_url + ConfigurationManager.Configuration.TmdbFetchedPosterSize;
-                // get highest rated poster for our language
-
-                var postersSortedByVote = images.posters.OrderByDescending(i => i.vote_average);
-
-                var poster = postersSortedByVote.FirstOrDefault(p => p.iso_639_1 != null && p.iso_639_1.Equals(ConfigurationManager.Configuration.PreferredMetadataLanguage, StringComparison.OrdinalIgnoreCase));
-                if (poster == null && !ConfigurationManager.Configuration.PreferredMetadataLanguage.Equals("en"))
-                {
-                    // couldn't find our specific language, find english (if that wasn't our language)
-                    poster = postersSortedByVote.FirstOrDefault(p => p.iso_639_1 != null && p.iso_639_1.Equals("en", StringComparison.OrdinalIgnoreCase));
-                }
-                if (poster == null)
-                {
-                    //still couldn't find it - try highest rated null one
-                    poster = postersSortedByVote.FirstOrDefault(p => p.iso_639_1 == null);
-                }
-                if (poster == null)
-                {
-                    //finally - just get the highest rated one
-                    poster = postersSortedByVote.FirstOrDefault();
-                }
-                if (poster != null)
-                {
-                    try
-                    {
-                        item.PrimaryImagePath = await ProviderManager.DownloadAndSaveImage(item, tmdbImageUrl + poster.file_path, "folder" + Path.GetExtension(poster.file_path), ConfigurationManager.Configuration.SaveLocalMeta && item.LocationType == LocationType.FileSystem, MovieDbResourcePool, cancellationToken).ConfigureAwait(false);
-                    }
-                    catch (HttpException)
-                    {
-                    }
-                    catch (IOException)
-                    {
-
-                    }
-                }
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // backdrops
-            if (images.backdrops != null && images.backdrops.Count > 0)
-            {
-                item.BackdropImagePaths = new List<string>();
-
-                var tmdbSettings = await TmdbSettings.ConfigureAwait(false);
-
-                var tmdbImageUrl = tmdbSettings.images.base_url + ConfigurationManager.Configuration.TmdbFetchedBackdropSize;
-                //backdrops should be in order of rating.  get first n ones
-                var numToFetch = Math.Min(ConfigurationManager.Configuration.MaxBackdrops, images.backdrops.Count);
-                for (var i = 0; i < numToFetch; i++)
-                {
-                    var bdName = "backdrop" + (i == 0 ? "" : i.ToString(CultureInfo.InvariantCulture));
-
-                    var hasLocalBackdrop = item.LocationType == LocationType.FileSystem ? item.HasLocalImage(bdName) : item.BackdropImagePaths.Count > i;
-
-                    if (ConfigurationManager.Configuration.RefreshItemImages || !hasLocalBackdrop)
-                    {
-                        try
-                        {
-                            item.BackdropImagePaths.Add(await ProviderManager.DownloadAndSaveImage(item, tmdbImageUrl + images.backdrops[i].file_path, bdName + Path.GetExtension(images.backdrops[i].file_path), ConfigurationManager.Configuration.SaveLocalMeta && item.LocationType == LocationType.FileSystem, MovieDbResourcePool, cancellationToken).ConfigureAwait(false));
-                        }
-                        catch (HttpException)
-                        {
-                        }
-                        catch (IOException)
-                        {
-
-                        }
-                    }
-                }
-            }
         }
 
 
@@ -1445,34 +1333,6 @@ namespace MediaBrowser.Controller.Providers.Movies
             public List<Country> countries { get; set; }
         }
 
-        protected class Backdrop
-        {
-            public string file_path { get; set; }
-            public int width { get; set; }
-            public int height { get; set; }
-            public string iso_639_1 { get; set; }
-            public double aspect_ratio { get; set; }
-            public double vote_average { get; set; }
-            public int vote_count { get; set; }
-        }
-
-        protected class Poster
-        {
-            public string file_path { get; set; }
-            public int width { get; set; }
-            public int height { get; set; }
-            public string iso_639_1 { get; set; }
-            public double aspect_ratio { get; set; }
-            public double vote_average { get; set; }
-            public int vote_count { get; set; }
-        }
-
-        protected class MovieImages
-        {
-            public List<Backdrop> backdrops { get; set; }
-            public List<Poster> posters { get; set; }
-        }
-
         protected class Keyword
         {
             public int id { get; set; }
@@ -1511,7 +1371,6 @@ namespace MediaBrowser.Controller.Providers.Movies
             public int vote_count { get; set; }
             public Casts casts { get; set; }
             public Releases releases { get; set; }
-            public MovieImages images { get; set; }
             public Keywords keywords { get; set; }
         }
 

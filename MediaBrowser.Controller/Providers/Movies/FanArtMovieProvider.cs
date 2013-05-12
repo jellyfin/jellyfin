@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -6,7 +7,8 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
-using System.IO;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -25,6 +27,8 @@ namespace MediaBrowser.Controller.Providers.Movies
         protected IHttpClient HttpClient { get; private set; }
 
         private readonly IProviderManager _providerManager;
+
+        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FanArtMovieProvider" /> class.
@@ -57,6 +61,30 @@ namespace MediaBrowser.Controller.Providers.Movies
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether [refresh on version change].
+        /// </summary>
+        /// <value><c>true</c> if [refresh on version change]; otherwise, <c>false</c>.</value>
+        protected override bool RefreshOnVersionChange
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Gets the provider version.
+        /// </summary>
+        /// <value>The provider version.</value>
+        protected override string ProviderVersion
+        {
+            get
+            {
+                return "12";
+            }
+        }
+        
         /// <summary>
         /// The fan art base URL
         /// </summary>
@@ -92,14 +120,32 @@ namespace MediaBrowser.Controller.Providers.Movies
                 return false;
             }
 
+            // Refresh if tmdb id has changed
+            if (providerInfo.Data != GetComparisonData(item.GetProviderId(MetadataProviders.Tmdb)))
+            {
+                return true;
+            }
+            
             if (!ConfigurationManager.Configuration.DownloadMovieImages.Art &&
                 !ConfigurationManager.Configuration.DownloadMovieImages.Logo &&
-                !ConfigurationManager.Configuration.DownloadMovieImages.Disc)
+                !ConfigurationManager.Configuration.DownloadMovieImages.Disc &&
+                !ConfigurationManager.Configuration.DownloadMovieImages.Backdrops &&
+                !ConfigurationManager.Configuration.DownloadMovieImages.Banner &&
+                !ConfigurationManager.Configuration.DownloadMovieImages.Thumb)
             {
                 return false;
             }
 
             return base.NeedsRefreshInternal(item, providerInfo);
+        }
+
+        /// <summary>
+        /// Gets the comparison data.
+        /// </summary>
+        /// <returns>Guid.</returns>
+        private Guid GetComparisonData(string id)
+        {
+            return string.IsNullOrEmpty(id) ? Guid.Empty : id.GetMD5();
         }
 
         /// <summary>
@@ -113,28 +159,32 @@ namespace MediaBrowser.Controller.Providers.Movies
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            BaseProviderInfo data;
+
+            if (!item.ProviderData.TryGetValue(Id, out data))
+            {
+                data = new BaseProviderInfo();
+                item.ProviderData[Id] = data;
+            }
+
+            var status = ProviderRefreshStatus.Success;
+            
             var movie = item;
 
             var language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
             var url = string.Format(FanArtBaseUrl, APIKey, movie.GetProviderId(MetadataProviders.Tmdb));
             var doc = new XmlDocument();
 
-            try
+            using (var xml = await HttpClient.Get(new HttpRequestOptions
             {
-                using (var xml = await HttpClient.Get(new HttpRequestOptions
-                {
-                    Url = url,
-                    ResourcePool = FanArtResourcePool,
-                    CancellationToken = cancellationToken,
-                    EnableResponseCache = true
+                Url = url,
+                ResourcePool = FanArtResourcePool,
+                CancellationToken = cancellationToken,
+                EnableResponseCache = true
 
-                }).ConfigureAwait(false))
-                {
-                    doc.Load(xml);
-                }
-            }
-            catch (HttpException)
+            }).ConfigureAwait(false))
             {
+                doc.Load(xml);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -170,10 +220,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                         }
                         catch (HttpException)
                         {
-                        }
-                        catch (IOException)
-                        {
-
+                            status = ProviderRefreshStatus.CompletedWithErrors;
                         }
                     }
                 }
@@ -199,10 +246,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                         }
                         catch (HttpException)
                         {
-                        }
-                        catch (IOException)
-                        {
-
+                            status = ProviderRefreshStatus.CompletedWithErrors;
                         }
                     }
                 }
@@ -225,10 +269,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                         }
                         catch (HttpException)
                         {
-                        }
-                        catch (IOException)
-                        {
-
+                            status = ProviderRefreshStatus.CompletedWithErrors;
                         }
                     }
                 }
@@ -252,10 +293,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                         }
                         catch (HttpException)
                         {
-                        }
-                        catch (IOException)
-                        {
-
+                            status = ProviderRefreshStatus.CompletedWithErrors;
                         }
                     }
                 }
@@ -279,15 +317,49 @@ namespace MediaBrowser.Controller.Providers.Movies
                         }
                         catch (HttpException)
                         {
-                        }
-                        catch (IOException)
-                        {
-
+                            status = ProviderRefreshStatus.CompletedWithErrors;
                         }
                     }
                 }
+
+                var hasBackdrop = item.LocationType == LocationType.FileSystem ?
+                    item.ResolveArgs.ContainsMetaFileByName(BACKDROP_FILE)
+                    : item.BackdropImagePaths.Count > 0;
+
+                if (ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && !hasBackdrop)
+                {
+                    var nodes = doc.SelectNodes("//fanart/movie/moviebackgrounds//@url");
+                    if (nodes != null)
+                    {
+                        var numBackdrops = 0;
+                        item.BackdropImagePaths = new List<string>();
+                        foreach (XmlNode node in nodes)
+                        {
+                            path = node.Value;
+                            if (!string.IsNullOrEmpty(path))
+                            {
+                                Logger.Debug("FanArtProvider getting Backdrop for " + item.Name);
+                                try
+                                {
+                                    item.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(item, path, ("backdrop" + (numBackdrops > 0 ? numBackdrops.ToString(UsCulture) : "") + ".jpg"), saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                    numBackdrops++;
+                                    if (numBackdrops >= ConfigurationManager.Configuration.MaxBackdrops) break;
+                                }
+                                catch (HttpException)
+                                {
+                                    status = ProviderRefreshStatus.CompletedWithErrors;
+                                }
+                            }
+                        }
+
+                    }
+
+                }
+
             }
-            SetLastRefreshed(movie, DateTime.UtcNow);
+
+            data.Data = GetComparisonData(item.GetProviderId(MetadataProviders.Tmdb));
+            SetLastRefreshed(movie, DateTime.UtcNow, status);
             return true;
         }
 

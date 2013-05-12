@@ -204,23 +204,17 @@ namespace MediaBrowser.Controller.Providers.Movies
             string url = string.Format(@"http://api.themoviedb.org/3/person/{1}?api_key={0}&append_to_response=credits,images", MovieDbProvider.ApiKey, id);
             PersonResult searchResult = null;
 
-            try
+            using (var json = await HttpClient.Get(new HttpRequestOptions
             {
-                using (var json = await HttpClient.Get(new HttpRequestOptions
-                {
-                    Url = url,
-                    CancellationToken = cancellationToken,
-                    ResourcePool = MovieDbProvider.Current.MovieDbResourcePool,
-                    AcceptHeader = MovieDbProvider.AcceptHeader,
-                    EnableResponseCache = true
+                Url = url,
+                CancellationToken = cancellationToken,
+                ResourcePool = MovieDbProvider.Current.MovieDbResourcePool,
+                AcceptHeader = MovieDbProvider.AcceptHeader,
+                EnableResponseCache = true
 
-                }).ConfigureAwait(false))
-                {
-                    searchResult = JsonSerializer.DeserializeFromStream<PersonResult>(json);
-                }
-            }
-            catch (HttpException)
+            }).ConfigureAwait(false))
             {
+                searchResult = JsonSerializer.DeserializeFromStream<PersonResult>(json);
             }
 
             cancellationToken.ThrowIfCancellationRequested();

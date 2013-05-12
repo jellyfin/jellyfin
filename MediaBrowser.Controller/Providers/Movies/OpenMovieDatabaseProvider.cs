@@ -121,7 +121,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            // Refresh if rt id has changed
+            // Refresh if imdb id has changed
             if (providerInfo.Data != GetComparisonData(item.GetProviderId(MetadataProviders.Imdb)))
             {
                 return true;
