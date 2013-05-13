@@ -294,4 +294,4 @@
         $("#imageDropZone", page).off('dragover').off('drop');
     });
 
-})(jQuery, document, window, FileReader, escape);
+})(jQuery, document, window, window.FileReader, escape);

@@ -921,7 +921,7 @@ var Dashboard = {
         else if (type == "artist") {
             url = "itembynamedetails.html?artist=" + ApiClient.encodeName(cmd.ItemIdentifier) + "&context=" + (context || "music");
         }
-        
+
         if (url) {
             Dashboard.navigate(url);
             return;
@@ -1141,12 +1141,8 @@ $(function () {
     $(document.body).append(footerHtml);
 
     if ($.browser.msie && parseInt($.browser.version) < 10) {
-        Dashboard.confirm("This is an unsupported version of Internet Explorer. Please consider upgrading to IE10.", "Unsupported Browser", function (result) {
 
-            if (result) {
-                window.location = "http://windows.microsoft.com/en-us/internet-explorer/downloads/ie-10/worldwide-languages";
-            }
-        });
+        alert("This is an unsupported version of Internet Explorer. Please consider upgrading to IE10, Chrome, or Firefox.");
     }
 });
 
