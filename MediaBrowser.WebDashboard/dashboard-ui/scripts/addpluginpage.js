@@ -31,23 +31,14 @@
 
         var packageVersion;
 
-        if (installedPlugin) {
+        if (!installedPlugin) {
 
-            // Select the first available package with the same update class as the installed version
-            packageVersion = packageInfo.versions.filter(function (current) {
-
-                return current.classification == installedPlugin.UpdateClass;
-            })[0];
-
-
-        } else {
             $('#pCurrentVersion', page).hide().html("");
         }
 
         // If we don't have a package version to select, pick the first release build
         if (!packageVersion) {
 
-            // Select the first available package with the same update class as the installed version
             packageVersion = packageInfo.versions.filter(function (current) {
 
                 return current.classification == "Release";
@@ -57,20 +48,19 @@
         // If we still don't have a package version to select, pick the first Beta build
         if (!packageVersion) {
 
-            // Select the first available package with the same update class as the installed version
             packageVersion = packageInfo.versions.filter(function (current) {
 
                 return current.classification == "Beta";
             })[0];
         }
 
+        selectmenu.selectmenu('refresh');
+
         if (packageVersion) {
             var val = packageVersion.versionStr + '|' + packageVersion.classification;
 
-            $('#selectVersion', page).val(val);
+            selectmenu.val(val).selectmenu('refresh');
         }
-
-        selectmenu.selectmenu('refresh');
     }
 
     function renderPackage(pkg, installedPlugins, pluginSecurityInfo, page) {
