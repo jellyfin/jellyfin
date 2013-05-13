@@ -393,7 +393,7 @@
             SortOrder: "Ascending",
             IncludeItemTypes: "",
             Recursive: true,
-            Fields: "UserData,DisplayMediaType,ItemCounts,DateCreated,AudioInfo,SeriesInfo",
+            Fields: "UserData,DisplayMediaType,ItemCounts,DateCreated,AudioInfo,SeriesInfo,ParentId",
             Limit: LibraryBrowser.getDefaultPageSize(),
             StartIndex: 0
         };
@@ -413,11 +413,22 @@
                 $('.viewSettings', page).hide();
             }
 
-            html += LibraryBrowser.getPosterDetailViewHtml({
-                items: result.Items,
-                preferBackdrop: shape == "backdrop",
-                shape: shape
-            });
+            if (query.IncludeItemTypes == "Audio") {
+                
+                html += LibraryBrowser.getSongTableHtml(result.Items, {
+                    showAlbum: true,
+                    showArtist: true
+                });
+                
+
+            } else {
+                
+                html += LibraryBrowser.getPosterDetailViewHtml({
+                    items: result.Items,
+                    preferBackdrop: shape == "backdrop",
+                    shape: shape
+                });
+            }
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 

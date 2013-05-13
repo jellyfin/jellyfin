@@ -252,7 +252,7 @@
                     if (item.Album && item.ParentId) {
                         html += '<td><a href="itemdetails.html?id=' + item.ParentId + '">' + item.Album + '</a></td>';
                     } else {
-                        html += '<td></td>';
+                        html += '<td>' + (item.Album || '') + '</td>';
                     }
                 }
 
@@ -264,7 +264,7 @@
 
                         html += '<td><a href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(artist) + '">' + artist + '</a></td>';
                     } else {
-                        html += '<td></td>';
+                        html += '<td>' + (artist || '') + '</td>';
                     }
                 }
 
