@@ -1,6 +1,16 @@
 ﻿(function ($, document, LibraryBrowser, window) {
 
     var currentItem;
+    var sessionsPromise;
+
+    function getSessionsPromise() {
+        
+        if (sessionsPromise == null) {
+            sessionsPromise = ApiClient.getSessions();
+        }
+
+        return sessionsPromise;
+    }
 
     function reload(page) {
 
@@ -725,7 +735,7 @@
 
         $('#btnEdit', page).on('click', function () {
 
-            Dashboard.navigate("edititemmetadata.html?id=" + currentItem.Id);
+            Dashboard.navigate("edititemimages.html?id=" + currentItem.Id);
         });
 
     }).on('pageshow', "#itemDetailPage", function () {
