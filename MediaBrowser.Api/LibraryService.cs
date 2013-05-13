@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Controller.Persistence;
+﻿using System.Threading;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
 using System;
@@ -36,6 +38,12 @@ namespace MediaBrowser.Api
         public int? Limit { get; set; }
     }
 
+    [Route("/Library/Refresh", "POST")]
+    [Api(Description = "Starts a library scan")]
+    public class RefreshLibrary : IReturnVoid
+    {
+    }
+    
     /// <summary>
     /// Class LibraryService
     /// </summary>
@@ -46,13 +54,17 @@ namespace MediaBrowser.Api
         /// </summary>
         private readonly IItemRepository _itemRepo;
 
+        private readonly ILibraryManager _libraryManager;
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="LibraryService"/> class.
+        /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         /// <param name="itemRepo">The item repo.</param>
-        public LibraryService(IItemRepository itemRepo)
+        /// <param name="libraryManager">The library manager.</param>
+        public LibraryService(IItemRepository itemRepo, ILibraryManager libraryManager)
         {
             _itemRepo = itemRepo;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -65,6 +77,15 @@ namespace MediaBrowser.Api
             var result = GetCriticReviewsAsync(request).Result;
 
             return ToOptimizedResult(result);
+        }
+
+        /// <summary>
+        /// Posts the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        public void Post(RefreshLibrary request)
+        {
+            _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
         }
 
         /// <summary>
