@@ -41,9 +41,11 @@
 
             html += "<li>";
 
-            var href = configPage ? Dashboard.getConfigurationPageUrl(configPage.Name) : "#";
-
-            html += "<a href='" + href + "'>";
+            if (configPage) {
+                html += "<a href='" + Dashboard.getConfigurationPageUrl(configPage.Name) + "'>";
+            } else {
+                html += "<a onclick='Dashboard.alert(\"Nothing to configure.\");' href='#'>";
+            }
 
             html += "<h3>" + plugin.Name + "</h3>";
 
