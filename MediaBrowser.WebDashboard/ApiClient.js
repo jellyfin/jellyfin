@@ -2513,7 +2513,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         };
     }
 
-}(jQuery, navigator, JSON, window.WebSocket, setTimeout);
+}(jQuery, navigator, window.JSON, window.WebSocket, setTimeout);
 
 /**
  * Provides a friendly way to create an api client instance using information from the browser's current url
