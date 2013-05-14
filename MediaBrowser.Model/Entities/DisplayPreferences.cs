@@ -22,6 +22,7 @@ namespace MediaBrowser.Model.Entities
             RememberIndexing = false;
             PrimaryImageHeight = 250;
             PrimaryImageWidth = 250;
+            ShowBackdrop = true;
             CustomPrefs = new Dictionary<string, string>();
         }
 
@@ -70,6 +71,11 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The scroll direction.</value>
         public ScrollDirection ScrollDirection { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether to show backdrops on this item.
+        /// </summary>
+        /// <value><c>true</c> if showing backdrops; otherwise, <c>false</c>.</value>
+        public bool ShowBackdrop { get; set; }
         /// <summary>
         /// Gets or sets a value indicating whether [remember sorting].
         /// </summary>
