@@ -102,7 +102,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         self.encodeName = function (name) {
 
             name = name.split('/').join('-');
-            
+
             name = name.split('?').join('-');
 
             var val = $.param({ name: name });
@@ -2276,6 +2276,23 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             return self.ajax({
                 type: "DELETE",
                 url: url
+            });
+        };
+
+        self.getItemCounts = function (userId) {
+
+            var options = {};
+
+            if (userId) {
+                options.userId = userId;
+            }
+
+            var url = self.getUrl("Items/Counts", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
             });
         };
 
