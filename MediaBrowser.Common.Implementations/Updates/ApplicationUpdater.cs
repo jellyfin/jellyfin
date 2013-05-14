@@ -19,6 +19,13 @@ namespace MediaBrowser.Common.Implementations.Updates
         private const string UpdaterDll = "Mediabrowser.InstallUtil.dll";
         public void UpdateApplication(MBApplication app, IApplicationPaths appPaths, string archive)
         {
+            // First see if there is a version file and read that in
+            var version = "Unknown";
+            if (File.Exists(archive + ".ver"))
+            {
+                version = File.ReadAllText(archive + ".ver");
+            }
+
             // Use our installer passing it the specific archive
             // We need to copy to a temp directory and execute it there
             var source = Path.Combine(appPaths.ProgramSystemPath, UpdaterExe);
@@ -33,7 +40,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             File.Copy(source, Path.Combine(Path.GetTempPath(), "ServiceStack.Text.dll"), true);
             source = Path.Combine(appPaths.ProgramSystemPath, "Ionic.Zip.dll");
             File.Copy(source, Path.Combine(Path.GetTempPath(), "Ionic.Zip.dll"), true);
-            Process.Start(tempUpdater, string.Format("product={0} archive=\"{1}\" caller={2} pismo=false", product, archive, Process.GetCurrentProcess().Id));
+            Process.Start(tempUpdater, string.Format("product={0} archive=\"{1}\" caller={2} pismo=false version={3}", product, archive, Process.GetCurrentProcess().Id, version));
 
             // That's it.  The installer will do the work once we exit
         }

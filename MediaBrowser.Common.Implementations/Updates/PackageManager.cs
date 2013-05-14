@@ -101,6 +101,11 @@ namespace MediaBrowser.Common.Implementations.Updates
             try
             {
                 File.Copy(tempFile, target, true);
+                //If it is an archive - write out a version file so we know what it is
+                if (isArchive)
+                {
+                    File.WriteAllText(target+".ver", package.versionStr);
+                }
             }
             catch (IOException e)
             {
