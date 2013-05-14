@@ -71,6 +71,14 @@ namespace MediaBrowser.Controller.Providers.TV
             }
         }
 
+        protected override bool RefreshOnFileSystemStampChange
+        {
+            get
+            {
+                return ConfigurationManager.Configuration.SaveLocalMeta;
+            }
+        }
+
         /// <summary>
         /// Needses the refresh internal.
         /// </summary>
@@ -168,7 +176,8 @@ namespace MediaBrowser.Controller.Providers.TV
                 {
                     if (ConfigurationManager.Configuration.RefreshItemImages || !season.HasLocalImage("folder"))
                     {
-                        var n = images.SelectSingleNode("//Banner[BannerType='season'][BannerType2='season'][Season='" + seasonNumber + "']");
+                        var n = images.SelectSingleNode("//Banner[BannerType='season'][BannerType2='season'][Season='" + seasonNumber + "'][Language='" + ConfigurationManager.Configuration.PreferredMetadataLanguage + "']") ??
+                                images.SelectSingleNode("//Banner[BannerType='season'][BannerType2='season'][Season='" + seasonNumber + "'][Language='en']");
                         if (n != null)
                         {
                             n = n.SelectSingleNode("./BannerPath");
@@ -187,7 +196,8 @@ namespace MediaBrowser.Controller.Providers.TV
 
                     if (ConfigurationManager.Configuration.DownloadSeasonImages.Banner && (ConfigurationManager.Configuration.RefreshItemImages || !season.HasLocalImage("banner")))
                     {
-                        var n = images.SelectSingleNode("//Banner[BannerType='season'][BannerType2='seasonwide'][Season='" + seasonNumber + "']");
+                        var n = images.SelectSingleNode("//Banner[BannerType='season'][BannerType2='seasonwide'][Season='" + seasonNumber + "'][Language='" + ConfigurationManager.Configuration.PreferredMetadataLanguage + "']") ?? 
+                                images.SelectSingleNode("//Banner[BannerType='season'][BannerType2='seasonwide'][Season='" + seasonNumber + "'][Language='en']");
                         if (n != null)
                         {
                             n = n.SelectSingleNode("./BannerPath");
