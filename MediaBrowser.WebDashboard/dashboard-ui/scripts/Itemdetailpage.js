@@ -4,7 +4,7 @@
     var sessionsPromise;
 
     function getSessionsPromise() {
-        
+
         if (sessionsPromise == null) {
             sessionsPromise = ApiClient.getSessions();
         }
@@ -77,34 +77,7 @@
         return "";
     }
 
-    function enableCustomHeader(page, text) {
-        var elem = $('.libraryPageHeader', page).show();
-
-        $('span', elem).html(text);
-    }
-
     function renderHeader(page, item) {
-
-        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "BoxSet") {
-            enableCustomHeader(page, "Movies");
-            $('#standardLogo', page).hide();
-        }
-        else if (item.Type == "Episode" || item.Type == "Season" || item.Type == "Series") {
-            enableCustomHeader(page, "TV Shows");
-            $('#standardLogo', page).hide();
-        }
-        else if (item.Type == "Audio" || item.Type == "MusicAlbum") {
-            enableCustomHeader(page, "Music");
-            $('#standardLogo', page).hide();
-        }
-        else if (item.MediaType == "Game" || item.Type == "GamePlatform") {
-            enableCustomHeader(page, "Games");
-            $('#standardLogo', page).hide();
-        }
-        else {
-            $('.libraryPageHeader', page).hide();
-            $('#standardLogo', page).show();
-        }
 
         $('.itemTabs', page).hide();
 
@@ -373,7 +346,7 @@
                     html += '<img src="css/images/rotten.png" />';
                 }
             }
-            
+
             html += '</div>';
 
             html += '<div class="reviewCaption">' + review.Caption + '</div>';

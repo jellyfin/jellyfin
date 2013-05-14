@@ -28,6 +28,36 @@
             sortBy: "SortName"
         };
 
+        apiClient.getItemCounts(userId).done(function (counts) {
+
+            var views = [];
+
+            if (counts.MovieCount || counts.TrailerCount) {
+                views.push({ name: "Movies", url: "moviesrecommended.html", img: "css/images/items/list/chapter.png", background: "#0094FF" });
+            }
+
+            if (counts.EpisodeCount || counts.SeriesCount) {
+                views.push({ name: "TV Shows", url: "tvrecommended.html", img: "css/images/items/list/collection.png", background: "#FF870F" });
+            }
+
+            if (counts.SongCount) {
+                views.push({ name: "Music", url: "musicrecommended.html", img: "css/images/items/list/audiocollection.png", background: "#6FBD45" });
+            }
+
+            if (counts.GameCount) {
+                views.push({ name: "Games", url: "gamesrecommended.html", img: "css/images/items/list/gamecollection.png", background: "#E12026" });
+            }
+
+            var html = '';
+
+            for (var i = 0, length = views.length; i < length; i++) {
+
+                html += getViewHtml(views[i]);
+            }
+
+            $('#views', page).html(html);
+        });
+
         apiClient.getItems(userId, options).done(function (result) {
 
             $('#divCollections', page).html(LibraryBrowser.getPosterViewHtml({
@@ -36,35 +66,6 @@
                 shape: "backdrop",
                 centerText: true
             }));
-
-        });
-
-        // Kick this off now. Just see if there are any games in the library
-        var gamesPromise = ApiClient.getItems(userId, { Recursive: true, limit: 0, MediaTypes: "Game" });
-
-        var views = [
-            { name: "Movies", url: "moviesrecommended.html", img: "css/images/items/list/chapter.png", background: "#0094FF" },
-            { name: "TV Shows", url: "tvrecommended.html", img: "css/images/items/list/collection.png", background: "#FF870F" },
-            { name: "Music", url: "musicrecommended.html", img: "css/images/items/list/audiocollection.png", background: "#6FBD45" }
-        ];
-
-        var html = '';
-
-        for (var i = 0, length = views.length; i < length; i++) {
-
-            html += getViewHtml(views[i]);
-        }
-
-        $('#views', page).html(html);
-
-        gamesPromise.done(function (result) {
-
-            if (result.TotalRecordCount) {
-
-                var view = { name: "Games", url: "gamesrecommended.html", img: "css/images/items/list/gamecollection.png", background: "#E12026" };
-
-                $('#views', page).append(getViewHtml(view));
-            }
 
         });
     });

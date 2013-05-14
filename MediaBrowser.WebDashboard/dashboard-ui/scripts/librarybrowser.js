@@ -1589,3 +1589,93 @@
     };
 
 })(window, document, jQuery);
+
+
+(function (window, document, $) {
+
+    var itemCountsPromise;
+
+    function renderHeader(page, user, counts) {
+
+        var html = '<div class="viewMenuBar">';
+
+        html += '<a class="viewMenuLink" href="index.html" title="Home"><img src="css/images/mblogoicon.png" alt="Home" /></a>';
+
+        var selectedCssClass = ' selectedViewLink';
+        var selectedHtml = "<span class='selectedViewIndicator'>&#9654;</span>";
+        var view = page.getAttribute('data-view');
+
+        if (counts.MovieCount || counts.TrailerCount) {
+
+            html += '<a class="viewMenuLink viewMenuImageLink" href="moviesrecommended.html" title="Movies"><img src="css/images/views/movies.png" alt="Movies" /></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'movies' ? selectedCssClass : '') + '" href="moviesrecommended.html">' + (view == 'movies' ? selectedHtml : '') + '<span class="viewName">Movies</span></a>';
+        }
+
+        if (counts.EpisodeCount || counts.SeriesCount) {
+            html += '<a class="viewMenuLink viewMenuImageLink" href="tvrecommended.html" title="TV Shows"><img src="css/images/views/tvshows.png" alt="TV Shows" /></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'tvshows' ? selectedCssClass : '') + '" href="tvrecommended.html">' + (view == 'tvshows' ? selectedHtml : '') + '<span class="viewName">TV Shows</span></a>';
+        }
+
+        if (counts.SongCount) {
+            html += '<a class="viewMenuLink viewMenuImageLink" href="musicrecommended.html" title="Music"><img src="css/images/views/music.png" alt="Music" /></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'music' ? selectedCssClass : '') + '" href="musicrecommended.html">' + (view == 'music' ? selectedHtml : '') + '<span class="viewName">Music</span></a>';
+        }
+
+        if (counts.GameCount) {
+            html += '<a class="viewMenuLink viewMenuImageLink" href="gamesrecommended.html" title="Games"><img src="css/images/views/games.png" alt="Games" /></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'games' ? selectedCssClass : '') + '" href="gamesrecommended.html">' + (view == 'games' ? selectedHtml : '') + '<span class="viewName">Games</span></a>';
+        }
+
+        html += '<div class="viewMenuSecondary">';
+
+        html += Search.getSearchHtml();
+
+        html += '<a class="viewMenuLink" class="btnCurrentUser" href="#" onclick="Dashboard.showUserFlyout(this);">';
+
+        if (user.PrimaryImageTag) {
+
+            var url = ApiClient.getUserImageUrl(user.Id, {
+                width: 225,
+                tag: user.PrimaryImageTag,
+                type: "Primary"
+            });
+
+            html += '<img src="' + url + '" />';
+        } else {
+            html += '<img src="css/images/currentuserdefaultwhite.png" />';
+        }
+
+        html += '</a>';
+
+        html += '<a class="viewMenuLink" href="dashboard.html" title="Dashboard"><img src="css/images/toolswhite.png" alt="Dashboard" /></a>';
+
+        html += '</div>';
+
+        html += '</div>';
+
+        $(page).prepend(html);
+
+        Search.onSearchRendered($('.viewMenuBar', page));
+    }
+
+    $(document).on('pagebeforeshow', ".libraryPage", function () {
+
+        var page = this;
+
+        if (!$('.viewMenuBar', page).length) {
+
+            itemCountsPromise = itemCountsPromise || ApiClient.getItemCounts(Dashboard.getCurrentUserId());
+
+            itemCountsPromise.done(function (counts) {
+
+                Dashboard.getCurrentUser().done(function (user) {
+
+                    renderHeader(page, user, counts);
+
+                });
+            });
+
+        }
+    });
+
+})(window, document, jQuery);

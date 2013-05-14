@@ -1,17 +1,16 @@
 ﻿.headerSearch {
     display: none;
-    margin-right: 3em;
+    margin-right: 1em;
     position: relative;
 }
 
 .txtSearch {
     vertical-align: middle;
-    font: 16px arial,sans-serif;
-    height: 28px;
-    line-height: 28px;
+    font: 13px arial,sans-serif;
     margin: 0 .15em 0 0;
     width: 150px;
     padding: 0;
+    border: 1px solid #4d90fe;
 }
 
 .btnSearch {
@@ -30,7 +29,6 @@
     -webkit-border-radius: 2px;
     border-radius: 2px;
     font-weight: bold;
-    height: 28px;
     min-width: 54px;
     padding: 0 8px;
     text-align: center;
@@ -40,8 +38,13 @@
     text-align: center;
 }
 
+.txtSearch, .btnSearch {
+    height: 22px;
+    line-height: 22px;
+}
+
     .btnSearch img {
-        height: 28px;
+        height: 22px;
         margin: 0 auto;
         border: 0;
     }
@@ -133,21 +136,11 @@
 
 @media all and (min-width: 1200px) {
     .txtSearch {
-        width: 350px;
+        width: 300px;
     }
 
     .searchHints {
-        width: 348px;
-    }
-}
-
-@media all and (min-width: 1440px) {
-    .txtSearch {
-        width: 400px;
-    }
-
-    .searchHints {
-        width: 398px;
+        width: 298px;
     }
 }
 

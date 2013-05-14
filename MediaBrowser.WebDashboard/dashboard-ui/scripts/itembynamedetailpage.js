@@ -76,36 +76,9 @@
         });
     }
 
-    function enableCustomHeader(page, text) {
-        var elem = $('.libraryPageHeader', page).show();
-
-        $('span', elem).html(text);
-    }
-
     function renderHeader(page, item) {
 
         var context = getParameterByName('context');
-
-        if (context == "movies") {
-            enableCustomHeader(page, "Movies");
-            $('#standardLogo', page).hide();
-        }
-        else if (context == "music") {
-            enableCustomHeader(page, "Music");
-            $('#standardLogo', page).hide();
-        }
-        else if (context == "tv") {
-            enableCustomHeader(page, "TV Shows");
-            $('#standardLogo', page).hide();
-        }
-        else if (context == "games") {
-            enableCustomHeader(page, "Games");
-            $('#standardLogo', page).hide();
-        }
-        else {
-            $('.libraryPageHeader', page).hide();
-            $('#standardLogo', page).show();
-        }
 
         $('.itemTabs', page).hide();
 

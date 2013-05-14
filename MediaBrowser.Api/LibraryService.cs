@@ -1,10 +1,16 @@
-﻿using System.Threading;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
@@ -43,7 +49,15 @@ namespace MediaBrowser.Api
     public class RefreshLibrary : IReturnVoid
     {
     }
-    
+
+    [Route("/Items/Counts", "GET")]
+    [Api(Description = "Gets counts of various item types")]
+    public class GetItemCounts : IReturn<ItemCounts>
+    {
+        [ApiMember(Name = "UserId", Description = "Optional. Get counts from a specific user's library.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid? UserId { get; set; }
+    }
+
     /// <summary>
     /// Class LibraryService
     /// </summary>
@@ -55,16 +69,19 @@ namespace MediaBrowser.Api
         private readonly IItemRepository _itemRepo;
 
         private readonly ILibraryManager _libraryManager;
+        private readonly IUserManager _userManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         /// <param name="itemRepo">The item repo.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public LibraryService(IItemRepository itemRepo, ILibraryManager libraryManager)
+        /// <param name="userManager">The user manager.</param>
+        public LibraryService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager)
         {
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
+            _userManager = userManager;
         }
 
         /// <summary>
@@ -77,6 +94,41 @@ namespace MediaBrowser.Api
             var result = GetCriticReviewsAsync(request).Result;
 
             return ToOptimizedResult(result);
+        }
+
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
+        public object Get(GetItemCounts request)
+        {
+            var items = GetItems(request.UserId).ToList();
+
+            var counts = new ItemCounts
+            {
+                AlbumCount = items.OfType<MusicAlbum>().Count(),
+                EpisodeCount = items.OfType<Episode>().Count(),
+                GameCount = items.OfType<BaseGame>().Count(),
+                MovieCount = items.OfType<Movie>().Count(),
+                SeriesCount = items.OfType<Series>().Count(),
+                SongCount = items.OfType<Audio>().Count(),
+                TrailerCount = items.OfType<Trailer>().Count()
+            };
+
+            return ToOptimizedResult(counts);
+        }
+
+        protected IEnumerable<BaseItem> GetItems(Guid? userId)
+        {
+            if (userId.HasValue)
+            {
+                var user = _userManager.GetUserById(userId.Value);
+
+                return _userManager.GetUserById(userId.Value).RootFolder.GetRecursiveChildren(user);
+            }
+
+            return _libraryManager.RootFolder.RecursiveChildren;
         }
 
         /// <summary>

@@ -3,17 +3,64 @@
     background: none!important;
 }
 
+.viewMenuBar {
+    background: #444;
+    background-image: linear-gradient(#444,#2d2d2d);
+    border-bottom: 1px solid #444;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.viewMenuLink {
+    text-decoration: none;
+    color: #bbb;
+    padding: 7px .9em 6px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+    .viewMenuLink:hover {
+        color: #fff;
+    }
+
+        .viewMenuLink:hover img {
+            opacity: .5;
+        }
+
+    .viewMenuLink img {
+        height: 20px;
+        vertical-align: top;
+    }
+
+.viewMenuSecondary {
+    float: right;
+}
+
+.viewMenuTextLink {
+    display: none;
+    height: 20px;
+    padding-top: 9px;
+    text-transform: uppercase;
+}
+
+.viewName {
+    vertical-align: middle;
+}
+
+.selectedViewLink {
+    color: #fff;
+}
+
+.selectedViewIndicator {
+    margin-right: .25em;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+}
+
 .libraryPage .header {
     padding-bottom: 0;
 }
-
-.libraryPageHeader {
-    margin: -5px 0 0;
-}
-
-    .libraryPageHeader a {
-        margin-right: 15px;
-    }
 
 .libraryPage .ui-content {
     padding: 10px;
@@ -192,6 +239,14 @@
     .galleryImage {
         width: 150px;
     }
+
+    .viewMenuTextLink {
+        display: inline-block;
+    }
+
+    .viewMenuImageLink {
+        display: none;
+    }
 }
 
 @media all and (min-width: 1200px) {
@@ -203,7 +258,7 @@
 
 @media all and (min-width: 650px) {
     .libraryPage .ui-content {
-        padding: 0 20px 100px;
+        padding: 15px 20px 100px;
     }
 
     .viewControls, .listTopPaging {

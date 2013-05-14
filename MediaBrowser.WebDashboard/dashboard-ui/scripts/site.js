@@ -430,13 +430,11 @@ var Dashboard = {
         }, 500);
     },
 
-
-
-    showUserFlyout: function () {
+    showUserFlyout: function (context) {
 
         Dashboard.getCurrentUser().done(function (user) {
 
-            var html = '<div data-role="popup" id="userFlyout" style="max-width:400px;margin-top:50px;margin-right:20px;" class="ui-corner-all" data-position-to=".btnCurrentUser:visible">';
+            var html = '<div data-role="popup" id="userFlyout" style="max-width:400px;margin-top:30px;margin-right:20px;" class="ui-corner-all">';
 
             html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
 
@@ -467,7 +465,7 @@ var Dashboard = {
 
             $(document.body).append(html);
 
-            $('#userFlyout').popup().trigger('create').popup("open").on("popupafterclose", function () {
+            $('#userFlyout').popup({ positionTo: context }).trigger('create').popup("open").on("popupafterclose", function () {
 
                 $(this).off("popupafterclose").remove();
             });
@@ -642,7 +640,7 @@ var Dashboard = {
 
     ensureHeader: function (page) {
 
-        if (!$('.headerButtons', page).length) {
+        if (!page.hasClass('libraryPage') && !$('.headerButtons', page).length) {
 
             var isLoggedIn = Dashboard.getCurrentUserId();
 
@@ -663,44 +661,33 @@ var Dashboard = {
 
         var headerHtml = '';
 
-        var isLibraryPage = page.hasClass('libraryPage');
-
         var header = $('.header', page);
 
         if (!header.length) {
             headerHtml += '<div class="header">';
 
-            if (!page.hasClass('noLogoPage')) {
-                headerHtml += '<a class="logo" href="index.html">';
+            headerHtml += '<a class="logo" href="index.html">';
 
-                if (page.hasClass('standalonePage')) {
+            if (page.hasClass('standalonePage')) {
 
-                    headerHtml += '<img class="imgLogoIcon" src="css/images/mblogoicon.png" /><img class="imgLogoText" src="css/images/mblogotextblack.png" />';
-                }
-                else if (isLibraryPage) {
-
-                    headerHtml += '<img class="imgLogoIcon" src="css/images/mblogoicon.png" /><img class="imgLogoText" src="css/images/mblogotextwhite.png" />';
-                }
-                headerHtml += '</a>';
+                headerHtml += '<img class="imgLogoIcon" src="css/images/mblogoicon.png" /><img class="imgLogoText" src="css/images/mblogotextblack.png" />';
             }
+
+            headerHtml += '</a>';
             headerHtml += '</div>';
             page.prepend(headerHtml);
 
             header = $('.header', page);
         }
 
-        var imageColor = isLibraryPage ? "white" : "black";
+        var imageColor = "black";
 
         headerHtml = '';
         headerHtml += '<div class="headerButtons">';
 
         if (user && !page.hasClass('wizardPage')) {
 
-            if (isLibraryPage) {
-                headerHtml += Search.getSearchHtml();
-            }
-
-            headerHtml += '<a class="imageLink btnCurrentUser" href="#" onclick="Dashboard.showUserFlyout();"><span class="currentUsername">' + user.Name + '</span>';
+            headerHtml += '<a class="imageLink btnCurrentUser" href="#" onclick="Dashboard.showUserFlyout(this);"><span class="currentUsername">' + user.Name + '</span>';
 
             if (user.PrimaryImageTag) {
 

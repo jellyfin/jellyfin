@@ -4,9 +4,7 @@
     <title>Media Browser</title>
 </head>
 <body>
-    <div id="movieTrailersPage" data-role="page" class="page libraryPage noLogoPage" data-theme="a">
-        <h1 class="libraryPageHeader"><a href="index.html" class="imageLink">
-            <img src="css/images/mblogoicon.png"></a>Movies</h1>
+    <div id="movieTrailersPage" data-role="page" class="page libraryPage" data-theme="a" data-view="movies">
         <div data-role="content">
             <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
                 <a href="moviesrecommended.html" data-role="button">Suggested</a>
@@ -71,17 +69,17 @@
                     <input class="radioSortBy" type="radio" name="radioSortBy" data-theme="c" id="radioRuntime" value="off" data-sortby="Runtime" data-mini="true">
                     <label for="radioRuntime">Runtime</label>
 
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        <strong>Sort Order:</strong>
-                    </legend>
+                    <fieldset data-role="controlgroup">
+                        <legend>
+                            <strong>Sort Order:</strong>
+                        </legend>
 
-                    <input class="radioSortOrder" data-theme="c" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
-                    <label for="radioAscending">Ascending</label>
+                        <input class="radioSortOrder" data-theme="c" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
+                        <label for="radioAscending">Ascending</label>
 
-                    <input class="radioSortOrder" data-theme="c" type="radio" name="radioSortOrder" id="radioDescending" value="off" data-sortorder="Descending" data-mini="true">
-                    <label for="radioDescending">Descending</label>
-                </fieldset>
+                        <input class="radioSortOrder" data-theme="c" type="radio" name="radioSortOrder" id="radioDescending" value="off" data-sortorder="Descending" data-mini="true">
+                        <label for="radioDescending">Descending</label>
+                    </fieldset>
             </form>
         </div>
         <div data-role="panel" id="filterPanel" data-position="right" data-display="overlay" data-theme="b" data-position-fixed="true">
