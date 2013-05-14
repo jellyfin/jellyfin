@@ -15,7 +15,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
         /// <value>The priority.</value>
         public override ResolverPriority Priority
         {
-            get { return ResolverPriority.Third; } // we need to be ahead of the generic folder resolver but behind the movie one
+            get { return ResolverPriority.Second; } // we need to be ahead of the generic folder resolver but behind the movie one
         }
 
         /// <summary>
