@@ -369,7 +369,7 @@ namespace MediaBrowser.Server.Implementations.IO
             lock (_timerLock)
             {
                 // Extend the timer as long as any of the paths are still being written to.
-                if (_affectedPaths.Any(p => !FileSystem.GetFileSystemInfo(p.Key).Attributes.HasFlag(FileAttributes.ReadOnly) && IsFileLocked(p.Key)))
+                if (_affectedPaths.Any(p => IsFileLocked(p.Key)))
                 {
                     Logger.Info("Timer extended.");
                     _updateTimer.Change(TimeSpan.FromSeconds(ConfigurationManager.Configuration.FileWatcherDelay), TimeSpan.FromMilliseconds(-1));
@@ -400,7 +400,9 @@ namespace MediaBrowser.Server.Implementations.IO
             {
                 var data = FileSystem.GetFileSystemInfo(path);
 
-                if (!data.Exists || data.Attributes.HasFlag(FileAttributes.Directory))
+                if (!data.Exists
+                    || data.Attributes.HasFlag(FileAttributes.Directory)
+                    || data.Attributes.HasFlag(FileAttributes.ReadOnly))
                 {
                     return false;
                 }
