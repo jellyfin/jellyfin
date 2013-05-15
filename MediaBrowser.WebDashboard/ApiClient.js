@@ -1883,14 +1883,17 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
          */
         self.getThemeSongs = function (userId, itemId) {
 
-            if (!userId) {
-                throw new Error("null userId");
-            }
             if (!itemId) {
                 throw new Error("null itemId");
             }
 
-            var url = self.getUrl("Users/" + userId + "/Items/" + itemId + "/ThemeSongs");
+            var options = {};
+
+            if (userId) {
+                options.userId = userId;
+            }
+
+            var url = self.getUrl("Items/" + itemId + "/ThemeSongs", options);
 
             return self.ajax({
                 type: "GET",
@@ -1901,14 +1904,17 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
         self.getThemeVideos = function (userId, itemId) {
 
-            if (!userId) {
-                throw new Error("null userId");
-            }
             if (!itemId) {
                 throw new Error("null itemId");
             }
 
-            var url = self.getUrl("Users/" + userId + "/Items/" + itemId + "/ThemeVideos");
+            var options = {};
+
+            if (userId) {
+                options.userId = userId;
+            }
+
+            var url = self.getUrl("Items/" + itemId + "/ThemeVideos", options);
 
             return self.ajax({
                 type: "GET",

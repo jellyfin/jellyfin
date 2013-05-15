@@ -218,8 +218,8 @@ namespace MediaBrowser.Api
         private Task<BaseItemDto[]> GetItemDtos(IEnumerable<BaseItem> pagedItems, User user, List<ItemFields> fields)
         {
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
-            
-            return Task.WhenAll(pagedItems.Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)));
+
+            return Task.WhenAll(pagedItems.Select(i => dtoBuilder.GetBaseItemDto(i, fields, user)));
         }
 
         /// <summary>

@@ -319,50 +319,6 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class GetThemeSongs
-    /// </summary>
-    [Route("/Users/{UserId}/Items/{Id}/ThemeSongs", "GET")]
-    [Api(Description = "Gets theme songs for an item")]
-    public class GetThemeSongs : IReturn<ThemeSongsResult>
-    {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid UserId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Id { get; set; }
-    }
-
-    /// <summary>
-    /// Class GetThemeVideos
-    /// </summary>
-    [Route("/Users/{UserId}/Items/{Id}/ThemeVideos", "GET")]
-    [Api(Description = "Gets video backdrops for an item")]
-    public class GetThemeVideos : IReturn<ThemeVideosResult>
-    {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid UserId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Id { get; set; }
-    }
-
-    /// <summary>
     /// Class GetSpecialFeatures
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/SpecialFeatures", "GET")]
@@ -443,7 +399,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
 
-            var items = _itemRepo.GetItems(movie.SpecialFeatureIds).OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).Select(t => t.Result).ToList();
+            var items = _itemRepo.GetItems(movie.SpecialFeatureIds).OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, fields, user)).Select(t => t.Result).ToList();
 
             return ToOptimizedResult(items);
         }
@@ -464,65 +420,9 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
 
-            var items = _itemRepo.GetItems(item.LocalTrailerIds).OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).Select(t => t.Result).ToList();
+            var items = _itemRepo.GetItems(item.LocalTrailerIds).OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, fields, user)).Select(t => t.Result).ToList();
 
             return ToOptimizedResult(items);
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetThemeSongs request)
-        {
-            var user = _userManager.GetUserById(request.UserId);
-
-            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
-
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
-
-            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
-
-            var items = _itemRepo.GetItems(item.ThemeSongIds).OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).Select(t => t.Result).ToArray();
-
-            var result = new ThemeSongsResult
-            {
-                Items = items,
-                TotalRecordCount = items.Length,
-                OwnerId = DtoBuilder.GetClientItemId(item)
-            };
-
-            return ToOptimizedResult(result);
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetThemeVideos request)
-        {
-            var user = _userManager.GetUserById(request.UserId);
-
-            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
-
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
-
-            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
-
-            var items = _itemRepo.GetItems(item.ThemeVideoIds).OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, user, fields)).Select(t => t.Result).ToArray();
-
-            var result = new ThemeVideosResult
-            {
-                Items = items,
-                TotalRecordCount = items.Length,
-                OwnerId = DtoBuilder.GetClientItemId(item)
-            };
-
-            return ToOptimizedResult(result);
         }
 
         /// <summary>
@@ -541,7 +441,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
 
-            var result = dtoBuilder.GetBaseItemDto(item, user, fields).Result;
+            var result = dtoBuilder.GetBaseItemDto(item, fields, user).Result;
 
             return ToOptimizedResult(result);
         }
@@ -562,7 +462,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
 
-            var result = dtoBuilder.GetBaseItemDto(item, user, fields).Result;
+            var result = dtoBuilder.GetBaseItemDto(item, fields, user).Result;
 
             return ToOptimizedResult(result);
         }
