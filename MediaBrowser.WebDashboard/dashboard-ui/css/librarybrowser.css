@@ -203,6 +203,7 @@
 
 .criticRatingSummary {
     background-color: #FFE482!important;
+    background-color: rgba(255,228,130,0.7);
     color: #000!important;
 }
 
@@ -368,6 +369,9 @@ a.itemTag:hover {
     border: 1px solid #181818;
     background: #222;
     margin-top: 2em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .detailSectionContent {

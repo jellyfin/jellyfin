@@ -232,24 +232,65 @@
         }
 
         renderSeriesAirTime(page, item, context);
+        renderSimiliarItems(page, item);
     }
-    
+
+    function renderSimiliarItems(page, item) {
+
+        if (item.Type != "Movie" &&
+            item.Type != "Trailer" &&
+            item.Type != "MusicAlbum" &&
+            item.Type != "Series" &&
+            item.MediaType != "Game") {
+
+            $('#similarCollapsible', page).hide();
+            return;
+        }
+
+        ApiClient.getSimilarItems(item.Id, {
+
+            userId: Dashboard.getCurrentUserId(),
+            limit: 8
+
+        }).done(function (result) {
+
+            if (!result.Items.length) {
+
+                $('#similarCollapsible', page).hide();
+                return;
+            }
+
+            var elem = $('#similarCollapsible', page).show();
+
+            $('.detailSectionHeader', elem).html('If you like ' + item.Name + ', check these out...');
+
+            var html = LibraryBrowser.getPosterViewHtml({
+                items: result.Items,
+                useAverageAspectRatio: true,
+                showNewIndicator: true,
+                shape: item.Type == "MusicAlbum" ? "square" : "portrait"
+            });
+
+            $('#similarContent', page).html(html);
+        });
+    }
+
     function renderSeriesAirTime(page, item, context) {
-        
+
         if (item.Type != "Series") {
             $('#seriesAirTime', page).hide();
             return;
         }
 
         var html = item.Status == 'Ended' ? 'Aired' : 'Airs';
-        
+
         if (item.AirDays.length) {
-            html += ' ' + item.AirDays.map(function(a) {
+            html += ' ' + item.AirDays.map(function (a) {
                 return a + "s";
 
             }).join(',');
         }
-        
+
         if (item.Studios.length) {
             html += ' on <a class="textlink" href="itembynamedetails.html?context=' + context + '&studio=' + ApiClient.encodeName(item.Studios[0].Name) + '">' + item.Studios[0].Name + '</a>';
         }
@@ -283,7 +324,7 @@
     function renderChildren(page, item) {
 
         var sortBy = item.Type == "Boxset" ? "ProductionYear,SortName" : "SortName";
-        
+
         ApiClient.getItems(Dashboard.getCurrentUserId(), {
 
             ParentId: getParameterByName('id'),

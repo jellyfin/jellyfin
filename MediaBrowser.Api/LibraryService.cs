@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
 using System;
@@ -101,6 +102,32 @@ namespace MediaBrowser.Api
     {
         [ApiMember(Name = "UserId", Description = "Optional. Get counts from a specific user's library.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public Guid? UserId { get; set; }
+    }
+
+    [Route("/Items/{Id}/Similar", "GET")]
+    [Api(Description = "Gets items similar to a given input item.")]
+    public class GetSimilarItems : IReturn<ItemsResult>
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid? UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// The maximum number of items to return
+        /// </summary>
+        /// <value>The limit.</value>
+        [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? Limit { get; set; }
     }
 
     /// <summary>
@@ -227,7 +254,7 @@ namespace MediaBrowser.Api
             var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
 
             var item = string.IsNullOrEmpty(request.Id) ?
-                (request.UserId.HasValue ? user.RootFolder : 
+                (request.UserId.HasValue ? user.RootFolder :
                 (Folder)_libraryManager.RootFolder) : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, request.UserId);
 
             // Get everything
@@ -275,6 +302,184 @@ namespace MediaBrowser.Api
             };
 
             return ToOptimizedResult(result);
+        }
+
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
+        public object Get(GetSimilarItems request)
+        {
+            var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
+
+            var item = string.IsNullOrEmpty(request.Id) ?
+                (request.UserId.HasValue ? user.RootFolder :
+                (Folder)_libraryManager.RootFolder) : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, request.UserId);
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
+
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
+
+            var inputItems = user == null
+                                 ? _libraryManager.RootFolder.RecursiveChildren
+                                 : user.RootFolder.GetRecursiveChildren(user);
+
+            var items = GetSimilaritems(item, inputItems).ToArray();
+
+            var result = new ItemsResult
+            {
+                Items = items.Take(request.Limit ?? items.Length).Select(i => dtoBuilder.GetBaseItemDto(i, fields, user)).Select(t => t.Result).ToArray(),
+
+                TotalRecordCount = items.Length
+            };
+
+            return ToOptimizedResult(result);
+        }
+
+        /// <summary>
+        /// Gets the similiar items.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="inputItems">The input items.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        private IEnumerable<BaseItem> GetSimilaritems(BaseItem item, IEnumerable<BaseItem> inputItems)
+        {
+            if (item is Movie || item is Trailer)
+            {
+                inputItems = inputItems.Where(i => i is Movie || i is Trailer);
+            }
+            else if (item is Series)
+            {
+                inputItems = inputItems.Where(i => i is Series);
+            }
+            else if (item is BaseGame)
+            {
+                inputItems = inputItems.Where(i => i is BaseGame);
+            }
+            else if (item is MusicAlbum)
+            {
+                inputItems = inputItems.Where(i => i is MusicAlbum);
+            }
+            else if (item is Audio)
+            {
+                inputItems = inputItems.Where(i => i is Audio);
+            }
+
+            // Avoid implicitly captured closure
+            var currentItem = item;
+
+            return inputItems.Where(i => i.Id != currentItem.Id)
+                .Select(i => new Tuple<BaseItem, int>(i, GetSimiliarityScore(item, i)))
+                .Where(i => i.Item2 > 0)
+                .OrderByDescending(i => i.Item2)
+                .ThenByDescending(i => i.Item1.CriticRating ?? 0)
+                .Select(i => i.Item1);
+        }
+
+        /// <summary>
+        /// Gets the similiarity score.
+        /// </summary>
+        /// <param name="item1">The item1.</param>
+        /// <param name="item2">The item2.</param>
+        /// <returns>System.Int32.</returns>
+        private int GetSimiliarityScore(BaseItem item1, BaseItem item2)
+        {
+            var points = 0;
+
+            if (!string.IsNullOrEmpty(item1.OfficialRating) && string.Equals(item1.OfficialRating, item2.OfficialRating, StringComparison.OrdinalIgnoreCase))
+            {
+                points += 1;
+            }
+
+            // Find common genres
+            points += item1.Genres.Where(i => item2.Genres.Contains(i, StringComparer.OrdinalIgnoreCase)).Sum(i => 5);
+
+            // Find common tags
+            points += item1.Tags.Where(i => item2.Tags.Contains(i, StringComparer.OrdinalIgnoreCase)).Sum(i => 5);
+
+            // Find common studios
+            points += item1.Studios.Where(i => item2.Studios.Contains(i, StringComparer.OrdinalIgnoreCase)).Sum(i => 3);
+
+            var item2PeopleNames = item2.People.Select(i => i.Name).ToList();
+
+            points += item1.People.Where(i => item2PeopleNames.Contains(i.Name, StringComparer.OrdinalIgnoreCase)).Sum(i =>
+            {
+                if (string.Equals(i.Name, PersonType.Director, StringComparison.OrdinalIgnoreCase))
+                {
+                    return 5;
+                }
+                if (string.Equals(i.Name, PersonType.Actor, StringComparison.OrdinalIgnoreCase))
+                {
+                    return 3;
+                }
+                if (string.Equals(i.Name, PersonType.Composer, StringComparison.OrdinalIgnoreCase))
+                {
+                    return 3;
+                }
+                if (string.Equals(i.Name, PersonType.GuestStar, StringComparison.OrdinalIgnoreCase))
+                {
+                    return 3;
+                }
+                if (string.Equals(i.Name, PersonType.Writer, StringComparison.OrdinalIgnoreCase))
+                {
+                    return 2;
+                }
+
+                return 1;
+            });
+
+            if (item1.ProductionYear.HasValue && item2.ProductionYear.HasValue)
+            {
+                var diff = Math.Abs(item1.ProductionYear.Value - item2.ProductionYear.Value);
+
+                // Add a point if they came out within the same decade
+                if (diff < 10)
+                {
+                    points += 1;
+                }
+
+                // And another if within five years
+                if (diff < 5)
+                {
+                    points += 1;
+                }
+            }
+
+            var album = item1 as MusicAlbum;
+
+            if (album != null)
+            {
+                points += GetAlbumSimilarityScore(album, (MusicAlbum)item2);
+            }
+
+            return points;
+        }
+
+        /// <summary>
+        /// Gets the album similarity score.
+        /// </summary>
+        /// <param name="item1">The item1.</param>
+        /// <param name="item2">The item2.</param>
+        /// <returns>System.Int32.</returns>
+        private int GetAlbumSimilarityScore(MusicAlbum item1, MusicAlbum item2)
+        {
+            var artists1 = item1.RecursiveChildren
+                .OfType<Audio>()
+                .SelectMany(i => new[]{i.AlbumArtist, i.Artist})
+                .Where(i => !string.IsNullOrEmpty(i))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var artists2 = item2.RecursiveChildren
+                .OfType<Audio>()
+                .SelectMany(i => new[] { i.AlbumArtist, i.Artist })
+                .Where(i => !string.IsNullOrEmpty(i))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            return artists1.Where(i => artists2.Contains(i, StringComparer.OrdinalIgnoreCase)).Sum(i => 5);
         }
     }
 }
