@@ -151,6 +151,13 @@ namespace MediaBrowser.Controller.Providers.Movies
             {
                 return true;
             }
+
+            // Don't refresh if we already have both poster and backdrop and we're not refreshing images
+            if (item.LocationType == LocationType.FileSystem && !ConfigurationManager.Configuration.RefreshItemImages 
+                && item.HasLocalImage("folder") && item.HasLocalImage("backdrop"))
+            {
+                return false;
+            }
             
             return base.NeedsRefreshInternal(item, providerInfo);
         }
