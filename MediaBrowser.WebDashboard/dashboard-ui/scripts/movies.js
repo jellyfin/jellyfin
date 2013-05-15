@@ -83,8 +83,6 @@
 
         var page = this;
 
-        query.Limit = LibraryBrowser.getDefaultPageSize();
-
         $('.radioSortBy', this).on('click', function () {
             query.StartIndex = 0;
             query.SortBy = this.getAttribute('data-sortby');
@@ -198,6 +196,14 @@
 
 
     }).on('pagebeforeshow', "#moviesPage", function () {
+
+        var limit = LibraryBrowser.getDefaultPageSize();
+
+        // If the default page size has changed, the start index will have to be reset
+        if (limit != query.Limit) {
+            query.Limit = limit;
+            query.StartIndex = 0;
+        }
 
         reloadItems(this);
 

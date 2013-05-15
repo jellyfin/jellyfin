@@ -796,7 +796,8 @@
 
             var recordsEnd = Math.min(query.StartIndex + query.Limit, totalRecordCount);
 
-            var showControls = totalRecordCount > query.Limit;
+            // 20 is the minimum page size
+            var showControls = totalRecordCount > 20;
 
             html += '<div class="listPaging">';
 

@@ -60,8 +60,6 @@
 
         var page = this;
 
-        query.Limit = LibraryBrowser.getDefaultPageSize();
-
         $('.radioSortBy', this).on('click', function () {
             query.SortBy = this.getAttribute('data-sortby');
             reloadItems(page);
@@ -114,6 +112,14 @@
         });
 
     }).on('pagebeforeshow', "#boxsetsPage", function () {
+
+        var limit = LibraryBrowser.getDefaultPageSize();
+
+        // If the default page size has changed, the start index will have to be reset
+        if (limit != query.Limit) {
+            query.Limit = limit;
+            query.StartIndex = 0;
+        }
 
         reloadItems(this);
 

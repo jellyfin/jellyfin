@@ -1,115 +1,121 @@
 (function ($, document) {
 
-	// The base query options
-	var query = {
+    // The base query options
+    var query = {
 
-		SortBy: "SortName",
-		SortOrder: "Ascending",
-		MediaTypes: "Game",
-		Recursive: true,
-		Fields: "ItemCounts,DateCreated,UserData",
-		StartIndex: 0
-	};
+        SortBy: "SortName",
+        SortOrder: "Ascending",
+        MediaTypes: "Game",
+        Recursive: true,
+        Fields: "ItemCounts,DateCreated,UserData",
+        StartIndex: 0
+    };
 
-	function reloadItems(page) {
+    function reloadItems(page) {
 
-		Dashboard.showLoadingMsg();
+        Dashboard.showLoadingMsg();
 
-		ApiClient.getGenres(Dashboard.getCurrentUserId(), query).done(function (result) {
+        ApiClient.getGenres(Dashboard.getCurrentUserId(), query).done(function (result) {
 
-			var html = '';
+            var html = '';
 
-			$('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
+            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
 
-			html += LibraryBrowser.getPosterDetailViewHtml({
-				items: result.Items,
-				countNameSingular: "Game",
-				countNamePlural: "Games",
-				context: "games"
-			});
+            html += LibraryBrowser.getPosterDetailViewHtml({
+                items: result.Items,
+                countNameSingular: "Game",
+                countNamePlural: "Games",
+                context: "games"
+            });
 
-			html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
+            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 
-			$('#items', page).html(html).trigger('create');
+            $('#items', page).html(html).trigger('create');
 
-			$('.selectPage', page).on('change', function () {
-			    query.StartIndex = (parseInt(this.value) - 1) * query.Limit;
-				reloadItems(page);
-			});
+            $('.selectPage', page).on('change', function () {
+                query.StartIndex = (parseInt(this.value) - 1) * query.Limit;
+                reloadItems(page);
+            });
 
-			$('.btnNextPage', page).on('click', function () {
-			    query.StartIndex += query.Limit;
-			    reloadItems(page);
-			});
+            $('.btnNextPage', page).on('click', function () {
+                query.StartIndex += query.Limit;
+                reloadItems(page);
+            });
 
-			$('.btnPreviousPage', page).on('click', function () {
-			    query.StartIndex -= query.Limit;
-			    reloadItems(page);
-			});
+            $('.btnPreviousPage', page).on('click', function () {
+                query.StartIndex -= query.Limit;
+                reloadItems(page);
+            });
 
-			$('.selectPageSize', page).on('change', function () {
-			    query.Limit = parseInt(this.value);
-			    query.StartIndex = 0;
-			    reloadItems(page);
-			});
+            $('.selectPageSize', page).on('change', function () {
+                query.Limit = parseInt(this.value);
+                query.StartIndex = 0;
+                reloadItems(page);
+            });
 
-			Dashboard.hideLoadingMsg();
-		});
-	}
+            Dashboard.hideLoadingMsg();
+        });
+    }
 
-	$(document).on('pageinit', "#gameGenresPage", function () {
+    $(document).on('pageinit', "#gameGenresPage", function () {
 
-		var page = this;
+        var page = this;
 
-		query.Limit = LibraryBrowser.getDefaultPageSize();
+        $('.radioSortBy', this).on('click', function () {
+            query.SortBy = this.getAttribute('data-sortby');
+            query.StartIndex = 0;
+            reloadItems(page);
+        });
 
-		$('.radioSortBy', this).on('click', function () {
-			query.SortBy = this.getAttribute('data-sortby');
-			query.StartIndex = 0;
-			reloadItems(page);
-		});
+        $('.radioSortOrder', this).on('click', function () {
+            query.SortOrder = this.getAttribute('data-sortorder');
+            query.StartIndex = 0;
+            reloadItems(page);
+        });
 
-		$('.radioSortOrder', this).on('click', function () {
-			query.SortOrder = this.getAttribute('data-sortorder');
-			query.StartIndex = 0;
-			reloadItems(page);
-		});
+        $('.chkStandardFilter', this).on('change', function () {
 
-		$('.chkStandardFilter', this).on('change', function () {
+            var filterName = this.getAttribute('data-filter');
+            var filters = query.Filters || "";
 
-			var filterName = this.getAttribute('data-filter');
-			var filters = query.Filters || "";
+            filters = (',' + filters).replace(',' + filterName, '').substring(1);
 
-			filters = (',' + filters).replace(',' + filterName, '').substring(1);
+            if (this.checked) {
+                filters = filters ? (filters + ',' + filterName) : filterName;
+            }
 
-			if (this.checked) {
-				filters = filters ? (filters + ',' + filterName) : filterName;
-			}
+            query.StartIndex = 0;
+            query.Filters = filters;
 
-			query.StartIndex = 0;
-			query.Filters = filters;
+            reloadItems(page);
+        });
 
-			reloadItems(page);
-		});
+    }).on('pagebeforeshow', "#gameGenresPage", function () {
 
-	}).on('pagebeforeshow', "#gameGenresPage", function () {
+        var limit = LibraryBrowser.getDefaultPageSize();
 
-			reloadItems(this);
+        // If the default page size has changed, the start index will have to be reset
+        if (limit != query.Limit) {
+            query.Limit = limit;
+            query.StartIndex = 0;
+        }
 
-		}).on('pageshow', "#gameGenresPage", function () {
+        reloadItems(this);
 
-			// Reset form values using the last used query
-			$('.radioSortBy', this).each(function () {
+    }).on('pageshow', "#gameGenresPage", function () {
 
-				this.checked = query.SortBy == this.getAttribute('data-sortby');
+        // Reset form values using the last used query
+        $('.radioSortBy', this).each(function () {
 
-			}).checkboxradio('refresh');
+            this.checked = query.SortBy == this.getAttribute('data-sortby');
 
-			$('.radioSortOrder', this).each(function () {
+        }).checkboxradio('refresh');
 
-				this.checked = query.SortOrder == this.getAttribute('data-sortorder');
+        $('.radioSortOrder', this).each(function () {
 
-			}).checkboxradio('refresh');
-		});
+            this.checked = query.SortOrder == this.getAttribute('data-sortorder');
+
+        }).checkboxradio('refresh');
+    });
 
 })(jQuery, document);
