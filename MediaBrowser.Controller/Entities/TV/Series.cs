@@ -1,11 +1,9 @@
-﻿using System.IO;
-using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities.TV
@@ -15,6 +13,11 @@ namespace MediaBrowser.Controller.Entities.TV
     /// </summary>
     public class Series : Folder
     {
+        public Series()
+        {
+            AirDays = new List<DayOfWeek>();
+        }
+
         /// <summary>
         /// Gets or sets the status.
         /// </summary>

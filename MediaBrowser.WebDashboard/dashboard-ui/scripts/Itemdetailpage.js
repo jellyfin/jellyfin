@@ -230,6 +230,35 @@
         } else {
             $('#detailSection', page).show();
         }
+
+        renderSeriesAirTime(page, item, context);
+    }
+    
+    function renderSeriesAirTime(page, item, context) {
+        
+        if (item.Type != "Series") {
+            $('#seriesAirTime', page).hide();
+            return;
+        }
+
+        var html = item.Status == 'Ended' ? 'Aired' : 'Airs';
+        
+        if (item.AirDays.length) {
+            html += ' ' + item.AirDays.map(function(a) {
+                return a + "s";
+
+            }).join(',');
+        }
+        
+        if (item.Studios.length) {
+            html += ' on <a class="textlink" href="itembynamedetails.html?context=' + context + '&studio=' + ApiClient.encodeName(item.Studios[0].Name) + '">' + item.Studios[0].Name + '</a>';
+        }
+
+        if (item.AirTime) {
+            html += ' at ' + item.AirTime;
+        }
+
+        $('#seriesAirTime', page).show().html(html).trigger('create');
     }
 
     function renderTags(page, item) {
@@ -253,10 +282,12 @@
 
     function renderChildren(page, item) {
 
+        var sortBy = item.Type == "Boxset" ? "ProductionYear,SortName" : "SortName";
+        
         ApiClient.getItems(Dashboard.getCurrentUserId(), {
 
             ParentId: getParameterByName('id'),
-            SortBy: "SortName",
+            SortBy: sortBy,
             Fields: "PrimaryImageAspectRatio,ItemCounts,DisplayMediaType,DateCreated,UserData,AudioInfo"
 
         }).done(function (result) {
