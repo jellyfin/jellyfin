@@ -1,4 +1,4 @@
-﻿var LibraryBrowser = (function (window, document, $) {
+﻿var LibraryBrowser = (function (window, document, $, screen) {
 
     var defaultBackground = "#999;";
 
@@ -1448,11 +1448,16 @@
         },
 
         renderDetailPageBackdrop: function (page, item) {
+
+            var screenWidth = Math.max(screen.height, screen.width);
+
             var imgUrl;
 
             if (item.BackdropImageTags && item.BackdropImageTags.length) {
 
-                imgUrl = LibraryBrowser.getImageUrl(item, 'Backdrop', 0, {});
+                imgUrl = LibraryBrowser.getImageUrl(item, 'Backdrop', 0, {
+                     maxwidth: screenWidth
+                });
 
                 $('#itemBackdrop', page).removeClass('noBackdrop').css('background-image', 'url("' + imgUrl + '")');
 
@@ -1462,7 +1467,8 @@
                 imgUrl = ApiClient.getImageUrl(item.ParentBackdropItemId, {
                     type: 'Backdrop',
                     index: 0,
-                    tag: item.ParentBackdropImageTags[0]
+                    tag: item.ParentBackdropImageTags[0],
+                    maxwidth: screenWidth
                 });
 
                 $('#itemBackdrop', page).removeClass('noBackdrop').css('background-image', 'url("' + imgUrl + '")');
@@ -1617,7 +1623,7 @@
 
     };
 
-})(window, document, jQuery);
+})(window, document, jQuery, screen);
 
 
 (function (window, document, $) {
