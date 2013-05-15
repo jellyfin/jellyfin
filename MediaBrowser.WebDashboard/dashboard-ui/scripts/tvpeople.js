@@ -9,7 +9,6 @@
         Recursive: true,
         Fields: "ItemCounts,DateCreated,UserData",
         PersonTypes: "",
-        Limit: LibraryBrowser.getDefaultPageSize(),
         StartIndex: 0
     };
 
@@ -62,6 +61,8 @@
     $(document).on('pageinit', "#tvPeoplePage", function () {
 
         var page = this;
+
+        query.Limit = LibraryBrowser.getDefaultPageSize();
 
         $('.radioSortBy', this).on('click', function () {
             query.SortBy = this.getAttribute('data-sortby');

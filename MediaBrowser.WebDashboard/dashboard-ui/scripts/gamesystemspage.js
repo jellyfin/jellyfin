@@ -9,7 +9,6 @@
 		IncludeItemTypes: "GamePlatform",
 		Recursive: true,
 		Fields: "ItemCounts,ItemCounts,DateCreated,UserData",
-		Limit: LibraryBrowser.getDefaultPageSize(),
 		StartIndex: 0
 	};
 
@@ -61,6 +60,8 @@
 	$(document).on('pageinit', "#gamesystemsPage", function () {
 
 		var page = this;
+
+		query.Limit = LibraryBrowser.getDefaultPageSize();
 
 		$('.radioSortBy', this).on('click', function () {
 			query.SortBy = this.getAttribute('data-sortby');

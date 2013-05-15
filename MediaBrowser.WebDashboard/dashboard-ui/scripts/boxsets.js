@@ -8,7 +8,6 @@
         IncludeItemTypes: "BoxSet",
         Recursive: true,
         Fields: "DisplayMediaType,ItemCounts,DateCreated,UserData",
-        Limit: LibraryBrowser.getDefaultPageSize(),
         StartIndex: 0
     };
 
@@ -60,6 +59,8 @@
     $(document).on('pageinit', "#boxsetsPage", function () {
 
         var page = this;
+
+        query.Limit = LibraryBrowser.getDefaultPageSize();
 
         $('.radioSortBy', this).on('click', function () {
             query.SortBy = this.getAttribute('data-sortby');

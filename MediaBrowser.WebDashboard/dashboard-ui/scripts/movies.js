@@ -10,7 +10,6 @@
         IncludeItemTypes: "Movie",
         Recursive: true,
         Fields: "UserData,DisplayMediaType,ItemCounts,DateCreated",
-        Limit: LibraryBrowser.getDefaultPageSize(),
         StartIndex: 0
     };
 
@@ -83,6 +82,8 @@
     $(document).on('pageinit', "#moviesPage", function () {
 
         var page = this;
+
+        query.Limit = LibraryBrowser.getDefaultPageSize();
 
         $('.radioSortBy', this).on('click', function () {
             query.StartIndex = 0;

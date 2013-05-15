@@ -10,7 +10,6 @@
         IncludeItemTypes: "Series",
         Recursive: true,
         Fields: "DisplayMediaType,SeriesInfo,ItemCounts,DateCreated,UserData",
-        Limit: LibraryBrowser.getDefaultPageSize(),
         StartIndex: 0
     };
 
@@ -80,6 +79,8 @@
     $(document).on('pageinit', "#tvShowsPage", function () {
 
         var page = this;
+
+        query.Limit = LibraryBrowser.getDefaultPageSize();
 
         $('.radioSortBy', this).on('click', function () {
             query.SortBy = this.getAttribute('data-sortby');

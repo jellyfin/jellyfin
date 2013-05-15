@@ -1,4 +1,4 @@
-﻿var LibraryBrowser = (function (window, document, $, screen) {
+﻿var LibraryBrowser = (function (window, document, $, screen, localStorage) {
 
     var defaultBackground = "#999;";
 
@@ -6,6 +6,12 @@
 
         getDefaultPageSize: function () {
 
+            var saved = localStorage.getItem('pagesize');
+            
+            if (saved) {
+                return parseInt(saved);
+            }
+            
             if (window.location.toString().toLowerCase().indexOf('localhost') != -1) {
                 return 100;
             }
@@ -581,7 +587,7 @@
                 var date = item.DateCreated;
 
                 try {
-                    if (date && (new Date().getTime() - parseISO8601Date(date).getTime()) < 864000000) {
+                    if (date && (new Date().getTime() - parseISO8601Date(date).getTime()) < 604800000) {
                         return "<div class='posterRibbon'>New</div>";
                     }
                 } catch (err) {
@@ -768,6 +774,10 @@
 
         getPagingHtml: function (query, totalRecordCount) {
 
+            if (query.Limit) {
+                localStorage.setItem('pagesize', query.Limit);
+            }
+            
             var html = '';
 
             var pageCount = Math.ceil(totalRecordCount / query.Limit);
@@ -1623,7 +1633,7 @@
 
     };
 
-})(window, document, jQuery, screen);
+})(window, document, jQuery, screen, localStorage);
 
 
 (function (window, document, $) {
