@@ -575,6 +575,10 @@ a.itemTag:hover {
     text-align: center;
 }
 
+.timelineItemsContainer {
+    text-align: left;
+}
+
 @media all and (min-width: 1200px) {
 
     .scenePosterViewItem img {
@@ -669,4 +673,8 @@ a.itemTag:hover {
 
 .tileItem .itemProgressText {
     display: none;
+}
+
+.timelineHeader {
+    margin-bottom: .25em;
 }

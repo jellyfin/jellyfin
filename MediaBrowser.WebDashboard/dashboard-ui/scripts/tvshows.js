@@ -30,12 +30,22 @@
                     preferBackdrop: true,
                     context: "tv"
                 });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
             else if (view == "Poster") {
                 html += LibraryBrowser.getPosterDetailViewHtml({
                     items: result.Items,
                     context: "tv"
                 });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
+            else if (view == "Timeline") {
+                html += LibraryBrowser.getPosterDetailViewHtml({
+                    items: result.Items,
+                    context: "tv",
+                    timeline: true
+                });
+                $('.itemsContainer', page).addClass('timelineItemsContainer');
             }
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
@@ -135,7 +145,15 @@
 
             view = this.value;
 
-            reloadItems(page);
+            if (view == "Timeline") {
+
+                query.SortBy = "PremiereDate";
+                query.StartIndex = 0;
+                $('#radioPremiereDate', page)[0].click();
+
+            } else {
+                reloadItems(page);
+            }
         });
 
         $('#chkTrailer', this).on('change', function () {

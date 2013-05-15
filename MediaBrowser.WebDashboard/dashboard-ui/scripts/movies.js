@@ -31,6 +31,7 @@
                     context: "movies",
                     shape: "backdrop"
                 });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
             else if (view == "Poster") {
                 html += LibraryBrowser.getPosterDetailViewHtml({
@@ -38,6 +39,16 @@
                     context: "movies",
                     shape: "poster"
                 });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
+            else if (view == "Timeline") {
+                html += LibraryBrowser.getPosterDetailViewHtml({
+                    items: result.Items,
+                    context: "movies",
+                    shape: "poster",
+                    timeline: true
+                });
+                $('.itemsContainer', page).addClass('timelineItemsContainer');
             }
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
@@ -48,7 +59,7 @@
                 query.StartIndex = (parseInt(this.value) - 1) * query.Limit;
                 reloadItems(page);
             });
-            
+
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
                 reloadItems(page);
@@ -124,7 +135,16 @@
 
             view = this.value;
 
-            reloadItems(page);
+            if (view == "Timeline") {
+
+                query.SortBy = "PremiereDate";
+                query.StartIndex = 0;
+                $('#radioPremiereDate', page)[0].click();
+
+            } else {
+                reloadItems(page);
+            }
+
         });
 
         $('#chk3D', this).on('change', function () {
@@ -134,7 +154,7 @@
 
             reloadItems(page);
         });
-        
+
         $('#chkSubtitle', this).on('change', function () {
 
             query.StartIndex = 0;
@@ -142,7 +162,7 @@
 
             reloadItems(page);
         });
-        
+
         $('#chkTrailer', this).on('change', function () {
 
             query.StartIndex = 0;
@@ -150,7 +170,7 @@
 
             reloadItems(page);
         });
-        
+
         $('#chkSpecialFeature', this).on('change', function () {
 
             query.StartIndex = 0;
@@ -158,7 +178,7 @@
 
             reloadItems(page);
         });
-        
+
         $('#chkThemeSong', this).on('change', function () {
 
             query.StartIndex = 0;
@@ -166,7 +186,7 @@
 
             reloadItems(page);
         });
-        
+
         $('#chkThemeVideo', this).on('change', function () {
 
             query.StartIndex = 0;

@@ -15,6 +15,12 @@
         <div data-role="content">
             <div class="viewSettings">
                 <div class="viewControls">
+                    <div style="display: inline-block;">
+                        <select data-mini="true" data-inline="true" id="selectView" name="selectView">
+                            <option value="Poster">Poster</option>
+                            <option value="Timeline">Timeline</option>
+                        </select>
+                    </div>
                     <button data-mini="true" data-icon="sort" data-inline="true" onclick="$('#sortPanel', $.mobile.activePage).panel( 'toggle' );">Sort</button>
                     <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $.mobile.activePage).panel( 'toggle' );">Filter</button>
                 </div>
@@ -33,6 +39,16 @@
 
                     <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
                     <label for="radioSortName">Name</label>
+
+                    <input class="radioSortBy" type="radio" name="radioSortBy" data-theme="c" id="radioCommunityRating" value="off" data-sortby="CommunityRating" data-mini="true">
+                    <label for="radioCommunityRating">Community Rating</label>
+
+                    <input class="radioSortBy" type="radio" name="radioSortBy" data-theme="c" id="radioDateCreated" value="off" data-sortby="DateCreated" data-mini="true">
+                    <label for="radioDateCreated">Date Added</label>
+
+                    <input class="radioSortBy" type="radio" name="radioSortBy" data-theme="c" id="radioPremiereDate" value="off" data-sortby="ProductionYear,PremiereDate" data-mini="true">
+                    <label for="radioPremiereDate">Date Released</label>
+
                 </fieldset>
 
                 <fieldset data-role="controlgroup">

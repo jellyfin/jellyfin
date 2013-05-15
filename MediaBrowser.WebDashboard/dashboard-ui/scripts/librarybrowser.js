@@ -15,6 +15,7 @@
         getPosterDetailViewHtml: function (options) {
 
             var items = options.items;
+            var currentYear;
 
             if (!options.shape) {
                 options.shape = options.preferBackdrop ? "backdrop" : "poster";
@@ -27,6 +28,16 @@
             for (var i = 0, length = items.length; i < length; i++) {
 
                 var item = items[i];
+
+                if (options.timeline) {
+                    var year = item.ProductionYear || "Unknown Year";
+
+                    if (year != currentYear) {
+
+                        html += '<h2 class="timelineHeader">' + year + '</h2>';
+                        currentYear = year;
+                    }
+                }
 
                 var imgUrl;
                 var isDefault = false;
@@ -685,7 +696,6 @@
 
             }
             else if (item.AlbumArtist && item.Type == "MusicAlbum") {
-                html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>');
 
             }
             else if (item.Album) {
@@ -1107,28 +1117,28 @@
 
                 if (item.Type == "Person") {
                     url = ApiClient.getPersonImageUrl(item.Name, {
-                        maxheight: 400,
+                        maxheight: 480,
                         tag: imageTags.Primary,
                         type: "Primary"
                     });
                 }
                 else if (item.Type == "Genre") {
                     url = ApiClient.getGenreImageUrl(item.Name, {
-                        maxheight: 400,
+                        maxheight: 480,
                         tag: imageTags.Primary,
                         type: "Primary"
                     });
                 }
                 else if (item.Type == "Studio") {
                     url = ApiClient.getStudioImageUrl(item.Name, {
-                        maxheight: 400,
+                        maxheight: 480,
                         tag: imageTags.Primary,
                         type: "Primary"
                     });
                 }
                 else if (item.Type == "Artist") {
                     url = ApiClient.getArtistImageUrl(item.Name, {
-                        maxheight: 400,
+                        maxheight: 480,
                         tag: imageTags.Primary,
                         type: "Primary"
                     });
@@ -1136,7 +1146,7 @@
                 else {
                     url = ApiClient.getImageUrl(item.Id, {
                         type: "Primary",
-                        maxheight: 400,
+                        maxheight: 480,
                         tag: item.ImageTags.Primary
                     });
                 }
@@ -1145,28 +1155,28 @@
 
                 if (item.Type == "Person") {
                     url = ApiClient.getPersonImageUrl(item.Name, {
-                        maxheight: 400,
+                        maxheight: 480,
                         tag: item.BackdropImageTags[0],
                         type: "Backdrop"
                     });
                 }
                 else if (item.Type == "Genre") {
                     url = ApiClient.getGenreImageUrl(item.Name, {
-                        maxheight: 400,
+                        maxheight: 480,
                         tag: item.BackdropImageTags[0],
                         type: "Backdrop"
                     });
                 }
                 else if (item.Type == "Studio") {
                     url = ApiClient.getStudioImageUrl(item.Name, {
-                        maxheight: 400,
+                        maxheight: 480,
                         tag: item.BackdropImageTags[0],
                         type: "Backdrop"
                     });
                 }
                 else if (item.Type == "Artist") {
                     url = ApiClient.getArtistImageUrl(item.Name, {
-                        maxheight: 400,
+                        maxheight: 480,
                         tag: item.BackdropImageTags[0],
                         type: "Backdrop"
                     });
@@ -1174,7 +1184,7 @@
                 else {
                     url = ApiClient.getImageUrl(item.Id, {
                         type: "Backdrop",
-                        maxheight: 400,
+                        maxheight: 480,
                         tag: item.BackdropImageTags[0]
                     });
                 }
@@ -1183,28 +1193,28 @@
 
                 if (item.Type == "Person") {
                     url = ApiClient.getPersonImageUrl(item.Name, {
-                        maxheight: 400,
+                        maxheight: 480,
                         tag: imageTags.Thumb,
                         type: "Thumb"
                     });
                 }
                 else if (item.Type == "Genre") {
                     url = ApiClient.getGenreImageUrl(item.Name, {
-                        maxheight: 400,
+                        maxheight: 480,
                         tag: imageTags.Thumb,
                         type: "Thumb"
                     });
                 }
                 else if (item.Type == "Studio") {
                     url = ApiClient.getStudioImageUrl(item.Name, {
-                        maxheight: 400,
+                        maxheight: 480,
                         tag: imageTags.Thumb,
                         type: "Thumb"
                     });
                 }
                 else if (item.Type == "Artist") {
                     url = ApiClient.getArtistImageUrl(item.Name, {
-                        maxheight: 400,
+                        maxheight: 480,
                         tag: imageTags.Thumb,
                         type: "Thumb"
                     });
@@ -1212,7 +1222,7 @@
                 else {
                     url = ApiClient.getImageUrl(item.Id, {
                         type: "Thumb",
-                        maxheight: 400,
+                        maxheight: 480,
                         tag: item.ImageTags.Thumb
                     });
                 }
@@ -1221,7 +1231,7 @@
 
                 url = ApiClient.getImageUrl(item.Id, {
                     type: "Disc",
-                    maxheight: 400,
+                    maxheight: 480,
                     tag: item.ImageTags.Disc
                 });
             }

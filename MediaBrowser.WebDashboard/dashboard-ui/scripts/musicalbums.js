@@ -1,5 +1,7 @@
 ﻿(function ($, document) {
 
+    var view = "Poster";
+    
     // The base query options
     var query = {
 
@@ -22,11 +24,23 @@
 
             $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
 
-            html += LibraryBrowser.getPosterDetailViewHtml({
-                items: result.Items,
-                context: "music",
-                shape: "square"
-            });
+            if (view == "Poster") {
+                html += LibraryBrowser.getPosterDetailViewHtml({
+                    items: result.Items,
+                    context: "music",
+                    shape: "square"
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
+            else if (view == "Timeline") {
+                html += LibraryBrowser.getPosterDetailViewHtml({
+                    items: result.Items,
+                    context: "music",
+                    shape: "square",
+                    timeline: true
+                });
+                $('.itemsContainer', page).addClass('timelineItemsContainer');
+            }
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 
@@ -90,11 +104,28 @@
             reloadItems(page);
         });
 
+        $('#selectView', this).on('change', function () {
+
+            view = this.value;
+
+            if (view == "Timeline") {
+
+                query.SortBy = "PremiereDate";
+                query.StartIndex = 0;
+                $('#radioPremiereDate', page)[0].click();
+
+            } else {
+                reloadItems(page);
+            }
+        });
+
     }).on('pagebeforeshow', "#musicAlbumsPage", function () {
 
         reloadItems(this);
 
     }).on('pageshow', "#musicAlbumsPage", function () {
+
+        $('#selectView', this).val(view).selectmenu('refresh');
 
         // Reset form values using the last used query
         $('.radioSortBy', this).each(function () {
