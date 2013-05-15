@@ -120,7 +120,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var user = UserManager.GetUserById(request.UserId.Value);
 
-                return await builder.GetBaseItemDto(item, user, fields.ToList()).ConfigureAwait(false);
+                return await builder.GetBaseItemDto(item, fields.ToList(), user).ConfigureAwait(false);
             }
 
             return await builder.GetBaseItemDto(item, fields.ToList()).ConfigureAwait(false);

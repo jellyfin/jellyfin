@@ -40,79 +40,20 @@ namespace MediaBrowser.Controller.Dto
         }
 
         /// <summary>
-        /// Gets the dto base item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="fields">The fields.</param>
-        /// <returns>Task{DtoBaseItem}.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
-        public async Task<BaseItemDto> GetBaseItemDto(BaseItem item, List<ItemFields> fields)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
-            if (fields == null)
-            {
-                throw new ArgumentNullException("fields");
-            }
-
-            var dto = new BaseItemDto();
-
-            var tasks = new List<Task>();
-
-            if (fields.Contains(ItemFields.Studios))
-            {
-                tasks.Add(AttachStudios(dto, item));
-            }
-
-            if (fields.Contains(ItemFields.People))
-            {
-                tasks.Add(AttachPeople(dto, item));
-            }
-
-            if (fields.Contains(ItemFields.PrimaryImageAspectRatio))
-            {
-                try
-                {
-                    await AttachPrimaryImageAspectRatio(dto, item, _logger).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
-                    _logger.ErrorException("Error generating PrimaryImageAspectRatio for {0}", ex, item.Name);
-                }
-            }
-
-            AttachBasicFields(dto, item, fields);
-
-            // Make sure all the tasks we kicked off have completed.
-            if (tasks.Count > 0)
-            {
-                await Task.WhenAll(tasks).ConfigureAwait(false);
-            }
-
-            return dto;
-        }
-
-        /// <summary>
         /// Converts a BaseItem to a DTOBaseItem
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="user">The user.</param>
         /// <param name="fields">The fields.</param>
+        /// <param name="user">The user.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public async Task<BaseItemDto> GetBaseItemDto(BaseItem item, User user, List<ItemFields> fields)
+        public async Task<BaseItemDto> GetBaseItemDto(BaseItem item, List<ItemFields> fields, User user = null)
         {
             if (item == null)
             {
                 throw new ArgumentNullException("item");
             }
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
-            }
+
             if (fields == null)
             {
                 throw new ArgumentNullException("fields");
@@ -132,7 +73,10 @@ namespace MediaBrowser.Controller.Dto
                 tasks.Add(AttachPeople(dto, item));
             }
 
-            tasks.Add(AttachUserSpecificInfo(dto, item, user, fields));
+            if (user != null)
+            {
+                tasks.Add(AttachUserSpecificInfo(dto, item, user, fields));
+            }
 
             if (fields.Contains(ItemFields.PrimaryImageAspectRatio))
             {

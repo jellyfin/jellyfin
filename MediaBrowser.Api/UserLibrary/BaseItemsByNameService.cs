@@ -261,7 +261,7 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             var dto = user == null ? await new DtoBuilder(Logger, LibraryManager, UserDataRepository).GetBaseItemDto(item, fields).ConfigureAwait(false) :
-                await new DtoBuilder(Logger, LibraryManager, UserDataRepository).GetBaseItemDto(item, user, fields).ConfigureAwait(false);
+                await new DtoBuilder(Logger, LibraryManager, UserDataRepository).GetBaseItemDto(item, fields, user).ConfigureAwait(false);
 
             if (fields.Contains(ItemFields.ItemCounts))
             {

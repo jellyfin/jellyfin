@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -44,6 +45,50 @@ namespace MediaBrowser.Api
         public int? Limit { get; set; }
     }
 
+    /// <summary>
+    /// Class GetThemeSongs
+    /// </summary>
+    [Route("/Items/{Id}/ThemeSongs", "GET")]
+    [Api(Description = "Gets theme songs for an item")]
+    public class GetThemeSongs : IReturn<ThemeSongsResult>
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid? UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
+    /// <summary>
+    /// Class GetThemeVideos
+    /// </summary>
+    [Route("/Items/{Id}/ThemeVideos", "GET")]
+    [Api(Description = "Gets video backdrops for an item")]
+    public class GetThemeVideos : IReturn<ThemeVideosResult>
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid? UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
     [Route("/Library/Refresh", "POST")]
     [Api(Description = "Starts a library scan")]
     public class RefreshLibrary : IReturnVoid
@@ -70,6 +115,7 @@ namespace MediaBrowser.Api
 
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
+        private readonly IUserDataRepository _userDataRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
@@ -77,11 +123,12 @@ namespace MediaBrowser.Api
         /// <param name="itemRepo">The item repo.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="userManager">The user manager.</param>
-        public LibraryService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager)
+        public LibraryService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager, IUserDataRepository userDataRepository)
         {
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
             _userManager = userManager;
+            _userDataRepository = userDataRepository;
         }
 
         /// <summary>
@@ -168,6 +215,66 @@ namespace MediaBrowser.Api
             result.ItemReviews = reviewsArray;
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
+        public object Get(GetThemeSongs request)
+        {
+            var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
+
+            var item = string.IsNullOrEmpty(request.Id) ?
+                (request.UserId.HasValue ? user.RootFolder : 
+                (Folder)_libraryManager.RootFolder) : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, request.UserId);
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
+
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
+
+            var items = _itemRepo.GetItems(item.ThemeSongIds).OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, fields, user)).Select(t => t.Result).ToArray();
+
+            var result = new ThemeSongsResult
+            {
+                Items = items,
+                TotalRecordCount = items.Length,
+                OwnerId = DtoBuilder.GetClientItemId(item)
+            };
+
+            return ToOptimizedResult(result);
+        }
+
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
+        public object Get(GetThemeVideos request)
+        {
+            var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
+
+            var item = string.IsNullOrEmpty(request.Id) ?
+                (request.UserId.HasValue ? user.RootFolder :
+                (Folder)_libraryManager.RootFolder) : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, request.UserId);
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
+
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
+
+            var items = _itemRepo.GetItems(item.ThemeVideoIds).OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, fields, user)).Select(t => t.Result).ToArray();
+
+            var result = new ThemeVideosResult
+            {
+                Items = items,
+                TotalRecordCount = items.Length,
+                OwnerId = DtoBuilder.GetClientItemId(item)
+            };
+
+            return ToOptimizedResult(result);
         }
     }
 }
