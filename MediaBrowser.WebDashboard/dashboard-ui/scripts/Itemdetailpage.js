@@ -221,6 +221,15 @@
         }
 
         renderTags(page, item);
+
+        var elem = $('.detailSectionContent', page)[0];
+        var text = elem.textContent || elem.innerText;
+
+        if (!text.trim()) {
+            $('#detailSection', page).hide();
+        } else {
+            $('#detailSection', page).show();
+        }
     }
 
     function renderTags(page, item) {
