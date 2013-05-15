@@ -5,122 +5,135 @@
 </head>
 <body>
     <div id="itemByNameDetailPage" data-role="page" class="page libraryPage" data-theme="a">
+        <div id="movieGenreTabs" class="itemTabs" style="display: none;">
+            <div class="libraryViewNav">
+                <a href="moviesrecommended.html">Suggested</a>
+                <a href="movies.html">Movies</a>
+                <a href="boxsets.html">Box Sets</a>
+                <a href="movietrailers.html">Trailers</a>
+                <a href="moviegenres.html" class="ui-btn-active">Genres</a>
+                <a href="moviepeople.html">People</a>
+                <a href="moviestudios.html">Studios</a>
+            </div>
+        </div>
+        <div id="moviePeopleTabs" class="itemTabs" style="display: none;">
+            <div class="libraryViewNav">
+                <a href="moviesrecommended.html">Suggested</a>
+                <a href="movies.html">Movies</a>
+                <a href="boxsets.html">Box Sets</a>
+                <a href="movietrailers.html">Trailers</a>
+                <a href="moviegenres.html">Genres</a>
+                <a href="moviepeople.html" class="ui-btn-active">People</a>
+                <a href="moviestudios.html">Studios</a>
+            </div>
+        </div>
+        <div id="movieStudioTabs" class="itemTabs" style="display: none;">
+            <div class="libraryViewNav">
+                <a href="moviesrecommended.html">Suggested</a>
+                <a href="movies.html">Movies</a>
+                <a href="boxsets.html">Box Sets</a>
+                <a href="movietrailers.html">Trailers</a>
+                <a href="moviegenres.html">Genres</a>
+                <a href="moviepeople.html">People</a>
+                <a href="moviestudios.html" class="ui-btn-active">Studios</a>
+            </div>
+        </div>
+        <div id="tvGenreTabs" class="itemTabs" style="display: none;">
+            <div class="libraryViewNav">
+                <a href="tvrecommended.html">Suggested</a>
+                <a href="tvnextup.html">Next up</a>
+                <a href="tvshows.html">Shows</a>
+                <a href="tvgenres.html" class="ui-btn-active">Genres</a>
+                <a href="tvpeople.html">Actors</a>
+                <a href="tvstudios.html">Networks</a>
+            </div>
+        </div>
+        <div id="tvPeopleTabs" class="itemTabs" style="display: none;">
+            <div class="libraryViewNav">
+                <a href="tvrecommended.html">Suggested</a>
+                <a href="tvnextup.html">Next up</a>
+                <a href="tvshows.html">Shows</a>
+                <a href="tvgenres.html">Genres</a>
+                <a href="tvpeople.html" class="ui-btn-active">Actors</a>
+                <a href="tvstudios.html">Networks</a>
+            </div>
+        </div>
+        <div id="tvStudioTabs" class="itemTabs" style="display: none;">
+            <div class="libraryViewNav">
+                <a href="tvrecommended.html">Suggested</a>
+                <a href="tvnextup.html">Next up</a>
+                <a href="tvshows.html">Shows</a>
+                <a href="tvgenres.html">Genres</a>
+                <a href="tvpeople.html">Actors</a>
+                <a href="tvstudios.html" class="ui-btn-active">Networks</a>
+            </div>
+        </div>
+        <div id="musicGenreTabs" class="itemTabs" style="display: none;">
+            <div class="libraryViewNav">
+                <a href="musicrecommended.html">Suggested</a>
+                <a href="songs.html">Songs</a>
+                <a href="musicalbums.html">Albums</a>
+                <a href="musicartists.html">Artists</a>
+                <a href="musicgenres.html" class="ui-btn-active">Genres</a>
+            </div>
+        </div>
+        <div id="artistTabs" class="itemTabs" style="display: none;">
+            <div class="libraryViewNav">
+                <a href="musicrecommended.html">Suggested</a>
+                <a href="songs.html">Songs</a>
+                <a href="musicalbums.html">Albums</a>
+                <a href="musicartists.html" class="ui-btn-active">Artists</a>
+                <a href="musicgenres.html">Genres</a>
+            </div>
+        </div>
+        <div id="gameGenreTabs" class="itemTabs" style="display: none;">
+            <div class="libraryViewNav">
+                <a href="gamesrecommended.html">Suggested</a>
+                <a href="games.html">Games</a>
+                <a href="gamesystems.html">Game Systems</a>
+                <a href="gamegenres.html" class="ui-btn-active">Genres</a>
+                <a href="gamestudios.html">Studios</a>
+            </div>
+        </div>
+        <div id="gameStudioTabs" class="itemTabs" style="display: none;">
+            <div class="libraryViewNav">
+                <a href="gamesrecommended.html">Suggested</a>
+                <a href="games.html">Games</a>
+                <a href="gamesystems.html">Game Systems</a>
+                <a href="gamegenres.html">Genres</a>
+                <a href="gamestudios.html" class="ui-btn-active">Studios</a>
+            </div>
+        </div>
+
+        <div id="itemBackdrop" class="itemBackdrop noBackdrop">
+            <div class="itemBackdropContent">
+                <table class="detailPageContent primaryDetailPageContent">
+                    <tr>
+                        <td style="vertical-align: top; padding: 10px 1em 10px 0;">
+                            <div id="itemImage" class="itemImageContainer"></div>
+                        </td>
+                        <td style="vertical-align: top; padding: 0;">
+                            <p><span class="itemName"></span><span class="itemMiscInfo" style="display: inline;"></span></p>
+                            <p>
+                                <span class="itemCommunityRating"></span>
+                                <span class="userDataIcons" style="margin-left: 2em;"></span>
+                            </p>
+                            <p class="itemOverview"></p>
+                            <p id="itemBirthday"></p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
         <div data-role="content">
 
-            <div id="movieGenreTabs" class="itemTabs" style="display: none;">
-                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
-                    <a href="moviesrecommended.html" data-role="button">Suggested</a>
-                    <a href="movies.html" data-role="button">Movies</a>
-                    <a href="boxsets.html" data-role="button">Box Sets</a>
-                    <a href="movietrailers.html" data-role="button">Trailers</a>
-                    <a href="moviegenres.html" data-role="button" class="ui-btn-active">Genres</a>
-                    <a href="moviepeople.html" data-role="button">People</a>
-                    <a href="moviestudios.html" data-role="button">Studios</a>
-                </div>
-            </div>
-            <div id="moviePeopleTabs" class="itemTabs" style="display: none;">
-                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
-                    <a href="moviesrecommended.html" data-role="button">Suggested</a>
-                    <a href="movies.html" data-role="button">Movies</a>
-                    <a href="boxsets.html" data-role="button">Box Sets</a>
-                    <a href="movietrailers.html" data-role="button">Trailers</a>
-                    <a href="moviegenres.html" data-role="button">Genres</a>
-                    <a href="moviepeople.html" data-role="button" class="ui-btn-active">People</a>
-                    <a href="moviestudios.html" data-role="button">Studios</a>
-                </div>
-            </div>
-            <div id="movieStudioTabs" class="itemTabs" style="display: none;">
-                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
-                    <a href="moviesrecommended.html" data-role="button">Suggested</a>
-                    <a href="movies.html" data-role="button">Movies</a>
-                    <a href="boxsets.html" data-role="button">Box Sets</a>
-                    <a href="movietrailers.html" data-role="button">Trailers</a>
-                    <a href="moviegenres.html" data-role="button">Genres</a>
-                    <a href="moviepeople.html" data-role="button">People</a>
-                    <a href="moviestudios.html" data-role="button" class="ui-btn-active">Studios</a>
-                </div>
-            </div>
-            <div id="tvGenreTabs" class="itemTabs" style="display: none;">
-                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
-                    <a href="tvrecommended.html" data-role="button">Suggested</a>
-                    <a href="tvnextup.html" data-role="button">Next up</a>
-                    <a href="tvshows.html" data-role="button">Shows</a>
-                    <a href="tvgenres.html" data-role="button" class="ui-btn-active">Genres</a>
-                    <a href="tvpeople.html" data-role="button">Actors</a>
-                    <a href="tvstudios.html" data-role="button">Networks</a>
-                </div>
-            </div>
-            <div id="tvPeopleTabs" class="itemTabs" style="display: none;">
-                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
-                    <a href="tvrecommended.html" data-role="button">Suggested</a>
-                    <a href="tvnextup.html" data-role="button">Next up</a>
-                    <a href="tvshows.html" data-role="button">Shows</a>
-                    <a href="tvgenres.html" data-role="button">Genres</a>
-                    <a href="tvpeople.html" data-role="button" class="ui-btn-active">Actors</a>
-                    <a href="tvstudios.html" data-role="button">Networks</a>
-                </div>
-            </div>
-            <div id="tvStudioTabs" class="itemTabs" style="display: none;">
-                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
-                    <a href="tvrecommended.html" data-role="button">Suggested</a>
-                    <a href="tvnextup.html" data-role="button">Next up</a>
-                    <a href="tvshows.html" data-role="button">Shows</a>
-                    <a href="tvgenres.html" data-role="button">Genres</a>
-                    <a href="tvpeople.html" data-role="button">Actors</a>
-                    <a href="tvstudios.html" data-role="button" class="ui-btn-active">Networks</a>
-                </div>
-            </div>
-            <div id="musicGenreTabs" class="itemTabs" style="display: none;">
-                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
-                    <a href="musicrecommended.html" data-role="button">Suggested</a>
-                    <a href="songs.html" data-role="button">Songs</a>
-                    <a href="musicalbums.html" data-role="button">Albums</a>
-                    <a href="musicartists.html" data-role="button">Artists</a>
-                    <a href="musicgenres.html" data-role="button" class="ui-btn-active">Genres</a>
-                </div>
-            </div>
-            <div id="artistTabs" class="itemTabs" style="display: none;">
-                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
-                    <a href="musicrecommended.html" data-role="button">Suggested</a>
-                    <a href="songs.html" data-role="button">Songs</a>
-                    <a href="musicalbums.html" data-role="button">Albums</a>
-                    <a href="musicartists.html" data-role="button" class="ui-btn-active">Artists</a>
-                    <a href="musicgenres.html" data-role="button">Genres</a>
-                </div>
-            </div>
-            <div id="gameGenreTabs" class="itemTabs" style="display: none;">
-                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
-                    <a href="gamesrecommended.html" data-role="button">Suggested</a>
-                    <a href="games.html" data-role="button">Games</a>
-                    <a href="gamesystems.html" data-role="button">Game Systems</a>
-                    <a href="gamegenres.html" data-role="button" class="ui-btn-active">Genres</a>
-                    <a href="gamestudios.html" data-role="button">Studios</a>
-                </div>
-            </div>
-            <div id="gameStudioTabs" class="itemTabs" style="display: none;">
-                <div data-role="controlgroup" data-type="horizontal" class="libraryViewNav" data-mini="true">
-                    <a href="gamesrecommended.html" data-role="button">Suggested</a>
-                    <a href="games.html" data-role="button">Games</a>
-                    <a href="gamesystems.html" data-role="button">Game Systems</a>
-                    <a href="gamegenres.html" data-role="button">Genres</a>
-                    <a href="gamestudios.html" data-role="button" class="ui-btn-active">Studios</a>
-                </div>
-            </div>
             <div class="detailPageContent">
-                <div class="detailPagePrimaryInfo">
-                    <div class="itemImageBlock">
-                        <div id="itemMedia" style="position: relative;">
-                            <div id="itemImage"></div>
-                        </div>
+                <div>
+                    <div class="detailSectionHeader" style="margin-top: 0;">
+                        Details
                     </div>
+                    <div class="detailSectionContent" style="padding: 0 1em;">
 
-                    <div class="itemDetailBlock">
-                        <h1 id="itemName" class="detailPageName"></h1>
-
-                        <p id="itemMiscInfo" class="itemMiscInfo"></p>
-                        <p id="itemOverview"></p>
-                        <p id="itemRatings" class="userDataIcons"></p>
-                        <p id="itemBirthday"></p>
                         <p id="itemBirthLocation"></p>
                         <p id="itemDeathDate"></p>
 
@@ -129,11 +142,14 @@
                 </div>
 
                 <div>
-                    <div data-role="collapsible" id="galleryCollapsible" style="display: none;" data-mini="true" data-collapsed="false" data-corners="false">
-                        <h3>Gallery</h3>
-                        <div id="galleryContent"></div>
+                    <div id="galleryCollapsible" style="display: none;">
+                        <div class="detailSectionHeader">
+                            Gallery
+                        </div>
+                        <div id="galleryContent" class="detailSectionContent"></div>
                     </div>
                 </div>
+                <br />
 
                 <div id="itemTabs" style="text-align: center;"></div>
             </div>

@@ -44,21 +44,24 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
                 .ToList();
 
             // Get the first audio stream
-            var stream = data.streams.First(s => s.codec_type.Equals("audio", StringComparison.OrdinalIgnoreCase));
+            var stream = data.streams.FirstOrDefault(s => s.codec_type.Equals("audio", StringComparison.OrdinalIgnoreCase));
 
-            // Get duration from stream properties
-            var duration = stream.duration;
-
-            // If it's not there go into format properties
-            if (string.IsNullOrEmpty(duration))
+            if (stream != null)
             {
-                duration = data.format.duration;
-            }
+                // Get duration from stream properties
+                var duration = stream.duration;
 
-            // If we got something, parse it
-            if (!string.IsNullOrEmpty(duration))
-            {
-                audio.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(duration, UsCulture)).Ticks;
+                // If it's not there go into format properties
+                if (string.IsNullOrEmpty(duration))
+                {
+                    duration = data.format.duration;
+                }
+
+                // If we got something, parse it
+                if (!string.IsNullOrEmpty(duration))
+                {
+                    audio.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(duration, UsCulture)).Ticks;
+                }
             }
 
             if (data.format.tags != null)

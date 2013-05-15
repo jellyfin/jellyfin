@@ -26,11 +26,13 @@
 
             $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item));
 
-            LibraryBrowser.renderTitle(item, $('#itemName', page), $('#parentName', page), $('#grandParentName', page));
+            LibraryBrowser.renderName(item, $('.itemName', page));
+            LibraryBrowser.renderParentName(item, $('.parentName', page));
 
             var context = getContext(item);
             setInitialCollapsibleState(page, item, context);
             renderDetails(page, item, context);
+            LibraryBrowser.renderDetailPageBackdrop(page, item);
 
             if (MediaPlayer.canPlay(item)) {
                 $('#playButtonContainer', page).show();
@@ -116,18 +118,11 @@
 
     function setInitialCollapsibleState(page, item, context) {
 
-        if (item.ChildCount && item.Type == "MusicAlbum") {
-            $('#itemSongs', page).show();
-            $('#childrenCollapsible', page).hide();
-            renderChildren(page, item);
-        }
-        else if (item.ChildCount) {
-            $('#itemSongs', page).hide();
+        if (item.ChildCount) {
             $('#childrenCollapsible', page).show();
             renderChildren(page, item);
         }
         else {
-            $('#itemSongs', page).hide();
             $('#childrenCollapsible', page).hide();
         }
         if (LibraryBrowser.shouldDisplayGallery(item)) {
@@ -190,12 +185,12 @@
             $('#itemTagline', page).hide();
         }
 
-        LibraryBrowser.renderOverview($('#itemOverview', page), item);
+        LibraryBrowser.renderOverview($('.itemOverview', page), item);
 
         if (item.CommunityRating || item.CriticRating) {
-            $('#itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item)).show();
+            $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item)).show();
         } else {
-            $('#itemCommunityRating', page).hide();
+            $('.itemCommunityRating', page).hide();
         }
 
         if (item.Type != "Episode" && item.Type != "Movie") {
@@ -208,16 +203,18 @@
         LibraryBrowser.renderBudget($('#itemBudget', page), item);
         LibraryBrowser.renderRevenue($('#itemRevenue', page), item);
 
-        $('#itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
+        $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
 
-        LibraryBrowser.renderGenres($('#itemGenres', page), item, context);
-        LibraryBrowser.renderStudios($('#itemStudios', page), item, context);
+        LibraryBrowser.renderGenres($('.itemGenres', page), item, context);
+        LibraryBrowser.renderStudios($('.itemStudios', page), item, context);
         renderUserDataIcons(page, item);
-        LibraryBrowser.renderLinks($('#itemLinks', page), item);
+        LibraryBrowser.renderLinks($('.itemExternalLinks', page), item);
+
+        $('.criticRatingScore', page).html((item.CriticRating || '0') + '%');
 
         if (item.CriticRatingSummary) {
             $('#criticRatingSummary', page).show();
-            $('#criticRatingSummaryText', page).html(item.CriticRatingSummary);
+            $('.criticRatingSummaryText', page).html(item.CriticRatingSummary);
 
         } else {
             $('#criticRatingSummary', page).hide();
@@ -238,10 +235,10 @@
 
             }
 
-            $('#itemTags', page).show().html(html);
+            $('.itemTags', page).show().html(html);
 
         } else {
-            $('#itemTags', page).hide();
+            $('.itemTags', page).hide();
         }
     }
 
@@ -257,7 +254,7 @@
 
             if (item.Type == "MusicAlbum") {
 
-                $('#itemSongs', page).html(LibraryBrowser.getSongTableHtml(result.Items, { showArtist: true })).trigger('create');
+                $('#childrenContent', page).html(LibraryBrowser.getSongTableHtml(result.Items, { showArtist: true })).trigger('create');
 
             } else {
 
@@ -298,7 +295,7 @@
         }
     }
     function renderUserDataIcons(page, item) {
-        $('#itemRatings', page).html(LibraryBrowser.getUserDataIconsHtml(item));
+        $('.userDataIcons', page).html(LibraryBrowser.getUserDataIconsHtml(item));
     }
 
     function renderCriticReviews(page, item, limit) {
@@ -311,7 +308,7 @@
 
         ApiClient.getCriticReviews(item.Id, options).done(function (result) {
 
-            if (result.TotalRecordCount) {
+            if (result.TotalRecordCount || item.CriticRatingSummary) {
                 $('#criticReviewsCollapsible', page).show();
                 renderCriticReviewsContent(page, result, limit);
             } else {

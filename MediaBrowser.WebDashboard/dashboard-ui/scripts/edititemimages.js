@@ -13,7 +13,8 @@
 
             currentItem = item;
 
-            LibraryBrowser.renderTitle(item, $('#itemName', page), $('#parentName', page), $('#grandParentName', page), true);
+            LibraryBrowser.renderName(item, $('.itemName', page), true);
+            LibraryBrowser.renderParentName(item, $('.parentName', page));
 
             ApiClient.getItemImageInfos(currentItem.Id).done(function (imageInfos) {
                 renderStandardImages(page, item, imageInfos);
@@ -32,7 +33,7 @@
 
             var image = images[i];
 
-            html += '<div style="display:inline-block;margin:5px;background:#202020;padding:10px;font-size:14px;">';
+            html += '<div style="display:inline-block;margin:5px;background:#202020;padding:10px;">';
 
             html += '<div style="float:left;height:100px;width:175px;vertical-align:top;background-repeat:no-repeat;background-size:contain;background-image:url(\'' + LibraryBrowser.getImageUrl(currentItem, image.ImageType, image.ImageIndex, { maxwidth: 300 }) + '\');"></div>';
 

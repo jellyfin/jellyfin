@@ -54,7 +54,7 @@
 
             Dashboard.setPageTitle(name);
 
-            $('#itemName', page).html(name);
+            $('.itemName', page).html(name);
 
             renderDetails(page, item);
             renderTabs(page, item);
@@ -287,7 +287,8 @@
 
     function renderDetails(page, item) {
 
-        LibraryBrowser.renderOverview($('#itemOverview', page), item);
+        LibraryBrowser.renderDetailPageBackdrop(page, item);
+        LibraryBrowser.renderOverview($('.itemOverview', page), item);
 
         renderUserDataIcons(page, item);
         LibraryBrowser.renderLinks($('#itemLinks', page), item);
@@ -337,7 +338,7 @@
     }
 
     function renderUserDataIcons(page, item) {
-        $('#itemRatings', page).html(LibraryBrowser.getUserDataIconsHtml(item));
+        $('.userDataIcons', page).html(LibraryBrowser.getUserDataIconsHtml(item));
     }
 
     function addCurrentItemToQuery(query) {

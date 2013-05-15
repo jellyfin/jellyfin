@@ -11,7 +11,6 @@
     text-align: left;
     width: 100%;
     margin: 0 auto;
-    font-size: 14px;
 }
 
 .stretchedDetailTable {
@@ -44,11 +43,6 @@
 
 .detailTable tr:hover {
     background: #555;
-}
-
-.detailTable .imgUserItemRating {
-    width: 18px;
-    height: 18px;
 }
 
 .userDataCell {

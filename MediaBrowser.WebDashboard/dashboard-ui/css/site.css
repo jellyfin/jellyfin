@@ -32,6 +32,7 @@
 
 body {
     overflow-y: scroll!important;
+    font-size: 14px;
 }
 
 .textlink {
@@ -401,10 +402,6 @@ form, .readOnlyContent {
         top: 6px;
     }
 
-#divVirtualFolders .ui-btn-inner, .mediaLocationsHeader, #divVirtualFolders .ui-btn-text {
-    font-size: 14px;
-}
-
 #ulDirectoryPickerList a {
     padding-top: .4em;
     padding-bottom: .4em;
@@ -419,7 +416,6 @@ form, .readOnlyContent {
     display: inline-block;
     margin: 5px;
     text-align: center;
-    font-size: 14px;
     padding: 0;
     position: relative;
     padding-bottom: 28px;
@@ -669,95 +665,17 @@ progress {
 
 /* Detail Page*/
 
-.itemDetailImage {
-    max-width: 100%;
-    max-height: 400px;
-}
-
-.itemImageBlock {
-    vertical-align: top;
-}
-
-.itemDetailBlock {
-    vertical-align: top;
-    padding-top: 1em;
-    font-size: 15px;
-}
-
 .imgUserItemRating {
-    height: 20px;
-    width: 20px;
+    height: 17px;
+    width: 17px;
     margin-right: 1em;
     cursor: pointer;
+    vertical-align: top;
 }
 
     .imgUserItemRating:hover {
         opacity: .5;
     }
-
-@media all and (min-width: 650px) {
-    .itemImageBlock {
-        display: inline-block;
-    }
-
-    .itemDetailImage {
-        max-width: 220px;
-    }
-
-    .itemDetailBlock {
-        padding-top: 0;
-        display: inline-block;
-        width: 57%;
-        padding-left: 20px;
-    }
-}
-
-@media all and (min-width: 750px) {
-
-    .itemDetailImage {
-        max-width: 300px;
-    }
-
-    .itemDetailBlock {
-        width: 52%;
-    }
-}
-
-@media all and (min-width: 1000px) {
-
-    .itemDetailBlock {
-        width: 60%;
-    }
-}
-
-@media all and (min-width: 1440px) {
-
-    .itemDetailImage {
-        max-width: 350px;
-    }
-
-    .itemDetailBlock {
-        width: 60%;
-    }
-}
-
-@media all and (min-width: 1700px) {
-
-    .itemDetailImage {
-        max-width: 400px;
-    }
-
-    .itemDetailBlock {
-        width: 61%;
-    }
-}
-
-@media all and (min-width: 1920px) {
-
-    .itemDetailBlock {
-        width: 63%;
-    }
-}
 
 /* Now playing bar */
 #nowPlayingBar {

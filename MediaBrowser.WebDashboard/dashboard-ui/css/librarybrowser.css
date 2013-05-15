@@ -6,14 +6,13 @@
 .viewMenuBar {
     background: #444;
     background-image: linear-gradient(#444,#2d2d2d);
-    border-bottom: 1px solid #444;
     font-size: 13px;
     font-weight: bold;
 }
 
 .viewMenuLink {
     text-decoration: none;
-    color: #bbb;
+    color: #ccc;
     padding: 7px .9em 6px;
     display: inline-block;
     vertical-align: middle;
@@ -82,15 +81,45 @@
 
 .libraryViewNav {
     text-align: center;
+    background-image: linear-gradient(#444,#2d2d2d);
+    border-bottom: 1px solid #111;
+    border-top: 1px solid #111;
 }
 
-    .libraryViewNav .ui-btn-inner {
-        padding: .6em 5px;
+    .libraryViewNav .ui-btn-active {
+        border: 0;
     }
+
+    .libraryViewNav a {
+        display: inline-block;
+        padding: .5em .25em;
+        color: #eee!important;
+        text-decoration: none;
+    }
+
+        .libraryViewNav a:hover {
+            color: #bbb!important;
+        }
 
 .ehsContent {
     max-width: 600px;
     margin: 0 auto;
+    padding: 0;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+    .ehsContent td {
+        padding: 0;
+        border-spacing: 0;
+    }
+
+.detailPageContent {
+    margin: 0 auto;
+    width: 90%;
+    padding: 0;
+    border-spacing: 0;
+    border-collapse: collapse;
 }
 
 .viewSettings {
@@ -109,12 +138,6 @@
 
 .labelPageSize, .selectPageSize {
     display: none;
-}
-
-
-.detailPageContent .ui-collapsible-content {
-    padding-left: 5px;
-    padding-right: 5px;
 }
 
 .galleryImageContainer {
@@ -140,6 +163,7 @@
     height: 17px;
     display: inline-block;
     background-size: cover;
+    vertical-align: top;
 }
 
 .halfStarRating {
@@ -158,6 +182,7 @@
     background-size: cover;
     background-position: left center;
     background-repeat: no-repeat;
+    vertical-align: top;
 }
 
 .fresh {
@@ -173,32 +198,46 @@
     vertical-align: top;
     margin-left: 5px;
     display: inline-block;
+    vertical-align: top;
 }
 
 .criticRatingSummary {
-    padding: 5px;
-    font-size: 13px;
-    background: #2489ce;
-    margin-top: 1em;
+    background-color: #FFE482!important;
+    color: #000!important;
 }
 
-.criticRatingSummaryHeader {
-    text-transform: uppercase;
-    margin-bottom: 5px;
-    display: block;
+.criticRatingScore {
+    font-weight: bold;
+    font-size: 18px;
+    margin: .5em 0;
 }
 
 .itemTag {
     display: inline-block;
-    background-color: #999;
+    background-color: #555;
     border-radius: 4px;
-    padding: 3px 5px;
+    padding: 5px 7px;
     font-size: 13px;
     margin: 0 5px 5px 0;
+    color: #fff!important;
+    text-decoration: none;
+    font-weight: normal!important;
 }
 
+a.itemTag:hover {
+    background-color: #2489ce;
+}
+
+.itemLinks {
+    text-align: center;
+    padding: 0;
+}
+
+    .itemLinks p {
+        margin: .5em 0;
+    }
+
 .criticReview {
-    font-size: 14px;
     margin: 1.5em 0;
     background: #222;
     padding: .8em .8em .8em 55px;
@@ -233,6 +272,126 @@
     left: .8em;
 }
 
+.itemBackdrop {
+    background-size: cover;
+    background-position: center 15%;
+    background-repeat: no-repeat;
+    height: 540px;
+    border-bottom: 1px solid #111;
+    position: relative;
+}
+
+.itemBackdropContent {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    font-size: 13px;
+    background-color: rgba(0,0,0,0.7);
+}
+
+.noBackdrop {
+    height: 280px;
+    border: 0;
+}
+
+    .noBackdrop .itemBackdropContent {
+        background-color: transparent;
+    }
+
+.itemBackdropContent {
+    height: 230px;
+}
+
+    .itemBackdropContent p:not(.itemOverview) {
+        white-space: nowrap;
+    }
+
+.itemDetailImage {
+    height: 240px;
+    -moz-box-shadow: 0px 0 20px #000;
+    -webkit-box-shadow: 0px 0 20px #000;
+    box-shadow: 0px 0 20px #000;
+    border: solid 1px #222;
+    margin-top: -30px;
+}
+
+.parentName {
+    padding: .5em;
+    text-align: center;
+    font-size: 16px;
+    border: 0;
+}
+
+    .parentName a {
+        color: #000!important;
+    }
+
+.itemName {
+    font-size: 22px;
+}
+
+    .itemName + .itemMiscInfo {
+        margin-left: 1em;
+    }
+
+.itemOverview {
+    max-height: 80px;
+    overflow-y: auto;
+    text-overflow: ellipsis;
+}
+
+.libraryPage ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.libraryPage ::-webkit-scrollbar-button:start:decrement,
+.libraryPage ::-webkit-scrollbar-button:end:increment {
+    display: none;
+}
+
+.libraryPage ::-webkit-scrollbar-track-piece {
+    background-color: #3b3b3b;
+    -webkit-border-radius: 6px;
+}
+
+.libraryPage ::-webkit-scrollbar-thumb:vertical {
+    -webkit-border-radius: 6px;
+    background: #666 no-repeat center;
+}
+
+.detailSectionHeader {
+    padding: .5em 1em;
+    font-size: 16px;
+    font-weight: bold;
+    border: 1px solid #181818;
+    background: #222;
+    margin-top: 2em;
+}
+
+.detailSectionContent {
+}
+
+@media all and (max-width: 750px) {
+
+    .itemBackdrop {
+        background-image: none!important;
+        height: 510px;
+    }
+
+    .itemImageContainer {
+        position: absolute;
+        top: -230px;
+        margin: 0 auto 0 -20px;
+        text-align: center;
+        width: 100%;
+    }
+
+    .noBackdrop {
+        height: 510px;
+    }
+}
 
 @media all and (min-width: 750px) {
 
@@ -246,6 +405,17 @@
 
     .viewMenuImageLink {
         display: none;
+    }
+
+    .libraryViewNav a {
+        padding: .5em 1em;
+    }
+}
+
+@media all and (min-width: 1000px) {
+
+    .itemBackdrop {
+        background-size: 100% auto;
     }
 }
 
@@ -275,26 +445,20 @@
 }
 
 @media all and (min-width: 750px) {
-    .libraryViewNav .ui-btn-inner {
-        padding-left: 20px;
-        padding-right: 20px;
-    }
-
-    .detailPageContent .ui-collapsible-content {
-        padding-left: 15px;
-        padding-right: 15px;
+    .detailPageContent {
+        max-width: 900px;
+        width: auto;
     }
 }
 
 @media all and (min-width: 1000px) {
-    .detailPageContent {
-        width: 90%;
-        margin: 0 auto;
-        max-width: 1200px;
-    }
 
     .ehsContent {
         max-width: 800px;
+    }
+
+    .detailPageContent {
+        max-width: 900px;
     }
 }
 
@@ -303,16 +467,24 @@
     .ehsContent {
         max-width: 940px;
     }
+
+    .detailPageContent {
+        max-width: 1000px;
+    }
 }
 
 @media all and (min-width: 1440px) {
 
-    .detailPageContent {
-        width: 1200px;
-    }
-
     .ehsContent {
         max-width: 1070px;
+    }
+
+    .detailPageContent {
+        max-width: 1170px;
+    }
+
+    .primaryDetailPageContent {
+        max-width: 1100px;
     }
 }
 
@@ -328,18 +500,6 @@
     }
 }
 
-.playFlyout a {
-    font-size: 14px;
-}
-
-.detailPageName {
-    margin: 0 0 .1em;
-}
-
-    .detailPageName + .detailPageName {
-        margin: 0;
-    }
-
 .detailPageParentLink {
     text-decoration: none;
 }
@@ -350,20 +510,13 @@
 
 .itemMiscInfo {
     color: #ddd;
-    font-size: 14px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
 }
 
-.detailPageName .itemMiscInfo {
-    margin-left: 1.5em;
-    font-family: Arial;
-    color: #ccc;
-}
-
 .itemMediaInfo {
-    font-size: 14px;
+    padding-left: .5em;
 }
 
 .mediaInfoStream {
@@ -408,20 +561,11 @@
     font-weight: bold;
 }
 
-.detailPagePrimaryInfo {
-    margin: 1em 0;
-}
-
 .scenePosterViewItem img {
     max-width: 150px!important;
 }
 
 @media all and (min-width: 650px) {
-    .detailPagePrimaryInfo {
-        padding: 0 10px;
-        margin-top: 1.5em;
-    }
-
     .libraryTabs .ui-btn-inner {
         padding: .5em 15px!important;
     }
@@ -450,7 +594,7 @@
     height: 14px;
     border: 1px solid #666;
     border-radius: 0;
-    width: 100px;
+    width: 50px;
     margin-right: 5px;
 }
 

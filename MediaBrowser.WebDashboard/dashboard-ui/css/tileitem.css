@@ -5,14 +5,8 @@
     text-shadow: none;
     font-weight: normal!important;
     display: block;
-    font-size: 14px;
     position: relative;
 }
-
-
-    .tileItem .itemProgress {
-        font-size: 14px;
-    }
 
     .tileItem .starRating {
         width: 16px;
@@ -43,11 +37,6 @@
 
 .tileItem p {
     margin: .5em 0 0;
-}
-
-.tileItem .imgUserItemRating {
-    height: 18px;
-    width: 18px;
 }
 
 .tileContent {
