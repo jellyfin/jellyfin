@@ -194,6 +194,18 @@
             reloadItems(page);
         });
 
+        $('.alphabetPicker', this).on('alphaselect', function (e, character) {
+
+            query.NameStartsWith = character;
+
+            reloadItems(page);
+            
+        }).on('alphaclear', function (e) {
+
+            query.NameStartsWith = '';
+
+            reloadItems(page);
+        });
 
     }).on('pagebeforeshow', "#moviesPage", function () {
 
@@ -249,6 +261,8 @@
         $('#chkSpecialFeature', this).checked(query.HasSpecialFeature == true).checkboxradio('refresh');
         $('#chkThemeSong', this).checked(query.HasThemeSong == true).checkboxradio('refresh');
         $('#chkThemeVideo', this).checked(query.HasThemeVideo == true).checkboxradio('refresh');
+
+        $('.alphabetPicker', this).alphaValue(query.NameStartsWith);
 
     });
 

@@ -118,6 +118,19 @@
             }
         });
 
+        $('.alphabetPicker', this).on('alphaselect', function (e, character) {
+
+            query.NameStartsWith = character;
+
+            reloadItems(page);
+
+        }).on('alphaclear', function (e) {
+
+            query.NameStartsWith = '';
+
+            reloadItems(page);
+        });
+
     }).on('pagebeforeshow', "#musicAlbumsPage", function () {
 
         var limit = LibraryBrowser.getDefaultPageSize();
@@ -146,6 +159,8 @@
             this.checked = query.SortOrder == this.getAttribute('data-sortorder');
 
         }).checkboxradio('refresh');
+
+        $('.alphabetPicker', this).alphaValue(query.NameStartsWith);
     });
 
 })(jQuery, document);

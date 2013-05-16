@@ -127,6 +127,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "SeriesStatus", Description = "Optional filter by Series Status. Allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string SeriesStatus { get; set; }
 
+        [ApiMember(Name = "NameStartsWith", Description = "Optional filter whose name begins with a prefix.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string NameStartsWith { get; set; }
+
         /// <summary>
         /// Gets or sets the air days.
         /// </summary>
@@ -162,7 +165,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "HasTrailer", Description = "Optional filter by items with trailers.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public bool? HasTrailer { get; set; }
-        
+
         /// <summary>
         /// Gets the order by.
         /// </summary>
@@ -450,7 +453,12 @@ namespace MediaBrowser.Api.UserLibrary
                 var vals = request.IncludeItemTypes.Split(',');
                 items = items.Where(f => vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
             }
-            
+
+            if (!string.IsNullOrEmpty(request.NameStartsWith))
+            {
+                items = items.Where(i => i.Name.IndexOf(request.NameStartsWith, StringComparison.OrdinalIgnoreCase) == 0);
+            }
+
             // Filter by Series Status
             if (!string.IsNullOrEmpty(request.SeriesStatus))
             {
@@ -489,7 +497,7 @@ namespace MediaBrowser.Api.UserLibrary
 
                 items = items.Where(i => !string.IsNullOrEmpty(i.MediaType) && types.Contains(i.MediaType, StringComparer.OrdinalIgnoreCase));
             }
-            
+
             var imageTypes = GetImageTypes(request).ToArray();
             if (imageTypes.Length > 0)
             {
