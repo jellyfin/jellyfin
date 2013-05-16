@@ -409,8 +409,8 @@ namespace MediaBrowser.WebDashboard.Api
             var files = new[]
                             {
                                 "http://code.jquery.com/mobile/1.3.1/jquery.mobile-1.3.1.min.css",
-                                "thirdparty/video-js-4.0/video-js.css",
-                                "thirdparty/video-js-4.0/video-js.tube.min.css",
+                                "thirdparty/video-js-3.2.0/video-js.min.css",
+                                "thirdparty/video-js-3.2.0/video-js.tube.min.css",
                                 "thirdparty/jqm-icon-pack-3.0/font-awesome/jqm-icon-pack-3.0.0-fa.css",
                                 "css/all.css" + versionString
                             };
@@ -519,7 +519,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
 
-            await AppendResource(memoryStream, "thirdparty/video-js-4.0/video.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/video-js-3.2.0/video.min.js", newLineBytes).ConfigureAwait(false);
             await AppendResource(memoryStream, "thirdparty/autoNumeric.js", newLineBytes).ConfigureAwait(false);
 
             await AppendResource(assembly, memoryStream, "MediaBrowser.WebDashboard.ApiClient.js", newLineBytes).ConfigureAwait(false);
