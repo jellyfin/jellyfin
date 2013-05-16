@@ -250,7 +250,7 @@ namespace MediaBrowser.Controller.Providers.TV
                     if (episode.IndexNumber < 0)
                         episode.IndexNumber = doc.SafeGetInt32("//EpisodeNumber");
 
-                    episode.Name = episode.IndexNumber.Value.ToString("000") + " - " + doc.SafeGetString("//EpisodeName");
+                    episode.Name = doc.SafeGetString("//EpisodeName");
                     episode.CommunityRating = doc.SafeGetSingle("//Rating", -1, 10);
                     var firstAired = doc.SafeGetString("//FirstAired");
                     DateTime airDate;
