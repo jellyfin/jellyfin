@@ -98,6 +98,19 @@
             reloadItems(page);
         });
 
+        $('.alphabetPicker', this).on('alphaselect', function (e, character) {
+
+            query.NameStartsWith = character;
+
+            reloadItems(page);
+
+        }).on('alphaclear', function (e) {
+
+            query.NameStartsWith = '';
+
+            reloadItems(page);
+        });
+
     }).on('pagebeforeshow', "#musicArtistsPage", function () {
 
         var limit = LibraryBrowser.getDefaultPageSize();
@@ -126,6 +139,8 @@
         }).checkboxradio('refresh');
 
         $('#chkIsOnTour', this).checked(query.IsOnTour === true).checkboxradio('refresh');
+
+        $('.alphabetPicker', this).alphaValue(query.NameStartsWith);
     });
 
 })(jQuery, document);

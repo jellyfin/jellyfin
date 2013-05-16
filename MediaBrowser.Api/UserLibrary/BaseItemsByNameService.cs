@@ -133,6 +133,11 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{IbnStub}.</returns>
         private IEnumerable<IbnStub<TItemType>> FilterItems(GetItemsByName request, IEnumerable<IbnStub<TItemType>> items, User user)
         {
+            if (!string.IsNullOrEmpty(request.NameStartsWith))
+            {
+                items = items.Where(i => i.Name.IndexOf(request.NameStartsWith, StringComparison.OrdinalIgnoreCase) == 0);
+            }
+
             var filters = request.GetFilters().ToList();
 
             if (filters.Count == 0)
@@ -227,7 +232,7 @@ namespace MediaBrowser.Api.UserLibrary
 
                 items = items.Where(f => vals.Contains(f.MediaType ?? string.Empty, StringComparer.OrdinalIgnoreCase));
             }
-
+            
             return items;
         }
 
@@ -304,6 +309,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public Guid? UserId { get; set; }
 
+        [ApiMember(Name = "NameStartsWith", Description = "Optional filter whose name begins with a prefix.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string NameStartsWith { get; set; }
+        
         /// <summary>
         /// What to sort the results by
         /// </summary>

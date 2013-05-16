@@ -264,7 +264,7 @@
 
             var html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: true,
+                useAverageAspectRatio: item.MediaType != "Game",
                 showNewIndicator: true,
                 shape: item.Type == "MusicAlbum" ? "square" : "portrait"
             });
@@ -320,7 +320,6 @@
     }
 
     function renderChildren(page, item) {
-
         var sortBy = item.Type == "Boxset" ? "ProductionYear,SortName" : "SortName";
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), {

@@ -678,10 +678,10 @@ a.itemTag:hover {
 
 .alphabetPicker {
     position: fixed;
-    right: 0;
+    right: 2px;
     bottom: 0;
     top: 100px;
-    width: 25px;
+    width: 27px;
     z-index: 1000;
     text-align: center;
     font-size: 13px;
@@ -713,7 +713,7 @@ a.itemTag:hover {
     }
 
     .itemsContainerWithAlphaPicker {
-        margin-right: 25px;
+        margin-right: 27px;
     }
 }
 

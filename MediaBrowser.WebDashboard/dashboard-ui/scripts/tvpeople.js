@@ -108,6 +108,19 @@
             reloadItems(page);
         });
 
+        $('.alphabetPicker', this).on('alphaselect', function (e, character) {
+
+            query.NameStartsWith = character;
+
+            reloadItems(page);
+
+        }).on('alphaclear', function (e) {
+
+            query.NameStartsWith = '';
+
+            reloadItems(page);
+        });
+
     }).on('pagebeforeshow', "#tvPeoplePage", function () {
 
         var limit = LibraryBrowser.getDefaultPageSize();
@@ -152,6 +165,8 @@
             this.checked = filters.indexOf(',' + filterName) != -1;
 
         }).checkboxradio('refresh');
+
+        $('.alphabetPicker', this).alphaValue(query.NameStartsWith);
     });
 
 })(jQuery, document);
