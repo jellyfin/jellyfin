@@ -75,7 +75,7 @@ namespace MediaBrowser.Api.Library
                 throw new DirectoryNotFoundException("The media collection does not exist");
             }
 
-            if (Directory.Exists(newPath))
+            if (!string.Equals(currentPath, newPath, StringComparison.OrdinalIgnoreCase) && Directory.Exists(newPath))
             {
                 throw new ArgumentException("There is already a media collection with the name " + newPath + ".");
             }
