@@ -286,7 +286,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// <summary>
         /// The dummy chapter duration
         /// </summary>
-        private readonly long DummyChapterDuration = TimeSpan.FromMinutes(10).Ticks;
+        private readonly long _dummyChapterDuration = TimeSpan.FromMinutes(5).Ticks;
 
         /// <summary>
         /// Adds the dummy chapters.
@@ -296,7 +296,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         {
             var runtime = video.RunTimeTicks ?? 0;
 
-            if (runtime < DummyChapterDuration)
+            if (runtime < _dummyChapterDuration)
             {
                 return;
             }
@@ -315,7 +315,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
                 });
 
                 index++;
-                currentChapterTicks += DummyChapterDuration;
+                currentChapterTicks += _dummyChapterDuration;
             }
 
             video.Chapters = chapters;
