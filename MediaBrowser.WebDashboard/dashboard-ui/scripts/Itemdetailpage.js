@@ -132,10 +132,7 @@
             $('#galleryCollapsible', page).hide();
         }
 
-        if (!item.MediaStreams || !item.MediaStreams.length) {
-            $('#mediaInfoCollapsible', page).hide();
-        } else {
-            $('#mediaInfoCollapsible', page).show();
+        if (item.MediaStreams && item.MediaStreams.length) {
             renderMediaInfo(page, item);
         }
         if (!item.Chapters || !item.Chapters.length) {
@@ -222,13 +219,14 @@
 
         renderTags(page, item);
 
-        var elem = $('.detailSectionContent', page)[0];
+        var detailsSection = $('#detailsSection', page);
+        var elem = $('.detailSectionContent', detailsSection)[0];
         var text = elem.textContent || elem.innerText;
 
         if (!text.trim()) {
-            $('#detailSection', page).hide();
+            detailsSection.hide();
         } else {
-            $('#detailSection', page).show();
+            detailsSection.show();
         }
 
         renderSeriesAirTime(page, item, context);
@@ -250,7 +248,7 @@
         ApiClient.getSimilarItems(item.Id, {
 
             userId: Dashboard.getCurrentUserId(),
-            limit: 8
+            limit: item.Type == "MusicAlbum" ? 6 : 8
 
         }).done(function (result) {
 
@@ -567,73 +565,68 @@
 
             html += '<div class="mediaInfoStream">';
 
-            html += '<p class="mediaInfoStreamType">' + type + '</p>';
+            html += '<span class="mediaInfoStreamType">' + type + ':</span>';
 
-            html += '<ul class="mediaInfoDetails">';
+            var attributes = [];
 
             if (stream.Codec) {
-                html += '<li><span class="mediaInfoLabel">Codec: </span> ' + stream.Codec + '</li>';
+                attributes.push('<span class="mediaInfoAttribute">' + stream.Codec + '</span>');
             }
             if (stream.Profile) {
-                html += '<li><span class="mediaInfoLabel">Profile: </span> ' + stream.Profile + '</li>';
+                attributes.push('<span class="mediaInfoAttribute">' + stream.Profile + '</span>');
             }
             if (stream.Level) {
-                html += '<li><span class="mediaInfoLabel">Level: </span> ' + stream.Level + '</li>';
+                attributes.push('<span class="mediaInfoAttribute">Level ' + stream.Level + '</span>');
             }
             if (stream.Language) {
-                html += '<li><span class="mediaInfoLabel">Language: </span> ' + stream.Language + '</li>';
+                attributes.push('<span class="mediaInfoAttribute">' + stream.Language + '</span>');
             }
+
             if (stream.Width) {
-                html += '<li><span class="mediaInfoLabel">Width: </span> ' + stream.Width + '</li>';
+                attributes.push('<span class="mediaInfoAttribute">' + stream.Width + '</span>');
             }
+
             if (stream.Height) {
-                html += '<li><span class="mediaInfoLabel">Height: </span> ' + stream.Height + '</li>';
+                attributes.push('<span class="mediaInfoAttribute">' + stream.Height + '</span>');
             }
+
             if (stream.AspectRatio) {
-                html += '<li><span class="mediaInfoLabel">Aspect Ratio: </span> ' + stream.AspectRatio + '</li>';
+                attributes.push('<span class="mediaInfoAttribute">' + stream.AspectRatio + '</span>');
             }
+
             if (stream.BitRate) {
-                html += '<li><span class="mediaInfoLabel">Bitrate: </span> <span class="autoNumeric" data-a-pad="false">' + (parseInt(stream.BitRate / 1000)) + ' kbps</span></li>';
+                attributes.push('<span class="mediaInfoAttribute">' + (parseInt(stream.BitRate / 1000)) + ' kbps</span>');
             }
+
             if (stream.Channels) {
-                html += '<li><span class="mediaInfoLabel">Channels: </span> ' + stream.Channels + '</li>';
+                attributes.push('<span class="mediaInfoAttribute">' + stream.Channels + ' ch</span>');
             }
+
             if (stream.SampleRate) {
-                html += '<li><span class="mediaInfoLabel">Sample Rate: </span> <span class="autoNumeric" data-a-pad="false">' + stream.SampleRate + ' khz</span></li>';
+                attributes.push('<span class="mediaInfoAttribute">' + stream.SampleRate + ' khz</span>');
             }
 
             var framerate = stream.AverageFrameRate || stream.RealFrameRate;
 
             if (framerate) {
-                html += '<li><span class="mediaInfoLabel">Framerate: </span> ' + framerate + '</li>';
+                attributes.push('<span class="mediaInfoAttribute">' + framerate + '</span>');
             }
 
             if (stream.PixelFormat) {
-                html += '<li><span class="mediaInfoLabel">Pixel Format: </span> ' + stream.PixelFormat + '</li>';
+                attributes.push('<span class="mediaInfoAttribute">' + stream.PixelFormat + '</span>');
             }
 
-            if (stream.IsDefault || stream.IsForced || stream.IsExternal) {
-
-                var vals = [];
-
-                if (stream.IsDefault) {
-                    vals.push("Default");
-                }
-                if (stream.IsForced) {
-                    vals.push("Forced");
-                }
-                if (stream.IsExternal) {
-                    vals.push("External");
-                }
-
-                html += '<li><span class="mediaInfoLabel">Flags: </span> ' + vals.join(", ") + '</li>';
+            if (stream.IsDefault) {
+                attributes.push('<span class="mediaInfoAttribute">Default</span>');
+            }
+            if (stream.IsForced) {
+                attributes.push('<span class="mediaInfoAttribute">Forced</span>');
+            }
+            if (stream.IsExternal) {
+                attributes.push('<span class="mediaInfoAttribute">External</span>');
             }
 
-            if (stream.Path) {
-                html += '<li><span class="mediaInfoLabel">Path: </span> ' + stream.Path + '</li>';
-            }
-
-            html += '</ul>';
+            html += attributes.join('&nbsp;&#149;&nbsp;');
 
             html += '</div>';
         }
