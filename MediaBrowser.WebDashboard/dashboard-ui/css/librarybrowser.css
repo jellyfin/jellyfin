@@ -152,7 +152,8 @@
     }
 
 .galleryImage {
-    width: 120px;
+    max-height: 63px;
+    max-width: 300px;
 }
 
 .starRating {
@@ -401,7 +402,7 @@ a.itemTag:hover {
 @media all and (min-width: 750px) {
 
     .galleryImage {
-        width: 150px;
+        max-height: 90px;
     }
 
     .viewMenuTextLink {
@@ -426,9 +427,7 @@ a.itemTag:hover {
 
 @media all and (min-width: 1200px) {
 
-    .galleryImage {
-        width: 180px;
-    }
+
 }
 
 @media all and (min-width: 650px) {

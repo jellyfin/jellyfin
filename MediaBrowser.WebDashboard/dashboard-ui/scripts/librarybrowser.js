@@ -1606,7 +1606,9 @@
 
         createGalleryImage: function (item, type, tag, index) {
 
-            var lightboxWidth = 800;
+            var screenWidth = Math.max(screen.height, screen.width);
+            screenWidth = Math.min(screenWidth, 1280);
+            
             var html = '';
 
             if (typeof (index) == "undefined") index = 0;
@@ -1614,7 +1616,7 @@
             html += '<div class="galleryImageContainer">';
             html += '<a href="#pop_' + index + '_' + tag + '" data-transition="fade" data-rel="popup" data-position-to="window">';
             html += '<img class="galleryImage" src="' + LibraryBrowser.getImageUrl(item, type, index, {
-                maxwidth: lightboxWidth,
+                maxwidth: screenWidth,
                 tag: tag
             }) + '" />';
             html += '</div>';
@@ -1623,7 +1625,7 @@
             html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
             html += '<img class="" src="' + LibraryBrowser.getImageUrl(item, type, index, {
 
-                maxwidth: lightboxWidth,
+                maxwidth: screenWidth,
                 tag: tag
 
             }) + '" />';
