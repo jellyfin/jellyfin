@@ -7,7 +7,6 @@
         SortOrder: "Ascending",
         Recursive: true,
         Fields: "ItemCounts,DateCreated,UserData",
-        Limit: LibraryBrowser.getDefaultPageSize(),
         StartIndex: 0
     };
 
@@ -100,6 +99,14 @@
         });
 
     }).on('pagebeforeshow', "#musicArtistsPage", function () {
+
+        var limit = LibraryBrowser.getDefaultPageSize();
+
+        // If the default page size has changed, the start index will have to be reset
+        if (limit != query.Limit) {
+            query.Limit = limit;
+            query.StartIndex = 0;
+        }
 
         reloadItems(this);
 

@@ -1,4 +1,4 @@
-﻿var LibraryBrowser = (function (window, document, $, screen) {
+﻿var LibraryBrowser = (function (window, document, $, screen, localStorage) {
 
     var defaultBackground = "#999;";
 
@@ -6,6 +6,12 @@
 
         getDefaultPageSize: function () {
 
+            var saved = localStorage.getItem('pagesize');
+            
+            if (saved) {
+                return parseInt(saved);
+            }
+            
             if (window.location.toString().toLowerCase().indexOf('localhost') != -1) {
                 return 100;
             }
@@ -581,7 +587,7 @@
                 var date = item.DateCreated;
 
                 try {
-                    if (date && (new Date().getTime() - parseISO8601Date(date).getTime()) < 864000000) {
+                    if (date && (new Date().getTime() - parseISO8601Date(date).getTime()) < 604800000) {
                         return "<div class='posterRibbon'>New</div>";
                     }
                 } catch (err) {
@@ -768,6 +774,10 @@
 
         getPagingHtml: function (query, totalRecordCount) {
 
+            if (query.Limit) {
+                localStorage.setItem('pagesize', query.Limit);
+            }
+            
             var html = '';
 
             var pageCount = Math.ceil(totalRecordCount / query.Limit);
@@ -786,7 +796,8 @@
 
             var recordsEnd = Math.min(query.StartIndex + query.Limit, totalRecordCount);
 
-            var showControls = totalRecordCount > query.Limit;
+            // 20 is the minimum page size
+            var showControls = totalRecordCount > 20;
 
             html += '<div class="listPaging">';
 
@@ -1595,7 +1606,9 @@
 
         createGalleryImage: function (item, type, tag, index) {
 
-            var lightboxWidth = 800;
+            var screenWidth = Math.max(screen.height, screen.width);
+            screenWidth = Math.min(screenWidth, 1280);
+            
             var html = '';
 
             if (typeof (index) == "undefined") index = 0;
@@ -1603,7 +1616,7 @@
             html += '<div class="galleryImageContainer">';
             html += '<a href="#pop_' + index + '_' + tag + '" data-transition="fade" data-rel="popup" data-position-to="window">';
             html += '<img class="galleryImage" src="' + LibraryBrowser.getImageUrl(item, type, index, {
-                maxwidth: lightboxWidth,
+                maxwidth: screenWidth,
                 tag: tag
             }) + '" />';
             html += '</div>';
@@ -1612,7 +1625,7 @@
             html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
             html += '<img class="" src="' + LibraryBrowser.getImageUrl(item, type, index, {
 
-                maxwidth: lightboxWidth,
+                maxwidth: screenWidth,
                 tag: tag
 
             }) + '" />';
@@ -1623,7 +1636,7 @@
 
     };
 
-})(window, document, jQuery, screen);
+})(window, document, jQuery, screen, localStorage);
 
 
 (function (window, document, $) {

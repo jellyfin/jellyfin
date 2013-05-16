@@ -120,35 +120,33 @@
         </div>
         <div data-role="content">
             <div class="detailPageContent">
-                <div id="detailSection" style="display: none;">
-                    <div class="detailSectionHeader" style="margin-top: 0;">
-                        Details
-                    </div>
-                    <div class="detailSectionContent" style="padding: 0 1em;">
 
-                        <p id="seriesAirTime"></p>
-                        <p class="itemStudios"></p>
-                        <p class="itemExternalLinks"></p>
-                        <p class="itemTags"></p>
-                        <p id="itemPremiereDate"></p>
-
-                        <p id="itemBudget"></p>
-                        <p id="itemRevenue"></p>
-                    </div>
-                </div>
-                <div id="childrenCollapsible" class="hide">
-                    <div class="detailSectionHeader"><span id="childrenTitle"></span></div>
-                    <div id="childrenContent" class="detailSectionContent"></div>
-                </div>
-                <div style="display: inline-block; vertical-align: top;">
-                    <div id="mediaInfoCollapsible" style="display: none;">
-                        <div class="detailSectionHeader">
-                            Media Info
+                <div style="display: inline-block;">
+                    <div id="detailsSection" style="display: none;" class="detailSection">
+                        <div class="detailSectionHeader" style="margin-top: 0;">
+                            Details
                         </div>
-                        <div id="mediaInfoContent" class="itemMediaInfo detailSectionContent"></div>
+                        <div class="detailSectionContent" style="padding: 0 1em;">
+
+                            <div id="mediaInfoContent"></div>
+                            <p id="seriesAirTime"></p>
+                            <p id="itemPremiereDate"></p>
+                            <p id="itemBudget"></p>
+                            <p id="itemRevenue"></p>
+                            <p class="itemStudios"></p>
+                            <p class="itemExternalLinks"></p>
+                            <div class="mediaInfo"></div>
+                            <p class="itemTags"></p>
+                        </div>
                     </div>
                 </div>
-                <div style="display: inline-block; vertical-align: top;">
+                <div style="display: inline-block;" class="detailSection">
+                    <div id="childrenCollapsible" class="hide">
+                        <div class="detailSectionHeader"><span id="childrenTitle"></span></div>
+                        <div id="childrenContent" class="detailSectionContent"></div>
+                    </div>
+                </div>
+                <div style="display: inline-block;" class="detailSection">
                     <div id="trailersCollapsible" style="display: none;">
                         <div class="detailSectionHeader">
                             Trailers
@@ -156,7 +154,7 @@
                         <div id="trailersContent" class="detailSectionContent"></div>
                     </div>
                 </div>
-                <div style="display: inline-block; vertical-align: top;">
+                <div style="display: inline-block;" class="detailSection">
                     <div id="specialsCollapsible" style="display: none;">
                         <div class="detailSectionHeader">
                             Special Features
@@ -164,19 +162,25 @@
                         <div id="specialsContent" class="detailSectionContent"></div>
                     </div>
                 </div>
-                <div id="castCollapsible" style="display: none;">
+                <div id="castCollapsible" style="display: none;" class="detailSection">
                     <div class="detailSectionHeader">
                         Cast & Crew
                     </div>
                     <div id="castContent" class="detailSectionContent"></div>
                 </div>
-                <div id="galleryCollapsible" style="display: none;">
+                <div id="similarCollapsible" style="display: none;" class="detailSection">
+                    <div class="detailSectionHeader">
+                        Similar
+                    </div>
+                    <div id="similarContent" class="detailSectionContent"></div>
+                </div>
+                <div id="galleryCollapsible" style="display: none;" class="detailSection">
                     <div class="detailSectionHeader">
                         Gallery
                     </div>
                     <div id="galleryContent" class="detailSectionContent"></div>
                 </div>
-                <div id="criticReviewsCollapsible" style="display: none;">
+                <div id="criticReviewsCollapsible" style="display: none;" class="detailSection">
                     <div class="detailSectionHeader">
                         What the Critics Say
                     </div>
@@ -186,27 +190,26 @@
                             <div class="reviewScore">
                                 <img src="css/images/fresh.png">
                             </div>
-                            <div>TOMATOMETER</div>
                             <div class="criticRatingScore"></div>
                             <div class="criticRatingSummaryText"></div>
                         </div>
                         <div id="criticReviewsContent" class="detailSectionContent"></div>
                     </div>
                 </div>
-                <div id="scenesCollapsible" style="display: none;">
+                <div id="scenesCollapsible" style="display: none;" class="detailSection">
                     <div class="detailSectionHeader">
                         Scenes
                     </div>
                     <div id="scenesContent" class="detailSectionContent"></div>
                 </div>
-                <div id="themeSongsCollapsible" style="display: none;">
+                <div id="themeSongsCollapsible" style="display: none;" class="detailSection">
                     <div class="detailSectionHeader">
                         Theme Songs
                     </div>
                     <div id="themeSongsContent" class="detailSectionContent"></div>
                 </div>
 
-                <div id="themeVideosCollapsible" style="display: none;">
+                <div id="themeVideosCollapsible" style="display: none;" class="detailSection">
                     <div class="detailSectionHeader">
                         Theme Videos
                     </div>

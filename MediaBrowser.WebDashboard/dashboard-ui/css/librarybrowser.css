@@ -152,7 +152,8 @@
     }
 
 .galleryImage {
-    width: 120px;
+    max-height: 63px;
+    max-width: 300px;
 }
 
 .starRating {
@@ -202,14 +203,15 @@
 }
 
 .criticRatingSummary {
-    background-color: #FFE482!important;
+    background-color: #ffe482!important;
+    background-color: rgba(255,228,130,0.85)!important;
     color: #000!important;
 }
 
 .criticRatingScore {
     font-weight: bold;
     font-size: 18px;
-    margin: .5em 0;
+    margin-bottom: .5em;
 }
 
 .itemTag {
@@ -361,16 +363,20 @@ a.itemTag:hover {
     background: #666 no-repeat center;
 }
 
+.detailSection {
+    vertical-align: top;
+    margin-bottom: 3em;
+}
+
 .detailSectionHeader {
     padding: .5em 1em;
     font-size: 16px;
     font-weight: bold;
     border: 1px solid #181818;
     background: #222;
-    margin-top: 2em;
-}
-
-.detailSectionContent {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 @media all and (max-width: 750px) {
@@ -396,7 +402,7 @@ a.itemTag:hover {
 @media all and (min-width: 750px) {
 
     .galleryImage {
-        width: 150px;
+        max-height: 90px;
     }
 
     .viewMenuTextLink {
@@ -421,9 +427,7 @@ a.itemTag:hover {
 
 @media all and (min-width: 1200px) {
 
-    .galleryImage {
-        width: 180px;
-    }
+
 }
 
 @media all and (min-width: 650px) {
@@ -515,26 +519,21 @@ a.itemTag:hover {
     overflow: hidden;
 }
 
-.itemMediaInfo {
-    padding-left: .5em;
-}
-
 .mediaInfoStream {
-    display: inline-block;
-    vertical-align: top;
-    margin-right: 2em;
+    margin: 1em 0;
+    color: #bbb;
 }
 
 .mediaInfoStreamType {
-    border-bottom: 1px solid #555;
-    padding-bottom: 5px;
-    margin-bottom: .5em;
+    margin-right: 1em;
+    color: #fff;
+}
+
+.mediaInfoAttribute {
+    color: #fff;
 }
 
 .mediaInfoDetails {
-    margin: 0 0 0 .25em;
-    padding: 0;
-    list-style-type: none;
 }
 
 .mediaInfoLabel {

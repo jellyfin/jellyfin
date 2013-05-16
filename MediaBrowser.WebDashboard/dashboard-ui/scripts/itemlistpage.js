@@ -1,14 +1,13 @@
 ﻿(function ($, document) {
 
     var view = "Poster";
-    
+
     // The base query options
     var query = {
 
         SortBy: "SortName",
         SortOrder: "Ascending",
         Fields: "UserData,DisplayMediaType,ItemCounts,DateCreated",
-        Limit: LibraryBrowser.getDefaultPageSize(),
         StartIndex: 0
     };
 
@@ -76,15 +75,15 @@
             }
 
             $('#itemName', page).html(name);
-            
+
             Dashboard.setPageTitle(name);
-            
+
             if (ApiClient.isWebSocketOpen()) {
                 ApiClient.sendWebSocketMessage("Context", [item.Type, item.Id].join('|'));
             }
 
         });
-        
+
         Dashboard.getCurrentUser().done(function (user) {
 
             if (user.Configuration.IsAdministrator) {
@@ -143,12 +142,13 @@
 
     }).on('pageshow', "#itemListPage", function () {
 
+        query.Limit = LibraryBrowser.getDefaultPageSize();
         query.ParentId = getParameterByName('parentId');
         query.Filters = "";
         query.SortBy = "SortName";
         query.SortOrder = "Ascending";
         query.StartIndex = 0;
-        
+
         reloadItems(this);
 
         // Reset form values using the last used query

@@ -9,7 +9,6 @@
         Recursive: true,
         Fields: "ItemCounts,DateCreated,UserData",
         PersonTypes: "",
-        Limit: LibraryBrowser.getDefaultPageSize(),
         StartIndex: 0
     };
 
@@ -110,6 +109,14 @@
         });
 
     }).on('pagebeforeshow', "#moviePeoplePage", function () {
+
+        var limit = LibraryBrowser.getDefaultPageSize();
+
+        // If the default page size has changed, the start index will have to be reset
+        if (limit != query.Limit) {
+            query.Limit = limit;
+            query.StartIndex = 0;
+        }
 
         reloadItems(this);
 
