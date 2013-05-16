@@ -434,16 +434,16 @@ namespace MediaBrowser.Api
             {
                 var diff = Math.Abs(item1.ProductionYear.Value - item2.ProductionYear.Value);
 
-                // Add a point if they came out within the same decade
+                // Add if they came out within the same decade
                 if (diff < 10)
                 {
-                    points += 1;
+                    points += 3;
                 }
 
-                // And another if within five years
+                // And more if within five years
                 if (diff < 5)
                 {
-                    points += 1;
+                    points += 3;
                 }
             }
 
