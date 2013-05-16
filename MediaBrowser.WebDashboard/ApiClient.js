@@ -257,6 +257,17 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
+        self.getSimilarItems = function (itemId, options) {
+
+            var url = self.getUrl("Items/" + itemId + "/Similar", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         /**
          * Gets all cultures known to the server
          */
