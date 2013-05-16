@@ -456,7 +456,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (!string.IsNullOrEmpty(request.NameStartsWith))
             {
-                items = items.Where(i => i.Name.IndexOf(request.NameStartsWith, StringComparison.OrdinalIgnoreCase) == 0);
+                items = items.Where(i => i.SortName.IndexOf(request.NameStartsWith, StringComparison.OrdinalIgnoreCase) == 0);
             }
 
             // Filter by Series Status
