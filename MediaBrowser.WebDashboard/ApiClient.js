@@ -922,7 +922,8 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             // Closure to capture the file information.
             reader.onload = function (e) {
 
-                var data = window.btoa(e.target.result);
+                // Split by a comma to remove the url: prefix
+                var data = e.target.result.split(',')[1];
 
                 var url = self.getUrl("Users/" + userId + "/Images/" + imageType);
 
@@ -941,7 +942,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             };
 
             // Read in the image file as a data URL.
-            reader.readAsBinaryString(file);
+            reader.readAsDataURL(file);
 
             return deferred.promise();
         };
@@ -979,7 +980,8 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             // Closure to capture the file information.
             reader.onload = function (e) {
 
-                var data = window.btoa(e.target.result);
+                // Split by a comma to remove the url: prefix
+                var data = e.target.result.split(',')[1];
 
                 var url = self.getUrl("Items/" + itemId + "/Images/" + imageType);
 
@@ -998,7 +1000,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             };
 
             // Read in the image file as a data URL.
-            reader.readAsBinaryString(file);
+            reader.readAsDataURL(file);
 
             return deferred.promise();
         };

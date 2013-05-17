@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Drawing;
+using System.Text;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
@@ -716,6 +718,15 @@ namespace MediaBrowser.Api.Images
                 var text = await reader.ReadToEndAsync().ConfigureAwait(false);
 
                 var bytes = Convert.FromBase64String(text);
+
+                // Validate first
+                using (var memoryStream = new MemoryStream(bytes))
+                {
+                    using (var image = Image.FromStream(memoryStream))
+                    {
+                        Logger.Info("New image is {0}x{1}", image.Width, image.Height);
+                    }
+                }
 
                 string filename;
 
