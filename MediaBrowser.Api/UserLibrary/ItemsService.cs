@@ -127,8 +127,8 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "SeriesStatus", Description = "Optional filter by Series Status. Allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string SeriesStatus { get; set; }
 
-        [ApiMember(Name = "NameStartsWith", Description = "Optional filter whose name begins with a prefix.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string NameStartsWith { get; set; }
+        [ApiMember(Name = "NameStartsWithOrGreater", Description = "Optional filter by items whose name is sorted equally or greater than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string NameStartsWithOrGreater { get; set; }
 
         /// <summary>
         /// Gets or sets the air days.
@@ -454,9 +454,9 @@ namespace MediaBrowser.Api.UserLibrary
                 items = items.Where(f => vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
             }
 
-            if (!string.IsNullOrEmpty(request.NameStartsWith))
+            if (!string.IsNullOrEmpty(request.NameStartsWithOrGreater))
             {
-                items = items.Where(i => i.SortName.IndexOf(request.NameStartsWith, StringComparison.OrdinalIgnoreCase) == 0);
+                items = items.Where(i => string.Compare(request.NameStartsWithOrGreater, i.SortName, StringComparison.OrdinalIgnoreCase) < 1);
             }
 
             // Filter by Series Status
