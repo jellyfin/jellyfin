@@ -1,10 +1,9 @@
-﻿using System.IO;
-using MediaBrowser.Controller.IO;
+﻿using MediaBrowser.Controller.Resolvers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using MediaBrowser.Controller.Resolvers;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -16,7 +15,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// The TVDB API key
         /// </summary>
-        public static readonly string TVDBApiKey = "B89CE93890E9419B";
+        public static readonly string TvdbApiKey = "B89CE93890E9419B";
         /// <summary>
         /// The banner URL
         /// </summary>
@@ -93,7 +92,7 @@ namespace MediaBrowser.Controller.Library
             // Look for one of the season folder names
             foreach (var name in SeasonFolderNames)
             {
-                int index = path.IndexOf(name, StringComparison.OrdinalIgnoreCase);
+                var index = path.IndexOf(name, StringComparison.OrdinalIgnoreCase);
 
                 if (index != -1)
                 {
@@ -115,7 +114,7 @@ namespace MediaBrowser.Controller.Library
             int length = 0;
 
             // Find out where the numbers start, and then keep going until they end
-            for (int i = 0; i < path.Length; i++)
+            for (var i = 0; i < path.Length; i++)
             {
                 if (char.IsNumber(path, i))
                 {
