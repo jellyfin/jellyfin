@@ -622,9 +622,26 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected string GetUserAgentParam(BaseItem item)
         {
+            var useragent = GetUserAgent(item);
+
+            if (!string.IsNullOrEmpty(useragent))
+            {
+                return "-user-agent \"" + useragent + "\"";
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the user agent.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>System.String.</returns>
+        protected string GetUserAgent(BaseItem item)
+        {
             if (item.Path.IndexOf("apple.com", StringComparison.OrdinalIgnoreCase) != -1)
             {
-                return "-user-agent \"QuickTime/7.6.2\"";
+                return "QuickTime/7.6.2";
             }
 
             return string.Empty;

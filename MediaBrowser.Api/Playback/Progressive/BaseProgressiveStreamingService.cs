@@ -1,4 +1,7 @@
-﻿using MediaBrowser.Api.Images;
+﻿using System.Net;
+using System.Net.Cache;
+using System.Net.Http;
+using MediaBrowser.Api.Images;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Common.Net;
@@ -188,6 +191,11 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var responseHeaders = new Dictionary<string, string>();
 
+            if (request.Static && state.Item.LocationType == LocationType.Remote)
+            {
+                return GetStaticRemoteStreamResult(state.Item, responseHeaders, isHeadRequest).Result;
+            }
+
             var outputPath = GetOutputFilePath(state);
             var outputPathExists = File.Exists(outputPath);
 
@@ -207,6 +215,60 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
 
             return GetStreamResult(state, responseHeaders, isHeadRequest).Result;
+        }
+
+        /// <summary>
+        /// Gets the static remote stream result.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="responseHeaders">The response headers.</param>
+        /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
+        /// <returns>Task{System.Object}.</returns>
+        private async Task<object> GetStaticRemoteStreamResult(BaseItem item, Dictionary<string, string> responseHeaders, bool isHeadRequest)
+        {
+            responseHeaders["Accept-Ranges"] = "none";
+
+            var httpClient = new HttpClient(new WebRequestHandler
+            {
+                CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache),
+                AutomaticDecompression = DecompressionMethods.None
+            });
+
+            using (var message = new HttpRequestMessage(HttpMethod.Get, item.Path))
+            {
+                var useragent = GetUserAgent(item);
+
+                if (!string.IsNullOrEmpty(useragent))
+                {
+                    message.Headers.Add("User-Agent", useragent);
+                }
+
+                var response = await httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+
+                response.EnsureSuccessStatusCode();
+
+                var contentType = response.Content.Headers.ContentType.MediaType;
+
+                // Headers only
+                if (isHeadRequest)
+                {
+                    response.Dispose();
+
+                    return ResultFactory.GetResult(null, contentType, responseHeaders);
+                }
+
+                var result = new StaticRemoteStreamWriter(response, httpClient);
+
+                result.Options["Content-Type"] = contentType;
+
+                // Add the response headers to the result object
+                foreach (var header in responseHeaders)
+                {
+                    result.Options[header.Key] = header.Value;
+                }
+
+                return result;
+            }
         }
 
         /// <summary>

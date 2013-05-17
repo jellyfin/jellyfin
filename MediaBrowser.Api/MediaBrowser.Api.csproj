@@ -56,6 +56,8 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
@@ -82,6 +84,7 @@
     <Compile Include="Playback\Progressive\BaseProgressiveStreamingService.cs" />
     <Compile Include="Playback\BaseStreamingService.cs" />
     <Compile Include="Playback\Progressive\ProgressiveStreamWriter.cs" />
+    <Compile Include="Playback\StaticRemoteStreamWriter.cs" />
     <Compile Include="Playback\StreamRequest.cs" />
     <Compile Include="Playback\StreamState.cs" />
     <Compile Include="Playback\Progressive\VideoService.cs" />

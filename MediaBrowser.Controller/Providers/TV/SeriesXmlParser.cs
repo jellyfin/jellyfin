@@ -63,8 +63,15 @@ namespace MediaBrowser.Controller.Providers.TV
                     }
 
                 case "Airs_Time":
-                    item.AirTime = reader.ReadElementContentAsString();
-                    break;
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            item.AirTime = val;
+                        }
+                        break;
+                    }
 
                 case "SeriesName":
                     item.Name = reader.ReadElementContentAsString();
