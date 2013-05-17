@@ -133,9 +133,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{IbnStub}.</returns>
         private IEnumerable<IbnStub<TItemType>> FilterItems(GetItemsByName request, IEnumerable<IbnStub<TItemType>> items, User user)
         {
-            if (!string.IsNullOrEmpty(request.NameStartsWith))
+            if (!string.IsNullOrEmpty(request.NameStartsWithOrGreater))
             {
-                items = items.Where(i => i.Name.IndexOf(request.NameStartsWith, StringComparison.OrdinalIgnoreCase) == 0);
+                items = items.Where(i => string.Compare(request.NameStartsWithOrGreater, i.Name, StringComparison.OrdinalIgnoreCase) < 1);
             }
 
             var filters = request.GetFilters().ToList();
@@ -309,8 +309,8 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public Guid? UserId { get; set; }
 
-        [ApiMember(Name = "NameStartsWith", Description = "Optional filter whose name begins with a prefix.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string NameStartsWith { get; set; }
+        [ApiMember(Name = "NameStartsWithOrGreater", Description = "Optional filter by items whose name is sorted equally or greater than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string NameStartsWithOrGreater { get; set; }
         
         /// <summary>
         /// What to sort the results by

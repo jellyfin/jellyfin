@@ -231,6 +231,18 @@
 
         renderSeriesAirTime(page, item, context);
         renderSimiliarItems(page, item);
+
+        if (item.Players) {
+            $('#players', page).show().html(item.Players + ' Player');
+        } else {
+            $('#players', page).hide();
+        }
+
+        if (item.Type == "Audio" && item.Artists && item.Artists.length) {
+            $('#artist', page).show().html('Artist:&nbsp;&nbsp;<a class="textlink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.Artists[0]) + '">' + item.Artists[0] + '</a>').trigger('create');
+        } else {
+            $('#artist', page).hide();
+        }
     }
 
     function renderSimiliarItems(page, item) {

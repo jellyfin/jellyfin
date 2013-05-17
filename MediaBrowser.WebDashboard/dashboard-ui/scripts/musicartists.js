@@ -100,13 +100,13 @@
 
         $('.alphabetPicker', this).on('alphaselect', function (e, character) {
 
-            query.NameStartsWith = character;
+            query.NameStartsWithOrGreater = character;
 
             reloadItems(page);
 
         }).on('alphaclear', function (e) {
 
-            query.NameStartsWith = '';
+            query.NameStartsWithOrGreater = '';
 
             reloadItems(page);
         });
@@ -140,7 +140,7 @@
 
         $('#chkIsOnTour', this).checked(query.IsOnTour === true).checkboxradio('refresh');
 
-        $('.alphabetPicker', this).alphaValue(query.NameStartsWith);
+        $('.alphabetPicker', this).alphaValue(query.NameStartsWithOrGreater);
     });
 
 })(jQuery, document);

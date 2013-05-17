@@ -275,7 +275,7 @@
 
                 if (options.showArtist) {
 
-                    if (item.Artists && item.Artists.length) {
+                    if (item.Artists && item.Artists.length && item.Artists[0]) {
 
                         var artist = item.Artists[0];
 
