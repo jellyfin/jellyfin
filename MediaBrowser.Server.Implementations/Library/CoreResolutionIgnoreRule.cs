@@ -66,7 +66,8 @@ namespace MediaBrowser.Server.Implementations.Library
                     return true;
                 }
 
-                if (string.Equals(filename, BaseItem.TrailerFolderName, StringComparison.OrdinalIgnoreCase))
+                // Ignore trailer folders but allow it at the collection level
+                if (string.Equals(filename, BaseItem.TrailerFolderName, StringComparison.OrdinalIgnoreCase) && !(args.Parent is AggregateFolder) && !(args.Parent is UserRootFolder))
                 {
                     return true;
                 }
