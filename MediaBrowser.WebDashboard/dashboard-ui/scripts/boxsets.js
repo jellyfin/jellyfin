@@ -114,6 +114,7 @@
         $('.alphabetPicker', this).on('alphaselect', function (e, character) {
 
             query.NameStartsWithOrGreater = character;
+            query.StartIndex = 0;
 
             reloadItems(page);
 
