@@ -253,6 +253,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 if (isHeadRequest)
                 {
                     response.Dispose();
+                    httpClient.Dispose();
 
                     return ResultFactory.GetResult(null, contentType, responseHeaders);
                 }
