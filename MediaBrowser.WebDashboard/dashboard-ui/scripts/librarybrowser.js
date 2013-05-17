@@ -921,7 +921,9 @@
 
             var html = '';
 
-            html += LibraryBrowser.getItemProgressBarHtml(item);
+            if (item.Type != "Audio") {
+                html += LibraryBrowser.getItemProgressBarHtml(item);
+            }
 
             var userData = item.UserData || {};
 

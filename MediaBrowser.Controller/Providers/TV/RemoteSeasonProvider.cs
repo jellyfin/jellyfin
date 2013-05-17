@@ -158,7 +158,7 @@ namespace MediaBrowser.Controller.Providers.TV
             if ((season.PrimaryImagePath == null) || (!season.HasImage(ImageType.Banner)) || (season.BackdropImagePaths == null))
             {
                 var images = new XmlDocument();
-                var url = string.Format("http://www.thetvdb.com/api/" + TVUtils.TVDBApiKey + "/series/{0}/banners.xml", seriesId);
+                var url = string.Format("http://www.thetvdb.com/api/" + TVUtils.TvdbApiKey + "/series/{0}/banners.xml", seriesId);
 
                 using (var imgs = await HttpClient.Get(new HttpRequestOptions
                 {

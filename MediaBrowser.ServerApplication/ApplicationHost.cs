@@ -378,18 +378,15 @@ namespace MediaBrowser.ServerApplication
                 RegisterServerWithAdministratorAccess();
             }
 
+            base.FindParts();
+
+            HttpServer.Init(GetExports<IRestfulService>(false));
+
+            ServerManager.AddWebSocketListeners(GetExports<IWebSocketListener>(false));
+
+            StartServer(true);
+            
             Parallel.Invoke(
-
-                () => base.FindParts(),
-
-                () =>
-                {
-                    HttpServer.Init(GetExports<IRestfulService>(false));
-
-                    ServerManager.AddWebSocketListeners(GetExports<IWebSocketListener>(false));
-
-                    StartServer(true);
-                },
 
                 () => LibraryManager.AddParts(GetExports<IResolverIgnoreRule>(), GetExports<IVirtualFolderCreator>(), GetExports<IItemResolver>(), GetExports<IIntroProvider>(), GetExports<IBaseItemComparer>()),
 
