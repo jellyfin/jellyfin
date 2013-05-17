@@ -197,7 +197,7 @@ namespace MediaBrowser.Controller.Providers.TV
             if (!string.IsNullOrEmpty(seriesId))
             {
 
-                string url = string.Format(seriesGet, TVUtils.TVDBApiKey, seriesId, ConfigurationManager.Configuration.PreferredMetadataLanguage);
+                string url = string.Format(seriesGet, TVUtils.TvdbApiKey, seriesId, ConfigurationManager.Configuration.PreferredMetadataLanguage);
                 var doc = new XmlDocument();
 
                 try
@@ -296,7 +296,7 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <returns>Task.</returns>
         private async Task FetchActors(Series series, string seriesId, XmlDocument doc, CancellationToken cancellationToken)
         {
-            string urlActors = string.Format(getActors, TVUtils.TVDBApiKey, seriesId);
+            string urlActors = string.Format(getActors, TVUtils.TvdbApiKey, seriesId);
             var docActors = new XmlDocument();
 
             try
@@ -377,7 +377,7 @@ namespace MediaBrowser.Controller.Providers.TV
         {
             if ((!string.IsNullOrEmpty(seriesId)) && ((series.PrimaryImagePath == null) || (series.BackdropImagePaths == null)))
             {
-                string url = string.Format("http://www.thetvdb.com/api/" + TVUtils.TVDBApiKey + "/series/{0}/banners.xml", seriesId);
+                string url = string.Format("http://www.thetvdb.com/api/" + TVUtils.TvdbApiKey + "/series/{0}/banners.xml", seriesId);
                 var images = new XmlDocument();
 
                 try

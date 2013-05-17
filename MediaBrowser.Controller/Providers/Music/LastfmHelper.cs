@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Entities;
 using System;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Providers.Music
 {
@@ -30,7 +31,7 @@ namespace MediaBrowser.Controller.Providers.Music
             artist.ProductionYear = yearFormed;
             if (data.tags != null)
             {
-                AddGenres(artist, data.tags);
+                AddTags(artist, data.tags);
             }
 
             var entity = artist as Artist;
@@ -55,21 +56,15 @@ namespace MediaBrowser.Controller.Providers.Music
             item.ProductionYear = release.Year;
             if (data.toptags != null)
             {
-                AddGenres(item, data.toptags);
+                AddTags(item, data.toptags);
             }
         }
 
-        private static void AddGenres(BaseItem item, LastfmTags tags)
+        private static void AddTags(BaseItem item, LastfmTags tags)
         {
-            item.Genres.Clear();
+            var itemTags = (from tag in tags.tag where !string.IsNullOrEmpty(tag.name) select tag.name).ToList();
 
-            foreach (var tag in tags.tag)
-            {
-                if (!string.IsNullOrEmpty(tag.name))
-                {
-                    item.AddGenre(tag.name);
-                }
-            }
+            item.Tags = itemTags;
         }
     }
 }

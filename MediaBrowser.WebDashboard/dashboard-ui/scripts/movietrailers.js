@@ -106,6 +106,19 @@
             reloadItems(page);
         });
 
+        $('.alphabetPicker', this).on('alphaselect', function (e, character) {
+
+            query.NameStartsWithOrGreater = character;
+
+            reloadItems(page);
+
+        }).on('alphaclear', function (e) {
+
+            query.NameStartsWithOrGreater = '';
+
+            reloadItems(page);
+        });
+
     }).on('pagebeforeshow', "#movieTrailersPage", function () {
 
         var limit = LibraryBrowser.getDefaultPageSize();
@@ -144,6 +157,8 @@
         }).checkboxradio('refresh');
 
         $('#selectView', this).val(view).selectmenu('refresh');
+
+        $('.alphabetPicker', this).alphaValue(query.NameStartsWith);
     });
 
 })(jQuery, document);

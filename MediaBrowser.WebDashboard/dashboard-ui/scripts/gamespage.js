@@ -152,6 +152,19 @@
             reloadItems(page);
         });
 
+        $('.alphabetPicker', this).on('alphaselect', function (e, character) {
+
+            query.NameStartsWithOrGreater = character;
+
+            reloadItems(page);
+
+        }).on('alphaclear', function (e) {
+
+            query.NameStartsWithOrGreater = '';
+
+            reloadItems(page);
+        });
+
     }).on('pagebeforeshow', "#gamesPage", function () {
 
         var limit = LibraryBrowser.getDefaultPageSize();
@@ -195,6 +208,8 @@
         $('#chkTrailer', this).checked(query.HasTrailer == true).checkboxradio('refresh');
         $('#chkThemeSong', this).checked(query.HasThemeSong == true).checkboxradio('refresh');
         $('#chkThemeVideo', this).checked(query.HasThemeVideo == true).checkboxradio('refresh');
+
+        $('.alphabetPicker', this).alphaValue(query.NameStartsWith);
     });
 
 })(jQuery, document);

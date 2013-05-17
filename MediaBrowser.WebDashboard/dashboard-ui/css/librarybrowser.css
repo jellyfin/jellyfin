@@ -426,8 +426,6 @@ a.itemTag:hover {
 }
 
 @media all and (min-width: 1200px) {
-
-
 }
 
 @media all and (min-width: 650px) {
@@ -676,4 +674,73 @@ a.itemTag:hover {
 
 .timelineHeader {
     margin-bottom: .25em;
+}
+
+.alphabetPicker {
+    position: fixed;
+    right: 2px;
+    bottom: 0;
+    top: 100px;
+    width: 27px;
+    z-index: 1000;
+    text-align: center;
+    font-size: 13px;
+    display: none;
+    line-height: 1;
+}
+
+    .alphabetPicker a {
+        display: block;
+        text-decoration: none;
+        padding: 1px 0;
+        color: #eee!important;
+    }
+
+        .alphabetPicker a:hover:not(.selectedCharacter) {
+            background: #666!important;
+            color: #fff!important;
+        }
+
+.selectedCharacter {
+    color: #fff!important;
+    background: #4d90fe;
+}
+
+@media all and (min-height: 500px) {
+
+    .alphabetPicker {
+        display: block;
+    }
+
+    .itemsContainerWithAlphaPicker {
+        margin-right: 27px;
+    }
+}
+
+@media all and (min-height: 600px) {
+
+    .alphabetPicker a {
+        padding: 2px 0;
+    }
+}
+
+@media all and (min-height: 720px) {
+
+    .alphabetPicker {
+        top: 135px;
+    }
+
+        .alphabetPicker a {
+            padding: 4px 0;
+        }
+}
+
+@media all and (min-height: 850px) {
+
+    .alphabetPicker a {
+        padding: 6px 0;
+    }
+}
+
+@media all and (min-height: 1000px) {
 }

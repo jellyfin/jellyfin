@@ -130,7 +130,7 @@
 
     addVirtualFolder: function () {
 
-        MediaLibraryPage.getTextValue("Add Media Collection", "Name:", "", function (name) {
+        MediaLibraryPage.getTextValue("Add Media Collection", "Name (Movies, Music, TV, etc):", "", function (name) {
 
             var userId = getParameterByName("userId");
 
