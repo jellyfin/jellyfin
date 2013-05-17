@@ -179,7 +179,7 @@ namespace MediaBrowser.Controller.Providers.TV
                     seasonNumber = "0"; // Specials
                 }
 
-                var url = string.Format(episodeQuery, TVUtils.TVDBApiKey, seriesId, seasonNumber, episodeNumber, ConfigurationManager.Configuration.PreferredMetadataLanguage);
+                var url = string.Format(episodeQuery, TVUtils.TvdbApiKey, seriesId, seasonNumber, episodeNumber, ConfigurationManager.Configuration.PreferredMetadataLanguage);
                 var doc = new XmlDocument();
 
                 try
@@ -205,7 +205,7 @@ namespace MediaBrowser.Controller.Providers.TV
                 //this is basicly just for anime.
                 if (!doc.HasChildNodes && Int32.Parse(seasonNumber) == 1)
                 {
-                    url = string.Format(absEpisodeQuery, TVUtils.TVDBApiKey, seriesId, episodeNumber, ConfigurationManager.Configuration.PreferredMetadataLanguage);
+                    url = string.Format(absEpisodeQuery, TVUtils.TvdbApiKey, seriesId, episodeNumber, ConfigurationManager.Configuration.PreferredMetadataLanguage);
 
                     try
                     {
@@ -250,7 +250,7 @@ namespace MediaBrowser.Controller.Providers.TV
                     if (episode.IndexNumber < 0)
                         episode.IndexNumber = doc.SafeGetInt32("//EpisodeNumber");
 
-                    episode.Name = episode.IndexNumber.Value.ToString("000") + " - " + doc.SafeGetString("//EpisodeName");
+                    episode.Name = doc.SafeGetString("//EpisodeName");
                     episode.CommunityRating = doc.SafeGetSingle("//Rating", -1, 10);
                     var firstAired = doc.SafeGetString("//FirstAired");
                     DateTime airDate;
