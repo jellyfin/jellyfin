@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
+using MediaBrowser.ServerApplication.Splash;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
@@ -164,11 +165,19 @@ namespace MediaBrowser.ServerApplication
 
                 Logger = CompositionRoot.LogManager.GetLogger("App");
 
+                var splash = new SplashWindow(CompositionRoot.ApplicationVersion);
+
+                splash.Show();
+                
                 await CompositionRoot.Init();
 
-                var win = new MainWindow(CompositionRoot.LogManager, CompositionRoot, CompositionRoot.ServerConfigurationManager, CompositionRoot.UserManager, CompositionRoot.LibraryManager, CompositionRoot.JsonSerializer, CompositionRoot.DisplayPreferencesManager);
+                splash.Hide();
 
-                win.Show();
+                var task = CompositionRoot.RunStartupTasks();
+
+                new MainWindow(CompositionRoot.LogManager, CompositionRoot, CompositionRoot.ServerConfigurationManager, CompositionRoot.UserManager, CompositionRoot.LibraryManager, CompositionRoot.JsonSerializer, CompositionRoot.DisplayPreferencesManager).Show();
+
+                await task.ConfigureAwait(false);
             }
             catch (Exception ex)
             {

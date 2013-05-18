@@ -44,7 +44,6 @@ using MediaBrowser.Server.Implementations.Udp;
 using MediaBrowser.Server.Implementations.Updates;
 using MediaBrowser.Server.Implementations.WebSocket;
 using MediaBrowser.ServerApplication.Implementations;
-using MediaBrowser.ServerApplication.Splash;
 using MediaBrowser.WebDashboard.Api;
 using System;
 using System.Collections.Generic;
@@ -63,7 +62,7 @@ namespace MediaBrowser.ServerApplication
     /// </summary>
     public class ApplicationHost : BaseApplicationHost<ServerApplicationPaths>, IServerApplicationHost
     {
-        private const int UdpServerPort = 7359;
+        internal const int UdpServerPort = 7359;
 
         /// <summary>
         /// Gets the server kernel.
@@ -140,11 +139,6 @@ namespace MediaBrowser.ServerApplication
         private IHttpServer HttpServer { get; set; }
 
         /// <summary>
-        /// Gets or sets the UDP server.
-        /// </summary>
-        /// <value>The UDP server.</value>
-        private UdpServer UdpServer { get; set; }
-        /// <summary>
         /// Gets or sets the display preferences manager.
         /// </summary>
         /// <value>The display preferences manager.</value>
@@ -176,25 +170,10 @@ namespace MediaBrowser.ServerApplication
         private Task<IHttpServer> _httpServerCreationTask;
 
         /// <summary>
-        /// Inits this instance.
-        /// </summary>
-        /// <returns>Task.</returns>
-        public override async Task Init()
-        {
-            var win = new SplashWindow(ApplicationVersion);
-
-            win.Show();
-
-            await base.Init();
-
-            win.Hide();
-        }
-
-        /// <summary>
         /// Runs the startup tasks.
         /// </summary>
         /// <returns>Task.</returns>
-        protected override async Task RunStartupTasks()
+        public override async Task RunStartupTasks()
         {
             await base.RunStartupTasks().ConfigureAwait(false);
 
@@ -390,21 +369,8 @@ namespace MediaBrowser.ServerApplication
 
                 () => LibraryManager.AddParts(GetExports<IResolverIgnoreRule>(), GetExports<IVirtualFolderCreator>(), GetExports<IItemResolver>(), GetExports<IIntroProvider>(), GetExports<IBaseItemComparer>()),
 
-                () => ProviderManager.AddMetadataProviders(GetExports<BaseMetadataProvider>().ToArray()),
+                () => ProviderManager.AddMetadataProviders(GetExports<BaseMetadataProvider>().ToArray())
 
-                () =>
-                {
-                    UdpServer = new UdpServer(Logger, NetworkManager, ServerConfigurationManager);
-
-                    try
-                    {
-                        UdpServer.Start(UdpServerPort);
-                    }
-                    catch (SocketException ex)
-                    {
-                        Logger.ErrorException("Failed to start UDP Server", ex);
-                    }
-                }
                 );
         }
 
@@ -469,23 +435,6 @@ namespace MediaBrowser.ServerApplication
         public override bool CanSelfUpdate
         {
             get { return ConfigurationManager.CommonConfiguration.EnableAutoUpdate; }
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected override void Dispose(bool dispose)
-        {
-            if (dispose)
-            {
-                if (UdpServer != null)
-                {
-                    UdpServer.Dispose();
-                }
-            }
-
-            base.Dispose(dispose);
         }
 
         /// <summary>
