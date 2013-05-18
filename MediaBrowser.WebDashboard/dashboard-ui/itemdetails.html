@@ -122,47 +122,39 @@
         <div data-role="content">
             <div class="detailPageContent">
 
-                <div style="display: inline-block;">
-                    <div id="detailsSection" style="display: none;" class="detailSection">
-                        <div class="detailSectionHeader" style="margin-top: 0;">
-                            Details
-                        </div>
-                        <div class="detailSectionContent" style="padding: 0 1em;">
+                <div id="detailsSection" class="detailSection inlineDetailSection hide">
+                    <div class="detailSectionHeader" style="margin-top: 0;">
+                        Details
+                    </div>
+                    <div class="detailSectionContent" style="padding: 0 1em;">
 
-                            <div id="mediaInfoContent"></div>
-                            <p id="players"></p>
-                            <p id="seriesAirTime"></p>
-                            <p id="itemPremiereDate"></p>
-                            <p id="itemBudget"></p>
-                            <p id="itemRevenue"></p>
-                            <p class="itemStudios"></p>
-                            <p class="itemExternalLinks"></p>
-                            <div class="mediaInfo"></div>
-                            <p class="itemTags"></p>
-                        </div>
+                        <div id="mediaInfoContent"></div>
+                        <p id="players"></p>
+                        <p id="seriesAirTime"></p>
+                        <p id="itemPremiereDate"></p>
+                        <p id="itemBudget"></p>
+                        <p id="itemRevenue"></p>
+                        <p class="itemStudios"></p>
+                        <p class="itemExternalLinks"></p>
+                        <div class="mediaInfo"></div>
+                        <p class="itemTags"></p>
                     </div>
                 </div>
-                <div style="display: inline-block;" class="detailSection">
-                    <div id="childrenCollapsible" class="hide">
-                        <div class="detailSectionHeader"><span id="childrenTitle"></span></div>
-                        <div id="childrenContent" class="detailSectionContent"></div>
-                    </div>
+                <div id="childrenCollapsible" class="hide detailSection inlineDetailSection">
+                    <div class="detailSectionHeader"><span id="childrenTitle"></span></div>
+                    <div id="childrenContent" class="detailSectionContent"></div>
                 </div>
-                <div style="display: inline-block;" class="detailSection">
-                    <div id="trailersCollapsible" style="display: none;">
-                        <div class="detailSectionHeader">
-                            Trailers
-                        </div>
-                        <div id="trailersContent" class="detailSectionContent"></div>
+                <div id="trailersCollapsible" class="detailSection inlineDetailSection hide">
+                    <div class="detailSectionHeader">
+                        Trailers
                     </div>
+                    <div id="trailersContent" class="detailSectionContent"></div>
                 </div>
-                <div style="display: inline-block;" class="detailSection">
-                    <div id="specialsCollapsible" style="display: none;">
-                        <div class="detailSectionHeader">
-                            Special Features
-                        </div>
-                        <div id="specialsContent" class="detailSectionContent"></div>
+                <div id="specialsCollapsible" class="detailSection inlineDetailSection hide">
+                    <div class="detailSectionHeader">
+                        Special Features
                     </div>
+                    <div id="specialsContent" class="detailSectionContent"></div>
                 </div>
                 <div id="castCollapsible" style="display: none;" class="detailSection">
                     <div class="detailSectionHeader">

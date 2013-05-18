@@ -119,11 +119,11 @@
     function setInitialCollapsibleState(page, item, context) {
 
         if (item.ChildCount) {
-            $('#childrenCollapsible', page).show();
+            $('#childrenCollapsible', page).removeClass('hide');
             renderChildren(page, item);
         }
         else {
-            $('#childrenCollapsible', page).hide();
+            $('#childrenCollapsible', page).addClass('hide');
         }
         if (LibraryBrowser.shouldDisplayGallery(item)) {
             $('#galleryCollapsible', page).show();
@@ -142,15 +142,15 @@
             renderScenes(page, item, 6);
         }
         if (!item.LocalTrailerCount || item.LocalTrailerCount == 0) {
-            $('#trailersCollapsible', page).hide();
+            $('#trailersCollapsible', page).addClass('hide');
         } else {
-            $('#trailersCollapsible', page).show();
+            $('#trailersCollapsible', page).removeClass('hide');
             renderTrailers(page, item);
         }
         if (!item.SpecialFeatureCount || item.SpecialFeatureCount == 0) {
-            $('#specialsCollapsible', page).hide();
+            $('#specialsCollapsible', page).addClass('hide');
         } else {
-            $('#specialsCollapsible', page).show();
+            $('#specialsCollapsible', page).removeClass('hide');
             renderSpecials(page, item, 6);
         }
         if (!item.People || !item.People.length) {
@@ -224,9 +224,9 @@
         var text = elem.textContent || elem.innerText;
 
         if (!text.trim()) {
-            detailsSection.hide();
+            detailsSection.addClass('hide');
         } else {
-            detailsSection.show();
+            detailsSection.removeClass('hide');
         }
 
         renderSeriesAirTime(page, item, context);

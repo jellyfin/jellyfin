@@ -379,6 +379,13 @@ a.itemTag:hover {
     overflow: hidden;
 }
 
+@media all and (min-width: 600px) {
+    .inlineDetailSection:not(.hide) {
+        display: inline-block;
+        margin-bottom: 2em;
+    }
+}
+
 @media all and (max-width: 750px) {
 
     .itemBackdrop {
@@ -423,9 +430,6 @@ a.itemTag:hover {
     .itemBackdrop {
         background-size: 100% auto;
     }
-}
-
-@media all and (min-width: 1200px) {
 }
 
 @media all and (min-width: 650px) {
