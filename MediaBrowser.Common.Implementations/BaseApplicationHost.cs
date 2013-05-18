@@ -180,8 +180,6 @@ namespace MediaBrowser.Common.Implementations
             await RegisterResources().ConfigureAwait(false);
 
             FindParts();
-
-            await RunStartupTasks().ConfigureAwait(false);
         }
 
         protected virtual void OnLoggerLoaded()
@@ -193,7 +191,7 @@ namespace MediaBrowser.Common.Implementations
         /// Runs the startup tasks.
         /// </summary>
         /// <returns>Task.</returns>
-        protected virtual Task RunStartupTasks()
+        public virtual Task RunStartupTasks()
         {
             return Task.Run(() =>
             {
