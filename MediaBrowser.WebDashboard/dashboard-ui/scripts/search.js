@@ -156,6 +156,21 @@
             html += '<div class="searchHintSecondaryText">' + hint.AlbumArtist + '</div>';
 
         }
+        else if (hint.Type == "Movie") {
+
+            html += '<div class="searchHintSecondaryText">Movie</div>';
+
+        }
+        else if (hint.Type == "Episode") {
+
+            html += '<div class="searchHintSecondaryText">Episode</div>';
+
+        }
+        else if (hint.Type == "Series") {
+
+            html += '<div class="searchHintSecondaryText">Series</div>';
+
+        }
         else {
             html += '<div class="searchHintSecondaryText">' + (hint.DisplayMediaType || hint.Type) + '</div>';
         }

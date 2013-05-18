@@ -386,6 +386,7 @@
         addCurrentItemToQuery(query);
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
+
             var html = '';
 
             if (result.TotalRecordCount > query.Limit) {

@@ -294,8 +294,8 @@
 
         var html = item.Status == 'Ended' ? 'Aired' : 'Airs';
 
-        if (item.AirDays.length) {
-            html += ' ' + item.AirDays.map(function (a) {
+        if (item.AirDays && item.AirDays.length) {
+            html += item.AirDays.length == 7 ? 'daily' : ' ' + item.AirDays.map(function (a) {
                 return a + "s";
 
             }).join(',');
@@ -759,6 +759,10 @@
             html += '<p>' + cast.Name + '</p>';
 
             var role = cast.Role ? "as " + cast.Role : cast.Type;
+            
+            if (role == "GuestStar") {
+                role = "Guest star";
+            }
 
             html += '<p>' + (role || "") + '</p>';
 
