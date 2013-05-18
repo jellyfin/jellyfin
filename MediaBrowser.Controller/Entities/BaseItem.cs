@@ -905,7 +905,6 @@ namespace MediaBrowser.Controller.Entities
             if (changed || forceSave || themeSongsChanged || themeVideosChanged || localTrailersChanged)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-
                 await LibraryManager.UpdateItem(this, cancellationToken).ConfigureAwait(false);
             }
 
@@ -1506,7 +1505,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Refresh metadata
-            return RefreshMetadata(CancellationToken.None);
+            return RefreshMetadata(CancellationToken.None, forceSave: true);
         }
     }
 }

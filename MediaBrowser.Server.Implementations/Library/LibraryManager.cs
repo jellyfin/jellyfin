@@ -269,16 +269,16 @@ namespace MediaBrowser.Server.Implementations.Library
             // Need to use DistinctBy Id because there could be multiple instances with the same id
             // due to sharing the default library
             var userRootFolders = _userManager.Users.Select(i => i.RootFolder)
-                .DistinctBy(i => i.Id)
+                .Distinct()
                 .ToList();
 
             items.AddRange(userRootFolders);
 
             // Get all user collection folders
+            // Skip BasePluginFolders because we already got them from RootFolder.RecursiveChildren
             var userFolders =
-                _userManager.Users.SelectMany(i => i.RootFolder.Children)
+                userRootFolders.SelectMany(i => i.Children)
                             .Where(i => !(i is BasePluginFolder))
-                            .DistinctBy(i => i.Id)
                             .ToList();
 
             items.AddRange(userFolders);
