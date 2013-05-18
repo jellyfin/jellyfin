@@ -647,6 +647,11 @@ namespace MediaBrowser.Controller.Entities
         public long? RunTimeTicks { get; set; }
 
         /// <summary>
+        /// Gets or sets the original run time ticks.
+        /// </summary>
+        /// <value>The original run time ticks.</value>
+        public long? OriginalRunTimeTicks { get; set; }
+        /// <summary>
         /// Gets or sets the aspect ratio.
         /// </summary>
         /// <value>The aspect ratio.</value>
@@ -900,7 +905,6 @@ namespace MediaBrowser.Controller.Entities
             if (changed || forceSave || themeSongsChanged || themeVideosChanged || localTrailersChanged)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-
                 await LibraryManager.UpdateItem(this, cancellationToken).ConfigureAwait(false);
             }
 
@@ -1501,7 +1505,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Refresh metadata
-            return RefreshMetadata(CancellationToken.None);
+            return RefreshMetadata(CancellationToken.None, forceSave: true);
         }
     }
 }

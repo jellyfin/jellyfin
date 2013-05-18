@@ -135,7 +135,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             if (!string.IsNullOrEmpty(request.NameStartsWithOrGreater))
             {
-                items = items.Where(i => string.Compare(request.NameStartsWithOrGreater, i.Name, StringComparison.OrdinalIgnoreCase) < 1);
+                items = items.Where(i => string.Compare(request.NameStartsWithOrGreater, i.Name, StringComparison.CurrentCultureIgnoreCase) < 1);
             }
 
             var filters = request.GetFilters().ToList();

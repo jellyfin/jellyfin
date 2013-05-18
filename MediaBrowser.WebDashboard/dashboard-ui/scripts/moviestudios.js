@@ -17,6 +17,9 @@
 
         ApiClient.getStudios(Dashboard.getCurrentUserId(), query).done(function (result) {
 
+            // Scroll back up so they can see the results from the beginning
+            $(document).scrollTop(0);
+
             var html = '';
 
             $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');

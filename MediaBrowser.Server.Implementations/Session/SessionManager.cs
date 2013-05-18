@@ -200,7 +200,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="deviceName">Name of the device.</param>
         /// <exception cref="System.ArgumentNullException">
         /// </exception>
-        public void OnPlaybackStart(User user, BaseItem item, string clientType, string deviceId, string deviceName)
+        public async Task OnPlaybackStart(User user, BaseItem item, string clientType, string deviceId, string deviceName)
         {
             if (user == null)
             {
@@ -213,6 +213,15 @@ namespace MediaBrowser.Server.Implementations.Session
 
             UpdateNowPlayingItemId(user, clientType, deviceId, deviceName, item, false);
 
+            var key = item.GetUserDataKey();
+
+            var data = await _userDataRepository.GetUserData(user.Id, key).ConfigureAwait(false);
+
+            data.PlayCount++;
+            data.LastPlayedDate = DateTime.UtcNow;
+
+            await _userDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None).ConfigureAwait(false);
+            
             // Nothing to save here
             // Fire events to inform plugins
             EventHelper.QueueEventIfNotNull(PlaybackStart, this, new PlaybackProgressEventArgs
@@ -254,7 +263,7 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 var data = await _userDataRepository.GetUserData(user.Id, key).ConfigureAwait(false);
 
-                UpdatePlayState(item, data, positionTicks.Value, false);
+                UpdatePlayState(item, data, positionTicks.Value);
                 await _userDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None).ConfigureAwait(false);
             }
 
@@ -297,7 +306,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (positionTicks.HasValue)
             {
-                UpdatePlayState(item, data, positionTicks.Value, true);
+                UpdatePlayState(item, data, positionTicks.Value);
             }
             else
             {
@@ -322,11 +331,12 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="item">The item</param>
         /// <param name="data">User data for the item</param>
         /// <param name="positionTicks">The current playback position</param>
-        /// <param name="incrementPlayCount">Whether or not to increment playcount</param>
-        private void UpdatePlayState(BaseItem item, UserItemData data, long positionTicks, bool incrementPlayCount)
+        private void UpdatePlayState(BaseItem item, UserItemData data, long positionTicks)
         {
+            var hasRuntime = item.RunTimeTicks.HasValue && item.RunTimeTicks > 0;
+
             // If a position has been reported, and if we know the duration
-            if (positionTicks > 0 && item.RunTimeTicks.HasValue && item.RunTimeTicks > 0)
+            if (positionTicks > 0 && hasRuntime)
             {
                 var pctIn = Decimal.Divide(positionTicks, item.RunTimeTicks.Value) * 100;
 
@@ -334,7 +344,6 @@ namespace MediaBrowser.Server.Implementations.Session
                 if (pctIn < _configurationManager.Configuration.MinResumePct)
                 {
                     positionTicks = 0;
-                    incrementPlayCount = false;
                 }
 
                 // If we're at the end, assume completed
@@ -356,19 +365,19 @@ namespace MediaBrowser.Server.Implementations.Session
                     }
                 }
             }
+            else if (!hasRuntime)
+            {
+                // If we don't know the runtime we'll just have to assume it was fully played
+                data.Played = true;
+                positionTicks = 0;
+            }
 
             if (item is Audio)
             {
-                data.PlaybackPositionTicks = 0;
+                positionTicks = 0;
             }
 
             data.PlaybackPositionTicks = positionTicks;
-
-            if (incrementPlayCount)
-            {
-                data.PlayCount++;
-                data.LastPlayedDate = DateTime.UtcNow;
-            }
         }
     }
 }

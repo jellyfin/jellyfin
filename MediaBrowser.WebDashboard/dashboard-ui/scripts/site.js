@@ -1013,19 +1013,6 @@ var Dashboard = {
 
     processLibraryUpdateNotification: function (data) {
 
-        if (Dashboard.newItemTimeout) {
-            clearTimeout(Dashboard.newItemTimeout);
-        }
-
-        Dashboard.newItemTimeout = setTimeout(function () {
-
-            Dashboard.onNewItemTimerStopped(data);
-
-        }, 60000);
-    },
-
-    onNewItemTimerStopped: function (data) {
-
         var newItems = data.ItemsAdded;
 
         if (!newItems.length) {
@@ -1035,7 +1022,7 @@ var Dashboard = {
         ApiClient.getItems(Dashboard.getCurrentUserId(), {
 
             Recursive: true,
-            Limit: 2,
+            Limit: 3,
             Filters: "IsNotFolder",
             SortBy: "DateCreated",
             SortOrder: "Descending",
@@ -1070,8 +1057,6 @@ var Dashboard = {
                 WebNotifications.show(notification);
             }
         });
-
-        Dashboard.newItemTimeout = null;
     },
 
     ensurePageTitle: function (page) {

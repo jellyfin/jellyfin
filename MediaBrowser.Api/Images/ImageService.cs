@@ -361,7 +361,7 @@ namespace MediaBrowser.Api.Images
 
                 index++;
             }
-            
+
             index = 0;
 
             foreach (var image in item.ScreenshotImagePaths)
@@ -422,7 +422,7 @@ namespace MediaBrowser.Api.Images
 
             return list;
         }
-        
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -765,7 +765,7 @@ namespace MediaBrowser.Api.Images
                 }
 
                 // Don't save locally if there's no parent (special feature, trailer, etc)
-                var saveLocally = (!(entity is Audio) && entity.Parent != null && !string.IsNullOrEmpty(entity.MetaLocation)) || entity is User;
+                var saveLocally = !(entity is Audio) && entity.Parent != null && !string.IsNullOrEmpty(entity.MetaLocation) || entity is User;
 
                 if (imageType != ImageType.Primary)
                 {
@@ -773,6 +773,11 @@ namespace MediaBrowser.Api.Images
                     {
                         saveLocally = false;
                     }
+                }
+
+                if (entity.LocationType != LocationType.FileSystem)
+                {
+                    saveLocally = false;
                 }
 
                 var imagePath = _providerManager.GetSavePath(entity, filename + "." + extension, saveLocally);
