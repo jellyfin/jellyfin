@@ -115,7 +115,7 @@
     getClientType: function (connection) {
 
         var clientLowered = connection.Client.toLowerCase();
-        
+
         if (clientLowered == "dashboard") {
 
             return "<img src='css/images/clients/html5.png' alt='Dashboard' title='Dashboard' />";
@@ -276,6 +276,14 @@
         var page = $.mobile.activePage;
 
         $('#appVersionNumber', page).html(dashboardInfo.SystemInfo.Version);
+
+        var port = ApiClient.serverPortNumber();
+
+        if (port == dashboardInfo.SystemInfo.WebSocketPortNumber) {
+            $('#ports', page).html('Running on port <b>' + port + '</b>');
+        } else {
+            $('#ports', page).html('Running on ports <b>' + port + '</b> and <b>' + dashboardInfo.SystemInfo.WebSocketPortNumber + '</b>');
+        }
 
         if (dashboardInfo.RunningTasks.filter(function (task) {
 
