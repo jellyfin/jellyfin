@@ -46,14 +46,14 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
         private readonly List<Audio> _newlyAddedItems = new List<Audio>();
 
-        private const int NewItemDelay = 300000;
+        private const int NewItemDelay = 60000;
 
         /// <summary>
         /// The current new item timer
         /// </summary>
         /// <value>The new item timer.</value>
         private Timer NewItemTimer { get; set; }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioImagesTask" /> class.
         /// </summary>
@@ -118,7 +118,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
             foreach (var item in newSongs
                 .Where(i => i.LocationType == LocationType.FileSystem && string.IsNullOrEmpty(i.PrimaryImagePath) && i.MediaStreams.Any(m => m.Type == MediaStreamType.Video))
-                .Take(20))
+                .Take(10))
             {
                 try
                 {
@@ -130,7 +130,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets the name of the task
         /// </summary>
@@ -216,7 +216,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
             var filename = item.Album ?? string.Empty;
 
-            filename += album == null ? item.Id.ToString("N") + item.DateModified.Ticks : album.Id.ToString() + album.DateModified.Ticks;
+            filename += album == null ? item.Id.ToString("N") + item.DateModified.Ticks : album.Id.ToString("N") + album.DateModified.Ticks;
 
             var path = ImageCache.GetResourcePath(filename + "_primary", ".jpg");
 
@@ -232,7 +232,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                 {
                     try
                     {
-                        await _mediaEncoder.ExtractImage(new[] {item.Path}, InputType.AudioFile, null, path, cancellationToken).ConfigureAwait(false);
+                        await _mediaEncoder.ExtractImage(new[] { item.Path }, InputType.AudioFile, null, path, cancellationToken).ConfigureAwait(false);
                     }
                     finally
                     {
