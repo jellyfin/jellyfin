@@ -325,7 +325,7 @@ namespace MediaBrowser.Controller.Providers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            item.AddTrailerUrl(val);
+                            //item.AddTrailerUrl(val);
                         }
                         break;
                     }
@@ -336,10 +336,10 @@ namespace MediaBrowser.Controller.Providers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            int ProductionYear;
-                            if (int.TryParse(val, out ProductionYear) && ProductionYear > 1850)
+                            int productionYear;
+                            if (int.TryParse(val, out productionYear) && productionYear > 1850)
                             {
-                                item.ProductionYear = ProductionYear;
+                                item.ProductionYear = productionYear;
                             }
                         }
 

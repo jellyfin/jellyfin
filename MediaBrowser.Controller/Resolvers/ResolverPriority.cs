@@ -18,9 +18,10 @@ namespace MediaBrowser.Controller.Resolvers
         /// The third
         /// </summary>
         Third = 3,
+        Fourth = 4,
         /// <summary>
         /// The last
         /// </summary>
-        Last = 4
+        Last = 5
     }
 }
