@@ -46,11 +46,11 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <summary>
         /// The episode query
         /// </summary>
-        private const string episodeQuery = "http://www.thetvdb.com/api/{0}/series/{1}/default/{2}/{3}/{4}.xml";
+        private const string EpisodeQuery = "http://www.thetvdb.com/api/{0}/series/{1}/default/{2}/{3}/{4}.xml";
         /// <summary>
         /// The abs episode query
         /// </summary>
-        private const string absEpisodeQuery = "http://www.thetvdb.com/api/{0}/series/{1}/absolute/{2}/{3}.xml";
+        private const string AbsEpisodeQuery = "http://www.thetvdb.com/api/{0}/series/{1}/absolute/{2}/{3}.xml";
 
         /// <summary>
         /// Supportses the specified item.
@@ -179,11 +179,28 @@ namespace MediaBrowser.Controller.Providers.TV
                     seasonNumber = "0"; // Specials
                 }
 
-                var url = string.Format(episodeQuery, TVUtils.TvdbApiKey, seriesId, seasonNumber, episodeNumber, ConfigurationManager.Configuration.PreferredMetadataLanguage);
+                var url = string.Format(EpisodeQuery, TVUtils.TvdbApiKey, seriesId, seasonNumber, episodeNumber, ConfigurationManager.Configuration.PreferredMetadataLanguage);
                 var doc = new XmlDocument();
 
-                try
+                using (var result = await HttpClient.Get(new HttpRequestOptions
                 {
+                    Url = url,
+                    ResourcePool = RemoteSeriesProvider.Current.TvDbResourcePool,
+                    CancellationToken = cancellationToken,
+                    EnableResponseCache = true
+
+                }).ConfigureAwait(false))
+                {
+                    doc.Load(result);
+                }
+
+                //episode does not exist under this season, try absolute numbering.
+                //still assuming it's numbered as 1x01
+                //this is basicly just for anime.
+                if (!doc.HasChildNodes && Int32.Parse(seasonNumber) == 1)
+                {
+                    url = string.Format(AbsEpisodeQuery, TVUtils.TvdbApiKey, seriesId, episodeNumber, ConfigurationManager.Configuration.PreferredMetadataLanguage);
+
                     using (var result = await HttpClient.Get(new HttpRequestOptions
                     {
                         Url = url,
@@ -193,37 +210,8 @@ namespace MediaBrowser.Controller.Providers.TV
 
                     }).ConfigureAwait(false))
                     {
-                        doc.Load(result);
-                    }
-                }
-                catch (HttpException)
-                {
-                }
-
-                //episode does not exist under this season, try absolute numbering.
-                //still assuming it's numbered as 1x01
-                //this is basicly just for anime.
-                if (!doc.HasChildNodes && Int32.Parse(seasonNumber) == 1)
-                {
-                    url = string.Format(absEpisodeQuery, TVUtils.TvdbApiKey, seriesId, episodeNumber, ConfigurationManager.Configuration.PreferredMetadataLanguage);
-
-                    try
-                    {
-                        using (var result = await HttpClient.Get(new HttpRequestOptions
-                        {
-                            Url = url,
-                            ResourcePool = RemoteSeriesProvider.Current.TvDbResourcePool,
-                            CancellationToken = cancellationToken,
-                            EnableResponseCache = true
-
-                        }).ConfigureAwait(false))
-                        {
-                            if (result != null) doc.Load(result);
-                            usingAbsoluteData = true;
-                        }
-                    }
-                    catch (HttpException)
-                    {
+                        if (result != null) doc.Load(result);
+                        usingAbsoluteData = true;
                     }
                 }
 
