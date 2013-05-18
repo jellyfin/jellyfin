@@ -55,7 +55,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
         private readonly List<BaseItem> _newlyAddedItems = new List<BaseItem>();
 
-        private const int NewItemDelay = 300000;
+        private const int NewItemDelay = 60000;
 
         /// <summary>
         /// The current new item timer
@@ -124,7 +124,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                 NewItemTimer = null;
             }
 
-            foreach (var item in GetItemsForExtraction(newItems.Take(5)))
+            foreach (var item in GetItemsForExtraction(newItems.Take(3)))
             {
                 try
                 {
@@ -215,7 +215,8 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
             var videos = allItems.OfType<Video>().ToList();
 
-            var items = videos;
+            var items = videos.ToList();
+
             items.AddRange(localTrailers);
 
             items.AddRange(themeVideos);

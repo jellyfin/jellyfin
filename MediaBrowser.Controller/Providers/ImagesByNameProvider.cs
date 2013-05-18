@@ -126,7 +126,8 @@ namespace MediaBrowser.Controller.Providers
             }
 
             data.Data = ConfigurationManager.ApplicationPaths.ItemsByNamePath.GetMD5();
-            
+            SetLastRefreshed(item, DateTime.UtcNow);
+     
             return result;
         }
 

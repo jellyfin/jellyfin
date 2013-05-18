@@ -408,7 +408,7 @@ namespace MediaBrowser.Server.Implementations.Providers
         {
             return (saveLocally && item.MetaLocation != null) ?
                 Path.Combine(item.MetaLocation, targetFileName) :
-                _remoteImageCache.GetResourcePath(item.GetType().FullName + item.Path.ToLower(), targetFileName);
+                _remoteImageCache.GetResourcePath(item.GetType().FullName + item.Id.ToString(), targetFileName);
         }
 
         /// <summary>

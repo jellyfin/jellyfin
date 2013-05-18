@@ -91,12 +91,13 @@ namespace MediaBrowser.Controller.Providers
             }
 
             // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
-            var deletedKeys = item.Images.Keys.Where(image =>
+            var deletedKeys = item.Images.ToList().Where(image =>
             {
-                var path = item.Images[image];
+                var path = image.Value;
 
                 return IsInMetaLocation(item, path) && item.ResolveArgs.GetMetaFileByPath(path) == null;
-            }).ToList();
+
+            }).Select(i => i.Key).ToList();
 
             // Now remove them from the dictionary
             foreach (var key in deletedKeys)

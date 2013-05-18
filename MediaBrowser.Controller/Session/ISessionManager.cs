@@ -52,7 +52,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <exception cref="System.ArgumentNullException"></exception>
-        void OnPlaybackStart(User user, BaseItem item, string clientType, string deviceId, string deviceName);
+        Task OnPlaybackStart(User user, BaseItem item, string clientType, string deviceId, string deviceName);
 
         /// <summary>
         /// Used to report playback progress for an item
