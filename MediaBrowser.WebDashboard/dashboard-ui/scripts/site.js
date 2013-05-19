@@ -477,9 +477,9 @@ var Dashboard = {
         options = options || {};
 
         options.header = options.header || "Select Media Path";
-        options.instruction = options.instruction || "Browse to or enter the folder containing the media. Network paths (UNC) are recommended for optimal playback performance.";
+        options.instruction = options.instruction || "<p class='directoryPickerHeadline'>Network paths (UNC) are optional, but will allow direct file playback when possible.</p>";
 
-        var html = '<div data-role="popup" id="popupDirectoryPicker" class="ui-corner-all popup" style="min-width:60%;">';
+        var html = '<div data-role="popup" id="popupDirectoryPicker" class="ui-corner-all popup" style="min-width:65%;">';
 
         html += '<div class="ui-corner-top ui-bar-a" style="text-align: center; padding: 0 20px;">';
         html += '<h3>' + options.header + '</h3>';
@@ -487,14 +487,14 @@ var Dashboard = {
 
         html += '<div data-role="content" class="ui-corner-bottom ui-content">';
         html += '<form>';
-        html += '<p>' + options.instruction + '</p>';
+        html += '<div>' + options.instruction + '</div>';
 
         html += '<div data-role="fieldcontain" style="margin:0;">';
-        html += '<label for="txtDirectoryPickerPath">Current Folder:</label>';
+        html += '<label for="txtDirectoryPickerPath" class="lblDirectoryPickerPath">Current Folder:</label>';
         html += '<input id="txtDirectoryPickerPath" name="txtDirectoryPickerPath" type="text" onchange="Dashboard.refreshDirectoryBrowser(this.value);" required="required" style="font-weight:bold;" />';
         html += '</div>';
 
-        html += '<div style="height: 300px; overflow-y: auto;">';
+        html += '<div style="height: 320px; overflow-y: auto;">';
         html += '<ul id="ulDirectoryPickerList" data-role="listview" data-inset="true" data-auto-enhanced="false"></ul>';
         html += '</div>';
 

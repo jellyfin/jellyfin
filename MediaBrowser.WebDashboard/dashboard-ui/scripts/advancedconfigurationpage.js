@@ -58,7 +58,7 @@
 
                 header: "Select Items By Name Path",
 
-                instruction: "Browse or enter the path to your items by name folder. The folder must be writeable."
+                instruction: "<p>Browse or enter the path to your items by name folder. The folder must be writeable.</p>"
             });
         });
 

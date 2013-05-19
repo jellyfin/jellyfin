@@ -405,7 +405,26 @@ form, .readOnlyContent {
 #ulDirectoryPickerList a {
     padding-top: .4em;
     padding-bottom: .4em;
-    font-size: 15px;
+    font-size: 14px;
+}
+
+.lblDirectoryPickerPath {
+    white-space: nowrap;
+}
+
+.directoryPickerHeadline {
+    border: 1px solid #f7c942;
+    color: #222;
+    text-shadow: 0 1px 0 #fff;
+    background: #fff9df;
+    background-image: -webkit-gradient(linear,left top,left bottom,from(#fffadf),to(#fff3a5));
+    background-image: -webkit-linear-gradient(#fffadf,#fff3a5);
+    background-image: -moz-linear-gradient(#fffadf,#fff3a5);
+    background-image: -ms-linear-gradient(#fffadf,#fff3a5);
+    background-image: -o-linear-gradient(#fffadf,#fff3a5);
+    background-image: linear-gradient(#fffadf,#fff3a5);
+    padding: 1em;
+    border-radius: 5px;
 }
 
 /*
