@@ -28,18 +28,13 @@ namespace MediaBrowser.Controller.Providers.Movies
 
         protected readonly IProviderManager ProviderManager;
         
-        public TmdbPersonProvider(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
+        public TmdbPersonProvider(IJsonSerializer jsonSerializer, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
             : base(logManager, configurationManager)
         {
             if (jsonSerializer == null)
             {
                 throw new ArgumentNullException("jsonSerializer");
             }
-            if (httpClient == null)
-            {
-                throw new ArgumentNullException("httpClient");
-            }
-            HttpClient = httpClient;
             JsonSerializer = jsonSerializer;
             ProviderManager = providerManager;
         }
@@ -49,12 +44,6 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// </summary>
         /// <value>The json serializer.</value>
         protected IJsonSerializer JsonSerializer { get; private set; }
-
-        /// <summary>
-        /// Gets the HTTP client.
-        /// </summary>
-        /// <value>The HTTP client.</value>
-        protected IHttpClient HttpClient { get; private set; }
 
         /// <summary>
         /// Supportses the specified item.
@@ -172,11 +161,10 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             try
             {
-                using (Stream json = await HttpClient.Get(new HttpRequestOptions
+                using (Stream json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
                 {
                     Url = url,
                     CancellationToken = cancellationToken,
-                    ResourcePool = MovieDbProvider.Current.MovieDbResourcePool,
                     AcceptHeader = MovieDbProvider.AcceptHeader,
                     EnableResponseCache = true
 
@@ -204,11 +192,10 @@ namespace MediaBrowser.Controller.Providers.Movies
             string url = string.Format(@"http://api.themoviedb.org/3/person/{1}?api_key={0}&append_to_response=credits,images", MovieDbProvider.ApiKey, id);
             PersonResult searchResult = null;
 
-            using (var json = await HttpClient.Get(new HttpRequestOptions
+            using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = cancellationToken,
-                ResourcePool = MovieDbProvider.Current.MovieDbResourcePool,
                 AcceptHeader = MovieDbProvider.AcceptHeader,
                 EnableResponseCache = true
 
@@ -340,7 +327,12 @@ namespace MediaBrowser.Controller.Providers.Movies
             var localPath = Path.Combine(item.MetaLocation, targetName);
             if (!item.ResolveArgs.ContainsMetaFileByName(targetName))
             {
-                using (var sourceStream = await HttpClient.Get(source, MovieDbProvider.Current.MovieDbResourcePool, cancellationToken).ConfigureAwait(false))
+                using (var sourceStream = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
+                {
+                    Url = source,
+                    CancellationToken = cancellationToken
+
+                }).ConfigureAwait(false))
                 {
                     await ProviderManager.SaveToLibraryFilesystem(item, localPath, sourceStream, cancellationToken).ConfigureAwait(false);
 

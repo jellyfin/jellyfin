@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <summary>
         /// The movie db
         /// </summary>
-        internal readonly SemaphoreSlim MovieDbResourcePool = new SemaphoreSlim(1,1);
+        private readonly SemaphoreSlim _movieDbResourcePool = new SemaphoreSlim(1,1);
 
         internal static MovieDbProvider Current { get; private set; }
 
@@ -81,7 +81,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         {
             if (dispose)
             {
-                MovieDbResourcePool.Dispose();
+                _movieDbResourcePool.Dispose();
             }
         }
 
@@ -172,7 +172,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _tmdbSettingsTask, ref _tmdbSettingsTaskInitialized, ref _tmdbSettingsTaskSyncLock, () => GetTmdbSettings(JsonSerializer, HttpClient));
+                LazyInitializer.EnsureInitialized(ref _tmdbSettingsTask, ref _tmdbSettingsTaskInitialized, ref _tmdbSettingsTaskSyncLock, () => GetTmdbSettings(JsonSerializer));
                 return _tmdbSettingsTask;
             }
         }
@@ -181,15 +181,14 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// Gets the TMDB settings.
         /// </summary>
         /// <returns>Task{TmdbSettingsResult}.</returns>
-        private static async Task<TmdbSettingsResult> GetTmdbSettings(IJsonSerializer jsonSerializer, IHttpClient httpClient)
+        private async Task<TmdbSettingsResult> GetTmdbSettings(IJsonSerializer jsonSerializer)
         {
             try
             {
-                using (var json = await httpClient.Get(new HttpRequestOptions
+                using (var json = await GetMovieDbResponse(new HttpRequestOptions
                 {
                     Url = string.Format(TmdbConfigUrl, ApiKey),
                     CancellationToken = CancellationToken.None,
-                    ResourcePool = Current.MovieDbResourcePool,
                     AcceptHeader = AcceptHeader,
                     EnableResponseCache = true
 
@@ -560,11 +559,10 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             try
             {
-                using (Stream json = await HttpClient.Get(new HttpRequestOptions
+                using (Stream json = await GetMovieDbResponse(new HttpRequestOptions
                 {
                     Url = url3,
                     CancellationToken = cancellationToken,
-                    ResourcePool = Current.MovieDbResourcePool,
                     AcceptHeader = AcceptHeader,
                     EnableResponseCache = true
 
@@ -600,11 +598,10 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                 try
                 {
-                    using (var json = await HttpClient.Get(new HttpRequestOptions
+                    using (var json = await GetMovieDbResponse(new HttpRequestOptions
                     {
                         Url = url3,
                         CancellationToken = cancellationToken,
-                        ResourcePool = Current.MovieDbResourcePool,
                         AcceptHeader = AcceptHeader,
                         EnableResponseCache = true
 
@@ -647,11 +644,10 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                         try
                         {
-                            using (var json = await HttpClient.Get(new HttpRequestOptions
+                            using (var json = await GetMovieDbResponse(new HttpRequestOptions
                             {
                                 Url = url3,
                                 CancellationToken = cancellationToken,
-                                ResourcePool = Current.MovieDbResourcePool,
                                 AcceptHeader = AcceptHeader,
                                 EnableResponseCache = true
 
@@ -737,11 +733,10 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                 try
                 {
-                    using (Stream json = await HttpClient.Get(new HttpRequestOptions
+                    using (Stream json = await GetMovieDbResponse(new HttpRequestOptions
                     {
                         Url = url,
                         CancellationToken = cancellationToken,
-                        ResourcePool = Current.MovieDbResourcePool,
                         AcceptHeader = AcceptHeader,
                         EnableResponseCache = true
 
@@ -822,11 +817,10 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             try
             {
-                using (var json = await HttpClient.Get(new HttpRequestOptions
+                using (var json = await GetMovieDbResponse(new HttpRequestOptions
                 {
                     Url = url,
                     CancellationToken = cancellationToken,
-                    ResourcePool = Current.MovieDbResourcePool,
                     AcceptHeader = AcceptHeader,
                     EnableResponseCache = true
 
@@ -863,11 +857,10 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                     try
                     {
-                        using (Stream json = await HttpClient.Get(new HttpRequestOptions
+                        using (Stream json = await GetMovieDbResponse(new HttpRequestOptions
                         {
                             Url = url,
                             CancellationToken = cancellationToken,
-                            ResourcePool = Current.MovieDbResourcePool,
                             AcceptHeader = AcceptHeader,
                             EnableResponseCache = true
 
@@ -1022,6 +1015,38 @@ namespace MediaBrowser.Controller.Providers.Movies
 
         }
 
+        private DateTime _lastRequestDate = DateTime.MinValue;
+
+        /// <summary>
+        /// Gets the movie db response.
+        /// </summary>
+        internal async Task<Stream> GetMovieDbResponse(HttpRequestOptions options)
+        {
+            var cancellationToken = options.CancellationToken;
+
+            await _movieDbResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                // Limit to three requests per second
+                var diff = 330 - (DateTime.Now - _lastRequestDate).TotalMilliseconds;
+
+                if (diff > 0)
+                {
+                    await Task.Delay(Convert.ToInt32(diff), cancellationToken).ConfigureAwait(false);
+                }
+
+                _lastRequestDate = DateTime.Now;
+
+                return await HttpClient.Get(options).ConfigureAwait(false);
+            }
+            finally
+            {
+                _lastRequestDate = DateTime.Now;
+
+                _movieDbResourcePool.Release();
+            }
+        }
 
         /// <summary>
         /// The remove
