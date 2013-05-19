@@ -125,7 +125,7 @@ namespace MediaBrowser.Controller.Providers.TV
                     SetLastRefreshed(item, DateTime.UtcNow, status);
                     return true;
                 }
-                Logger.Info("Episode provider cannot determine Series Id for " + item.Path);
+                Logger.Info("Episode provider not fetching because series does not have a tvdb id: " + item.Path);
                 return false;
             }
             Logger.Info("Episode provider not fetching because local meta exists or requested to ignore: " + item.Name);
