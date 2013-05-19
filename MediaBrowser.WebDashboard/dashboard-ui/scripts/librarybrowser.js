@@ -658,11 +658,19 @@
 
             var name = item.Name;
 
-            if (item.IndexNumber != null && item.Type !== "Season") {
-                name = item.IndexNumber + " - " + name;
-            }
-            if (item.ParentIndexNumber != null && item.Type != "Episode") {
-                name = item.ParentIndexNumber + "." + name;
+            if (item.Type == "Episode" && item.IndexNumber != null && item.ParentIndexNumber != null) {
+
+                var displayIndexNumber = item.IndexNumber < 10 ? "0" + item.IndexNumber : item.IndexNumber;
+
+                name = item.ParentIndexNumber + "x" + displayIndexNumber + " - " + name;
+
+            } else {
+                if (item.IndexNumber != null && item.Type !== "Season") {
+                    name = item.IndexNumber + " - " + name;
+                }
+                if (item.ParentIndexNumber != null && item.Type != "Episode") {
+                    name = item.ParentIndexNumber + "." + name;
+                }
             }
 
             Dashboard.setPageTitle(name);
@@ -1798,7 +1806,7 @@
     });
 
     $.fn.alphaValue = function (val) {
-        
+
         if (val == null) {
             return $('.selectedCharacter', this).html();
         }
@@ -1808,7 +1816,7 @@
         $('.selectedCharacter', this).removeClass('selectedCharacter');
 
         $('a', this).each(function () {
-            
+
             if (this.innerHTML.toLowerCase() == val) {
 
                 $(this).addClass('selectedCharacter');

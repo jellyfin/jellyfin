@@ -316,7 +316,7 @@ a.itemTag:hover {
     color: #fff!important;
     font-weight: normal!important;
     display: none;
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(0,0,0,0.6);
     border-radius: 3px;
     padding: 3px 5px;
 }
