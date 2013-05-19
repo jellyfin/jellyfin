@@ -473,22 +473,16 @@ namespace MediaBrowser.Controller.Providers.TV
             string url = string.Format(rootUrl + seriesQuery, WebUtility.UrlEncode(name));
             var doc = new XmlDocument();
 
-            try
+            using (var results = await HttpClient.Get(new HttpRequestOptions
             {
-                using (var results = await HttpClient.Get(new HttpRequestOptions
-                {
-                    Url = url,
-                    ResourcePool = TvDbResourcePool,
-                    CancellationToken = cancellationToken,
-                    EnableResponseCache = true
+                Url = url,
+                ResourcePool = TvDbResourcePool,
+                CancellationToken = cancellationToken,
+                EnableResponseCache = true
 
-                }).ConfigureAwait(false))
-                {
-                    doc.Load(results);
-                }
-            }
-            catch (HttpException)
+            }).ConfigureAwait(false))
             {
+                doc.Load(results);
             }
 
             if (doc.HasChildNodes)

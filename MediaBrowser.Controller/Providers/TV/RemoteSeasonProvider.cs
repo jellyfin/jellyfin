@@ -120,7 +120,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                     return true;
                 }
-                Logger.Info("Season provider unable to obtain series id for {0}", item.Path);
+                Logger.Info("Season provider not fetching because series does not have a tvdb id: " + season.Path);
             }
             else
             {
