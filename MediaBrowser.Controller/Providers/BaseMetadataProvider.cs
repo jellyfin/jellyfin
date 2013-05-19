@@ -204,8 +204,6 @@ namespace MediaBrowser.Controller.Providers
                 throw new ArgumentNullException("providerInfo");
             }
 
-            if (item.DontFetchMeta && RequiresInternet) return false;
-            
             if (CompareDate(item) > providerInfo.LastRefreshed)
             {
                 return true;

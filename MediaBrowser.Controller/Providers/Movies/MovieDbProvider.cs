@@ -244,8 +244,6 @@ namespace MediaBrowser.Controller.Providers.Movies
 
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            if (item.DontFetchMeta) return false;
-
             if (HasAltMeta(item))
                 return false; //never refresh if has meta from other source
 
@@ -278,22 +276,10 @@ namespace MediaBrowser.Controller.Providers.Movies
                 SetLastRefreshed(item, DateTime.UtcNow);
                 return true;
             }
-            if (item.DontFetchMeta)
-            {
-                Logger.Info("MovieDbProvider - Not fetching because requested to ignore " + item.Name);
-                return false;
-            }
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (!ConfigurationManager.Configuration.SaveLocalMeta || !HasLocalMeta(item) || (force && !HasLocalMeta(item)))
-            {
-                await FetchMovieData(item, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                Logger.Debug("MovieDBProvider not fetching because local meta exists for " + item.Name);
-            }
+            await FetchMovieData(item, cancellationToken).ConfigureAwait(false);
 
             SetLastRefreshed(item, DateTime.UtcNow);
             return true;
