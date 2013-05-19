@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Net;
 using System;
 using System.IO;
 using System.Text;
@@ -139,8 +138,6 @@ namespace MediaBrowser.Controller.Providers.Music
 
             var doc = new XmlDocument();
 
-            var status = ProviderRefreshStatus.Success;
-            
             using (var xml = await HttpClient.Get(new HttpRequestOptions
             {
                 Url = url,
@@ -166,14 +163,7 @@ namespace MediaBrowser.Controller.Providers.Music
                     if (!string.IsNullOrEmpty(path))
                     {
                         Logger.Debug("FanArtProvider getting Disc for " + item.Name);
-                        try
-                        {
-                            item.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(item, path, DISC_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                        }
-                        catch (HttpException)
-                        {
-                            status = ProviderRefreshStatus.CompletedWithErrors;
-                        }
+                        item.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(item, path, DISC_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
 
@@ -186,19 +176,12 @@ namespace MediaBrowser.Controller.Providers.Music
                     if (!string.IsNullOrEmpty(path))
                     {
                         Logger.Debug("FanArtProvider getting albumcover for " + item.Name);
-                        try
-                        {
-                            item.SetImage(ImageType.Primary, await _providerManager.DownloadAndSaveImage(item, path, PRIMARY_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                        }
-                        catch (HttpException)
-                        {
-                            status = ProviderRefreshStatus.CompletedWithErrors;
-                        }
+                        item.SetImage(ImageType.Primary, await _providerManager.DownloadAndSaveImage(item, path, PRIMARY_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
             }
 
-            SetLastRefreshed(item, DateTime.UtcNow, status);
+            SetLastRefreshed(item, DateTime.UtcNow);
 
             return true;
         }

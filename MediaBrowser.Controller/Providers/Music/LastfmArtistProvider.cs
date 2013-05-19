@@ -93,42 +93,35 @@ namespace MediaBrowser.Controller.Providers.Music
             //Execute the Artist search against our name and assume first one is the one we want
             var url = RootUrl + string.Format("method=artist.search&artist={0}&api_key={1}&format=json", UrlEncode(item.Name), ApiKey);
 
-            try
+            using (var json = await HttpClient.Get(new HttpRequestOptions
             {
-                using (var json = await HttpClient.Get(new HttpRequestOptions
-                {
-                    Url = url,
-                    ResourcePool = LastfmResourcePool,
-                    CancellationToken = cancellationToken,
-                    EnableResponseCache = true
+                Url = url,
+                ResourcePool = LastfmResourcePool,
+                CancellationToken = cancellationToken,
+                EnableResponseCache = true
 
-                }).ConfigureAwait(false))
+            }).ConfigureAwait(false))
+            {
+                using (var reader = new StreamReader(json, true))
                 {
-                    using (var reader = new StreamReader(json, true))
+                    var jsonString = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                    // Sometimes they send back an empty response or just the text "null"
+                    if (!jsonString.StartsWith("{", StringComparison.OrdinalIgnoreCase))
                     {
-                        var jsonString = await reader.ReadToEndAsync().ConfigureAwait(false);
+                        return null;
+                    }
 
-                        // Sometimes they send back an empty response or just the text "null"
-                        if (!jsonString.StartsWith("{", StringComparison.OrdinalIgnoreCase))
-                        {
-                            return null;
-                        }
+                    var searchResult = JsonSerializer.DeserializeFromString<LastfmArtistSearchResults>(jsonString);
 
-                        var searchResult = JsonSerializer.DeserializeFromString<LastfmArtistSearchResults>(jsonString);
+                    if (searchResult != null && searchResult.results != null && searchResult.results.artistmatches != null && searchResult.results.artistmatches.artist.Count > 0)
+                    {
+                        var artist = searchResult.results.artistmatches.artist.FirstOrDefault(i => i.name != null && string.Compare(i.name, item.Name, CultureInfo.CurrentCulture, CompareOptions.IgnoreNonSpace) == 0) ??
+                            searchResult.results.artistmatches.artist.First();
 
-                        if (searchResult != null && searchResult.results != null && searchResult.results.artistmatches != null && searchResult.results.artistmatches.artist.Count > 0)
-                        {
-                            var artist = searchResult.results.artistmatches.artist.FirstOrDefault(i => i.name != null && string.Compare(i.name, item.Name, CultureInfo.CurrentCulture, CompareOptions.IgnoreNonSpace) == 0) ??
-                                searchResult.results.artistmatches.artist.First();
-
-                            return artist.mbid;
-                        }
+                        return artist.mbid;
                     }
                 }
-            }
-            catch (HttpException)
-            {
-                return null;
             }
 
             return null;

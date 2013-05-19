@@ -146,14 +146,7 @@ namespace MediaBrowser.Controller.Providers.Music
                     if (!string.IsNullOrEmpty(path))
                     {
                         Logger.Debug("FanArtProvider getting ClearLogo for " + item.Name);
-                        try
-                        {
-                            item.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(item, path, LOGO_FILE, SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                        }
-                        catch (HttpException)
-                        {
-                            status = ProviderRefreshStatus.CompletedWithErrors;
-                        }
+                        item.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(item, path, LOGO_FILE, SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
                 cancellationToken.ThrowIfCancellationRequested();
@@ -171,16 +164,9 @@ namespace MediaBrowser.Controller.Providers.Music
                             if (!string.IsNullOrEmpty(path))
                             {
                                 Logger.Debug("FanArtProvider getting Backdrop for " + item.Name);
-                                try
-                                {
-                                    item.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(item, path, ("Backdrop" + (numBackdrops > 0 ? numBackdrops.ToString(UsCulture) : "") + ".jpg"), SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                                    numBackdrops++;
-                                    if (numBackdrops >= ConfigurationManager.Configuration.MaxBackdrops) break;
-                                }
-                                catch (HttpException)
-                                {
-                                    status = ProviderRefreshStatus.CompletedWithErrors;
-                                }
+                                item.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(item, path, ("Backdrop" + (numBackdrops > 0 ? numBackdrops.ToString(UsCulture) : "") + ".jpg"), SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                numBackdrops++;
+                                if (numBackdrops >= ConfigurationManager.Configuration.MaxBackdrops) break;
                             }
                         }
 
@@ -199,14 +185,7 @@ namespace MediaBrowser.Controller.Providers.Music
                     if (!string.IsNullOrEmpty(path))
                     {
                         Logger.Debug("FanArtProvider getting ClearArt for " + item.Name);
-                        try
-                        {
-                            item.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(item, path, ART_FILE, SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                        }
-                        catch (HttpException)
-                        {
-                            status = ProviderRefreshStatus.CompletedWithErrors;
-                        }
+                        item.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(item, path, ART_FILE, SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
                 cancellationToken.ThrowIfCancellationRequested();
@@ -219,14 +198,7 @@ namespace MediaBrowser.Controller.Providers.Music
                     if (!string.IsNullOrEmpty(path))
                     {
                         Logger.Debug("FanArtProvider getting Banner for " + item.Name);
-                        try
-                        {
-                            item.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(item, path, BANNER_FILE, SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                        }
-                        catch (HttpException)
-                        {
-                            status = ProviderRefreshStatus.CompletedWithErrors;
-                        }
+                        item.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(item, path, BANNER_FILE, SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
 
@@ -240,14 +212,7 @@ namespace MediaBrowser.Controller.Providers.Music
                     if (!string.IsNullOrEmpty(path))
                     {
                         Logger.Debug("FanArtProvider getting Primary image for " + item.Name);
-                        try
-                        {
-                            item.SetImage(ImageType.Primary, await _providerManager.DownloadAndSaveImage(item, path, PRIMARY_FILE, SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                        }
-                        catch (HttpException)
-                        {
-                            status = ProviderRefreshStatus.CompletedWithErrors;
-                        }
+                        item.SetImage(ImageType.Primary, await _providerManager.DownloadAndSaveImage(item, path, PRIMARY_FILE, SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
             }

@@ -127,14 +127,7 @@ namespace MediaBrowser.Controller.Providers.TV
                     if (!string.IsNullOrEmpty(path))
                     {
                         Logger.Debug("FanArtProvider getting ClearLogo for " + series.Name);
-                        try
-                        {
-                            series.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(series, path, LOGO_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                        }
-                        catch (HttpException)
-                        {
-                            status = ProviderRefreshStatus.CompletedWithErrors;
-                        }
+                        series.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(series, path, LOGO_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
 
@@ -151,14 +144,7 @@ namespace MediaBrowser.Controller.Providers.TV
                     if (!string.IsNullOrEmpty(path))
                     {
                         Logger.Debug("FanArtProvider getting ClearArt for " + series.Name);
-                        try
-                        {
-                            series.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(series, path, ART_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                        }
-                        catch (HttpException)
-                        {
-                            status = ProviderRefreshStatus.CompletedWithErrors;
-                        }
+                        series.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(series, path, ART_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
 
@@ -172,14 +158,7 @@ namespace MediaBrowser.Controller.Providers.TV
                     if (!string.IsNullOrEmpty(path))
                     {
                         Logger.Debug("FanArtProvider getting ThumbArt for " + series.Name);
-                        try
-                        {
-                            series.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(series, path, THUMB_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                        }
-                        catch (HttpException)
-                        {
-                            status = ProviderRefreshStatus.CompletedWithErrors;
-                        }
+                        series.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(series, path, THUMB_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
 
@@ -191,14 +170,7 @@ namespace MediaBrowser.Controller.Providers.TV
                     if (!string.IsNullOrEmpty(path))
                     {
                         Logger.Debug("FanArtProvider getting banner for " + series.Name);
-                        try
-                        {
-                            series.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(series, path, BANNER_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                        }
-                        catch (HttpException)
-                        {
-                            status = ProviderRefreshStatus.CompletedWithErrors;
-                        }
+                        series.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(series, path, BANNER_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
             }

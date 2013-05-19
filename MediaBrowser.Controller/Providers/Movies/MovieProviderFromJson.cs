@@ -52,7 +52,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <returns>DateTime.</returns>
         protected override DateTime CompareDate(BaseItem item)
         {
-            var entry = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, LOCAL_META_FILE_NAME));
+            var entry = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, LocalMetaFileName));
             return entry != null ? entry.LastWriteTimeUtc : DateTime.MinValue;
         }
 
@@ -64,12 +64,12 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            if (item.ResolveArgs.ContainsMetaFileByName(ALT_META_FILE_NAME))
+            if (item.ResolveArgs.ContainsMetaFileByName(AltMetaFileName))
             {
                 return false; // don't read our file if 3rd party data exists
             }
 
-            if (!item.ResolveArgs.ContainsMetaFileByName(LOCAL_META_FILE_NAME))
+            if (!item.ResolveArgs.ContainsMetaFileByName(LocalMetaFileName))
             {
                 return false; // nothing to read
             }
@@ -89,7 +89,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var entry = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, LOCAL_META_FILE_NAME));
+            var entry = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, LocalMetaFileName));
             if (entry != null)
             {
                 // read in our saved meta and pass to processing function
