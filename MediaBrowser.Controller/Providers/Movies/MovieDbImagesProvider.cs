@@ -238,7 +238,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             //        poster
             if (images.posters != null && images.posters.Count > 0 && (ConfigurationManager.Configuration.RefreshItemImages || !hasLocalPoster))
             {
-                var tmdbSettings = await MovieDbProvider.Current.TmdbSettings.ConfigureAwait(false);
+                var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
                 var tmdbImageUrl = tmdbSettings.images.base_url + ConfigurationManager.Configuration.TmdbFetchedPosterSize;
                 // get highest rated poster for our language
@@ -281,7 +281,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             {
                 item.BackdropImagePaths = new List<string>();
 
-                var tmdbSettings = await MovieDbProvider.Current.TmdbSettings.ConfigureAwait(false);
+                var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
                 var tmdbImageUrl = tmdbSettings.images.base_url + ConfigurationManager.Configuration.TmdbFetchedBackdropSize;
                 //backdrops should be in order of rating.  get first n ones

@@ -62,23 +62,15 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         }
 
         /// <summary>
-        /// Needses the refresh internal.
+        /// Gets a value indicating whether [refresh on version change].
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="providerInfo">The provider info.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
+        /// <value><c>true</c> if [refresh on version change]; otherwise, <c>false</c>.</value>
+        protected override bool RefreshOnVersionChange
         {
-            // If the last run wasn't successful, try again when there's a new version of ffmpeg
-            if (providerInfo.LastRefreshStatus != ProviderRefreshStatus.Success)
+            get
             {
-                if (!string.Equals(ProviderVersion, providerInfo.ProviderVersion))
-                {
-                    return true;
-                }
+                return true;
             }
-
-            return base.NeedsRefreshInternal(item, providerInfo);
         }
     }
 }

@@ -118,18 +118,6 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         }
 
         /// <summary>
-        /// Gets a value indicating whether [refresh on version change].
-        /// </summary>
-        /// <value><c>true</c> if [refresh on version change]; otherwise, <c>false</c>.</value>
-        protected override bool RefreshOnVersionChange
-        {
-            get
-            {
-                return true;
-            }
-        }
-
-        /// <summary>
         /// Mounts the iso if needed.
         /// </summary>
         /// <param name="item">The item.</param>

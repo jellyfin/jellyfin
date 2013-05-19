@@ -70,24 +70,6 @@ namespace MediaBrowser.Controller.Providers.Movies
                 return "2";
             }
         }
-        
-        /// <summary>
-        /// Needses the refresh internal.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="providerInfo">The provider info.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
-        {
-            if (RefreshOnVersionChange && !String.Equals(ProviderVersion, providerInfo.ProviderVersion))
-            {
-                return true;
-            }
-            
-            //we fetch if either info or image needed and haven't already tried recently
-            return (string.IsNullOrEmpty(item.PrimaryImagePath) || !item.ResolveArgs.ContainsMetaFileByName(MetaFileName))
-                && DateTime.Today.Subtract(providerInfo.LastRefreshed).TotalDays > ConfigurationManager.Configuration.MetadataRefreshDays;
-        }
 
         /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
@@ -159,22 +141,16 @@ namespace MediaBrowser.Controller.Providers.Movies
             string url = string.Format(@"http://api.themoviedb.org/3/search/person?api_key={1}&query={0}", WebUtility.UrlEncode(person.Name), MovieDbProvider.ApiKey);
             PersonSearchResults searchResult = null;
 
-            try
+            using (Stream json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {
-                using (Stream json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
-                {
-                    Url = url,
-                    CancellationToken = cancellationToken,
-                    AcceptHeader = MovieDbProvider.AcceptHeader,
-                    EnableResponseCache = true
+                Url = url,
+                CancellationToken = cancellationToken,
+                AcceptHeader = MovieDbProvider.AcceptHeader,
+                EnableResponseCache = true
 
-                }).ConfigureAwait(false))
-                {
-                    searchResult = JsonSerializer.DeserializeFromStream<PersonSearchResults>(json);
-                }
-            }
-            catch (HttpException)
+            }).ConfigureAwait(false))
             {
+                searchResult = JsonSerializer.DeserializeFromStream<PersonSearchResults>(json);
             }
 
             return searchResult != null && searchResult.Total_Results > 0 ? searchResult.Results[0].Id.ToString(UsCulture) : null;
@@ -293,7 +269,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 }
                 if (profile != null)
                 {
-                    var tmdbSettings = await MovieDbProvider.Current.TmdbSettings.ConfigureAwait(false);
+                    var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
                     var img = await DownloadAndSaveImage(person, tmdbSettings.images.base_url + ConfigurationManager.Configuration.TmdbFetchedProfileSize + profile.file_path,
                                              "folder" + Path.GetExtension(profile.file_path), cancellationToken).ConfigureAwait(false);

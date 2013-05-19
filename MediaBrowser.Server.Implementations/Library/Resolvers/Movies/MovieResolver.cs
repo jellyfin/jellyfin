@@ -170,7 +170,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     // If we already know it's a movie, we can stop looping
                     if (!isKnownMovie.HasValue)
                     {
-                        isKnownMovie = args.ContainsMetaFileByName("movie.xml") || args.ContainsMetaFileByName(MovieDbProvider.LOCAL_META_FILE_NAME) || args.Path.IndexOf("[tmdbid", StringComparison.OrdinalIgnoreCase) != -1;
+                        isKnownMovie = args.ContainsMetaFileByName("movie.xml") || args.ContainsMetaFileByName(MovieDbProvider.LocalMetaFileName) || args.Path.IndexOf("[tmdbid", StringComparison.OrdinalIgnoreCase) != -1;
                     }
 
                     if (isKnownMovie.Value)

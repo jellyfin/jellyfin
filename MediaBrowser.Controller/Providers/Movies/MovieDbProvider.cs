@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -20,14 +19,6 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Providers.Movies
 {
-    class MovieDbProviderException : ApplicationException
-    {
-        public MovieDbProviderException(string msg)
-            : base(msg)
-        {
-        }
-
-    }
     /// <summary>
     /// Class MovieDbProvider
     /// </summary>
@@ -154,85 +145,42 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <summary>
         /// The _TMDB settings task
         /// </summary>
-        private Task<TmdbSettingsResult> _tmdbSettingsTask;
-        /// <summary>
-        /// The _TMDB settings task initialized
-        /// </summary>
-        private bool _tmdbSettingsTaskInitialized;
-        /// <summary>
-        /// The _TMDB settings task sync lock
-        /// </summary>
-        private object _tmdbSettingsTaskSyncLock = new object();
+        private TmdbSettingsResult _tmdbSettings;
 
-        /// <summary>
-        /// Gets the TMDB settings.
-        /// </summary>
-        /// <value>The TMDB settings.</value>
-        public Task<TmdbSettingsResult> TmdbSettings
-        {
-            get
-            {
-                LazyInitializer.EnsureInitialized(ref _tmdbSettingsTask, ref _tmdbSettingsTaskInitialized, ref _tmdbSettingsTaskSyncLock, () => GetTmdbSettings(JsonSerializer));
-                return _tmdbSettingsTask;
-            }
-        }
+        private readonly SemaphoreSlim _tmdbSettingsSemaphore = new SemaphoreSlim(1, 1);
 
         /// <summary>
         /// Gets the TMDB settings.
         /// </summary>
         /// <returns>Task{TmdbSettingsResult}.</returns>
-        private async Task<TmdbSettingsResult> GetTmdbSettings(IJsonSerializer jsonSerializer)
+        internal async Task<TmdbSettingsResult> GetTmdbSettings(CancellationToken cancellationToken)
         {
+            if (_tmdbSettings != null)
+            {
+                return _tmdbSettings;
+            }
+
+            await _tmdbSettingsSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
             try
             {
                 using (var json = await GetMovieDbResponse(new HttpRequestOptions
                 {
                     Url = string.Format(TmdbConfigUrl, ApiKey),
-                    CancellationToken = CancellationToken.None,
+                    CancellationToken = cancellationToken,
                     AcceptHeader = AcceptHeader,
                     EnableResponseCache = true
 
                 }).ConfigureAwait(false))
                 {
-                    return jsonSerializer.DeserializeFromStream<TmdbSettingsResult>(json);
+                    _tmdbSettings = JsonSerializer.DeserializeFromStream<TmdbSettingsResult>(json);
+
+                    return _tmdbSettings;
                 }
             }
-            catch (HttpException)
+            finally
             {
-                return new TmdbSettingsResult
-                {
-                    images = new TmdbImageSettings
-                    {
-                        backdrop_sizes =
-                            new List<string>
-                                                                                                     {
-                                                                                                         "w380",
-                                                                                                         "w780",
-                                                                                                         "w1280",
-                                                                                                         "original"
-                                                                                                     },
-                        poster_sizes =
-                            new List<string>
-                                                                                                     {
-                                                                                                         "w92",
-                                                                                                         "w154",
-                                                                                                         "w185",
-                                                                                                         "w342",
-                                                                                                         "w500",
-                                                                                                         "original"
-                                                                                                     },
-                        profile_sizes =
-                            new List<string>
-                                                                                                     {
-                                                                                                         "w45",
-                                                                                                         "w185",
-                                                                                                         "h632",
-                                                                                                         "original"
-                                                                                                     },
-                        base_url = "http://cf2.imgobject.com/t/p/"
-
-                    }
-                };
+                _tmdbSettingsSemaphore.Release();
             }
         }
 
@@ -284,12 +232,15 @@ namespace MediaBrowser.Controller.Providers.Movies
             new Regex(@"(?<name>.*)") // last resort matches the whole string as the name
         };
 
-        public const string LOCAL_META_FILE_NAME = "tmdb3.json";
-        public const string ALT_META_FILE_NAME = "movie.xml";
+        public const string LocalMetaFileName = "tmdb3.json";
+        public const string AltMetaFileName = "movie.xml";
 
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
             if (item.DontFetchMeta) return false;
+
+            if (HasAltMeta(item))
+                return false; //never refresh if has meta from other source
 
             if (item.LocationType == LocationType.FileSystem &&
                 ConfigurationManager.Configuration.SaveLocalMeta && 
@@ -302,31 +253,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             }
 
-            if (providerInfo.LastRefreshStatus != ProviderRefreshStatus.Success)
-            {
-                Logger.Debug("MovieProvider for {0} - last attempt had errors.  Will try again.", item.Path);
-                return true;
-            }
-
-            if (RefreshOnVersionChange && !String.Equals(ProviderVersion, providerInfo.ProviderVersion))
-            {
-                return true;
-            }
-            
-            var downloadDate = providerInfo.LastRefreshed;
-
-            if (ConfigurationManager.Configuration.MetadataRefreshDays == -1 && downloadDate != DateTime.MinValue)
-            {
-                return false;
-            }
-
-            if (DateTime.Today.Subtract(downloadDate).TotalDays < ConfigurationManager.Configuration.MetadataRefreshDays) // only refresh every n days
-                return false;
-
-            if (HasAltMeta(item))
-                return false; //never refresh if has meta from other source
-
-            return true;
+            return base.NeedsRefreshInternal(item, providerInfo);
         }
 
         /// <summary>
@@ -354,19 +281,13 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             if (!ConfigurationManager.Configuration.SaveLocalMeta || !HasLocalMeta(item) || (force && !HasLocalMeta(item)))
             {
-                try
-                {
-                    await FetchMovieData(item, cancellationToken).ConfigureAwait(false);
-                    SetLastRefreshed(item, DateTime.UtcNow);
-                }
-                catch (MovieDbProviderException)
-                {
-                    SetLastRefreshed(item, DateTime.UtcNow, ProviderRefreshStatus.CompletedWithErrors);
-                }
-
-                return true;
+                await FetchMovieData(item, cancellationToken).ConfigureAwait(false);
             }
-            Logger.Debug("MovieDBProvider not fetching because local meta exists for " + item.Name);
+            else
+            {
+                Logger.Debug("MovieDBProvider not fetching because local meta exists for " + item.Name);
+            }
+
             SetLastRefreshed(item, DateTime.UtcNow);
             return true;
         }
@@ -379,7 +300,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         private bool HasLocalMeta(BaseItem item)
         {
             //need at least the xml and folder.jpg/png or a movie.xml put in by someone else
-            return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName(LOCAL_META_FILE_NAME);
+            return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName(LocalMetaFileName);
         }
 
         /// <summary>
@@ -389,7 +310,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <returns><c>true</c> if [has alt meta] [the specified item]; otherwise, <c>false</c>.</returns>
         private bool HasAltMeta(BaseItem item)
         {
-            return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName(ALT_META_FILE_NAME);
+            return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName(AltMetaFileName);
         }
 
         /// <summary>
@@ -557,23 +478,18 @@ namespace MediaBrowser.Controller.Providers.Movies
             string url3 = string.Format(Search3, UrlEncode(name), ApiKey, language);
             TmdbMovieSearchResults searchResult = null;
 
-            try
+            using (Stream json = await GetMovieDbResponse(new HttpRequestOptions
             {
-                using (Stream json = await GetMovieDbResponse(new HttpRequestOptions
-                {
-                    Url = url3,
-                    CancellationToken = cancellationToken,
-                    AcceptHeader = AcceptHeader,
-                    EnableResponseCache = true
+                Url = url3,
+                CancellationToken = cancellationToken,
+                AcceptHeader = AcceptHeader,
+                EnableResponseCache = true
 
-                }).ConfigureAwait(false))
-                {
-                    searchResult = JsonSerializer.DeserializeFromStream<TmdbMovieSearchResults>(json);
-                }
-            }
-            catch (HttpException)
+            }).ConfigureAwait(false))
             {
+                searchResult = JsonSerializer.DeserializeFromStream<TmdbMovieSearchResults>(json);
             }
+
             if (searchResult == null || searchResult.results.Count == 0)
             {
                 //try replacing numbers
@@ -596,22 +512,16 @@ namespace MediaBrowser.Controller.Providers.Movies
                 Logger.Info("MovieDBProvider - No results.  Trying replacement numbers: " + name);
                 url3 = string.Format(Search3, UrlEncode(name), ApiKey, language);
 
-                try
+                using (var json = await GetMovieDbResponse(new HttpRequestOptions
                 {
-                    using (var json = await GetMovieDbResponse(new HttpRequestOptions
-                    {
-                        Url = url3,
-                        CancellationToken = cancellationToken,
-                        AcceptHeader = AcceptHeader,
-                        EnableResponseCache = true
+                    Url = url3,
+                    CancellationToken = cancellationToken,
+                    AcceptHeader = AcceptHeader,
+                    EnableResponseCache = true
 
-                    }).ConfigureAwait(false))
-                    {
-                        searchResult = JsonSerializer.DeserializeFromStream<TmdbMovieSearchResults>(json);
-                    }
-                }
-                catch (HttpException)
+                }).ConfigureAwait(false))
                 {
+                    searchResult = JsonSerializer.DeserializeFromStream<TmdbMovieSearchResults>(json);
                 }
             }
             if (searchResult != null)
@@ -642,39 +552,33 @@ namespace MediaBrowser.Controller.Providers.Movies
                         //that title didn't match - look for alternatives
                         url3 = string.Format(AltTitleSearch, id, ApiKey, ConfigurationManager.Configuration.MetadataCountryCode);
 
-                        try
+                        using (var json = await GetMovieDbResponse(new HttpRequestOptions
                         {
-                            using (var json = await GetMovieDbResponse(new HttpRequestOptions
-                            {
-                                Url = url3,
-                                CancellationToken = cancellationToken,
-                                AcceptHeader = AcceptHeader,
-                                EnableResponseCache = true
+                            Url = url3,
+                            CancellationToken = cancellationToken,
+                            AcceptHeader = AcceptHeader,
+                            EnableResponseCache = true
 
-                            }).ConfigureAwait(false))
-                            {
-                                var response = JsonSerializer.DeserializeFromStream<TmdbAltTitleResults>(json);
+                        }).ConfigureAwait(false))
+                        {
+                            var response = JsonSerializer.DeserializeFromStream<TmdbAltTitleResults>(json);
 
-                                if (response != null && response.titles != null)
+                            if (response != null && response.titles != null)
+                            {
+                                foreach (var title in response.titles)
                                 {
-                                    foreach (var title in response.titles)
+                                    var t = GetComparableName(title.title, Logger);
+                                    if (t == compName)
                                     {
-                                        var t = GetComparableName(title.title, Logger);
-                                        if (t == compName)
-                                        {
-                                            Logger.Debug("MovieDbProvider - " + compName +
-                                                                " matched " + t);
-                                            matchedName = t;
-                                            break;
-                                        }
                                         Logger.Debug("MovieDbProvider - " + compName +
-                                                            " did not match " + t);
+                                                            " matched " + t);
+                                        matchedName = t;
+                                        break;
                                     }
+                                    Logger.Debug("MovieDbProvider - " + compName +
+                                                        " did not match " + t);
                                 }
                             }
-                        }
-                        catch (HttpException)
-                        {
                         }
                     }
 
@@ -731,31 +635,25 @@ namespace MediaBrowser.Controller.Providers.Movies
             {
                 string url = string.Format(GetMovieInfo3, childId, ApiKey, language);
 
-                try
+                using (Stream json = await GetMovieDbResponse(new HttpRequestOptions
                 {
-                    using (Stream json = await GetMovieDbResponse(new HttpRequestOptions
-                    {
-                        Url = url,
-                        CancellationToken = cancellationToken,
-                        AcceptHeader = AcceptHeader,
-                        EnableResponseCache = true
+                    Url = url,
+                    CancellationToken = cancellationToken,
+                    AcceptHeader = AcceptHeader,
+                    EnableResponseCache = true
 
-                    }).ConfigureAwait(false))
-                    {
-                        var movieResult = JsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
+                }).ConfigureAwait(false))
+                {
+                    var movieResult = JsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
 
-                        if (movieResult != null && movieResult.belongs_to_collection != null)
-                        {
-                            id = movieResult.belongs_to_collection.id.ToString(CultureInfo.InvariantCulture);
-                        }
-                        else
-                        {
-                            Logger.Error("Unable to obtain boxset id.");
-                        }
+                    if (movieResult != null && movieResult.belongs_to_collection != null)
+                    {
+                        id = movieResult.belongs_to_collection.id.ToString(CultureInfo.InvariantCulture);
                     }
-                }
-                catch (HttpException)
-                {
+                    else
+                    {
+                        Logger.Error("Unable to obtain boxset id.");
+                    }
                 }
             }
             return id;
@@ -795,7 +693,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await ProviderManager.SaveToLibraryFilesystem(item, Path.Combine(item.MetaLocation, LOCAL_META_FILE_NAME), ms, cancellationToken).ConfigureAwait(false);
+                await ProviderManager.SaveToLibraryFilesystem(item, Path.Combine(item.MetaLocation, LocalMetaFileName), ms, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -815,34 +713,16 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            try
+            using (var json = await GetMovieDbResponse(new HttpRequestOptions
             {
-                using (var json = await GetMovieDbResponse(new HttpRequestOptions
-                {
-                    Url = url,
-                    CancellationToken = cancellationToken,
-                    AcceptHeader = AcceptHeader,
-                    EnableResponseCache = true
+                Url = url,
+                CancellationToken = cancellationToken,
+                AcceptHeader = AcceptHeader,
+                EnableResponseCache = true
 
-                }).ConfigureAwait(false))
-                {
-                    mainResult = JsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
-                }
-            }
-            catch (HttpException e)
+            }).ConfigureAwait(false))
             {
-                if (e.IsTimedOut)
-                {
-                    Logger.ErrorException("MovieDbProvider timed out attempting to retrieve main info for {0}", e, item.Path);
-                    throw new MovieDbProviderException("Timed out on main info");
-                }
-                if (e.StatusCode == HttpStatusCode.NotFound)
-                {
-                    Logger.ErrorException("MovieDbProvider not found error attempting to retrieve main info for {0}", e, item.Path);
-                    throw new MovieDbProviderException("Not Found");
-                }
-
-                throw;
+                mainResult = JsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -855,22 +735,16 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                     url = string.Format(baseUrl, id, ApiKey, "en");
 
-                    try
+                    using (Stream json = await GetMovieDbResponse(new HttpRequestOptions
                     {
-                        using (Stream json = await GetMovieDbResponse(new HttpRequestOptions
-                        {
-                            Url = url,
-                            CancellationToken = cancellationToken,
-                            AcceptHeader = AcceptHeader,
-                            EnableResponseCache = true
+                        Url = url,
+                        CancellationToken = cancellationToken,
+                        AcceptHeader = AcceptHeader,
+                        EnableResponseCache = true
 
-                        }).ConfigureAwait(false))
-                        {
-                            mainResult = JsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
-                        }
-                    }
-                    catch (HttpException)
+                    }).ConfigureAwait(false))
                     {
+                        mainResult = JsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
                     }
 
                     if (String.IsNullOrEmpty(mainResult.overview))

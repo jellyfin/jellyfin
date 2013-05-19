@@ -75,24 +75,24 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <summary>
         /// The root URL
         /// </summary>
-        private const string rootUrl = "http://www.thetvdb.com/api/";
+        private const string RootUrl = "http://www.thetvdb.com/api/";
         /// <summary>
         /// The series query
         /// </summary>
-        private const string seriesQuery = "GetSeries.php?seriesname={0}";
+        private const string SeriesQuery = "GetSeries.php?seriesname={0}";
         /// <summary>
         /// The series get
         /// </summary>
-        private const string seriesGet = "http://www.thetvdb.com/api/{0}/series/{1}/{2}.xml";
+        private const string SeriesGet = "http://www.thetvdb.com/api/{0}/series/{1}/{2}.xml";
         /// <summary>
         /// The get actors
         /// </summary>
-        private const string getActors = "http://www.thetvdb.com/api/{0}/series/{1}/actors.xml";
+        private const string GetActors = "http://www.thetvdb.com/api/{0}/series/{1}/actors.xml";
 
         /// <summary>
         /// The LOCA l_ MET a_ FIL e_ NAME
         /// </summary>
-        protected const string LOCAL_META_FILE_NAME = "Series.xml";
+        protected const string LocalMetaFileName = "Series.xml";
 
         /// <summary>
         /// Supportses the specified item.
@@ -133,15 +133,6 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            var downloadDate = providerInfo.LastRefreshed;
-
-            if (ConfigurationManager.Configuration.MetadataRefreshDays == -1 && downloadDate != DateTime.MinValue)
-            {
-                return false;
-            }
-
-            if (item.DontFetchMeta) return false;
-
             return !HasLocalMeta(item) && base.NeedsRefreshInternal(item, providerInfo);
         }
 
@@ -195,7 +186,7 @@ namespace MediaBrowser.Controller.Providers.TV
             if (!string.IsNullOrEmpty(seriesId))
             {
 
-                string url = string.Format(seriesGet, TVUtils.TvdbApiKey, seriesId, ConfigurationManager.Configuration.PreferredMetadataLanguage);
+                string url = string.Format(SeriesGet, TVUtils.TvdbApiKey, seriesId, ConfigurationManager.Configuration.PreferredMetadataLanguage);
                 var doc = new XmlDocument();
 
                 using (var xml = await HttpClient.Get(new HttpRequestOptions
@@ -273,7 +264,7 @@ namespace MediaBrowser.Controller.Providers.TV
                         var ms = new MemoryStream();
                         doc.Save(ms);
 
-                        await _providerManager.SaveToLibraryFilesystem(series, Path.Combine(series.MetaLocation, LOCAL_META_FILE_NAME), ms, cancellationToken).ConfigureAwait(false);
+                        await _providerManager.SaveToLibraryFilesystem(series, Path.Combine(series.MetaLocation, LocalMetaFileName), ms, cancellationToken).ConfigureAwait(false);
                     }
                 }
             }
@@ -291,7 +282,7 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <returns>Task.</returns>
         private async Task FetchActors(Series series, string seriesId, XmlDocument doc, CancellationToken cancellationToken)
         {
-            string urlActors = string.Format(getActors, TVUtils.TvdbApiKey, seriesId);
+            string urlActors = string.Format(GetActors, TVUtils.TvdbApiKey, seriesId);
             var docActors = new XmlDocument();
 
             using (var actors = await HttpClient.Get(new HttpRequestOptions
@@ -440,7 +431,7 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <returns><c>true</c> if [has local meta] [the specified item]; otherwise, <c>false</c>.</returns>
         private bool HasLocalMeta(BaseItem item)
         {
-            return item.ResolveArgs.ContainsMetaFileByName(LOCAL_META_FILE_NAME);
+            return item.ResolveArgs.ContainsMetaFileByName(LocalMetaFileName);
         }
 
         /// <summary>
@@ -470,7 +461,7 @@ namespace MediaBrowser.Controller.Providers.TV
         {
 
             //nope - search for it
-            string url = string.Format(rootUrl + seriesQuery, WebUtility.UrlEncode(name));
+            string url = string.Format(RootUrl + SeriesQuery, WebUtility.UrlEncode(name));
             var doc = new XmlDocument();
 
             using (var results = await HttpClient.Get(new HttpRequestOptions

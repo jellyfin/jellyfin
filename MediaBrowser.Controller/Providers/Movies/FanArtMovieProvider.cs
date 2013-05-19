@@ -214,14 +214,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                     path = node != null ? node.Value : null;
                     if (!string.IsNullOrEmpty(path))
                     {
-                        try
-                        {
-                            movie.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(movie, path, LOGO_FILE, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                        }
-                        catch (HttpException)
-                        {
-                            status = ProviderRefreshStatus.CompletedWithErrors;
-                        }
+                        movie.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(movie, path, LOGO_FILE, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
                 cancellationToken.ThrowIfCancellationRequested();
@@ -240,14 +233,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                     path = node != null ? node.Value : null;
                     if (!string.IsNullOrEmpty(path))
                     {
-                        try
-                        {
-                            movie.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(movie, path, ART_FILE, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                        }
-                        catch (HttpException)
-                        {
-                            status = ProviderRefreshStatus.CompletedWithErrors;
-                        }
+                        movie.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(movie, path, ART_FILE, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
                 cancellationToken.ThrowIfCancellationRequested();
@@ -263,14 +249,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                     path = node != null ? node.Value : null;
                     if (!string.IsNullOrEmpty(path))
                     {
-                        try
-                        {
-                            movie.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(movie, path, DISC_FILE, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                        }
-                        catch (HttpException)
-                        {
-                            status = ProviderRefreshStatus.CompletedWithErrors;
-                        }
+                        movie.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(movie, path, DISC_FILE, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
 
@@ -287,14 +266,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                     path = node != null ? node.Value : null;
                     if (!string.IsNullOrEmpty(path))
                     {
-                        try
-                        {
-                            movie.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(movie, path, BANNER_FILE, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                        }
-                        catch (HttpException)
-                        {
-                            status = ProviderRefreshStatus.CompletedWithErrors;
-                        }
+                        movie.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(movie, path, BANNER_FILE, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
 
@@ -311,14 +283,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                     path = node != null ? node.Value : null;
                     if (!string.IsNullOrEmpty(path))
                     {
-                        try
-                        {
-                            movie.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(movie, path, THUMB_FILE, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                        }
-                        catch (HttpException)
-                        {
-                            status = ProviderRefreshStatus.CompletedWithErrors;
-                        }
+                        movie.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(movie, path, THUMB_FILE, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
 
@@ -339,16 +304,9 @@ namespace MediaBrowser.Controller.Providers.Movies
                             if (!string.IsNullOrEmpty(path))
                             {
                                 Logger.Debug("FanArtProvider getting Backdrop for " + item.Name);
-                                try
-                                {
-                                    item.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(item, path, ("backdrop" + (numBackdrops > 0 ? numBackdrops.ToString(UsCulture) : "") + ".jpg"), saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                                    numBackdrops++;
-                                    if (numBackdrops >= ConfigurationManager.Configuration.MaxBackdrops) break;
-                                }
-                                catch (HttpException)
-                                {
-                                    status = ProviderRefreshStatus.CompletedWithErrors;
-                                }
+                                item.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(item, path, ("backdrop" + (numBackdrops > 0 ? numBackdrops.ToString(UsCulture) : "") + ".jpg"), saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                                numBackdrops++;
+                                if (numBackdrops >= ConfigurationManager.Configuration.MaxBackdrops) break;
                             }
                         }
 
