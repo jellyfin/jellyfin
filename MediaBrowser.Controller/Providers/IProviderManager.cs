@@ -21,6 +21,8 @@ namespace MediaBrowser.Controller.Providers
         /// <exception cref="System.ArgumentNullException">item</exception>
         Task<string> DownloadAndSaveImage(BaseItem item, string source, string targetName, bool saveLocally, SemaphoreSlim resourcePool, CancellationToken cancellationToken);
 
+        Task<string> SaveImage(BaseItem item, Stream source, string targetName, bool saveLocally, CancellationToken cancellationToken);
+        
         /// <summary>
         /// Saves to library filesystem.
         /// </summary>

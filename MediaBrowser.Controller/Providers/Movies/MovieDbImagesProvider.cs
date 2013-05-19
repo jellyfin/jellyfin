@@ -207,11 +207,10 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <returns>Task{MovieImages}.</returns>
         private async Task<MovieImages> FetchImages(BaseItem item, string id, CancellationToken cancellationToken)
         {
-            using (var json = await _httpClient.Get(new HttpRequestOptions
+            using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {
                 Url = string.Format(GetImages, id, MovieDbProvider.ApiKey, item is BoxSet ? "collection" : "movie"),
                 CancellationToken = cancellationToken,
-                ResourcePool = MovieDbProvider.Current.MovieDbResourcePool,
                 AcceptHeader = MovieDbProvider.AcceptHeader,
                 EnableResponseCache = true
 
@@ -264,14 +263,14 @@ namespace MediaBrowser.Controller.Providers.Movies
                 }
                 if (poster != null)
                 {
-                    try
+                    var img = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
                     {
-                        item.PrimaryImagePath = await _providerManager.DownloadAndSaveImage(item, tmdbImageUrl + poster.file_path, "folder" + Path.GetExtension(poster.file_path), ConfigurationManager.Configuration.SaveLocalMeta && item.LocationType == LocationType.FileSystem, MovieDbProvider.Current.MovieDbResourcePool, cancellationToken).ConfigureAwait(false);
-                    }
-                    catch (HttpException)
-                    {
-                        status = ProviderRefreshStatus.CompletedWithErrors;
-                    }
+                        Url = tmdbImageUrl + poster.file_path,
+                        CancellationToken = cancellationToken
+
+                    }).ConfigureAwait(false);
+
+                    item.PrimaryImagePath = await _providerManager.SaveImage(item, img, "folder" + Path.GetExtension(poster.file_path), ConfigurationManager.Configuration.SaveLocalMeta && item.LocationType == LocationType.FileSystem, cancellationToken).ConfigureAwait(false);
                 }
             }
 
@@ -295,14 +294,14 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                     if (ConfigurationManager.Configuration.RefreshItemImages || !hasLocalBackdrop)
                     {
-                        try
+                        var img = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
                         {
-                            item.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(item, tmdbImageUrl + images.backdrops[i].file_path, bdName + Path.GetExtension(images.backdrops[i].file_path), ConfigurationManager.Configuration.SaveLocalMeta && item.LocationType == LocationType.FileSystem, MovieDbProvider.Current.MovieDbResourcePool, cancellationToken).ConfigureAwait(false));
-                        }
-                        catch (HttpException)
-                        {
-                            status = ProviderRefreshStatus.CompletedWithErrors;
-                        }
+                            Url = tmdbImageUrl + images.backdrops[i].file_path,
+                            CancellationToken = cancellationToken
+
+                        }).ConfigureAwait(false);
+
+                        item.BackdropImagePaths.Add(await _providerManager.SaveImage(item, img, bdName + Path.GetExtension(images.backdrops[i].file_path), ConfigurationManager.Configuration.SaveLocalMeta && item.LocationType == LocationType.FileSystem, cancellationToken).ConfigureAwait(false));
                     }
                 }
             }

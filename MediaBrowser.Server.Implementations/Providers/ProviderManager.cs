@@ -357,16 +357,22 @@ namespace MediaBrowser.Server.Implementations.Providers
                 throw new ArgumentNullException("resourcePool");
             }
 
+            var img = await _httpClient.Get(source, resourcePool, cancellationToken).ConfigureAwait(false);
+
+            //download and save locally
+            return await SaveImage(item, img, targetName, saveLocally, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<string> SaveImage(BaseItem item, Stream source, string targetName, bool saveLocally, CancellationToken cancellationToken)
+        {
             //download and save locally
             var localPath = (saveLocally && item.MetaLocation != null) ?
                 Path.Combine(item.MetaLocation, targetName) :
                 _remoteImageCache.GetResourcePath(item.GetType().FullName + item.Path.ToLower(), targetName);
 
-            var img = await _httpClient.Get(source, resourcePool, cancellationToken).ConfigureAwait(false);
-
             if (saveLocally) // queue to media directories
             {
-                await SaveToLibraryFilesystem(item, localPath, img, cancellationToken).ConfigureAwait(false);
+                await SaveToLibraryFilesystem(item, localPath, source, cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -376,7 +382,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                 {
                     using (var fs = new FileStream(localPath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
                     {
-                        await img.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
+                        await source.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
                     }
                 }
                 catch (OperationCanceledException)
@@ -390,7 +396,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                 }
                 finally
                 {
-                    img.Dispose();
+                    source.Dispose();
                 }
 
             }
