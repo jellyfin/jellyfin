@@ -96,7 +96,7 @@ namespace MediaBrowser.Controller.Providers.TV
             var series = (Series)item;
 
             string language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
-            string url = string.Format(FanArtBaseUrl, APIKey, series.GetProviderId(MetadataProviders.Tvdb));
+            string url = string.Format(FanArtBaseUrl, ApiKey, series.GetProviderId(MetadataProviders.Tvdb));
             var doc = new XmlDocument();
 
             using (var xml = await HttpClient.Get(new HttpRequestOptions
@@ -117,7 +117,7 @@ namespace MediaBrowser.Controller.Providers.TV
             {
                 string path;
                 var hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hdtv" : "clear";
-                if (ConfigurationManager.Configuration.DownloadSeriesImages.Logo && !series.ResolveArgs.ContainsMetaFileByName(LOGO_FILE))
+                if (ConfigurationManager.Configuration.DownloadSeriesImages.Logo && !series.ResolveArgs.ContainsMetaFileByName(LogoFile))
                 {
                     var node = doc.SelectSingleNode("//fanart/series/" + hd + "logos/" + hd + "logo[@lang = \"" + language + "\"]/@url") ??
                                 doc.SelectSingleNode("//fanart/series/clearlogos/clearlogo[@lang = \"" + language + "\"]/@url") ??
@@ -127,14 +127,14 @@ namespace MediaBrowser.Controller.Providers.TV
                     if (!string.IsNullOrEmpty(path))
                     {
                         Logger.Debug("FanArtProvider getting ClearLogo for " + series.Name);
-                        series.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(series, path, LOGO_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                        series.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(series, path, LogoFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
 
                 hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hd" : "";
-                if (ConfigurationManager.Configuration.DownloadSeriesImages.Art && !series.ResolveArgs.ContainsMetaFileByName(ART_FILE))
+                if (ConfigurationManager.Configuration.DownloadSeriesImages.Art && !series.ResolveArgs.ContainsMetaFileByName(ArtFile))
                 {
                     var node = doc.SelectSingleNode("//fanart/series/" + hd + "cleararts/" + hd + "clearart[@lang = \"" + language + "\"]/@url") ??
                                doc.SelectSingleNode("//fanart/series/cleararts/clearart[@lang = \"" + language + "\"]/@url") ??
@@ -144,13 +144,13 @@ namespace MediaBrowser.Controller.Providers.TV
                     if (!string.IsNullOrEmpty(path))
                     {
                         Logger.Debug("FanArtProvider getting ClearArt for " + series.Name);
-                        series.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(series, path, ART_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                        series.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(series, path, ArtFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (ConfigurationManager.Configuration.DownloadSeriesImages.Thumb && !series.ResolveArgs.ContainsMetaFileByName(THUMB_FILE))
+                if (ConfigurationManager.Configuration.DownloadSeriesImages.Thumb && !series.ResolveArgs.ContainsMetaFileByName(ThumbFile))
                 {
                     var node = doc.SelectSingleNode("//fanart/series/tvthumbs/tvthumb[@lang = \"" + language + "\"]/@url") ??
                                doc.SelectSingleNode("//fanart/series/tvthumbs/tvthumb/@url");
@@ -158,11 +158,11 @@ namespace MediaBrowser.Controller.Providers.TV
                     if (!string.IsNullOrEmpty(path))
                     {
                         Logger.Debug("FanArtProvider getting ThumbArt for " + series.Name);
-                        series.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(series, path, THUMB_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                        series.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(series, path, ThumbFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
 
-                if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && !series.ResolveArgs.ContainsMetaFileByName(BANNER_FILE))
+                if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && !series.ResolveArgs.ContainsMetaFileByName(BannerFile))
                 {
                     var node = doc.SelectSingleNode("//fanart/series/tbbanners/tvbanner[@lang = \"" + language + "\"]/@url") ??
                                doc.SelectSingleNode("//fanart/series/tbbanners/tvbanner/@url");
@@ -170,7 +170,7 @@ namespace MediaBrowser.Controller.Providers.TV
                     if (!string.IsNullOrEmpty(path))
                     {
                         Logger.Debug("FanArtProvider getting banner for " + series.Name);
-                        series.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(series, path, BANNER_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                        series.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(series, path, BannerFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
             }

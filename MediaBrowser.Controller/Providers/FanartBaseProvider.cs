@@ -20,47 +20,47 @@ namespace MediaBrowser.Controller.Providers
     public abstract class FanartBaseProvider : BaseMetadataProvider
     {
 
-        protected static readonly SemaphoreSlim FanArtResourcePool = new SemaphoreSlim(5,5);
+        protected static readonly SemaphoreSlim FanArtResourcePool = new SemaphoreSlim(3,3);
 
         /// <summary>
         /// The LOG o_ FILE
         /// </summary>
-        protected const string LOGO_FILE = "logo.png";
+        protected const string LogoFile = "logo.png";
 
         /// <summary>
         /// The AR t_ FILE
         /// </summary>
-        protected const string ART_FILE = "clearart.png";
+        protected const string ArtFile = "clearart.png";
 
         /// <summary>
         /// The THUM b_ FILE
         /// </summary>
-        protected const string THUMB_FILE = "thumb.jpg";
+        protected const string ThumbFile = "thumb.jpg";
 
         /// <summary>
         /// The DIS c_ FILE
         /// </summary>
-        protected const string DISC_FILE = "disc.png";
+        protected const string DiscFile = "disc.png";
 
         /// <summary>
         /// The BANNE r_ FILE
         /// </summary>
-        protected const string BANNER_FILE = "banner.png";
+        protected const string BannerFile = "banner.png";
 
         /// <summary>
         /// The Backdrop
         /// </summary>
-        protected const string BACKDROP_FILE = "backdrop.jpg";
+        protected const string BackdropFile = "backdrop.jpg";
 
         /// <summary>
         /// The Primary image
         /// </summary>
-        protected const string PRIMARY_FILE = "folder.jpg";
+        protected const string PrimaryFile = "folder.jpg";
 
         /// <summary>
         /// The API key
         /// </summary>
-        protected const string APIKey = "5c6b04c68e904cfed1e6cbc9a9e683d4";
+        protected const string ApiKey = "5c6b04c68e904cfed1e6cbc9a9e683d4";
 
         protected FanartBaseProvider(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
         {

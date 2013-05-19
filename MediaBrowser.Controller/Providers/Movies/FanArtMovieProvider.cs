@@ -172,7 +172,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             var movie = item;
 
             var language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
-            var url = string.Format(FanArtBaseUrl, APIKey, movie.GetProviderId(MetadataProviders.Tmdb));
+            var url = string.Format(FanArtBaseUrl, ApiKey, movie.GetProviderId(MetadataProviders.Tmdb));
             var doc = new XmlDocument();
 
             using (var xml = await HttpClient.Get(new HttpRequestOptions
@@ -198,7 +198,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 var hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hd" : "";
 
                 var hasLogo = item.LocationType == LocationType.FileSystem ? 
-                    item.ResolveArgs.ContainsMetaFileByName(LOGO_FILE) 
+                    item.ResolveArgs.ContainsMetaFileByName(LogoFile) 
                     : item.HasImage(ImageType.Logo);
 
                 if (ConfigurationManager.Configuration.DownloadMovieImages.Logo && !hasLogo)
@@ -214,13 +214,13 @@ namespace MediaBrowser.Controller.Providers.Movies
                     path = node != null ? node.Value : null;
                     if (!string.IsNullOrEmpty(path))
                     {
-                        movie.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(movie, path, LOGO_FILE, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                        movie.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(movie, path, LogoFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var hasArt = item.LocationType == LocationType.FileSystem ?
-                    item.ResolveArgs.ContainsMetaFileByName(ART_FILE)
+                    item.ResolveArgs.ContainsMetaFileByName(ArtFile)
                     : item.HasImage(ImageType.Art);
 
                 if (ConfigurationManager.Configuration.DownloadMovieImages.Art && !hasArt)
@@ -233,13 +233,13 @@ namespace MediaBrowser.Controller.Providers.Movies
                     path = node != null ? node.Value : null;
                     if (!string.IsNullOrEmpty(path))
                     {
-                        movie.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(movie, path, ART_FILE, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                        movie.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(movie, path, ArtFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var hasDisc = item.LocationType == LocationType.FileSystem ?
-                    item.ResolveArgs.ContainsMetaFileByName(DISC_FILE)
+                    item.ResolveArgs.ContainsMetaFileByName(DiscFile)
                     : item.HasImage(ImageType.Disc);
 
                 if (ConfigurationManager.Configuration.DownloadMovieImages.Disc && !hasDisc)
@@ -249,14 +249,14 @@ namespace MediaBrowser.Controller.Providers.Movies
                     path = node != null ? node.Value : null;
                     if (!string.IsNullOrEmpty(path))
                     {
-                        movie.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(movie, path, DISC_FILE, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                        movie.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(movie, path, DiscFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var hasBanner = item.LocationType == LocationType.FileSystem ?
-                    item.ResolveArgs.ContainsMetaFileByName(BANNER_FILE)
+                    item.ResolveArgs.ContainsMetaFileByName(BannerFile)
                     : item.HasImage(ImageType.Banner);
 
                 if (ConfigurationManager.Configuration.DownloadMovieImages.Banner && !hasBanner)
@@ -266,14 +266,14 @@ namespace MediaBrowser.Controller.Providers.Movies
                     path = node != null ? node.Value : null;
                     if (!string.IsNullOrEmpty(path))
                     {
-                        movie.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(movie, path, BANNER_FILE, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                        movie.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(movie, path, BannerFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var hasThumb = item.LocationType == LocationType.FileSystem ?
-                    item.ResolveArgs.ContainsMetaFileByName(THUMB_FILE)
+                    item.ResolveArgs.ContainsMetaFileByName(ThumbFile)
                     : item.HasImage(ImageType.Thumb);
 
                 if (ConfigurationManager.Configuration.DownloadMovieImages.Thumb && !hasThumb)
@@ -283,12 +283,12 @@ namespace MediaBrowser.Controller.Providers.Movies
                     path = node != null ? node.Value : null;
                     if (!string.IsNullOrEmpty(path))
                     {
-                        movie.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(movie, path, THUMB_FILE, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                        movie.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(movie, path, ThumbFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
 
                 var hasBackdrop = item.LocationType == LocationType.FileSystem ?
-                    item.ResolveArgs.ContainsMetaFileByName(BACKDROP_FILE)
+                    item.ResolveArgs.ContainsMetaFileByName(BackdropFile)
                     : item.BackdropImagePaths.Count > 0;
 
                 if (ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && !hasBackdrop)

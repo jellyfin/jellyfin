@@ -134,7 +134,7 @@ namespace MediaBrowser.Controller.Providers.Music
                 return true;
             }
 
-            var url = string.Format("http://api.fanart.tv/webservice/album/{0}/{1}/xml/all/1/1", APIKey, album.MusicBrainzReleaseGroupId);
+            var url = string.Format("http://api.fanart.tv/webservice/album/{0}/{1}/xml/all/1/1", ApiKey, album.MusicBrainzReleaseGroupId);
 
             var doc = new XmlDocument();
 
@@ -154,7 +154,7 @@ namespace MediaBrowser.Controller.Providers.Music
 
             if (doc.HasChildNodes)
             {
-                if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Disc && !item.ResolveArgs.ContainsMetaFileByName(DISC_FILE))
+                if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Disc && !item.ResolveArgs.ContainsMetaFileByName(DiscFile))
                 {
                     var node = doc.SelectSingleNode("//fanart/music/albums/album/cdart/@url");
 
@@ -163,11 +163,11 @@ namespace MediaBrowser.Controller.Providers.Music
                     if (!string.IsNullOrEmpty(path))
                     {
                         Logger.Debug("FanArtProvider getting Disc for " + item.Name);
-                        item.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(item, path, DISC_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                        item.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(item, path, DiscFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
 
-                if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Primary && !item.ResolveArgs.ContainsMetaFileByName(PRIMARY_FILE))
+                if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Primary && !item.ResolveArgs.ContainsMetaFileByName(PrimaryFile))
                 {
                     var node = doc.SelectSingleNode("//fanart/music/albums/album/albumcover/@url");
 
@@ -176,7 +176,7 @@ namespace MediaBrowser.Controller.Providers.Music
                     if (!string.IsNullOrEmpty(path))
                     {
                         Logger.Debug("FanArtProvider getting albumcover for " + item.Name);
-                        item.SetImage(ImageType.Primary, await _providerManager.DownloadAndSaveImage(item, path, PRIMARY_FILE, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                        item.SetImage(ImageType.Primary, await _providerManager.DownloadAndSaveImage(item, path, PrimaryFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
             }
