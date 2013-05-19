@@ -163,18 +163,15 @@
         $('#themeSongsCollapsible', page).hide();
         $('#themeVideosCollapsible', page).hide();
 
-        ApiClient.getThemeSongs(Dashboard.getCurrentUserId(), item.Id).done(function (result) {
-            renderThemeSongs(page, item, result);
-        });
-
-        ApiClient.getThemeVideos(Dashboard.getCurrentUserId(), item.Id).done(function (result) {
-            renderThemeVideos(page, item, result);
-        });
-
+        renderThemeSongs(page, item);
+        renderThemeVideos(page, item);
         renderCriticReviews(page, item, 1);
     }
 
     function renderDetails(page, item, context) {
+
+        renderSimilarItems(page, item);
+        renderSiblingLinks(page, item);
 
         if (item.Taglines && item.Taglines.length) {
             $('#itemTagline', page).html(item.Taglines[0]).show();
@@ -219,6 +216,8 @@
 
         renderTags(page, item);
 
+        renderSeriesAirTime(page, item, context);
+
         var detailsSection = $('#detailsSection', page);
         var elem = $('.detailSectionContent', detailsSection)[0];
         var text = elem.textContent || elem.innerText;
@@ -228,9 +227,6 @@
         } else {
             detailsSection.removeClass('hide');
         }
-
-        renderSeriesAirTime(page, item, context);
-        renderSimiliarItems(page, item);
 
         if (item.Players) {
             $('#players', page).show().html(item.Players + ' Player');
@@ -243,9 +239,47 @@
         } else {
             $('#artist', page).hide();
         }
+
     }
 
-    function renderSimiliarItems(page, item) {
+    function renderSiblingLinks(page, item) {
+
+        $('.lnkSibling', page).addClass('hide');
+
+        if ((item.Type != "Episode" && item.Type != "Season" && item.Type != "Audio") || item.IndexNumber == null) {
+            return;
+        }
+
+        var friendly = item.Type == "Audio" ? "song" : item.Type.toLowerCase();
+
+        ApiClient.getItems(Dashboard.getCurrentUserId(), {
+
+            AdjacentTo: item.Id,
+            ParentId: item.ParentId
+
+        }).done(function (result) {
+
+            for (var i = 0, length = result.Items.length; i < length; i++) {
+
+                var curr = result.Items[i];
+
+                if (curr.IndexNumber == null) {
+                    continue;
+                }
+
+                if (curr.IndexNumber < item.IndexNumber) {
+
+                    $('.lnkPreviousItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id).html('← Previous ' + friendly);
+                }
+                else if (curr.IndexNumber > item.IndexNumber) {
+
+                    $('.lnkNextItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id).html('Next ' + friendly + ' →');
+                }
+            }
+        });
+    }
+
+    function renderSimilarItems(page, item) {
 
         if (item.Type != "Movie" &&
             item.Type != "Trailer" &&
@@ -390,6 +424,11 @@
 
     function renderCriticReviews(page, item, limit) {
 
+        if (item.Type != "Movie" && item.Type != "Trailer") {
+            $('#criticReviewsCollapsible', page).hide();
+            return;
+        }
+
         var options = {};
 
         if (limit) {
@@ -479,24 +518,30 @@
         $('#criticReviewsContent', page).html(html).trigger('create');
     }
 
-    function renderThemeSongs(page, item, result) {
+    function renderThemeSongs(page, item) {
 
-        if (result.Items.length) {
+        ApiClient.getThemeSongs(Dashboard.getCurrentUserId(), item.Id).done(function (result) {
+            if (result.Items.length) {
 
-            $('#themeSongsCollapsible', page).show();
+                $('#themeSongsCollapsible', page).show();
 
-            $('#themeSongsContent', page).html(LibraryBrowser.getSongTableHtml(result.Items, { showArtist: true, showAlbum: true })).trigger('create');
-        }
+                $('#themeSongsContent', page).html(LibraryBrowser.getSongTableHtml(result.Items, { showArtist: true, showAlbum: true })).trigger('create');
+            }
+        });
+
     }
 
-    function renderThemeVideos(page, item, result) {
+    function renderThemeVideos(page, item) {
 
-        if (result.Items.length) {
+        ApiClient.getThemeVideos(Dashboard.getCurrentUserId(), item.Id).done(function (result) {
+            if (result.Items.length) {
 
-            $('#themeVideosCollapsible', page).show();
+                $('#themeVideosCollapsible', page).show();
 
-            $('#themeVideosContent', page).html(getVideosHtml(result.Items)).trigger('create');
-        }
+                $('#themeVideosContent', page).html(getVideosHtml(result.Items)).trigger('create');
+            }
+        });
+
     }
 
     function renderScenes(page, item, limit) {
@@ -759,7 +804,7 @@
             html += '<p>' + cast.Name + '</p>';
 
             var role = cast.Role ? "as " + cast.Role : cast.Type;
-            
+
             if (role == "GuestStar") {
                 role = "Guest star";
             }

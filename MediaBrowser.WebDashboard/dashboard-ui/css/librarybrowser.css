@@ -309,6 +309,36 @@ a.itemTag:hover {
         white-space: nowrap;
     }
 
+.lnkSibling {
+    position: absolute;
+    bottom: 240px;
+    text-decoration: none;
+    color: #fff!important;
+    font-weight: normal!important;
+    display: none;
+    background-color: rgba(0,0,0,0.4);
+    border-radius: 3px;
+    padding: 3px 5px;
+}
+
+    .lnkSibling:hover {
+        text-decoration: underline;
+    }
+
+.noBackdrop .lnkSibling {
+    background-color: transparent;
+    border-radius: 0;
+    padding: 0;
+}
+
+.lnkPreviousItem {
+    left: 15px;
+}
+
+.lnkNextItem {
+    right: 15px;
+}
+
 .itemDetailImage {
     height: 240px;
     -moz-box-shadow: 0px 0 20px #000;
@@ -408,6 +438,18 @@ a.itemTag:hover {
 
 @media all and (min-width: 750px) {
 
+    .lnkSibling:not(.hide) {
+        display: block;
+    }
+
+    .lnkSibling {
+        bottom: 270px;
+    }
+
+    .noBackdrop .lnkSibling {
+        bottom: 260px;
+    }
+
     .galleryImage {
         max-height: 90px;
     }
@@ -429,6 +471,10 @@ a.itemTag:hover {
 
     .itemBackdrop {
         background-size: 100% auto;
+    }
+
+    .noBackdrop .lnkSibling {
+        bottom: 205px;
     }
 }
 
@@ -480,6 +526,14 @@ a.itemTag:hover {
 }
 
 @media all and (min-width: 1440px) {
+
+    .lnkSibling {
+        bottom: 205px;
+        color: #ddd!important;
+        background-color: transparent;
+        border-radius: 0;
+        padding: 0;
+    }
 
     .ehsContent {
         max-width: 1070px;

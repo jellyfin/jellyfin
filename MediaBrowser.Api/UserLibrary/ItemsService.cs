@@ -166,6 +166,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "HasTrailer", Description = "Optional filter by items with trailers.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public bool? HasTrailer { get; set; }
 
+        [ApiMember(Name = "AdjacentTo", Description = "Optional. Return items that are siblings of a supplied item.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string AdjacentTo { get; set; }
+
         /// <summary>
         /// Gets the order by.
         /// </summary>
@@ -240,7 +243,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             items = items.AsParallel();
 
-            items = ApplyAdditionalFilters(request, items);
+            items = ApplyAdditionalFilters(request, items, user);
 
             // Apply filters
             // Run them starting with the ones that are likely to reduce the list the most
@@ -325,9 +328,6 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{BaseItem}.</returns>
         internal static IEnumerable<BaseItem> ApplyFilter(IEnumerable<BaseItem> items, ItemFilter filter, User user, IUserDataRepository repository)
         {
-            // Avoids implicitly captured closure
-            var currentUser = user;
-
             switch (filter)
             {
                 case ItemFilter.Likes:
@@ -397,7 +397,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        internal static IEnumerable<BaseItem> ApplyAdditionalFilters(GetItems request, IEnumerable<BaseItem> items)
+        private IEnumerable<BaseItem> ApplyAdditionalFilters(GetItems request, IEnumerable<BaseItem> items, User user)
         {
             // Artists
             if (!string.IsNullOrEmpty(request.Artists))
@@ -422,6 +422,30 @@ namespace MediaBrowser.Api.UserLibrary
 
                     return false;
                 });
+            }
+
+            if (!string.IsNullOrEmpty(request.AdjacentTo))
+            {
+                var item = DtoBuilder.GetItemByClientId(request.AdjacentTo, _userManager, _libraryManager);
+
+                var allSiblings = item.Parent.GetChildren(user).OrderBy(i => i.SortName).ToList();
+
+                var index = allSiblings.IndexOf(item);
+
+                var previousId = Guid.Empty;
+                var nextId = Guid.Empty;
+
+                if (index > 0)
+                {
+                    previousId = allSiblings[index - 1].Id;
+                }
+
+                if (index < allSiblings.Count - 1)
+                {
+                    nextId = allSiblings[index + 1].Id;
+                }
+
+                items = items.Where(i => i.Id == previousId || i.Id == nextId);
             }
 
             // Min official rating
