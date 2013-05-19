@@ -162,6 +162,13 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             await _tmdbSettingsSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
+            // Check again in case it got populated while we were waiting.
+            if (_tmdbSettings != null)
+            {
+                _tmdbSettingsSemaphore.Release();
+                return _tmdbSettings;
+            }
+            
             try
             {
                 using (var json = await GetMovieDbResponse(new HttpRequestOptions
