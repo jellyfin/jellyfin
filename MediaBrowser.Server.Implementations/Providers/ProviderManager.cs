@@ -191,6 +191,11 @@ namespace MediaBrowser.Server.Implementations.Providers
                     continue;
                 }
 
+                if (provider.RequiresInternet && item.DontFetchMeta)
+                {
+                    continue;
+                }
+
                 currentTasks.Add(FetchAsync(provider, item, force, cancellationToken));
                 currentPriority = provider.Priority;
             }

@@ -148,7 +148,7 @@ namespace MediaBrowser.Controller.Providers.TV
             cancellationToken.ThrowIfCancellationRequested();
             
             var series = (Series)item;
-            if (!item.DontFetchMeta && !HasLocalMeta(series))
+            if (!HasLocalMeta(series))
             {
                 var path = item.Path ?? "";
                 var seriesId = Path.GetFileName(path).GetAttributeValue("tvdbid") ?? await GetSeriesId(series, cancellationToken);

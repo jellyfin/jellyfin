@@ -115,7 +115,7 @@ namespace MediaBrowser.Controller.Providers.TV
             cancellationToken.ThrowIfCancellationRequested();
             
             var episode = (Episode)item;
-            if (!item.DontFetchMeta && !HasLocalMeta(episode))
+            if (!HasLocalMeta(episode))
             {
                 var seriesId = episode.Series != null ? episode.Series.GetProviderId(MetadataProviders.Tvdb) : null;
 
