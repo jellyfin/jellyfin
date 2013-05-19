@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Resolvers;
+﻿using System.Globalization;
+using MediaBrowser.Controller.Resolvers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -184,8 +185,7 @@ namespace MediaBrowser.Controller.Library
                 }
                 else
                 {
-                    if (EntityResolutionHelper.IsVideoFile(child.FullName) &&
-                        !string.IsNullOrEmpty(EpisodeNumberFromFile(child.FullName, false)))
+                    if (EntityResolutionHelper.IsVideoFile(child.FullName) && GetEpisodeNumberFromFile(child.FullName, false).HasValue)
                     {
                         return true;
                     }
@@ -201,14 +201,14 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fullPath">The full path.</param>
         /// <param name="isInSeason">if set to <c>true</c> [is in season].</param>
         /// <returns>System.String.</returns>
-        public static string EpisodeNumberFromFile(string fullPath, bool isInSeason)
+        public static int? GetEpisodeNumberFromFile(string fullPath, bool isInSeason)
         {
             string fl = fullPath.ToLower();
             foreach (var r in EpisodeExpressions)
             {
                 Match m = r.Match(fl);
                 if (m.Success)
-                    return m.Groups["epnumber"].Value;
+                    return ParseEpisodeNumber(m.Groups["epnumber"].Value);
             }
             if (isInSeason)
             {
@@ -217,8 +217,22 @@ namespace MediaBrowser.Controller.Library
 
                 if (match != null)
                 {
-                    return match.Value;
+                    return ParseEpisodeNumber(match.Value);
                 }
+            }
+
+            return null;
+        }
+
+        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        
+        private static int? ParseEpisodeNumber(string val)
+        {
+            int num;
+
+            if (!string.IsNullOrEmpty(val) && int.TryParse(val, NumberStyles.Integer, UsCulture, out num))
+            {
+                return num;
             }
 
             return null;
