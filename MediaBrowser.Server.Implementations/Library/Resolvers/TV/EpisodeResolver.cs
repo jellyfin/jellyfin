@@ -18,30 +18,41 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
         /// <returns>Episode.</returns>
         protected override Episode Resolve(ItemResolveArgs args)
         {
+            var isInSeason = args.Parent is Season;
+
             // If the parent is a Season or Series, then this is an Episode if the VideoResolver returns something
-            if (args.Parent is Season || args.Parent is Series)
+            if (isInSeason || args.Parent is Series)
             {
                 if (args.IsDirectory)
                 {
                     if (args.ContainsFileSystemEntryByName("video_ts"))
                     {
                         return new Episode
-                            {
-                                Path = args.Path,
-                                VideoType = VideoType.Dvd
-                            };
+                        {
+                            IndexNumber = TVUtils.GetEpisodeNumberFromFile(args.Path, isInSeason),
+                            Path = args.Path,
+                            VideoType = VideoType.Dvd
+                        };
                     }
                     if (args.ContainsFileSystemEntryByName("bdmv"))
                     {
                         return new Episode
-                            {
-                                Path = args.Path,
-                                VideoType = VideoType.BluRay
-                            };
+                        {
+                            IndexNumber = TVUtils.GetEpisodeNumberFromFile(args.Path, isInSeason),
+                            Path = args.Path,
+                            VideoType = VideoType.BluRay
+                        };
                     }
                 }
 
-                return base.Resolve(args);
+                var episide = base.Resolve(args);
+
+                if (episide != null)
+                {
+                    episide.IndexNumber = TVUtils.GetEpisodeNumberFromFile(args.Path, isInSeason);
+                }
+
+                return episide;
             }
 
             return null;

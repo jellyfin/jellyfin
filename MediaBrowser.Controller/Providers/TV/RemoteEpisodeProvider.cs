@@ -144,17 +144,15 @@ namespace MediaBrowser.Controller.Providers.TV
         {
             string location = episode.Path;
 
-            string epNum = TVUtils.EpisodeNumberFromFile(location, episode.Season != null);
+            var episodeNumber = episode.IndexNumber ?? TVUtils.GetEpisodeNumberFromFile(location, episode.Season != null);
 
             var status = ProviderRefreshStatus.Success;
 
-            if (epNum == null)
+            if (episodeNumber == null)
             {
                 Logger.Warn("TvDbProvider: Could not determine episode number for: " + episode.Path);
                 return status;
             }
-
-            var episodeNumber = Int32.Parse(epNum);
 
             episode.IndexNumber = episodeNumber;
             var usingAbsoluteData = false;
