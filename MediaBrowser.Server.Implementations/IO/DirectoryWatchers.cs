@@ -328,15 +328,26 @@ namespace MediaBrowser.Server.Implementations.IO
                 return;
             }
 
+            var tempIgnorePaths = _tempIgnoredPaths.Keys.ToList();
+
+            if (e.ChangeType == WatcherChangeTypes.Changed)
+            {
+                // If the parent of an ignored path has a change event, ignore that too
+                if (tempIgnorePaths.Any(i => string.Equals(Path.GetDirectoryName(i), e.FullPath, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return;
+                }
+            }
+
             // Ignore certain files
             if (_alwaysIgnoreFiles.Any(f => e.Name.EndsWith(f, StringComparison.OrdinalIgnoreCase)))
             {
                 return;
             }
 
-            if (_tempIgnoredPaths.ContainsKey(e.FullPath))
+            if (tempIgnorePaths.Contains(e.FullPath, StringComparer.OrdinalIgnoreCase))
             {
-                Logger.Info("Watcher requested to ignore change to " + e.FullPath);
+                Logger.Debug("Watcher requested to ignore change to " + e.FullPath);
                 return;
             }
 
