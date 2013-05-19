@@ -186,12 +186,12 @@ namespace MediaBrowser.Server.Implementations.Providers
 
                 // Put this check below the await because the needs refresh of the next tier of providers may depend on the previous ones running
                 //  This is the case for the fan art provider which depends on the movie and tv providers having run before them
-                if (!force && !provider.NeedsRefresh(item))
+                if (provider.RequiresInternet && item.DontFetchMeta)
                 {
                     continue;
                 }
 
-                if (provider.RequiresInternet && item.DontFetchMeta)
+                if (!force && !provider.NeedsRefresh(item))
                 {
                     continue;
                 }

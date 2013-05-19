@@ -114,7 +114,7 @@ namespace MediaBrowser.Controller.Providers.Music
 
             //var artist = item;
 
-            var url = string.Format(FanArtBaseUrl, APIKey, item.GetProviderId(MetadataProviders.Musicbrainz));
+            var url = string.Format(FanArtBaseUrl, ApiKey, item.GetProviderId(MetadataProviders.Musicbrainz));
             var doc = new XmlDocument();
 
             var status = ProviderRefreshStatus.Success;
@@ -137,7 +137,7 @@ namespace MediaBrowser.Controller.Providers.Music
             {
                 string path;
                 var hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hd" : "";
-                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo && !item.ResolveArgs.ContainsMetaFileByName(LOGO_FILE))
+                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo && !item.ResolveArgs.ContainsMetaFileByName(LogoFile))
                 {
                     var node =
                         doc.SelectSingleNode("//fanart/music/musiclogos/" + hd + "musiclogo/@url") ??
@@ -146,12 +146,12 @@ namespace MediaBrowser.Controller.Providers.Music
                     if (!string.IsNullOrEmpty(path))
                     {
                         Logger.Debug("FanArtProvider getting ClearLogo for " + item.Name);
-                        item.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(item, path, LOGO_FILE, SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                        item.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(item, path, LogoFile, SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Backdrops && !item.ResolveArgs.ContainsMetaFileByName(BACKDROP_FILE))
+                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Backdrops && !item.ResolveArgs.ContainsMetaFileByName(BackdropFile))
                 {
                     var nodes = doc.SelectNodes("//fanart/music/artistbackgrounds//@url");
                     if (nodes != null)
@@ -176,7 +176,7 @@ namespace MediaBrowser.Controller.Providers.Music
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Art && !item.ResolveArgs.ContainsMetaFileByName(ART_FILE))
+                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Art && !item.ResolveArgs.ContainsMetaFileByName(ArtFile))
                 {
                     var node =
                         doc.SelectSingleNode("//fanart/music/musicarts/" + hd + "musicart/@url") ??
@@ -185,12 +185,12 @@ namespace MediaBrowser.Controller.Providers.Music
                     if (!string.IsNullOrEmpty(path))
                     {
                         Logger.Debug("FanArtProvider getting ClearArt for " + item.Name);
-                        item.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(item, path, ART_FILE, SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                        item.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(item, path, ArtFile, SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Banner && !item.ResolveArgs.ContainsMetaFileByName(BANNER_FILE))
+                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Banner && !item.ResolveArgs.ContainsMetaFileByName(BannerFile))
                 {
                     var node = doc.SelectSingleNode("//fanart/music/musicbanners/" + hd + "musicbanner/@url") ??
                                doc.SelectSingleNode("//fanart/music/musicbanners/musicbanner/@url");
@@ -198,21 +198,21 @@ namespace MediaBrowser.Controller.Providers.Music
                     if (!string.IsNullOrEmpty(path))
                     {
                         Logger.Debug("FanArtProvider getting Banner for " + item.Name);
-                        item.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(item, path, BANNER_FILE, SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                        item.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(item, path, BannerFile, SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // Artist thumbs are actually primary images (they are square/portrait)
-                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Primary && !item.ResolveArgs.ContainsMetaFileByName(PRIMARY_FILE))
+                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Primary && !item.ResolveArgs.ContainsMetaFileByName(PrimaryFile))
                 {
                     var node = doc.SelectSingleNode("//fanart/music/artistthumbs/artistthumb/@url");
                     path = node != null ? node.Value : null;
                     if (!string.IsNullOrEmpty(path))
                     {
                         Logger.Debug("FanArtProvider getting Primary image for " + item.Name);
-                        item.SetImage(ImageType.Primary, await _providerManager.DownloadAndSaveImage(item, path, PRIMARY_FILE, SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                        item.SetImage(ImageType.Primary, await _providerManager.DownloadAndSaveImage(item, path, PrimaryFile, SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
             }

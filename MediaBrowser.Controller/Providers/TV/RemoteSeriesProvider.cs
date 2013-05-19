@@ -30,7 +30,7 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <summary>
         /// The tv db
         /// </summary>
-        internal readonly SemaphoreSlim TvDbResourcePool = new SemaphoreSlim(5, 5);
+        internal readonly SemaphoreSlim TvDbResourcePool = new SemaphoreSlim(3, 3);
 
         internal static RemoteSeriesProvider Current { get; private set; }
 
