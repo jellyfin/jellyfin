@@ -238,7 +238,7 @@ var Dashboard = {
     showServerRestartWarning: function () {
 
         var html = '<span style="margin-right: 1em;">Please restart Media Browser Server to finish updating.</span>';
-        html += '<button type="button" data-icon="refresh" onclick="Dashboard.restartServer();" data-theme="b" data-inline="true" data-mini="true">Restart Server</button>';
+        html += '<button type="button" data-icon="refresh" onclick="$(this).button(\'disable\');Dashboard.restartServer();" data-theme="b" data-inline="true" data-mini="true">Restart Server</button>';
 
         Dashboard.showFooterNotification({ id: "serverRestartWarning", html: html, forceShow: true, allowHide: false });
     },
