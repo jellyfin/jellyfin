@@ -80,7 +80,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <param name="host">The host.</param>
         /// <returns>HttpClient.</returns>
         /// <exception cref="System.ArgumentNullException">host</exception>
-        private HttpClient GetHttpClient(string host)
+        private HttpClient GetHttpClient(string host, bool enableHttpCompression)
         {
             if (string.IsNullOrEmpty(host))
             {
@@ -88,17 +88,20 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
 
             HttpClient client;
-            if (!_httpClients.TryGetValue(host, out client))
+
+            var key = host + enableHttpCompression;
+
+            if (!_httpClients.TryGetValue(key, out client))
             {
                 var handler = new WebRequestHandler
                 {
                     CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache),
-                    AutomaticDecompression = DecompressionMethods.None
+                    AutomaticDecompression = enableHttpCompression ? DecompressionMethods.Deflate : DecompressionMethods.None
                 };
 
                 client = new HttpClient(handler);
                 client.Timeout = TimeSpan.FromSeconds(20);
-                _httpClients.TryAdd(host, client);
+                _httpClients.TryAdd(key, client);
             }
 
             return client;
@@ -182,7 +185,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 {
                     options.CancellationToken.ThrowIfCancellationRequested();
 
-                    var response = await GetHttpClient(GetHostFromUrl(options.Url)).SendAsync(message, HttpCompletionOption.ResponseHeadersRead, options.CancellationToken).ConfigureAwait(false);
+                    var response = await GetHttpClient(GetHostFromUrl(options.Url), options.EnableHttpCompression).SendAsync(message, HttpCompletionOption.ResponseHeadersRead, options.CancellationToken).ConfigureAwait(false);
 
                     if (options.EnableResponseCache)
                     {
@@ -411,7 +414,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var msg = await GetHttpClient(GetHostFromUrl(url)).PostAsync(url, content, cancellationToken).ConfigureAwait(false);
+                var msg = await GetHttpClient(GetHostFromUrl(url), false).PostAsync(url, content, cancellationToken).ConfigureAwait(false);
 
                 EnsureSuccessStatusCode(msg);
 
@@ -472,7 +475,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                 using (var message = GetHttpRequestMessage(options))
                 {
-                    using (var response = await GetHttpClient(GetHostFromUrl(options.Url)).SendAsync(message, HttpCompletionOption.ResponseHeadersRead, options.CancellationToken).ConfigureAwait(false))
+                    using (var response = await GetHttpClient(GetHostFromUrl(options.Url), options.EnableHttpCompression).SendAsync(message, HttpCompletionOption.ResponseHeadersRead, options.CancellationToken).ConfigureAwait(false))
                     {
                         EnsureSuccessStatusCode(response);
 

@@ -49,5 +49,12 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <value><c>true</c> if [enable response caching]; otherwise, <c>false</c>.</value>
         public bool EnableResponseCache { get; set; }
+
+        public bool EnableHttpCompression { get; set; }
+
+        public HttpRequestOptions()
+        {
+            EnableHttpCompression = true;
+        }
     }
 }
