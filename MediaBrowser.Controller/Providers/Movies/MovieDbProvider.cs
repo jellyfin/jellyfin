@@ -896,7 +896,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             try
             {
                 // Limit to three requests per second
-                var diff = 400 - (DateTime.Now - _lastRequestDate).TotalMilliseconds;
+                var diff = 500 - (DateTime.Now - _lastRequestDate).TotalMilliseconds;
 
                 if (diff > 0)
                 {
