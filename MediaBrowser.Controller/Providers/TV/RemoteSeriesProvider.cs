@@ -214,7 +214,7 @@ namespace MediaBrowser.Controller.Providers.TV
                     series.AirTime = doc.SafeGetString("//Airs_Time");
 
                     string n = doc.SafeGetString("//banner");
-                    if (!string.IsNullOrWhiteSpace(n))
+                    if (!string.IsNullOrWhiteSpace(n) && !series.HasImage(ImageType.Banner))
                     {
                         series.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n, "banner" + Path.GetExtension(n), ConfigurationManager.Configuration.SaveLocalMeta, TvDbResourcePool, cancellationToken).ConfigureAwait(false));
                     }

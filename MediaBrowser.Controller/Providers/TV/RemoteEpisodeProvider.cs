@@ -215,18 +215,21 @@ namespace MediaBrowser.Controller.Providers.TV
 
                 if (doc.HasChildNodes)
                 {
-                    var p = doc.SafeGetString("//filename");
-                    if (p != null)
+                    if (!episode.HasImage(ImageType.Primary))
                     {
-                        if (!Directory.Exists(episode.MetaLocation)) Directory.CreateDirectory(episode.MetaLocation);
+                        var p = doc.SafeGetString("//filename");
+                        if (p != null)
+                        {
+                            if (!Directory.Exists(episode.MetaLocation)) Directory.CreateDirectory(episode.MetaLocation);
 
-                        try
-                        {
-                            episode.PrimaryImagePath = await _providerManager.DownloadAndSaveImage(episode, TVUtils.BannerUrl + p, Path.GetFileName(p), ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken);
-                        }
-                        catch (HttpException)
-                        {
-                            status = ProviderRefreshStatus.CompletedWithErrors;
+                            try
+                            {
+                                episode.PrimaryImagePath = await _providerManager.DownloadAndSaveImage(episode, TVUtils.BannerUrl + p, Path.GetFileName(p), ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken);
+                            }
+                            catch (HttpException)
+                            {
+                                status = ProviderRefreshStatus.CompletedWithErrors;
+                            }
                         }
                     }
 
