@@ -151,7 +151,7 @@ pre, textarea.pre {
     vertical-align: middle;
 }
 
-.imageLink.supporter {
+.imageLink.supporterIcon {
     display: none;
 }
 
@@ -282,7 +282,7 @@ form, .readOnlyContent {
         height: 50px;
     }
 
-    .imageLink.supporter {
+    .imageLink.supporterIcon {
         display: inline-block;
     }
 

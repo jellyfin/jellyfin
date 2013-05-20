@@ -526,6 +526,8 @@
                 $('#themeSongsCollapsible', page).show();
 
                 $('#themeSongsContent', page).html(LibraryBrowser.getSongTableHtml(result.Items, { showArtist: true, showAlbum: true })).trigger('create');
+            } else {
+                $('#themeSongsCollapsible', page).hide();
             }
         });
 
@@ -539,6 +541,8 @@
                 $('#themeVideosCollapsible', page).show();
 
                 $('#themeVideosContent', page).html(getVideosHtml(result.Items)).trigger('create');
+            } else {
+                $('#themeVideosCollapsible', page).hide();
             }
         });
 

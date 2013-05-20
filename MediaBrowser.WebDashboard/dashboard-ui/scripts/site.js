@@ -477,7 +477,7 @@ var Dashboard = {
         options = options || {};
 
         options.header = options.header || "Select Media Path";
-        options.instruction = options.instruction || "Any path will do, but network paths (UNC) will allow clients direct file playback when possible. For optimal playback of bluray and dvd folders, unc paths are recommended.";
+        options.instruction = options.instruction || "Any path will do, but <b>network paths (UNC)</b> allow clients direct file playback when possible. For optimal playback of bluray and dvd folders, <b>network paths</b> are recommended.";
 
         var html = '<div data-role="popup" id="popupDirectoryPicker" class="ui-corner-all popup" style="min-width:65%;">';
 
@@ -713,13 +713,17 @@ var Dashboard = {
 
         header.append(headerHtml);
 
-        Search.onSearchRendered(header);
+        if (!$('.supporterIcon', header).length) {
+            
+            Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
 
-        Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
-            if (pluginSecurityInfo.IsMBSupporter) {
-                $('<a class="imageLink" href="supporter.html"><img src="css/images/supporter/supporterbadge.png" /></a>').insertBefore('.btnTools', header);
-            }
-        });
+                if (pluginSecurityInfo.IsMBSupporter) {
+                    $('<a class="imageLink supporterIcon" href="supporter.html"><img src="css/images/supporter/supporterbadge.png" /></a>').insertBefore($('.btnTools', header));
+                } else {
+                    $('<a class="imageLink supporterIcon nonSupporterIcon" href="supporter.html" title="Become a Media Browser supporter!"><img src="css/images/supporter/nonsupporterbadge.png" /></a>').insertBefore($('.btnTools', header));
+                }
+            });
+        }
     },
 
     ensureToolsMenu: function (page) {
