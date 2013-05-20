@@ -77,9 +77,12 @@ namespace MediaBrowser.Api.Library
 
             if (!string.Equals(currentPath, newPath, StringComparison.OrdinalIgnoreCase) && Directory.Exists(newPath))
             {
-                throw new ArgumentException("There is already a media collection with the name " + newPath + ".");
+                //Create an unique name
+                var temporaryName = Guid.NewGuid().ToString();
+                var temporaryPath = Path.Combine(rootFolderPath, temporaryName);
+                Directory.Move(currentPath,temporaryPath);
+                currentPath = temporaryPath;
             }
-
             Directory.Move(currentPath, newPath);
         }
 
