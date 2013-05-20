@@ -48,6 +48,7 @@ namespace MediaBrowser.Controller.Entities
         public const string TrailerFolderName = "trailers";
         public const string ThemeSongsFolderName = "theme-music";
         public const string ThemeVideosFolderName = "backdrops";
+        public const string XbmcTrailerFileSuffix = "-trailer";
 
         private string _name;
         /// <summary>
@@ -707,27 +708,38 @@ namespace MediaBrowser.Controller.Entities
                 return new List<Trailer>();
             }
 
+            var files = new List<FileSystemInfo>();
+
             var folder = resolveArgs.GetFileSystemEntryByName(TrailerFolderName);
 
             // Path doesn't exist. No biggie
-            if (folder == null)
+            if (folder != null)
             {
-                return new List<Trailer>();
+                try
+                {
+                    files.AddRange(new DirectoryInfo(folder.FullName).EnumerateFiles());
+                }
+                catch (IOException ex)
+                {
+                    Logger.ErrorException("Error loading trailers for {0}", ex, Name);
+                }
             }
 
-            IEnumerable<FileSystemInfo> files;
-
-            try
+            // Support xbmc trailers (-trailer suffix on video file names)
+            files.AddRange(resolveArgs.FileSystemChildren.Where(i =>
             {
-                files = new DirectoryInfo(folder.FullName).EnumerateFiles();
-            }
-            catch (IOException ex)
-            {
-                Logger.ErrorException("Error loading trailers for {0}", ex, Name);
-                return new List<Trailer>();
-            }
+                if (!i.Attributes.HasFlag(FileAttributes.Directory))
+                {
+                    if (System.IO.Path.GetFileNameWithoutExtension(i.Name).EndsWith(XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase) && !string.Equals(Path, i.FullName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
 
-            return LibraryManager.ResolvePaths<Trailer>(files, null).Select(video =>
+                return false;
+            }));
+
+            var trailers= LibraryManager.ResolvePaths<Trailer>(files, null).Select(video =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
                 var dbItem = LibraryManager.RetrieveItem(video.Id) as Trailer;
@@ -740,6 +752,8 @@ namespace MediaBrowser.Controller.Entities
 
                 return video;
             }).ToList();
+
+            return trailers;
         }
 
         /// <summary>
