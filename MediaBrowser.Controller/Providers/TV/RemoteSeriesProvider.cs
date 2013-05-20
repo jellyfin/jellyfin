@@ -360,16 +360,30 @@ namespace MediaBrowser.Controller.Providers.TV
                 string url = string.Format("http://www.thetvdb.com/api/" + TVUtils.TvdbApiKey + "/series/{0}/banners.xml", seriesId);
                 var images = new XmlDocument();
 
-                using (var imgs = await HttpClient.Get(new HttpRequestOptions
+                try
                 {
-                    Url = url,
-                    ResourcePool = TvDbResourcePool,
-                    CancellationToken = cancellationToken,
-                    EnableResponseCache = true
+                    using (var imgs = await HttpClient.Get(new HttpRequestOptions
+                    {
+                        Url = url,
+                        ResourcePool = TvDbResourcePool,
+                        CancellationToken = cancellationToken,
+                        EnableResponseCache = true
 
-                }).ConfigureAwait(false))
+                    }).ConfigureAwait(false))
+                    {
+                        images.Load(imgs);
+                    }
+                }
+                catch (HttpException ex)
                 {
-                    images.Load(imgs);
+                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
+                    {
+                        // If a series has no images this will produce a 404.
+                        // Return gracefully so we don't keep retrying on subsequent scans
+                        return;
+                    }
+
+                    throw;
                 }
 
                 if (images.HasChildNodes)
