@@ -1,8 +1,8 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Resolvers;
 using System;
 using System.IO;
-using MediaBrowser.Controller.Resolvers;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers
 {
