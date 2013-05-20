@@ -31,6 +31,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
                 {
                     return base.Resolve(args);
                 }
+
+                // Support xbmc local trailer convention, but only when looking for local trailers (hence the parent == null check)
+                if (args.Parent == null && Path.GetFileNameWithoutExtension(args.Path).EndsWith(BaseItem.XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase))
+                {
+                    return base.Resolve(args);
+                }
             }
 
             return null;

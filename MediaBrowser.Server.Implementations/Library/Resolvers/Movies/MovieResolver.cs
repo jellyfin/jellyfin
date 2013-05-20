@@ -158,7 +158,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 }
 
                 // Don't misidentify xbmc trailers as a movie
-                if (child.Name.IndexOf("-trailer", StringComparison.OrdinalIgnoreCase) != -1)
+                if (child.Name.IndexOf(BaseItem.XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase) != -1)
                 {
                     continue;
                 }
