@@ -157,6 +157,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     continue;
                 }
 
+                // Don't misidentify xbmc trailers as a movie
+                if (child.Name.IndexOf("-trailer", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    continue;
+                }
+
                 var childArgs = new ItemResolveArgs(ApplicationPaths)
                 {
                     FileInfo = child,
