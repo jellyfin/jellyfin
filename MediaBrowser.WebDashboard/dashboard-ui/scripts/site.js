@@ -477,7 +477,7 @@ var Dashboard = {
         options = options || {};
 
         options.header = options.header || "Select Media Path";
-        options.instruction = options.instruction || "<p class='directoryPickerHeadline'>Network paths (UNC) are optional, but will allow direct file playback when possible.</p>";
+        options.instruction = options.instruction || "Any path will do, but network paths (UNC) will allow clients direct file playback when possible. For optimal playback of bluray and dvd folders, unc paths are recommended.";
 
         var html = '<div data-role="popup" id="popupDirectoryPicker" class="ui-corner-all popup" style="min-width:65%;">';
 
@@ -487,7 +487,7 @@ var Dashboard = {
 
         html += '<div data-role="content" class="ui-corner-bottom ui-content">';
         html += '<form>';
-        html += '<div>' + options.instruction + '</div>';
+        html += '<p class="directoryPickerHeadline">' + options.instruction + '</p>';
 
         html += '<div data-role="fieldcontain" style="margin:0;">';
         html += '<label for="txtDirectoryPickerPath" class="lblDirectoryPickerPath">Current Folder:</label>';
