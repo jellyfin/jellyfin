@@ -17,7 +17,7 @@
         $('#selectTmdbPosterDownloadSize', page).val(config.TmdbFetchedPosterSize).selectmenu("refresh");
         $('#selectTmdbBackdropDownloadSize', page).val(config.TmdbFetchedBackdropSize).selectmenu("refresh");
         
-        $('#chkRefreshItemImages', page).checked(config.RefreshItemImages).checkboxradio("refresh");
+        $('#chkRefreshItemImages', page).checked(!config.RefreshItemImages).checkboxradio("refresh");
         $('#txtNumbackdrops', page).val(config.MaxBackdrops);
 
         $('#chkDownloadMovieArt', page).checked(config.DownloadMovieImages.Art).checkboxradio("refresh");
@@ -60,7 +60,7 @@
             config.TmdbFetchedPosterSize = $('#selectTmdbPosterDownloadSize', form).val();
             config.TmdbFetchedBackdropSize = $('#selectTmdbBackdropDownloadSize', form).val();
 
-            config.RefreshItemImages = $('#chkRefreshItemImages', form).checked();
+            config.RefreshItemImages = !$('#chkRefreshItemImages', form).checked();
             config.MaxBackdrops = $('#txtNumbackdrops', form).val();
 
             config.DownloadMovieImages.Art = $('#chkDownloadMovieArt', form).checked();
