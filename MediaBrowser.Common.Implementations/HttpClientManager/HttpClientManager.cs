@@ -97,7 +97,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 };
 
                 client = new HttpClient(handler);
-                client.Timeout = TimeSpan.FromSeconds(30);
+                client.Timeout = TimeSpan.FromSeconds(20);
                 _httpClients.TryAdd(host, client);
             }
 
