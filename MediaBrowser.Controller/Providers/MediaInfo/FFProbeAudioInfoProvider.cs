@@ -186,7 +186,9 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             {
                 audio.Genres.Clear();
 
-                foreach (var genre in val.Split(new[] { '/', '|' }, StringSplitOptions.RemoveEmptyEntries))
+                foreach (var genre in val
+                    .Split(new[] { '/', '|' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Where(i => !string.IsNullOrWhiteSpace(i)))
                 {
                     audio.AddGenre(genre);
                 }
