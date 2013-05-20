@@ -98,7 +98,8 @@ namespace MediaBrowser.Controller.Providers.Music
                 Url = url,
                 ResourcePool = LastfmResourcePool,
                 CancellationToken = cancellationToken,
-                EnableResponseCache = true
+                EnableResponseCache = true,
+                EnableHttpCompression = false
 
             }).ConfigureAwait(false))
             {
@@ -191,7 +192,8 @@ namespace MediaBrowser.Controller.Providers.Music
                 Url = url,
                 ResourcePool = LastfmResourcePool,
                 CancellationToken = cancellationToken,
-                EnableResponseCache = true
+                EnableResponseCache = true,
+                EnableHttpCompression = false
 
             }).ConfigureAwait(false))
             {
