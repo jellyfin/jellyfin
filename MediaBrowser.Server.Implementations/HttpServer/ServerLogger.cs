@@ -79,7 +79,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="message">The message.</param>
         public void Debug(object message)
         {
-            _logger.Debug(GetMesssage(message));
+            // Way too verbose. Can always make this configurable if needed again.
+            //_logger.Debug(GetMesssage(message));
         }
 
         /// <summary>
@@ -89,7 +90,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="args">The args.</param>
         public void DebugFormat(string format, params object[] args)
         {
-            _logger.Debug(format, args);
+            // Way too verbose. Can always make this configurable if needed again.
+            //_logger.Debug(format, args);
         }
 
         /// <summary>
