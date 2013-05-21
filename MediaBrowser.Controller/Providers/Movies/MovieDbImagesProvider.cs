@@ -288,9 +288,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 {
                     var bdName = "backdrop" + (i == 0 ? "" : i.ToString(CultureInfo.InvariantCulture));
 
-                    var hasLocalBackdrop = item.BackdropImagePaths.Count > i;
-
-                    if (ConfigurationManager.Configuration.RefreshItemImages || !hasLocalBackdrop)
+                    if (ConfigurationManager.Configuration.RefreshItemImages || !item.HasLocalImage(bdName))
                     {
                         var img = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
                         {
