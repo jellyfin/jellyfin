@@ -153,8 +153,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             }
 
             // Don't refresh if we already have both poster and backdrop and we're not refreshing images
-            if (item.LocationType == LocationType.FileSystem && !ConfigurationManager.Configuration.RefreshItemImages 
-                && item.HasLocalImage("folder") && item.HasLocalImage("backdrop"))
+            if (!ConfigurationManager.Configuration.RefreshItemImages && item.HasImage(ImageType.Primary) && item.BackdropImagePaths.Count > 0)
             {
                 return false;
             }
@@ -211,8 +210,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             {
                 Url = string.Format(GetImages, id, MovieDbProvider.ApiKey, item is BoxSet ? "collection" : "movie"),
                 CancellationToken = cancellationToken,
-                AcceptHeader = MovieDbProvider.AcceptHeader,
-                EnableResponseCache = true
+                AcceptHeader = MovieDbProvider.AcceptHeader
 
             }).ConfigureAwait(false))
             {

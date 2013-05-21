@@ -590,8 +590,7 @@ namespace MediaBrowser.Controller.Providers.TV
             {
                 Url = url,
                 ResourcePool = TvDbResourcePool,
-                CancellationToken = cancellationToken,
-                EnableResponseCache = true
+                CancellationToken = cancellationToken
 
             }).ConfigureAwait(false))
             {

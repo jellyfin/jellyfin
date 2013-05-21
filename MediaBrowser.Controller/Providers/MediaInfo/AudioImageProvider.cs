@@ -1,9 +1,14 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.MediaInfo;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,13 +20,40 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     public class AudioImageProvider : BaseMetadataProvider
     {
         /// <summary>
+        /// Gets or sets the image cache.
+        /// </summary>
+        /// <value>The image cache.</value>
+        public FileSystemRepository ImageCache { get; set; }
+
+        /// <summary>
+        /// The _locks
+        /// </summary>
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new ConcurrentDictionary<string, SemaphoreSlim>();
+
+        /// <summary>
+        /// The _media encoder
+        /// </summary>
+        private readonly IMediaEncoder _mediaEncoder;
+
+        /// <summary>
+        /// The _library manager
+        /// </summary>
+        private readonly ILibraryManager _libraryManager;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="BaseMetadataProvider" /> class.
         /// </summary>
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        public AudioImageProvider(ILogManager logManager, IServerConfigurationManager configurationManager)
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="mediaEncoder">The media encoder.</param>
+        public AudioImageProvider(ILogManager logManager, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IMediaEncoder mediaEncoder)
             : base(logManager, configurationManager)
         {
+            _libraryManager = libraryManager;
+            _mediaEncoder = mediaEncoder;
+
+            ImageCache = new FileSystemRepository(Kernel.Instance.FFMpegManager.AudioImagesDataPath);
         }
 
         /// <summary>
@@ -55,42 +87,90 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         }
 
         /// <summary>
-        /// Needses the refresh internal.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="providerInfo">The provider info.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
-        {
-            if (!string.IsNullOrEmpty(item.PrimaryImagePath))
-            {
-                return false;
-            }
-            return base.NeedsRefreshInternal(item, providerInfo);
-        }
-
-        /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            if (force || string.IsNullOrEmpty(item.PrimaryImagePath))
-            {
-                var album = item.ResolveArgs.Parent as MusicAlbum;
+            var audio = (Audio)item;
 
-                if (album != null)
+            if (string.IsNullOrEmpty(audio.PrimaryImagePath) && audio.MediaStreams.Any(s => s.Type == MediaStreamType.Video))
+            {
+                try
                 {
-                    // First try to use the parent's image
-                    item.PrimaryImagePath = item.ResolveArgs.Parent.PrimaryImagePath;
+                    await CreateImagesForSong(audio, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error extracting image for {0}", ex, item.Name);
                 }
             }
 
             SetLastRefreshed(item, DateTime.UtcNow);
-            return TrueTaskResult;
+            return true;
+        }
+
+        /// <summary>
+        /// Creates the images for song.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="System.InvalidOperationException">Can't extract an image unless the audio file has an embedded image.</exception>
+        private async Task CreateImagesForSong(Audio item, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var album = item.Parent as MusicAlbum;
+
+            var filename = item.Album ?? string.Empty;
+            filename += item.Artist ?? string.Empty;
+            filename += album == null ? item.Id.ToString("N") + item.DateModified.Ticks : album.Id.ToString("N") + album.DateModified.Ticks;
+
+            var path = ImageCache.GetResourcePath(filename + "_primary", ".jpg");
+
+            if (!ImageCache.ContainsFilePath(path))
+            {
+                var semaphore = GetLock(path);
+
+                // Acquire a lock
+                await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+                // Check again
+                if (!ImageCache.ContainsFilePath(path))
+                {
+                    try
+                    {
+                        await _mediaEncoder.ExtractImage(new[] { item.Path }, InputType.AudioFile, null, path, cancellationToken).ConfigureAwait(false);
+                    }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+
+                    // Image is already in the cache
+                    item.PrimaryImagePath = path;
+
+                    await _libraryManager.UpdateItem(item, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    semaphore.Release();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the lock.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <returns>SemaphoreSlim.</returns>
+        private SemaphoreSlim GetLock(string filename)
+        {
+            return _locks.GetOrAdd(filename, key => new SemaphoreSlim(1, 1));
         }
     }
 }
