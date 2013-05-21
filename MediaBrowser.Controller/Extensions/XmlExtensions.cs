@@ -96,11 +96,15 @@ namespace MediaBrowser.Controller.Extensions
         /// <returns>System.String.</returns>
         public static string SafeGetString(this XmlDocument doc, string path, string defaultString)
         {
-            XmlNode rvalNode = doc.SelectSingleNode(path);
-            if (rvalNode != null && rvalNode.InnerText.Trim().Length > 0)
+            var rvalNode = doc.SelectSingleNode(path);
+
+            if (rvalNode != null)
             {
-                return rvalNode.InnerText;
+                var text = rvalNode.InnerText;
+
+                return !string.IsNullOrWhiteSpace(text) ? text : defaultString;
             }
+
             return defaultString;
         }
 
@@ -124,10 +128,12 @@ namespace MediaBrowser.Controller.Extensions
         /// <returns>System.String.</returns>
         public static string SafeGetString(this XmlNode doc, string path, string defaultValue)
         {
-            XmlNode rvalNode = doc.SelectSingleNode(path);
-            if (rvalNode != null && rvalNode.InnerText.Length > 0)
+            var rvalNode = doc.SelectSingleNode(path);
+            if (rvalNode != null)
             {
-                return rvalNode.InnerText;
+                var text = rvalNode.InnerText;
+
+                return !string.IsNullOrWhiteSpace(text) ? text : defaultValue;
             }
             return defaultValue;
         }

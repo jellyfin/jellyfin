@@ -367,7 +367,12 @@ namespace MediaBrowser.ServerApplication
             
             Parallel.Invoke(
 
-                () => LibraryManager.AddParts(GetExports<IResolverIgnoreRule>(), GetExports<IVirtualFolderCreator>(), GetExports<IItemResolver>(), GetExports<IIntroProvider>(), GetExports<IBaseItemComparer>()),
+                () => LibraryManager.AddParts(GetExports<IResolverIgnoreRule>(), 
+                    GetExports<IVirtualFolderCreator>(), 
+                    GetExports<IItemResolver>(), 
+                    GetExports<IIntroProvider>(),
+                    GetExports<IBaseItemComparer>(),
+                    GetExports<ILibraryPrescanTask>()),
 
                 () => ProviderManager.AddMetadataProviders(GetExports<BaseMetadataProvider>().ToArray())
 

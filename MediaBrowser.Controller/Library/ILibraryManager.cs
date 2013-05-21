@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Library
 {
+    /// <summary>
+    /// Interface ILibraryManager
+    /// </summary>
     public interface ILibraryManager
     {
         /// <summary>
@@ -140,11 +143,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="resolvers">The resolvers.</param>
         /// <param name="introProviders">The intro providers.</param>
         /// <param name="itemComparers">The item comparers.</param>
+        /// <param name="prescanTasks">The prescan tasks.</param>
         void AddParts(IEnumerable<IResolverIgnoreRule> rules, 
             IEnumerable<IVirtualFolderCreator> pluginFolders, 
             IEnumerable<IItemResolver> resolvers, 
             IEnumerable<IIntroProvider> introProviders, 
-            IEnumerable<IBaseItemComparer> itemComparers);
+            IEnumerable<IBaseItemComparer> itemComparers,
+            IEnumerable<ILibraryPrescanTask> prescanTasks);
 
         /// <summary>
         /// Sorts the specified items.
@@ -160,7 +165,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Ensure supplied item has only one instance throughout
         /// </summary>
-        /// <param name="item"></param>
+        /// <param name="item">The item.</param>
         /// <returns>The proper instance to the item</returns>
         BaseItem GetOrAddByReferenceItem(BaseItem item);
 
@@ -186,7 +191,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task UpdateItem(BaseItem item, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Retrieves the item.
         /// </summary>

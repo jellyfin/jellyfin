@@ -1,7 +1,7 @@
-﻿using System.Globalization;
-using MediaBrowser.Controller.Resolvers;
+﻿using MediaBrowser.Controller.Resolvers;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -243,7 +243,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="fullPath">The full path.</param>
         /// <returns>System.String.</returns>
-        public static string SeasonNumberFromEpisodeFile(string fullPath)
+        public static int? GetSeasonNumberFromEpisodeFile(string fullPath)
         {
             string fl = fullPath.ToLower();
             foreach (var r in EpisodeExpressions)
@@ -253,7 +253,19 @@ namespace MediaBrowser.Controller.Library
                 {
                     Group g = m.Groups["seasonnumber"];
                     if (g != null)
-                        return g.Value;
+                    {
+                        var val = g.Value;
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            int num;
+
+                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out num))
+                            {
+                                return num;
+                            }
+                        }
+                    }
                     return null;
                 }
             }

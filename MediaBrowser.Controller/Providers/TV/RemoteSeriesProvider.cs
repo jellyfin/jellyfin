@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -6,12 +7,13 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -25,14 +27,26 @@ namespace MediaBrowser.Controller.Providers.TV
     /// </summary>
     class RemoteSeriesProvider : BaseMetadataProvider, IDisposable
     {
+        /// <summary>
+        /// The _provider manager
+        /// </summary>
         private readonly IProviderManager _providerManager;
-        
+
         /// <summary>
         /// The tv db
         /// </summary>
-        internal readonly SemaphoreSlim TvDbResourcePool = new SemaphoreSlim(3, 3);
+        internal readonly SemaphoreSlim TvDbResourcePool = new SemaphoreSlim(1, 1);
 
+        /// <summary>
+        /// Gets the current.
+        /// </summary>
+        /// <value>The current.</value>
         internal static RemoteSeriesProvider Current { get; private set; }
+
+        /// <summary>
+        /// The _zip client
+        /// </summary>
+        private readonly IZipClient _zipClient;
 
         /// <summary>
         /// Gets the HTTP client.
@@ -47,8 +61,9 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="providerManager">The provider manager.</param>
+        /// <param name="zipClient">The zip client.</param>
         /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public RemoteSeriesProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
+        public RemoteSeriesProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IZipClient zipClient)
             : base(logManager, configurationManager)
         {
             if (httpClient == null)
@@ -57,6 +72,7 @@ namespace MediaBrowser.Controller.Providers.TV
             }
             HttpClient = httpClient;
             _providerManager = providerManager;
+            _zipClient = zipClient;
             Current = this;
         }
 
@@ -81,13 +97,9 @@ namespace MediaBrowser.Controller.Providers.TV
         /// </summary>
         private const string SeriesQuery = "GetSeries.php?seriesname={0}";
         /// <summary>
-        /// The series get
+        /// The series get zip
         /// </summary>
-        private const string SeriesGet = "http://www.thetvdb.com/api/{0}/series/{1}/{2}.xml";
-        /// <summary>
-        /// The get actors
-        /// </summary>
-        private const string GetActors = "http://www.thetvdb.com/api/{0}/series/{1}/actors.xml";
+        private const string SeriesGetZip = "http://www.thetvdb.com/api/{0}/series/{1}/all/{2}.zip";
 
         /// <summary>
         /// The LOCA l_ MET a_ FIL e_ NAME
@@ -126,6 +138,30 @@ namespace MediaBrowser.Controller.Providers.TV
         }
 
         /// <summary>
+        /// Gets a value indicating whether [refresh on version change].
+        /// </summary>
+        /// <value><c>true</c> if [refresh on version change]; otherwise, <c>false</c>.</value>
+        protected override bool RefreshOnVersionChange
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Gets the provider version.
+        /// </summary>
+        /// <value>The provider version.</value>
+        protected override string ProviderVersion
+        {
+            get
+            {
+                return "1";
+            }
+        }
+
+        /// <summary>
         /// Needses the refresh internal.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -133,9 +169,43 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            return !HasLocalMeta(item) && base.NeedsRefreshInternal(item, providerInfo);
+            // Refresh even if local metadata exists because we need episode infos
+            if (GetComparisonData(item) != providerInfo.Data)
+            {
+                return true;
+            }
+
+            return base.NeedsRefreshInternal(item, providerInfo);
         }
 
+        /// <summary>
+        /// Gets the comparison data.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>Guid.</returns>
+        private Guid GetComparisonData(BaseItem item)
+        {
+            var series = (Series)item;
+            var seriesId = series.GetProviderId(MetadataProviders.Tvdb);
+
+            if (!string.IsNullOrEmpty(seriesId))
+            {
+                // Process images
+                var path = GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId);
+
+                var files = new DirectoryInfo(path)
+                    .EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
+                    .Select(i => i.FullName + i.LastWriteTimeUtc.Ticks)
+                    .ToArray();
+
+                if (files.Length > 0)
+                {
+                    return string.Join(string.Empty, files).GetMD5();
+                }
+            }
+
+            return Guid.Empty;
+        }
         /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>
@@ -146,30 +216,40 @@ namespace MediaBrowser.Controller.Providers.TV
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             var series = (Series)item;
-            if (!HasLocalMeta(series))
+
+            var seriesId = series.GetProviderId(MetadataProviders.Tvdb);
+
+            if (string.IsNullOrEmpty(seriesId))
             {
-                var path = item.Path ?? "";
-                var seriesId = Path.GetFileName(path).GetAttributeValue("tvdbid") ?? await GetSeriesId(series, cancellationToken);
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var status = ProviderRefreshStatus.Success;
-
-                if (!string.IsNullOrEmpty(seriesId))
-                {
-                    series.SetProviderId(MetadataProviders.Tvdb, seriesId);
-
-                    status = await FetchSeriesData(series, seriesId, cancellationToken).ConfigureAwait(false);
-                }
-
-                SetLastRefreshed(item, DateTime.UtcNow, status);
-                return true;
+                seriesId = await GetSeriesId(series, cancellationToken);
             }
-            Logger.Info("Series provider not fetching because local meta exists or requested to ignore: " + item.Name);
-            return false;
 
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var status = ProviderRefreshStatus.Success;
+
+            if (!string.IsNullOrEmpty(seriesId))
+            {
+                series.SetProviderId(MetadataProviders.Tvdb, seriesId);
+
+                var seriesDataPath = GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId);
+
+                status = await FetchSeriesData(series, seriesId, seriesDataPath, cancellationToken).ConfigureAwait(false);
+            }
+
+            BaseProviderInfo data;
+            if (!item.ProviderData.TryGetValue(Id, out data))
+            {
+                data = new BaseProviderInfo();
+                item.ProviderData[Id] = data;
+            }
+
+            data.Data = GetComparisonData(item);
+            
+            SetLastRefreshed(item, DateTime.UtcNow, status);
+            return true;
         }
 
         /// <summary>
@@ -177,263 +257,291 @@ namespace MediaBrowser.Controller.Providers.TV
         /// </summary>
         /// <param name="series">The series.</param>
         /// <param name="seriesId">The series id.</param>
+        /// <param name="seriesDataPath">The series data path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        private async Task<ProviderRefreshStatus> FetchSeriesData(Series series, string seriesId, CancellationToken cancellationToken)
+        private async Task<ProviderRefreshStatus> FetchSeriesData(Series series, string seriesId, string seriesDataPath, CancellationToken cancellationToken)
         {
             var status = ProviderRefreshStatus.Success;
 
-            if (!string.IsNullOrEmpty(seriesId))
+            var files = Directory.EnumerateFiles(seriesDataPath, "*.xml", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).ToArray();
+
+            var seriesXmlFilename = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower() + ".xml";
+
+            // Only download if not already there
+            // The prescan task will take care of updates so we don't need to re-download here
+            if (!files.Contains("banners.xml", StringComparer.OrdinalIgnoreCase) || !files.Contains("actors.xml", StringComparer.OrdinalIgnoreCase) || !files.Contains(seriesXmlFilename, StringComparer.OrdinalIgnoreCase))
             {
+                await DownloadSeriesZip(seriesId, seriesDataPath, cancellationToken).ConfigureAwait(false);
+            }
 
-                string url = string.Format(SeriesGet, TVUtils.TvdbApiKey, seriesId, ConfigurationManager.Configuration.PreferredMetadataLanguage);
-                var doc = new XmlDocument();
+            // Only examine the main info if there's no local metadata
+            if (!HasLocalMeta(series))
+            {
+                var seriesXmlPath = Path.Combine(seriesDataPath, seriesXmlFilename);
+                var actorsXmlPath = Path.Combine(seriesDataPath, "actors.xml");
 
-                using (var xml = await HttpClient.Get(new HttpRequestOptions
+                var seriesDoc = new XmlDocument();
+                seriesDoc.Load(seriesXmlPath);
+
+                FetchMainInfo(series, seriesDoc);
+
+                var actorsDoc = new XmlDocument();
+                actorsDoc.Load(actorsXmlPath);
+
+                FetchActors(series, actorsDoc, seriesDoc);
+
+                if (ConfigurationManager.Configuration.SaveLocalMeta)
                 {
-                    Url = url,
-                    ResourcePool = TvDbResourcePool,
-                    CancellationToken = cancellationToken,
-                    EnableResponseCache = true
+                    var ms = new MemoryStream();
+                    seriesDoc.Save(ms);
 
-                }).ConfigureAwait(false))
-                {
-                    doc.Load(xml);
+                    await _providerManager.SaveToLibraryFilesystem(series, Path.Combine(series.MetaLocation, LocalMetaFileName), ms, cancellationToken).ConfigureAwait(false);
                 }
+            }
 
-                if (doc.HasChildNodes)
-                {
-                    //kick off the actor and image fetch simultaneously
-                    var actorTask = FetchActors(series, seriesId, doc, cancellationToken);
-                    var imageTask = FetchImages(series, seriesId, cancellationToken);
+            // Process images
+            var imagesXmlPath = Path.Combine(seriesDataPath, "banners.xml");
 
-                    series.Name = doc.SafeGetString("//SeriesName");
-                    series.Overview = doc.SafeGetString("//Overview");
-                    series.CommunityRating = doc.SafeGetSingle("//Rating", 0, 10);
-                    series.AirDays = TVUtils.GetAirDays(doc.SafeGetString("//Airs_DayOfWeek"));
-                    series.AirTime = doc.SafeGetString("//Airs_Time");
+            try
+            {
+                var xmlDoc = new XmlDocument();
+                xmlDoc.Load(imagesXmlPath);
 
-                    string n = doc.SafeGetString("//banner");
-                    if (!string.IsNullOrWhiteSpace(n) && !series.HasImage(ImageType.Banner))
-                    {
-                        series.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n, "banner" + Path.GetExtension(n), ConfigurationManager.Configuration.SaveLocalMeta, TvDbResourcePool, cancellationToken).ConfigureAwait(false));
-                    }
-
-                    string s = doc.SafeGetString("//Network");
-
-                    if (!string.IsNullOrWhiteSpace(s))
-                    {
-                        series.Studios.Clear();
-
-                        foreach (var studio in s.Trim().Split('|'))
-                        {
-                            series.AddStudio(studio);
-                        }
-                    }
-
-                    series.OfficialRating = doc.SafeGetString("//ContentRating");
-
-                    string g = doc.SafeGetString("//Genre");
-
-                    if (g != null)
-                    {
-                        string[] genres = g.Trim('|').Split('|');
-                        if (g.Length > 0)
-                        {
-                            series.Genres.Clear();
-
-                            foreach (var genre in genres)
-                            {
-                                series.AddGenre(genre);
-                            }
-                        }
-                    }
-
-                    try
-                    {
-                        //wait for other tasks
-                        await Task.WhenAll(actorTask, imageTask).ConfigureAwait(false);
-                    }
-                    catch (HttpException)
-                    {
-                        status = ProviderRefreshStatus.CompletedWithErrors;
-                    }
-
-                    if (ConfigurationManager.Configuration.SaveLocalMeta)
-                    {
-                        var ms = new MemoryStream();
-                        doc.Save(ms);
-
-                        await _providerManager.SaveToLibraryFilesystem(series, Path.Combine(series.MetaLocation, LocalMetaFileName), ms, cancellationToken).ConfigureAwait(false);
-                    }
-                }
+                await FetchImages(series, xmlDoc, cancellationToken).ConfigureAwait(false);
+            }
+            catch (HttpException)
+            {
+                // Have the provider try again next time, but don't let it fail here
+                status = ProviderRefreshStatus.CompletedWithErrors;
             }
 
             return status;
         }
 
         /// <summary>
-        /// Fetches the actors.
+        /// Downloads the series zip.
         /// </summary>
-        /// <param name="series">The series.</param>
         /// <param name="seriesId">The series id.</param>
-        /// <param name="doc">The doc.</param>
+        /// <param name="seriesDataPath">The series data path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task FetchActors(Series series, string seriesId, XmlDocument doc, CancellationToken cancellationToken)
+        internal async Task DownloadSeriesZip(string seriesId, string seriesDataPath, CancellationToken cancellationToken)
         {
-            string urlActors = string.Format(GetActors, TVUtils.TvdbApiKey, seriesId);
-            var docActors = new XmlDocument();
-
-            using (var actors = await HttpClient.Get(new HttpRequestOptions
+            var url = string.Format(SeriesGetZip, TVUtils.TvdbApiKey, seriesId, ConfigurationManager.Configuration.PreferredMetadataLanguage);
+            
+            using (var zipStream = await HttpClient.Get(new HttpRequestOptions
             {
-                Url = urlActors,
+                Url = url,
                 ResourcePool = TvDbResourcePool,
-                CancellationToken = cancellationToken,
-                EnableResponseCache = true
+                CancellationToken = cancellationToken
 
             }).ConfigureAwait(false))
             {
-                docActors.Load(actors);
+                // Copy to memory stream because we need a seekable stream
+                using (var ms = new MemoryStream())
+                {
+                    await zipStream.CopyToAsync(ms).ConfigureAwait(false);
+
+                    ms.Position = 0;
+                    _zipClient.ExtractAll(ms, seriesDataPath, true);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the series data path.
+        /// </summary>
+        /// <param name="appPaths">The app paths.</param>
+        /// <param name="seriesId">The series id.</param>
+        /// <returns>System.String.</returns>
+        internal static string GetSeriesDataPath(IApplicationPaths appPaths, string seriesId)
+        {
+            var seriesDataPath = Path.Combine(GetSeriesDataPath(appPaths), seriesId);
+
+            if (!Directory.Exists(seriesDataPath))
+            {
+                Directory.CreateDirectory(seriesDataPath);
             }
 
-            if (docActors.HasChildNodes)
+            return seriesDataPath;
+        }
+
+        /// <summary>
+        /// Gets the series data path.
+        /// </summary>
+        /// <param name="appPaths">The app paths.</param>
+        /// <returns>System.String.</returns>
+        internal static string GetSeriesDataPath(IApplicationPaths appPaths)
+        {
+            var dataPath = Path.Combine(appPaths.DataPath, "tvdb");
+
+            if (!Directory.Exists(dataPath))
             {
-                XmlNode actorsNode = null;
-                if (ConfigurationManager.Configuration.SaveLocalMeta)
+                Directory.CreateDirectory(dataPath);
+            }
+
+            return dataPath;
+        }
+
+        /// <summary>
+        /// Fetches the main info.
+        /// </summary>
+        /// <param name="series">The series.</param>
+        /// <param name="doc">The doc.</param>
+        private void FetchMainInfo(Series series, XmlDocument doc)
+        {
+            series.Name = doc.SafeGetString("//SeriesName");
+            series.Overview = doc.SafeGetString("//Overview");
+            series.CommunityRating = doc.SafeGetSingle("//Rating", 0, 10);
+            series.AirDays = TVUtils.GetAirDays(doc.SafeGetString("//Airs_DayOfWeek"));
+            series.AirTime = doc.SafeGetString("//Airs_Time");
+
+            string s = doc.SafeGetString("//Network");
+
+            if (!string.IsNullOrWhiteSpace(s))
+            {
+                series.Studios.Clear();
+
+                foreach (var studio in s.Trim().Split('|'))
                 {
-                    //add to the main doc for saving
-                    var seriesNode = doc.SelectSingleNode("//Series");
-                    if (seriesNode != null)
-                    {
-                        actorsNode = doc.CreateNode(XmlNodeType.Element, "Persons", null);
-                        seriesNode.AppendChild(actorsNode);
-                    }
+                    series.AddStudio(studio);
                 }
+            }
 
-                var xmlNodeList = docActors.SelectNodes("Actors/Actor");
+            series.OfficialRating = doc.SafeGetString("//ContentRating");
 
-                if (xmlNodeList != null)
+            string g = doc.SafeGetString("//Genre");
+
+            if (g != null)
+            {
+                string[] genres = g.Trim('|').Split('|');
+                if (g.Length > 0)
                 {
-                    series.People.Clear();
+                    series.Genres.Clear();
 
-                    foreach (XmlNode p in xmlNodeList)
+                    foreach (var genre in genres)
                     {
-                        string actorName = p.SafeGetString("Name");
-                        string actorRole = p.SafeGetString("Role");
-                        if (!string.IsNullOrWhiteSpace(actorName))
-                        {
-                            series.AddPerson(new PersonInfo { Type = PersonType.Actor, Name = actorName, Role = actorRole });
-
-                            if (ConfigurationManager.Configuration.SaveLocalMeta && actorsNode != null)
-                            {
-                                //create in main doc
-                                var personNode = doc.CreateNode(XmlNodeType.Element, "Person", null);
-                                foreach (XmlNode subNode in p.ChildNodes)
-                                    personNode.AppendChild(doc.ImportNode(subNode, true));
-                                //need to add the type
-                                var typeNode = doc.CreateNode(XmlNodeType.Element, "Type", null);
-                                typeNode.InnerText = PersonType.Actor;
-                                personNode.AppendChild(typeNode);
-                                actorsNode.AppendChild(personNode);
-                            }
-
-                        }
+                        series.AddGenre(genre);
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Fetches the actors.
+        /// </summary>
+        /// <param name="series">The series.</param>
+        /// <param name="actorsDoc">The actors doc.</param>
+        /// <param name="seriesDoc">The seriesDoc.</param>
+        /// <returns>Task.</returns>
+        private void FetchActors(Series series, XmlDocument actorsDoc, XmlDocument seriesDoc)
+        {
+            XmlNode actorsNode = null;
+            if (ConfigurationManager.Configuration.SaveLocalMeta)
+            {
+                //add to the main seriesDoc for saving
+                var seriesNode = seriesDoc.SelectSingleNode("//Series");
+                if (seriesNode != null)
+                {
+                    actorsNode = seriesDoc.CreateNode(XmlNodeType.Element, "Persons", null);
+                    seriesNode.AppendChild(actorsNode);
+                }
+            }
+
+            var xmlNodeList = actorsDoc.SelectNodes("Actors/Actor");
+
+            if (xmlNodeList != null)
+            {
+                series.People.Clear();
+
+                foreach (XmlNode p in xmlNodeList)
+                {
+                    string actorName = p.SafeGetString("Name");
+                    string actorRole = p.SafeGetString("Role");
+                    if (!string.IsNullOrWhiteSpace(actorName))
+                    {
+                        series.AddPerson(new PersonInfo { Type = PersonType.Actor, Name = actorName, Role = actorRole });
+
+                        if (ConfigurationManager.Configuration.SaveLocalMeta && actorsNode != null)
+                        {
+                            //create in main seriesDoc
+                            var personNode = seriesDoc.CreateNode(XmlNodeType.Element, "Person", null);
+                            foreach (XmlNode subNode in p.ChildNodes)
+                                personNode.AppendChild(seriesDoc.ImportNode(subNode, true));
+                            //need to add the type
+                            var typeNode = seriesDoc.CreateNode(XmlNodeType.Element, "Type", null);
+                            typeNode.InnerText = PersonType.Actor;
+                            personNode.AppendChild(typeNode);
+                            actorsNode.AppendChild(personNode);
+                        }
+
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// The us culture
+        /// </summary>
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
+
         /// <summary>
         /// Fetches the images.
         /// </summary>
         /// <param name="series">The series.</param>
-        /// <param name="seriesId">The series id.</param>
+        /// <param name="images">The images.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task FetchImages(Series series, string seriesId, CancellationToken cancellationToken)
+        private async Task FetchImages(Series series, XmlDocument images, CancellationToken cancellationToken)
         {
-            if ((!string.IsNullOrEmpty(seriesId)) && ((series.PrimaryImagePath == null) || (series.BackdropImagePaths == null)))
+            if (ConfigurationManager.Configuration.RefreshItemImages || !series.HasImage(ImageType.Primary))
             {
-                string url = string.Format("http://www.thetvdb.com/api/" + TVUtils.TvdbApiKey + "/series/{0}/banners.xml", seriesId);
-                var images = new XmlDocument();
-
-                try
+                var n = images.SelectSingleNode("//Banner[BannerType='poster']");
+                if (n != null)
                 {
-                    using (var imgs = await HttpClient.Get(new HttpRequestOptions
+                    n = n.SelectSingleNode("./BannerPath");
+                    if (n != null)
                     {
-                        Url = url,
-                        ResourcePool = TvDbResourcePool,
-                        CancellationToken = cancellationToken,
-                        EnableResponseCache = true
-
-                    }).ConfigureAwait(false))
-                    {
-                        images.Load(imgs);
+                        series.PrimaryImagePath = await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "folder" + Path.GetExtension(n.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, TvDbResourcePool, cancellationToken).ConfigureAwait(false);
                     }
                 }
-                catch (HttpException ex)
-                {
-                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
-                    {
-                        // If a series has no images this will produce a 404.
-                        // Return gracefully so we don't keep retrying on subsequent scans
-                        return;
-                    }
+            }
 
-                    throw;
+            if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && (ConfigurationManager.Configuration.RefreshItemImages || !series.HasImage(ImageType.Banner)))
+            {
+                var n = images.SelectSingleNode("//Banner[BannerType='series']");
+                if (n != null)
+                {
+                    n = n.SelectSingleNode("./BannerPath");
+                    if (n != null)
+                    {
+                        var bannerImagePath = await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "banner" + Path.GetExtension(n.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, TvDbResourcePool, cancellationToken);
+
+                        series.SetImage(ImageType.Banner, bannerImagePath);
+                    }
                 }
+            }
 
-                if (images.HasChildNodes)
+            if (series.BackdropImagePaths.Count < ConfigurationManager.Configuration.MaxBackdrops)
+            {
+                var bdNo = 0;
+                var xmlNodeList = images.SelectNodes("//Banner[BannerType='fanart']");
+                if (xmlNodeList != null)
                 {
-                    if (ConfigurationManager.Configuration.RefreshItemImages || !series.HasLocalImage("folder"))
+                    foreach (XmlNode b in xmlNodeList)
                     {
-                        var n = images.SelectSingleNode("//Banner[BannerType='poster']");
-                        if (n != null)
+                        var p = b.SelectSingleNode("./BannerPath");
+
+                        if (p != null)
                         {
-                            n = n.SelectSingleNode("./BannerPath");
-                            if (n != null)
-                            {
-                                series.PrimaryImagePath = await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "folder" + Path.GetExtension(n.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, TvDbResourcePool, cancellationToken).ConfigureAwait(false);
-                            }
+                            var bdName = "backdrop" + (bdNo > 0 ? bdNo.ToString(UsCulture) : "");
+                            series.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + p.InnerText, bdName + Path.GetExtension(p.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, TvDbResourcePool, cancellationToken).ConfigureAwait(false));
+                            bdNo++;
                         }
+
+                        if (series.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops) break;
                     }
-
-                    if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && (ConfigurationManager.Configuration.RefreshItemImages || !series.HasLocalImage("banner")))
-                    {
-                        var n = images.SelectSingleNode("//Banner[BannerType='series']");
-                        if (n != null)
-                        {
-                            n = n.SelectSingleNode("./BannerPath");
-                            if (n != null)
-                            {
-                                var bannerImagePath = await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "banner" + Path.GetExtension(n.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, TvDbResourcePool, cancellationToken);
-
-                                series.SetImage(ImageType.Banner, bannerImagePath);
-                            }
-                        }
-                    }
-
-                    var bdNo = 0;
-                    var xmlNodeList = images.SelectNodes("//Banner[BannerType='fanart']");
-                    if (xmlNodeList != null)
-                        foreach (XmlNode b in xmlNodeList)
-                        {
-                            series.BackdropImagePaths = new List<string>();
-                            var p = b.SelectSingleNode("./BannerPath");
-                            if (p != null)
-                            {
-                                var bdName = "backdrop" + (bdNo > 0 ? bdNo.ToString(UsCulture) : "");
-                                if (ConfigurationManager.Configuration.RefreshItemImages || !series.HasLocalImage(bdName))
-                                {
-                                    series.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + p.InnerText, bdName + Path.GetExtension(p.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, TvDbResourcePool, cancellationToken).ConfigureAwait(false));
-                                }
-                                bdNo++;
-                                if (bdNo >= ConfigurationManager.Configuration.MaxBackdrops) break;
-                            }
-                        }
                 }
             }
         }
@@ -573,6 +681,9 @@ namespace MediaBrowser.Controller.Providers.TV
             return name.Trim();
         }
 
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);

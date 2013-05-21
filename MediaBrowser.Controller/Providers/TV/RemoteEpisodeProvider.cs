@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -22,8 +23,11 @@ namespace MediaBrowser.Controller.Providers.TV
     /// </summary>
     class RemoteEpisodeProvider : BaseMetadataProvider
     {
+        /// <summary>
+        /// The _provider manager
+        /// </summary>
         private readonly IProviderManager _providerManager;
-        
+
         /// <summary>
         /// Gets the HTTP client.
         /// </summary>
@@ -36,6 +40,7 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="providerManager">The provider manager.</param>
         public RemoteEpisodeProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
             : base(logManager, configurationManager)
         {
@@ -80,11 +85,39 @@ namespace MediaBrowser.Controller.Providers.TV
             get { return true; }
         }
 
+        /// <summary>
+        /// Returns true or false indicating if the provider should refresh when the contents of it's directory changes
+        /// </summary>
+        /// <value><c>true</c> if [refresh on file system stamp change]; otherwise, <c>false</c>.</value>
         protected override bool RefreshOnFileSystemStampChange
         {
             get
             {
                 return true;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether [refresh on version change].
+        /// </summary>
+        /// <value><c>true</c> if [refresh on version change]; otherwise, <c>false</c>.</value>
+        protected override bool RefreshOnVersionChange
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Gets the provider version.
+        /// </summary>
+        /// <value>The provider version.</value>
+        protected override string ProviderVersion
+        {
+            get
+            {
+                return "1";
             }
         }
 
@@ -101,7 +134,50 @@ namespace MediaBrowser.Controller.Providers.TV
                 return false;
             }
 
+            if (GetComparisonData(item) != providerInfo.Data)
+            {
+                return true;
+            }
+
             return base.NeedsRefreshInternal(item, providerInfo);
+        }
+
+        /// <summary>
+        /// Gets the comparison data.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>Guid.</returns>
+        private Guid GetComparisonData(BaseItem item)
+        {
+            var episode = (Episode)item;
+
+            var seriesId = episode.Series != null ? episode.Series.GetProviderId(MetadataProviders.Tvdb) : null;
+
+            if (!string.IsNullOrEmpty(seriesId))
+            {
+                // Process images
+                var seriesXmlPath = Path.Combine(RemoteSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId), ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower() + ".xml");
+
+                var seriesXmlFileInfo = new FileInfo(seriesXmlPath);
+
+                return GetComparisonData(seriesXmlFileInfo);
+            }
+
+            return Guid.Empty;
+        }
+
+        /// <summary>
+        /// Gets the comparison data.
+        /// </summary>
+        /// <param name="seriesXmlFileInfo">The series XML file info.</param>
+        /// <returns>Guid.</returns>
+        private Guid GetComparisonData(FileInfo seriesXmlFileInfo)
+        {
+            var date = seriesXmlFileInfo.Exists ? seriesXmlFileInfo.LastWriteTimeUtc : DateTime.MinValue;
+
+            var key = date.Ticks + seriesXmlFileInfo.FullName;
+
+            return key.GetMD5();
         }
 
         /// <summary>
@@ -109,26 +185,51 @@ namespace MediaBrowser.Controller.Providers.TV
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="force">if set to <c>true</c> [force].</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            
-            var episode = (Episode)item;
-            if (!HasLocalMeta(episode))
+            if (HasLocalMeta(item))
             {
-                var seriesId = episode.Series != null ? episode.Series.GetProviderId(MetadataProviders.Tvdb) : null;
-
-                if (seriesId != null)
-                {
-                    var status = await FetchEpisodeData(episode, seriesId, cancellationToken).ConfigureAwait(false);
-                    SetLastRefreshed(item, DateTime.UtcNow, status);
-                    return true;
-                }
-                Logger.Info("Episode provider not fetching because series does not have a tvdb id: " + item.Path);
                 return false;
             }
-            Logger.Info("Episode provider not fetching because local meta exists or requested to ignore: " + item.Name);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var episode = (Episode)item;
+
+            var seriesId = episode.Series != null ? episode.Series.GetProviderId(MetadataProviders.Tvdb) : null;
+
+            if (!string.IsNullOrEmpty(seriesId))
+            {
+                var seriesXmlPath = Path.Combine(RemoteSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId), ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower() + ".xml");
+
+                var seriesXmlFileInfo = new FileInfo(seriesXmlPath);
+
+                var status = ProviderRefreshStatus.Success;
+
+                if (seriesXmlFileInfo.Exists)
+                {
+                    var xmlDoc = new XmlDocument();
+                    xmlDoc.Load(seriesXmlPath);
+
+                    status = await FetchEpisodeData(xmlDoc, episode, seriesId, cancellationToken).ConfigureAwait(false);
+                }
+
+                BaseProviderInfo data;
+                if (!item.ProviderData.TryGetValue(Id, out data))
+                {
+                    data = new BaseProviderInfo();
+                    item.ProviderData[Id] = data;
+                }
+
+                data.Data = GetComparisonData(seriesXmlFileInfo);
+
+                SetLastRefreshed(item, DateTime.UtcNow, status);
+                return true;
+            }
+
+            Logger.Info("Episode provider not fetching because series does not have a tvdb id: " + item.Path);
             return false;
         }
 
@@ -136,162 +237,121 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <summary>
         /// Fetches the episode data.
         /// </summary>
+        /// <param name="seriesXml">The series XML.</param>
         /// <param name="episode">The episode.</param>
         /// <param name="seriesId">The series id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        private async Task<ProviderRefreshStatus> FetchEpisodeData(Episode episode, string seriesId, CancellationToken cancellationToken)
+        private async Task<ProviderRefreshStatus> FetchEpisodeData(XmlDocument seriesXml, Episode episode, string seriesId, CancellationToken cancellationToken)
         {
-            string location = episode.Path;
-
-            var episodeNumber = episode.IndexNumber ?? TVUtils.GetEpisodeNumberFromFile(location, episode.Season != null);
-
             var status = ProviderRefreshStatus.Success;
 
-            if (episodeNumber == null)
+            if (episode.IndexNumber == null)
             {
-                Logger.Warn("TvDbProvider: Could not determine episode number for: " + episode.Path);
                 return status;
             }
 
-            episode.IndexNumber = episodeNumber;
-            var usingAbsoluteData = false;
+            var seasonNumber = episode.ParentIndexNumber ?? TVUtils.GetSeasonNumberFromEpisodeFile(episode.Path);
 
-            if (string.IsNullOrEmpty(seriesId)) return status;
-
-            var seasonNumber = "";
-            if (episode.Parent is Season)
+            if (seasonNumber == null)
             {
-                seasonNumber = episode.Parent.IndexNumber.ToString();
+                return status;
             }
 
-            if (string.IsNullOrEmpty(seasonNumber))
-                seasonNumber = TVUtils.SeasonNumberFromEpisodeFile(location); // try and extract the season number from the file name for S1E1, 1x04 etc.
+            var usingAbsoluteData = false;
 
-            if (!string.IsNullOrEmpty(seasonNumber))
+            var episodeNode = seriesXml.SelectSingleNode("//Episode[EpisodeNumber='" + episode.IndexNumber.Value + "'][SeasonNumber='" + seasonNumber.Value + "']");
+
+            if (episodeNode == null)
             {
-                seasonNumber = seasonNumber.TrimStart('0');
-
-                if (string.IsNullOrEmpty(seasonNumber))
+                if (seasonNumber.Value == 1)
                 {
-                    seasonNumber = "0"; // Specials
+                    episodeNode = seriesXml.SelectSingleNode("//Episode[absolute_number='" + episode.IndexNumber.Value + "']");
+                    usingAbsoluteData = true;
                 }
+            }
 
-                var url = string.Format(EpisodeQuery, TVUtils.TvdbApiKey, seriesId, seasonNumber, episodeNumber, ConfigurationManager.Configuration.PreferredMetadataLanguage);
-                var doc = new XmlDocument();
+            // If still null, nothing we can do
+            if (episodeNode == null)
+            {
+                return status;
+            }
 
-                using (var result = await HttpClient.Get(new HttpRequestOptions
+            var doc = new XmlDocument();
+            doc.LoadXml(episodeNode.OuterXml);
+
+            if (!episode.HasImage(ImageType.Primary))
+            {
+                var p = doc.SafeGetString("//filename");
+                if (p != null)
                 {
-                    Url = url,
-                    ResourcePool = RemoteSeriesProvider.Current.TvDbResourcePool,
-                    CancellationToken = cancellationToken,
-                    EnableResponseCache = true
+                    if (!Directory.Exists(episode.MetaLocation)) Directory.CreateDirectory(episode.MetaLocation);
 
-                }).ConfigureAwait(false))
-                {
-                    doc.Load(result);
-                }
-
-                //episode does not exist under this season, try absolute numbering.
-                //still assuming it's numbered as 1x01
-                //this is basicly just for anime.
-                if (!doc.HasChildNodes && Int32.Parse(seasonNumber) == 1)
-                {
-                    url = string.Format(AbsEpisodeQuery, TVUtils.TvdbApiKey, seriesId, episodeNumber, ConfigurationManager.Configuration.PreferredMetadataLanguage);
-
-                    using (var result = await HttpClient.Get(new HttpRequestOptions
+                    try
                     {
-                        Url = url,
-                        ResourcePool = RemoteSeriesProvider.Current.TvDbResourcePool,
-                        CancellationToken = cancellationToken,
-                        EnableResponseCache = true
-
-                    }).ConfigureAwait(false))
+                        episode.PrimaryImagePath = await _providerManager.DownloadAndSaveImage(episode, TVUtils.BannerUrl + p, Path.GetFileName(p), ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken);
+                    }
+                    catch (HttpException)
                     {
-                        if (result != null) doc.Load(result);
-                        usingAbsoluteData = true;
+                        status = ProviderRefreshStatus.CompletedWithErrors;
                     }
                 }
+            }
 
-                if (doc.HasChildNodes)
+            episode.Overview = doc.SafeGetString("//Overview");
+            if (usingAbsoluteData)
+                episode.IndexNumber = doc.SafeGetInt32("//absolute_number", -1);
+            if (episode.IndexNumber < 0)
+                episode.IndexNumber = doc.SafeGetInt32("//EpisodeNumber");
+
+            episode.Name = doc.SafeGetString("//EpisodeName");
+            episode.CommunityRating = doc.SafeGetSingle("//Rating", -1, 10);
+            var firstAired = doc.SafeGetString("//FirstAired");
+            DateTime airDate;
+            if (DateTime.TryParse(firstAired, out airDate) && airDate.Year > 1850)
+            {
+                episode.PremiereDate = airDate.ToUniversalTime();
+                episode.ProductionYear = airDate.Year;
+            }
+
+            episode.People.Clear();
+
+            var actors = doc.SafeGetString("//GuestStars");
+            if (actors != null)
+            {
+                foreach (var person in actors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = PersonType.GuestStar, Name = str }))
                 {
-                    if (!episode.HasImage(ImageType.Primary))
-                    {
-                        var p = doc.SafeGetString("//filename");
-                        if (p != null)
-                        {
-                            if (!Directory.Exists(episode.MetaLocation)) Directory.CreateDirectory(episode.MetaLocation);
-
-                            try
-                            {
-                                episode.PrimaryImagePath = await _providerManager.DownloadAndSaveImage(episode, TVUtils.BannerUrl + p, Path.GetFileName(p), ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken);
-                            }
-                            catch (HttpException)
-                            {
-                                status = ProviderRefreshStatus.CompletedWithErrors;
-                            }
-                        }
-                    }
-
-                    episode.Overview = doc.SafeGetString("//Overview");
-                    if (usingAbsoluteData)
-                        episode.IndexNumber = doc.SafeGetInt32("//absolute_number", -1);
-                    if (episode.IndexNumber < 0)
-                        episode.IndexNumber = doc.SafeGetInt32("//EpisodeNumber");
-
-                    episode.Name = doc.SafeGetString("//EpisodeName");
-                    episode.CommunityRating = doc.SafeGetSingle("//Rating", -1, 10);
-                    var firstAired = doc.SafeGetString("//FirstAired");
-                    DateTime airDate;
-                    if (DateTime.TryParse(firstAired, out airDate) && airDate.Year > 1850)
-                    {
-                        episode.PremiereDate = airDate.ToUniversalTime();
-                        episode.ProductionYear = airDate.Year;
-                    }
-
-                    episode.People.Clear();
-
-                    var actors = doc.SafeGetString("//GuestStars");
-                    if (actors != null)
-                    {
-                        foreach (var person in actors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = PersonType.GuestStar, Name = str }))
-                        {
-                            episode.AddPerson(person);
-                        }
-                    }
-
-
-                    var directors = doc.SafeGetString("//Director");
-                    if (directors != null)
-                    {
-                        foreach (var person in directors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = PersonType.Director, Name = str }))
-                        {
-                            episode.AddPerson(person);
-                        }
-                    }
-
-
-                    var writers = doc.SafeGetString("//Writer");
-                    if (writers != null)
-                    {
-                        foreach (var person in writers.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = PersonType.Writer, Name = str }))
-                        {
-                            episode.AddPerson(person);
-                        }
-                    }
-
-                    if (ConfigurationManager.Configuration.SaveLocalMeta)
-                    {
-                        if (!Directory.Exists(episode.MetaLocation)) Directory.CreateDirectory(episode.MetaLocation);
-                        var ms = new MemoryStream();
-                        doc.Save(ms);
-
-                        await _providerManager.SaveToLibraryFilesystem(episode, Path.Combine(episode.MetaLocation, Path.GetFileNameWithoutExtension(episode.Path) + ".xml"), ms, cancellationToken).ConfigureAwait(false);
-                    }
-
-                    return status;
+                    episode.AddPerson(person);
                 }
+            }
 
+
+            var directors = doc.SafeGetString("//Director");
+            if (directors != null)
+            {
+                foreach (var person in directors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = PersonType.Director, Name = str }))
+                {
+                    episode.AddPerson(person);
+                }
+            }
+
+
+            var writers = doc.SafeGetString("//Writer");
+            if (writers != null)
+            {
+                foreach (var person in writers.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(str => new PersonInfo { Type = PersonType.Writer, Name = str }))
+                {
+                    episode.AddPerson(person);
+                }
+            }
+
+            if (ConfigurationManager.Configuration.SaveLocalMeta)
+            {
+                if (!Directory.Exists(episode.MetaLocation)) Directory.CreateDirectory(episode.MetaLocation);
+                var ms = new MemoryStream();
+                doc.Save(ms);
+
+                await _providerManager.SaveToLibraryFilesystem(episode, Path.Combine(episode.MetaLocation, Path.GetFileNameWithoutExtension(episode.Path) + ".xml"), ms, cancellationToken).ConfigureAwait(false);
             }
 
             return status;
