@@ -533,7 +533,10 @@ namespace MediaBrowser.Api.Playback
 
             if (video != null)
             {
-                inputPath = MediaEncoderHelpers.GetInputArgument(video, isoMount, out type);
+                if (!(video.VideoType == VideoType.Iso && isoMount == null))
+                {
+                    inputPath = MediaEncoderHelpers.GetInputArgument(video, isoMount, out type);
+                }
             }
 
             return MediaEncoder.GetInputArgument(inputPath, type);
