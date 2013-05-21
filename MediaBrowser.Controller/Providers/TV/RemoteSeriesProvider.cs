@@ -525,7 +525,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
             if (series.BackdropImagePaths.Count < ConfigurationManager.Configuration.MaxBackdrops)
             {
-                var bdNo = 0;
+                var bdNo = series.BackdropImagePaths.Count;
                 var xmlNodeList = images.SelectNodes("//Banner[BannerType='fanart']");
                 if (xmlNodeList != null)
                 {

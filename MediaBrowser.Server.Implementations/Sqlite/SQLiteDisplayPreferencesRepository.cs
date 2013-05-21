@@ -34,18 +34,6 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         }
 
         /// <summary>
-        /// Gets a value indicating whether [enable delayed commands].
-        /// </summary>
-        /// <value><c>true</c> if [enable delayed commands]; otherwise, <c>false</c>.</value>
-        protected override bool EnableDelayedCommands
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
         /// The _json serializer
         /// </summary>
         private readonly IJsonSerializer _jsonSerializer;
@@ -132,13 +120,13 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var cmd = connection.CreateCommand())
+            using (var cmd = Connection.CreateCommand())
             {
                 cmd.CommandText = "replace into displaypreferences (id, data) values (@1, @2)";
                 cmd.AddParam("@1", displayPreferences.Id);
                 cmd.AddParam("@2", serialized);
 
-                using (var tran = connection.BeginTransaction())
+                using (var tran = Connection.BeginTransaction())
                 {
                     try
                     {
@@ -174,7 +162,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 throw new ArgumentNullException("displayPreferencesId");
             }
 
-            var cmd = connection.CreateCommand();
+            var cmd = Connection.CreateCommand();
             cmd.CommandText = "select data from displaypreferences where id = @id";
 
             var idParam = cmd.Parameters.Add("@id", DbType.Guid);

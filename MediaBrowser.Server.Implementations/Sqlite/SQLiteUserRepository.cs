@@ -46,18 +46,6 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         private readonly IApplicationPaths _appPaths;
 
         /// <summary>
-        /// Gets a value indicating whether [enable delayed commands].
-        /// </summary>
-        /// <value><c>true</c> if [enable delayed commands]; otherwise, <c>false</c>.</value>
-        protected override bool EnableDelayedCommands
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="SQLiteUserDataRepository" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
@@ -127,13 +115,13 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var cmd = connection.CreateCommand())
+            using (var cmd = Connection.CreateCommand())
             {
                 cmd.CommandText = "replace into users (guid, data) values (@1, @2)";
                 cmd.AddParam("@1", user.Id);
                 cmd.AddParam("@2", serialized);
 
-                using (var tran = connection.BeginTransaction())
+                using (var tran = Connection.BeginTransaction())
                 {
                     try
                     {
@@ -162,7 +150,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <returns>IEnumerable{User}.</returns>
         public IEnumerable<User> RetrieveAllUsers()
         {
-            using (var cmd = connection.CreateCommand())
+            using (var cmd = Connection.CreateCommand())
             {
                 cmd.CommandText = "select data from users";
 
@@ -201,7 +189,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var cmd = connection.CreateCommand())
+            using (var cmd = Connection.CreateCommand())
             {
                 cmd.CommandText = "delete from users where guid=@guid";
                 var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
