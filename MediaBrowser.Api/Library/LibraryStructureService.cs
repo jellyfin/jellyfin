@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller;
+﻿using System.Threading;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using ServiceStack.ServiceHost;
@@ -203,6 +204,8 @@ namespace MediaBrowser.Api.Library
 
                 LibraryHelpers.AddVirtualFolder(request.Name, user, _appPaths);
             }
+
+            _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
         }
 
         /// <summary>
@@ -221,6 +224,8 @@ namespace MediaBrowser.Api.Library
 
                 LibraryHelpers.RenameVirtualFolder(request.Name, request.NewName, user, _appPaths);
             }
+
+            _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
         }
         
         /// <summary>
@@ -239,6 +244,8 @@ namespace MediaBrowser.Api.Library
 
                 LibraryHelpers.RemoveVirtualFolder(request.Name, user, _appPaths);
             }
+
+            _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
         }
 
         /// <summary>
@@ -257,6 +264,8 @@ namespace MediaBrowser.Api.Library
 
                 LibraryHelpers.AddMediaPath(request.Name, request.Path, user, _appPaths);
             }
+
+            _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
         }
 
         /// <summary>
@@ -275,6 +284,8 @@ namespace MediaBrowser.Api.Library
 
                 LibraryHelpers.RemoveMediaPath(request.Name, request.Path, user, _appPaths);
             }
+
+            _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
         }
     }
 }
