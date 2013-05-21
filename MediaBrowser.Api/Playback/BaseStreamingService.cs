@@ -105,7 +105,10 @@ namespace MediaBrowser.Api.Playback
         protected string GetOutputFilePath(StreamState state)
         {
             var folder = ApplicationPaths.EncodedMediaCachePath;
-            return Path.Combine(folder, GetCommandLineArguments("dummy\\dummy", state, false).GetMD5() + GetOutputFileExtension(state).ToLower());
+
+            var outputFileExtension = GetOutputFileExtension(state);
+
+            return Path.Combine(folder, GetCommandLineArguments("dummy\\dummy", state, false).GetMD5() + (outputFileExtension ?? string.Empty).ToLower());
         }
 
         /// <summary>
