@@ -36,18 +36,6 @@ namespace MediaBrowser.Server.Implementations.Sqlite
             }
         }
 
-        /// <summary>
-        /// Gets a value indicating whether [enable delayed commands].
-        /// </summary>
-        /// <value><c>true</c> if [enable delayed commands]; otherwise, <c>false</c>.</value>
-        protected override bool EnableDelayedCommands
-        {
-            get
-            {
-                return false;
-            }
-        }
-
         private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
@@ -184,14 +172,14 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var cmd = connection.CreateCommand())
+            using (var cmd = Connection.CreateCommand())
             {
                 cmd.CommandText = "replace into userdata (key, userId, data) values (@1, @2, @3)";
                 cmd.AddParam("@1", key);
                 cmd.AddParam("@2", userId);
                 cmd.AddParam("@3", serialized);
 
-                using (var tran = connection.BeginTransaction())
+                using (var tran = Connection.BeginTransaction())
                 {
                     try
                     {
@@ -247,7 +235,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <returns>Task{UserItemData}.</returns>
         private async Task<UserItemData> RetrieveUserData(Guid userId, string key)
         {
-            using (var cmd = connection.CreateCommand())
+            using (var cmd = Connection.CreateCommand())
             {
                 cmd.CommandText = "select data from userdata where key = @key and userId=@userId";
 

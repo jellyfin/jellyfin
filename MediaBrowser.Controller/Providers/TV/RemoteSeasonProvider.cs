@@ -279,7 +279,6 @@ namespace MediaBrowser.Controller.Providers.TV
                     n = n.SelectSingleNode("./BannerPath");
                     if (n != null)
                     {
-                        if (season.BackdropImagePaths == null) season.BackdropImagePaths = new List<string>();
                         season.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(season, TVUtils.BannerUrl + n.InnerText, "backdrop" + Path.GetExtension(n.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false));
                     }
                 }
