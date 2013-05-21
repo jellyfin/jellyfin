@@ -145,8 +145,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             {
                 Url = url,
                 CancellationToken = cancellationToken,
-                AcceptHeader = MovieDbProvider.AcceptHeader,
-                EnableResponseCache = true
+                AcceptHeader = MovieDbProvider.AcceptHeader
 
             }).ConfigureAwait(false))
             {
@@ -172,8 +171,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             {
                 Url = url,
                 CancellationToken = cancellationToken,
-                AcceptHeader = MovieDbProvider.AcceptHeader,
-                EnableResponseCache = true
+                AcceptHeader = MovieDbProvider.AcceptHeader
 
             }).ConfigureAwait(false))
             {

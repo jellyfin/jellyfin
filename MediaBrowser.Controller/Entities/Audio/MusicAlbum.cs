@@ -118,16 +118,12 @@ namespace MediaBrowser.Controller.Entities.Audio
                 var images = base.Images;
                 string primaryImagePath;
 
-                if (images == null || !images.TryGetValue(ImageType.Primary, out primaryImagePath))
+                if (!images.TryGetValue(ImageType.Primary, out primaryImagePath))
                 {
                     var image = Children.Select(c => c.PrimaryImagePath).FirstOrDefault(c => !string.IsNullOrEmpty(c));
 
                     if (!string.IsNullOrEmpty(image))
                     {
-                        if (images == null)
-                        {
-                            images = new Dictionary<ImageType, string>();
-                        }
                         images[ImageType.Primary] = image;
                     }
                 }
