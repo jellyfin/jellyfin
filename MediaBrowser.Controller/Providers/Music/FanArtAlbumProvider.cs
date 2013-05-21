@@ -220,7 +220,7 @@ namespace MediaBrowser.Controller.Providers.Music
                 {
                     Url = url,
                     CancellationToken = cancellationToken,
-                    UserAgent = "MediaBrowserServer/www.mediabrowser3.com",
+                    UserAgent = Environment.MachineName + "-" + Environment.UserName,
                     EnableResponseCache = true
 
                 }).ConfigureAwait(false))
