@@ -246,12 +246,54 @@
                 return false;
             });
 
+            $('#searchHints', parentElem).on("keydown", '.searchHint', function (e) {
+
+                // Down
+                if (e.keyCode == 40) {
+
+                    var next = $(this).next()[0];
+
+                    if (next) {
+                        next.focus();
+                    }
+
+                }
+
+                // Up
+                if (e.keyCode == 38) {
+
+                    var prev = $(this).prev()[0];
+
+                    if (prev) {
+                        prev.focus();
+                    } else {
+                        $('#txtSearch', parentElem)[0].focus();
+                    }
+
+                }
+            });
+
             $('#txtSearch', parentElem).on("keyup", function (e) {
 
-                var value = this.value;
+                // Down
+                if (e.keyCode == 40) {
 
-                showFlyout(parentElem);
-                updateFlyout(parentElem, value);
+                    var first = $('.searchHint', parentElem)[0];
+
+                    if (first) {
+                        first.focus();
+                    }
+
+                }
+
+            }).on("keyup", function (e) {
+
+                if (e.keyCode != 40) {
+                    var value = this.value;
+
+                    showFlyout(parentElem);
+                    updateFlyout(parentElem, value);
+                }
 
             }).on("focus", function () {
 

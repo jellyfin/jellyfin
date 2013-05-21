@@ -74,6 +74,10 @@
         background-color: #eee;
     }
 
+    .searchHint:focus {
+        background-color: #eee;
+    }
+
 .searchHintImage {
     display: inline-block;
     width: 15%;
