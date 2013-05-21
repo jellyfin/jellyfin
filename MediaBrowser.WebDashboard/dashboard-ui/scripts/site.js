@@ -477,7 +477,7 @@ var Dashboard = {
         options = options || {};
 
         options.header = options.header || "Select Media Path";
-        options.instruction = options.instruction || "Any path will do, but <b>network paths (UNC)</b> allow clients direct file playback when possible. For optimal playback of bluray and dvd folders, <b>network paths</b> are recommended.";
+        options.instruction = options.instruction || "Any path will do, but for optimal playback of bluray, dvd folders, and games, <b>network paths (UNC)</b> are recommended.";
 
         var html = '<div data-role="popup" id="popupDirectoryPicker" class="ui-corner-all popup" style="min-width:65%;">';
 

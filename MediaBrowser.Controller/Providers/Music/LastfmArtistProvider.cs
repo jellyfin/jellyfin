@@ -117,8 +117,13 @@ namespace MediaBrowser.Controller.Providers.Music
 
                     if (searchResult != null && searchResult.results != null && searchResult.results.artistmatches != null && searchResult.results.artistmatches.artist.Count > 0)
                     {
-                        var artist = searchResult.results.artistmatches.artist.FirstOrDefault(i => i.name != null && string.Compare(i.name, item.Name, CultureInfo.CurrentCulture, CompareOptions.IgnoreNonSpace) == 0) ??
-                            searchResult.results.artistmatches.artist.First();
+                        var artist = searchResult.results.artistmatches.artist
+                            .FirstOrDefault(i => i.name != null && string.Compare(i.name, item.Name, CultureInfo.CurrentCulture, CompareOptions.IgnoreNonSpace | CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0);
+
+                        if (artist == null)
+                        {
+                            return null;
+                        }
 
                         return artist.mbid;
                     }
