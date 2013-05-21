@@ -18,42 +18,17 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <summary>
         /// The db file name
         /// </summary>
-        protected string dbFileName;
+        protected string DbFileName;
         /// <summary>
         /// The connection
         /// </summary>
-        protected SQLiteConnection connection;
-        /// <summary>
-        /// The delayed commands
-        /// </summary>
-        protected ConcurrentQueue<SQLiteCommand> delayedCommands = new ConcurrentQueue<SQLiteCommand>();
-        /// <summary>
-        /// The flush interval
-        /// </summary>
-        private const int FlushInterval = 2000;
-
-        /// <summary>
-        /// The flush timer
-        /// </summary>
-        private Timer FlushTimer;
+        protected SQLiteConnection Connection;
 
         /// <summary>
         /// Gets the logger.
         /// </summary>
         /// <value>The logger.</value>
         protected ILogger Logger { get; private set; }
-
-        /// <summary>
-        /// Gets a value indicating whether [enable delayed commands].
-        /// </summary>
-        /// <value><c>true</c> if [enable delayed commands]; otherwise, <c>false</c>.</value>
-        protected virtual bool EnableDelayedCommands
-        {
-            get
-            {
-                return true;
-            }
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteRepository" /> class.
@@ -83,7 +58,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 throw new ArgumentNullException("dbPath");
             }
 
-            dbFileName = dbPath;
+            DbFileName = dbPath;
             var connectionstr = new SQLiteConnectionStringBuilder
             {
                 PageSize = 4096,
@@ -93,15 +68,9 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 JournalMode = SQLiteJournalModeEnum.Memory
             };
 
-            connection = new SQLiteConnection(connectionstr.ConnectionString);
+            Connection = new SQLiteConnection(connectionstr.ConnectionString);
 
-            await connection.OpenAsync().ConfigureAwait(false);
-
-            if (EnableDelayedCommands)
-            {
-                // Run once
-                FlushTimer = new Timer(Flush, null, TimeSpan.FromMilliseconds(FlushInterval), TimeSpan.FromMilliseconds(-1));
-            }
+            await Connection.OpenAsync().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -117,11 +86,11 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 throw new ArgumentNullException("queries");
             }
 
-            using (var tran = connection.BeginTransaction())
+            using (var tran = Connection.BeginTransaction())
             {
                 try
                 {
-                    using (var cmd = connection.CreateCommand())
+                    using (var cmd = Connection.CreateCommand())
                     {
                         foreach (var query in queries)
                         {
@@ -165,26 +134,15 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 {
                     lock (_disposeLock)
                     {
-                        if (connection != null)
+                        if (Connection != null)
                         {
-                            if (EnableDelayedCommands)
+                            if (Connection.IsOpen())
                             {
-                                FlushOnDispose();
+                                Connection.Close();
                             }
 
-                            if (connection.IsOpen())
-                            {
-                                connection.Close();
-                            }
-
-                            connection.Dispose();
-                            connection = null;
-                        }
-
-                        if (FlushTimer != null)
-                        {
-                            FlushTimer.Dispose();
-                            FlushTimer = null;
+                            Connection.Dispose();
+                            Connection = null;
                         }
                     }
                 }
@@ -193,101 +151,6 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                     Logger.ErrorException("Error disposing database", ex);
                 }
             }
-        }
-
-        /// <summary>
-        /// Flushes the on dispose.
-        /// </summary>
-        private void FlushOnDispose()
-        {
-            // If we're not already flushing, do it now
-            if (!_isFlushing)
-            {
-                Flush(null);
-            }
-
-            // Don't dispose in the middle of a flush
-            while (_isFlushing)
-            {
-                Thread.Sleep(25);
-            }
-        }
-
-        /// <summary>
-        /// Queues the command.
-        /// </summary>
-        /// <param name="cmd">The CMD.</param>
-        /// <exception cref="System.ArgumentNullException">cmd</exception>
-        protected void QueueCommand(SQLiteCommand cmd)
-        {
-            if (cmd == null)
-            {
-                throw new ArgumentNullException("cmd");
-            }
-
-            delayedCommands.Enqueue(cmd);
-        }
-
-        /// <summary>
-        /// The is flushing
-        /// </summary>
-        private bool _isFlushing;
-
-        /// <summary>
-        /// Flushes the specified sender.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        private void Flush(object sender)
-        {
-            // Cannot call Count on a ConcurrentQueue since it's an O(n) operation
-            // Use IsEmpty instead
-            if (delayedCommands.IsEmpty)
-            {
-                FlushTimer.Change(TimeSpan.FromMilliseconds(FlushInterval), TimeSpan.FromMilliseconds(-1));
-                return;
-            }
-
-            if (_isFlushing)
-            {
-                return;
-            }
-
-            _isFlushing = true;
-            var numCommands = 0;
-
-            using (var tran = connection.BeginTransaction())
-            {
-                try
-                {
-                    while (!delayedCommands.IsEmpty)
-                    {
-                        SQLiteCommand command;
-
-                        delayedCommands.TryDequeue(out command);
-
-                        command.Connection = connection;
-                        command.Transaction = tran;
-
-                        command.ExecuteNonQuery();
-
-                        command.Dispose();
-
-                        numCommands++;
-                    }
-
-                    tran.Commit();
-                }
-                catch (Exception e)
-                {
-                    Logger.ErrorException("Failed to commit transaction.", e);
-                    tran.Rollback();
-                }
-            }
-
-            Logger.Debug("SQL Delayed writer executed " + numCommands + " commands");
-
-            FlushTimer.Change(TimeSpan.FromMilliseconds(FlushInterval), TimeSpan.FromMilliseconds(-1));
-            _isFlushing = false;
         }
 
         /// <summary>
@@ -303,11 +166,11 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 throw new ArgumentNullException("cmd");
             }
 
-            using (var tran = connection.BeginTransaction())
+            using (var tran = Connection.BeginTransaction())
             {
                 try
                 {
-                    cmd.Connection = connection;
+                    cmd.Connection = Connection;
                     cmd.Transaction = tran;
 
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
