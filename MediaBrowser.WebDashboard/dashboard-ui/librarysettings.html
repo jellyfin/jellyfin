@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Media Library</title>
+</head>
+<body>
+    <div id="librarySettingsPage" data-role="page" class="page type-interior">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="library.html" data-role="button">Collections</a>
+                    <a href="#" data-role="button" class="ui-btn-active">Settings</a>
+                </div>
+
+                <form id="librarySettingsForm">
+
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <input type="checkbox" id="chkEnableCustomIBNPath" name="chkEnableCustomIBNPath" />
+                            <label for="chkEnableCustomIBNPath">Use custom images by name path</label>
+                            <div class="fieldDescription">
+                                This folder contains actor, artist, genre and studio images.
+                            </div>
+                        </li>
+                        <li id="fieldEnterIBNPath" style="display: none;">
+                            <label for="txtItemsByNamePath">Images by name path: </label>
+                            <div style="display: inline-block; width: 92%;">
+                                <input type="text" id="txtItemsByNamePath" name="txtItemsByNamePath" />
+                            </div>
+                            <button id="btnSelectIBNPath" type="button" data-icon="folder-close" data-iconpos="notext" data-inline="true">Select Directory</button>
+                            <div class="fieldDescription">
+                                Supply a custom path for images by name. MB server must have write access to this folder.
+                            </div>
+                        </li>
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="ok">
+                                Save
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete">
+                                Cancel
+                            </button>
+                        </li>
+                    </ul>
+
+                </form>
+
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $('#librarySettingsForm').on('submit', LibrarySettingsPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

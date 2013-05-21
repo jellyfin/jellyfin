@@ -16,6 +16,7 @@
         if (userId) {
 
             $('#userProfileNavigation', page).show();
+            $('#defaultNavigation', page).hide();
 
             ApiClient.getUser(userId).done(function (user) {
                 Dashboard.setPageTitle(user.Name);
@@ -42,7 +43,9 @@
         } else {
 
             $('#userProfileNavigation', page).hide();
-            ApiClient.getVirtualFolders().done(function(result) {
+            $('#defaultNavigation', page).show();
+
+            ApiClient.getVirtualFolders().done(function (result) {
                 MediaLibraryPage.reloadVirtualFolders(page, result);
             });
 
