@@ -282,13 +282,17 @@ namespace MediaBrowser.Controller.Providers.Movies
                 var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
                 var tmdbImageUrl = tmdbSettings.images.base_url + ConfigurationManager.Configuration.TmdbFetchedBackdropSize;
+
                 //backdrops should be in order of rating.  get first n ones
-                var numToFetch = Math.Min(ConfigurationManager.Configuration.MaxBackdrops, images.backdrops.Count);
+                var numToFetch = Math.Max(images.backdrops.Count - ConfigurationManager.Configuration.MaxBackdrops, 0);
+
                 for (var i = 0; i < numToFetch; i++)
                 {
                     var bdName = "backdrop" + (i == 0 ? "" : i.ToString(CultureInfo.InvariantCulture));
 
-                    if (ConfigurationManager.Configuration.RefreshItemImages || !item.HasLocalImage(bdName))
+                    var hasLocalBackdrop = item.LocationType == LocationType.FileSystem && ConfigurationManager.Configuration.SaveLocalMeta ? item.HasLocalImage(bdName) : item.BackdropImagePaths.Count > i;
+
+                    if (ConfigurationManager.Configuration.RefreshItemImages || !hasLocalBackdrop)
                     {
                         var img = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
                         {
