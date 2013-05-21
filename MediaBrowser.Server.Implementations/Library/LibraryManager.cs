@@ -31,6 +31,8 @@ namespace MediaBrowser.Server.Implementations.Library
     /// </summary>
     public class LibraryManager : ILibraryManager
     {
+        private IEnumerable<ILibraryPrescanTask> PrescanTasks { get; set; }
+        
         /// <summary>
         /// Gets the intro providers.
         /// </summary>
@@ -161,13 +163,15 @@ namespace MediaBrowser.Server.Implementations.Library
             IEnumerable<IVirtualFolderCreator> pluginFolders,
             IEnumerable<IItemResolver> resolvers,
             IEnumerable<IIntroProvider> introProviders,
-            IEnumerable<IBaseItemComparer> itemComparers)
+            IEnumerable<IBaseItemComparer> itemComparers,
+            IEnumerable<ILibraryPrescanTask> prescanTasks)
         {
             EntityResolutionIgnoreRules = rules;
             PluginFolderCreators = pluginFolders;
             EntityResolvers = resolvers.OrderBy(i => i.Priority).ToArray();
             IntroProviders = introProviders;
             Comparers = itemComparers;
+            PrescanTasks = prescanTasks;
         }
 
         /// <summary>
@@ -839,6 +843,19 @@ namespace MediaBrowser.Server.Implementations.Library
             foreach (var folder in _userManager.Users.Select(u => u.RootFolder).Distinct())
             {
                 await ValidateCollectionFolders(folder, cancellationToken).ConfigureAwait(false);
+            }
+
+            // Run prescan tasks
+            foreach (var task in PrescanTasks)
+            {
+                try
+                {
+                    await task.Run(new Progress<double>(), cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error running prescan task", ex);
+                }
             }
 
             var innerProgress = new ActionableProgress<double>();

@@ -233,7 +233,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             var status = ProviderRefreshStatus.Success;
 
-            var hasLocalPoster = item.LocationType == LocationType.FileSystem ? item.HasLocalImage("folder") : item.HasImage(ImageType.Primary);
+            var hasLocalPoster = item.HasImage(ImageType.Primary);
 
             //        poster
             if (images.posters != null && images.posters.Count > 0 && (ConfigurationManager.Configuration.RefreshItemImages || !hasLocalPoster))
@@ -290,7 +290,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 {
                     var bdName = "backdrop" + (i == 0 ? "" : i.ToString(CultureInfo.InvariantCulture));
 
-                    var hasLocalBackdrop = item.LocationType == LocationType.FileSystem ? item.HasLocalImage(bdName) : item.BackdropImagePaths.Count > i;
+                    var hasLocalBackdrop = item.BackdropImagePaths.Count > i;
 
                     if (ConfigurationManager.Configuration.RefreshItemImages || !hasLocalBackdrop)
                     {

@@ -18,41 +18,54 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
         /// <returns>Episode.</returns>
         protected override Episode Resolve(ItemResolveArgs args)
         {
-            var isInSeason = args.Parent is Season;
+            var season = args.Parent as Season;
 
             // If the parent is a Season or Series, then this is an Episode if the VideoResolver returns something
-            if (isInSeason || args.Parent is Series)
+            if (season != null || args.Parent is Series)
             {
+                Episode episode = null;
+
                 if (args.IsDirectory)
                 {
                     if (args.ContainsFileSystemEntryByName("video_ts"))
                     {
-                        return new Episode
+                        episode = new Episode
                         {
-                            IndexNumber = TVUtils.GetEpisodeNumberFromFile(args.Path, isInSeason),
                             Path = args.Path,
                             VideoType = VideoType.Dvd
                         };
                     }
                     if (args.ContainsFileSystemEntryByName("bdmv"))
                     {
-                        return new Episode
+                        episode = new Episode
                         {
-                            IndexNumber = TVUtils.GetEpisodeNumberFromFile(args.Path, isInSeason),
                             Path = args.Path,
                             VideoType = VideoType.BluRay
                         };
                     }
                 }
 
-                var episide = base.Resolve(args);
-
-                if (episide != null)
+                if (episode == null)
                 {
-                    episide.IndexNumber = TVUtils.GetEpisodeNumberFromFile(args.Path, isInSeason);
+                    episode = base.Resolve(args);
                 }
 
-                return episide;
+                if (episode != null)
+                {
+                    episode.IndexNumber = TVUtils.GetEpisodeNumberFromFile(args.Path, season != null);
+
+                    if (season != null)
+                    {
+                        episode.ParentIndexNumber = season.IndexNumber;
+                    }
+                    
+                    if (episode.ParentIndexNumber == null)
+                    {
+                        episode.ParentIndexNumber = TVUtils.GetSeasonNumberFromEpisodeFile(args.Path);
+                    }
+                }
+
+                return episode;
             }
 
             return null;
