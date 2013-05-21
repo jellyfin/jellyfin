@@ -8,6 +8,7 @@ using MediaBrowser.Server.Implementations.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SQLite;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -52,6 +53,19 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// The _app paths
         /// </summary>
         private readonly IApplicationPaths _appPaths;
+
+        /// <summary>
+        /// The _save item command
+        /// </summary>
+        private SQLiteCommand _saveItemCommand;
+        /// <summary>
+        /// The _delete children command
+        /// </summary>
+        private SQLiteCommand _deleteChildrenCommand;
+        /// <summary>
+        /// The _save children command
+        /// </summary>
+        private SQLiteCommand _saveChildrenCommand;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SQLiteUserDataRepository" /> class.
@@ -100,6 +114,8 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                                };
 
             RunQueries(queries);
+
+            PrepareStatements();
         }
 
         //cascade delete triggers
@@ -117,13 +133,46 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 END";
 
         /// <summary>
+        /// The _write lock
+        /// </summary>
+        private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1,1);
+
+        /// <summary>
+        /// Prepares the statements.
+        /// </summary>
+        private void PrepareStatements()
+        {
+            _saveItemCommand = new SQLiteCommand
+            {
+                CommandText = "replace into items (guid, obj_type, data) values (@1, @2, @3)"
+            };
+
+            _saveItemCommand.Parameters.Add(new SQLiteParameter("@1"));
+            _saveItemCommand.Parameters.Add(new SQLiteParameter("@2"));
+            _saveItemCommand.Parameters.Add(new SQLiteParameter("@3"));
+
+            _deleteChildrenCommand = new SQLiteCommand
+            {
+                CommandText = "delete from children where guid = @guid"
+            };
+            _deleteChildrenCommand.Parameters.Add(new SQLiteParameter("@guid"));
+
+            _saveChildrenCommand = new SQLiteCommand
+            {
+                CommandText = "replace into children (guid, child) values (@guid, @child)"
+            };
+            _saveChildrenCommand.Parameters.Add(new SQLiteParameter("@guid"));
+            _saveChildrenCommand.Parameters.Add(new SQLiteParameter("@child"));
+        }
+
+        /// <summary>
         /// Save a standard item in the repo
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public Task SaveItem(BaseItem item, CancellationToken cancellationToken)
+        public async Task SaveItem(BaseItem item, CancellationToken cancellationToken)
         {
             if (item == null)
             {
@@ -137,19 +186,51 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            return Task.Run(() =>
+            var serialized = _jsonSerializer.SerializeToBytes(item);
+
+            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            SQLiteTransaction transaction = null;
+
+            try
             {
-                var serialized = _jsonSerializer.SerializeToBytes(item);
+                transaction = Connection.BeginTransaction();
 
-                cancellationToken.ThrowIfCancellationRequested();
+                _saveItemCommand.Parameters[0].Value = item.Id;
+                _saveItemCommand.Parameters[1].Value = item.GetType().FullName;
+                _saveItemCommand.Parameters[2].Value = serialized;
 
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = "replace into items (guid, obj_type, data) values (@1, @2, @3)";
-                cmd.AddParam("@1", item.Id);
-                cmd.AddParam("@2", item.GetType().FullName);
-                cmd.AddParam("@3", serialized);
-                QueueCommand(cmd);
-            });
+                _saveItemCommand.Transaction = transaction;
+
+                await _saveItemCommand.ExecuteNonQueryAsync(cancellationToken);
+
+                transaction.Commit();
+            }
+            catch (OperationCanceledException)
+            {
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.ErrorException("Failed to save item:", e);
+
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+            }
+            finally
+            {
+                if (transaction != null)
+                {
+                    transaction.Dispose();
+                }
+
+                _writeLock.Release();
+            }
         }
 
         /// <summary>
@@ -157,6 +238,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
+        /// <exception cref="System.ArgumentNullException">id</exception>
         /// <exception cref="System.ArgumentException"></exception>
         public BaseItem GetItem(Guid id)
         {
@@ -189,6 +271,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
+        /// <exception cref="System.ArgumentNullException">id</exception>
         /// <exception cref="System.ArgumentException"></exception>
         protected BaseItem RetrieveItemInternal(Guid id)
         {
@@ -197,7 +280,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 throw new ArgumentNullException("id");
             }
 
-            using (var cmd = connection.CreateCommand())
+            using (var cmd = Connection.CreateCommand())
             {
                 cmd.CommandText = "select obj_type,data from items where guid = @guid";
                 var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
@@ -240,7 +323,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 throw new ArgumentNullException();
             }
 
-            using (var cmd = connection.CreateCommand())
+            using (var cmd = Connection.CreateCommand())
             {
                 cmd.CommandText = "select obj_type,data from items where guid in (select child from children where guid = @guid)";
                 var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
@@ -281,7 +364,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">id</exception>
-        public Task SaveChildren(Guid id, IEnumerable<BaseItem> children, CancellationToken cancellationToken)
+        public async Task SaveChildren(Guid id, IEnumerable<BaseItem> children, CancellationToken cancellationToken)
         {
             if (id == Guid.Empty)
             {
@@ -300,27 +383,57 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            return Task.Run(() =>
+            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            SQLiteTransaction transaction = null;
+
+            try
             {
-                var cmd = connection.CreateCommand();
+                transaction = Connection.BeginTransaction();
 
-                cmd.CommandText = "delete from children where guid = @guid";
-                cmd.AddParam("@guid", id);
+                // Delete exising children
+                _deleteChildrenCommand.Parameters[0].Value = id;
+                _deleteChildrenCommand.Transaction = transaction;
+                await _deleteChildrenCommand.ExecuteNonQueryAsync(cancellationToken);
 
-                QueueCommand(cmd);
-
+                // Save new children
                 foreach (var child in children)
                 {
-                    var guid = child.Id;
-                    cmd = connection.CreateCommand();
-                    cmd.AddParam("@guid", id);
-                    cmd.CommandText = "replace into children (guid, child) values (@guid, @child)";
-                    var childParam = cmd.Parameters.Add("@child", DbType.Guid);
+                    _saveChildrenCommand.Transaction = transaction;
+                    
+                    _saveChildrenCommand.Parameters[0].Value = id;
+                    _saveChildrenCommand.Parameters[1].Value = child.Id;
 
-                    childParam.Value = guid;
-                    QueueCommand(cmd);
+                    await _saveChildrenCommand.ExecuteNonQueryAsync(cancellationToken);
                 }
-            });
+
+                transaction.Commit();
+            }
+            catch (OperationCanceledException)
+            {
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.ErrorException("Failed to save item:", e);
+
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+            }
+            finally
+            {
+                if (transaction != null)
+                {
+                    transaction.Dispose();
+                }
+
+                _writeLock.Release();
+            }
         }
 
         /// <summary>
