@@ -132,6 +132,10 @@
 
             return "<img src='css/images/clients/android.png' alt='Android' title='Android' />";
         }
+        if (clientLowered == "roku") {
+
+            return "<img src='css/images/clients/roku.png' alt='Roku' title='Roku' />";
+        }
         if (clientLowered == "ios") {
 
             return "<img src='css/images/clients/ios.png' alt='iOS' title='iOS' />";
