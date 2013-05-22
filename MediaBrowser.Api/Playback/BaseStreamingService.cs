@@ -211,7 +211,7 @@ namespace MediaBrowser.Api.Playback
         /// <returns>MediaStream.</returns>
         private MediaStream GetMediaStream(IEnumerable<MediaStream> allStream, int? desiredIndex, MediaStreamType type, bool returnFirstIfNoIndex = true)
         {
-            var streams = allStream.Where(s => s.Type == type).ToList();
+            var streams = allStream.Where(s => s.Type == type).OrderBy(i => i.Index).ToList();
 
             if (desiredIndex.HasValue)
             {
