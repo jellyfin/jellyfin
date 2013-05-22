@@ -82,8 +82,9 @@ namespace MediaBrowser.Server.Implementations.Session
                     var vals = message.Data.Split('|');
 
                     session.NowViewingItemType = vals[0];
-                    session.NowViewingItemIdentifier = vals[1];
-                    session.NowViewingContext = vals.Length > 2 ? vals[2] : null;
+                    session.NowViewingItemId = vals[1];
+                    session.NowViewingItemName = vals[2];
+                    session.NowViewingContext = vals.Length > 3 ? vals[3] : null;
                 }
             }
             else if (string.Equals(message.MessageType, "PlaybackStart", StringComparison.OrdinalIgnoreCase))
