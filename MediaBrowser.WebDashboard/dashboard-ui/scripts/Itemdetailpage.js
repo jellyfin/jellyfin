@@ -53,7 +53,7 @@
             $(".autoNumeric").autoNumeric('init');
 
             if (ApiClient.isWebSocketOpen()) {
-                ApiClient.sendWebSocketMessage("Context", [item.Type, item.Id, context].join('|'));
+                ApiClient.sendWebSocketMessage("Context", [item.Type, item.Id, item.Name, context].join('|'));
             }
 
             Dashboard.hideLoadingMsg();

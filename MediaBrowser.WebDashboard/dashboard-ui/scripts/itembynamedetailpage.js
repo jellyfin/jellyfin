@@ -61,7 +61,7 @@
 
             if (ApiClient.isWebSocketOpen()) {
 
-                var vals = [item.Type, item.Name];
+                var vals = [item.Type, item.Id, item.Name];
 
                 var context = getParameterByName('context');
                 

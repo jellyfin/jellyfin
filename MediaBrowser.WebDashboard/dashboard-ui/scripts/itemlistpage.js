@@ -82,7 +82,7 @@
             Dashboard.setPageTitle(name);
 
             if (ApiClient.isWebSocketOpen()) {
-                ApiClient.sendWebSocketMessage("Context", [item.Type, item.Id].join('|'));
+                ApiClient.sendWebSocketMessage("Context", [item.Type, item.Id, item.Name].join('|'));
             }
 
         });
