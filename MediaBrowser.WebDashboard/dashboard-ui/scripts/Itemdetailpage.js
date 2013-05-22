@@ -813,7 +813,15 @@
                 role = "Guest star";
             }
 
-            html += '<p>' + (role || "") + '</p>';
+            role = role || "";
+
+            var maxlength = 40;
+
+            if (role.length > maxlength) {
+                role = role.substring(0, maxlength - 3) + '...';
+            }
+
+            html += '<p>' + role + '</p>';
 
             html += '</div>';
 
