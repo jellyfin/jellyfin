@@ -45,7 +45,13 @@ namespace MediaBrowser.Model.Session
         /// Gets or sets the now viewing item identifier.
         /// </summary>
         /// <value>The now viewing item identifier.</value>
-        public string NowViewingItemIdentifier { get; set; }
+        public string NowViewingItemId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the now viewing item.
+        /// </summary>
+        /// <value>The name of the now viewing item.</value>
+        public string NowViewingItemName { get; set; }
         
         /// <summary>
         /// Gets or sets the name of the device.

@@ -26,7 +26,8 @@ namespace MediaBrowser.Controller.Dto
                 SupportsRemoteControl = session.SupportsRemoteControl,
                 IsPaused = session.IsPaused,
                 NowViewingContext = session.NowViewingContext,
-                NowViewingItemIdentifier = session.NowViewingItemIdentifier,
+                NowViewingItemId = session.NowViewingItemId,
+                NowViewingItemName = session.NowViewingItemName,
                 NowViewingItemType = session.NowViewingItemType
             };
 

@@ -1,8 +1,12 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
+using MoreLinq;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
@@ -17,17 +21,19 @@ namespace MediaBrowser.ServerApplication.EntryPoints
 
         private readonly ISessionManager _sessionManager;
         private readonly IServerManager _serverManager;
-   
+        private readonly IUserManager _userManager;
+
         /// <summary>
         /// The _library changed sync lock
         /// </summary>
         private readonly object _libraryChangedSyncLock = new object();
 
-        /// <summary>
-        /// Gets or sets the library update info.
-        /// </summary>
-        /// <value>The library update info.</value>
-        private LibraryUpdateInfo LibraryUpdateInfo { get; set; }
+        private readonly List<Folder> _foldersAddedTo = new List<Folder>();
+        private readonly List<Folder> _foldersRemovedFrom = new List<Folder>();
+
+        private readonly List<BaseItem> _itemsAdded = new List<BaseItem>();
+        private readonly List<BaseItem> _itemsRemoved = new List<BaseItem>();
+        private readonly List<BaseItem> _itemsUpdated = new List<BaseItem>();
 
         /// <summary>
         /// Gets or sets the library update timer.
@@ -40,11 +46,12 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         /// </summary>
         private const int LibraryUpdateDuration = 60000;
 
-        public LibraryChangedNotifier(ILibraryManager libraryManager, ISessionManager sessionManager, IServerManager serverManager)
+        public LibraryChangedNotifier(ILibraryManager libraryManager, ISessionManager sessionManager, IServerManager serverManager, IUserManager userManager)
         {
             _libraryManager = libraryManager;
             _sessionManager = sessionManager;
             _serverManager = serverManager;
+            _userManager = userManager;
         }
 
         public void Run()
@@ -64,11 +71,6 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         {
             lock (_libraryChangedSyncLock)
             {
-                if (LibraryUpdateInfo == null)
-                {
-                    LibraryUpdateInfo = new LibraryUpdateInfo();
-                }
-
                 if (LibraryUpdateTimer == null)
                 {
                     LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
@@ -81,10 +83,10 @@ namespace MediaBrowser.ServerApplication.EntryPoints
 
                 if (e.Item.Parent != null)
                 {
-                    LibraryUpdateInfo.FoldersAddedTo.Add(e.Item.Parent.Id);
+                    _foldersAddedTo.Add(e.Item.Parent);
                 }
 
-                LibraryUpdateInfo.ItemsAdded.Add(e.Item.Id);
+                _itemsAdded.Add(e.Item);
             }
         }
 
@@ -97,11 +99,6 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         {
             lock (_libraryChangedSyncLock)
             {
-                if (LibraryUpdateInfo == null)
-                {
-                    LibraryUpdateInfo = new LibraryUpdateInfo();
-                }
-
                 if (LibraryUpdateTimer == null)
                 {
                     LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
@@ -112,7 +109,7 @@ namespace MediaBrowser.ServerApplication.EntryPoints
                     LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
                 }
 
-                LibraryUpdateInfo.ItemsUpdated.Add(e.Item.Id);
+                _itemsUpdated.Add(e.Item);
             }
         }
 
@@ -125,11 +122,6 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         {
             lock (_libraryChangedSyncLock)
             {
-                if (LibraryUpdateInfo == null)
-                {
-                    LibraryUpdateInfo = new LibraryUpdateInfo();
-                }
-
                 if (LibraryUpdateTimer == null)
                 {
                     LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
@@ -142,10 +134,10 @@ namespace MediaBrowser.ServerApplication.EntryPoints
 
                 if (e.Item.Parent != null)
                 {
-                    LibraryUpdateInfo.FoldersRemovedFrom.Add(e.Item.Parent.Id);
+                    _foldersRemovedFrom.Add(e.Item.Parent);
                 }
 
-                LibraryUpdateInfo.ItemsRemoved.Add(e.Item.Id);
+                _itemsRemoved.Add(e.Item);
             }
         }
 
@@ -158,16 +150,16 @@ namespace MediaBrowser.ServerApplication.EntryPoints
             lock (_libraryChangedSyncLock)
             {
                 // Remove dupes in case some were saved multiple times
-                LibraryUpdateInfo.FoldersAddedTo = LibraryUpdateInfo.FoldersAddedTo.Distinct().ToList();
+                var foldersAddedTo = _foldersAddedTo.DistinctBy(i => i.Id).ToList();
 
-                LibraryUpdateInfo.FoldersRemovedFrom = LibraryUpdateInfo.FoldersRemovedFrom.Distinct().ToList();
+                var foldersRemovedFrom = _foldersRemovedFrom.DistinctBy(i => i.Id).ToList();
 
-                LibraryUpdateInfo.ItemsUpdated = LibraryUpdateInfo.ItemsUpdated
-                    .Where(i => !LibraryUpdateInfo.ItemsAdded.Contains(i))
-                    .Distinct()
+                var itemsUpdated = _itemsUpdated
+                    .Where(i => !_itemsAdded.Contains(i))
+                    .DistinctBy(i => i.Id)
                     .ToList();
 
-                _serverManager.SendWebSocketMessage("LibraryChanged", LibraryUpdateInfo);
+                SendChangeNotifications(_itemsAdded.ToList(), itemsUpdated, _itemsRemoved.ToList(), foldersAddedTo, foldersRemovedFrom, CancellationToken.None);
 
                 if (LibraryUpdateTimer != null)
                 {
@@ -175,8 +167,112 @@ namespace MediaBrowser.ServerApplication.EntryPoints
                     LibraryUpdateTimer = null;
                 }
 
-                LibraryUpdateInfo = null;
+                _itemsAdded.Clear();
+                _itemsRemoved.Clear();
+                _itemsUpdated.Clear();
+                _foldersAddedTo.Clear();
+                _foldersRemovedFrom.Clear();
             }
+        }
+
+        /// <summary>
+        /// Sends the change notifications.
+        /// </summary>
+        /// <param name="itemsAdded">The items added.</param>
+        /// <param name="itemsUpdated">The items updated.</param>
+        /// <param name="itemsRemoved">The items removed.</param>
+        /// <param name="foldersAddedTo">The folders added to.</param>
+        /// <param name="foldersRemovedFrom">The folders removed from.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        private async void SendChangeNotifications(IEnumerable<BaseItem> itemsAdded, IEnumerable<BaseItem> itemsUpdated, IEnumerable<BaseItem> itemsRemoved, IEnumerable<Folder> foldersAddedTo, IEnumerable<Folder> foldersRemovedFrom, CancellationToken cancellationToken)
+        {
+            var currentSessions = _sessionManager.Sessions.ToList();
+
+            var users = currentSessions.Select(i => i.UserId ?? Guid.Empty).Where(i => i != Guid.Empty).Distinct().ToList();
+
+            foreach (var userId in users)
+            {
+                var id = userId;
+                var webSockets = currentSessions.Where(u => u.UserId.HasValue && u.UserId.Value == id).SelectMany(i => i.WebSockets).ToList();
+
+                await _serverManager.SendWebSocketMessageAsync("LibraryChanged", () => GetLibraryUpdateInfo(itemsAdded, itemsUpdated, itemsRemoved, foldersAddedTo, foldersRemovedFrom, id), webSockets, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Gets the library update info.
+        /// </summary>
+        /// <param name="itemsAdded">The items added.</param>
+        /// <param name="itemsUpdated">The items updated.</param>
+        /// <param name="itemsRemoved">The items removed.</param>
+        /// <param name="foldersAddedTo">The folders added to.</param>
+        /// <param name="foldersRemovedFrom">The folders removed from.</param>
+        /// <param name="userId">The user id.</param>
+        /// <returns>LibraryUpdateInfo.</returns>
+        private LibraryUpdateInfo GetLibraryUpdateInfo(IEnumerable<BaseItem> itemsAdded, IEnumerable<BaseItem> itemsUpdated, IEnumerable<BaseItem> itemsRemoved, IEnumerable<Folder> foldersAddedTo, IEnumerable<Folder> foldersRemovedFrom, Guid userId)
+        {
+            var user = _userManager.GetUserById(userId);
+
+            var collections = user.RootFolder.GetChildren(user).ToList();
+
+            var allRecursiveChildren = user.RootFolder.GetRecursiveChildren(user).ToDictionary(i => i.Id);
+
+            return new LibraryUpdateInfo
+            {
+                ItemsAdded = itemsAdded.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren)).Select(i => i.Id).Distinct().ToList(),
+
+                ItemsUpdated = itemsUpdated.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren)).Select(i => i.Id).Distinct().ToList(),
+
+                ItemsRemoved = itemsRemoved.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren)).Select(i => i.Id).Distinct().ToList(),
+
+                FoldersAddedTo = foldersAddedTo.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren)).Select(i => i.Id).Distinct().ToList(),
+
+                FoldersRemovedFrom = foldersRemovedFrom.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren)).Select(i => i.Id).Distinct().ToList()
+            };
+        }
+
+        /// <summary>
+        /// Translates the physical item to user library.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="item">The item.</param>
+        /// <param name="user">The user.</param>
+        /// <param name="collections">The collections.</param>
+        /// <param name="allRecursiveChildren">All recursive children.</param>
+        /// <returns>IEnumerable{``0}.</returns>
+        private IEnumerable<T> TranslatePhysicalItemToUserLibrary<T>(T item, User user, List<BaseItem> collections, Dictionary<Guid, BaseItem> allRecursiveChildren)
+            where T : BaseItem
+        {
+            // If the physical root changed, return the user root
+            if (item is AggregateFolder)
+            {
+                return new T[] { user.RootFolder as T };
+            }
+
+            // Need to find what user collection folder this belongs to
+            if (item.Parent is AggregateFolder)
+            {
+                return new T[] { user.RootFolder as T };
+            }
+
+            // If it's a user root, return it only if it's the right one
+            if (item is UserRootFolder)
+            {
+                if (item.Id == user.RootFolder.Id)
+                {
+                    return new T[] { item };
+                }
+
+                return new T[] { };
+            }
+
+            // Return it only if it's in the user's library
+            if (allRecursiveChildren.ContainsKey(item.Id))
+            {
+                return new T[] { item };
+            }
+
+            return new T[] { };
         }
 
         /// <summary>

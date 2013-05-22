@@ -53,7 +53,7 @@
             $(".autoNumeric").autoNumeric('init');
 
             if (ApiClient.isWebSocketOpen()) {
-                ApiClient.sendWebSocketMessage("Context", [item.Type, item.Id, context].join('|'));
+                ApiClient.sendWebSocketMessage("Context", [item.Type, item.Id, item.Name, context].join('|'));
             }
 
             Dashboard.hideLoadingMsg();
@@ -813,7 +813,15 @@
                 role = "Guest star";
             }
 
-            html += '<p>' + (role || "") + '</p>';
+            role = role || "";
+
+            var maxlength = 40;
+
+            if (role.length > maxlength) {
+                role = role.substring(0, maxlength - 3) + '...';
+            }
+
+            html += '<p>' + role + '</p>';
 
             html += '</div>';
 

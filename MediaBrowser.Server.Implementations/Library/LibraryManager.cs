@@ -32,7 +32,7 @@ namespace MediaBrowser.Server.Implementations.Library
     public class LibraryManager : ILibraryManager
     {
         private IEnumerable<ILibraryPrescanTask> PrescanTasks { get; set; }
-        
+
         /// <summary>
         /// Gets the intro providers.
         /// </summary>
@@ -306,7 +306,20 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>BaseItem.</returns>
         public BaseItem ResolveItem(ItemResolveArgs args)
         {
-            var item = EntityResolvers.Select(r => r.ResolvePath(args)).FirstOrDefault(i => i != null);
+            var item = EntityResolvers.Select(r =>
+            {
+                try
+                {
+                    return r.ResolvePath(args);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in {0} resolving {1}", ex, r.GetType().Name, args.Path);
+
+                    return null;
+                }
+
+            }).FirstOrDefault(i => i != null);
 
             if (item != null)
             {
@@ -1028,7 +1041,7 @@ namespace MediaBrowser.Server.Implementations.Library
             await SaveItem(item, cancellationToken).ConfigureAwait(false);
 
             UpdateItemInLibraryCache(item);
-            
+
             if (ItemAdded != null)
             {
                 try
