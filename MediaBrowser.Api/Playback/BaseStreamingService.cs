@@ -426,11 +426,6 @@ namespace MediaBrowser.Api.Playback
         {
             if (audioStream.Channels > 2 && request.AudioCodec.HasValue)
             {
-                if (request.AudioCodec.Value == AudioCodecs.Aac)
-                {
-                    // libvo_aacenc currently only supports two channel output
-                    return 2;
-                }
                 if (request.AudioCodec.Value == AudioCodecs.Wma)
                 {
                     // wmav2 currently only supports two channel output
@@ -465,7 +460,7 @@ namespace MediaBrowser.Api.Playback
             {
                 if (codec == AudioCodecs.Aac)
                 {
-                    return "libvo_aacenc";
+                    return "aac";
                 }
                 if (codec == AudioCodecs.Mp3)
                 {

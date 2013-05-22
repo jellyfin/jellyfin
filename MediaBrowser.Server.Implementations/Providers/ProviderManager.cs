@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -98,11 +97,6 @@ namespace MediaBrowser.Server.Implementations.Providers
         }
 
         /// <summary>
-        /// The _supported providers key
-        /// </summary>
-        private readonly Guid _supportedProvidersKey = "SupportedProviders".GetMD5();
-
-        /// <summary>
         /// Runs all metadata providers for an entity, and returns true or false indicating if at least one was refreshed and requires persistence
         /// </summary>
         /// <param name="item">The item.</param>
@@ -120,40 +114,10 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Determine if supported providers have changed
-            var supportedProviders = MetadataProviders.Where(p => p.Supports(item)).ToList();
-
-            BaseProviderInfo supportedProvidersInfo;
-
-            var supportedProvidersValue = string.Join(string.Empty, supportedProviders.Select(i => i.GetType().Name));
-            var providersChanged = false;
-
-            item.ProviderData.TryGetValue(_supportedProvidersKey, out supportedProvidersInfo);
-
-            var supportedProvidersHash = supportedProvidersValue.GetMD5();
-
-            if (supportedProvidersInfo != null)
-            {
-                // Force refresh if the supported providers have changed
-                providersChanged = force = force || supportedProvidersHash != supportedProvidersInfo.Data;
-
-                // If providers have changed, clear provider info and update the supported providers hash
-                if (providersChanged)
-                {
-                    _logger.Debug("Providers changed for {0}. Clearing and forcing refresh.", item.Name);
-                    item.ProviderData.Clear();
-                }
-            }
-
-            if (providersChanged)
-            {
-                supportedProvidersInfo.Data = supportedProvidersHash;
-            }
-
             if (force) item.ClearMetaValues();
 
             // Run the normal providers sequentially in order of priority
-            foreach (var provider in supportedProviders)
+            foreach (var provider in MetadataProviders.Where(p => p.Supports(item)))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -206,12 +170,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                 result |= results.Contains(true);
             }
 
-            if (providersChanged)
-            {
-                item.ProviderData[_supportedProvidersKey] = supportedProvidersInfo;
-            }
-
-            return result || providersChanged;
+            return result;
         }
 
         /// <summary>

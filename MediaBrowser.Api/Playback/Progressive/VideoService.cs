@@ -217,6 +217,11 @@ namespace MediaBrowser.Api.Playback.Progressive
             
             var args = "-acodec " + codec;
 
+            if (string.Equals(codec, "aac", StringComparison.OrdinalIgnoreCase))
+            {
+                args += " -strict experimental";
+            }
+            
             // Add the number of audio channels
             var channels = GetNumAudioChannelsParam(request, state.AudioStream);
 

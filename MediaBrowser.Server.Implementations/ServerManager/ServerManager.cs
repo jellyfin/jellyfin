@@ -36,6 +36,14 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// The web socket connections
         /// </summary>
         private readonly List<IWebSocketConnection> _webSocketConnections = new List<IWebSocketConnection>();
+        /// <summary>
+        /// Gets the web socket connections.
+        /// </summary>
+        /// <value>The web socket connections.</value>
+        public IEnumerable<IWebSocketConnection> WebSocketConnections
+        {
+            get { return _webSocketConnections; }
+        }
 
         /// <summary>
         /// Gets or sets the external web socket server.
@@ -83,6 +91,9 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <value>The web socket listeners.</value>
         private readonly List<IWebSocketListener> _webSocketListeners = new List<IWebSocketListener>();
 
+        /// <summary>
+        /// The _kernel
+        /// </summary>
         private readonly Kernel _kernel;
 
         /// <summary>
@@ -240,7 +251,26 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">messageType</exception>
-        public async Task SendWebSocketMessageAsync<T>(string messageType, Func<T> dataFunction, CancellationToken cancellationToken)
+        public Task SendWebSocketMessageAsync<T>(string messageType, Func<T> dataFunction, CancellationToken cancellationToken)
+        {
+            return SendWebSocketMessageAsync(messageType, dataFunction, _webSocketConnections, cancellationToken);
+        }
+
+        /// <summary>
+        /// Sends the web socket message async.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="messageType">Type of the message.</param>
+        /// <param name="dataFunction">The data function.</param>
+        /// <param name="connections">The connections.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="System.ArgumentNullException">messageType
+        /// or
+        /// dataFunction
+        /// or
+        /// cancellationToken</exception>
+        public async Task SendWebSocketMessageAsync<T>(string messageType, Func<T> dataFunction, IEnumerable<IWebSocketConnection> connections, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(messageType))
             {
@@ -259,16 +289,16 @@ namespace MediaBrowser.Server.Implementations.ServerManager
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var connections = _webSocketConnections.Where(s => s.State == WebSocketState.Open).ToList();
+            var connectionsList = connections.Where(s => s.State == WebSocketState.Open).ToList();
 
-            if (connections.Count > 0)
+            if (connectionsList.Count > 0)
             {
                 _logger.Info("Sending web socket message {0}", messageType);
 
                 var message = new WebSocketMessage<T> { MessageType = messageType, Data = dataFunction() };
                 var bytes = _jsonSerializer.SerializeToBytes(message);
 
-                var tasks = connections.Select(s => Task.Run(() =>
+                var tasks = connectionsList.Select(s => Task.Run(() =>
                 {
                     try
                     {

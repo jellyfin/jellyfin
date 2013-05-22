@@ -160,90 +160,89 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             options.CancellationToken.ThrowIfCancellationRequested();
 
-            using (var message = GetHttpRequestMessage(options))
+            var message = GetHttpRequestMessage(options);
+
+            //if (options.EnableResponseCache && cachedInfo != null)
+            //{
+            //    if (!string.IsNullOrEmpty(cachedInfo.Etag))
+            //    {
+            //        message.Headers.Add("If-None-Match", cachedInfo.Etag);
+            //    }
+            //    else if (cachedInfo.LastModified.HasValue)
+            //    {
+            //        message.Headers.IfModifiedSince = new DateTimeOffset(cachedInfo.LastModified.Value);
+            //    }
+            //}
+
+            if (options.ResourcePool != null)
             {
-                if (options.EnableResponseCache && cachedInfo != null)
+                await options.ResourcePool.WaitAsync(options.CancellationToken).ConfigureAwait(false);
+            }
+
+            _logger.Info("HttpClientManager.Get url: {0}", options.Url);
+
+            try
+            {
+                options.CancellationToken.ThrowIfCancellationRequested();
+
+                var response = await GetHttpClient(GetHostFromUrl(options.Url), options.EnableHttpCompression).SendAsync(message, HttpCompletionOption.ResponseHeadersRead, options.CancellationToken).ConfigureAwait(false);
+
+                if (options.EnableResponseCache)
                 {
-                    if (!string.IsNullOrEmpty(cachedInfo.Etag))
-                    {
-                        message.Headers.Add("If-None-Match", cachedInfo.Etag);
-                    }
-                    else if (cachedInfo.LastModified.HasValue)
-                    {
-                        message.Headers.IfModifiedSince = new DateTimeOffset(cachedInfo.LastModified.Value);
-                    }
-                }
-
-                if (options.ResourcePool != null)
-                {
-                    await options.ResourcePool.WaitAsync(options.CancellationToken).ConfigureAwait(false);
-                }
-
-                _logger.Info("HttpClientManager.Get url: {0}", options.Url);
-
-                try
-                {
-                    options.CancellationToken.ThrowIfCancellationRequested();
-
-                    var response = await GetHttpClient(GetHostFromUrl(options.Url), options.EnableHttpCompression).SendAsync(message, HttpCompletionOption.ResponseHeadersRead, options.CancellationToken).ConfigureAwait(false);
-
-                    if (options.EnableResponseCache)
-                    {
-                        if (response.StatusCode != HttpStatusCode.NotModified)
-                        {
-                            EnsureSuccessStatusCode(response);
-                        }
-
-                        options.CancellationToken.ThrowIfCancellationRequested();
-
-                        cachedInfo = UpdateInfoCache(cachedInfo, options.Url, cachedInfoPath, response);
-
-                        if (response.StatusCode == HttpStatusCode.NotModified)
-                        {
-                            _logger.Debug("Server indicates not modified for {0}. Returning cached result.", options.Url);
-
-                            return GetCachedResponse(cachedReponsePath);
-                        }
-
-                        if (!string.IsNullOrEmpty(cachedInfo.Etag) || cachedInfo.LastModified.HasValue ||
-                            (cachedInfo.Expires.HasValue && cachedInfo.Expires.Value > DateTime.UtcNow))
-                        {
-                            await UpdateResponseCache(response, cachedReponsePath).ConfigureAwait(false);
-
-                            return GetCachedResponse(cachedReponsePath);
-                        }
-                    }
-                    else
+                    if (response.StatusCode != HttpStatusCode.NotModified)
                     {
                         EnsureSuccessStatusCode(response);
-
-                        options.CancellationToken.ThrowIfCancellationRequested();
                     }
 
-                    return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                }
-                catch (OperationCanceledException ex)
-                {
-                    throw GetCancellationException(options.Url, options.CancellationToken, ex);
-                }
-                catch (HttpRequestException ex)
-                {
-                    _logger.ErrorException("Error getting response from " + options.Url, ex);
+                    options.CancellationToken.ThrowIfCancellationRequested();
 
-                    throw new HttpException(ex.Message, ex);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error getting response from " + options.Url, ex);
+                    cachedInfo = UpdateInfoCache(cachedInfo, options.Url, cachedInfoPath, response);
 
-                    throw;
-                }
-                finally
-                {
-                    if (options.ResourcePool != null)
+                    if (response.StatusCode == HttpStatusCode.NotModified)
                     {
-                        options.ResourcePool.Release();
+                        _logger.Debug("Server indicates not modified for {0}. Returning cached result.", options.Url);
+
+                        return GetCachedResponse(cachedReponsePath);
                     }
+
+                    if (!string.IsNullOrEmpty(cachedInfo.Etag) || cachedInfo.LastModified.HasValue ||
+                        (cachedInfo.Expires.HasValue && cachedInfo.Expires.Value > DateTime.UtcNow))
+                    {
+                        await UpdateResponseCache(response, cachedReponsePath).ConfigureAwait(false);
+
+                        return GetCachedResponse(cachedReponsePath);
+                    }
+                }
+                else
+                {
+                    EnsureSuccessStatusCode(response);
+
+                    options.CancellationToken.ThrowIfCancellationRequested();
+                }
+
+                return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            }
+            catch (OperationCanceledException ex)
+            {
+                throw GetCancellationException(options.Url, options.CancellationToken, ex);
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.ErrorException("Error getting response from " + options.Url, ex);
+
+                throw new HttpException(ex.Message, ex);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting response from " + options.Url, ex);
+
+                throw;
+            }
+            finally
+            {
+                if (options.ResourcePool != null)
+                {
+                    options.ResourcePool.Release();
                 }
             }
         }
