@@ -10,6 +10,12 @@
 
         ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
 
+            if (item.IsFolder) {
+                $('#fldRecursive', page).show();
+            } else {
+                $('#fldRecursive', page).hide();
+            }
+
             $('#btnRefresh', page).button('enable');
 
             $('#refreshLoading', page).hide();
@@ -40,6 +46,60 @@
         } else {
             $('#fldBudget', page).hide();
             $('#fldRevenue', page).hide();
+        }
+
+        if (item.MediaType == "Game") {
+            $('#fldPlayers', page).show();
+            $('#fldGamesDb', page).show();
+        } else {
+            $('#fldPlayers', page).hide();
+            $('#fldGamesDb', page).hide();
+        }
+
+        if (item.Type == "Movie" || item.Type == "Trailer") {
+            $('#fldCriticRating', page).show();
+            $('#fldCriticRatingSummary', page).show();
+            $('#fldRottenTomatoes', page).show();
+        } else {
+            $('#fldCriticRating', page).hide();
+            $('#fldCriticRatingSummary', page).hide();
+            $('#fldRottenTomatoes', page).hide();
+        }
+
+        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Person" || item.Type == "BoxSet") {
+            $('#fldTmdb', page).show();
+        } else {
+            $('#fldTmdb', page).hide();
+        }
+
+        if (item.Type == "Series" || item.Type == "Season" || item.Type == "Episode") {
+            $('#fldTvdb', page).show();
+            $('#fldTvCom', page).show();
+        } else {
+            $('#fldTvdb', page).hide();
+            $('#fldTvCom', page).hide();
+        }
+
+        if (item.Type == "Audio") {
+            $('#fldArtist', page).show();
+            $('#fldAlbum', page).show();
+            $('#fldAlbumArtist', page).show();
+        } else {
+            $('#fldArtist', page).hide();
+            $('#fldAlbum', page).hide();
+            $('#fldAlbumArtist', page).hide();
+        }
+
+        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Person" || item.Type == "Series" || item.Type == "Season" || item.Type == "Episode") {
+            $('#fldImdb', page).show();
+        } else {
+            $('#fldImdb', page).hide();
+        }
+
+        if (item.Type == "Audio" || item.Type == "Artist" || item.Type == "MusicArtist" || item.Type == "MusicAlbum") {
+            $('#fldMusicBrainz', page).show();
+        } else {
+            $('#fldMusicBrainz', page).hide();
         }
 
         if (item.MediaType == "Video") {
@@ -124,6 +184,13 @@
 
         $('#txtIndexNumber', page).val(item.IndexNumber || "");
         $('#txtParentIndexNumber', page).val(item.ParentIndexNumber || "");
+        $('#txtPlayers', page).val(item.Players || "");
+
+        $('#txtAlbum', page).val(item.Album || "");
+        $('#txtAlbumArtist', page).val(item.AlbumArtist || "");
+
+        var artists = item.Artists || [];
+        $('#txtArtist', page).val(artists.join(','));
 
         var date;
 
@@ -156,6 +223,17 @@
         $('#txtProductionYear', page).val(item.ProductionYear || "");
 
         $('#txtOriginalAspectRatio', page).val(item.AspectRatio || "");
+
+        var providerIds = item.ProviderIds || {};
+
+        $('#txtGamesDb', page).val(providerIds.Gamesdb || "");
+        $('#txtImdb', page).val(providerIds.Imdb || "");
+        $('#txtTmdb', page).val(providerIds.Tmdb || "");
+        $('#txtTvdb', page).val(providerIds.Tvdb || "");
+        $('#txtTvCom', page).val(providerIds.Tvcom || "");
+        $('#txtMusicBrainz', page).val(providerIds.Musicbrainz || "");
+        $('#txtRottenTomatoes', page).val(providerIds.RottenTomatoes || "");
+
     }
 
     function populateLanguages(allCultures, select) {
@@ -224,7 +302,7 @@
 
             $('#refreshLoading', page).show();
 
-            ApiClient.refreshItem(currentItem.Id, true, false).done(function () {
+            ApiClient.refreshItem(currentItem.Id, true, $('#fldRecursive', page).checked()).done(function () {
 
                 reload(page);
 

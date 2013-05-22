@@ -486,12 +486,12 @@ a.itemTag:hover {
 
     .metadataFormFields {
         float: left;
-        width: 70%;
+        width: 75%;
     }
 
     .metadataFormButtons {
         float: right;
-        width: 28%;
+        width: 23%;
     }
 }
 
