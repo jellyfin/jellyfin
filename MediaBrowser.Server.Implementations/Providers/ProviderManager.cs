@@ -423,19 +423,6 @@ namespace MediaBrowser.Server.Implementations.Providers
                 dataToSave.Position = 0;
             }
 
-            if (!(dataToSave is MemoryStream || dataToSave is FileStream))
-            {
-                var ms = new MemoryStream();
-
-                using (dataToSave)
-                {
-                    await dataToSave.CopyToAsync(ms).ConfigureAwait(false);
-                }
-
-                ms.Position = 0;
-                dataToSave = ms;
-            }
-
             try
             {
                 using (dataToSave)

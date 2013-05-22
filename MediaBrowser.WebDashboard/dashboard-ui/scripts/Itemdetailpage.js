@@ -851,7 +851,7 @@
 
         $('#btnEdit', page).on('click', function () {
 
-            Dashboard.navigate("edititemimages.html?id=" + currentItem.Id);
+            Dashboard.navigate("edititemmetadata.html?id=" + currentItem.Id);
         });
 
     }).on('pageshow', "#itemDetailPage", function () {
