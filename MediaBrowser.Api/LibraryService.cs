@@ -101,10 +101,10 @@ namespace MediaBrowser.Api
     [Api(Description = "Refreshes metadata for an item")]
     public class RefreshItem : IReturnVoid
     {
-        [ApiMember(Name = "Forced", Description = "Indicates if a normal or forced refresh should occur.", IsRequired = true, DataType = "bool", ParameterType = "query", Verb = "POST")]
+        [ApiMember(Name = "Forced", Description = "Indicates if a normal or forced refresh should occur.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
         public bool Forced { get; set; }
 
-        [ApiMember(Name = "Recursive", Description = "Indicates if the refresh should occur recursively.", IsRequired = true, DataType = "bool", ParameterType = "query", Verb = "POST")]
+        [ApiMember(Name = "Recursive", Description = "Indicates if the refresh should occur recursively.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
         public bool Recursive { get; set; }
         
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
