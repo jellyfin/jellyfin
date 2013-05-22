@@ -554,8 +554,9 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
+        /// <param name="forceRefreshMetadata">if set to <c>true</c> [force refresh metadata].</param>
         /// <returns>Task.</returns>
-        public async Task ValidateChildren(IProgress<double> progress, CancellationToken cancellationToken, bool? recursive = null)
+        public async Task ValidateChildren(IProgress<double> progress, CancellationToken cancellationToken, bool? recursive = null, bool forceRefreshMetadata = false)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -575,7 +576,7 @@ namespace MediaBrowser.Controller.Entities
 
                 var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(innerCancellationTokenSource.Token, cancellationToken);
 
-                await ValidateChildrenInternal(progress, linkedCancellationTokenSource.Token, recursive).ConfigureAwait(false);
+                await ValidateChildrenInternal(progress, linkedCancellationTokenSource.Token, recursive, forceRefreshMetadata).ConfigureAwait(false);
             }
             catch (OperationCanceledException ex)
             {
@@ -606,8 +607,9 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
+        /// <param name="forceRefreshMetadata">if set to <c>true</c> [force refresh metadata].</param>
         /// <returns>Task.</returns>
-        protected async virtual Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool? recursive = null)
+        protected async virtual Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool? recursive = null, bool forceRefreshMetadata = false)
         {
             // Nothing to do here
             if (LocationType != LocationType.FileSystem)
@@ -723,7 +725,7 @@ namespace MediaBrowser.Controller.Entities
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await RefreshChildren(validChildren, progress, cancellationToken, recursive).ConfigureAwait(false);
+            await RefreshChildren(validChildren, progress, cancellationToken, recursive, forceRefreshMetadata).ConfigureAwait(false);
 
             progress.Report(100);
         }
@@ -735,8 +737,9 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
+        /// <param name="forceRefreshMetadata">if set to <c>true</c> [force refresh metadata].</param>
         /// <returns>Task.</returns>
-        private async Task RefreshChildren(IEnumerable<Tuple<BaseItem, bool>> children, IProgress<double> progress, CancellationToken cancellationToken, bool? recursive)
+        private async Task RefreshChildren(IEnumerable<Tuple<BaseItem, bool>> children, IProgress<double> progress, CancellationToken cancellationToken, bool? recursive, bool forceRefreshMetadata = false)
         {
             var list = children.ToList();
 
@@ -760,7 +763,7 @@ namespace MediaBrowser.Controller.Entities
                     var child = currentTuple.Item1;
 
                     //refresh it
-                    await child.RefreshMetadata(cancellationToken, resetResolveArgs: child.IsFolder, forceSave: currentTuple.Item2).ConfigureAwait(false);
+                    await child.RefreshMetadata(cancellationToken, resetResolveArgs: child.IsFolder, forceSave: currentTuple.Item2, forceRefresh: forceRefreshMetadata).ConfigureAwait(false);
 
                     // Refresh children if a folder and the item changed or recursive is set to true
                     var refreshChildren = child.IsFolder && (currentTuple.Item2 || (recursive.HasValue && recursive.Value));
