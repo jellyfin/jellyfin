@@ -256,7 +256,7 @@
                     if (next) {
                         next.focus();
                     }
-
+                    return false;
                 }
 
                 // Up
@@ -269,7 +269,7 @@
                     } else {
                         $('#txtSearch', parentElem)[0].focus();
                     }
-
+                    return false;
                 }
             });
 
@@ -284,6 +284,7 @@
                         first.focus();
                     }
 
+                    return false;
                 }
 
             }).on("keyup", function (e) {
