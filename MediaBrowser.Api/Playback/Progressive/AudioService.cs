@@ -3,7 +3,9 @@ using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using ServiceStack.ServiceHost;
+using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
@@ -83,6 +85,11 @@ namespace MediaBrowser.Api.Playback.Progressive
             var request = state.Request;
 
             var audioTranscodeParams = new List<string>();
+
+            if (string.Equals(Path.GetExtension(outputPath), ".aac", StringComparison.OrdinalIgnoreCase))
+            {
+                audioTranscodeParams.Add("-strict experimental");
+            }
 
             if (request.AudioBitRate.HasValue)
             {
