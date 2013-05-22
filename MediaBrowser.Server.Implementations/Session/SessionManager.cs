@@ -220,6 +220,11 @@ namespace MediaBrowser.Server.Implementations.Session
             data.PlayCount++;
             data.LastPlayedDate = DateTime.UtcNow;
 
+            if (!(item is Video))
+            {
+                data.Played = true;
+            }
+
             await _userDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None).ConfigureAwait(false);
             
             // Nothing to save here
