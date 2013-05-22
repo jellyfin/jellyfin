@@ -96,6 +96,17 @@ namespace MediaBrowser.Api
     {
     }
 
+    [Route("/Items/{Id}/Refresh", "POST")]
+    [Api(Description = "Refreshes metadata for an item")]
+    public class RefreshItem : IReturnVoid
+    {
+        [ApiMember(Name = "IsForced", Description = "Indicates if a normal or forced refresh should occur.", IsRequired = true, DataType = "bool", ParameterType = "query", Verb = "POST")]
+        public bool IsForced { get; set; }
+
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Id { get; set; }
+    }
+
     [Route("/Items/Counts", "GET")]
     [Api(Description = "Gets counts of various item types")]
     public class GetItemCounts : IReturn<ItemCounts>
@@ -305,6 +316,17 @@ namespace MediaBrowser.Api
         }
 
         /// <summary>
+        /// Posts the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        public void Post(RefreshItem request)
+        {
+            var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager);
+
+            item.RefreshMetadata(CancellationToken.None, forceRefresh: request.IsForced);
+        }
+
+        /// <summary>
         /// Gets the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -467,7 +489,7 @@ namespace MediaBrowser.Api
         {
             var artists1 = item1.RecursiveChildren
                 .OfType<Audio>()
-                .SelectMany(i => new[]{i.AlbumArtist, i.Artist})
+                .SelectMany(i => new[] { i.AlbumArtist, i.Artist })
                 .Where(i => !string.IsNullOrEmpty(i))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
