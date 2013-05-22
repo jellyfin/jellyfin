@@ -78,6 +78,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// Gets
         /// </summary>
         /// <param name="host">The host.</param>
+        /// <param name="enableHttpCompression">if set to <c>true</c> [enable HTTP compression].</param>
         /// <returns>HttpClient.</returns>
         /// <exception cref="System.ArgumentNullException">host</exception>
         private HttpClient GetHttpClient(string host, bool enableHttpCompression)
@@ -185,7 +186,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 options.CancellationToken.ThrowIfCancellationRequested();
 
-                var response = await GetHttpClient(GetHostFromUrl(options.Url), options.EnableHttpCompression).SendAsync(message, HttpCompletionOption.ResponseHeadersRead, options.CancellationToken).ConfigureAwait(false);
+                var response = await GetHttpClient(GetHostFromUrl(options.Url), options.EnableHttpCompression).SendAsync(message, HttpCompletionOption.ResponseContentRead, options.CancellationToken).ConfigureAwait(false);
 
                 if (options.EnableResponseCache)
                 {
