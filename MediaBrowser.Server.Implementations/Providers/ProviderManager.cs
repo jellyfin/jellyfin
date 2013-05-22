@@ -114,8 +114,6 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (force) item.ClearMetaValues();
-
             // Run the normal providers sequentially in order of priority
             foreach (var provider in MetadataProviders.Where(p => p.Supports(item)))
             {

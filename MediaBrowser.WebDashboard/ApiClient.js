@@ -378,6 +378,28 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         };
 
         /**
+         * Refreshes metadata for an item
+         */
+        self.refreshItem = function (itemId, force, recursive) {
+
+            if (!itemId) {
+                throw new Error("null itemId");
+            }
+
+            var url = self.getUrl("Items/" + itemId + "/Refresh", {
+
+                force: force || false,
+                recursive: recursive || false
+
+            });
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
+        /**
          * Installs or updates a new plugin
          */
         self.installPlugin = function (name, updateClass, version) {
