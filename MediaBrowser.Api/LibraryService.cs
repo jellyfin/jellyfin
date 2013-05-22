@@ -100,9 +100,12 @@ namespace MediaBrowser.Api
     [Api(Description = "Refreshes metadata for an item")]
     public class RefreshItem : IReturnVoid
     {
-        [ApiMember(Name = "IsForced", Description = "Indicates if a normal or forced refresh should occur.", IsRequired = true, DataType = "bool", ParameterType = "query", Verb = "POST")]
-        public bool IsForced { get; set; }
+        [ApiMember(Name = "Forced", Description = "Indicates if a normal or forced refresh should occur.", IsRequired = true, DataType = "bool", ParameterType = "query", Verb = "POST")]
+        public bool Forced { get; set; }
 
+        [ApiMember(Name = "Recursive", Description = "Indicates if the refresh should occur recursively.", IsRequired = true, DataType = "bool", ParameterType = "query", Verb = "POST")]
+        public bool Recursive { get; set; }
+        
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Id { get; set; }
     }
@@ -323,7 +326,16 @@ namespace MediaBrowser.Api
         {
             var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager);
 
-            item.RefreshMetadata(CancellationToken.None, forceRefresh: request.IsForced);
+            var folder = item as Folder;
+
+            if (folder != null)
+            {
+                folder.ValidateChildren(new Progress<double>(), CancellationToken.None, request.Recursive, request.Forced);
+            }
+            else
+            {
+                item.RefreshMetadata(CancellationToken.None, forceRefresh: request.Forced);
+            }
         }
 
         /// <summary>
