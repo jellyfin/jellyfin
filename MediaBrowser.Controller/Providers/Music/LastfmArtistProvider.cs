@@ -83,7 +83,7 @@ namespace MediaBrowser.Controller.Providers.Music
         private string FindIdFromMusicArtistEntity(BaseItem item)
         {
             var artist = _libraryManager.RootFolder.RecursiveChildren.OfType<MusicArtist>()
-                .FirstOrDefault(i => string.Equals(i.Name, item.Name, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(i => string.Compare(i.Name, item.Name, CultureInfo.CurrentCulture, CompareOptions.IgnoreNonSpace | CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0);
 
             return artist != null ? artist.GetProviderId(MetadataProviders.Musicbrainz) : null;
         }

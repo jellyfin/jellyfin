@@ -162,17 +162,17 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             using (var message = GetHttpRequestMessage(options))
             {
-                if (options.EnableResponseCache && cachedInfo != null)
-                {
-                    if (!string.IsNullOrEmpty(cachedInfo.Etag))
-                    {
-                        message.Headers.Add("If-None-Match", cachedInfo.Etag);
-                    }
-                    else if (cachedInfo.LastModified.HasValue)
-                    {
-                        message.Headers.IfModifiedSince = new DateTimeOffset(cachedInfo.LastModified.Value);
-                    }
-                }
+                //if (options.EnableResponseCache && cachedInfo != null)
+                //{
+                //    if (!string.IsNullOrEmpty(cachedInfo.Etag))
+                //    {
+                //        message.Headers.Add("If-None-Match", cachedInfo.Etag);
+                //    }
+                //    else if (cachedInfo.LastModified.HasValue)
+                //    {
+                //        message.Headers.IfModifiedSince = new DateTimeOffset(cachedInfo.LastModified.Value);
+                //    }
+                //}
 
                 if (options.ResourcePool != null)
                 {
