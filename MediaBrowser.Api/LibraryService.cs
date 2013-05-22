@@ -11,6 +11,7 @@ using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -107,6 +108,14 @@ namespace MediaBrowser.Api
         public bool Recursive { get; set; }
         
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Id { get; set; }
+    }
+
+    [Route("/Items/{Id}", "DELETE")]
+    [Api(Description = "Deletes an item from the library and file system")]
+    public class DeleteItem : IReturnVoid
+    {
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
         public string Id { get; set; }
     }
 
@@ -223,9 +232,66 @@ namespace MediaBrowser.Api
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(RefreshLibrary request)
+        public async void Post(RefreshLibrary request)
         {
-            _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+            try
+            {
+                await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error refreshing library", ex);
+            }
+        }
+
+        /// <summary>
+        /// Deletes the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        public async void Delete(DeleteItem request)
+        {
+            var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager);
+
+            var parent = item.Parent;
+
+            if (item.LocationType == LocationType.FileSystem)
+            {
+                if (Directory.Exists(item.Path))
+                {
+                    Directory.Delete(item.Path, true);
+                }
+                else if (File.Exists(item.Path))
+                {
+                    File.Delete(item.Path);
+                }
+
+                if (parent != null)
+                {
+                    try
+                    {
+                        await parent.ValidateChildren(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorException("Error refreshing item", ex);
+                    }
+                }
+            }
+            else if (parent != null)
+            {
+                try
+                {
+                    await parent.RemoveChild(item, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error removing item", ex);
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Don't know how to delete " + item.Name);
+            }
         }
 
         /// <summary>
@@ -322,19 +388,26 @@ namespace MediaBrowser.Api
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(RefreshItem request)
+        public async void Post(RefreshItem request)
         {
             var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager);
 
             var folder = item as Folder;
 
-            if (folder != null)
+            try
             {
-                folder.ValidateChildren(new Progress<double>(), CancellationToken.None, request.Recursive, request.Forced);
+                if (folder != null)
+                {
+                    await folder.ValidateChildren(new Progress<double>(), CancellationToken.None, request.Recursive, request.Forced).ConfigureAwait(false);
+                }
+                else
+                {
+                    await item.RefreshMetadata(CancellationToken.None, forceRefresh: request.Forced).ConfigureAwait(false);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                item.RefreshMetadata(CancellationToken.None, forceRefresh: request.Forced);
+                Logger.ErrorException("Error refreshing library", ex);
             }
         }
 
