@@ -72,6 +72,10 @@ namespace MediaBrowser.Server.Implementations.Session
 
                     session.WebSockets = sockets;
                 }
+                else
+                {
+                    _logger.Warn("Unable to determine session based on identity message: {0}", message.Data);
+                }
             }
             else if (string.Equals(message.MessageType, "Context", StringComparison.OrdinalIgnoreCase))
             {
@@ -85,6 +89,10 @@ namespace MediaBrowser.Server.Implementations.Session
                     session.NowViewingItemId = vals[1];
                     session.NowViewingItemName = vals[2];
                     session.NowViewingContext = vals.Length > 3 ? vals[3] : null;
+                }
+                else
+                {
+                    _logger.Warn("Unable to determine session based on context message: {0}", message.Data);
                 }
             }
             else if (string.Equals(message.MessageType, "PlaybackStart", StringComparison.OrdinalIgnoreCase))
