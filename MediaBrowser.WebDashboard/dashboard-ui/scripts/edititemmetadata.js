@@ -12,7 +12,8 @@
 
             currentItem = item;
 
-            LibraryBrowser.renderTitle(item, $('#itemName', page), $('#parentName', page), $('#grandParentName', page), true);
+            LibraryBrowser.renderName(item, $('.itemName', page), true);
+            LibraryBrowser.renderParentName(item, $('.parentName', page));
 
             setFieldVisibilities(page, item);
             fillItemInfo(page, item);
@@ -22,6 +23,7 @@
     }
 
     function setFieldVisibilities(page, item) {
+
         if (item.Type == "Series" || item.Type == "Person") {
             $('#fldEndDate', page).show();
         } else {
@@ -83,20 +85,20 @@
         ApiClient.getCultures().done(function (result) {
 
             var select = $('#selectLanguage', page);
-            
+
             populateLanguages(result, select);
 
             select.val(item.Language || "").selectmenu('refresh');
         });
 
         ApiClient.getParentalRatings().done(function (result) {
-            
+
             var select = $('#selectOfficialRating', page);
 
             populateRatings(result, select);
 
             select.val(item.OfficialRating || "").selectmenu('refresh');
-            
+
             select = $('#selectCustomRating', page);
 
             populateRatings(result, select);
@@ -193,11 +195,11 @@
 
         select.html(html).selectmenu("refresh");
     }
-    
+
     function editItemMetadataPage() {
         var self = this;
 
-        self.onSubmit = function() {
+        self.onSubmit = function () {
 
             Dashboard.alert('coming soon');
 

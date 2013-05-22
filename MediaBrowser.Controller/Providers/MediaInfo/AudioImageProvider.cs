@@ -57,6 +57,30 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         }
 
         /// <summary>
+        /// Gets a value indicating whether [refresh on version change].
+        /// </summary>
+        /// <value><c>true</c> if [refresh on version change]; otherwise, <c>false</c>.</value>
+        protected override bool RefreshOnVersionChange
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Gets the provider version.
+        /// </summary>
+        /// <value>The provider version.</value>
+        protected override string ProviderVersion
+        {
+            get
+            {
+                return "1";
+            }
+        }
+
+        /// <summary>
         /// Supportses the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -150,17 +174,17 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
                     {
                         semaphore.Release();
                     }
-
-                    // Image is already in the cache
-                    item.PrimaryImagePath = path;
-
-                    await _libraryManager.UpdateItem(item, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
                     semaphore.Release();
                 }
             }
+
+            // Image is already in the cache
+            item.PrimaryImagePath = path;
+
+            await _libraryManager.UpdateItem(item, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

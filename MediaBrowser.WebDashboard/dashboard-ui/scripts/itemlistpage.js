@@ -140,7 +140,7 @@
 
         $('#btnEdit', page).on('click', function () {
 
-            Dashboard.navigate("edititemimages.html?id=" + query.ParentId);
+            Dashboard.navigate("edititemmetadata.html?id=" + query.ParentId);
         });
 
     }).on('pageshow', "#itemListPage", function () {
