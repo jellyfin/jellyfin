@@ -10,6 +10,10 @@
 
         ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
 
+            $('#btnRefresh', page).button('enable');
+
+            $('#refreshLoading', page).hide();
+
             currentItem = item;
 
             LibraryBrowser.renderName(item, $('.itemName', page), true);
@@ -213,6 +217,19 @@
 
         var page = this;
 
+
+        $('#btnRefresh', this).on('click', function () {
+
+            $(this).button('disable');
+
+            $('#refreshLoading', page).show();
+
+            ApiClient.refreshItem(currentItem.Id, true, false).done(function () {
+
+                reload(page);
+
+            });
+        });
 
     }).on('pageshow', "#editItemMetadataPage", function () {
 

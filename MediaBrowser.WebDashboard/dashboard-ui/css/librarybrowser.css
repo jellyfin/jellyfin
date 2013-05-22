@@ -408,10 +408,18 @@ a.itemTag:hover {
     overflow: hidden;
 }
 
+.editMetadataForm {
+    max-width: 100%;
+}
+
 @media all and (min-width: 600px) {
     .inlineDetailSection:not(.hide) {
         display: inline-block;
         margin-bottom: 2em;
+    }
+
+    .editMetadataForm .ui-field-contain {
+        margin: .25em 0;
     }
 }
 
@@ -474,6 +482,16 @@ a.itemTag:hover {
 
     .noBackdrop .lnkSibling {
         bottom: 205px;
+    }
+
+    .metadataFormFields {
+        float: left;
+        width: 70%;
+    }
+
+    .metadataFormButtons {
+        float: right;
+        width: 28%;
     }
 }
 

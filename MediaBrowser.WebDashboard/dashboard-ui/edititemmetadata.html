@@ -8,7 +8,6 @@
         <div class="ui-bar-c parentName" style="display: none;">
         </div>
         <div data-role="content">
-
             <div class="ehsContent">
                 <h1 class="itemName detailPageName"></h1>
                 <br />
@@ -17,86 +16,105 @@
                     <a href="#" data-role="button" onclick="Dashboard.navigate('edititemimages.html', true);">Images</a>
                 </div>
 
-                <form id="editItemMetadataForm" style="max-width: 100%;">
-                    <div data-role="fieldcontain">
-                        <label for="txtName">Name:</label>
-                        <input type="text" id="txtName" name="txtName" required="required" data-mini="true" />
+                <form id="editItemMetadataForm" class="editMetadataForm">
+                    <div class="metadataFormFields">
+                        <div data-role="fieldcontain">
+                            <label for="txtName">Name:</label>
+                            <input type="text" id="txtName" name="txtName" required="required" data-mini="true" />
+                        </div>
+                        <div data-role="fieldcontain">
+                            <label for="txtSortName">Sort name:</label>
+                            <input type="text" id="txtSortName" name="txtSortName" data-mini="true" />
+                        </div>
+                        <div data-role="fieldcontain">
+                            <label for="txtDisplayMediaType">Display type:</label>
+                            <input type="text" id="txtDisplayMediaType" name="txtDisplayMediaType" data-mini="true" />
+                        </div>
+                        <div data-role="fieldcontain" id="fldParentIndexNumber" style="display: none;">
+                            <label id="lblParentIndexNumber" for="txtParentIndexNumber">Parent number:</label>
+                            <input type="number" id="txtParentIndexNumber" name="txtParentIndexNumber" data-mini="true" pattern="[0-9]*" />
+                        </div>
+                        <div data-role="fieldcontain" id="fldIndexNumber" style="display: none;">
+                            <label id="lblIndexNumber" for="txtIndexNumber">Number:</label>
+                            <input type="number" id="txtIndexNumber" name="txtIndexNumber" data-mini="true" pattern="[0-9]*" />
+                        </div>
+                        <div data-role="fieldcontain">
+                            <label for="txtCommunityRating">Community rating:</label>
+                            <input type="number" id="txtCommunityRating" name="txtCommunityRating" step=".1" data-mini="true" />
+                        </div>
+                        <div data-role="fieldcontain">
+                            <label for="txtCriticRating">Critic rating:</label>
+                            <input type="number" id="txtCriticRating" name="txtCriticRating" step=".1" data-mini="true" />
+                        </div>
+                        <div data-role="fieldcontain">
+                            <label for="txtCriticRatingSummary">Critic rating summary:</label>
+                            <input type="text" id="txtCriticRatingSummary" name="txtCriticRatingSummary" data-mini="true" />
+                        </div>
+                        <div data-role="fieldcontain">
+                            <label for="txtHomePageUrl">Website:</label>
+                            <input type="url" id="txtHomePageUrl" name="txtHomePageUrl" data-mini="true" />
+                        </div>
+                        <div data-role="fieldcontain">
+                            <label for="txtPremiereDate">Release date:</label>
+                            <input type="date" id="txtPremiereDate" name="txtPremiereDate" data-mini="true" />
+                        </div>
+                        <div data-role="fieldcontain" id="fldEndDate" style="display: none;">
+                            <label for="txtEndDate">End date:</label>
+                            <input type="date" id="txtEndDate" name="txtEndDate" data-mini="true" />
+                        </div>
+                        <div data-role="fieldcontain">
+                            <label for="txtProductionYear">Year:</label>
+                            <input type="number" id="txtProductionYear" name="txtProductionYear" data-mini="true" />
+                        </div>
+                        <div data-role="fieldcontain">
+                            <label for="selectOfficialRating">Official rating:</label>
+                            <select name="selectOfficialRating" id="selectOfficialRating" data-mini="true"></select>
+                        </div>
+                        <div data-role="fieldcontain">
+                            <label for="selectCustomRating">Custom rating:</label>
+                            <select name="selectCustomRating" id="selectCustomRating" data-mini="true"></select>
+                        </div>
+                        <div data-role="fieldcontain" id="fldBudget" style="display: none;">
+                            <label for="txtBudget">Budget ($):</label>
+                            <input type="number" id="txtBudget" name="txtBudget" data-mini="true" />
+                        </div>
+                        <div data-role="fieldcontain" id="fldRevenue" style="display: none;">
+                            <label for="txtRevenue">Revenue ($):</label>
+                            <input type="number" id="txtRevenue" name="txtRevenue" data-mini="true" />
+                        </div>
+                        <div data-role="fieldcontain" id="fldOriginalAspectRatio" style="display: none;">
+                            <label for="txtOriginalAspectRatio">Original aspect ratio:</label>
+                            <input type="text" id="txtOriginalAspectRatio" name="txtOriginalAspectRatio" data-mini="true" />
+                        </div>
+                        <div data-role="fieldcontain" style="display: none;">
+                            <label for="selectLanguage">Original language:</label>
+                            <select name="selectLanguage" id="selectLanguage" data-mini="true"></select>
+                        </div>
+                        <ul data-role="listview" class="ulForm">
+                            <li>
+                                <button type="submit" data-theme="b" data-icon="ok">
+                                    Save
+                                </button>
+                            </li>
+                        </ul>
                     </div>
-                    <div data-role="fieldcontain">
-                        <label for="txtSortName">Sort name:</label>
-                        <input type="text" id="txtSortName" name="txtSortName" data-mini="true" />
+                    <div class="metadataFormButtons">
+
+                        <div data-role="collapsible" data-content-theme="a" data-collapsed="false" data-mini="true">
+                            <h3>Refresh Metadata</h3>
+                            <div>
+                                <div id="refreshLoading" style="display: none;">
+                                    <div class="circle"></div>
+                                    <div class="circle1"></div>
+                                    <div style="margin-top: -15px;"></div>
+                                </div>
+                                <p>
+                                    <button id="btnRefresh" type="button" data-icon="refresh" data-mini="true" data-theme="b">Refresh</button>
+                                </p>
+                            </div>
+                        </div>
+
                     </div>
-                    <div data-role="fieldcontain">
-                        <label for="txtDisplayMediaType">Display media type:</label>
-                        <input type="text" id="txtDisplayMediaType" name="txtDisplayMediaType" data-mini="true" />
-                    </div>
-                    <div data-role="fieldcontain" id="fldParentIndexNumber" style="display: none;">
-                        <label id="lblParentIndexNumber" for="txtParentIndexNumber">Parent number:</label>
-                        <input type="number" id="txtParentIndexNumber" name="txtParentIndexNumber" data-mini="true" pattern="[0-9]*" />
-                    </div>
-                    <div data-role="fieldcontain" id="fldIndexNumber" style="display: none;">
-                        <label id="lblIndexNumber" for="txtIndexNumber">Number:</label>
-                        <input type="number" id="txtIndexNumber" name="txtIndexNumber" data-mini="true" pattern="[0-9]*" />
-                    </div>
-                    <div data-role="fieldcontain">
-                        <label for="txtCommunityRating">Community rating:</label>
-                        <input type="number" id="txtCommunityRating" name="txtCommunityRating" step=".1" data-mini="true" />
-                    </div>
-                    <div data-role="fieldcontain">
-                        <label for="txtCriticRating">Critic rating:</label>
-                        <input type="number" id="txtCriticRating" name="txtCriticRating" step=".1" data-mini="true" />
-                    </div>
-                    <div data-role="fieldcontain">
-                        <label for="txtCriticRatingSummary">Critic rating summary:</label>
-                        <input type="text" id="txtCriticRatingSummary" name="txtCriticRatingSummary" data-mini="true" />
-                    </div>
-                    <div data-role="fieldcontain">
-                        <label for="txtHomePageUrl">Website:</label>
-                        <input type="url" id="txtHomePageUrl" name="txtHomePageUrl" data-mini="true" />
-                    </div>
-                    <div data-role="fieldcontain">
-                        <label for="txtPremiereDate">Release date:</label>
-                        <input type="date" id="txtPremiereDate" name="txtPremiereDate" data-mini="true" />
-                    </div>
-                    <div data-role="fieldcontain" id="fldEndDate" style="display: none;">
-                        <label for="txtEndDate">End date:</label>
-                        <input type="date" id="txtEndDate" name="txtEndDate" data-mini="true" />
-                    </div>
-                    <div data-role="fieldcontain">
-                        <label for="txtProductionYear">Year:</label>
-                        <input type="number" id="txtProductionYear" name="txtProductionYear" data-mini="true" />
-                    </div>
-                    <div data-role="fieldcontain">
-                        <label for="selectOfficialRating">Official rating:</label>
-                        <select name="selectOfficialRating" id="selectOfficialRating" data-mini="true"></select>
-                    </div>
-                    <div data-role="fieldcontain">
-                        <label for="selectCustomRating">Custom rating:</label>
-                        <select name="selectCustomRating" id="selectCustomRating" data-mini="true"></select>
-                    </div>
-                    <div data-role="fieldcontain" id="fldBudget" style="display: none;">
-                        <label for="txtBudget">Budget:</label>
-                        <input type="number" id="txtBudget" name="txtBudget" data-mini="true" />
-                    </div>
-                    <div data-role="fieldcontain" id="fldRevenue" style="display: none;">
-                        <label for="txtRevenue">Revenue:</label>
-                        <input type="number" id="txtRevenue" name="txtRevenue" data-mini="true" />
-                    </div>
-                    <div data-role="fieldcontain" id="fldOriginalAspectRatio" style="display: none;">
-                        <label for="txtOriginalAspectRatio">Original aspect ratio:</label>
-                        <input type="text" id="txtOriginalAspectRatio" name="txtOriginalAspectRatio" data-mini="true" />
-                    </div>
-                    <div data-role="fieldcontain">
-                        <label for="selectLanguage">Original language:</label>
-                        <select name="selectLanguage" id="selectLanguage" data-mini="true"></select>
-                    </div>
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <button type="submit" data-theme="b" data-icon="ok">
-                                Save
-                            </button>
-                        </li>
-                    </ul>
                 </form>
             </div>
         </div>
