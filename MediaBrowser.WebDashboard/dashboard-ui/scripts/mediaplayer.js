@@ -1,4 +1,4 @@
-﻿(function (document, clearTimeout, screen, localStorage, _V_, $, setInterval, window) {
+﻿(function (document, setTimeout, clearTimeout, screen, localStorage, _V_, $, setInterval, window) {
 
     function mediaPlayer() {
         var self = this;
@@ -7,14 +7,149 @@
         var testableVideoElement = document.createElement('video');
         var currentMediaElement;
         var currentProgressInterval;
+        var positionSlider;
+        var isPositionSliderActive;
+        var currentTimeElement;
+        var currentItem;
+        var volumeSlider;
+        var muteButton;
+        var unmuteButton;
+        var startTimeTicksOffset;
+        var curentDurationTicks;
+        var isStaticStream;
 
-	    if (typeof(self.playing) == 'undefined') {
-		    self.playing = '';
-	    }
+        self.playing = '';
+        self.queue = [];
 
-	    if (typeof(self.queue) == 'undefined') {
-		    self.queue = [];
-	    }
+        function replaceQueryString(url, param, value) {
+            var re = new RegExp("([?|&])" + param + "=.*?(&|$)", "i");
+            if (url.match(re))
+                return url.replace(re, '$1' + param + "=" + value + '$2');
+            else
+                return url + '&' + param + "=" + value;
+        }
+
+        function updateVolumeButtons(vol) {
+
+            if (vol) {
+                muteButton.show();
+                unmuteButton.hide();
+            } else {
+                muteButton.hide();
+                unmuteButton.show();
+            }
+        }
+
+        function onPlaybackStopped() {
+
+            currentTimeElement.hide();
+
+            var endTime = this.currentTime;
+
+            this.currentTime = 0;
+
+            clearProgressInterval();
+
+            var position = Math.floor(10000000 * endTime) + startTimeTicksOffset;
+
+            ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), currentItem.Id, position);
+
+            MediaPlayer.queuePlayNext();
+        }
+
+        function startProgressInterval(itemId) {
+
+            clearProgressInterval();
+
+            var intervalTime = ApiClient.isWebSocketOpen() ? 10000 : 30000;
+
+            currentProgressInterval = setInterval(function () {
+
+                var position = Math.floor(10000000 * currentMediaElement.currentTime) + startTimeTicksOffset;
+
+                ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, position);
+
+            }, intervalTime);
+        }
+
+        function clearProgressInterval() {
+
+            if (currentProgressInterval) {
+                clearTimeout(currentProgressInterval);
+                currentProgressInterval = null;
+            }
+        }
+
+        $(function () {
+
+            muteButton = $('#muteButton');
+            unmuteButton = $('#unmuteButton');
+
+            currentTimeElement = $('.currentTime');
+
+            volumeSlider = $('.volumeSlider').on('change', function () {
+
+                var vol = this.value;
+                updateVolumeButtons(vol);
+                currentMediaElement.volume = vol;
+            });
+
+            positionSlider = $(".positionSlider").on('change', function () {
+
+                isPositionSliderActive = true;
+
+                setCurrentTimePercent(parseInt(this.value), currentItem);
+
+            }).on('changed', function () {
+
+                isPositionSliderActive = false;
+
+                var element = currentMediaElement;
+
+                var newPercent = parseInt(this.value);
+
+                var newPositionTicks = (newPercent / 100) * currentItem.RunTimeTicks;
+
+                if (isStaticStream) {
+
+                    element.currentTime = newPositionTicks / (1000 * 10000);
+
+                } else {
+
+                    var currentSrc = element.currentSrc;
+
+                    if (currentSrc.toLowerCase().indexOf('starttimeticks') == -1) {
+
+                        currentSrc += "&starttimeticks=" + newPositionTicks;
+
+                    } else {
+                        currentSrc = replaceQueryString(currentSrc, 'starttimeticks', newPositionTicks);
+                    }
+
+                    clearProgressInterval();
+
+                    $(element).off('ended.playbackstopped').on("play.onceafterseek", function () {
+
+                        $(this).off('play.onceafterseek').on('ended.playbackstopped', onPlaybackStopped);
+                        startProgressInterval(currentItem.Id);
+
+                    });
+                    startTimeTicksOffset = newPositionTicks;
+
+                    element.src = currentSrc;
+                }
+            });
+
+            (function (el, timeout) {
+                var timer, trig = function () { el.trigger("changed"); };
+                el.bind("change", function () {
+                    if (timer) {
+                        clearTimeout(timer);
+                    }
+                    timer = setTimeout(trig, timeout);
+                });
+            })(positionSlider, 500);
+        });
 
         function endsWith(text, pattern) {
 
@@ -25,9 +160,35 @@
             return d >= 0 && text.lastIndexOf(pattern) === d;
         }
 
-        function playAudio(item, params) {
+        function setCurrentTimePercent(percent, item) {
 
-            var volume = localStorage.getItem("volume") || 0.5;
+            var position = (percent / 100) * curentDurationTicks;
+            setCurrentTime(position, item, false);
+        }
+
+        function setCurrentTime(ticks, item, updateSlider) {
+
+            // Convert to ticks
+            ticks = Math.floor(ticks);
+
+            var timeText = DashboardPage.getDisplayText(ticks);
+
+            if (curentDurationTicks) {
+
+                timeText += " / " + DashboardPage.getDisplayText(curentDurationTicks);
+
+                if (updateSlider) {
+                    var percent = ticks / curentDurationTicks;
+                    percent *= 100;
+
+                    positionSlider.val(percent);
+                }
+            }
+
+            currentTimeElement.html(timeText);
+        }
+
+        function playAudio(item, params) {
 
             var baseParams = {
                 audioChannels: 2,
@@ -68,58 +229,82 @@
 
             }
 
-            /* ffmpeg always says the ogg stream is corrupt after conversion
-             var oggUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.oga', $.extend({}, baseParams, {
-             audioCodec: 'Vorbis'
-             }));
-             */
-
             var html = '';
-            html += '<audio class="itemAudio" preload="none" controls autoplay>';
+
+            var attributes = "autoplay";
+
+            if ($.browser.ipad || $.browser.iphone || $.browser.android) {
+                attributes += " controls";
+            }
+            html += '<audio preload="auto" ' + attributes + '>';
             html += '<source type="audio/mpeg" src="' + mp3Url + '" />';
             html += '<source type="audio/aac" src="' + aacUrl + '" />';
             html += '<source type="audio/webm" src="' + webmUrl + '" />';
-            //html += '<source type="audio/ogg" src="' + oggUrl + '" />';
             html += '</audio';
 
             var nowPlayingBar = $('#nowPlayingBar').show();
             //show stop button
             $('#stopButton', nowPlayingBar).show();
+            $('#playButton', nowPlayingBar).hide();
+            $('#pauseButton', nowPlayingBar).show();
 
             $('#mediaElement', nowPlayingBar).html(html);
 
-            $(".itemAudio").each(function () {
-                this.volume = volume;
+            var audioElement = $("audio", nowPlayingBar);
+
+            audioElement.each(function () {
+                this.volume = localStorage.getItem("volume") || 0.5;
             });
 
-            $(".itemAudio").on("ended", function () {
-                MediaPlayer.stopAudio(item.Id);
+            audioElement.on("volumechange", function () {
 
-	            MediaPlayer.queuePlayNext();
-            });
+                var vol = this.volume;
 
-            $(".itemAudio").on("volumechange", function () {
-                localStorage.setItem("volume", this.volume);
-            });
+                localStorage.setItem("volume", vol);
 
-            $(".itemAudio").on("play", updateAudioProgress(item.Id));
+                updateVolumeButtons(vol);
 
-	        MediaPlayer.nowPlaying(item);
+            }).on("play.once", function () {
 
-            return $('audio', nowPlayingBar)[0];
-        }
+                var duration = this.duration;
+                isStaticStream = duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
 
-        function updateAudioProgress(itemId) {
-            ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), itemId);
+                currentTimeElement.show();
+                audioElement.removeAttr('controls').hide().off("play.once");
 
-            currentProgressInterval = setInterval(function () {
-                var position;
-                $(".itemAudio").each(function () {
-                    position = Math.floor(10000000 * this.currentTime);
-                });
+                updateVolumeButtons(this.volume);
 
-                ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, position);
-            }, 30000);
+                ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id);
+
+                startProgressInterval(item.Id);
+
+            }).on("pause", function () {
+
+                $('#playButton', nowPlayingBar).show();
+                $('#pauseButton', nowPlayingBar).hide();
+
+            }).on("playing", function () {
+
+                $('#playButton', nowPlayingBar).hide();
+                $('#pauseButton', nowPlayingBar).show();
+
+            }).on("timeupdate", function () {
+
+                if (!isPositionSliderActive) {
+
+                    var ticks = startTimeTicksOffset + this.currentTime * 1000 * 10000;
+                    
+                    setCurrentTime(ticks, item, true);
+                }
+
+            }).on("ended.playbackstopped", onPlaybackStopped);
+
+            MediaPlayer.nowPlaying(item);
+
+            currentItem = item;
+            curentDurationTicks = item.RunTimeTicks;
+
+            return audioElement[0];
         }
 
         function playVideo(item, startPosition) {
@@ -193,20 +378,20 @@
                     videoCodec: 'h264',
                     audioCodec: 'aac',
                     profile: 'high',
-	                videoBitrate: 2500000
+                    videoBitrate: 2500000
                 }));
 
                 var tsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ts', $.extend({}, baseParams, {
                     videoCodec: 'h264',
                     audioCodec: 'aac',
                     profile: 'high',
-	                videoBitrate: 2500000
+                    videoBitrate: 2500000
                 }));
 
                 var webmVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
                     videoCodec: 'vpx',
                     audioCodec: 'Vorbis',
-	                videoBitrate: 2500000
+                    videoBitrate: 2500000
                 }));
 
                 var hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.m3u8', $.extend({}, baseParams, {
@@ -234,7 +419,7 @@
 
                 (this).addEvent("loadstart", function () {
                     $(".vjs-remaining-time-display").hide();
-	                $(".vjs-duration-display").hide();
+                    $(".vjs-duration-display").hide();
                 });
 
                 (this).addEvent("durationchange", function () {
@@ -249,7 +434,7 @@
                 (this).addEvent("play", updateProgress);
 
                 (this).addEvent("ended", function () {
-	                MediaPlayer.stop();
+                    MediaPlayer.stop();
                 });
 
             });
@@ -278,7 +463,7 @@
                 var positionTicks = parseInt(startTime) + Math.floor(10000000 * player.currentTime());
 
                 ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, positionTicks);
-                
+
             }, intervalTime);
         }
 
@@ -325,6 +510,8 @@
 
                 mediaElement = playAudio(item);
             }
+
+            startTimeTicksOffset = startPosition || 0;
 
             if (!mediaElement) {
                 return;
@@ -392,7 +579,7 @@
             else
                 html += '<div>' + seriesName + '<br/>' + name + '</div>';
 
-            $('#mediaInfo', nowPlayingBar).html(html);
+            $('.nowPlayingMediaInfo', nowPlayingBar).html(html);
         };
 
         self.playById = function (id, startPositionTicks) {
@@ -405,70 +592,84 @@
 
         };
 
+        self.nowPlaying = function (item) {
+            self.playing = item;
+        };
 
-
-	    self.nowPlaying = function (item) {
-		    self.playing = item;
-	    };
-
-	    self.canQueue = function (mediaType) {
+        self.canQueue = function (mediaType) {
             return mediaType == "Audio";
         };
 
-	    self.queueAdd = function (item) {
-		    self.queue.push(item);
-	    };
+        self.queueAdd = function (item) {
+            self.queue.push(item);
+        };
 
-	    self.queueRemove = function (elem) {
-		    var index = $(elem).attr("data-queue-index");
+        self.queueRemove = function (elem) {
+            var index = $(elem).attr("data-queue-index");
 
-		    self.queue.splice(index, 1);
+            self.queue.splice(index, 1);
 
-		    $(elem).parent().parent().remove();
-		    return false;
-	    };
+            $(elem).parent().parent().remove();
+            return false;
+        };
 
-	    self.queuePlay = function (elem) {
-		    var index = $(elem).attr("data-queue-index");
+        self.queuePlay = function (elem) {
+            var index = $(elem).attr("data-queue-index");
 
-		    MediaPlayer.play(new Array(self.queue[index]));
-		    self.queue.splice(index, 1);
-	    };
+            MediaPlayer.play(new Array(self.queue[index]));
+            self.queue.splice(index, 1);
+        };
 
-	    self.queuePlayNext = function (item) {
-		    if (typeof self.queue[0] != "undefined") {
-			    MediaPlayer.play(new Array(self.queue[0]));
-			    self.queue.shift();
-		    }
-	    };
+        self.queuePlayNext = function (item) {
+            if (typeof self.queue[0] != "undefined") {
+                MediaPlayer.play(new Array(self.queue[0]));
+                self.queue.shift();
+            }
+        };
 
-	    self.queueAddNext = function (item) {
-		    if (typeof self.queue[0] != "undefined") {
-			    self.queue.unshift(item);
-		    }else {
-			    self.queueAdd(item);
-		    }
-	    };
+        self.queueAddNext = function (item) {
+            if (typeof self.queue[0] != "undefined") {
+                self.queue.unshift(item);
+            } else {
+                self.queueAdd(item);
+            }
+        };
 
-	    self.inQueue = function (item) {
-		    $.each(MediaPlayer.queue, function(i, queueItem){
-			    if (item.Id == queueItem.Id) {
-				    return true;
-			    }
-		    });
-		    return false;
-	    };
+        self.inQueue = function (item) {
+            $.each(MediaPlayer.queue, function (i, queueItem) {
+                if (item.Id == queueItem.Id) {
+                    return true;
+                }
+            });
+            return false;
+        };
 
         self.playLast = function (itemId) {
-	        ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(function (item) {
-				self.queueAdd(item);
-	        });
+            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(function (item) {
+                self.queueAdd(item);
+            });
         };
 
         self.playNext = function (itemId) {
-	        ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(function (item) {
-		        self.queueAddNext(item);
-	        });
+            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(function (item) {
+                self.queueAddNext(item);
+            });
+        };
+
+        self.pause = function () {
+            currentMediaElement.pause();
+        };
+
+        self.unpause = function () {
+            currentMediaElement.play();
+        };
+
+        self.mute = function () {
+            currentMediaElement.volume = 0;
+        };
+
+        self.unmute = function () {
+            currentMediaElement.volume = volumeSlider.val();
         };
 
         self.stop = function () {
@@ -496,8 +697,6 @@
                 //player.tech.destroy();
                 player.destroy();
             } else {
-                self.stopAudio();
-
                 elem.pause();
                 elem.src = "";
             }
@@ -527,22 +726,6 @@
             }
         };
 
-        self.stopAudio = function () {
-            var itemString = $(".itemAudio source").attr('src').match(new RegExp("Audio/[0-9a-z\-]+", "g"));
-            var itemId = itemString[0].replace("Audio/", "");
-
-            var position;
-            $(".itemAudio").each(function () {
-                position = Math.floor(10000000 * this.currentTime);
-            });
-
-            ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), itemId, position);
-
-            if (currentProgressInterval) {
-                clearTimeout(currentProgressInterval);
-            }
-        };
-
         self.isPlaying = function () {
             return currentMediaElement;
         };
@@ -550,4 +733,4 @@
 
     window.MediaPlayer = new mediaPlayer();
 
-})(document, clearTimeout, screen, localStorage, _V_, $, setInterval, window);
+})(document, setTimeout, clearTimeout, screen, localStorage, _V_, $, setInterval, window);

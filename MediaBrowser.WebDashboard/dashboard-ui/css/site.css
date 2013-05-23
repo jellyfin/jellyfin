@@ -697,9 +697,14 @@ progress {
 
 /* Now playing bar */
 #nowPlayingBar {
-    padding: 8px 20px;
+    padding: 6px .5em;
     border-top: 2px solid #D7742B;
 }
+
+
+    #nowPlayingBar > *:not(#mediaElement) {
+        margin: 0 1em;
+    }
 
 .nowPlayingBarImage {
     border: 1px solid #a7a7a7;
@@ -708,12 +713,12 @@ progress {
 }
 
 .mediaButton {
-    margin: 0 20px 0 0;
     display: inline-block;
+    position: relative;
+    top: -4px;
 }
 
 #mediaElement {
-    margin-right: 20px;
     display: inline-block;
     position: relative;
 }
@@ -722,23 +727,27 @@ progress {
         width: 270px;
     }
 
-#nowPlayingBar #mediaInfo, #nowPlayingBar #mediaInfo div {
-    margin-left: 10px;
+.nowPlayingMediaInfo div {
     display: inline-block;
 }
 
-#nowPlayingBar #mediaInfo {
+.nowPlayingMediaInfo a {
+    margin-right: .25em;
+}
+
+
+.nowPlayingMediaInfo {
     display: none;
 }
 
 @media all and (min-width: 650px) {
-    #nowPlayingBar #mediaInfo {
+    .nowPlayingMediaInfo {
         display: inline-block;
     }
 }
 
 .mediaButton img {
-    height: 28px;
+    height: 24px;
 }
 
 .itemVideo, .itemVideo.video-js {
@@ -747,6 +756,45 @@ progress {
     height: auto;
     /*width: 180px;*/
     bottom: -5px;
+}
+
+.currentTime {
+    display: inline-block;
+    position: relative;
+    top: -10px;
+}
+
+.mediaSlider {
+    -webkit-appearance: none;
+    -moz-apperance: none;
+    background: #777;
+    border-radius: 5px;
+    vertical-align: bottom;
+    position: relative;
+    top: -17px;
+    height: 3px;
+    width: 50px;
+}
+
+    .mediaSlider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        -moz-apperance: none;
+        width: 15px;
+        height: 15px;
+        -webkit-border-radius: 10px;
+        -moz-border-radius: 10px;
+        -ms-border-radius: 10px;
+        -o-border-radius: 10px;
+        border-radius: 10px;
+        background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #fefefe), color-stop(0.49, #dddddd), color-stop(0.51, #d1d1d1), color-stop(1, #a1a1a1) );
+    }
+
+.positionSlider {
+    width: 130px;
+}
+
+.volumeButton {
+    margin-right: .5em!important;
 }
 
 @media all and (min-width: 650px) {

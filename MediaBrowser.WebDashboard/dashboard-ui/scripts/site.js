@@ -714,7 +714,7 @@ var Dashboard = {
         header.append(headerHtml);
 
         if (!$('.supporterIcon', header).length) {
-            
+
             Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
 
                 if (pluginSecurityInfo.IsMBSupporter) {
@@ -1106,11 +1106,21 @@ $(function () {
     footerHtml += '<div id="nowPlayingBar" style="display:none;">';
     footerHtml += '<a class="imageButton mediaButton" href="playlist.html"><img src="css/images/media/playlist.png" /></a>';
     footerHtml += '<button id="previousTrackButton" class="imageButton mediaButton" title="Previous Track" type="button"><img src="css/images/media/previoustrack.png" /></button>';
+    footerHtml += '<button id="playButton" class="imageButton mediaButton" title="Play" type="button" onclick="MediaPlayer.unpause();"><img src="css/images/media/play.png" /></button>';
+    footerHtml += '<button id="pauseButton" class="imageButton mediaButton" title="Pause" type="button" onclick="MediaPlayer.pause();"><img src="css/images/media/pause.png" /></button>';
     footerHtml += '<button id="stopButton" class="imageButton mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();"><img src="css/images/media/stop.png" /></button>';
     footerHtml += '<button id="nextTrackButton" class="imageButton mediaButton" title="Next Track" type="button"><img src="css/images/media/nexttrack.png" /></button>';
+    footerHtml += '<input type="range" class="mediaSlider positionSlider" step=".001" min="0" max="100" value="0" />';
+    footerHtml += '<div class="currentTime"></div>';
     footerHtml += '<div id="mediaElement"></div>';
-    footerHtml += '<div id="mediaInfo"></div>';
+    footerHtml += '<div class="nowPlayingMediaInfo"></div>';
+    
+    footerHtml += '<button id="muteButton" onclick="MediaPlayer.mute();" class="imageButton mediaButton volumeButton" title="Volume" type="button"><img src="css/images/media/volume.png" /></button>';
+    footerHtml += '<button id="unmuteButton" onclick="MediaPlayer.unmute();" class="imageButton mediaButton volumeButton" title="Volume" type="button"><img src="css/images/media/mute.png" /></button>';
+    footerHtml += '<input type="range" class="mediaSlider volumeSlider" step=".05" min="0" max="1" value="0" />';
+
     footerHtml += '</div>';
+
     footerHtml += '<div id="footerNotifications"></div>';
     footerHtml += '</div>';
 
