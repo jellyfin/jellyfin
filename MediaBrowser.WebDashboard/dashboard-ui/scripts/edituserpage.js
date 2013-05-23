@@ -59,10 +59,8 @@
         if (!loggedInUser.Configuration.IsAdministrator) {
 
             $('#fldIsAdmin', page).hide();
-            $('#fldMaxParentalRating', page).hide();
         } else {
             $('#fldIsAdmin', page).show();
-            $('#fldMaxParentalRating', page).show();
         }
 
         Dashboard.setPageTitle(user.Name || "Add User");
@@ -101,6 +99,7 @@
 
         $('#chkForcedSubtitlesOnly', page).checked(user.Configuration.UseForcedSubtitlesOnly || false).checkboxradio("refresh");
         $('#chkIsAdmin', page).checked(user.Configuration.IsAdministrator || false).checkboxradio("refresh");
+        $('#chkBlockNotRated', page).checked(user.Configuration.BlockNotRated || false).checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
     }
@@ -130,6 +129,7 @@
         user.Configuration.AudioLanguagePreference = $('#selectAudioLanguage', page).val();
         user.Configuration.SubtitleLanguagePreference = $('#selectSubtitleLanguage', page).val();
         user.Configuration.UseForcedSubtitlesOnly = $('#chkForcedSubtitlesOnly', page).checked();
+        user.Configuration.BlockNotRated = $('#chkBlockNotRated', page).checked();
 
         var userId = getParameterByName("userId");
 

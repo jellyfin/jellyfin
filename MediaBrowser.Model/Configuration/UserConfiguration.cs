@@ -13,6 +13,12 @@ namespace MediaBrowser.Model.Configuration
         public int? MaxParentalRating { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether items with no rating information should be blocked.
+        /// </summary>
+        /// <value><c>true</c> if items with no rating info should be blocked; otherwise, <c>false</c>.</value>
+        public bool BlockNotRated { get; set; }
+        
+        /// <summary>
         /// Gets or sets a value indicating whether [use custom library].
         /// </summary>
         /// <value><c>true</c> if [use custom library]; otherwise, <c>false</c>.</value>
@@ -48,6 +54,7 @@ namespace MediaBrowser.Model.Configuration
         public UserConfiguration()
         {
             IsAdministrator = true;
+            BlockNotRated = true;
         }
     }
 }

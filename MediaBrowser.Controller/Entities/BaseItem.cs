@@ -1072,6 +1072,11 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
+            if (user.Configuration.BlockNotRated && string.IsNullOrEmpty(CustomRating ?? OfficialRating))
+            {
+                return false;
+            }
+
             return Ratings.Level(CustomRating ?? OfficialRating) <= user.Configuration.MaxParentalRating.Value;
         }
 

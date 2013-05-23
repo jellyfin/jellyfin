@@ -20,9 +20,13 @@
                             <label for="txtUserName">Name: </label>
                             <input id="txtUserName" name="txtUserName" required="required" type="text" />
                         </li>
-                        <li id="fldMaxParentalRating" style="display: none;">
+                        <li id="fldMaxParentalRating" >
                             <label for="selectMaxParentalRating">Max parental rating:</label>
                             <select name="selectMaxParentalRating" id="selectMaxParentalRating"></select>
+                        </li>
+                        <li id="fldBlockNotRated" >
+                            <input type="checkbox" id="chkBlockNotRated" name="chkBlockNotRated" />
+                            <label for="chkBlockNotRated">Block items with no rating information</label>
                         </li>
                         <li id="fldIsAdmin" style="display: none;">
                             <input type="checkbox" id="chkIsAdmin" name="chkIsAdmin" />
