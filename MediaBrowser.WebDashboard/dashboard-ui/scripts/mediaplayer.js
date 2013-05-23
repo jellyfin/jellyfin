@@ -42,6 +42,7 @@
 
         function onPlaybackStopped() {
 
+            console.log('ended');
             currentTimeElement.hide();
 
             var endTime = this.currentTime;
@@ -65,11 +66,17 @@
 
             currentProgressInterval = setInterval(function () {
 
-                var position = Math.floor(10000000 * currentMediaElement.currentTime) + startTimeTicksOffset;
-
-                ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, position);
+                if (currentMediaElement) {
+                    sendProgressUpdate(itemId);
+                }
 
             }, intervalTime);
+        }
+
+        function sendProgressUpdate(itemId) {
+            var position = Math.floor(10000000 * currentMediaElement.currentTime) + startTimeTicksOffset;
+
+            ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, position);
         }
 
         function clearProgressInterval() {
@@ -93,6 +100,8 @@
                 updateVolumeButtons(vol);
                 currentMediaElement.volume = vol;
             });
+
+            $(".jqueryuislider").slider({ orientation: "horizontal" });
 
             positionSlider = $(".positionSlider").on('change', function () {
 
@@ -132,6 +141,7 @@
 
                         $(this).off('play.onceafterseek').on('ended.playbackstopped', onPlaybackStopped);
                         startProgressInterval(currentItem.Id);
+                        sendProgressUpdate(currentItem.Id);
 
                     });
                     startTimeTicksOffset = newPositionTicks;
@@ -252,9 +262,14 @@
 
             var audioElement = $("audio", nowPlayingBar);
 
+            var initialVolume = localStorage.getItem("volume") || 0.5;
+
             audioElement.each(function () {
-                this.volume = localStorage.getItem("volume") || 0.5;
+                this.volume = initialVolume;
             });
+
+            volumeSlider.val(initialVolume);
+            updateVolumeButtons(initialVolume);
 
             audioElement.on("volumechange", function () {
 
@@ -270,9 +285,8 @@
                 isStaticStream = duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
 
                 currentTimeElement.show();
-                audioElement.removeAttr('controls').hide().off("play.once");
 
-                updateVolumeButtons(this.volume);
+                audioElement.removeAttr('controls').hide().off("play.once");
 
                 ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id);
 
@@ -293,7 +307,7 @@
                 if (!isPositionSliderActive) {
 
                     var ticks = startTimeTicksOffset + this.currentTime * 1000 * 10000;
-                    
+
                     setCurrentTime(ticks, item, true);
                 }
 
@@ -698,6 +712,8 @@
                 player.destroy();
             } else {
                 elem.pause();
+
+                $(elem).trigger('ended');
                 elem.src = "";
             }
 

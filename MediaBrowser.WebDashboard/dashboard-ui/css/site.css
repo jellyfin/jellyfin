@@ -765,29 +765,37 @@ progress {
 }
 
 .mediaSlider {
-    -webkit-appearance: none;
-    -moz-apperance: none;
-    background: #777;
-    border-radius: 5px;
-    vertical-align: bottom;
     position: relative;
-    top: -17px;
-    height: 3px;
+    top: -10px;
     width: 50px;
 }
 
-    .mediaSlider::-webkit-slider-thumb {
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    /* IE10 won't see this (good) '*/
+    .mediaSlider {
         -webkit-appearance: none;
         -moz-apperance: none;
-        width: 15px;
-        height: 15px;
-        -webkit-border-radius: 10px;
-        -moz-border-radius: 10px;
-        -ms-border-radius: 10px;
-        -o-border-radius: 10px;
-        border-radius: 10px;
-        background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #fefefe), color-stop(0.49, #dddddd), color-stop(0.51, #d1d1d1), color-stop(1, #a1a1a1) );
+        background: #777;
+        border-radius: 5px;
+        vertical-align: bottom;
+        height: 3px;
+        top: -17px;
     }
+}
+
+
+.mediaSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    -moz-apperance: none;
+    width: 15px;
+    height: 15px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -ms-border-radius: 10px;
+    -o-border-radius: 10px;
+    border-radius: 10px;
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #fefefe), color-stop(0.49, #dddddd), color-stop(0.51, #d1d1d1), color-stop(1, #a1a1a1) );
+}
 
 .positionSlider {
     width: 130px;
@@ -795,6 +803,41 @@ progress {
 
 .volumeButton {
     margin-right: .5em!important;
+}
+
+::-ms-fill-lower {
+    background: #777;
+}
+
+::-ms-fill-upper {
+    background: #777;
+}
+
+::-ms-thumb {
+    background: #000;
+    border-radius: 5px;
+    border: 1px solid #000;
+}
+
+::-ms-ticks-after {
+    display: none;
+    color: #777!important;
+    background: #777;
+}
+
+::-ms-ticks-before {
+    display: none;
+    color: #777!important;
+    background: #777;
+}
+
+::-ms-track {
+    padding: 0;
+    border: 0;
+}
+
+::-ms-tooltip {
+    display: none; /* display and visibility only */
 }
 
 @media all and (min-width: 650px) {

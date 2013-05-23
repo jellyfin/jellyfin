@@ -182,7 +182,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.Object.</returns>
         public object Get(GetDashboardInfo request)
         {
-            var result =  GetDashboardInfo(_appHost, Logger, _taskManager, _userManager, _libraryManager, _sessionManager).Result;
+            var result = GetDashboardInfo(_appHost, Logger, _taskManager, _userManager, _libraryManager, _sessionManager).Result;
 
             return ResultFactory.GetOptimizedResult(RequestContext, result);
         }
@@ -197,10 +197,10 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="connectionManager">The connection manager.</param>
         /// <returns>DashboardInfo.</returns>
-        public static async Task<DashboardInfo> GetDashboardInfo(IServerApplicationHost appHost, 
-            ILogger logger, 
-            ITaskManager taskManager, 
-            IUserManager userManager, 
+        public static async Task<DashboardInfo> GetDashboardInfo(IServerApplicationHost appHost,
+            ILogger logger,
+            ITaskManager taskManager,
+            IUserManager userManager,
             ILibraryManager libraryManager,
             ISessionManager connectionManager)
         {
