@@ -29,7 +29,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="item">The item.</param>
         /// <param name="imageType">Type of the image.</param>
         /// <returns>Cache key relating to the current state of this item and configuration</returns>
-        string ConfigurationCacheKey(BaseItem item, ImageType imageType);
+        string GetConfigurationCacheKey(BaseItem item, ImageType imageType);
 
         /// <summary>
         /// Gets the size of the enhanced image.
