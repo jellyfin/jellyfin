@@ -668,7 +668,6 @@ namespace MediaBrowser.Api.Images
             }
 
             var contentType = MimeTypes.GetMimeType(imagePath);
-            var dateLastModified = (supportedImageEnhancers.Select(e => e.LastConfigurationChange(item, request.Type)).Concat(new[] { originalFileImageDateModified })).Max();
 
             var cacheGuid = kernel.ImageManager.GetImageCacheTag(imagePath, originalFileImageDateModified, supportedImageEnhancers, item, request.Type);
 
@@ -679,7 +678,7 @@ namespace MediaBrowser.Api.Images
                 cacheDuration = TimeSpan.FromDays(365);
             }
 
-            return ToCachedResult(cacheGuid, dateLastModified, cacheDuration, () => new ImageWriter
+            return ToCachedResult(cacheGuid, originalFileImageDateModified, cacheDuration, () => new ImageWriter
             {
                 Item = item,
                 Request = request,
