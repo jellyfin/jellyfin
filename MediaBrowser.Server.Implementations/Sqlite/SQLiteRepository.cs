@@ -1,11 +1,9 @@
 using MediaBrowser.Model.Logging;
 using System;
-using System.Collections.Concurrent;
 using System.Data;
 using System.Data.Common;
 using System.Data.SQLite;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Sqlite

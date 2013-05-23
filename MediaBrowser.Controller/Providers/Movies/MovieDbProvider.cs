@@ -911,12 +911,12 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <summary>
         /// The remove
         /// </summary>
-        const string remove = "\"'!`?";
+        const string Remove = "\"'!`?";
         // "Face/Off" support.
         /// <summary>
         /// The spacers
         /// </summary>
-        const string spacers = "/,.:;\\(){}[]+-_=–*";  // (there are not actually two - in the they are different char codes)
+        const string Spacers = "/,.:;\\(){}[]+-_=–*";  // (there are not actually two - in the they are different char codes)
         /// <summary>
         /// The replace start numbers
         /// </summary>
@@ -996,11 +996,11 @@ namespace MediaBrowser.Controller.Providers.Movies
                 {
                     // skip char modifier and diacritics 
                 }
-                else if (remove.IndexOf(c) > -1)
+                else if (Remove.IndexOf(c) > -1)
                 {
                     // skip chars we are removing
                 }
-                else if (spacers.IndexOf(c) > -1)
+                else if (Spacers.IndexOf(c) > -1)
                 {
                     sb.Append(" ");
                 }

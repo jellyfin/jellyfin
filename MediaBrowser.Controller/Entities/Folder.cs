@@ -706,16 +706,10 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
 
-                var saveTasks = new List<Task>();
+                await LibraryManager.CreateItems(newItems, cancellationToken).ConfigureAwait(false);
 
                 foreach (var item in newItems)
                 {
-                    if (saveTasks.Count > 50)
-                    {
-                        await Task.WhenAll(saveTasks).ConfigureAwait(false);
-                        saveTasks.Clear();
-                    }
-
                     if (!_children.TryAdd(item.Id, item))
                     {
                         Logger.Error("Failed to add {0}", item.Name);
@@ -724,11 +718,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         Logger.Debug("** " + item.Name + " Added to library.");
                     }
-
-                    saveTasks.Add(LibraryManager.CreateItem(item, CancellationToken.None));
                 }
-
-                await Task.WhenAll(saveTasks).ConfigureAwait(false);
 
                 await LibraryManager.SaveChildren(Id, newChildren, CancellationToken.None).ConfigureAwait(false);
 
