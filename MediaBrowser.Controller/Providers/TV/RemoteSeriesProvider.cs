@@ -35,7 +35,7 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <summary>
         /// The tv db
         /// </summary>
-        internal readonly SemaphoreSlim TvDbResourcePool = new SemaphoreSlim(1, 1);
+        internal readonly SemaphoreSlim TvDbResourcePool = new SemaphoreSlim(2, 2);
 
         /// <summary>
         /// Gets the current.
