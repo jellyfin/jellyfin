@@ -121,6 +121,21 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
+        /// Never want folders to be blocked by "BlockNotRated"
+        /// </summary>
+        public override string OfficialRating
+        {
+            get
+            {
+                return !string.IsNullOrEmpty(base.OfficialRating) ? base.OfficialRating : "None";
+            }
+            set
+            {
+                base.OfficialRating = value;
+            }
+        }
+
+        /// <summary>
         /// Removes the child.
         /// </summary>
         /// <param name="item">The item.</param>
