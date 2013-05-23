@@ -185,6 +185,14 @@ namespace MediaBrowser.Controller.Library
         Task CreateItem(BaseItem item, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Creates the items.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task CreateItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Updates the item.
         /// </summary>
         /// <param name="item">The item.</param>
