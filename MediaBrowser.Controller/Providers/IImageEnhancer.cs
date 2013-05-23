@@ -24,12 +24,12 @@ namespace MediaBrowser.Controller.Providers
         MetadataProviderPriority Priority { get; }
 
         /// <summary>
-        /// Return the date of the last configuration change affecting the provided baseitem and image type
+        /// Return a key incorporating all configuration information related to this item
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="imageType">Type of the image.</param>
-        /// <returns>Date of last config change</returns>
-        DateTime LastConfigurationChange(BaseItem item, ImageType imageType);
+        /// <returns>Cache key relating to the current state of this item and configuration</returns>
+        string ConfigurationCacheKey(BaseItem item, ImageType imageType);
 
         /// <summary>
         /// Gets the size of the enhanced image.
