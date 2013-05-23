@@ -642,7 +642,7 @@ namespace MediaBrowser.Controller.Drawing
             }
 
             // Cache name is created with supported enhancers combined with the last config change so we pick up new config changes
-            var cacheKeys = imageEnhancers.Select(i => i.ConfigurationCacheKey(item, imageType)).ToList();
+            var cacheKeys = imageEnhancers.Select(i => i.GetConfigurationCacheKey(item, imageType)).ToList();
             cacheKeys.Add(originalImagePath + dateModified.Ticks);
 
             return string.Join("|", cacheKeys.ToArray()).GetMD5();
