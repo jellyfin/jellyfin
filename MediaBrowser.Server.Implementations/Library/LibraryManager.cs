@@ -1036,21 +1036,40 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task CreateItem(BaseItem item, CancellationToken cancellationToken)
+        public Task CreateItem(BaseItem item, CancellationToken cancellationToken)
         {
-            await SaveItem(item, cancellationToken).ConfigureAwait(false);
+            return CreateItems(new[] { item }, cancellationToken);
+        }
 
-            UpdateItemInLibraryCache(item);
+        /// <summary>
+        /// Creates the items.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public async Task CreateItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken)
+        {
+            var list = items.ToList();
+
+            await ItemRepository.SaveItems(list, cancellationToken).ConfigureAwait(false);
+
+            foreach (var item in list)
+            {
+                UpdateItemInLibraryCache(item);
+            }
 
             if (ItemAdded != null)
             {
-                try
+                foreach (var item in list)
                 {
-                    ItemAdded(this, new ItemChangeEventArgs { Item = item });
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error in ItemUpdated event handler", ex);
+                    try
+                    {
+                        ItemAdded(this, new ItemChangeEventArgs { Item = item });
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error in ItemUpdated event handler", ex);
+                    }
                 }
             }
         }
@@ -1063,7 +1082,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public async Task UpdateItem(BaseItem item, CancellationToken cancellationToken)
         {
-            await SaveItem(item, cancellationToken).ConfigureAwait(false);
+            await ItemRepository.SaveItem(item, cancellationToken).ConfigureAwait(false);
 
             UpdateItemInLibraryCache(item);
 
@@ -1097,17 +1116,6 @@ namespace MediaBrowser.Server.Implementations.Library
                     _logger.ErrorException("Error in ItemRemoved event handler", ex);
                 }
             }
-        }
-
-        /// <summary>
-        /// Saves the item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        private Task SaveItem(BaseItem item, CancellationToken cancellationToken)
-        {
-            return ItemRepository.SaveItem(item, cancellationToken);
         }
 
         /// <summary>

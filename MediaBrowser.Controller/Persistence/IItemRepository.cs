@@ -64,5 +64,13 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="criticReviews">The critic reviews.</param>
         /// <returns>Task.</returns>
         Task SaveCriticReviews(Guid itemId, IEnumerable<ItemReview> criticReviews);
+
+        /// <summary>
+        /// Saves the items.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SaveItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken);
     }
 }
