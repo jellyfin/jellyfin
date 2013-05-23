@@ -15,7 +15,7 @@ namespace MediaBrowser.Controller.Providers.Movies
 {
     public class OpenMovieDatabaseProvider : BaseMetadataProvider
     {
-        private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(2, 2);
 
         /// <summary>
         /// Gets the json serializer.

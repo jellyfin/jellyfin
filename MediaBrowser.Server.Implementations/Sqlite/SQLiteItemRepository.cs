@@ -135,7 +135,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <summary>
         /// The _write lock
         /// </summary>
-        private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1,1);
+        private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
 
         /// <summary>
         /// Prepares the statements.
@@ -172,11 +172,32 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public async Task SaveItem(BaseItem item, CancellationToken cancellationToken)
+        public Task SaveItem(BaseItem item, CancellationToken cancellationToken)
         {
             if (item == null)
             {
                 throw new ArgumentNullException("item");
+            }
+
+            return SaveItems(new[] { item }, cancellationToken);
+        }
+
+        /// <summary>
+        /// Saves the items.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="System.ArgumentNullException">
+        /// items
+        /// or
+        /// cancellationToken
+        /// </exception>
+        public async Task SaveItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken)
+        {
+            if (items == null)
+            {
+                throw new ArgumentNullException("items");
             }
 
             if (cancellationToken == null)
@@ -186,8 +207,6 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var serialized = _jsonSerializer.SerializeToBytes(item);
-
             await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             SQLiteTransaction transaction = null;
@@ -196,13 +215,18 @@ namespace MediaBrowser.Server.Implementations.Sqlite
             {
                 transaction = Connection.BeginTransaction();
 
-                _saveItemCommand.Parameters[0].Value = item.Id;
-                _saveItemCommand.Parameters[1].Value = item.GetType().FullName;
-                _saveItemCommand.Parameters[2].Value = serialized;
+                foreach (var item in items)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    
+                    _saveItemCommand.Parameters[0].Value = item.Id;
+                    _saveItemCommand.Parameters[1].Value = item.GetType().FullName;
+                    _saveItemCommand.Parameters[2].Value = _jsonSerializer.SerializeToBytes(item);
 
-                _saveItemCommand.Transaction = transaction;
+                    _saveItemCommand.Transaction = transaction;
 
-                await _saveItemCommand.ExecuteNonQueryAsync(cancellationToken);
+                    await _saveItemCommand.ExecuteNonQueryAsync(cancellationToken);
+                }
 
                 transaction.Commit();
             }
@@ -400,7 +424,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 foreach (var child in children)
                 {
                     _saveChildrenCommand.Transaction = transaction;
-                    
+
                     _saveChildrenCommand.Parameters[0].Value = id;
                     _saveChildrenCommand.Parameters[1].Value = child.Id;
 
