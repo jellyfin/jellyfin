@@ -285,6 +285,15 @@ namespace MediaBrowser.Api
 
             var user = _userManager.GetUserById(id);
 
+            // If removing admin access
+            if (!dtoUser.Configuration.IsAdministrator && user.Configuration.IsAdministrator)
+            {
+                if (_userManager.Users.Count(i => i.Configuration.IsAdministrator) == 1)
+                {
+                    throw new ArgumentException("There must be at least one user in the system with administrative access.");
+                }
+            }
+
             var task = user.Name.Equals(dtoUser.Name, StringComparison.Ordinal) ? _userManager.UpdateUser(user) : _userManager.RenameUser(user, dtoUser.Name);
 
             Task.WaitAll(task);
