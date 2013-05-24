@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -13,19 +12,33 @@ using System.Xml;
 
 namespace MediaBrowser.Controller.Providers.TV
 {
+    /// <summary>
+    /// Class FanArtSeasonProvider
+    /// </summary>
     class FanArtSeasonProvider : FanartBaseProvider
     {
         /// <summary>
         /// The _provider manager
         /// </summary>
         private readonly IProviderManager _providerManager;
-        
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FanArtSeasonProvider"/> class.
+        /// </summary>
+        /// <param name="logManager">The log manager.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="providerManager">The provider manager.</param>
         public FanArtSeasonProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
             : base(logManager, configurationManager)
         {
             _providerManager = providerManager;
         }
 
+        /// <summary>
+        /// Supportses the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
             return item is Season;
@@ -84,6 +97,13 @@ namespace MediaBrowser.Controller.Providers.TV
             return key.GetMD5();
         }
 
+        /// <summary>
+        /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="force">if set to <c>true</c> [force].</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{System.Boolean}.</returns>
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -101,7 +121,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
                 if (imagesFileInfo.Exists)
                 {
-                    if (!season.HasImage(ImageType.Primary) || !season.HasImage(ImageType.Banner) || season.BackdropImagePaths.Count == 0)
+                    if (!season.HasImage(ImageType.Thumb))
                     {
                         var xmlDoc = new XmlDocument();
                         xmlDoc.Load(imagesXmlPath);
