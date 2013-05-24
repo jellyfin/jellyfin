@@ -246,17 +246,6 @@ namespace MediaBrowser.Controller.Providers.Movies
             if (HasAltMeta(item))
                 return false; //never refresh if has meta from other source
 
-            if (item.LocationType == LocationType.FileSystem &&
-                ConfigurationManager.Configuration.SaveLocalMeta && 
-                HasFileSystemStampChanged(item, providerInfo))
-            {
-                //If they deleted something from file system, chances are, this item was mis-identified the first time
-                item.SetProviderId(MetadataProviders.Tmdb, null);
-                Logger.Debug("MovieProvider reports file system stamp change...");
-                return true;
-
-            }
-
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
