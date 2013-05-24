@@ -20,6 +20,13 @@
                             <label for="txtUserName">Name: </label>
                             <input id="txtUserName" name="txtUserName" required="required" type="text" />
                         </li>
+                        <li id="fldIsAdmin" style="display: none;">
+                            <input type="checkbox" id="chkIsAdmin" name="chkIsAdmin" />
+                            <label for="chkIsAdmin">Allow this user to manage the server</label>
+                        </li>
+                    </ul>
+                    <h2>Parental Control</h2>
+                    <ul data-role="listview" class="ulForm">
                         <li id="fldMaxParentalRating" >
                             <label for="selectMaxParentalRating">Max parental rating:</label>
                             <select name="selectMaxParentalRating" id="selectMaxParentalRating"></select>
@@ -27,10 +34,6 @@
                         <li id="fldBlockNotRated" >
                             <input type="checkbox" id="chkBlockNotRated" name="chkBlockNotRated" />
                             <label for="chkBlockNotRated">Block items with no rating information</label>
-                        </li>
-                        <li id="fldIsAdmin" style="display: none;">
-                            <input type="checkbox" id="chkIsAdmin" name="chkIsAdmin" />
-                            <label for="chkIsAdmin">Allow this user to manage the server</label>
                         </li>
                     </ul>
                     <h2>Video Playback Settings</h2>
