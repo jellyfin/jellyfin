@@ -103,8 +103,8 @@
         html += '</ul>';
 
         html += '<p>';
-        html += '<button type="button" data-inline="true" data-icon="minus" data-folderindex="' + index + '" onclick="MediaLibraryPage.deleteVirtualFolder(this);">Remove collection</button>';
-        html += '<button type="button" data-inline="true" data-icon="pencil" data-folderindex="' + index + '" onclick="MediaLibraryPage.renameVirtualFolder(this);">Rename collection</button>';
+        html += '<button type="button" data-inline="true" data-icon="minus" data-folderindex="' + index + '" onclick="MediaLibraryPage.deleteVirtualFolder(this);" data-mini="true">Remove collection</button>';
+        html += '<button type="button" data-inline="true" data-icon="pencil" data-folderindex="' + index + '" onclick="MediaLibraryPage.renameVirtualFolder(this);" data-mini="true">Rename collection</button>';
         html += '</p>';
 
         html += '</div>';

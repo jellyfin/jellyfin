@@ -35,13 +35,13 @@
                 }
             }
         }
-        
+
         function isFullScreen() {
             return document.fullscreenEnabled || document.mozFullscreenEnabled || document.webkitIsFullScreen ? true : false;
         }
-        
-        $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function() {
-            
+
+        $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function () {
+
             if (isFullScreen()) {
                 $('.itemVideo').addClass('fullscreenVideo');
             } else {
@@ -285,7 +285,12 @@
 
             var html = '';
 
-            html += '<audio preload="auto" autoplay>';
+            // Can't autoplay in these browsers so we need to use the full controls
+            if ($.browser.msie || $.browser.android || $.browser.iphone || $.browser.ipad) {
+                html += '<audio preload="auto" autoplay controls>';
+            } else {
+                html += '<audio preload="auto" style="display:none;" autoplay>';
+            }
             html += '<source type="audio/mpeg" src="' + mp3Url + '" />';
             html += '<source type="audio/aac" src="' + aacUrl + '" />';
             html += '<source type="audio/webm" src="' + webmUrl + '" />';
@@ -328,7 +333,7 @@
 
                 currentTimeElement.show();
 
-                audioElement.removeAttr('controls').hide().off("play.once");
+                audioElement.off("play.once");
 
                 ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id);
 
@@ -454,8 +459,8 @@
             // HLS must be at the top for safari
             // Webm must be ahead of mp4 due to the issue of mp4 playing too fast in chrome
 
-            // Can't autoplay in ie so need to use the full controls
-            if ($.browser.msie) {
+            // Can't autoplay in these browsers so we need to use the full controls
+            if ($.browser.msie || $.browser.android || $.browser.iphone || $.browser.ipad) {
                 html += '<video class="itemVideo" preload="auto" autoplay controls>';
             } else {
                 html += '<video class="itemVideo" preload="auto" autoplay>';
@@ -551,10 +556,6 @@
         };
 
         self.canPlayMediaType = function (mediaType) {
-
-            if ($.browser.android || $.browser.iphone || $.browser.ipad) {
-                return false;
-            }
 
             var media;
 
