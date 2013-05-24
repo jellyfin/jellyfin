@@ -676,7 +676,9 @@
 
         renderName: function (item, nameElem, linkToElement) {
 
-            Dashboard.setPageTitle(LibraryBrowser.getPosterViewDisplayName(item));
+            var name = LibraryBrowser.getPosterViewDisplayName(item);
+            
+            Dashboard.setPageTitle(name);
 
             if (linkToElement) {
                 nameElem.html('<a class="detailPageParentLink" href="' + LibraryBrowser.getHref(item) + '">' + name + '</a>').trigger('create');
