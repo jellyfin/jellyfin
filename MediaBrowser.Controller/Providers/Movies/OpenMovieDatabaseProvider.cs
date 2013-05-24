@@ -159,8 +159,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             {
                 Url = url,
                 ResourcePool = _resourcePool,
-                CancellationToken = cancellationToken,
-                EnableResponseCache = true
+                CancellationToken = cancellationToken
 
             }).ConfigureAwait(false))
             {

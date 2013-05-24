@@ -1,5 +1,6 @@
-﻿using System.Globalization;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -7,6 +8,8 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Globalization;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -80,6 +83,65 @@ namespace MediaBrowser.Controller.Providers.TV
             return string.IsNullOrEmpty(id) ? Guid.Empty : id.GetMD5();
         }
 
+        /// <summary>
+        /// Gets a value indicating whether [refresh on version change].
+        /// </summary>
+        /// <value><c>true</c> if [refresh on version change]; otherwise, <c>false</c>.</value>
+        protected override bool RefreshOnVersionChange
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Gets the provider version.
+        /// </summary>
+        /// <value>The provider version.</value>
+        protected override string ProviderVersion
+        {
+            get
+            {
+                return "1";
+            }
+        }
+
+        /// <summary>
+        /// Gets the series data path.
+        /// </summary>
+        /// <param name="appPaths">The app paths.</param>
+        /// <param name="seriesId">The series id.</param>
+        /// <returns>System.String.</returns>
+        internal static string GetSeriesDataPath(IApplicationPaths appPaths, string seriesId)
+        {
+            var seriesDataPath = Path.Combine(GetSeriesDataPath(appPaths), seriesId);
+
+            if (!Directory.Exists(seriesDataPath))
+            {
+                Directory.CreateDirectory(seriesDataPath);
+            }
+
+            return seriesDataPath;
+        }
+
+        /// <summary>
+        /// Gets the series data path.
+        /// </summary>
+        /// <param name="appPaths">The app paths.</param>
+        /// <returns>System.String.</returns>
+        internal static string GetSeriesDataPath(IApplicationPaths appPaths)
+        {
+            var dataPath = Path.Combine(appPaths.DataPath, "fanart-tv");
+
+            if (!Directory.Exists(dataPath))
+            {
+                Directory.CreateDirectory(dataPath);
+            }
+
+            return dataPath;
+        }
+        
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
         
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
@@ -98,20 +160,28 @@ namespace MediaBrowser.Controller.Providers.TV
             var series = (Series)item;
 
             string language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
-            string url = string.Format(FanArtBaseUrl, ApiKey, series.GetProviderId(MetadataProviders.Tvdb));
-            var doc = new XmlDocument();
 
-            using (var xml = await HttpClient.Get(new HttpRequestOptions
+            var seriesId = series.GetProviderId(MetadataProviders.Tvdb);
+            string url = string.Format(FanArtBaseUrl, ApiKey, seriesId);
+
+            var xmlPath = Path.Combine(GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId), "fanart.xml");
+
+            using (var response = await HttpClient.Get(new HttpRequestOptions
             {
                 Url = url,
                 ResourcePool = FanArtResourcePool,
-                CancellationToken = cancellationToken,
-                EnableResponseCache = true
+                CancellationToken = cancellationToken
 
             }).ConfigureAwait(false))
             {
-                doc.Load(xml);
+                using (var xmlFileStream = new FileStream(xmlPath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                {
+                    await response.CopyToAsync(xmlFileStream).ConfigureAwait(false);
+                }
             }
+
+            var doc = new XmlDocument();
+            doc.Load(xmlPath);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -126,7 +196,6 @@ namespace MediaBrowser.Controller.Providers.TV
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    Logger.Debug("FanArtProvider getting ClearLogo for " + series.Name);
                     series.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(series, path, LogoFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                 }
             }
@@ -143,7 +212,6 @@ namespace MediaBrowser.Controller.Providers.TV
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    Logger.Debug("FanArtProvider getting ClearArt for " + series.Name);
                     series.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(series, path, ArtFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                 }
             }
@@ -157,7 +225,6 @@ namespace MediaBrowser.Controller.Providers.TV
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    Logger.Debug("FanArtProvider getting ThumbArt for " + series.Name);
                     series.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(series, path, ThumbFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                 }
             }
@@ -169,7 +236,6 @@ namespace MediaBrowser.Controller.Providers.TV
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    Logger.Debug("FanArtProvider getting banner for " + series.Name);
                     series.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(series, path, BannerFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                 }
             }
