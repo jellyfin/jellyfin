@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities.TV;
+﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using System;
 
@@ -10,6 +11,20 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
     public class SeasonResolver : FolderResolver<Season>
     {
         /// <summary>
+        /// The _config
+        /// </summary>
+        private readonly IServerConfigurationManager _config;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SeasonResolver"/> class.
+        /// </summary>
+        /// <param name="config">The config.</param>
+        public SeasonResolver(IServerConfigurationManager config)
+        {
+            _config = config;
+        }
+
+        /// <summary>
         /// Resolves the specified args.
         /// </summary>
         /// <param name="args">The args.</param>
@@ -18,10 +33,17 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
         {
             if (args.Parent is Series && args.IsDirectory)
             {
-                return new Season
+                var season = new Season
                 {
                     IndexNumber = TVUtils.GetSeasonNumberFromPath(args.Path)
                 };
+
+                if (season.IndexNumber.HasValue && season.IndexNumber.Value == 0)
+                {
+                    season.Name = _config.Configuration.SeasonZeroDisplayName;
+                }
+
+                return season;
             }
 
             return null;

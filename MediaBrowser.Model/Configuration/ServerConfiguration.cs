@@ -44,6 +44,12 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The item by name path.</value>
         public string ItemsByNamePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the display name of the season zero.
+        /// </summary>
+        /// <value>The display name of the season zero.</value>
+        public string SeasonZeroDisplayName { get; set; }
         
         /// <summary>
         /// Gets or sets the weather unit to use when displaying weather
@@ -260,6 +266,8 @@ namespace MediaBrowser.Model.Configuration
             SortReplaceCharacters = new[] { ".", "+", "%" };
             SortRemoveCharacters = new[] { ",", "&", "-", "{", "}", "'" };
             SortRemoveWords = new[] { "the", "a", "an" };
+
+            SeasonZeroDisplayName = "Specials";
         }
     }
 }

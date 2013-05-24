@@ -15,6 +15,8 @@
             $('#txtItemsByNamePath', page).removeAttr("required");
         }
 
+        $('#txtSeasonZeroName', page).val(config.SeasonZeroDisplayName);
+
         Dashboard.hideLoadingMsg();
     }
 
@@ -86,6 +88,8 @@
                 } else {
                     config.ItemsByNamePath = '';
                 }
+
+                config.SeasonZeroDisplayName = $('#txtSeasonZeroName', form).val();
 
                 ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
             });
