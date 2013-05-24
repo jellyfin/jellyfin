@@ -142,8 +142,7 @@ namespace MediaBrowser.Controller.Providers.Music
             {
                 Url = url,
                 ResourcePool = FanArtResourcePool,
-                CancellationToken = cancellationToken,
-                EnableResponseCache = true
+                CancellationToken = cancellationToken
 
             }).ConfigureAwait(false))
             {
@@ -154,7 +153,7 @@ namespace MediaBrowser.Controller.Providers.Music
 
             if (doc.HasChildNodes)
             {
-                if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Disc && !item.ResolveArgs.ContainsMetaFileByName(DiscFile))
+                if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Disc && !item.HasImage(ImageType.Disc))
                 {
                     var node = doc.SelectSingleNode("//fanart/music/albums/album/cdart/@url");
 
@@ -167,7 +166,7 @@ namespace MediaBrowser.Controller.Providers.Music
                     }
                 }
 
-                if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Primary && !item.ResolveArgs.ContainsMetaFileByName(PrimaryFile))
+                if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Primary && !item.HasImage(ImageType.Primary))
                 {
                     var node = doc.SelectSingleNode("//fanart/music/albums/album/albumcover/@url");
 
@@ -220,8 +219,7 @@ namespace MediaBrowser.Controller.Providers.Music
                 {
                     Url = url,
                     CancellationToken = cancellationToken,
-                    UserAgent = Environment.MachineName,
-                    EnableResponseCache = true
+                    UserAgent = Environment.MachineName
 
                 }).ConfigureAwait(false))
                 {

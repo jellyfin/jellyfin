@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -123,8 +122,7 @@ namespace MediaBrowser.Controller.Providers.Music
             {
                 Url = url,
                 ResourcePool = FanArtResourcePool,
-                CancellationToken = cancellationToken,
-                EnableResponseCache = true
+                CancellationToken = cancellationToken
 
             }).ConfigureAwait(false))
             {
@@ -176,7 +174,7 @@ namespace MediaBrowser.Controller.Providers.Music
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Art && !item.ResolveArgs.ContainsMetaFileByName(ArtFile))
+                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Art && !item.HasImage(ImageType.Art))
                 {
                     var node =
                         doc.SelectSingleNode("//fanart/music/musicarts/" + hd + "musicart/@url") ??
@@ -190,7 +188,7 @@ namespace MediaBrowser.Controller.Providers.Music
                 }
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Banner && !item.ResolveArgs.ContainsMetaFileByName(BannerFile))
+                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Banner && !item.HasImage(ImageType.Banner))
                 {
                     var node = doc.SelectSingleNode("//fanart/music/musicbanners/" + hd + "musicbanner/@url") ??
                                doc.SelectSingleNode("//fanart/music/musicbanners/musicbanner/@url");
@@ -205,7 +203,7 @@ namespace MediaBrowser.Controller.Providers.Music
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // Artist thumbs are actually primary images (they are square/portrait)
-                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Primary && !item.ResolveArgs.ContainsMetaFileByName(PrimaryFile))
+                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Primary && !item.HasImage(ImageType.Primary))
                 {
                     var node = doc.SelectSingleNode("//fanart/music/artistthumbs/artistthumb/@url");
                     path = node != null ? node.Value : null;

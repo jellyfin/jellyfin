@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -20,12 +19,6 @@ namespace MediaBrowser.Controller.Providers.TV
     class RemoteSeasonProvider : BaseMetadataProvider
     {
         /// <summary>
-        /// Gets the HTTP client.
-        /// </summary>
-        /// <value>The HTTP client.</value>
-        protected IHttpClient HttpClient { get; private set; }
-
-        /// <summary>
         /// The _provider manager
         /// </summary>
         private readonly IProviderManager _providerManager;
@@ -33,19 +26,13 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <summary>
         /// Initializes a new instance of the <see cref="RemoteSeasonProvider"/> class.
         /// </summary>
-        /// <param name="httpClient">The HTTP client.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="providerManager">The provider manager.</param>
         /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public RemoteSeasonProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
+        public RemoteSeasonProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
             : base(logManager, configurationManager)
         {
-            if (httpClient == null)
-            {
-                throw new ArgumentNullException("httpClient");
-            }
-            HttpClient = httpClient;
             _providerManager = providerManager;
         }
 
@@ -211,7 +198,7 @@ namespace MediaBrowser.Controller.Providers.TV
                 }
 
                 data.Data = GetComparisonData(imagesFileInfo);
-                
+
                 SetLastRefreshed(item, DateTime.UtcNow);
                 return true;
             }
