@@ -134,7 +134,7 @@
         }
         if (clientLowered == "roku") {
 
-            return "<img src='css/images/clients/roku.png' alt='Roku' title='Roku' />";
+            return "<img src='css/images/clients/roku.jpg' alt='Roku' title='Roku' />";
         }
         if (clientLowered == "ios") {
 
