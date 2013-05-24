@@ -285,7 +285,7 @@
 
             var html = '';
 
-            var requiresControls = $.browser.msie || $.browser.android || $.browser.iphone || $.browser.ipad;
+            var requiresControls = $.browser.android || $.browser.iphone || $.browser.ipad;
 
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresControls) {
