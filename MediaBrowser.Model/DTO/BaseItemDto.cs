@@ -121,6 +121,12 @@ namespace MediaBrowser.Model.Dto
         public int? IndexNumber { get; set; }
 
         /// <summary>
+        /// Gets or sets the index number end.
+        /// </summary>
+        /// <value>The index number end.</value>
+        public int? IndexNumberEnd { get; set; }
+        
+        /// <summary>
         /// Gets or sets the parent index number.
         /// </summary>
         /// <value>The parent index number.</value>
