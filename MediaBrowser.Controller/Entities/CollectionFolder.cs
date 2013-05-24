@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -74,23 +73,25 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                IEnumerable<Guid> folderIds;
+                Dictionary<Guid,Guid> folderIds;
 
                 try
                 {
                     // Accessing ResolveArgs could involve file system access
-                    folderIds = ResolveArgs.PhysicalLocations.Select(f => (f.GetMBId(typeof(Folder))));
+                    folderIds = ResolveArgs.PhysicalLocations
+                        .Select(f => (f.GetMBId(typeof(Folder))))
+                        .ToDictionary(i => i);
                 }
                 catch (IOException ex)
                 {
                     Logger.ErrorException("Error creating FolderIds for {0}", ex, Path);
 
-                    folderIds = new Guid[] {};
+                    folderIds = new Dictionary<Guid, Guid>();
                 }
 
                 var ourChildren =
-                    LibraryManager.RootFolder.Children.OfType<Folder>()
-                          .Where(i => folderIds.Contains(i.Id))
+                    LibraryManager.RootFolder.RecursiveChildren.OfType<Folder>()
+                          .Where(i => folderIds.ContainsKey(i.Id))
                           .SelectMany(c => c.Children);
 
                 return new ConcurrentDictionary<Guid,BaseItem>(ourChildren.ToDictionary(i => i.Id));

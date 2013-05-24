@@ -203,18 +203,11 @@ namespace MediaBrowser.Api.Library
         {
             // Example: D:\Movies is the existing path
             // D:\ cannot be added
-            // Neither can D:\Movies\Kids
             // A D:\Movies duplicate is ok here since that will be caught later
 
             if (newPath.Equals(existingPath, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
-            }
-
-            // Validate the D:\Movies\Kids scenario
-            if (newPath.StartsWith(existingPath.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
             }
 
             // Validate the D:\ scenario

@@ -430,6 +430,18 @@ namespace MediaBrowser.Server.Implementations.Library
                 var flattenFolderDepth = isPhysicalRoot ? 2 : 0;
 
                 args.FileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, _logger, flattenFolderDepth: flattenFolderDepth, args: args, resolveShortcuts: isPhysicalRoot || args.IsVf);
+
+                // Need to remove subpaths that may have been resolved from shortcuts
+                // Example: if \\server\movies exists, then strip out \\server\movies\action
+                if (isPhysicalRoot)
+                {
+                    var paths = args.FileSystemDictionary.Keys.ToList();
+
+                    foreach (var subPath in paths.Where(subPath => paths.Any(i => subPath.StartsWith(i.TrimEnd(System.IO.Path.DirectorySeparatorChar) + System.IO.Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))))
+                    {
+                        args.FileSystemDictionary.Remove(subPath);
+                    }
+                }
             }
 
             // Check to see if we should resolve based on our contents
