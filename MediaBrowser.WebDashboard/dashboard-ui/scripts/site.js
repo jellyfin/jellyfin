@@ -1118,7 +1118,7 @@ $(function () {
     footerHtml += '<button id="muteButton" onclick="MediaPlayer.mute();" class="imageButton mediaButton volumeButton" title="Volume" type="button"><img src="css/images/media/volume.png" /></button>';
     footerHtml += '<button id="unmuteButton" onclick="MediaPlayer.unmute();" class="imageButton mediaButton volumeButton" title="Volume" type="button"><img src="css/images/media/mute.png" /></button>';
     footerHtml += '<input type="range" class="mediaSlider volumeSlider" step=".05" min="0" max="1" value="0" />';
-    footerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="fullscsreenButton" class="imageButton mediaButton" title="Fullscreen" type="button"><img src="css/images/media/fullscreen.png" /></button>';
+    footerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="fullscsreenButton" class="imageButton mediaButton fullscsreenButton" title="Fullscreen" type="button"><img src="css/images/media/fullscreen.png" /></button>';
 
     footerHtml += '</div>';
 

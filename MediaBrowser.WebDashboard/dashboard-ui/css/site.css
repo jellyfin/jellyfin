@@ -846,6 +846,26 @@ input[type="range"]::-ms-fill-upper {
 }
 
 
+@media all and (max-width: 500px) {
+    .volumeButton, .volumeSlider, .fullscsreenButton {
+        display: none!important;
+    }
+
+    .positionSlider {
+        width: 50px;
+    }
+
+    .itemVideo:not(.fullscreenVideo) {
+        left: -300px;
+    }
+}
+
+@media all and (max-width: 750px) {
+    .positionSlider {
+        width: 50px;
+    }
+}
+
 /* VideoJS overrides */
 
 #videoWindow.tubecss .vjs-menu-button {
