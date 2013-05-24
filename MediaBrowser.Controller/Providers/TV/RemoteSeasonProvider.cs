@@ -7,7 +7,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;

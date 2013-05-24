@@ -84,7 +84,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 return "12";
             }
         }
-        
+
         /// <summary>
         /// The fan art base URL
         /// </summary>
@@ -119,7 +119,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             {
                 return false;
             }
-            
+
             if (!ConfigurationManager.Configuration.DownloadMovieImages.Art &&
                 !ConfigurationManager.Configuration.DownloadMovieImages.Logo &&
                 !ConfigurationManager.Configuration.DownloadMovieImages.Disc &&
@@ -168,7 +168,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             }
 
             var status = ProviderRefreshStatus.Success;
-            
+
             var movie = item;
 
             var language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
@@ -192,128 +192,102 @@ namespace MediaBrowser.Controller.Providers.Movies
             var saveLocal = ConfigurationManager.Configuration.SaveLocalMeta &&
                             item.LocationType == LocationType.FileSystem;
 
-            if (doc.HasChildNodes)
+            string path;
+            var hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hd" : "";
+
+            if (ConfigurationManager.Configuration.DownloadMovieImages.Logo && !item.HasImage(ImageType.Logo))
             {
-                string path;
-                var hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hd" : "";
-
-                var hasLogo = item.LocationType == LocationType.FileSystem ? 
-                    item.ResolveArgs.ContainsMetaFileByName(LogoFile) 
-                    : item.HasImage(ImageType.Logo);
-
-                if (ConfigurationManager.Configuration.DownloadMovieImages.Logo && !hasLogo)
+                var node =
+                    doc.SelectSingleNode("//fanart/movie/movielogos/" + hd + "movielogo[@lang = \"" + language + "\"]/@url") ??
+                    doc.SelectSingleNode("//fanart/movie/movielogos/movielogo[@lang = \"" + language + "\"]/@url");
+                if (node == null && language != "en")
                 {
-                    var node =
-                        doc.SelectSingleNode("//fanart/movie/movielogos/" + hd + "movielogo[@lang = \"" + language + "\"]/@url") ??
-                        doc.SelectSingleNode("//fanart/movie/movielogos/movielogo[@lang = \"" + language + "\"]/@url");
-                    if (node == null && language != "en")
-                    {
-                        //maybe just couldn't find language - try just first one
-                        node = doc.SelectSingleNode("//fanart/movie/movielogos/" + hd + "movielogo/@url");
-                    }
-                    path = node != null ? node.Value : null;
-                    if (!string.IsNullOrEmpty(path))
-                    {
-                        movie.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(movie, path, LogoFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                    }
+                    //maybe just couldn't find language - try just first one
+                    node = doc.SelectSingleNode("//fanart/movie/movielogos/" + hd + "movielogo/@url");
                 }
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var hasArt = item.LocationType == LocationType.FileSystem ?
-                    item.ResolveArgs.ContainsMetaFileByName(ArtFile)
-                    : item.HasImage(ImageType.Art);
-
-                if (ConfigurationManager.Configuration.DownloadMovieImages.Art && !hasArt)
+                path = node != null ? node.Value : null;
+                if (!string.IsNullOrEmpty(path))
                 {
-                    var node =
-                        doc.SelectSingleNode("//fanart/movie/moviearts/" + hd + "movieart[@lang = \"" + language + "\"]/@url") ??
-                        doc.SelectSingleNode("//fanart/movie/moviearts/" + hd + "movieart/@url") ??
-                        doc.SelectSingleNode("//fanart/movie/moviearts/movieart[@lang = \"" + language + "\"]/@url") ??
-                        doc.SelectSingleNode("//fanart/movie/moviearts/movieart/@url");
-                    path = node != null ? node.Value : null;
-                    if (!string.IsNullOrEmpty(path))
-                    {
-                        movie.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(movie, path, ArtFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                    }
+                    movie.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(movie, path, LogoFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                 }
-                cancellationToken.ThrowIfCancellationRequested();
+            }
+            cancellationToken.ThrowIfCancellationRequested();
 
-                var hasDisc = item.LocationType == LocationType.FileSystem ?
-                    item.ResolveArgs.ContainsMetaFileByName(DiscFile)
-                    : item.HasImage(ImageType.Disc);
-
-                if (ConfigurationManager.Configuration.DownloadMovieImages.Disc && !hasDisc)
+            if (ConfigurationManager.Configuration.DownloadMovieImages.Art && !item.HasImage(ImageType.Art))
+            {
+                var node =
+                    doc.SelectSingleNode("//fanart/movie/moviearts/" + hd + "movieart[@lang = \"" + language + "\"]/@url") ??
+                    doc.SelectSingleNode("//fanart/movie/moviearts/" + hd + "movieart/@url") ??
+                    doc.SelectSingleNode("//fanart/movie/moviearts/movieart[@lang = \"" + language + "\"]/@url") ??
+                    doc.SelectSingleNode("//fanart/movie/moviearts/movieart/@url");
+                path = node != null ? node.Value : null;
+                if (!string.IsNullOrEmpty(path))
                 {
-                    var node = doc.SelectSingleNode("//fanart/movie/moviediscs/moviedisc[@lang = \"" + language + "\"]/@url") ??
-                               doc.SelectSingleNode("//fanart/movie/moviediscs/moviedisc/@url");
-                    path = node != null ? node.Value : null;
-                    if (!string.IsNullOrEmpty(path))
-                    {
-                        movie.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(movie, path, DiscFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                    }
+                    movie.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(movie, path, ArtFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                 }
+            }
+            cancellationToken.ThrowIfCancellationRequested();
 
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var hasBanner = item.LocationType == LocationType.FileSystem ?
-                    item.ResolveArgs.ContainsMetaFileByName(BannerFile)
-                    : item.HasImage(ImageType.Banner);
-
-                if (ConfigurationManager.Configuration.DownloadMovieImages.Banner && !hasBanner)
+            if (ConfigurationManager.Configuration.DownloadMovieImages.Disc && !item.HasImage(ImageType.Disc))
+            {
+                var node = doc.SelectSingleNode("//fanart/movie/moviediscs/moviedisc[@lang = \"" + language + "\"]/@url") ??
+                           doc.SelectSingleNode("//fanart/movie/moviediscs/moviedisc/@url");
+                path = node != null ? node.Value : null;
+                if (!string.IsNullOrEmpty(path))
                 {
-                    var node = doc.SelectSingleNode("//fanart/movie/moviebanners/moviebanner[@lang = \"" + language + "\"]/@url") ??
-                               doc.SelectSingleNode("//fanart/movie/moviebanners/moviebanner/@url");
-                    path = node != null ? node.Value : null;
-                    if (!string.IsNullOrEmpty(path))
-                    {
-                        movie.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(movie, path, BannerFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                    }
+                    movie.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(movie, path, DiscFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                 }
+            }
 
-                cancellationToken.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
-                var hasThumb = item.LocationType == LocationType.FileSystem ?
-                    item.ResolveArgs.ContainsMetaFileByName(ThumbFile)
-                    : item.HasImage(ImageType.Thumb);
-
-                if (ConfigurationManager.Configuration.DownloadMovieImages.Thumb && !hasThumb)
+            if (ConfigurationManager.Configuration.DownloadMovieImages.Banner && !item.HasImage(ImageType.Banner))
+            {
+                var node = doc.SelectSingleNode("//fanart/movie/moviebanners/moviebanner[@lang = \"" + language + "\"]/@url") ??
+                           doc.SelectSingleNode("//fanart/movie/moviebanners/moviebanner/@url");
+                path = node != null ? node.Value : null;
+                if (!string.IsNullOrEmpty(path))
                 {
-                    var node = doc.SelectSingleNode("//fanart/movie/moviethumbs/moviethumb[@lang = \"" + language + "\"]/@url") ??
-                               doc.SelectSingleNode("//fanart/movie/moviethumbs/moviethumb/@url");
-                    path = node != null ? node.Value : null;
-                    if (!string.IsNullOrEmpty(path))
-                    {
-                        movie.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(movie, path, ThumbFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                    }
+                    movie.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(movie, path, BannerFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                 }
+            }
 
-                var hasBackdrop = item.LocationType == LocationType.FileSystem ?
-                    item.ResolveArgs.ContainsMetaFileByName(BackdropFile)
-                    : item.BackdropImagePaths.Count > 0;
+            cancellationToken.ThrowIfCancellationRequested();
 
-                if (ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && !hasBackdrop)
+            if (ConfigurationManager.Configuration.DownloadMovieImages.Thumb && !item.HasImage(ImageType.Thumb))
+            {
+                var node = doc.SelectSingleNode("//fanart/movie/moviethumbs/moviethumb[@lang = \"" + language + "\"]/@url") ??
+                           doc.SelectSingleNode("//fanart/movie/moviethumbs/moviethumb/@url");
+                path = node != null ? node.Value : null;
+                if (!string.IsNullOrEmpty(path))
                 {
-                    var nodes = doc.SelectNodes("//fanart/movie/moviebackgrounds//@url");
-                    if (nodes != null)
+                    movie.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(movie, path, ThumbFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                }
+            }
+
+            if (ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && item.BackdropImagePaths.Count < ConfigurationManager.Configuration.MaxBackdrops)
+            {
+                var nodes = doc.SelectNodes("//fanart/movie/moviebackgrounds//@url");
+
+                if (nodes != null)
+                {
+                    var numBackdrops = item.BackdropImagePaths.Count;
+
+                    foreach (XmlNode node in nodes)
                     {
-                        var numBackdrops = 0;
-                        item.BackdropImagePaths = new List<string>();
-                        foreach (XmlNode node in nodes)
+                        path = node.Value;
+
+                        if (!string.IsNullOrEmpty(path))
                         {
-                            path = node.Value;
-                            if (!string.IsNullOrEmpty(path))
-                            {
-                                Logger.Debug("FanArtProvider getting Backdrop for " + item.Name);
-                                item.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(item, path, ("backdrop" + (numBackdrops > 0 ? numBackdrops.ToString(UsCulture) : "") + ".jpg"), saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                                numBackdrops++;
-                                if (numBackdrops >= ConfigurationManager.Configuration.MaxBackdrops) break;
-                            }
-                        }
+                            item.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(item, path, ("backdrop" + (numBackdrops > 0 ? numBackdrops.ToString(UsCulture) : "") + ".jpg"), saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                            
+                            numBackdrops++;
 
+                            if (item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops) break;
+                        }
                     }
 
                 }
-
             }
 
             data.Data = GetComparisonData(item.GetProviderId(MetadataProviders.Tmdb));

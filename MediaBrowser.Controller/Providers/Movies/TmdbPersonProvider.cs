@@ -265,7 +265,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                     //still nothing - just get first one
                     profile = searchResult.profiles[0];
                 }
-                if (profile != null)
+                if (profile != null && !person.HasImage(ImageType.Primary))
                 {
                     var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
@@ -299,20 +299,19 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             //download and save locally (if not already there)
             var localPath = Path.Combine(item.MetaLocation, targetName);
-            if (!item.ResolveArgs.ContainsMetaFileByName(targetName))
+
+            using (var sourceStream = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {
-                using (var sourceStream = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
-                {
-                    Url = source,
-                    CancellationToken = cancellationToken
+                Url = source,
+                CancellationToken = cancellationToken
 
-                }).ConfigureAwait(false))
-                {
-                    await ProviderManager.SaveToLibraryFilesystem(item, localPath, sourceStream, cancellationToken).ConfigureAwait(false);
+            }).ConfigureAwait(false))
+            {
+                await ProviderManager.SaveToLibraryFilesystem(item, localPath, sourceStream, cancellationToken).ConfigureAwait(false);
 
-                    Logger.Debug("TmdbPersonProvider downloaded and saved image for {0}", item.Name);
-                }
+                Logger.Debug("TmdbPersonProvider downloaded and saved image for {0}", item.Name);
             }
+
             return localPath;
         }
 

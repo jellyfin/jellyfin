@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -8,6 +7,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -257,6 +257,7 @@ namespace MediaBrowser.Controller.Providers.TV
             if (series.BackdropImagePaths.Count < ConfigurationManager.Configuration.MaxBackdrops)
             {
                 var bdNo = series.BackdropImagePaths.Count;
+
                 var xmlNodeList = images.SelectNodes("//Banner[BannerType='fanart']");
                 if (xmlNodeList != null)
                 {

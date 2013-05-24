@@ -1,11 +1,11 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.Globalization;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Net;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,7 +53,7 @@ namespace MediaBrowser.Controller.Providers.TV
             {
                 return false;
             }
-            
+
             if (!ConfigurationManager.Configuration.DownloadSeriesImages.Art &&
                 !ConfigurationManager.Configuration.DownloadSeriesImages.Logo &&
                 !ConfigurationManager.Configuration.DownloadSeriesImages.Thumb &&
@@ -79,6 +79,8 @@ namespace MediaBrowser.Controller.Providers.TV
         {
             return string.IsNullOrEmpty(id) ? Guid.Empty : id.GetMD5();
         }
+
+        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
         
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
@@ -92,7 +94,7 @@ namespace MediaBrowser.Controller.Providers.TV
                 data = new BaseProviderInfo();
                 item.ProviderData[Id] = data;
             }
-            
+
             var series = (Series)item;
 
             string language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
@@ -113,67 +115,90 @@ namespace MediaBrowser.Controller.Providers.TV
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (doc.HasChildNodes)
+            string path;
+            var hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hdtv" : "clear";
+            if (ConfigurationManager.Configuration.DownloadSeriesImages.Logo && !series.HasImage(ImageType.Logo))
             {
-                string path;
-                var hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hdtv" : "clear";
-                if (ConfigurationManager.Configuration.DownloadSeriesImages.Logo && !series.ResolveArgs.ContainsMetaFileByName(LogoFile))
+                var node = doc.SelectSingleNode("//fanart/series/" + hd + "logos/" + hd + "logo[@lang = \"" + language + "\"]/@url") ??
+                            doc.SelectSingleNode("//fanart/series/clearlogos/clearlogo[@lang = \"" + language + "\"]/@url") ??
+                            doc.SelectSingleNode("//fanart/series/" + hd + "logos/" + hd + "logo/@url") ??
+                            doc.SelectSingleNode("//fanart/series/clearlogos/clearlogo/@url");
+                path = node != null ? node.Value : null;
+                if (!string.IsNullOrEmpty(path))
                 {
-                    var node = doc.SelectSingleNode("//fanart/series/" + hd + "logos/" + hd + "logo[@lang = \"" + language + "\"]/@url") ??
-                                doc.SelectSingleNode("//fanart/series/clearlogos/clearlogo[@lang = \"" + language + "\"]/@url") ??
-                                doc.SelectSingleNode("//fanart/series/" + hd + "logos/" + hd + "logo/@url") ??
-                                doc.SelectSingleNode("//fanart/series/clearlogos/clearlogo/@url");
-                    path = node != null ? node.Value : null;
-                    if (!string.IsNullOrEmpty(path))
-                    {
-                        Logger.Debug("FanArtProvider getting ClearLogo for " + series.Name);
-                        series.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(series, path, LogoFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                    }
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hd" : "";
-                if (ConfigurationManager.Configuration.DownloadSeriesImages.Art && !series.ResolveArgs.ContainsMetaFileByName(ArtFile))
-                {
-                    var node = doc.SelectSingleNode("//fanart/series/" + hd + "cleararts/" + hd + "clearart[@lang = \"" + language + "\"]/@url") ??
-                               doc.SelectSingleNode("//fanart/series/cleararts/clearart[@lang = \"" + language + "\"]/@url") ??
-                               doc.SelectSingleNode("//fanart/series/" + hd + "cleararts/" + hd + "clearart/@url") ??
-                               doc.SelectSingleNode("//fanart/series/cleararts/clearart/@url");
-                    path = node != null ? node.Value : null;
-                    if (!string.IsNullOrEmpty(path))
-                    {
-                        Logger.Debug("FanArtProvider getting ClearArt for " + series.Name);
-                        series.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(series, path, ArtFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                    }
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (ConfigurationManager.Configuration.DownloadSeriesImages.Thumb && !series.ResolveArgs.ContainsMetaFileByName(ThumbFile))
-                {
-                    var node = doc.SelectSingleNode("//fanart/series/tvthumbs/tvthumb[@lang = \"" + language + "\"]/@url") ??
-                               doc.SelectSingleNode("//fanart/series/tvthumbs/tvthumb/@url");
-                    path = node != null ? node.Value : null;
-                    if (!string.IsNullOrEmpty(path))
-                    {
-                        Logger.Debug("FanArtProvider getting ThumbArt for " + series.Name);
-                        series.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(series, path, ThumbFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                    }
-                }
-
-                if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && !series.ResolveArgs.ContainsMetaFileByName(BannerFile))
-                {
-                    var node = doc.SelectSingleNode("//fanart/series/tbbanners/tvbanner[@lang = \"" + language + "\"]/@url") ??
-                               doc.SelectSingleNode("//fanart/series/tbbanners/tvbanner/@url");
-                    path = node != null ? node.Value : null;
-                    if (!string.IsNullOrEmpty(path))
-                    {
-                        Logger.Debug("FanArtProvider getting banner for " + series.Name);
-                        series.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(series, path, BannerFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                    }
+                    Logger.Debug("FanArtProvider getting ClearLogo for " + series.Name);
+                    series.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(series, path, LogoFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                 }
             }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hd" : "";
+            if (ConfigurationManager.Configuration.DownloadSeriesImages.Art && !series.HasImage(ImageType.Art))
+            {
+                var node = doc.SelectSingleNode("//fanart/series/" + hd + "cleararts/" + hd + "clearart[@lang = \"" + language + "\"]/@url") ??
+                           doc.SelectSingleNode("//fanart/series/cleararts/clearart[@lang = \"" + language + "\"]/@url") ??
+                           doc.SelectSingleNode("//fanart/series/" + hd + "cleararts/" + hd + "clearart/@url") ??
+                           doc.SelectSingleNode("//fanart/series/cleararts/clearart/@url");
+                path = node != null ? node.Value : null;
+                if (!string.IsNullOrEmpty(path))
+                {
+                    Logger.Debug("FanArtProvider getting ClearArt for " + series.Name);
+                    series.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(series, path, ArtFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                }
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (ConfigurationManager.Configuration.DownloadSeriesImages.Thumb && !series.HasImage(ImageType.Thumb))
+            {
+                var node = doc.SelectSingleNode("//fanart/series/tvthumbs/tvthumb[@lang = \"" + language + "\"]/@url") ??
+                           doc.SelectSingleNode("//fanart/series/tvthumbs/tvthumb/@url");
+                path = node != null ? node.Value : null;
+                if (!string.IsNullOrEmpty(path))
+                {
+                    Logger.Debug("FanArtProvider getting ThumbArt for " + series.Name);
+                    series.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(series, path, ThumbFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                }
+            }
+
+            if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && !series.HasImage(ImageType.Banner))
+            {
+                var node = doc.SelectSingleNode("//fanart/series/tbbanners/tvbanner[@lang = \"" + language + "\"]/@url") ??
+                           doc.SelectSingleNode("//fanart/series/tbbanners/tvbanner/@url");
+                path = node != null ? node.Value : null;
+                if (!string.IsNullOrEmpty(path))
+                {
+                    Logger.Debug("FanArtProvider getting banner for " + series.Name);
+                    series.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(series, path, BannerFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                }
+            }
+
+            if (ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && item.BackdropImagePaths.Count < ConfigurationManager.Configuration.MaxBackdrops)
+            {
+                var nodes = doc.SelectNodes("//fanart/series/showbackgrounds//@url");
+
+                if (nodes != null)
+                {
+                    var numBackdrops = item.BackdropImagePaths.Count;
+
+                    foreach (XmlNode node in nodes)
+                    {
+                        path = node.Value;
+
+                        if (!string.IsNullOrEmpty(path))
+                        {
+                            item.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(item, path, ("backdrop" + (numBackdrops > 0 ? numBackdrops.ToString(UsCulture) : "") + ".jpg"), ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+
+                            numBackdrops++;
+
+                            if (item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops) break;
+                        }
+                    }
+
+                }
+            }
+
 
             data.Data = GetComparisonData(item.GetProviderId(MetadataProviders.Tvdb));
             SetLastRefreshed(series, DateTime.UtcNow, status);
