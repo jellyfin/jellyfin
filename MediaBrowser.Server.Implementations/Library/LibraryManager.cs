@@ -4,6 +4,7 @@ using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -159,6 +160,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="resolvers">The resolvers.</param>
         /// <param name="introProviders">The intro providers.</param>
         /// <param name="itemComparers">The item comparers.</param>
+        /// <param name="prescanTasks">The prescan tasks.</param>
         public void AddParts(IEnumerable<IResolverIgnoreRule> rules,
             IEnumerable<IVirtualFolderCreator> pluginFolders,
             IEnumerable<IItemResolver> resolvers,
@@ -211,9 +213,11 @@ namespace MediaBrowser.Server.Implementations.Library
         private bool _internetProvidersEnabled;
         private bool _peopleImageFetchingEnabled;
         private string _itemsByNamePath;
+        private string _seasonZeroDisplayName;
 
         private void RecordConfigurationValues(ServerConfiguration configuration)
         {
+            _seasonZeroDisplayName = ConfigurationManager.Configuration.SeasonZeroDisplayName;
             _itemsByNamePath = ConfigurationManager.ApplicationPaths.ItemsByNamePath;
             _internetProvidersEnabled = configuration.EnableInternetProviders;
             _peopleImageFetchingEnabled = configuration.InternetProviderExcludeTypes == null || !configuration.InternetProviderExcludeTypes.Contains(typeof(Person).Name, StringComparer.OrdinalIgnoreCase);
@@ -239,17 +243,25 @@ namespace MediaBrowser.Server.Implementations.Library
                 refreshPeopleAfterUpdate = newConfigurationFetchesPeopleImages && !_peopleImageFetchingEnabled;
             }
 
-            var ibnPathChanged = !string.Equals(_itemsByNamePath, ConfigurationManager.ApplicationPaths.ItemsByNamePath);
+            var ibnPathChanged = !string.Equals(_itemsByNamePath, ConfigurationManager.ApplicationPaths.ItemsByNamePath, StringComparison.CurrentCulture);
 
             if (ibnPathChanged)
             {
                 _itemsByName.Clear();
             }
 
+            var newSeasonZeroName = ConfigurationManager.Configuration.SeasonZeroDisplayName;
+            var seasonZeroNameChanged = !string.Equals(_seasonZeroDisplayName, newSeasonZeroName, StringComparison.CurrentCulture);
+            
             RecordConfigurationValues(config);
 
-            Task.Run(() =>
+            Task.Run(async () =>
             {
+                if (seasonZeroNameChanged)
+                {
+                    await UpdateSeasonZeroNames(newSeasonZeroName, CancellationToken.None).ConfigureAwait(false);
+                }
+
                 // Any number of configuration settings could change the way the library is refreshed, so do that now
                 _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
 
@@ -258,6 +270,27 @@ namespace MediaBrowser.Server.Implementations.Library
                     _taskManager.CancelIfRunningAndQueue<PeopleValidationTask>();
                 }
             });
+        }
+
+        /// <summary>
+        /// Updates the season zero names.
+        /// </summary>
+        /// <param name="newName">The new name.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        private Task UpdateSeasonZeroNames(string newName, CancellationToken cancellationToken)
+        {
+            var seasons = RootFolder.RecursiveChildren
+                .OfType<Season>()
+                .Where(i => i.IndexNumber.HasValue && i.IndexNumber.Value == 0 && !string.Equals(i.Name, newName, StringComparison.CurrentCulture))
+                .ToList();
+
+            foreach (var season in seasons)
+            {
+                season.Name = newName;
+            }
+
+            return UpdateItems(seasons, cancellationToken);
         }
 
         /// <summary>
@@ -1075,28 +1108,47 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
+        /// Updates the items.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        private async Task UpdateItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken)
+        {
+            var list = items.ToList();
+
+            await ItemRepository.SaveItems(list, cancellationToken).ConfigureAwait(false);
+
+            foreach (var item in list)
+            {
+                UpdateItemInLibraryCache(item);
+            }
+
+            if (ItemUpdated != null)
+            {
+                foreach (var item in list)
+                {
+                    try
+                    {
+                        ItemUpdated(this, new ItemChangeEventArgs { Item = item });
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error in ItemUpdated event handler", ex);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Updates the item.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task UpdateItem(BaseItem item, CancellationToken cancellationToken)
+        public Task UpdateItem(BaseItem item, CancellationToken cancellationToken)
         {
-            await ItemRepository.SaveItem(item, cancellationToken).ConfigureAwait(false);
-
-            UpdateItemInLibraryCache(item);
-
-            if (ItemUpdated != null)
-            {
-                try
-                {
-                    ItemUpdated(this, new ItemChangeEventArgs { Item = item });
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error in ItemUpdated event handler", ex);
-                }
-            }
+            return UpdateItems(new[] { item }, cancellationToken);
         }
 
         /// <summary>
